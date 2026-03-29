@@ -142,10 +142,8 @@ describe('TECH_UPGRADES', () => {
     const pearlTechs = Object.entries(TECH_UPGRADES).filter(
       ([, u]) => 'pearlCost' in u && (u as any).pearlCost > 0,
     );
-    // Currently hardenedShells and siegeWorks require pearls
-    expect(pearlTechs.length).toBeGreaterThanOrEqual(2);
-    for (const [id] of pearlTechs) {
-      expect(['hardenedShells', 'siegeWorks']).toContain(id);
-    }
+    // Exactly these techs should require pearls
+    const pearlTechIds = pearlTechs.map(([id]) => id).sort();
+    expect(pearlTechIds).toEqual(['hardenedShells', 'siegeWorks']);
   });
 });

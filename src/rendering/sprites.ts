@@ -685,6 +685,8 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(2, 6, '#d97706');
     p(3, 7, '#d97706');
     p(2, 8, '#d97706');
+  } else {
+    throw new Error(`Unhandled sprite type: ${type}`);
   }
 
   // Scale up with nearest-neighbour (no smoothing)
@@ -719,23 +721,10 @@ export function generateAllSprites(): {
 }
 
 /** Convenience: get the sprite canvas dimensions for a given SpriteId. */
-const LARGE_SPRITE_IDS = new Set<SpriteId>([
-  SpriteId.Lodge,
-  SpriteId.Burrow,
-  SpriteId.Armory,
-  SpriteId.Tower,
-  SpriteId.PredatorNest,
-  SpriteId.Rubble,
-  SpriteId.Watchtower,
-  SpriteId.BossCroc,
-  SpriteId.Catapult,
-  SpriteId.Wall,
-  SpriteId.ScoutPost,
-  SpriteId.SiegeTurtle,
-  SpriteId.AlphaPredator,
-  SpriteId.FishingHut,
-  SpriteId.HerbalistHut,
-]);
+/** Derived from LARGE_TYPES + SPRITE_NAMES so both registries stay in sync. */
+const LARGE_SPRITE_IDS = new Set<SpriteId>(
+  SPRITE_NAMES.filter(({ name }) => LARGE_TYPES.has(name)).map(({ id }) => id),
+);
 
 export function getSpriteSize(id: SpriteId): { width: number; height: number } {
   const isLarge = LARGE_SPRITE_IDS.has(id);

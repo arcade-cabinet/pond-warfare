@@ -161,4 +161,32 @@ describe('autoBuildSystem', () => {
 
     expect(world.resources.clams).toBe(clamsBefore);
   });
+
+  it('should successfully auto-build when conditions are met', () => {
+    world.autoBehaviors.build = true;
+    world.resources.clams = 10000;
+    world.resources.twigs = 10000;
+    // Pop cap reached triggers Burrow build pressure (score 100)
+    world.resources.food = 8;
+    world.resources.maxFood = 8;
+    // frameCount must be multiple of 300
+    world.frameCount = 300;
+
+    const lodge = createBuilding(world, EntityKind.Lodge, 800, 800);
+    // Set sprite dimensions so canPlaceBuilding overlap checks work properly
+    Sprite.width[lodge] = 96;
+    Sprite.height[lodge] = 96;
+
+    const gid = createGatherer(world, 810, 800);
+
+    const twigsBefore = world.resources.twigs;
+    autoBuildSystem(world);
+
+    // Burrow costs 0 clams, 75 twigs - twigs should have been deducted
+    expect(world.resources.twigs).toBeLessThan(twigsBefore);
+    // Gatherer should be in BuildMove state
+    expect(UnitStateMachine.state[gid]).toBe(UnitState.BuildMove);
+    // A floating text should have been created
+    expect(world.floatingTexts.length).toBeGreaterThan(0);
+  });
 });

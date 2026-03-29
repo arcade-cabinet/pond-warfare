@@ -87,12 +87,12 @@ Buildings start at 1 HP and must be constructed by Gatherers. Progress shown as 
 
 ### Enemy Evolution System
 
-The enemy faction evolves over time, unlocking progressively stronger unit types as the game progresses. Evolution only begins after the peace period ends.
+The enemy faction evolves, unlocking progressively stronger unit types as the game progresses. Evolution only begins after the peace period ends.
 
 | Tier | Minutes After Peace | Unit Unlocked | Threat Profile |
 |------|-------------------|---------------|----------------|
 | 0 | Start | Gator + Snake | Base enemies |
-| 1 | 5 min | Armored Gator | Tanky melee, hard to kill with light units |
+| 1 | 5 min | Armored Gator | Tanky melee, difficult to defeat with light units |
 | 2 | 10 min | Venom Snake | Poison DoT drains HP over time (2 dmg/sec for several ticks) |
 | 3 | 15 min | Swamp Drake | Fast flanker, bypasses front line to hit gatherers |
 | 4 | 25 min | Siege Turtle | Anti-building specialist (3x damage vs buildings) |

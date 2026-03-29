@@ -17,7 +17,6 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import { TILE_SIZE } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
-  Building,
   EntityTypeTag,
   FactionTag,
   Health,
