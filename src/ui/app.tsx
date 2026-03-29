@@ -104,6 +104,14 @@ export function App({ onMount }: AppProps) {
         class="relative h-screen w-screen overflow-hidden"
         style={{ color: 'var(--pw-text-primary)' }}
       >
+        {/* Rotate-your-device overlay for portrait mobile web users */}
+        <div class="rotate-prompt">
+          <div class="text-center">
+            <span style={{ fontSize: '48px' }}>&#x1F4F1;&#x2194;&#xFE0F;</span>
+            <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
+          </div>
+        </div>
+
         {/* Error overlay -- always rendered */}
         <ErrorOverlay />
 
@@ -188,9 +196,17 @@ export function App({ onMount }: AppProps) {
   // ---------- Playing: full game layout ----------
   return (
     <div
-      class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm font-game"
+      class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm font-game safe-area-pad"
       style={{ color: 'var(--pw-text-primary)' }}
     >
+      {/* Rotate-your-device overlay for portrait mobile web users */}
+      <div class="rotate-prompt">
+        <div class="text-center">
+          <span style={{ fontSize: '48px' }}>&#x1F4F1;&#x2194;&#xFE0F;</span>
+          <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
+        </div>
+      </div>
+
       {/* Error overlay -- always rendered, shows errors as they occur */}
       <ErrorOverlay />
 

@@ -90,6 +90,26 @@ body {
   touch-action: none;
 }
 
+/* ====================================================================
+   Rotate Device Prompt - Shown on portrait mobile web
+   ==================================================================== */
+.rotate-prompt {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--pw-bg-deep);
+  color: var(--pw-text-primary);
+  align-items: center;
+  justify-content: center;
+}
+
+@media (orientation: portrait) and (max-width: 767px) {
+  .rotate-prompt {
+    display: flex;
+  }
+}
+
 #game-canvas,
 #fog-canvas,
 #light-canvas,
@@ -236,7 +256,7 @@ body {
   position: absolute;
   top: 2px;
   right: 3px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-family: 'JetBrains Mono', monospace;
   color: var(--pw-accent-dim);
   background: rgba(0, 0, 0, 0.6);
@@ -429,7 +449,7 @@ body {
   border-top-color: var(--pw-wood-highlight);
   color: var(--pw-text-primary);
   padding: 6px 10px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   pointer-events: none;
   z-index: 100;
   white-space: nowrap;
@@ -1141,7 +1161,7 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--pw-accent-dim);
-  font-size: 10px;
+  font-size: 0.625rem;
   border-bottom: 1px solid var(--pw-border);
   padding-bottom: 4px;
 }
@@ -1194,4 +1214,14 @@ input[type="range"]::-moz-range-thumb {
   border: 2px solid var(--pw-accent-bright);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   cursor: pointer;
+}
+
+/* ====================================================================
+   Safe area insets for notched devices
+   ==================================================================== */
+.safe-area-pad {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }

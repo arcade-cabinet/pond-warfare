@@ -38,7 +38,7 @@ export function MainMenu() {
   return (
     <div
       id="intro-overlay"
-      class="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
+      class="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden safe-area-pad"
       style={{
         background:
           'radial-gradient(ellipse 120% 100% at 50% 65%, #15302a 0%, #0e2220 30%, #0a1a1f 55%, #060e12 100%)',

@@ -138,19 +138,23 @@ export function renderPixiFrame(
   renderCorpses(data.corpses, camX, camY, world.viewWidth, world.viewHeight, spriteCanvases);
 
   // --- Entities (Y-sorted) ---
+  const cullMargin = 64; // Buffer for sprite size overflow
   for (const eid of data.sortedEids) {
+    aliveEids.add(eid);
     const ex = Position.x[eid];
     const ey = Position.y[eid];
-    // Frustum cull
+    // Viewport frustum cull: skip rendering for off-screen entities
     if (
-      ex + 100 < camX ||
-      ex - 100 > camX + world.viewWidth ||
-      ey + 100 < camY ||
-      ey - 100 > camY + world.viewHeight
+      ex < camX - cullMargin ||
+      ex > camX + world.viewWidth + cullMargin ||
+      ey < camY - cullMargin ||
+      ey > camY + world.viewHeight + cullMargin
     ) {
+      // Entity is alive but off-screen: hide its sprite if it has one
+      const spr = entitySprites.get(eid);
+      if (spr) spr.visible = false;
       continue;
     }
-    aliveEids.add(eid);
     renderEntity(eid, frameCount);
   }
 
