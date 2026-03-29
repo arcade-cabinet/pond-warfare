@@ -24,7 +24,7 @@ import {
   renderParticles,
   renderProjectiles,
 } from './effects-renderer';
-import { renderEntity, setEntityRendererContext } from './entity-renderer';
+import { releaseSprite, renderEntity, setEntityRendererContext } from './entity-renderer';
 import {
   getApp,
   getBuildingProgressTexts,
@@ -154,11 +154,11 @@ export function renderPixiFrame(
     renderEntity(eid, frameCount);
   }
 
-  // --- Remove sprites for dead/removed entities ---
+  // --- Remove sprites for dead/removed entities (return to pool) ---
   for (const [eid, spr] of entitySprites) {
     if (!aliveEids.has(eid)) {
       entityLayer.removeChild(spr);
-      spr.destroy();
+      releaseSprite(spr);
       entitySprites.delete(eid);
       // Also clean up any building progress text
       const progText = buildingProgressTexts.get(eid);

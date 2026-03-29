@@ -152,6 +152,10 @@ export class Game {
   private initializing = false;
   private rafId: number | null = null;
 
+  // FPS tracking
+  private fpsFrameTimes: number[] = [];
+  private fpsLastUpdate = 0;
+
   // Audio/music state tracking
   private audioInitialized = false;
   private audioInitPromise: Promise<void> | null = null;
@@ -940,6 +944,10 @@ export class Game {
       }
     }
 
+    // Performance: AI throttling when entity count is high
+    const entityCount = spatialEnts.length;
+    const throttleAI = entityCount > 300 && this.world.frameCount % 2 !== 0;
+
     // Run all ECS systems in order
     dayNightSystem(this.world);
     movementSystem(this.world);
@@ -949,9 +957,9 @@ export class Game {
     combatSystem(this.world);
     projectileSystem(this.world);
     trainingSystem(this.world);
-    aiSystem(this.world);
+    if (!throttleAI) aiSystem(this.world);
     evolutionSystem(this.world);
-    autoBuildSystem(this.world);
+    if (!throttleAI) autoBuildSystem(this.world);
     autoTrainSystem(this.world);
     autoBehaviorSystem(this.world);
     healthSystem(this.world);
@@ -1207,6 +1215,47 @@ export class Game {
     }
 
     return true;
+  }
+
+  // ---- Unit-specific select sound ----
+
+  /** Play a unit-type-specific selection sound based on the first selected entity. */
+  private playUnitSelectSound(): void {
+    if (this.world.selection.length === 0) {
+      audio.selectUnit();
+      return;
+    }
+    const eid = this.world.selection[0];
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    switch (kind) {
+      case EntityKind.Brawler:
+        audio.selectBrawler();
+        break;
+      case EntityKind.Sniper:
+        audio.selectSniper();
+        break;
+      case EntityKind.Healer:
+        audio.selectHealer();
+        break;
+      case EntityKind.Catapult:
+        audio.selectCatapult();
+        break;
+      case EntityKind.Scout:
+        audio.selectScout();
+        break;
+      case EntityKind.Commander:
+        audio.selectCommander();
+        break;
+      case EntityKind.Gatherer:
+        audio.selectGatherer();
+        break;
+      case EntityKind.Shieldbearer:
+        audio.selectShieldbearer();
+        break;
+      default:
+        audio.selectUnit();
+        break;
+    }
   }
 
   // ---- Active abilities (tech tree) ----

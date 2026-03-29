@@ -67,6 +67,33 @@ function getRecoloredTexture(
 }
 
 // ---------------------------------------------------------------------------
+// Sprite pool: reuse Sprite objects instead of create/destroy per entity
+// ---------------------------------------------------------------------------
+const spritePool: Sprite[] = [];
+
+/** Acquire a sprite from the pool or create a new one. */
+export function acquireSprite(tex: Texture): Sprite {
+  const spr = spritePool.pop();
+  if (spr) {
+    spr.texture = tex;
+    spr.visible = true;
+    spr.alpha = 1;
+    spr.tint = 0xffffff;
+    spr.scale.set(1, 1);
+    return spr;
+  }
+  const newSpr = new Sprite(tex);
+  newSpr.anchor.set(0.5, 0.5);
+  return newSpr;
+}
+
+/** Return a sprite to the pool instead of destroying it. */
+export function releaseSprite(spr: Sprite): void {
+  spr.visible = false;
+  spritePool.push(spr);
+}
+
+// ---------------------------------------------------------------------------
 // World reference (set each frame from renderEntity caller)
 // ---------------------------------------------------------------------------
 let _world: GameWorld | null = null;
@@ -133,11 +160,10 @@ export function renderEntity(eid: number, frameCount: number): void {
     }
   }
 
-  // --- Get or create sprite ---
+  // --- Get or create sprite (pooled) ---
   let spr = entitySprites.get(eid);
   if (!spr) {
-    spr = new Sprite(effectiveTex);
-    spr.anchor.set(0.5, 0.5);
+    spr = acquireSprite(effectiveTex);
     entitySprites.set(eid, spr);
     entityLayer.addChild(spr);
   } else if (spr.texture !== effectiveTex) {
