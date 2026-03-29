@@ -18,7 +18,7 @@ function ConfettiDots() {
     const left = Math.random() * 100;
     const delay = Math.random() * 2;
     const duration = 2 + Math.random() * 2;
-    const colors = ['#fbbf24', '#38bdf8', '#f87171', '#4ade80', '#a78bfa', '#fb923c'];
+    const colors = ['#f0d060', '#40c8d0', '#e05050', '#40b868', '#a78bfa', '#e8a030'];
     const color = colors[i % colors.length];
     return (
       <span
@@ -44,7 +44,7 @@ function StarRating({ stars }: { stars: number }) {
   return (
     <div class="text-3xl mt-2">
       {Array.from({ length: 3 }, (_, i) => (
-        <span key={`star-${i}`} style={{ color: i < stars ? '#fbbf24' : '#475569' }}>
+        <span key={`star-${i}`} style={{ color: i < stars ? 'var(--pw-clam)' : 'var(--pw-text-muted)' }}>
           {'\u2605'}
         </span>
       ))}
@@ -79,20 +79,21 @@ export function GameOverBanner(props: GameOverProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="game-over-title"
-      class="absolute inset-0 flex flex-col items-center justify-center z-30 bg-black bg-opacity-50 overflow-hidden"
+      class="absolute inset-0 flex flex-col items-center justify-center z-30 overflow-hidden"
+      style={{ background: 'rgba(12, 26, 31, 0.7)' }}
     >
       {isVictory && <ConfettiDots />}
       <h1
         id="game-over-title"
-        class={`text-4xl md:text-6xl font-black mb-4 tracking-widest uppercase shadow-lg ${goTitleColor.value}`}
+        class={`font-title text-4xl md:text-6xl mb-4 tracking-widest uppercase shadow-lg ${goTitleColor.value}`}
       >
         {goTitle}
       </h1>
-      <p class="text-xl md:text-2xl text-white font-bold">{goDesc}</p>
+      <p class="font-heading text-xl md:text-2xl text-white font-bold">{goDesc}</p>
       <StarRating stars={stars} />
       <div ref={statsContainerRef} class="mt-4 flex flex-col items-center gap-1">
         {lines.map((line, i) => (
-          <p key={`stat-${i}`} data-stat-line class="text-sm text-slate-300" style={{ opacity: 0 }}>
+          <p key={`stat-${i}`} data-stat-line class="font-numbers text-sm" style={{ opacity: 0, color: 'var(--pw-text-secondary)' }}>
             {line}
           </p>
         ))}
@@ -101,7 +102,12 @@ export function GameOverBanner(props: GameOverProps) {
         ref={restartButtonRef}
         type="button"
         id="restart-btn"
-        class="mt-6 px-6 py-3 bg-sky-700 hover:bg-sky-600 text-white font-bold rounded-lg text-lg cursor-pointer border-2 border-sky-400 shadow-xl"
+        class="mt-6 px-6 py-3 font-heading text-white font-bold rounded-lg text-lg cursor-pointer shadow-xl transition-colors"
+        style={{
+          background: 'var(--pw-bg-elevated)',
+          border: '2px solid var(--pw-accent)',
+          color: 'var(--pw-accent-bright)',
+        }}
         onClick={props.onRestart}
       >
         Play Again

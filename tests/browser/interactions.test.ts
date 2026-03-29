@@ -511,6 +511,7 @@ describe('Action Panel interactions', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Expansion',
+        category: 'build',
         onClick,
       },
     ];
@@ -535,6 +536,7 @@ describe('Action Panel interactions', () => {
         hotkey: 'E',
         affordable: false,
         description: 'Train combat',
+        category: 'build',
         onClick,
       },
     ];
@@ -563,6 +565,7 @@ describe('Action Panel interactions', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Expansion',
+        category: 'build',
         onClick: onLodge,
       },
       {
@@ -571,6 +574,7 @@ describe('Action Panel interactions', () => {
         hotkey: 'W',
         affordable: true,
         description: 'Housing',
+        category: 'build',
         onClick: onBurrow,
       },
       {
@@ -579,6 +583,7 @@ describe('Action Panel interactions', () => {
         hotkey: 'E',
         affordable: true,
         description: 'Train combat',
+        category: 'build',
         onClick: onArmory,
       },
     ];
@@ -612,6 +617,7 @@ describe('Action Panel interactions', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Worker',
+        category: 'train',
         onClick: vi.fn(),
       },
     ];
@@ -624,9 +630,9 @@ describe('Action Panel interactions', () => {
       h('div', { style: 'width:256px;height:300px;background:#1e293b' }, h(ActionPanel, null)),
     );
 
-    // Find buttons that are not action-btns (queue items)
+    // Find queue cancel buttons (exclude action-btns and tab buttons)
     const allBtns = document.querySelectorAll(
-      '#action-panel button:not(.action-btn)',
+      '#action-panel .col-span-2 button',
     ) as NodeListOf<HTMLButtonElement>;
     expect(allBtns.length).toBe(2);
 
@@ -645,6 +651,7 @@ describe('Action Panel interactions', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Build a lodge',
+        category: 'build',
         onClick: vi.fn(),
       },
     ];

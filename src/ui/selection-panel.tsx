@@ -5,6 +5,7 @@
  * stats (HP, Dmg, Kills, Range), status text.
  * Multi-unit: squad count, composition breakdown, mini sprite grid (max 12 shown).
  * Resource: amount remaining, description.
+ * No selection: compact overview with idle workers, army count, population.
  */
 
 import {
@@ -20,10 +21,51 @@ import {
   selectionShowHpBar,
   selectionSpriteData,
   selectionStatsHtml,
+  idleWorkerCount,
+  armyCount,
+  food,
+  maxFood,
 } from './store';
 
 export interface SelectionPanelProps {
   onDeselect?: () => void;
+}
+
+/** Compact overview when nothing is selected. */
+function CommandCenterOverview() {
+  return (
+    <div class="flex flex-col gap-1">
+      <h2
+        class="font-heading text-sm md:text-base font-bold leading-tight"
+        style={{ color: 'var(--pw-text-muted)' }}
+      >
+        Command Center
+      </h2>
+      <div
+        class="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] md:text-xs font-numbers"
+        style={{ color: 'var(--pw-text-secondary)' }}
+      >
+        <span>
+          <span class="font-bold" style={{ color: 'var(--pw-clam)' }}>
+            {idleWorkerCount.value}
+          </span>{' '}
+          Idle
+        </span>
+        <span>
+          Army:{' '}
+          <span class="font-bold" style={{ color: 'var(--pw-enemy)' }}>
+            {armyCount.value}
+          </span>
+        </span>
+        <span>
+          Pop:{' '}
+          <span class="font-bold" style={{ color: 'var(--pw-food)' }}>
+            {food.value}/{maxFood.value}
+          </span>
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
@@ -33,13 +75,21 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
   return (
     <div
       id="selection-info"
-      class="w-1/3 md:w-full flex-1 p-2 md:p-4 border-r-2 md:border-r-0 md:border-b-4 border-slate-700 flex flex-col gap-1 md:gap-2 overflow-y-auto bg-slate-900 relative"
+      class="w-1/3 md:w-full flex-shrink-0 p-2 md:p-3 border-r-2 md:border-r-0 md:border-b-2 flex flex-col gap-1 md:gap-1.5 overflow-y-auto relative"
+      style={{
+        background: 'var(--pw-bg-deep)',
+        borderColor: 'var(--pw-border)',
+      }}
     >
       {/* Deselect button */}
       {count > 0 && onDeselect && (
         <button
           type="button"
-          class="absolute top-1 right-1 bg-slate-700 hover:bg-red-700 text-slate-300 rounded-full w-6 h-6 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10"
+          class="absolute top-1 right-1 rounded-full w-6 h-6 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors"
+          style={{
+            background: 'var(--pw-bg-elevated)',
+            color: 'var(--pw-text-secondary)',
+          }}
           title="Clear selection (Esc)"
           onClick={(e) => {
             e.stopPropagation();
@@ -50,58 +100,91 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
         </button>
       )}
 
-      <div class="flex flex-col sm:flex-row gap-2 md:gap-3 items-start">
-        {/* Portrait (single selection only) */}
-        {!selectionIsMulti.value && count > 0 && selectionSpriteData.value && (
-          <div class="relative flex-shrink-0">
-            <img
-              src={selectionSpriteData.value}
-              alt="portrait"
-              class="bg-slate-800 border-2 border-slate-600 rounded-sm shadow-inner w-12 h-12 md:w-16 md:h-16 render-pixelated cursor-pointer hover:border-sky-400 transition-colors"
-              title="Click to track unit"
-            />
-            {selectionKills.value > 0 && (
-              <span class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] md:text-[10px] font-bold rounded-full px-1 leading-tight">
-                {selectionKills.value}
-              </span>
-            )}
-          </div>
-        )}
+      {/* No selection: compact overview */}
+      {count === 0 && <CommandCenterOverview />}
 
-        <div class="flex-1 w-full">
-          <h2 class={`text-base md:text-xl font-bold leading-tight ${selectionNameColor.value}`}>
-            {selectionName}
-          </h2>
-
-          {/* HP bar */}
-          {showHp && (
-            <div class="w-full h-3 md:h-4 bg-red-900 border border-slate-900 mt-1">
-              <div
-                class="h-full transition-all duration-200"
+      {/* Has selection */}
+      {count > 0 && (
+        <div class="flex flex-col sm:flex-row gap-2 md:gap-2 items-start">
+          {/* Portrait (single selection only) */}
+          {!selectionIsMulti.value && selectionSpriteData.value && (
+            <div class="relative flex-shrink-0">
+              <img
+                src={selectionSpriteData.value}
+                alt="portrait"
+                class="rounded-sm shadow-inner w-12 h-12 md:w-14 md:h-14 render-pixelated cursor-pointer transition-colors"
                 style={{
-                  width: `${hpPercent.value}%`,
-                  background: hpBarColor.value,
+                  background: 'var(--pw-bg-surface)',
+                  border: '2px solid var(--pw-border)',
                 }}
+                title="Click to track unit"
               />
+              {selectionKills.value > 0 && (
+                <span
+                  class="absolute -top-1 -right-1 text-white text-[9px] md:text-[10px] font-numbers font-bold rounded-full px-1 leading-tight"
+                  style={{ background: 'var(--pw-enemy)' }}
+                >
+                  {selectionKills.value}
+                </span>
+              )}
             </div>
           )}
 
-          {/* Stats */}
-          <div id="sel-stats" class="text-slate-300 text-xs md:text-sm mt-1">
-            {selectionStatsHtml}
-          </div>
+          <div class="flex-1 w-full">
+            <h2
+              class={`font-heading text-sm md:text-lg font-bold leading-tight ${selectionNameColor.value}`}
+            >
+              {selectionName}
+            </h2>
 
-          {/* Description / status */}
-          <p class="text-[10px] md:text-xs text-slate-400 leading-tight">{selectionDesc}</p>
+            {/* HP bar */}
+            {showHp && (
+              <div
+                class="w-full h-2.5 md:h-3 mt-1"
+                style={{
+                  background: 'rgba(192, 48, 48, 0.3)',
+                  border: '1px solid var(--pw-bg-deep)',
+                }}
+              >
+                <div
+                  class="h-full transition-all duration-200"
+                  style={{
+                    width: `${hpPercent.value}%`,
+                    background: hpBarColor.value,
+                  }}
+                />
+              </div>
+            )}
 
-          {/* Multi-select composition */}
-          {selectionIsMulti.value && (
-            <p class="text-[10px] md:text-xs text-slate-400 leading-tight mt-1">
-              {selectionComposition}
+            {/* Stats */}
+            <div
+              id="sel-stats"
+              class="font-numbers text-[10px] md:text-xs mt-0.5"
+              style={{ color: 'var(--pw-text-secondary)' }}
+            >
+              {selectionStatsHtml}
+            </div>
+
+            {/* Description / status */}
+            <p
+              class="font-game text-[10px] md:text-xs leading-tight"
+              style={{ color: 'var(--pw-text-muted)' }}
+            >
+              {selectionDesc}
             </p>
-          )}
+
+            {/* Multi-select composition */}
+            {selectionIsMulti.value && (
+              <p
+                class="font-game text-[10px] md:text-xs leading-tight mt-0.5"
+                style={{ color: 'var(--pw-text-muted)' }}
+              >
+                {selectionComposition}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

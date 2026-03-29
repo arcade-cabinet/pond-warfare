@@ -36,16 +36,17 @@ function VolumeSlider({
 }) {
   return (
     <label class="flex items-center gap-3 w-full min-h-[44px]">
-      <span class="text-slate-300 text-xs w-24 shrink-0">{label}</span>
+      <span class="font-game text-xs w-24 shrink-0" style={{ color: 'var(--pw-text-secondary)' }}>{label}</span>
       <input
         type="range"
         min="0"
         max="100"
         value={value}
         onInput={(e) => onChange(Number((e.target as HTMLInputElement).value))}
-        class="flex-1 h-6 appearance-none bg-slate-600 rounded cursor-pointer accent-sky-500 touch-none"
+        class="flex-1 h-6 appearance-none rounded cursor-pointer touch-none"
+        style={{ background: 'var(--pw-border)', accentColor: 'var(--pw-accent)' }}
       />
-      <span class="text-slate-400 text-xs w-8 text-right">{value}</span>
+      <span class="font-numbers text-xs w-8 text-right" style={{ color: 'var(--pw-text-muted)' }}>{value}</span>
     </label>
   );
 }
@@ -61,16 +62,24 @@ export function SettingsPanel(props: SettingsPanelProps) {
       }}
     >
       {/* Backdrop */}
-      <div class="absolute inset-0 bg-black bg-opacity-70" />
+      <div class="absolute inset-0" style={{ background: 'rgba(12, 26, 31, 0.8)' }} />
 
       {/* Panel card */}
-      <div class="relative bg-slate-800 border-2 border-slate-600 rounded-lg shadow-2xl w-80 max-w-[90vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 font-mono text-sm text-slate-200 z-10">
+      <div
+        class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 font-game text-sm z-10"
+        style={{
+          background: 'var(--pw-bg-surface)',
+          border: '2px solid var(--pw-border)',
+          color: 'var(--pw-text-primary)',
+        }}
+      >
         {/* Header */}
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-sky-300 tracking-wide">Settings</h2>
+          <h2 class="font-title text-lg tracking-wide" style={{ color: 'var(--pw-accent)' }}>Settings</h2>
           <button
             type="button"
-            class="text-slate-400 hover:text-slate-200 text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            class="text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors"
+            style={{ color: 'var(--pw-text-muted)' }}
             onClick={props.onClose}
             title="Close Settings"
           >
@@ -80,7 +89,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Volume section */}
         <div class="space-y-3 mb-5">
-          <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Audio</div>
+          <div class="font-heading text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--pw-text-muted)' }}>Audio</div>
           <VolumeSlider
             label="Master Volume"
             value={masterVolume.value}
@@ -100,17 +109,18 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Game Speed section */}
         <div class="mb-5">
-          <div class="text-xs text-slate-500 uppercase tracking-wider mb-2">Game Speed</div>
+          <div class="font-heading text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--pw-text-muted)' }}>Game Speed</div>
           <div class="flex gap-2">
             {[1, 2, 3].map((s) => (
               <button
                 type="button"
                 key={`speed-${s}`}
-                class={`flex-1 py-1.5 min-h-[44px] rounded border font-bold text-xs cursor-pointer transition-colors ${
-                  currentSpeed === s
-                    ? 'bg-sky-700 border-sky-500 text-sky-200'
-                    : 'bg-slate-700 border-slate-500 text-slate-400 hover:bg-slate-600'
-                }`}
+                class="flex-1 py-1.5 min-h-[44px] rounded border font-numbers font-bold text-xs cursor-pointer transition-colors"
+                style={{
+                  background: currentSpeed === s ? 'var(--pw-bg-elevated)' : 'var(--pw-bg-surface)',
+                  borderColor: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-border)',
+                  color: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
+                }}
                 onClick={() => props.onSpeedSet(s)}
               >
                 {s}x
@@ -121,16 +131,15 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Toggles section */}
         <div class="space-y-3">
-          <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Options</div>
+          <div class="font-heading text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--pw-text-muted)' }}>Options</div>
 
           {/* Color Blind Mode */}
           <div class="flex items-center justify-between min-h-[44px]">
-            <span class="text-slate-300 text-xs">Color Blind Mode</span>
+            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>Color Blind Mode</span>
             <button
               type="button"
-              class={`w-12 h-7 rounded-full relative cursor-pointer transition-colors ${
-                colorBlindMode.value ? 'bg-amber-600' : 'bg-slate-600'
-              }`}
+              class="w-12 h-7 rounded-full relative cursor-pointer transition-colors"
+              style={{ background: colorBlindMode.value ? 'var(--pw-warning)' : 'var(--pw-border)' }}
               onClick={props.onColorBlindToggle}
               title="Toggle Color Blind Mode"
             >
@@ -144,12 +153,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
           {/* Auto-save */}
           <div class="flex items-center justify-between min-h-[44px]">
-            <span class="text-slate-300 text-xs">Auto-save (every 60s)</span>
+            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>Auto-save (every 60s)</span>
             <button
               type="button"
-              class={`w-12 h-7 rounded-full relative cursor-pointer transition-colors ${
-                autoSaveEnabled.value ? 'bg-green-600' : 'bg-slate-600'
-              }`}
+              class="w-12 h-7 rounded-full relative cursor-pointer transition-colors"
+              style={{ background: autoSaveEnabled.value ? 'var(--pw-success)' : 'var(--pw-border)' }}
               onClick={props.onAutoSaveToggle}
               title="Toggle Auto-save"
             >

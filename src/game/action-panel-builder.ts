@@ -4,6 +4,8 @@
  * Builds context-sensitive action buttons and training queue items for
  * the selected entity (or global Command Center when nothing is selected).
  * Covers Lodge, Armory, Gatherer build menu, and all tech upgrades.
+ * Each button is tagged with a category ('train', 'build', 'tech') for
+ * the tabbed action panel.
  */
 
 import { query } from 'bitecs';
@@ -68,6 +70,7 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
       w.resources.clams >= (gDef.clamCost ?? 0) &&
       w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
     description: 'Worker unit',
+    category: 'train',
     onClick: () => {
       train(
         w,
@@ -89,6 +92,7 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
       w.resources.clams >= smTech.clamCost &&
       w.resources.twigs >= smTech.twigCost,
     description: smTech.description,
+    category: 'tech',
     onClick: () => {
       if (
         canResearch('sturdyMud', w.tech) &&
@@ -111,6 +115,7 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
       w.resources.clams >= spTech.clamCost &&
       w.resources.twigs >= spTech.twigCost,
     description: spTech.description,
+    category: 'tech',
     onClick: () => {
       if (
         canResearch('swiftPaws', w.tech) &&
@@ -132,6 +137,7 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
       w.resources.clams >= (scoutDef.clamCost ?? 0) &&
       w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
     description: 'Fast recon, wide vision',
+    category: 'train',
     onClick: () => {
       train(
         w,
@@ -149,6 +155,7 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
     hotkey: 'T',
     affordable: true,
     description: 'View full tech tree',
+    category: 'tech',
     onClick: () => {
       store.techTreeOpen.value = true;
     },
@@ -204,6 +211,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= (lodgeDef.clamCost ?? 0) &&
             w.resources.twigs >= (lodgeDef.twigCost ?? 0),
           description: 'Expansion (+4 food cap, drop-off)',
+          category: 'build',
           onClick: () => {
             w.placingBuilding = 'lodge';
           },
@@ -215,6 +223,7 @@ export function buildActionPanel(world: GameWorld): void {
           hotkey: 'W',
           affordable: w.resources.twigs >= (burrowDef.twigCost ?? 0),
           description: 'Housing (+4 food cap)',
+          category: 'build',
           onClick: () => {
             w.placingBuilding = 'burrow';
           },
@@ -228,6 +237,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= (armoryDef.clamCost ?? 0) &&
             w.resources.twigs >= (armoryDef.twigCost ?? 0),
           description: 'Train combat units',
+          category: 'build',
           onClick: () => {
             w.placingBuilding = 'armory';
           },
@@ -241,6 +251,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= (towerDef.clamCost ?? 0) &&
             w.resources.twigs >= (towerDef.twigCost ?? 0),
           description: 'Defensive tower',
+          category: 'build',
           onClick: () => {
             w.placingBuilding = 'tower';
           },
@@ -255,6 +266,7 @@ export function buildActionPanel(world: GameWorld): void {
               w.resources.clams >= (wtDef.clamCost ?? 0) &&
               w.resources.twigs >= (wtDef.twigCost ?? 0),
             description: 'Long-range tower',
+            category: 'build',
             onClick: () => {
               w.placingBuilding = 'watchtower';
             },
@@ -267,6 +279,7 @@ export function buildActionPanel(world: GameWorld): void {
           hotkey: 'Y',
           affordable: w.resources.twigs >= (wallDef.twigCost ?? 0),
           description: 'Defensive barrier',
+          category: 'build',
           onClick: () => {
             w.placingBuilding = 'wall';
           },
@@ -281,6 +294,7 @@ export function buildActionPanel(world: GameWorld): void {
               w.resources.clams >= (spDef.clamCost ?? 0) &&
               w.resources.twigs >= (spDef.twigCost ?? 0),
             description: 'Reveals large area',
+            category: 'build',
             onClick: () => {
               w.placingBuilding = 'scout_post';
             },
@@ -301,6 +315,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= cartoTech.clamCost &&
             w.resources.twigs >= cartoTech.twigCost,
           description: cartoTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('cartography', w.tech) &&
@@ -323,6 +338,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= thTech.clamCost &&
             w.resources.twigs >= thTech.twigCost,
           description: thTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('tidalHarvest', w.tech) &&
@@ -349,6 +365,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= (bDef.twigCost ?? 0) &&
             w.resources.food + (bDef.foodCost ?? 1) <= w.resources.maxFood,
           description: 'Melee fighter',
+          category: 'train',
           onClick: () => {
             train(
               w,
@@ -370,6 +387,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= (sDef.twigCost ?? 0) &&
             w.resources.food + (sDef.foodCost ?? 1) <= w.resources.maxFood,
           description: 'Ranged attacker',
+          category: 'train',
           onClick: () => {
             train(
               w,
@@ -391,6 +409,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= (hDef.twigCost ?? 0) &&
             w.resources.food + (hDef.foodCost ?? 1) <= w.resources.maxFood,
           description: 'Heals nearby friendlies',
+          category: 'train',
           onClick: () => {
             train(
               w,
@@ -412,6 +431,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= ssTech.clamCost &&
             w.resources.twigs >= ssTech.twigCost,
           description: ssTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('sharpSticks', w.tech) &&
@@ -434,6 +454,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= eeTech.clamCost &&
             w.resources.twigs >= eeTech.twigCost,
           description: eeTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('eagleEye', w.tech) &&
@@ -456,6 +477,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= hsTech.clamCost &&
             w.resources.twigs >= hsTech.twigCost,
           description: hsTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('hardenedShells', w.tech) &&
@@ -479,6 +501,7 @@ export function buildActionPanel(world: GameWorld): void {
               w.resources.twigs >= (sbDef.twigCost ?? 0) &&
               w.resources.food + (sbDef.foodCost ?? 1) <= w.resources.maxFood,
             description: 'Tank unit with shield',
+            category: 'train',
             onClick: () => {
               train(
                 w,
@@ -502,6 +525,7 @@ export function buildActionPanel(world: GameWorld): void {
               w.resources.twigs >= (catDef.twigCost ?? 0) &&
               w.resources.food + (catDef.foodCost ?? 1) <= w.resources.maxFood,
             description: 'Siege AoE, long range',
+            category: 'train',
             onClick: () => {
               train(
                 w,
@@ -524,6 +548,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= isTech.clamCost &&
             w.resources.twigs >= isTech.twigCost,
           description: isTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('ironShell', w.tech) &&
@@ -546,6 +571,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= swTech.clamCost &&
             w.resources.twigs >= swTech.twigCost,
           description: swTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('siegeWorks', w.tech) &&
@@ -568,6 +594,7 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= brTech.clamCost &&
             w.resources.twigs >= brTech.twigCost,
           description: brTech.description,
+          category: 'tech',
           onClick: () => {
             if (
               canResearch('battleRoar', w.tech) &&

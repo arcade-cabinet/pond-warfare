@@ -83,16 +83,36 @@ function getNodeState(id: TechId, techState: TechState, clams: number, twigs: nu
   return 'unaffordable';
 }
 
-function stateClasses(state: NodeState): string {
+function stateStyles(state: NodeState): { border: string; background: string; color: string; extra: string } {
   switch (state) {
     case 'researched':
-      return 'border-green-500 bg-green-900/60 text-green-100';
+      return {
+        border: 'var(--pw-success)',
+        background: 'rgba(64, 184, 104, 0.15)',
+        color: 'var(--pw-text-primary)',
+        extra: '',
+      };
     case 'available':
-      return 'border-amber-400 bg-slate-700 text-amber-100 cursor-pointer hover:bg-slate-600 shadow-[0_0_12px_rgba(251,191,36,0.35)] animate-pulse-subtle';
+      return {
+        border: 'var(--pw-warning)',
+        background: 'var(--pw-bg-elevated)',
+        color: 'var(--pw-otter-light)',
+        extra: 'cursor-pointer animate-pulse-subtle',
+      };
     case 'unaffordable':
-      return 'border-amber-400/60 bg-slate-700/80 text-slate-300 cursor-not-allowed';
+      return {
+        border: 'rgba(232, 160, 48, 0.4)',
+        background: 'rgba(26, 53, 64, 0.8)',
+        color: 'var(--pw-text-secondary)',
+        extra: 'cursor-not-allowed',
+      };
     case 'locked':
-      return 'border-slate-600 bg-slate-800/60 text-slate-500 cursor-not-allowed opacity-60';
+      return {
+        border: 'var(--pw-border)',
+        background: 'rgba(19, 40, 48, 0.6)',
+        color: 'var(--pw-text-muted)',
+        extra: 'cursor-not-allowed opacity-60',
+      };
   }
 }
 
@@ -114,10 +134,11 @@ function TechNode({
 
   const x = node.col * CELL_W;
   const y = node.row * CELL_H;
+  const styles = stateStyles(state);
 
   return (
     <div
-      class={`absolute rounded-lg border-2 flex flex-col items-center justify-center text-center p-1 select-none transition-colors duration-200 ${stateClasses(state)}`}
+      class={`absolute rounded-lg border-2 flex flex-col items-center justify-center text-center p-1 select-none transition-colors duration-200 ${styles.extra}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -125,6 +146,9 @@ function TechNode({
         height: `${NODE_H}px`,
         minHeight: '44px',
         minWidth: '44px',
+        borderColor: styles.border,
+        background: styles.background,
+        color: styles.color,
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -132,23 +156,24 @@ function TechNode({
       }}
     >
       {state === 'researched' && (
-        <span class="absolute top-1 right-1 text-green-400 text-xs">&#10003;</span>
+        <span class="absolute top-1 right-1 text-xs" style={{ color: 'var(--pw-success)' }}>&#10003;</span>
       )}
-      <span class="text-xs font-bold leading-tight">{upgrade.name}</span>
+      <span class="font-heading text-xs font-bold leading-tight">{upgrade.name}</span>
       <span
-        class={`text-[10px] mt-0.5 ${state === 'unaffordable' ? 'text-red-400' : 'text-sky-200'}`}
+        class="font-numbers text-[10px] mt-0.5"
+        style={{ color: state === 'unaffordable' ? 'var(--pw-enemy-light)' : 'var(--pw-accent)' }}
       >
         {upgrade.clamCost}C {upgrade.twigCost}T
       </span>
-      <span class="text-[9px] leading-tight mt-0.5 opacity-80">{upgrade.description}</span>
+      <span class="font-game text-[9px] leading-tight mt-0.5 opacity-80">{upgrade.description}</span>
       {state === 'locked' && 'requires' in upgrade && upgrade.requires && (
-        <span class="text-[8px] text-slate-500 mt-0.5">
+        <span class="font-game text-[8px] mt-0.5" style={{ color: 'var(--pw-text-muted)' }}>
           Needs:{' '}
           {TECH_UPGRADES[upgrade.requires as keyof typeof TECH_UPGRADES]?.name ?? upgrade.requires}
         </span>
       )}
       {node.unlocks && (
-        <span class="text-[8px] text-amber-300 mt-0.5">Unlocks: {node.unlocks}</span>
+        <span class="font-game text-[8px] mt-0.5" style={{ color: 'var(--pw-warning)' }}>Unlocks: {node.unlocks}</span>
       )}
     </div>
   );
@@ -189,10 +214,10 @@ function EdgeLines({
         const researched = techState[edge.from as TechId] && techState[edge.to as TechId];
         const partial = techState[edge.from as TechId];
 
-        let stroke = '#475569'; // slate-600
+        let stroke = 'var(--pw-border)';
         if (researched)
-          stroke = '#22c55e'; // green-500
-        else if (partial) stroke = '#f59e0b'; // amber-500
+          stroke = 'var(--pw-success)';
+        else if (partial) stroke = 'var(--pw-warning)';
 
         return (
           <line
@@ -246,7 +271,7 @@ function BranchPanel({
 
   return (
     <div class="flex flex-col items-center">
-      <h3 class="text-amber-400 font-bold text-sm uppercase tracking-wider mb-3">{title}</h3>
+      <h3 class="font-heading text-sm uppercase tracking-wider mb-3" style={{ color: 'var(--pw-warning)' }}>{title}</h3>
       <div class="relative" style={{ width: `${gridW}px`, height: `${gridH}px` }}>
         <EdgeLines edges={edges} nodes={activeNodes} techState={techState} />
         {activeNodes.map((node) => {
@@ -281,7 +306,8 @@ export function TechTreePanel({
 }: TechTreePanelProps) {
   return (
     <div
-      class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center overflow-auto overscroll-contain touch-pan-y"
+      class="absolute inset-0 z-50 flex flex-col items-center overflow-auto overscroll-contain touch-pan-y"
+      style={{ background: 'rgba(12, 26, 31, 0.9)' }}
       onClick={(e) => {
         // Close when clicking the backdrop
         if (e.target === e.currentTarget) onClose();
@@ -289,10 +315,14 @@ export function TechTreePanel({
     >
       {/* Header */}
       <div class="w-full flex items-center justify-between px-6 pt-4 pb-2 max-w-4xl mx-auto">
-        <h2 class="text-lg font-bold text-slate-100 uppercase tracking-widest">Tech Tree</h2>
+        <h2 class="font-title text-lg uppercase tracking-widest" style={{ color: 'var(--pw-text-primary)' }}>Tech Tree</h2>
         <button
           type="button"
-          class="w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded bg-slate-700 hover:bg-red-700 text-slate-300 hover:text-white text-lg font-bold transition-colors"
+          class="w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded text-lg font-bold transition-colors"
+          style={{
+            background: 'var(--pw-bg-elevated)',
+            color: 'var(--pw-text-secondary)',
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onClose();
@@ -303,12 +333,12 @@ export function TechTreePanel({
       </div>
 
       {/* Resources bar */}
-      <div class="flex gap-4 text-xs text-slate-400 mb-4">
+      <div class="flex gap-4 text-xs mb-4 font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
         <span>
-          Clams: <span class="text-sky-200 font-bold">{clams}</span>
+          Clams: <span class="font-bold" style={{ color: 'var(--pw-clam)' }}>{clams}</span>
         </span>
         <span>
-          Twigs: <span class="text-sky-200 font-bold">{twigs}</span>
+          Twigs: <span class="font-bold" style={{ color: 'var(--pw-twig)' }}>{twigs}</span>
         </span>
       </div>
 

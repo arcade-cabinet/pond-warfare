@@ -467,6 +467,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Expansion (+4 food cap)',
+        category: 'build',
         onClick: noop,
       },
       {
@@ -475,6 +476,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'W',
         affordable: true,
         description: 'Housing (+4 food cap)',
+        category: 'build',
         onClick: noop,
       },
       {
@@ -483,6 +485,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'E',
         affordable: false,
         description: 'Train combat units',
+        category: 'build',
         onClick: noop,
       },
       {
@@ -491,6 +494,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'R',
         affordable: false,
         description: 'Defensive tower',
+        category: 'build',
         onClick: noop,
       },
     ];
@@ -513,6 +517,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Worker unit',
+        category: 'train',
         onClick: noop,
       },
       {
@@ -521,6 +526,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'W',
         affordable: true,
         description: '+20% building HP',
+        category: 'tech',
         onClick: noop,
       },
       {
@@ -529,6 +535,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'E',
         affordable: false,
         description: '+15% unit speed',
+        category: 'tech',
         onClick: noop,
       },
     ];
@@ -548,6 +555,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Melee fighter',
+        category: 'train',
         onClick: noop,
       },
       {
@@ -556,6 +564,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'W',
         affordable: true,
         description: 'Ranged attacker',
+        category: 'train',
         onClick: noop,
       },
       {
@@ -564,6 +573,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'E',
         affordable: true,
         description: 'Heals nearby friendlies',
+        category: 'train',
         onClick: noop,
       },
       {
@@ -572,6 +582,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'R',
         affordable: false,
         description: '+25% melee damage',
+        category: 'tech',
         onClick: noop,
       },
     ];
@@ -591,6 +602,7 @@ describe('Action Panel screenshots', () => {
         hotkey: 'Q',
         affordable: true,
         description: 'Worker unit',
+        category: 'train',
         onClick: noop,
       },
     ];

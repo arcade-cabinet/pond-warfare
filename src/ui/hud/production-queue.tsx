@@ -14,13 +14,17 @@ export function ProductionQueue() {
           key={
             item.entityId !== undefined ? `prod-${item.entityId}` : `prod-${item.unitLabel}-${i}`
           }
-          class="relative w-10 h-6 bg-slate-800 border border-slate-600 rounded overflow-hidden flex items-center justify-center"
+          class="relative w-10 h-6 rounded overflow-hidden flex items-center justify-center"
+          style={{
+            background: 'var(--pw-bg-surface)',
+            border: '1px solid var(--pw-border)',
+          }}
         >
           <div
-            class="absolute bottom-0 left-0 h-full bg-green-700 opacity-60 transition-all duration-75"
-            style={{ width: `${item.progress}%` }}
+            class="absolute bottom-0 left-0 h-full transition-all duration-75"
+            style={{ width: `${item.progress}%`, background: 'var(--pw-success)', opacity: 0.5 }}
           />
-          <span class="relative text-[8px] font-bold text-slate-200 z-10 truncate px-0.5">
+          <span class="relative text-[8px] font-numbers font-bold z-10 truncate px-0.5" style={{ color: 'var(--pw-text-primary)' }}>
             {item.unitLabel}
           </span>
         </div>

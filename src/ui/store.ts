@@ -61,6 +61,9 @@ export const armyCount = signal(0);
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);
 
+// ---- Action panel tab ----
+export const activeActionTab = signal<'train' | 'build' | 'tech'>('train');
+
 // ---- Tech tree panel ----
 export const techTreeOpen = signal(false);
 

@@ -19,7 +19,12 @@ export function CtrlGroups(props: CtrlGroupsProps) {
           <button
             type="button"
             key={`cg-${gnum}`}
-            class="w-7 h-7 min-w-[44px] min-h-[44px] bg-slate-800 border border-sky-600 rounded text-sky-300 font-bold text-xs hover:bg-slate-700 hover:border-sky-400 cursor-pointer flex items-center justify-center transition-colors"
+            class="w-7 h-7 min-w-[44px] min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
+            style={{
+              background: 'var(--pw-bg-surface)',
+              border: '1px solid var(--pw-accent)',
+              color: 'var(--pw-accent)',
+            }}
             title={`Group ${gnum} (${count} units) - press ${gnum} to recall`}
             onClick={(e) => {
               e.stopPropagation();
