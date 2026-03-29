@@ -34,7 +34,7 @@ export interface QueueItemDef {
 export const actionButtons = signal<ActionButtonDef[]>([]);
 export const queueItems = signal<QueueItemDef[]>([]);
 
-function ActionButton({ def, index }: { def: ActionButtonDef; index: number }) {
+function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
   return (
     <button
       type="button"
@@ -65,7 +65,8 @@ function QueueDisplay() {
       <span class="text-[10px] text-sky-200 uppercase tracking-wider">Queue (Click to Cancel)</span>
       <div class="flex gap-2 flex-wrap">
         {items.map((item, i) => (
-          <div
+          <button
+            type="button"
             key={`q-${i}`}
             class="relative w-8 h-8 bg-slate-700 border border-slate-500 hover:border-red-500 rounded cursor-pointer overflow-hidden"
             onClick={(e) => {
@@ -80,7 +81,7 @@ function QueueDisplay() {
             <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white z-10 shadow-sm">
               {item.label}
             </span>
-          </div>
+          </button>
         ))}
       </div>
     </div>

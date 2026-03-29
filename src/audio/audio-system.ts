@@ -72,7 +72,11 @@ export class AudioSystem {
 
   ping(): void {
     this.play(600, 'square', 0.1, 0.1, 800);
-    setTimeout(() => this.play(800, 'square', 0.1, 0.1, 1000), 100);
+    setTimeout(() => {
+      if (!this._muted && this.ctx && this.ctx.state !== 'closed') {
+        this.play(800, 'square', 0.1, 0.1, 1000);
+      }
+    }, 100);
   }
 
   click(): void {
@@ -89,17 +93,29 @@ export class AudioSystem {
 
   upgrade(): void {
     this.play(300, 'square', 0.1, 0.1, 600);
-    setTimeout(() => this.play(400, 'square', 0.2, 0.1, 800), 100);
+    setTimeout(() => {
+      if (!this._muted && this.ctx && this.ctx.state !== 'closed') {
+        this.play(400, 'square', 0.2, 0.1, 800);
+      }
+    }, 100);
   }
 
   win(): void {
     this.play(400, 'sine', 0.2, 0.1, 600);
-    setTimeout(() => this.play(600, 'sine', 0.4, 0.1, 800), 200);
+    setTimeout(() => {
+      if (!this._muted && this.ctx && this.ctx.state !== 'closed') {
+        this.play(600, 'sine', 0.4, 0.1, 800);
+      }
+    }, 200);
   }
 
   lose(): void {
     this.play(200, 'sawtooth', 0.4, 0.1, 100);
-    setTimeout(() => this.play(100, 'sawtooth', 0.6, 0.1, 50), 400);
+    setTimeout(() => {
+      if (!this._muted && this.ctx && this.ctx.state !== 'closed') {
+        this.play(100, 'sawtooth', 0.6, 0.1, 50);
+      }
+    }, 400);
   }
 
   heal(): void {

@@ -59,7 +59,7 @@ export const foodDisplay = computed(() => `${food.value}/${maxFood.value}`);
 export const foodAtCap = computed(() => food.value >= maxFood.value);
 
 export const hpPercent = computed(() => {
-  if (selectionMaxHp.value === 0) return 100;
+  if (selectionMaxHp.value === 0) return 0;
   return Math.max(0, (selectionHp.value / selectionMaxHp.value) * 100);
 });
 

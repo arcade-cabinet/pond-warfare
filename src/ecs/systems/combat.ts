@@ -115,6 +115,9 @@ export function combatSystem(world: GameWorld): void {
     if (state === UnitState.Idle && dmg > 0 && world.frameCount % 30 === 0) {
       const aggroRad = faction === Faction.Enemy ? AGGRO_RADIUS_ENEMY : AGGRO_RADIUS_PLAYER;
 
+      let closestAggro = -1;
+      let closestAggroDist = aggroRad;
+
       for (let j = 0; j < allTargetable.length; j++) {
         const t = allTargetable[j];
         if (FactionTag.faction[t] === faction) continue;
@@ -124,14 +127,19 @@ export function combatSystem(world: GameWorld): void {
 
         const dx = Position.x[t] - ex;
         const dy = Position.y[t] - ey;
-        if (Math.sqrt(dx * dx + dy * dy) < aggroRad) {
-          // cmdAtk(closeTarget) -> set a_move to target
-          UnitStateMachine.targetEntity[eid] = t;
-          UnitStateMachine.targetX[eid] = Position.x[t];
-          UnitStateMachine.targetY[eid] = Position.y[t];
-          UnitStateMachine.state[eid] = UnitState.AttackMove;
-          break;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < closestAggroDist) {
+          closestAggroDist = d;
+          closestAggro = t;
         }
+      }
+
+      if (closestAggro !== -1) {
+        // cmdAtk(closeTarget) -> set a_move to closest target
+        UnitStateMachine.targetEntity[eid] = closestAggro;
+        UnitStateMachine.targetX[eid] = Position.x[closestAggro];
+        UnitStateMachine.targetY[eid] = Position.y[closestAggro];
+        UnitStateMachine.state[eid] = UnitState.AttackMove;
       }
       continue; // Skip further processing this frame since we just changed state
     }

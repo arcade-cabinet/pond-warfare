@@ -34,6 +34,15 @@ export enum EntityKind {
   Clambed = 11,
 }
 
+/** Entity kinds that represent buildings (get larger vision radius, etc.). */
+export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
+  EntityKind.Lodge,
+  EntityKind.Burrow,
+  EntityKind.Armory,
+  EntityKind.Tower,
+  EntityKind.PredatorNest,
+]);
+
 export enum ResourceType {
   None = 0,
   Clams = 1,

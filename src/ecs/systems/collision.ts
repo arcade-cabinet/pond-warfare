@@ -32,6 +32,7 @@ export function collisionSystem(world: GameWorld): void {
     const ay = Position.y[eid];
     const ar = Collider.radius[eid];
 
+    // TODO: Replace O(n^2) brute-force with spatial partitioning (grid / quadtree) for better perf at high entity counts.
     for (let j = 0; j < ents.length; j++) {
       const other = ents[j];
       if (other === eid) continue;

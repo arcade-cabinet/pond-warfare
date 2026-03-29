@@ -142,7 +142,7 @@ export function aiSystem(world: GameWorld): void {
 
         // Find nearest player unit to attack
         // Original: let targets = GAME.entities.filter(e => e.faction === 'player' && e.hp > 0);
-        let closestTarget = 0;
+        let closestTarget = -1;
         let minDistSq = 400 * 400;
         for (let j = 0; j < allUnits.length; j++) {
           const u = allUnits[j];
@@ -158,7 +158,7 @@ export function aiSystem(world: GameWorld): void {
           }
         }
 
-        if (closestTarget) {
+        if (closestTarget !== -1) {
           // cmdAtk(closest)
           UnitStateMachine.targetEntity[defEid] = closestTarget;
           UnitStateMachine.targetX[defEid] = Position.x[closestTarget];

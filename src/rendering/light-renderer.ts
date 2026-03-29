@@ -14,17 +14,7 @@
 
 import { Building, EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import type { Firefly } from '@/types';
-import { EntityKind, Faction } from '@/types';
-
-/** Entity kinds that are buildings (not units). */
-const BUILDING_KINDS = new Set([
-  EntityKind.Lodge,
-  EntityKind.Burrow,
-  EntityKind.Armory,
-  EntityKind.Tower,
-  EntityKind.PredatorNest,
-]);
+import { BUILDING_KINDS, EntityKind, Faction, type Firefly } from '@/types';
 
 /**
  * Render dynamic lighting onto the light canvas.

@@ -7,10 +7,14 @@
  */
 
 import { useEffect, useRef } from 'preact/hooks';
+import { audio } from '@/audio/audio-system';
+import { game } from '@/game';
+import { selectArmy, selectIdleWorker } from '@/input/selection';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
 import { IntroOverlay } from './intro-overlay';
 import { Sidebar } from './sidebar';
+import * as store from './store';
 
 export interface AppProps {
   onMount: (refs: {
@@ -67,7 +71,21 @@ export function App({ onMount }: AppProps) {
         class="flex-1 relative cursor-crosshair overflow-hidden bg-black"
       >
         {/* Top bar HUD */}
-        <HUD />
+        <HUD
+          onSpeedClick={() => game.cycleSpeed()}
+          onMuteClick={() => {
+            audio.toggleMute();
+            store.muted.value = audio.muted;
+          }}
+          onIdleWorkerClick={() => {
+            selectIdleWorker(game.world);
+            game.syncUIStore();
+          }}
+          onArmyClick={() => {
+            selectArmy(game.world);
+            game.syncUIStore();
+          }}
+        />
 
         {/* Canvases */}
         <canvas ref={gameCanvasRef} id="game-canvas" />

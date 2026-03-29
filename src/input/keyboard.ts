@@ -123,7 +123,7 @@ export class KeyboardHandler {
 
     if (w.state !== 'playing') return;
 
-    // Attack-move (A)
+    // Attack-move mode (A key): enables attack-move cursor; next click issues an attack-move command
     if (k === 'a' && !e.ctrlKey && this.cb.hasPlayerUnitsSelected()) {
       this.cb.onAttackMoveMode();
     }

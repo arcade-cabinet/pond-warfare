@@ -12,16 +12,7 @@
 import { BUILDING_SIGHT_RADIUS, FOG_TEXTURE_SIZE, UNIT_SIGHT_RADIUS } from '@/constants';
 import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction } from '@/types';
-
-/** Entity kinds that are buildings (get larger vision radius). */
-const BUILDING_KINDS = new Set([
-  EntityKind.Lodge,
-  EntityKind.Burrow,
-  EntityKind.Armory,
-  EntityKind.Tower,
-  EntityKind.PredatorNest,
-]);
+import { BUILDING_KINDS, type EntityKind, Faction } from '@/types';
 
 export interface FogRendererState {
   fogCtx: CanvasRenderingContext2D;

@@ -17,7 +17,9 @@ import {
   FactionTag,
   Health,
   IsBuilding,
+  IsProjectile,
   Position,
+  ProjectileData,
   Selectable,
   UnitStateMachine,
 } from '@/ecs/components';
@@ -58,6 +60,7 @@ import {
 } from '@/rendering/game-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
 import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
+import type { ProjectileRenderData } from '@/rendering/particles';
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
 import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
@@ -91,6 +94,7 @@ export class Game {
 
   // Game loop
   private lastTime = 0;
+  private accumulator = 0;
   private running = false;
 
   // Container element
@@ -119,10 +123,17 @@ export class Game {
     this.minimapCanvas = minimapCanvas;
     this.minimapCamElement = minimapCamElement;
 
-    this.gameCtx = gameCanvas.getContext('2d', { alpha: false })!;
-    this.fogCtx = fogCanvas.getContext('2d')!;
-    this.lightCtx = lightCanvas.getContext('2d')!;
-    this.minimapCtx = minimapCanvas.getContext('2d', { alpha: false })!;
+    const gameCtx = gameCanvas.getContext('2d', { alpha: false });
+    const fogCtx = fogCanvas.getContext('2d');
+    const lightCtx = lightCanvas.getContext('2d');
+    const minimapCtx = minimapCanvas.getContext('2d', { alpha: false });
+    if (!gameCtx || !fogCtx || !lightCtx || !minimapCtx) {
+      throw new Error('Failed to acquire 2D rendering context from canvas');
+    }
+    this.gameCtx = gameCtx;
+    this.fogCtx = fogCtx;
+    this.lightCtx = lightCtx;
+    this.minimapCtx = minimapCtx;
 
     // Generate sprites
     const { canvases } = generateAllSprites();
@@ -402,20 +413,27 @@ export class Game {
     audio.click();
   }
 
-  /** Main game loop */
+  /** Main game loop using a fixed timestep accumulator. */
   private loop(timestamp: number): void {
     if (!this.running) return;
 
+    const FIXED_DT = 1000 / 60;
     const dt = timestamp - this.lastTime;
-    if (dt > 1000 / 60) {
+    this.lastTime = timestamp;
+
+    // Cap accumulated time to prevent spiral of death
+    this.accumulator += Math.min(dt, 200);
+
+    while (this.accumulator >= FIXED_DT) {
       if (this.world.state === 'playing') {
         for (let i = 0; i < this.world.gameSpeed; i++) {
           this.updateLogic();
         }
       }
-      this.draw();
-      this.lastTime = timestamp;
+      this.accumulator -= FIXED_DT;
     }
+
+    this.draw();
 
     requestAnimationFrame((t) => this.loop(t));
   }
@@ -476,11 +494,19 @@ export class Game {
       : null;
     const placement: PlacementPreview | null = this.getPlacementPreview();
 
+    // Query ECS for active projectile entities
+    const projEids = Array.from(query(this.world.ecs, [Position, ProjectileData, IsProjectile]));
+    const projectiles: ProjectileRenderData[] = projEids.map((eid) => ({
+      x: Position.x[eid],
+      y: Position.y[eid],
+      trail: [] as { x: number; y: number; life: number }[],
+    }));
+
     const renderData: RenderFrameData = {
       sortedEids,
       corpses: this.world.corpses,
       groundPings: this.world.groundPings,
-      projectiles: [],
+      projectiles,
       frameCount: this.world.frameCount,
       shake,
       selectionRect,

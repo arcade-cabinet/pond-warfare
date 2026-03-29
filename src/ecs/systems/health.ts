@@ -20,7 +20,6 @@ import { audio } from '@/audio/audio-system';
 import { ALLY_ASSIST_RADIUS, PALETTE } from '@/constants';
 import {
   Combat,
-  Dead,
   EntityTypeTag,
   FactionTag,
   Health,
@@ -166,12 +165,9 @@ export function takeDamage(
  * Process entity death. Direct port of Entity.die() (lines 1809-1844).
  */
 function processDeath(world: GameWorld, eid: number): void {
-  // Prevent double-die (original: if (this._dead) return; this._dead = true;)
-  if (hasComponent(world.ecs, eid, Dead)) return;
-
-  // Note: we don't addComponent Dead here because we removeEntity below.
-  // But we need to guard against re-entry during the same frame.
-  // Instead we just ensure HP is set to a sentinel.
+  // Prevent double-die: guard against re-entry during the same frame.
+  // We use HP === -1 as a sentinel since the entity is about to be removed.
+  if (Health.current[eid] === -1) return;
   Health.current[eid] = -1;
 
   const isBuilding = hasComponent(world.ecs, eid, IsBuilding);

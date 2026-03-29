@@ -45,6 +45,7 @@ import {
   drawParticles,
   drawProjectiles,
   type ProjectileRenderData,
+  updateProjectileTrails,
 } from './particles';
 
 /** Data needed to draw the selection rectangle. */
@@ -309,6 +310,7 @@ export function drawGame(
   drawParticles(ctx, world.particles);
 
   // --- Projectiles ---
+  updateProjectileTrails(data.projectiles);
   drawProjectiles(ctx, data.projectiles);
 
   // --- Rally point display ---

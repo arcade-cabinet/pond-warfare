@@ -85,28 +85,19 @@ export function movementSystem(world: GameWorld): void {
     // Calculate target radius for states that move toward an entity
     // Original lines 1647-1650: g_move uses tEnt.radius, r_move uses rEnt.radius, b_move/rep_move use tEnt.radius
     let targetRad = 0;
-    if (state === UnitState.GatherMove) {
+    if (
+      state === UnitState.GatherMove ||
+      state === UnitState.BuildMove ||
+      state === UnitState.RepairMove
+    ) {
       const tEnt = UnitStateMachine.targetEntity[eid];
       if (tEnt && hasComponent(world.ecs, tEnt, Collider)) {
         targetRad = Collider.radius[tEnt];
       }
-    }
-    if (state === UnitState.ReturnMove) {
+    } else if (state === UnitState.ReturnMove) {
       const rEnt = UnitStateMachine.returnEntity[eid];
       if (rEnt && hasComponent(world.ecs, rEnt, Collider)) {
         targetRad = Collider.radius[rEnt];
-      }
-    }
-    if (state === UnitState.BuildMove) {
-      const tEnt = UnitStateMachine.targetEntity[eid];
-      if (tEnt && hasComponent(world.ecs, tEnt, Collider)) {
-        targetRad = Collider.radius[tEnt];
-      }
-    }
-    if (state === UnitState.RepairMove) {
-      const tEnt = UnitStateMachine.targetEntity[eid];
-      if (tEnt && hasComponent(world.ecs, tEnt, Collider)) {
-        targetRad = Collider.radius[tEnt];
       }
     }
 

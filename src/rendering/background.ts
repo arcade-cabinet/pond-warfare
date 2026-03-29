@@ -74,30 +74,33 @@ export function buildFogTexture(patternCtx: CanvasRenderingContext2D): {
   ctx.fillRect(0, 0, size, size);
 
   // 150 radial gradient blobs with seamless tiling
+  const offsets: [number, number][] = [
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [-1, 0],
+    [0, 0],
+    [1, 0],
+    [-1, 1],
+    [0, 1],
+    [1, 1],
+  ];
   for (let i = 0; i < 150; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
     const r = 15 + Math.random() * 30;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, 'rgba(51, 65, 85, 0.5)');
-    g.addColorStop(1, 'rgba(51, 65, 85, 0)');
-    ctx.fillStyle = g;
 
-    // Draw at all 9 tile-wrap offsets for seamless tiling
-    const offsets: [number, number][] = [
-      [-1, -1],
-      [0, -1],
-      [1, -1],
-      [-1, 0],
-      [0, 0],
-      [1, 0],
-      [-1, 1],
-      [0, 1],
-      [1, 1],
-    ];
+    // Draw at all 9 tile-wrap offsets for seamless tiling,
+    // recreating the gradient per offset so it is centered correctly.
     for (const [ox, oy] of offsets) {
+      const cx = x + ox * size;
+      const cy = y + oy * size;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, 'rgba(51, 65, 85, 0.5)');
+      g.addColorStop(1, 'rgba(51, 65, 85, 0)');
+      ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(x + ox * size, y + oy * size, r, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
     }
   }

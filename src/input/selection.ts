@@ -400,7 +400,7 @@ export function train(
   if (
     world.resources.clams >= clamCost &&
     world.resources.twigs >= twigCost &&
-    world.resources.food < world.resources.maxFood
+    world.resources.food + foodCost <= world.resources.maxFood
   ) {
     world.resources.clams -= clamCost;
     world.resources.twigs -= twigCost;

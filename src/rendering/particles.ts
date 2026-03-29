@@ -31,18 +31,28 @@ export function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle
 }
 
 /**
+ * Tick trail lifetimes and prune expired entries.
+ * Call once per frame before rendering.
+ */
+export function updateProjectileTrails(projectiles: ProjectileRenderData[]): void {
+  for (const proj of projectiles) {
+    for (let i = proj.trail.length - 1; i >= 0; i--) {
+      proj.trail[i].life--;
+      if (proj.trail[i].life <= 0) {
+        proj.trail.splice(i, 1);
+      }
+    }
+  }
+}
+
+/**
  * Draw a single projectile: trail segments with fading alpha,
  * then the projectile body (stone outer + white inner).
+ * This is a pure render function with no mutation.
  */
 export function drawProjectile(ctx: CanvasRenderingContext2D, proj: ProjectileRenderData): void {
-  // Draw trail (iterate backwards for safe removal)
-  for (let i = proj.trail.length - 1; i >= 0; i--) {
-    const t = proj.trail[i];
-    t.life--;
-    if (t.life <= 0) {
-      proj.trail.splice(i, 1);
-      continue;
-    }
+  // Draw trail
+  for (const t of proj.trail) {
     const alpha = t.life / 8;
     ctx.fillStyle = `rgba(156, 163, 175, ${alpha * 0.6})`;
     ctx.fillRect(t.x - 1, t.y - 1, 2, 2);
@@ -76,12 +86,12 @@ export function drawFloatingTexts(
 ): void {
   ctx.font = "bold 14px 'Courier New'";
   ctx.textAlign = 'center';
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#000';
   for (const f of floatingTexts) {
     ctx.fillStyle = f.color;
     ctx.globalAlpha = Math.min(1, f.life / 30);
     ctx.fillText(f.text, f.x, f.y);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = '#000';
     ctx.strokeText(f.text, f.x, f.y);
   }
   ctx.globalAlpha = 1.0;

@@ -21,7 +21,7 @@ import type { GameWorld } from '@/ecs/world';
  * @param timeInHours - Current time expressed in hours (0-24)
  * @returns The RGB color string for the day-night overlay
  */
-function getLerpedColor(timeInHours: number): { color: string; darkness: number } {
+function getAmbientDarkness(timeInHours: number): number {
   // Find the two TIME_STOPS bracketing the current hour
   // Original: let i = 0; while (i < TIME_STOPS.length - 1 && TIME_STOPS[i+1].h <= timeInHours) i++;
   let idx = 0;
@@ -32,29 +32,16 @@ function getLerpedColor(timeInHours: number): { color: string; darkness: number 
   const start = TIME_STOPS[idx];
   const end = TIME_STOPS[idx + 1] ?? TIME_STOPS[idx];
 
-  // Original: if (start === end) return `rgb(${start.c[0]}, ${start.c[1]}, ${start.c[2]})`;
   if (start === end) {
-    const darkness = 1.0 - start.c[0] / 255;
-    return {
-      color: `rgb(${start.c[0]}, ${start.c[1]}, ${start.c[2]})`,
-      darkness,
-    };
+    return 1.0 - start.c[0] / 255;
   }
 
   // Linear interpolation between stops
-  // Original: let t = (timeInHours - start.h) / (end.h - start.h);
   const t = (timeInHours - start.h) / (end.h - start.h);
-  const r = Math.round(start.c[0] + (end.c[0] - start.c[0]) * t);
-  const g = Math.round(start.c[1] + (end.c[1] - start.c[1]) * t);
-  const b = Math.round(start.c[2] + (end.c[2] - start.c[2]) * t);
+  const r = start.c[0] + (end.c[0] - start.c[0]) * t;
 
   // Original: this.ambientDarkness = 1.0 - (r / 255);
-  const darkness = 1.0 - r / 255;
-
-  return {
-    color: `rgb(${r}, ${g}, ${b})`,
-    darkness,
-  };
+  return 1.0 - r / 255;
 }
 
 export function dayNightSystem(world: GameWorld): void {
@@ -67,8 +54,7 @@ export function dayNightSystem(world: GameWorld): void {
 
   // --- Calculate ambient darkness (lines 1150-1152 call getLerpedColor) ---
   const timeInHours = world.timeOfDay / 60;
-  const { darkness } = getLerpedColor(timeInHours);
-  world.ambientDarkness = darkness;
+  world.ambientDarkness = getAmbientDarkness(timeInHours);
 
   // --- Firefly update (lines 1154-1160) ---
   const margin = 200;

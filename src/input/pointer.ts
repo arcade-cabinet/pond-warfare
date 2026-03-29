@@ -79,6 +79,11 @@ export class PointerHandler {
   private boundMinimapDown: (e: PointerEvent) => void;
   private boundWindowMove: (e: PointerEvent) => void;
   private boundWindowUp: () => void;
+  private boundMouseEnter: () => void;
+  private boundMouseLeave: () => void;
+  private boundContextMenu: (e: Event) => void;
+  private boundMinimapContextMenu: ((e: Event) => void) | null = null;
+  private minimapParent: HTMLElement | null = null;
 
   constructor(
     world: GameWorld,
@@ -97,14 +102,17 @@ export class PointerHandler {
     this.boundMinimapDown = (e) => this.onMinimapDown(e);
     this.boundWindowMove = (e) => this.onWindowPointerMove(e);
     this.boundWindowUp = () => this.onWindowPointerUp();
-
-    container.addEventListener('mouseenter', () => {
+    this.boundMouseEnter = () => {
       this.mouse.in = true;
-    });
-    container.addEventListener('mouseleave', () => {
+    };
+    this.boundMouseLeave = () => {
       this.mouse.in = false;
-    });
-    container.addEventListener('contextmenu', (e) => e.preventDefault());
+    };
+    this.boundContextMenu = (e) => e.preventDefault();
+
+    container.addEventListener('mouseenter', this.boundMouseEnter);
+    container.addEventListener('mouseleave', this.boundMouseLeave);
+    container.addEventListener('contextmenu', this.boundContextMenu);
     container.addEventListener('pointerdown', this.boundPointerDown);
     container.addEventListener('pointermove', this.boundPointerMove);
     container.addEventListener('pointerup', this.boundPointerUp);
@@ -119,16 +127,27 @@ export class PointerHandler {
     const mmapContainer = minimapCanvas.parentElement;
     if (!mmapContainer) return;
 
-    mmapContainer.addEventListener('contextmenu', (e) => e.preventDefault());
+    this.minimapParent = mmapContainer;
+    this.boundMinimapContextMenu = (e) => e.preventDefault();
+    mmapContainer.addEventListener('contextmenu', this.boundMinimapContextMenu);
     mmapContainer.addEventListener('pointerdown', this.boundMinimapDown);
   }
 
   destroy(): void {
+    this.container.removeEventListener('mouseenter', this.boundMouseEnter);
+    this.container.removeEventListener('mouseleave', this.boundMouseLeave);
+    this.container.removeEventListener('contextmenu', this.boundContextMenu);
     this.container.removeEventListener('pointerdown', this.boundPointerDown);
     this.container.removeEventListener('pointermove', this.boundPointerMove);
     this.container.removeEventListener('pointerup', this.boundPointerUp);
     window.removeEventListener('pointermove', this.boundWindowMove);
     window.removeEventListener('pointerup', this.boundWindowUp);
+    if (this.minimapParent) {
+      if (this.boundMinimapContextMenu) {
+        this.minimapParent.removeEventListener('contextmenu', this.boundMinimapContextMenu);
+      }
+      this.minimapParent.removeEventListener('pointerdown', this.boundMinimapDown);
+    }
   }
 
   /** Current drag selection rectangle in world coords, or null if not dragging. */
@@ -326,18 +345,7 @@ export class PointerHandler {
       this.cb.deselectAll();
       w.selection = [];
     }
-    // The actual entity filtering is done by the game orchestrator via a callback,
-    // since the pointer handler doesn't have direct access to the ECS query.
-    // We expose getDragRect() and let the game loop handle box selection each frame.
-    // For the pointerup case, emit the final rect for one-shot processing.
-    const _rect = {
-      minX: Math.min(this.mouse.startX, this.mouse.worldX),
-      minY: Math.min(this.mouse.startY, this.mouse.worldY),
-      maxX: Math.max(this.mouse.startX, this.mouse.worldX),
-      maxY: Math.max(this.mouse.startY, this.mouse.worldY),
-    };
-    // The Game class should call processDragSelection(rect) after pointerup.
-    // We store it for retrieval.
+    // Store the final drag rect for retrieval by the game orchestrator.
     this._pendingDragRect = {
       minX: Math.min(this.mouse.startX, this.mouse.worldX),
       minY: Math.min(this.mouse.startY, this.mouse.worldY),
