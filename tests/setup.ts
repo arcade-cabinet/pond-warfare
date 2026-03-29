@@ -9,29 +9,39 @@
 import { vi } from 'vitest';
 
 // Mock Tone.js – it relies on standardized-audio-context which cannot run in jsdom
+function MockToneNode(this: any) {
+  this.connect = vi.fn().mockReturnValue(this);
+  this.toDestination = vi.fn().mockReturnValue(this);
+  this.dispose = vi.fn();
+  this.start = vi.fn();
+  this.stop = vi.fn();
+  this.triggerAttackRelease = vi.fn();
+  this.triggerAttack = vi.fn();
+  this.triggerRelease = vi.fn();
+  this.frequency = { rampTo: vi.fn(), value: 0, exponentialRampTo: vi.fn() };
+  this.volume = { value: 0, rampTo: vi.fn() };
+  this.oscillator = { type: 'sine', frequency: { exponentialRampTo: vi.fn() } };
+  this.pan = { value: 0 };
+}
 vi.mock('tone', () => ({
-  start: vi.fn(),
-  getContext: vi.fn(),
+  start: vi.fn().mockResolvedValue(undefined),
+  getContext: vi.fn().mockReturnValue({ state: 'running' }),
+  getTransport: vi
+    .fn()
+    .mockReturnValue({ bpm: { value: 60, rampTo: vi.fn() }, start: vi.fn(), stop: vi.fn() }),
   gainToDb: (v: number) => 20 * Math.log10(Math.max(v, 1e-6)),
-  Synth: vi.fn().mockImplementation(() => ({
-    connect: vi.fn().mockReturnThis(),
-    triggerAttackRelease: vi.fn(),
-    oscillator: { frequency: { exponentialRampTo: vi.fn() } },
-    dispose: vi.fn(),
-  })),
-  Panner: vi.fn().mockImplementation(() => ({
-    toDestination: vi.fn().mockReturnThis(),
-    dispose: vi.fn(),
-  })),
-  Noise: vi.fn().mockImplementation(() => ({
-    connect: vi.fn().mockReturnThis(),
-    start: vi.fn(),
-    stop: vi.fn(),
-  })),
-  Filter: vi.fn().mockImplementation(() => ({
-    toDestination: vi.fn().mockReturnThis(),
-    frequency: { rampTo: vi.fn() },
-  })),
+  Synth: MockToneNode,
+  PolySynth: MockToneNode,
+  MembraneSynth: MockToneNode,
+  MetalSynth: MockToneNode,
+  Panner: MockToneNode,
+  Noise: MockToneNode,
+  Filter: MockToneNode,
+  AutoFilter: MockToneNode,
+  Reverb: MockToneNode,
+  Limiter: MockToneNode,
+  Channel: MockToneNode,
+  Sequence: vi.fn().mockImplementation(() => ({ start: vi.fn(), stop: vi.fn(), dispose: vi.fn() })),
 }));
 
 // Mock HTMLCanvasElement.getContext for environments that don't support it

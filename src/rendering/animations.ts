@@ -1,5 +1,5 @@
 /**
- * Animation Manager (anime.js)
+ * Animation Manager (anime.js v4)
  *
  * Provides lightweight UI transitions and entity visual feedback:
  * - Unit command pulse (squish-stretch) tracked per entity
@@ -11,7 +11,7 @@
  * to apply squish effects during entity drawing.
  */
 
-import anime from 'animejs';
+import { animate, stagger } from 'animejs';
 
 /** Per-entity visual scale state read by the renderer. */
 export interface EntityScale {
@@ -19,8 +19,8 @@ export interface EntityScale {
   scaleY: number;
 }
 
-/** Active anime.js instances per entity so we can cancel/override. */
-const activeAnimations = new Map<number, anime.AnimeInstance>();
+/** Active animation abort controllers per entity so we can cancel/override. */
+const activeAnimations = new Map<number, { pause: () => void }>();
 
 /** Current visual scale per entity, read by the game renderer. */
 export const entityScales = new Map<number, EntityScale>();
@@ -32,33 +32,23 @@ export const entityScales = new Map<number, EntityScale>();
 export function triggerCommandPulse(eid: number): void {
   // Cancel any existing animation for this entity
   const existing = activeAnimations.get(eid);
-  if (existing) {
-    existing.pause();
-  }
+  if (existing) existing.pause();
 
   const scale: EntityScale = { scaleX: 1, scaleY: 1 };
   entityScales.set(eid, scale);
 
-  const anim = anime({
-    targets: scale,
-    scaleX: [
-      { value: 1.2, duration: 60, easing: 'easeOutQuad' },
-      { value: 0.9, duration: 80, easing: 'easeInOutQuad' },
-      { value: 1.0, duration: 100, easing: 'easeOutElastic(1, 0.5)' },
-    ],
-    scaleY: [
-      { value: 0.8, duration: 60, easing: 'easeOutQuad' },
-      { value: 1.1, duration: 80, easing: 'easeInOutQuad' },
-      { value: 1.0, duration: 100, easing: 'easeOutElastic(1, 0.5)' },
-    ],
-    update: () => {
+  const anim = animate(scale, {
+    scaleX: [1, 1.2, 0.9, 1.0],
+    scaleY: [1, 0.8, 1.1, 1.0],
+    duration: 240,
+    ease: 'outElastic(1, 0.5)',
+    onUpdate: () => {
       entityScales.set(eid, { scaleX: scale.scaleX, scaleY: scale.scaleY });
     },
-    complete: () => {
+    onComplete: () => {
       activeAnimations.delete(eid);
       entityScales.delete(eid);
     },
-    autoplay: true,
   });
 
   activeAnimations.set(eid, anim);
@@ -70,31 +60,23 @@ export function triggerCommandPulse(eid: number): void {
  */
 export function triggerBuildingComplete(eid: number): void {
   const existing = activeAnimations.get(eid);
-  if (existing) {
-    existing.pause();
-  }
+  if (existing) existing.pause();
 
   const scale: EntityScale = { scaleX: 1, scaleY: 1 };
   entityScales.set(eid, scale);
 
-  const anim = anime({
-    targets: scale,
-    scaleX: [
-      { value: 1.15, duration: 150, easing: 'easeOutQuad' },
-      { value: 1.0, duration: 300, easing: 'easeOutElastic(1, 0.6)' },
-    ],
-    scaleY: [
-      { value: 1.15, duration: 150, easing: 'easeOutQuad' },
-      { value: 1.0, duration: 300, easing: 'easeOutElastic(1, 0.6)' },
-    ],
-    update: () => {
+  const anim = animate(scale, {
+    scaleX: [1, 1.15, 1.0],
+    scaleY: [1, 1.15, 1.0],
+    duration: 450,
+    ease: 'outElastic(1, 0.6)',
+    onUpdate: () => {
       entityScales.set(eid, { scaleX: scale.scaleX, scaleY: scale.scaleY });
     },
-    complete: () => {
+    onComplete: () => {
       activeAnimations.delete(eid);
       entityScales.delete(eid);
     },
-    autoplay: true,
   });
 
   activeAnimations.set(eid, anim);
@@ -118,13 +100,12 @@ export function animateGameOverStats(container: HTMLElement): void {
   const lines = container.querySelectorAll('[data-stat-line]');
   if (lines.length === 0) return;
 
-  anime({
-    targets: Array.from(lines),
+  animate(Array.from(lines), {
     opacity: [0, 1],
     translateY: [20, 0],
-    delay: anime.stagger(150, { start: 300 }),
+    delay: stagger(150, { start: 300 }),
     duration: 400,
-    easing: 'easeOutCubic',
+    ease: 'outCubic',
   });
 }
 
@@ -132,12 +113,11 @@ export function animateGameOverStats(container: HTMLElement): void {
  * Animate the intro overlay title with a slide-in from above.
  */
 export function animateIntroTitle(titleElement: HTMLElement): void {
-  anime({
-    targets: titleElement,
+  animate(titleElement, {
     translateY: [-40, 0],
     opacity: [0, 1],
     duration: 800,
-    easing: 'easeOutCubic',
+    ease: 'outCubic',
   });
 }
 
@@ -145,11 +125,10 @@ export function animateIntroTitle(titleElement: HTMLElement): void {
  * Animate the intro subtitle with a delayed fade-in.
  */
 export function animateIntroSubtitle(subtitleElement: HTMLElement): void {
-  anime({
-    targets: subtitleElement,
+  animate(subtitleElement, {
     opacity: [0, 1],
     duration: 600,
     delay: 400,
-    easing: 'easeOutCubic',
+    ease: 'outCubic',
   });
 }

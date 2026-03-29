@@ -285,8 +285,8 @@ describe('TIME_STOPS (day/night cycle)', () => {
     const dayEnd = TIME_STOPS.find((s) => s.h === 18);
     expect(dayStart).toBeDefined();
     expect(dayEnd).toBeDefined();
-    expect(dayStart!.c).toEqual([255, 255, 255]);
-    expect(dayEnd!.c).toEqual([255, 255, 255]);
+    expect(dayStart?.c).toEqual([255, 255, 255]);
+    expect(dayEnd?.c).toEqual([255, 255, 255]);
   });
 
   it('nighttime (hour 0 and 24) uses a dark color', () => {
@@ -309,8 +309,8 @@ describe('TIME_STOPS (day/night cycle)', () => {
     const dayStop = TIME_STOPS.find((s) => s.h === 8);
     expect(nightStop).toBeDefined();
     expect(dayStop).toBeDefined();
-    const nightBrightness = nightStop!.c[0] + nightStop!.c[1] + nightStop!.c[2];
-    const dayBrightness = dayStop!.c[0] + dayStop!.c[1] + dayStop!.c[2];
+    const nightBrightness = nightStop?.c[0] + nightStop?.c[1] + nightStop?.c[2];
+    const dayBrightness = dayStop?.c[0] + dayStop?.c[1] + dayStop?.c[2];
     expect(dayBrightness).toBeGreaterThan(nightBrightness);
   });
 });

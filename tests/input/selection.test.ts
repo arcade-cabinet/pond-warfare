@@ -32,14 +32,14 @@ import {
   Selectable,
   Sprite,
   TrainingQueue,
+  trainingQueueSlots,
   UnitStateMachine,
   Velocity,
-  trainingQueueSlots,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import {
-  canPlaceBuilding,
   cancelTrain,
+  canPlaceBuilding,
   getEntityAt,
   hasPlayerUnitsSelected,
   issueContextCommand,
@@ -54,7 +54,12 @@ import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 // ---------------------------------------------------------------------------
 
 /** Create a minimal player unit entity with all required selection components. */
-function createPlayerUnit(world: GameWorld, x: number, y: number, kind = EntityKind.Gatherer): number {
+function createPlayerUnit(
+  world: GameWorld,
+  x: number,
+  y: number,
+  kind = EntityKind.Gatherer,
+): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
@@ -465,7 +470,7 @@ describe('selectArmy()', () => {
   });
 
   it('sets isTracking to true', () => {
-    const brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const _brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
     world.isTracking = false;
 
     selectArmy(world);
@@ -486,7 +491,7 @@ describe('selectArmy()', () => {
     Selectable.selected[prevSelected] = 1;
     world.selection = [prevSelected];
 
-    const brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const _brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
     selectArmy(world);
 
     expect(Selectable.selected[prevSelected]).toBe(0);

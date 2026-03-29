@@ -23,7 +23,7 @@
     "@capacitor/screen-orientation": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@preact/signals": "^2.9.0",
-    "animejs": "^3.2.2",
+    "animejs": "^4.3.6",
     "bitecs": "^0.4.0",
     "pixi.js": "^8.17.1",
     "planck": "^1.4.3",
@@ -39,11 +39,11 @@
     "@testing-library/preact": "^3.2.4",
     "@types/animejs": "^3.1.13",
     "autoprefixer": "^10.4.27",
-    "jsdom": "^26.1.0",
+    "jsdom": "^29.0.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
-    "vite": "^6.4.1",
-    "vitest": "^3.2.4"
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
   }
 }

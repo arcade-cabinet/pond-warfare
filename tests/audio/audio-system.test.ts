@@ -8,7 +8,7 @@
  * Tone.js is mocked in tests/setup.ts; AudioContext is mocked globally.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AudioSystem, audio } from '@/audio/audio-system';
 
 describe('AudioSystem – initial state', () => {
@@ -138,9 +138,25 @@ describe('AudioSystem – sound methods (no throw when started)', () => {
   });
 
   const methods: Array<keyof AudioSystem> = [
-    'chop', 'mine', 'build', 'hit', 'shoot', 'alert', 'ping',
-    'click', 'selectUnit', 'selectBuild', 'upgrade', 'win', 'lose',
-    'heal', 'error', 'deathUnit', 'deathBuilding', 'trainComplete', 'buildComplete',
+    'chop',
+    'mine',
+    'build',
+    'hit',
+    'shoot',
+    'alert',
+    'ping',
+    'click',
+    'selectUnit',
+    'selectBuild',
+    'upgrade',
+    'win',
+    'lose',
+    'heal',
+    'error',
+    'deathUnit',
+    'deathBuilding',
+    'trainComplete',
+    'buildComplete',
   ];
 
   for (const method of methods) {
