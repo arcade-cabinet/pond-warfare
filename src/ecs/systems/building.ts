@@ -48,7 +48,7 @@ export function buildingSystem(world: GameWorld): void {
 
       // Original: if (!this.tEnt || this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; return; }
       if (
-        !tEnt ||
+        tEnt === -1 ||
         !hasComponent(world.ecs, tEnt, Health) ||
         Health.current[tEnt] >= Health.max[tEnt]
       ) {
