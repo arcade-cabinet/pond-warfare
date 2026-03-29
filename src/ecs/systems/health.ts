@@ -33,6 +33,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { createCorpseId, EntityKind, Faction, SpriteId, UnitState } from '@/types';
+import { spawnParticle } from '@/utils/particles';
 
 /**
  * Apply damage to an entity. Exported as a utility for use by combat and projectile systems.
@@ -64,16 +65,18 @@ export function takeDamage(
   const isBuilding = hasComponent(world.ecs, targetEid, IsBuilding);
 
   // Damage particles (original: for(let i=0;i<5;i++) GAME.particles.push({...}))
+  const dmgPColor = isBuilding ? PALETTE.mudLight : PALETTE.clamMeat;
   for (let p = 0; p < 5; p++) {
-    world.particles.push({
-      x: tx,
-      y: ty - 10,
-      vx: (Math.random() - 0.5) * 2,
-      vy: Math.random() * 2,
-      life: 15,
-      color: isBuilding ? PALETTE.mudLight : PALETTE.clamMeat,
-      size: 3,
-    });
+    spawnParticle(
+      world,
+      tx,
+      ty - 10,
+      (Math.random() - 0.5) * 2,
+      Math.random() * 2,
+      15,
+      dmgPColor,
+      3,
+    );
   }
 
   // Floating damage text — color varies by counter multiplier
@@ -240,40 +243,43 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     for (let j = 0; j < 35; j++) {
       const angle = (j / 35) * Math.PI * 2;
       const spread = 2 + Math.random() * 3;
-      world.particles.push({
-        x: ex,
-        y: ey,
-        vx: Math.cos(angle) * spread,
-        vy: Math.sin(angle) * spread + 2,
-        life: 30,
-        color: PALETTE.mudLight,
-        size: 4,
-      });
+      spawnParticle(
+        world,
+        ex,
+        ey,
+        Math.cos(angle) * spread,
+        Math.sin(angle) * spread + 2,
+        30,
+        PALETTE.mudLight,
+        4,
+      );
     }
   } else {
     for (let j = 0; j < 20; j++) {
-      world.particles.push({
-        x: ex,
-        y: ey,
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4 + 2,
-        life: 30,
-        color: PALETTE.clamMeat,
-        size: 4,
-      });
+      spawnParticle(
+        world,
+        ex,
+        ey,
+        (Math.random() - 0.5) * 4,
+        (Math.random() - 0.5) * 4 + 2,
+        30,
+        PALETTE.clamMeat,
+        4,
+      );
     }
     // Splat variant particles for units
     if (!isResource) {
       for (let j = 0; j < 5; j++) {
-        world.particles.push({
-          x: ex + (Math.random() - 0.5) * 10,
-          y: ey + (Math.random() - 0.5) * 10,
-          vx: (Math.random() - 0.5) * 2,
-          vy: Math.random() * 2 + 1,
-          life: 15,
-          color: PALETTE.clamMeat,
-          size: 6,
-        });
+        spawnParticle(
+          world,
+          ex + (Math.random() - 0.5) * 10,
+          ey + (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 2,
+          Math.random() * 2 + 1,
+          15,
+          PALETTE.clamMeat,
+          6,
+        );
       }
     }
   }
@@ -372,15 +378,16 @@ export function healthSystem(world: GameWorld): void {
 
         // Visual feedback for healing
         if (world.tech.hardenedShells) {
-          world.particles.push({
-            x: Position.x[eid],
-            y: Position.y[eid] - 8,
-            vx: (Math.random() - 0.5) * 0.8,
-            vy: -Math.random() * 1,
-            life: 15,
-            color: '#86efac',
-            size: 2,
-          });
+          spawnParticle(
+            world,
+            Position.x[eid],
+            Position.y[eid] - 8,
+            (Math.random() - 0.5) * 0.8,
+            -Math.random() * 1,
+            15,
+            '#86efac',
+            2,
+          );
         }
       }
     }
@@ -428,15 +435,16 @@ export function healthSystem(world: GameWorld): void {
 
       if (bestEid !== -1) {
         Health.current[bestEid] = Math.min(Health.max[bestEid], Health.current[bestEid] + 2);
-        world.particles.push({
-          x: Position.x[bestEid],
-          y: Position.y[bestEid] - 10,
-          vx: (Math.random() - 0.5) * 1,
-          vy: -Math.random() * 1.5,
-          life: 20,
-          color: '#22c55e',
-          size: 3,
-        });
+        spawnParticle(
+          world,
+          Position.x[bestEid],
+          Position.y[bestEid] - 10,
+          (Math.random() - 0.5) * 1,
+          -Math.random() * 1.5,
+          20,
+          '#22c55e',
+          3,
+        );
       }
     }
   }

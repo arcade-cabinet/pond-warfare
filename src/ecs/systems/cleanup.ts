@@ -17,6 +17,7 @@ import { query } from 'bitecs';
 import { Building, EntityTypeTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind } from '@/types';
+import { spawnParticle } from '@/utils/particles';
 
 export function cleanupSystem(world: GameWorld): void {
   // --- Building ambient particles (lines 1579-1584) ---
@@ -31,40 +32,48 @@ export function cleanupSystem(world: GameWorld): void {
 
     // Armory smoke (original: if (this.type === 'armory' && GAME.frameCount % 5 === 0))
     if (kind === EntityKind.Armory && world.frameCount % 5 === 0) {
-      world.particles.push({
-        x: Position.x[eid] + 8,
-        y: Position.y[eid] - 12,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: -0.5 - Math.random() * 0.5,
-        life: 60,
-        color: 'rgba(156, 163, 175, 0.4)',
-        size: Math.random() * 3 + 2,
-      });
+      spawnParticle(
+        world,
+        Position.x[eid] + 8,
+        Position.y[eid] - 12,
+        (Math.random() - 0.5) * 0.5,
+        -0.5 - Math.random() * 0.5,
+        60,
+        'rgba(156, 163, 175, 0.4)',
+        Math.random() * 3 + 2,
+      );
     }
 
     // Lodge water bubbles (original: if (this.type === 'lodge' && GAME.frameCount % 30 === 0))
     if (kind === EntityKind.Lodge && world.frameCount % 30 === 0) {
-      world.particles.push({
-        x: Position.x[eid] + (Math.random() - 0.5) * 20,
-        y: Position.y[eid] + 10 + Math.random() * 10,
-        vx: 0,
-        vy: -0.2,
-        life: 30,
-        color: 'rgba(56, 189, 248, 0.5)',
-        size: 2,
-      });
+      spawnParticle(
+        world,
+        Position.x[eid] + (Math.random() - 0.5) * 20,
+        Position.y[eid] + 10 + Math.random() * 10,
+        0,
+        -0.2,
+        30,
+        'rgba(56, 189, 248, 0.5)',
+        2,
+      );
     }
   }
 
   // --- Particle decay (line 1188) ---
-  for (let i = world.particles.length - 1; i >= 0; i--) {
+  // Use swap-remove to avoid O(n) shifts from splice; order doesn't matter for particles.
+  let pLen = world.particles.length;
+  for (let i = pLen - 1; i >= 0; i--) {
     const p = world.particles[i];
     p.life--;
     // Original uses p.y -= p.vy (subtracts vy from y, so positive vy moves up)
     p.y -= p.vy;
     p.x += p.vx;
     if (p.life <= 0) {
-      world.particles.splice(i, 1);
+      world.particlePool.release(p);
+      // Swap with last element and pop (O(1) removal)
+      pLen--;
+      world.particles[i] = world.particles[pLen];
+      world.particles.length = pLen;
     }
   }
 

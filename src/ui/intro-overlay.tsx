@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { animateIntroSubtitle, animateIntroTitle } from '@/rendering/animations';
-import { type Difficulty, selectedDifficulty } from '@/ui/store';
+import { customMapSeed, selectedDifficulty, type Difficulty } from '@/ui/store';
 
 const DIFFICULTY_OPTIONS: {
   key: Difficulty;
@@ -45,6 +45,7 @@ export function IntroOverlay() {
   const [visible, setVisible] = useState(true);
   const [fading, setFading] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  const [seedInput, setSeedInput] = useState('');
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
@@ -63,6 +64,7 @@ export function IntroOverlay() {
   const handleBegin = () => {
     if (fading) return;
     selectedDifficulty.value = difficulty;
+    customMapSeed.value = seedInput.trim();
     setFading(true);
     setTimeout(() => {
       setVisible(false);
@@ -162,7 +164,9 @@ export function IntroOverlay() {
               <span
                 class="font-game text-[10px] md:text-xs mt-1"
                 style={{
-                  color: isSelected ? 'var(--pw-text-secondary)' : 'var(--pw-text-muted)',
+                  color: isSelected
+                    ? 'var(--pw-text-secondary)'
+                    : 'var(--pw-text-muted)',
                   opacity: isSelected ? 1 : 0.6,
                 }}
               >
@@ -171,6 +175,35 @@ export function IntroOverlay() {
             </button>
           );
         })}
+      </div>
+
+      {/* Map seed input */}
+      <div class="flex items-center gap-2 mt-4 relative z-10">
+        <label
+          class="font-numbers text-xs"
+          style={{ color: 'var(--pw-text-muted)' }}
+        >
+          Seed:
+        </label>
+        <input
+          type="text"
+          placeholder="Random"
+          value={seedInput}
+          onInput={(e) => setSeedInput((e.target as HTMLInputElement).value)}
+          onKeyDown={(e) => {
+            // Prevent keyboard shortcuts from firing while typing
+            e.stopPropagation();
+            if (e.key === 'Enter') handleBegin();
+          }}
+          class="font-numbers text-xs px-2 py-1 rounded"
+          style={{
+            width: '140px',
+            background: 'rgba(20, 30, 35, 0.8)',
+            border: '1px solid var(--pw-stone-dark, #3a3a3a)',
+            color: 'var(--pw-text-secondary)',
+            outline: 'none',
+          }}
+        />
       </div>
 
       {/* Click to begin */}

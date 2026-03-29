@@ -145,6 +145,15 @@ export function GameOverBanner(props: GameOverProps) {
         ))}
       </div>
 
+      {/* Map seed for sharing / replay */}
+      <p
+        class="font-numbers text-xs mt-3 select-all cursor-pointer"
+        style={{ color: 'var(--pw-text-muted)' }}
+        title="Click to select seed for copying"
+      >
+        Map Seed: {goMapSeed.value}
+      </p>
+
       <button
         ref={restartButtonRef}
         type="button"

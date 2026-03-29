@@ -386,6 +386,22 @@ export class Game {
     // Apply difficulty settings from UI selection
     this.applyDifficultyModifiers();
 
+    // Apply custom map seed if provided
+    const seedStr = store.customMapSeed.value;
+    if (seedStr && seedStr.length > 0) {
+      const parsed = Number(seedStr);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        this.world.mapSeed = Math.floor(parsed);
+      } else {
+        // Hash string seed to a number
+        let hash = 0;
+        for (let i = 0; i < seedStr.length; i++) {
+          hash = (hash * 31 + seedStr.charCodeAt(i)) & 0x7fffffff;
+        }
+        this.world.mapSeed = hash || 1;
+      }
+    }
+
     // Spawn initial entities
     spawnInitialEntities(this.world);
 
