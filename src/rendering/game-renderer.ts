@@ -25,7 +25,7 @@
  */
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { PALETTE, TILE_SIZE } from '@/constants';
+import { CB_PALETTE, PALETTE, TILE_SIZE } from '@/constants';
 import {
   Building,
   Carrying,
@@ -48,6 +48,14 @@ import {
   type ProjectileRenderData,
   updateProjectileTrails,
 } from './particles';
+
+/** Module-level color blind mode flag (avoids per-entity signal reads). */
+let cbMode = false;
+
+/** Set color blind mode on/off. Called by game.ts when the signal changes. */
+export function setColorBlindMode(enabled: boolean): void {
+  cbMode = enabled;
+}
 
 /** Data needed to draw the selection rectangle. */
 export interface SelectionRect {
@@ -228,7 +236,17 @@ function drawEntity(
     ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(ex - bw / 2, dy - 8, bw, bh);
     const hpPct = hp / maxHp;
-    ctx.fillStyle = hpPct > 0.6 ? '#22c55e' : hpPct > 0.3 ? '#eab308' : '#ef4444';
+    ctx.fillStyle = cbMode
+      ? hpPct > 0.6
+        ? CB_PALETTE.healthHigh
+        : hpPct > 0.3
+          ? CB_PALETTE.healthMid
+          : CB_PALETTE.healthLow
+      : hpPct > 0.6
+        ? '#22c55e'
+        : hpPct > 0.3
+          ? '#eab308'
+          : '#ef4444';
     ctx.fillRect(ex - bw / 2, dy - 8, bw * hpPct, bh);
   }
 

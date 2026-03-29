@@ -10,6 +10,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { game } from '@/game';
 import { selectArmy, selectIdleWorker } from '@/input/selection';
+import { setColorBlindMode } from '@/rendering/game-renderer';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
 import { IntroOverlay } from './intro-overlay';
@@ -76,6 +77,10 @@ export function App({ onMount }: AppProps) {
           onMuteClick={() => {
             audio.toggleMute();
             store.muted.value = audio.muted;
+          }}
+          onColorBlindToggle={() => {
+            store.colorBlindMode.value = !store.colorBlindMode.value;
+            setColorBlindMode(store.colorBlindMode.value);
           }}
           onIdleWorkerClick={() => {
             selectIdleWorker(game.world);

@@ -72,6 +72,7 @@ import {
   type PlacementPreview,
   type RenderFrameData,
   type SelectionRect,
+  setColorBlindMode,
 } from '@/rendering/game-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
 import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
@@ -340,6 +341,11 @@ export class Game {
 
     // Update UI store
     this.syncUIStore();
+
+    // Sync color blind mode signal to renderer module-level flag
+    store.colorBlindMode.subscribe((enabled) => {
+      setColorBlindMode(enabled);
+    });
 
     // Start game loop
     this.lastTime = performance.now();

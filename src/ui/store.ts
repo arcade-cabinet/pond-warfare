@@ -93,6 +93,8 @@ export const hpBarColor = computed(() => {
   return '#ef4444';
 });
 
+export const colorBlindMode = signal(false);
+
 export const speedLabel = computed(() => `${gameSpeed.value}x`);
 export const muteLabel = computed(() => (muted.value ? '\u{1F507}' : '\u{1F50A}'));
 

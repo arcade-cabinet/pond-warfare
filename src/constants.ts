@@ -48,6 +48,16 @@ export const PALETTE = {
 
 export type PaletteColor = (typeof PALETTE)[keyof typeof PALETTE];
 
+export const CB_PALETTE = {
+  playerColor: '#38bdf8', // Blue (unchanged, already good)
+  enemyColor: '#f59e0b', // Amber instead of red
+  healthHigh: '#38bdf8', // Blue instead of green
+  healthMid: '#f59e0b', // Amber instead of yellow
+  healthLow: '#ef4444', // Keep red (distinctive)
+  gatherPositive: '#38bdf8', // Blue instead of green
+  gatherNegative: '#ef4444', // Keep red
+} as const;
+
 export const TIME_STOPS = [
   { h: 0, c: [15, 20, 45] as const },
   { h: 5, c: [15, 20, 45] as const },

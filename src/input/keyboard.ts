@@ -10,6 +10,7 @@
  */
 
 import { entityExists, hasComponent } from 'bitecs';
+import { getKeymap } from '@/config/keymap';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Selectable } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -58,31 +59,30 @@ export class KeyboardHandler {
   /** Process camera panning each frame (WASD / arrow keys / screen-edge). */
   updatePan(mouseIn: boolean, mouseX: number, mouseY: number, mouseIsDown: boolean): boolean {
     const w = this.world;
+    const keymap = getKeymap();
     let manualPan = false;
 
-    // W / ArrowUp / screen-edge top
-    if (this.keys.w || this.keys.arrowup || (mouseIn && mouseY < 20 && !mouseIsDown)) {
+    // Pan up / screen-edge top
+    if (keymap.panUp.some((k) => this.keys[k]) || (mouseIn && mouseY < 20 && !mouseIsDown)) {
       w.camVelY -= PAN_ACCEL;
       manualPan = true;
     }
-    // S / ArrowDown / screen-edge bottom
+    // Pan down / screen-edge bottom
     if (
-      this.keys.s ||
-      this.keys.arrowdown ||
+      keymap.panDown.some((k) => this.keys[k]) ||
       (mouseIn && mouseY > w.viewHeight - 20 && !mouseIsDown)
     ) {
       w.camVelY += PAN_ACCEL;
       manualPan = true;
     }
-    // ArrowLeft / screen-edge left (A is reserved for attack-move)
-    if (this.keys.arrowleft || (mouseIn && mouseX < 20 && !mouseIsDown)) {
+    // Pan left / screen-edge left
+    if (keymap.panLeft.some((k) => this.keys[k]) || (mouseIn && mouseX < 20 && !mouseIsDown)) {
       w.camVelX -= PAN_ACCEL;
       manualPan = true;
     }
-    // D / ArrowRight / screen-edge right
+    // Pan right / screen-edge right
     if (
-      this.keys.d ||
-      this.keys.arrowright ||
+      keymap.panRight.some((k) => this.keys[k]) ||
       (mouseIn && mouseX > w.viewWidth - 20 && !mouseIsDown)
     ) {
       w.camVelX += PAN_ACCEL;
@@ -112,9 +112,10 @@ export class KeyboardHandler {
     if (k === 'shift') this.keys.shift = true;
 
     const w = this.world;
+    const keymap = getKeymap();
 
     // Escape: cancel placement / attack-move / deselect
-    if (k === 'escape') {
+    if (k === keymap.escape) {
       if (w.attackMoveMode) {
         w.attackMoveMode = false;
       } else if (w.placingBuilding) {
@@ -133,19 +134,19 @@ export class KeyboardHandler {
     if (w.state !== 'playing') return;
 
     // Pause toggle (P key)
-    if (k === 'p') {
+    if (k === keymap.pause) {
       w.paused = !w.paused;
       this.cb.onUpdateUI();
       return;
     }
 
     // Attack-move mode (A key): enables attack-move cursor; next click issues an attack-move command
-    if (k === 'a' && !e.ctrlKey && this.cb.hasPlayerUnitsSelected()) {
+    if (k === keymap.attackMove && !e.ctrlKey && this.cb.hasPlayerUnitsSelected()) {
       this.cb.onAttackMoveMode();
     }
 
     // Halt (H)
-    if (k === 'h' && this.cb.hasPlayerUnitsSelected()) {
+    if (k === keymap.halt && this.cb.hasPlayerUnitsSelected()) {
       this.cb.onHalt();
     }
 
@@ -181,25 +182,25 @@ export class KeyboardHandler {
     }
 
     // Mute (M)
-    if (k === 'm') this.cb.onToggleMute();
+    if (k === keymap.mute) this.cb.onToggleMute();
 
     // Speed (F)
-    if (k === 'f') this.cb.onCycleSpeed();
+    if (k === keymap.speed) this.cb.onCycleSpeed();
 
     // Period for idle worker
-    if (k === '.') this.cb.onSelectIdleWorker();
+    if (k === keymap.idleWorker) this.cb.onSelectIdleWorker();
 
     // Comma for army select
-    if (k === ',') this.cb.onSelectArmy();
+    if (k === keymap.selectArmy) this.cb.onSelectArmy();
 
     // Space to center on selection
-    if (k === ' ' && w.selection.length > 0) {
+    if (k === keymap.centerSelection && w.selection.length > 0) {
       e.preventDefault();
       w.isTracking = true;
     }
 
     // Tab to cycle through buildings
-    if (k === 'tab') {
+    if (k === keymap.cycleBuildings) {
       e.preventDefault();
       const buildings = this.cb.getPlayerBuildings();
       if (buildings.length > 0) {
@@ -217,9 +218,9 @@ export class KeyboardHandler {
     }
 
     // Hotkey buttons: Q, W, E, R for action panel buttons
-    if (['q', 'w', 'e', 'r'].includes(k) && !e.ctrlKey) {
-      const idx = 'qwer'.indexOf(k);
-      this.cb.onActionHotkey(idx);
+    const actionIdx = keymap.actionSlots.indexOf(k);
+    if (actionIdx !== -1 && !e.ctrlKey) {
+      this.cb.onActionHotkey(actionIdx);
     }
   }
 

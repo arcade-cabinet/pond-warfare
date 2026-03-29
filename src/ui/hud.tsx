@@ -10,6 +10,7 @@ import {
   armyCount,
   attackMoveActive,
   clams,
+  colorBlindMode,
   foodAtCap,
   foodDisplay,
   gameTimeDisplay,
@@ -49,6 +50,7 @@ export function formatRate(r: number): string {
 export interface HUDProps {
   onSpeedClick?: () => void;
   onMuteClick?: () => void;
+  onColorBlindToggle?: () => void;
   onIdleWorkerClick?: () => void;
   onArmyClick?: () => void;
 }
@@ -138,6 +140,15 @@ export function HUD(props: HUDProps) {
               onClick={props.onMuteClick}
             >
               {muteLabel}
+            </button>
+            <button
+              type="button"
+              id="cb-btn"
+              class={`text-[10px] md:text-xs px-1 md:px-2 py-0.5 border rounded cursor-pointer hover:bg-slate-600 font-bold ${colorBlindMode.value ? 'bg-amber-700 border-amber-500 text-amber-200' : 'bg-slate-700 border-slate-500 text-slate-400'}`}
+              title="Color Blind Mode"
+              onClick={props.onColorBlindToggle}
+            >
+              CB
             </button>
           </div>
         </div>
