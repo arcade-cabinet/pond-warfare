@@ -318,4 +318,29 @@ export function spawnInitialEntities(world: GameWorld): void {
       );
     }
   }
+
+  // ---- Neutral wildlife (ambient) ----
+  // 5-8 frogs scattered near water/resource areas
+  const frogCount = rng.int(5, 9);
+  for (let i = 0; i < frogCount; i++) {
+    spawnEntity(
+      world,
+      EntityKind.Frog,
+      clampWorld(rng.float(60, WORLD_WIDTH - 60), WORLD_WIDTH),
+      clampWorld(rng.float(60, WORLD_HEIGHT - 60), WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
+  // 3-5 fish scattered around
+  const fishCount = rng.int(3, 6);
+  for (let i = 0; i < fishCount; i++) {
+    spawnEntity(
+      world,
+      EntityKind.Fish,
+      clampWorld(rng.float(60, WORLD_WIDTH - 60), WORLD_WIDTH),
+      clampWorld(rng.float(60, WORLD_HEIGHT - 60), WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
 }
