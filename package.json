@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "copywasm": "mkdir -p public/assets && cp node_modules/.pnpm/sql.js@*/node_modules/sql.js/dist/sql-wasm.wasm public/assets/",
+    "copywasm": "mkdir -p public/assets && cp node_modules/.pnpm/sql.js@1.11.0/node_modules/sql.js/dist/sql-wasm.wasm public/assets/",
     "dev": "vite",
     "build": "pnpm copywasm && tsc --noEmit && vite build",
     "preview": "vite preview",
@@ -47,6 +47,7 @@
     "@vitest/browser-playwright": "^4.1.2",
     "jsdom": "^29.0.1",
     "playwright": "^1.58.2",
+    "sql.js": "1.11.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
     "vite": "^8.0.3",

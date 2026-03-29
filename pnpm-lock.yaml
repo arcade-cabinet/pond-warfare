@@ -90,6 +90,9 @@ importers:
       playwright:
         specifier: ^1.58.2
         version: 1.58.2
+      sql.js:
+        specifier: 1.11.0
+        version: 1.11.0
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
@@ -1825,8 +1828,8 @@ packages:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
 
-  sql.js@1.14.1:
-    resolution: {integrity: sha512-gcj8zBWU5cFsi9WUP+4bFNXAyF1iRpA3LLyS/DP5xlrNzGmPIizUeBggKa8DbDwdqaKwUcTEnChtd2grWo/x/A==}
+  sql.js@1.11.0:
+    resolution: {integrity: sha512-GsLUDU3vhOo14Pd5ME0y2te49JQyby6HuoCuadevEV+CGgTUjmYRrm7B7lhRyzOgrmcWmspUfyjNb6sOAEqdsA==}
 
   stack-trace@1.0.0-pre2:
     resolution: {integrity: sha512-2ztBJRek8IVofG9DBJqdy2N5kulaacX30Nz7xmkYF6ale9WBVmIy6mFBchvGX7Vx/MyjBhx+Rcxqrj+dbOnQ6A==}
@@ -3410,7 +3413,7 @@ snapshots:
       browser-fs-access: 0.35.0
       jszip: 3.10.1
       localforage: 1.10.0
-      sql.js: 1.14.1
+      sql.js: 1.11.0
 
   jiti@2.6.1: {}
 
@@ -3890,7 +3893,7 @@ snapshots:
 
   split2@4.2.0: {}
 
-  sql.js@1.14.1: {}
+  sql.js@1.11.0: {}
 
   stack-trace@1.0.0-pre2: {}
 
