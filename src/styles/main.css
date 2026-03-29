@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ====================================================================
    Pond Warfare - Brand Identity Palette
@@ -89,6 +88,26 @@ body {
 #game-canvas,
 #minimap-container {
   touch-action: none;
+}
+
+/* ====================================================================
+   Rotate Device Prompt - Shown on portrait mobile web
+   ==================================================================== */
+.rotate-prompt {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--pw-bg-deep);
+  color: var(--pw-text-primary);
+  align-items: center;
+  justify-content: center;
+}
+
+@media (orientation: portrait) and (max-width: 767px) {
+  .rotate-prompt {
+    display: flex;
+  }
 }
 
 #game-canvas,
@@ -237,7 +256,7 @@ body {
   position: absolute;
   top: 2px;
   right: 3px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-family: 'JetBrains Mono', monospace;
   color: var(--pw-accent-dim);
   background: rgba(0, 0, 0, 0.6);
@@ -430,7 +449,7 @@ body {
   border-top-color: var(--pw-wood-highlight);
   color: var(--pw-text-primary);
   padding: 6px 10px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   pointer-events: none;
   z-index: 100;
   white-space: nowrap;
@@ -608,6 +627,492 @@ body {
 }
 
 /* ====================================================================
+   Main Menu - Immersive Pond Scene
+   ==================================================================== */
+
+/* --- Lily pads: oval CSS shapes that float gently --- */
+@keyframes lily-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25%      { transform: translate(6px, -4px) rotate(2deg); }
+  50%      { transform: translate(-3px, 5px) rotate(-1deg); }
+  75%      { transform: translate(4px, 2px) rotate(1.5deg); }
+}
+
+.lily-pad {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: lily-drift 12s ease-in-out infinite;
+  /* Ellipse with radial gradient: dark green center, lighter edge */
+  background: radial-gradient(
+    ellipse at 45% 40%,
+    #1a4a28 0%,
+    #143a20 40%,
+    #0e2a18 70%,
+    rgba(10, 30, 16, 0.5) 100%
+  );
+  box-shadow:
+    inset -4px -2px 8px rgba(0, 0, 0, 0.4),
+    inset 2px 1px 4px rgba(64, 200, 100, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Notch cut-out on the lily pad (pie-slice) */
+.lily-pad::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 45%;
+  width: 20%;
+  height: 50%;
+  background: inherit;
+  /* Erase a wedge by overlaying the pond color */
+  background: linear-gradient(
+    180deg,
+    rgba(12, 26, 31, 0.95) 0%,
+    rgba(19, 40, 48, 0.8) 100%
+  );
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+/* Vein lines on lily pad */
+.lily-pad::before {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  border: 1px solid rgba(64, 200, 100, 0.06);
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 30%,
+    rgba(20, 60, 30, 0.15) 100%
+  );
+}
+
+.lily-pad:nth-child(2) { animation-delay: -3s; animation-duration: 14s; }
+.lily-pad:nth-child(3) { animation-delay: -7s; animation-duration: 16s; }
+.lily-pad:nth-child(4) { animation-delay: -1s; animation-duration: 11s; }
+.lily-pad:nth-child(5) { animation-delay: -5s; animation-duration: 15s; }
+.lily-pad:nth-child(6) { animation-delay: -9s; animation-duration: 13s; }
+
+/* Lily flower on some pads */
+.lily-flower {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f0d0e0 0%, #d090a0 60%, #a06070 100%);
+  box-shadow: 0 0 6px rgba(240, 180, 200, 0.3);
+  top: 20%;
+  right: 20%;
+}
+
+/* --- Firefly particles --- */
+@keyframes firefly-float {
+  0%, 100% { transform: translate(0, 0); opacity: 0; }
+  10%      { opacity: 1; }
+  50%      { transform: translate(30px, -40px); opacity: 0.8; }
+  90%      { opacity: 1; }
+}
+
+@keyframes firefly-glow {
+  0%, 100% { box-shadow: 0 0 4px 1px rgba(200, 230, 100, 0.4); }
+  50%      { box-shadow: 0 0 8px 3px rgba(200, 230, 100, 0.8); }
+}
+
+.firefly {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(200, 230, 100, 0.9);
+  pointer-events: none;
+  animation:
+    firefly-float 8s ease-in-out infinite,
+    firefly-glow 2s ease-in-out infinite;
+}
+
+.firefly:nth-child(2)  { animation-delay: -2s; animation-duration: 10s, 2.5s; }
+.firefly:nth-child(3)  { animation-delay: -4s; animation-duration: 7s, 1.8s; }
+.firefly:nth-child(4)  { animation-delay: -1s; animation-duration: 9s, 3s; }
+.firefly:nth-child(5)  { animation-delay: -6s; animation-duration: 11s, 2.2s; }
+.firefly:nth-child(6)  { animation-delay: -3s; animation-duration: 8s, 2.7s; }
+.firefly:nth-child(7)  { animation-delay: -5s; animation-duration: 12s, 1.9s; }
+.firefly:nth-child(8)  { animation-delay: -7s; animation-duration: 6s, 2.4s; }
+
+/* --- Water shimmer overlay --- */
+@keyframes water-shimmer {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 200%; }
+}
+
+.water-shimmer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background:
+    repeating-linear-gradient(
+      110deg,
+      transparent 0px,
+      rgba(64, 200, 208, 0.3) 2px,
+      transparent 4px,
+      transparent 60px
+    );
+  background-size: 200% 200%;
+  animation: water-shimmer 20s linear infinite;
+}
+
+/* --- Water caustics (light patterns on the pond surface) --- */
+@keyframes caustic-drift {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.03; }
+  33%  { transform: translate(20px, -10px) scale(1.1); opacity: 0.05; }
+  66%  { transform: translate(-15px, 8px) scale(0.95); opacity: 0.03; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.03; }
+}
+
+.water-caustics {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80px 40px at 20% 30%, rgba(64, 200, 208, 0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 60px 50px at 60% 70%, rgba(64, 200, 208, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 90px 35px at 80% 20%, rgba(64, 200, 208, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50px 60px at 40% 80%, rgba(64, 200, 208, 0.08) 0%, transparent 70%);
+  animation: caustic-drift 15s ease-in-out infinite;
+}
+
+/* --- Title water reflection --- */
+.title-reflection {
+  transform: scaleY(-1);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 70%);
+  filter: blur(1.5px);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* --- Wooden sign buttons (primary) --- */
+.wood-sign-btn {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  /* Wood plank gradient */
+  background:
+    linear-gradient(
+      95deg,
+      #3a5c4a 0%,
+      #2e4a3c 20%,
+      #243830 50%,
+      #2e4a3c 80%,
+      #3a5c4a 100%
+    );
+  border-top: 3px solid #4a6c58;
+  border-bottom: 3px solid #1a2e22;
+  border-left: 2px solid #3a5c48;
+  border-right: 2px solid #1e3228;
+  border-radius: 4px;
+  color: var(--pw-text-primary);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  transition: all 0.18s ease;
+  /* Wood grain pseudo-texture */
+  box-shadow:
+    inset 0 1px 0 rgba(100, 180, 120, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 0 20px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(64, 200, 100, 0.05);
+}
+
+/* Nail heads on wooden signs */
+.wood-sign-btn::before,
+.wood-sign-btn::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle at 35% 35%, #5a5a50, #2a2a24);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.wood-sign-btn::before { left: 10px; }
+.wood-sign-btn::after  { right: 10px; }
+
+.wood-sign-btn:hover:not(:disabled) {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(100, 180, 120, 0.15),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(64, 200, 208, 0.12),
+    0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.wood-sign-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.wood-sign-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.6) brightness(0.8);
+}
+
+/* --- Shield / compass button (New Game hero CTA) --- */
+.shield-btn {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  /* Shield shape via clip-path */
+  clip-path: polygon(
+    50% 0%,
+    100% 8%,
+    100% 60%,
+    85% 78%,
+    50% 100%,
+    15% 78%,
+    0% 60%,
+    0% 8%
+  );
+  background:
+    linear-gradient(
+      170deg,
+      #4a6c58 0%,
+      #2e4a3c 30%,
+      #1a3528 60%,
+      #243830 100%
+    );
+  color: var(--pw-accent);
+  text-shadow:
+    0 0 12px rgba(64, 200, 208, 0.5),
+    1px 1px 2px rgba(0, 0, 0, 0.8);
+  transition: all 0.2s ease;
+  box-shadow: none; /* clip-path clips box-shadow */
+}
+
+.shield-btn:hover {
+  filter: brightness(1.25);
+  transform: scale(1.04);
+}
+
+.shield-btn:active {
+  filter: brightness(0.95);
+  transform: scale(0.98);
+}
+
+/* Inner border for the shield */
+.shield-btn-inner {
+  position: absolute;
+  inset: 4px;
+  clip-path: polygon(
+    50% 0%,
+    100% 8%,
+    100% 60%,
+    85% 78%,
+    50% 100%,
+    15% 78%,
+    0% 60%,
+    0% 8%
+  );
+  border: 2px solid rgba(64, 200, 208, 0.2);
+  pointer-events: none;
+}
+
+/* Gold rim on the shield */
+.shield-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    50% 0%,
+    100% 8%,
+    100% 60%,
+    85% 78%,
+    50% 100%,
+    15% 78%,
+    0% 60%,
+    0% 8%
+  );
+  background:
+    linear-gradient(
+      180deg,
+      rgba(232, 184, 120, 0.15) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(200, 133, 74, 0.1) 100%
+    );
+  pointer-events: none;
+}
+
+/* --- Stone tablet buttons (secondary) --- */
+.stone-tablet-btn {
+  position: relative;
+  cursor: pointer;
+  border: 2px solid var(--pw-border);
+  background:
+    linear-gradient(
+      160deg,
+      #3c5858 0%,
+      #283838 40%,
+      #1c2828 100%
+    );
+  border-radius: 6px 6px 3px 3px;
+  color: var(--pw-text-secondary);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  transition: all 0.15s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(64, 200, 208, 0.06),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Stone texture cracks */
+.stone-tablet-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.02) 42%, transparent 44%),
+    linear-gradient(135deg, transparent 60%, rgba(0,0,0,0.1) 62%, transparent 64%);
+  pointer-events: none;
+}
+
+.stone-tablet-btn:hover:not(:disabled) {
+  filter: brightness(1.2);
+  border-color: var(--pw-border-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(64, 200, 208, 0.1),
+    0 0 12px rgba(64, 200, 208, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.stone-tablet-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Driftwood version bar --- */
+.driftwood {
+  position: relative;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(60, 50, 40, 0.6) 0%,
+      rgba(80, 65, 50, 0.7) 30%,
+      rgba(70, 58, 45, 0.65) 60%,
+      rgba(50, 42, 35, 0.5) 100%
+    );
+  border-radius: 20px / 8px;
+  border: 1px solid rgba(100, 80, 60, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(120, 100, 80, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Wood grain lines */
+.driftwood::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      rgba(80, 60, 40, 0.1) 1px,
+      transparent 2px,
+      transparent 8px
+    );
+  pointer-events: none;
+}
+
+/* --- Reed / hanging medal for rank --- */
+@keyframes reed-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
+}
+
+.reed-hang {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  animation: reed-sway 4s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* Reed stem */
+.reed-hang::before {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(180deg, #4a6c48 0%, #2a4a28 100%);
+  border-radius: 1px;
+  margin-bottom: 2px;
+}
+
+.reed-medal {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #c09030, #806020, #504010);
+  border: 2px solid rgba(200, 160, 80, 0.5);
+  box-shadow:
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(255, 220, 120, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* --- Cattail / reed decorations --- */
+@keyframes cattail-sway {
+  0%, 100% { transform: rotate(-1.5deg) scaleX(1); }
+  50%      { transform: rotate(1.5deg) scaleX(-1); }
+}
+
+.cattail {
+  position: absolute;
+  pointer-events: none;
+  transform-origin: bottom center;
+  animation: cattail-sway 6s ease-in-out infinite;
+}
+
+.cattail-stem {
+  width: 2px;
+  background: linear-gradient(180deg, #3a5a38 0%, #2a4028 70%, #1a2e1c 100%);
+  border-radius: 1px;
+  margin: 0 auto;
+}
+
+.cattail-head {
+  width: 6px;
+  height: 16px;
+  background: linear-gradient(180deg, #5a4030 0%, #3a2820 100%);
+  border-radius: 3px;
+  margin: 0 auto -2px;
+}
+
+.cattail:nth-child(2) { animation-delay: -2s; animation-duration: 7s; }
+.cattail:nth-child(3) { animation-delay: -4s; animation-duration: 5s; }
+
+/* ====================================================================
    Logo / Title Treatment
    ==================================================================== */
 .logo-pond {
@@ -656,7 +1161,7 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--pw-accent-dim);
-  font-size: 10px;
+  font-size: 0.625rem;
   border-bottom: 1px solid var(--pw-border);
   padding-bottom: 4px;
 }
@@ -709,4 +1214,14 @@ input[type="range"]::-moz-range-thumb {
   border: 2px solid var(--pw-accent-bright);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   cursor: pointer;
+}
+
+/* ====================================================================
+   Safe area insets for notched devices
+   ==================================================================== */
+.safe-area-pad {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }

@@ -8,7 +8,7 @@
  * Run with: npx vitest --config vitest.e2e.config.ts
  */
 
-import { page } from '@vitest/browser/context';
+import { page } from 'vitest/browser';
 import { render } from 'preact';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { game } from '@/game';
@@ -141,12 +141,16 @@ describe('E2E Playthrough', () => {
             console.log(`[${snapshot.gameSeconds}s] ${snapshot.phase}`, {
               clams: snapshot.clams,
               twigs: snapshot.twigs,
+              pearls: snapshot.pearls,
               food: `${snapshot.food}/${snapshot.maxFood}`,
               gatherers: snapshot.gatherers,
               army: snapshot.army,
               buildings: snapshot.buildings,
               enemyNests: snapshot.enemyNests,
+              evolutionTier: snapshot.evolutionTier,
+              champions: snapshot.champions,
               tech: snapshot.techResearched,
+              autoBehaviors: snapshot.autoBehaviors,
             });
           }
         },

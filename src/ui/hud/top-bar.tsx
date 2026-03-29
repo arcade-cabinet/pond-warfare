@@ -12,6 +12,7 @@ import {
   foodAtCap,
   foodDisplay,
   gameTimeDisplay,
+  hasSaveGame,
   isPeaceful,
   lowClams,
   lowTwigs,
@@ -20,6 +21,7 @@ import {
   peaceStatusColor,
   peaceStatusStyle,
   peaceStatusText,
+  pearls,
   rateClams,
   rateTwigs,
   speedLabel,
@@ -35,6 +37,7 @@ export interface TopBarProps {
   onSaveClick?: () => void;
   onLoadClick?: () => void;
   onSettingsClick?: () => void;
+  onKeyboardRefClick?: () => void;
 }
 
 export function TopBar(props: TopBarProps) {
@@ -70,12 +73,16 @@ export function TopBar(props: TopBarProps) {
     prevTwigs.current = currentTwigs;
   }, [currentTwigs]);
 
-  const hasSave = localStorage.getItem('pond-warfare-save');
+  const hasSave = hasSaveGame.value;
 
   return (
     <div
-      class="absolute top-0 left-0 w-full h-11 md:h-12 wood-panel border-0 border-b-2 md:border-b-3 flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm"
-      style={{ borderBottomColor: 'var(--pw-border)' }}
+      class="absolute top-0 left-0 w-full wood-panel border-0 border-b-2 md:border-b-3 flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm"
+      style={{
+        borderBottomColor: 'var(--pw-border)',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        minHeight: 'calc(2.75rem + env(safe-area-inset-top, 0px))',
+      }}
     >
       {/* Resources */}
       <div class="flex space-x-3 md:space-x-6">
@@ -93,8 +100,8 @@ export function TopBar(props: TopBarProps) {
             Clams:{' '}
           </span>
           <span
-            class={`font-numbers font-bold ${clamsFlash ? 'animate-resource-flash' : ''}`}
-            style={{ color: 'var(--pw-clam)' }}
+            class={`font-numbers font-bold ${clamsFlash ? 'animate-resource-flash' : ''} ${lowClams.value ? 'animate-pulse' : ''}`}
+            style={{ color: lowClams.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
           >
             {clams}
           </span>
@@ -132,8 +139,8 @@ export function TopBar(props: TopBarProps) {
             Twigs:{' '}
           </span>
           <span
-            class={`font-numbers font-bold ${twigsFlash ? 'animate-resource-flash' : ''}`}
-            style={{ color: 'var(--pw-twig)' }}
+            class={`font-numbers font-bold ${twigsFlash ? 'animate-resource-flash' : ''} ${lowTwigs.value ? 'animate-pulse' : ''}`}
+            style={{ color: lowTwigs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
           >
             {twigs}
           </span>
@@ -157,6 +164,26 @@ export function TopBar(props: TopBarProps) {
             </span>
           )}
         </div>
+
+        {/* Pearls (only show when > 0) */}
+        {pearls.value > 0 && (
+          <div class="flex items-center space-x-1 md:space-x-2">
+            <div
+              class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm"
+              style={{
+                background: 'radial-gradient(circle at 35% 35%, #e0e7ff, #a5b4fc)',
+                border: '1px solid #a5b4fc',
+                boxShadow: '0 0 4px rgba(165, 180, 252, 0.4)',
+              }}
+            />
+            <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+              Pearls:{' '}
+            </span>
+            <span class="font-numbers font-bold" style={{ color: '#a5b4fc' }}>
+              {pearls}
+            </span>
+          </div>
+        )}
 
         {/* Food */}
         <div class="flex items-center space-x-1 md:space-x-2">
@@ -287,6 +314,16 @@ export function TopBar(props: TopBarProps) {
             onClick={props.onSettingsClick}
           >
             {'\u2699'}
+          </button>
+          <button
+            type="button"
+            id="keyboard-ref-btn"
+            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center"
+            style={{ color: 'var(--pw-text-muted)' }}
+            title="Keyboard Shortcuts"
+            onClick={props.onKeyboardRefClick}
+          >
+            ?
           </button>
         </div>
       </div>

@@ -32,9 +32,23 @@ interface TreeEdge {
 const LODGE_NODES: TreeNode[] = [
   { id: 'cartography', col: 0, row: 0, unlocks: 'Scout Post' },
   { id: 'tidalHarvest', col: 1, row: 0 },
+  { id: 'herbalMedicine', col: 2, row: 0, unlocks: 'Herbalist Hut' },
+  { id: 'tradeRoutes', col: 0, row: 1 },
+  { id: 'aquaticTraining', col: 2, row: 1, unlocks: 'Swimmer' },
+  { id: 'pondBlessing', col: 1, row: 1 },
+  { id: 'deepDiving', col: 2, row: 2 },
+  { id: 'rootNetwork', col: 1, row: 2 },
+  { id: 'tidalSurge', col: 0, row: 2 },
 ];
 
-const LODGE_EDGES: TreeEdge[] = [];
+const LODGE_EDGES: TreeEdge[] = [
+  { from: 'herbalMedicine', to: 'aquaticTraining' },
+  { from: 'herbalMedicine', to: 'pondBlessing' },
+  { from: 'aquaticTraining', to: 'deepDiving' },
+  { from: 'cartography', to: 'tradeRoutes' },
+  { from: 'deepDiving', to: 'rootNetwork' },
+  { from: 'deepDiving', to: 'tidalSurge' },
+];
 
 // Armory branch layout
 const ARMORY_NODES: TreeNode[] = [
@@ -45,16 +59,32 @@ const ARMORY_NODES: TreeNode[] = [
   { id: 'battleRoar', col: 2, row: 1 },
   { id: 'eagleEye', col: 0, row: 2 },
   { id: 'siegeWorks', col: 1, row: 2, unlocks: 'Catapult' },
+  { id: 'cunningTraps', col: 2, row: 2, unlocks: 'Trapper' },
   { id: 'hardenedShells', col: 0, row: 3 },
+  { id: 'piercingShot', col: 1, row: 3 },
+  { id: 'camouflage', col: 2, row: 3 },
+  { id: 'fortifiedWalls', col: 0, row: 4 },
+  { id: 'rallyCry', col: 1, row: 4 },
+  { id: 'warDrums', col: 2, row: 4 },
+  { id: 'venomCoating', col: 0, row: 5 },
+  { id: 'siegeEngineering', col: 1, row: 5 },
 ];
 
 const ARMORY_EDGES: TreeEdge[] = [
   { from: 'sturdyMud', to: 'swiftPaws' },
+  { from: 'sturdyMud', to: 'fortifiedWalls' },
   { from: 'sharpSticks', to: 'ironShell' },
   { from: 'sharpSticks', to: 'battleRoar' },
   { from: 'sharpSticks', to: 'eagleEye' },
+  { from: 'sharpSticks', to: 'cunningTraps' },
   { from: 'eagleEye', to: 'siegeWorks' },
   { from: 'eagleEye', to: 'hardenedShells' },
+  { from: 'eagleEye', to: 'piercingShot' },
+  { from: 'cunningTraps', to: 'camouflage' },
+  { from: 'cunningTraps', to: 'venomCoating' },
+  { from: 'swiftPaws', to: 'rallyCry' },
+  { from: 'battleRoar', to: 'warDrums' },
+  { from: 'siegeWorks', to: 'siegeEngineering' },
 ];
 
 // -------------------------------------------------------------------
@@ -367,7 +397,7 @@ export function TechTreePanel({
       {/* Tree columns */}
       <div class="flex flex-col md:flex-row gap-10 md:gap-16 px-4 pb-8 items-start justify-center">
         <BranchPanel
-          title="Lodge"
+          title="Lodge / Nature"
           nodes={LODGE_NODES}
           edges={LODGE_EDGES}
           techState={techState}

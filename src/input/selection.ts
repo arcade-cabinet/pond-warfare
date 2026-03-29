@@ -15,6 +15,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { showBark } from '@/config/barks';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
 import { TILE_SIZE, TRAIN_TIMER, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
@@ -151,6 +152,10 @@ export function issueContextCommand(
       FactionTag.faction[eid] === Faction.Player &&
       !hasComponent(world.ecs, eid, IsBuilding),
   );
+
+  // Show a bark for the FIRST movable unit only (prevent spam for multi-select)
+  let barkShown = false;
+
   for (let idx = 0; idx < world.selection.length; idx++) {
     const eid = world.selection[idx];
     if (!hasComponent(world.ecs, eid, FactionTag)) continue;
@@ -177,12 +182,18 @@ export function issueContextCommand(
         UnitStateMachine.targetX[eid] = Position.x[target];
         UnitStateMachine.targetY[eid] = Position.y[target];
         UnitStateMachine.state[eid] = UnitState.AttackMove;
+        if (!barkShown) {
+          barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'attack');
+        }
       } else if (isTargetResource && kind === EntityKind.Gatherer) {
         // Gather
         UnitStateMachine.targetEntity[eid] = target;
         UnitStateMachine.targetX[eid] = Position.x[target];
         UnitStateMachine.targetY[eid] = Position.y[target];
         UnitStateMachine.state[eid] = UnitState.GatherMove;
+        if (!barkShown) {
+          barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'gather');
+        }
       } else if (
         isTargetBuilding &&
         tFaction === Faction.Player &&
@@ -194,6 +205,9 @@ export function issueContextCommand(
         UnitStateMachine.targetX[eid] = Position.x[target];
         UnitStateMachine.targetY[eid] = Position.y[target];
         UnitStateMachine.state[eid] = UnitState.BuildMove;
+        if (!barkShown) {
+          barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'build');
+        }
       } else if (
         EntityTypeTag.kind[target] === EntityKind.Lodge &&
         kind === EntityKind.Gatherer &&
@@ -226,6 +240,9 @@ export function issueContextCommand(
       // Role-based formation move: positions are assigned below after the loop
       UnitStateMachine.state[eid] = UnitState.Move;
       UnitStateMachine.targetEntity[eid] = -1;
+      if (!barkShown) {
+        barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'move');
+      }
     }
   }
 

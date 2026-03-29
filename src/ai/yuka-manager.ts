@@ -15,13 +15,16 @@ import {
   CohesionBehavior,
   EntityManager,
   FleeBehavior,
+  ObstacleAvoidanceBehavior,
+  OffsetPursuitBehavior,
+  PursuitBehavior,
   SeekBehavior,
   SeparationBehavior,
   Vector3,
   Vehicle,
   WanderBehavior,
 } from 'yuka';
-import { Position } from '@/ecs/components';
+import { Position, UnitStateMachine } from '@/ecs/components';
 
 /** Separation radius in world units. Vehicles within this distance push apart. */
 const SEPARATION_NEIGHBORHOOD_RADIUS = 40;
@@ -35,6 +38,11 @@ const FLEE_DURATION_FRAMES = 90; // ~1.5 seconds at 60 fps
 const ALIGNMENT_WEIGHT = 0.3;
 /** Weight for cohesion force during formation movement. */
 const COHESION_WEIGHT = 0.4;
+
+/** Weight for obstacle avoidance — low so it only kicks in when close. */
+const OBSTACLE_AVOIDANCE_WEIGHT = 0.3;
+/** How often (in frames) to refresh the obstacle list from ECS buildings. */
+const OBSTACLE_REFRESH_INTERVAL = 60;
 
 export class YukaManager {
   readonly entityManager = new EntityManager();
@@ -50,6 +58,15 @@ export class YukaManager {
 
   /** Tracks entity IDs that currently have flocking (alignment/cohesion) behaviors */
   private formationEids = new Set<number>();
+
+  /** Tracks active pursuit behaviors per vehicle for cleanup */
+  private pursuitTargets = new Map<number, number>();
+
+  /** Shared obstacle list for ObstacleAvoidanceBehavior (built from buildings). */
+  private obstacles: Vehicle[] = [];
+
+  /** Frame counter for periodic obstacle list refresh. */
+  private obstacleRefreshCounter = 0;
 
   /**
    * Register a unit (any faction) with a Yuka Vehicle using ArriveBehavior
@@ -80,6 +97,11 @@ export class YukaManager {
     separation.weight = SEPARATION_WEIGHT;
     vehicle.steering.add(separation);
 
+    // Obstacle avoidance steers around buildings
+    const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+    obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+    vehicle.steering.add(obstacleAvoidance);
+
     const arrive = new ArriveBehavior(new Vector3(targetX, 0, targetY));
     arrive.deceleration = 1.5;
     vehicle.steering.add(arrive);
@@ -99,13 +121,18 @@ export class YukaManager {
     const vehicle = this.vehicles.get(eid);
     if (!vehicle) return;
 
-    // Clear all behaviors then re-add separation first
+    // Clear all behaviors then re-add separation + obstacle avoidance first
     vehicle.steering.clear();
     this.wanderBehaviors.delete(eid);
+    this.pursuitTargets.delete(eid);
 
     const separation = new SeparationBehavior();
     separation.weight = SEPARATION_WEIGHT;
     vehicle.steering.add(separation);
+
+    const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+    obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+    vehicle.steering.add(obstacleAvoidance);
 
     // Preserve flocking behaviors for units in a formation
     if (this.formationEids.has(eid)) {
@@ -131,6 +158,34 @@ export class YukaManager {
   }
 
   /**
+   * Use PursuitBehavior to intercept a moving target vehicle.
+   * Instead of seeking the target's current position, this predicts where
+   * the target WILL BE and steers to intercept. Much smarter for chasing
+   * retreating units.
+   *
+   * Falls back to setTarget() with isChasing=true if either entity is not
+   * registered with Yuka.
+   */
+  setPursuit(eid: number, targetEid: number): void {
+    const vehicle = this.vehicles.get(eid);
+    const targetVehicle = this.vehicles.get(targetEid);
+    if (!vehicle || !targetVehicle) return;
+
+    // Skip if already pursuing the same target
+    if (this.pursuitTargets.get(eid) === targetEid) return;
+
+    // Clear existing directional behaviors, keep separation + obstacle avoidance
+    this.clearDirectionalBehaviors(vehicle);
+    this.wanderBehaviors.delete(eid);
+
+    const pursuit = new PursuitBehavior(targetVehicle);
+    pursuit.weight = 1.0;
+    vehicle.steering.add(pursuit);
+
+    this.pursuitTargets.set(eid, targetEid);
+  }
+
+  /**
    * Add WanderBehavior to a vehicle so it patrols an area instead of standing
    * still. Clears existing directional behaviors (seek/arrive) but keeps
    * separation. If the vehicle already has a wander behavior, this is a no-op.
@@ -147,12 +202,16 @@ export class YukaManager {
     // Already wandering
     if (this.wanderBehaviors.has(eid)) return;
 
-    // Clear existing behaviors, re-add separation + wander
+    // Clear existing behaviors, re-add separation + obstacle avoidance + wander
     vehicle.steering.clear();
 
     const separation = new SeparationBehavior();
     separation.weight = SEPARATION_WEIGHT;
     vehicle.steering.add(separation);
+
+    const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+    obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+    vehicle.steering.add(obstacleAvoidance);
 
     const wander = new WanderBehavior(radius, distance, jitter);
     wander.weight = 0.6;
@@ -177,10 +236,15 @@ export class YukaManager {
 
     vehicle.steering.clear();
     this.wanderBehaviors.delete(eid);
+    this.pursuitTargets.delete(eid);
 
     const separation = new SeparationBehavior();
     separation.weight = SEPARATION_WEIGHT;
     vehicle.steering.add(separation);
+
+    const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+    obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+    vehicle.steering.add(obstacleAvoidance);
 
     const flee = new FleeBehavior(new Vector3(fleeX, 0, fleeY), panicDistance);
     flee.weight = 1.0;
@@ -200,10 +264,15 @@ export class YukaManager {
 
     vehicle.steering.clear();
     this.wanderBehaviors.delete(eid);
+    this.pursuitTargets.delete(eid);
 
     const separation = new SeparationBehavior();
     separation.weight = SEPARATION_WEIGHT;
     vehicle.steering.add(separation);
+
+    const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+    obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+    vehicle.steering.add(obstacleAvoidance);
   }
 
   /** Returns true if the entity currently has an active flee timer. */
@@ -234,6 +303,7 @@ export class YukaManager {
     this.fleeTimers.delete(eid);
     this.wanderBehaviors.delete(eid);
     this.formationEids.delete(eid);
+    this.pursuitTargets.delete(eid);
   }
 
   /**
@@ -308,32 +378,64 @@ export class YukaManager {
    * @param targetY  Group center target Y
    */
   setFormation(eids: number[], targetX: number, targetY: number): void {
-    for (const eid of eids) {
-      const vehicle = this.vehicles.get(eid);
-      if (!vehicle) continue;
+    // Need at least one entity; first entity becomes leader
+    if (eids.length === 0) return;
 
-      // Rebuild steering: separation + alignment + cohesion + arrive to offset target
+    const leaderEid = eids[0];
+    const leaderVehicle = this.vehicles.get(leaderEid);
+
+    // Set up the leader with standard arrive behavior toward the group center
+    if (leaderVehicle) {
+      leaderVehicle.steering.clear();
+      this.wanderBehaviors.delete(leaderEid);
+      this.pursuitTargets.delete(leaderEid);
+
+      const separation = new SeparationBehavior();
+      separation.weight = SEPARATION_WEIGHT;
+      leaderVehicle.steering.add(separation);
+
+      const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+      obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+      leaderVehicle.steering.add(obstacleAvoidance);
+
+      const arrive = new ArriveBehavior(new Vector3(targetX, 0, targetY));
+      arrive.deceleration = 1.5;
+      leaderVehicle.steering.add(arrive);
+
+      this.formationEids.add(leaderEid);
+    }
+
+    // Followers use OffsetPursuitBehavior to maintain exact offset from leader
+    for (let i = 1; i < eids.length; i++) {
+      const eid = eids[i];
+      const vehicle = this.vehicles.get(eid);
+      if (!vehicle || !leaderVehicle) continue;
+
       vehicle.steering.clear();
       this.wanderBehaviors.delete(eid);
+      this.pursuitTargets.delete(eid);
 
       const separation = new SeparationBehavior();
       separation.weight = SEPARATION_WEIGHT;
       vehicle.steering.add(separation);
 
-      const alignment = new AlignmentBehavior();
-      alignment.weight = ALIGNMENT_WEIGHT;
-      vehicle.steering.add(alignment);
+      const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+      obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+      vehicle.steering.add(obstacleAvoidance);
 
-      const cohesion = new CohesionBehavior();
-      cohesion.weight = COHESION_WEIGHT;
-      vehicle.steering.add(cohesion);
+      // Use the planned formation targets from the ECS, not current position.
+      // The ECS has already assigned per-unit formation offsets in
+      // UnitStateMachine.targetX/Y, so we derive the offset from the
+      // difference between the unit's target and the group center.
+      const unitTargetX = UnitStateMachine.targetX[eid];
+      const unitTargetZ = UnitStateMachine.targetY[eid]; // Y maps to Z in Yuka's 3D space
+      const offsetX = unitTargetX - leaderVehicle.position.x;
+      const offsetZ = unitTargetZ - leaderVehicle.position.z;
+      const offset = new Vector3(offsetX, 0, offsetZ);
 
-      // Arrive toward the per-unit offset target (set via ECS UnitStateMachine.targetX/Y)
-      // The movement system will call setTarget() with the per-unit position,
-      // but we use targetX/targetY as a fallback center point here.
-      const arrive = new ArriveBehavior(new Vector3(targetX, 0, targetY));
-      arrive.deceleration = 1.5;
-      vehicle.steering.add(arrive);
+      const offsetPursuit = new OffsetPursuitBehavior(leaderVehicle, offset);
+      offsetPursuit.weight = 1.0;
+      vehicle.steering.add(offsetPursuit);
 
       this.formationEids.add(eid);
     }
@@ -364,9 +466,69 @@ export class YukaManager {
     this.fleeTimers.clear();
     this.wanderBehaviors.clear();
     this.formationEids.clear();
+    this.pursuitTargets.clear();
+    this.obstacles = [];
+    this.obstacleRefreshCounter = 0;
+  }
+
+  /**
+   * Set obstacle entities that units should steer around (typically buildings).
+   * Call this periodically with the current set of building positions.
+   * Each obstacle is represented as a Vehicle with position and boundingRadius.
+   */
+  setObstacles(obstacles: Array<{ x: number; y: number; radius: number }>): void {
+    // Rebuild the obstacle vehicle list
+    this.obstacles = obstacles.map((o) => {
+      const v = new Vehicle();
+      v.position.set(o.x, 0, o.y);
+      v.boundingRadius = o.radius;
+      return v;
+    });
+
+    // Update existing obstacle avoidance behaviors with the new list
+    for (const vehicle of this.vehicles.values()) {
+      for (const behavior of vehicle.steering.behaviors) {
+        if (behavior instanceof ObstacleAvoidanceBehavior) {
+          (behavior as ObstacleAvoidanceBehavior).obstacles = this.obstacles;
+        }
+      }
+    }
+  }
+
+  /** Returns true if the obstacle list should be refreshed this frame. */
+  shouldRefreshObstacles(): boolean {
+    this.obstacleRefreshCounter++;
+    if (this.obstacleRefreshCounter >= OBSTACLE_REFRESH_INTERVAL) {
+      this.obstacleRefreshCounter = 0;
+      return true;
+    }
+    return false;
   }
 
   // ---- Internal helpers ----
+
+  /**
+   * Clear directional behaviors (seek, arrive, pursuit, flee, wander)
+   * from a vehicle while preserving separation, obstacle avoidance,
+   * and flocking behaviors.
+   */
+  private clearDirectionalBehaviors(vehicle: Vehicle): void {
+    const keep: import('yuka').SteeringBehavior[] = [];
+    for (const b of vehicle.steering.behaviors) {
+      if (
+        b instanceof SeparationBehavior ||
+        b instanceof ObstacleAvoidanceBehavior ||
+        b instanceof AlignmentBehavior ||
+        b instanceof CohesionBehavior
+      ) {
+        keep.push(b);
+      }
+    }
+    vehicle.steering.clear();
+    for (const b of keep) {
+      vehicle.steering.add(b);
+    }
+  }
 
   /**
    * Decrement flee timers each frame. When a timer expires, the flee behavior

@@ -44,6 +44,19 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.Catapult]: SpriteId.Catapult,
   [EntityKind.Wall]: SpriteId.Wall,
   [EntityKind.ScoutPost]: SpriteId.ScoutPost,
+  [EntityKind.ArmoredGator]: SpriteId.ArmoredGator,
+  [EntityKind.VenomSnake]: SpriteId.VenomSnake,
+  [EntityKind.SwampDrake]: SpriteId.SwampDrake,
+  [EntityKind.SiegeTurtle]: SpriteId.SiegeTurtle,
+  [EntityKind.AlphaPredator]: SpriteId.AlphaPredator,
+  [EntityKind.PearlBed]: SpriteId.PearlBed,
+  [EntityKind.FishingHut]: SpriteId.FishingHut,
+  [EntityKind.HerbalistHut]: SpriteId.HerbalistHut,
+  [EntityKind.Swimmer]: SpriteId.Swimmer,
+  [EntityKind.Trapper]: SpriteId.Trapper,
+  [EntityKind.Commander]: SpriteId.Commander,
+  [EntityKind.Frog]: SpriteId.Frog,
+  [EntityKind.Fish]: SpriteId.Fish,
 };
 
 export function spawnEntity(
@@ -145,6 +158,7 @@ export function spawnEntity(
     let speed = def.speed;
     if (faction === Faction.Player && world.tech.swiftPaws) speed += 0.4;
     Velocity.speed[eid] = speed;
+    Velocity.speedDebuffTimer[eid] = 0;
 
     addComponent(world.ecs, eid, Combat);
     let damage = def.damage;

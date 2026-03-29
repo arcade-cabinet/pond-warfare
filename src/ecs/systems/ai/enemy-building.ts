@@ -6,6 +6,7 @@
  */
 
 import { query } from 'bitecs';
+import { resolvePersonality } from '@/config/ai-personalities';
 import {
   ENEMY_BUILD_CHECK_INTERVAL,
   ENEMY_BURROW_COST_CLAMS,
@@ -69,10 +70,14 @@ export function enemyBuildingTick(world: GameWorld): void {
       if (EntityTypeTag.kind[b] === EntityKind.Burrow) nearbyBurrows++;
     }
 
-    // Priority 1: Build a tower if none near this nest (mid-game onward)
+    // AI personality: scale tower cap by towerBuildRate (e.g. turtle builds more)
+    const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+    const maxTowersNear = Math.max(1, Math.round(1 * personality.towerBuildRate));
+
+    // Priority 1: Build a tower if under cap near this nest (mid-game onward)
     if (
       world.frameCount >= ENEMY_MID_GAME_FRAME &&
-      nearbyTowers < 1 &&
+      nearbyTowers < maxTowersNear &&
       res.clams >= ENEMY_TOWER_COST_CLAMS &&
       res.twigs >= ENEMY_TOWER_COST_TWIGS
     ) {
@@ -121,7 +126,10 @@ export function enemyBuildingTick(world: GameWorld): void {
 
   // Priority 3: Expansion nest if we have resources and few nests
   // Late game allows more expansion nests for increased pressure
-  const maxNests = world.frameCount >= ENEMY_LATE_GAME_FRAME ? ENEMY_MAX_NESTS_LATE : 3;
+  // AI personality: scale nest cap by expansionRate
+  const personalityExp = resolvePersonality(world.aiPersonality, world.frameCount);
+  const baseMaxNests = world.frameCount >= ENEMY_LATE_GAME_FRAME ? ENEMY_MAX_NESTS_LATE : 3;
+  const maxNests = Math.max(1, Math.round(baseMaxNests * personalityExp.expansionRate));
   if (
     nestEids.length < maxNests &&
     res.clams >= ENEMY_NEST_COST_CLAMS &&

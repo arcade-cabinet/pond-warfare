@@ -26,6 +26,10 @@ export interface ActionButtonDef {
   description?: string;
   category: ActionCategory;
   onClick: () => void;
+  /** Individual resource costs for detailed tooltip breakdown */
+  costBreakdown?: { clams?: number; twigs?: number; pearls?: number; food?: number };
+  /** Tech requirement label, e.g. "Requires: Eagle Eye" */
+  requires?: string;
 }
 
 /**
@@ -48,6 +52,8 @@ function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
       cost: def.cost,
       description: def.description ?? '',
       hotkey: def.hotkey,
+      costBreakdown: def.costBreakdown,
+      requires: def.requires,
     };
     // Clamp tooltip position to viewport with margins (estimate tooltip size ~200x100)
     const tooltipWidth = 200;

@@ -83,7 +83,7 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
     // Note: short arrays are padded with defaults here, but the validator
     // (isValidPartialKeyMap) requires exactly 6 items. This asymmetry is
     // intentional — setKeymap is lenient to simplify programmatic callers,
-    // while the validator is strict for untrusted input (e.g. localStorage).
+    // while the validator is strict for untrusted input (e.g. stored preferences).
     while (slots.length < 6) slots.push(DEFAULT_KEYMAP.actionSlots[slots.length]);
     merged.actionSlots = slots.slice(0, 6);
   }
@@ -152,9 +152,10 @@ function warnKeymapStorage(action: string, error: unknown): void {
   }
 }
 
-export function loadKeymapFromStorage(): void {
+export async function loadKeymapFromStorage(): Promise<void> {
   try {
-    const stored = localStorage.getItem(KEYMAP_STORAGE_KEY);
+    const { loadPreference } = await import('@/platform/native');
+    const stored = await loadPreference(KEYMAP_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       if (isValidPartialKeyMap(parsed)) {
@@ -166,9 +167,10 @@ export function loadKeymapFromStorage(): void {
   }
 }
 
-export function saveKeymapToStorage(): void {
+export async function saveKeymapToStorage(): Promise<void> {
   try {
-    localStorage.setItem(KEYMAP_STORAGE_KEY, JSON.stringify(activeKeymap));
+    const { savePreference } = await import('@/platform/native');
+    await savePreference(KEYMAP_STORAGE_KEY, JSON.stringify(activeKeymap));
   } catch (error) {
     warnKeymapStorage('save', error);
   }

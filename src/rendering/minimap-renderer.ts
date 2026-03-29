@@ -15,6 +15,7 @@
  * and updates the camera viewport indicator.
  */
 
+import { hasComponent } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   BUILDING_SIGHT_RADIUS,
@@ -25,7 +26,14 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from '@/constants';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import {
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsResource,
+  Position,
+  Resource,
+} from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { MinimapPing } from '@/types';
 import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
@@ -38,6 +46,8 @@ import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
  * @param entityEids    - All live entity IDs.
  * @param exploredCanvas - The explored-area canvas (drawn at low opacity).
  * @param minimapPings  - Active alert pings to render.
+ * @param playerEids    - Player-owned entity IDs for visibility checks.
+ * @param bgCanvas      - The full-world background terrain canvas (drawn scaled as base layer).
  */
 export function drawMinimap(
   minimapCtx: CanvasRenderingContext2D,
@@ -46,14 +56,19 @@ export function drawMinimap(
   exploredCanvas: HTMLCanvasElement,
   minimapPings: MinimapPing[],
   playerEids?: number[],
+  bgCanvas?: HTMLCanvasElement,
 ): void {
   const mc = minimapCtx;
   const sx = MINIMAP_SIZE / WORLD_WIDTH;
   const sy = MINIMAP_SIZE / WORLD_HEIGHT;
 
-  // Base fill: deep water
-  mc.fillStyle = PALETTE.waterDeep;
-  mc.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+  // Base layer: draw scaled terrain background if available, otherwise solid fill
+  if (bgCanvas) {
+    mc.drawImage(bgCanvas, 0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+  } else {
+    mc.fillStyle = PALETTE.waterDeep;
+    mc.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+  }
 
   // Draw explored areas with subtle tint (previously seen but not currently visible)
   mc.globalAlpha = 0.12;
@@ -86,11 +101,27 @@ export function drawMinimap(
     exploredData = exploredCtx.getImageData(0, 0, ew, eh);
   }
 
+  // LOD: skip drawing some entities when count is high
+  const entityTotal = entityEids.length;
+  const lodStride = entityTotal > 400 ? 4 : entityTotal > 200 ? 2 : 1;
+
   // Draw entity dots
-  for (const eid of entityEids) {
+  for (let lodIdx = 0; lodIdx < entityEids.length; lodIdx++) {
+    // Skip entities for LOD (always draw player units and buildings)
+    const eid = entityEids[lodIdx];
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const faction = FactionTag.faction[eid] as Faction;
     const def = ENTITY_DEFS[kind];
+
+    // LOD: skip non-essential entities at high counts (always draw player, buildings, nests)
+    if (
+      lodStride > 1 &&
+      lodIdx % lodStride !== 0 &&
+      faction !== Faction.Player &&
+      !def.isBuilding
+    ) {
+      continue;
+    }
 
     const ex = Position.x[eid];
     const ey = Position.y[eid];
@@ -128,6 +159,14 @@ export function drawMinimap(
       }
     }
 
+    // Resource depletion: dim resources based on remaining amount
+    const isResource = hasComponent(_world.ecs, eid, IsResource);
+    if (isResource) {
+      const maxAmount = def.resourceAmount ?? 1;
+      const alpha = Math.max(0.2, Resource.amount[eid] / maxAmount);
+      mc.globalAlpha = alpha;
+    }
+
     // Choose color
     if (kind === EntityKind.Cattail) {
       mc.fillStyle = PALETTE.reedGreen;
@@ -144,7 +183,22 @@ export function drawMinimap(
     }
 
     const dotSize = def.isBuilding ? 4 : 2;
-    mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
+
+    // PredatorNest: pulsing/blinking red dots to draw player attention
+    if (kind === EntityKind.PredatorNest) {
+      const pulse = 0.5 + 0.5 * Math.sin(_world.frameCount * 0.1);
+      mc.globalAlpha = 0.4 + pulse * 0.6;
+      const pSize = dotSize + pulse * 2;
+      mc.fillRect(ex * sx - pSize / 2, ey * sy - pSize / 2, pSize, pSize);
+      mc.globalAlpha = 1;
+    } else {
+      mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
+    }
+
+    // Reset alpha after drawing resource dots
+    if (isResource) {
+      mc.globalAlpha = 1;
+    }
   }
 
   // Draw animated radar-style pings

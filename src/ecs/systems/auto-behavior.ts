@@ -12,6 +12,7 @@
  */
 
 import { query } from 'bitecs';
+import { showBark } from '@/config/barks';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import {
   EntityTypeTag,
@@ -27,12 +28,18 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 
+/** Track how many consecutive frames each entity has been idle. */
+const idleFrameCount = new Map<number, number>();
+
 export function autoBehaviorSystem(world: GameWorld): void {
   // Only check every 60 frames (~1 second)
   if (world.frameCount % 60 !== 0) return;
 
-  const { gather, defend, attack, scout } = world.autoBehaviors;
-  if (!gather && !defend && !attack && !scout) return;
+  // Wildlife always wanders regardless of toggle state
+  neutralWildlifeWander(world);
+
+  const { gather, defend, attack, heal, scout } = world.autoBehaviors;
+  if (!gather && !defend && !attack && !heal && !scout) return;
 
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
 
@@ -40,7 +47,27 @@ export function autoBehaviorSystem(world: GameWorld): void {
     const eid = units[i];
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
-    if (UnitStateMachine.state[eid] !== UnitState.Idle) continue;
+
+    const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
+
+    // Track idle duration for idle barks
+    if (isIdle) {
+      const prev = idleFrameCount.get(eid) ?? 0;
+      idleFrameCount.set(eid, prev + 60); // runs every 60 frames
+    } else {
+      idleFrameCount.delete(eid);
+    }
+
+    // Idle bark: >1800 frames idle (30 seconds), 5% chance per check
+    if (isIdle) {
+      const idleFrames = idleFrameCount.get(eid) ?? 0;
+      if (idleFrames > 1800 && Math.random() < 0.05) {
+        const idleKind = EntityTypeTag.kind[eid] as EntityKind;
+        showBark(world, eid, Position.x[eid], Position.y[eid], idleKind, 'idle');
+      }
+    }
+
+    if (!isIdle) continue;
 
     const kind = EntityTypeTag.kind[eid] as EntityKind;
 
@@ -65,6 +92,34 @@ export function autoBehaviorSystem(world: GameWorld): void {
         UnitStateMachine.targetX[eid] = Position.x[bestRes];
         UnitStateMachine.targetY[eid] = Position.y[bestRes];
         UnitStateMachine.state[eid] = UnitState.GatherMove;
+      }
+      continue;
+    }
+
+    // Auto-Heal: idle healers seek the nearest wounded player unit (map-wide)
+    if (heal && kind === EntityKind.Healer) {
+      const allUnits = query(world.ecs, [Position, Health, FactionTag]);
+      let bestAlly = -1;
+      let bestDist = Infinity;
+      for (let j = 0; j < allUnits.length; j++) {
+        const aid = allUnits[j];
+        if (aid === eid) continue;
+        if (FactionTag.faction[aid] !== Faction.Player) continue;
+        if (Health.current[aid] <= 0) continue;
+        if (Health.current[aid] >= Health.max[aid]) continue;
+        const dx = Position.x[aid] - Position.x[eid];
+        const dy = Position.y[aid] - Position.y[eid];
+        const d = dx * dx + dy * dy;
+        if (d < bestDist) {
+          bestDist = d;
+          bestAlly = aid;
+        }
+      }
+      if (bestAlly !== -1) {
+        UnitStateMachine.targetEntity[eid] = bestAlly;
+        UnitStateMachine.targetX[eid] = Position.x[bestAlly];
+        UnitStateMachine.targetY[eid] = Position.y[bestAlly];
+        UnitStateMachine.state[eid] = UnitState.Move;
       }
       continue;
     }
@@ -144,5 +199,44 @@ export function autoBehaviorSystem(world: GameWorld): void {
         }
       }
     }
+  }
+
+}
+
+/**
+ * Makes neutral Frog and Fish entities wander randomly.
+ * Every 120 frames, idle neutral wildlife picks a new nearby random target.
+ */
+function neutralWildlifeWander(world: GameWorld): void {
+  if (world.frameCount % 120 !== 0) return;
+
+  const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
+  for (let i = 0; i < units.length; i++) {
+    const eid = units[i];
+    if (FactionTag.faction[eid] !== Faction.Neutral) continue;
+    if (Health.current[eid] <= 0) continue;
+
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    if (kind !== EntityKind.Frog && kind !== EntityKind.Fish) continue;
+
+    const state = UnitStateMachine.state[eid] as UnitState;
+    if (state !== UnitState.Idle) continue;
+
+    // Wander within a small radius around current position
+    const wanderRadius = kind === EntityKind.Frog ? 80 : 120;
+    const cx = Position.x[eid];
+    const cy = Position.y[eid];
+    const newX = Math.max(
+      60,
+      Math.min(WORLD_WIDTH - 60, cx + (Math.random() - 0.5) * wanderRadius),
+    );
+    const newY = Math.max(
+      60,
+      Math.min(WORLD_HEIGHT - 60, cy + (Math.random() - 0.5) * wanderRadius),
+    );
+
+    UnitStateMachine.targetX[eid] = newX;
+    UnitStateMachine.targetY[eid] = newY;
+    UnitStateMachine.state[eid] = UnitState.Move;
   }
 }

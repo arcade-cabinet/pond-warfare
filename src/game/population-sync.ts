@@ -8,6 +8,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import { DAY_FRAMES, EXPLORED_SCALE, TRAIN_TIMER, WAVE_INTERVAL } from '@/constants';
 import {
@@ -21,10 +22,18 @@ import {
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
+
+/** Track previous low-resource state to fire alert only on threshold crossing. */
+let _prevLowClams = false;
+let _prevLowTwigs = false;
+let _prevPeaceWarningPlayed = false;
+/** Guard to ensure permadeath save deletion only fires once. */
+let _permadeathDeleteFired = false;
 
 export interface PopulationResult {
   idleWorkers: number;
@@ -43,6 +52,7 @@ export function syncPopulationAndTimers(
   const w = world;
   store.clams.value = w.resources.clams;
   store.twigs.value = w.resources.twigs;
+  store.pearls.value = w.resources.pearls;
 
   // Resource income rate tracking: compute per-second deltas every 60 frames
   if (w.frameCount > 0 && w.frameCount % 60 === 0) {
@@ -85,12 +95,26 @@ export function syncPopulationAndTimers(
 
   // Sync auto-behavior toggles from UI store into game world
   w.autoBehaviors.gather = store.autoGatherEnabled.value;
+  w.autoBehaviors.build = store.autoBuildEnabled.value;
   w.autoBehaviors.defend = store.autoDefendEnabled.value;
   w.autoBehaviors.attack = store.autoAttackEnabled.value;
+  w.autoBehaviors.heal = store.autoHealEnabled.value;
   w.autoBehaviors.scout = store.autoScoutEnabled.value;
 
-  store.lowClams.value = w.resources.clams < 50;
-  store.lowTwigs.value = w.resources.twigs < 50;
+  const nowLowClams = w.resources.clams < 100;
+  const nowLowTwigs = w.resources.twigs < 50;
+  store.lowClams.value = nowLowClams;
+  store.lowTwigs.value = nowLowTwigs;
+
+  // Audio alert on threshold crossing (fire once, not every frame)
+  if (nowLowClams && !_prevLowClams) {
+    audio.alert();
+  }
+  if (nowLowTwigs && !_prevLowTwigs) {
+    audio.alert();
+  }
+  _prevLowClams = nowLowClams;
+  _prevLowTwigs = nowLowTwigs;
 
   // --- Control group counts ---
   const groupCounts: Record<number, number> = {};
@@ -111,6 +135,12 @@ export function syncPopulationAndTimers(
   let idleWorkers = 0;
   let armyUnits = 0;
 
+  // Per-type idle counts for contextual auto-behavior menu
+  let idleGatherers = 0;
+  let idleCombat = 0;
+  let idleHealers = 0;
+  let idleScouts = 0;
+
   for (let i = 0; i < allEntsForFood.length; i++) {
     const eid = allEntsForFood[i];
     if (FactionTag.faction[eid] !== Faction.Player) continue;
@@ -129,12 +159,25 @@ export function syncPopulationAndTimers(
     } else if (!hasComponent(w.ecs, eid, IsResource)) {
       // Non-building, non-resource player entities count as population
       curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
+      const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
       if (kind === EntityKind.Gatherer) {
-        if (UnitStateMachine.state[eid] === UnitState.Idle) {
+        if (isIdle) {
           idleWorkers++;
+          idleGatherers++;
         }
-      } else {
+      } else if (kind === EntityKind.Healer) {
         armyUnits++;
+        if (isIdle) idleHealers++;
+      } else {
+        // Combat units (including Scouts): Attack/Defend apply to all
+        armyUnits++;
+        if (isIdle) {
+          idleCombat++;
+          // Scout eligibility matches auto-behavior: any unit with speed >= 2.0
+          if (hasComponent(w.ecs, eid, Velocity) && Velocity.speed[eid] >= 2.0) {
+            idleScouts++;
+          }
+        }
       }
     }
   }
@@ -159,8 +202,14 @@ export function syncPopulationAndTimers(
   w.resources.maxFood = maxFoodCap;
   store.food.value = curFood + queuedFood;
   store.maxFood.value = maxFoodCap;
-  store.idleWorkerCount.value = idleWorkers;
+  store.idleWorkerCount.value = idleWorkers + idleCombat + idleHealers;
   store.armyCount.value = armyUnits;
+
+  // Per-type idle counts for contextual auto-behavior menu
+  store.idleGathererCount.value = idleGatherers;
+  store.idleCombatCount.value = idleCombat;
+  store.idleHealerCount.value = idleHealers;
+  store.idleScoutCount.value = idleScouts;
 
   // Track peak army
   if (armyUnits > w.stats.peakArmy) {
@@ -171,9 +220,25 @@ export function syncPopulationAndTimers(
   const peaceful = w.frameCount < w.peaceTimer;
   store.isPeaceful.value = peaceful;
   if (peaceful) {
-    store.peaceCountdown.value = Math.ceil((w.peaceTimer - w.frameCount) / 60);
+    const peaceSecondsLeft = Math.ceil((w.peaceTimer - w.frameCount) / 60);
+    store.peaceCountdown.value = peaceSecondsLeft;
+
+    // Peace warning: show alert banner when < 30 seconds remain
+    if (peaceSecondsLeft <= 30 && peaceSecondsLeft > 0) {
+      store.peaceWarningCountdown.value = peaceSecondsLeft;
+      // Tension audio cue: play once at the 30-second mark
+      if (!_prevPeaceWarningPlayed) {
+        audio.alert();
+        _prevPeaceWarningPlayed = true;
+      }
+    } else {
+      store.peaceWarningCountdown.value = -1;
+      _prevPeaceWarningPlayed = false;
+    }
   } else {
     store.peaceCountdown.value = -1;
+    store.peaceWarningCountdown.value = -1;
+    _prevPeaceWarningPlayed = false;
   }
 
   // --- Time display ---
@@ -183,6 +248,11 @@ export function syncPopulationAndTimers(
   const day = Math.floor(w.frameCount / DAY_FRAMES) + 1;
   store.gameDay.value = day;
   store.gameTimeDisplay.value = `Day ${day} - ${String(displayHours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}`;
+
+  // Reset permadeath guard when not in game-over (new game started)
+  if (w.state !== 'win' && w.state !== 'lose') {
+    _permadeathDeleteFired = false;
+  }
 
   // Game over stats
   if (w.state === 'win' || w.state === 'lose') {
@@ -224,10 +294,19 @@ export function syncPopulationAndTimers(
     }
     store.goRating.value = stars;
 
-    // Permadeath: delete save on loss
-    if (w.state === 'lose' && w.permadeath) {
-      localStorage.removeItem('pond-warfare-save');
+    // Permadeath: delete save on loss (guard to run only once)
+    if (w.state === 'lose' && w.permadeath && !_permadeathDeleteFired) {
+      _permadeathDeleteFired = true;
       store.hasSaveGame.value = false;
+      import('@/storage')
+        .then(({ getLatestSave, deleteSave }) =>
+          getLatestSave().then((save) => {
+            if (save) return deleteSave(save.id);
+          }),
+        )
+        .catch(() => {
+          /* best-effort cleanup */
+        });
     }
   }
 
@@ -269,6 +348,74 @@ export function syncPopulationAndTimers(
     });
   }
   store.globalProductionQueue.value = prodQueue;
+
+  // Base under attack detection: enemies within 400px of any player Lodge
+  const BASE_THREAT_RADIUS = 400;
+  const BASE_THREAT_RADIUS_SQ = BASE_THREAT_RADIUS * BASE_THREAT_RADIUS;
+  let baseAttacked = false;
+
+  // Find player lodges and enemy positions from allEntsForFood (already queried above)
+  const lodgePositions: { x: number; y: number }[] = [];
+  const enemyPositions: { x: number; y: number }[] = [];
+
+  for (let i = 0; i < allEntsForFood.length; i++) {
+    const eid = allEntsForFood[i];
+    if (Health.current[eid] <= 0) continue;
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    const faction = FactionTag.faction[eid] as Faction;
+
+    if (kind === EntityKind.Lodge && faction === Faction.Player) {
+      lodgePositions.push({ x: Position.x[eid], y: Position.y[eid] });
+    } else if (
+      faction === Faction.Enemy &&
+      !hasComponent(w.ecs, eid, IsBuilding) &&
+      !hasComponent(w.ecs, eid, IsResource)
+    ) {
+      enemyPositions.push({ x: Position.x[eid], y: Position.y[eid] });
+    }
+  }
+
+  for (const lodge of lodgePositions) {
+    for (const enemy of enemyPositions) {
+      const dx = lodge.x - enemy.x;
+      const dy = lodge.y - enemy.y;
+      if (dx * dx + dy * dy < BASE_THREAT_RADIUS_SQ) {
+        baseAttacked = true;
+        break;
+      }
+    }
+    if (baseAttacked) break;
+  }
+
+  store.baseUnderAttack.value = baseAttacked;
+
+  // --- Objective tracking: enemy nest counts ---
+  // Count alive PredatorNests each frame. totalEnemyNests is set once
+  // (on first non-zero observation) so that the HUD shows "0/N" from the start.
+  let aliveNests = 0;
+  for (let i = 0; i < allEntsForFood.length; i++) {
+    const eid = allEntsForFood[i];
+    if (EntityTypeTag.kind[eid] !== EntityKind.PredatorNest) continue;
+    if (Health.current[eid] > 0) aliveNests++;
+  }
+
+  // Track peak nest count (new nests can spawn via evolution, so don't freeze at first count)
+  if (aliveNests > store.totalEnemyNests.value) {
+    store.totalEnemyNests.value = aliveNests;
+  }
+
+  const total = store.totalEnemyNests.value;
+  const newDestroyed = total > 0 ? total - aliveNests : 0;
+
+  // Detect moment of destruction for pulse feedback
+  if (newDestroyed > store.destroyedEnemyNests.value) {
+    store.nestJustDestroyed.value = true;
+    // Clear the pulse after ~3 seconds (180 frames at 60fps)
+    setTimeout(() => {
+      store.nestJustDestroyed.value = false;
+    }, 3000);
+  }
+  store.destroyedEnemyNests.value = newDestroyed;
 
   return { idleWorkers, armyUnits, maxFoodCap };
 }

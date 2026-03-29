@@ -29,6 +29,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { spawnParticle } from '@/utils/particles';
 
 /**
  * Set of states that involve movement toward a target position.
@@ -71,7 +72,52 @@ export function movementSystem(world: GameWorld): void {
 
     const tx = UnitStateMachine.targetX[eid];
     const ty = UnitStateMachine.targetY[eid];
-    const speed = Velocity.speed[eid];
+    let speed = Velocity.speed[eid];
+
+    // Apply speed debuff from Trapper traps (50% slow)
+    if (Velocity.speedDebuffTimer[eid] > 0) {
+      speed *= 0.5;
+      Velocity.speedDebuffTimer[eid]--;
+    }
+
+    // Commander aura: speed bonus for buffed player units
+    if (world.commanderSpeedBuff.has(eid)) {
+      speed += world.commanderModifiers.auraSpeedBonus;
+    }
+
+    // Rally Cry: +30% speed to all player units while active
+    if (
+      FactionTag.faction[eid] === Faction.Player &&
+      world.rallyCryExpiry > 0 &&
+      world.frameCount < world.rallyCryExpiry
+    ) {
+      speed *= 1.3;
+    }
+
+    // Fortified Walls: enemies near player walls are slowed by 30%
+    if (world.tech.fortifiedWalls && FactionTag.faction[eid] === Faction.Enemy) {
+      const ex = Position.x[eid];
+      const ey = Position.y[eid];
+      const wallSlowRange = 80;
+      const wallCandidates = world.spatialHash
+        ? world.spatialHash.query(ex, ey, wallSlowRange)
+        : [];
+      for (let w = 0; w < wallCandidates.length; w++) {
+        const wid = wallCandidates[w];
+        if (
+          (EntityTypeTag.kind[wid] as EntityKind) === EntityKind.Wall &&
+          FactionTag.faction[wid] === Faction.Player &&
+          Health.current[wid] > 0
+        ) {
+          const wdx = Position.x[wid] - ex;
+          const wdy = Position.y[wid] - ey;
+          if (Math.sqrt(wdx * wdx + wdy * wdy) <= wallSlowRange) {
+            speed *= 0.7;
+            break;
+          }
+        }
+      }
+    }
 
     const dx = tx - Position.x[eid];
     const dy = ty - Position.y[eid];
@@ -133,7 +179,14 @@ export function movementSystem(world: GameWorld): void {
         // Yuka steering for any registered unit (positions synced in yukaManager.update)
         // Update Yuka target in case ECS target changed
         const isChasing = state === UnitState.AttackMove || state === UnitState.AttackMovePatrol;
-        world.yukaManager.setTarget(eid, tx, ty, isChasing);
+
+        // Use PursuitBehavior for intercept prediction when chasing a Yuka-registered target
+        const targetEnt = UnitStateMachine.targetEntity[eid];
+        if (isChasing && targetEnt !== -1 && world.yukaManager.has(targetEnt)) {
+          world.yukaManager.setPursuit(eid, targetEnt);
+        } else {
+          world.yukaManager.setTarget(eid, tx, ty, isChasing);
+        }
 
         // Update facing based on Yuka velocity
         const vel = world.yukaManager.getVelocity(eid);
@@ -171,7 +224,7 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
       break;
     case UnitState.GatherMove:
       UnitStateMachine.state[eid] = UnitState.Gathering;
-      UnitStateMachine.gatherTimer[eid] = GATHER_TIMER;
+      UnitStateMachine.gatherTimer[eid] = Math.round(GATHER_TIMER * world.gatherSpeedMod);
       break;
     case UnitState.BuildMove:
       UnitStateMachine.state[eid] = UnitState.Building;
@@ -190,27 +243,67 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
         // Use actual carried amount (may differ from GATHER_AMOUNT due to Tidal Harvest)
         const depositAmt = Carrying.resourceAmount[eid] || GATHER_AMOUNT;
 
-        // Floating text for returned resources
-        const resName = heldRes === ResourceType.Clams ? 'Clams' : 'Twigs';
-        const color = heldRes === ResourceType.Clams ? '#fde047' : '#f97316';
+        // Floating text for returned resources (slightly bigger life for visibility)
+        const resName =
+          heldRes === ResourceType.Clams
+            ? 'Clams'
+            : heldRes === ResourceType.Pearls
+              ? 'Pearls'
+              : 'Twigs';
+        const color =
+          heldRes === ResourceType.Clams
+            ? '#fde047'
+            : heldRes === ResourceType.Pearls
+              ? '#a5b4fc'
+              : '#f97316';
         world.floatingTexts.push({
           x: Position.x[eid],
-          y: Position.y[eid] - 20,
+          y: Position.y[eid] - 24,
           text: `+${depositAmt} ${resName}`,
           color,
-          life: 60,
+          life: 75,
         });
+
+        // Particle burst at the return building (lodge/nest) to celebrate deposit
+        const returnBld = UnitStateMachine.returnEntity[eid];
+        if (returnBld !== -1) {
+          const bx = Position.x[returnBld];
+          const by = Position.y[returnBld];
+          const pColor =
+            heldRes === ResourceType.Clams
+              ? '#fde047'
+              : heldRes === ResourceType.Pearls
+                ? '#a5b4fc'
+                : '#92400e';
+          for (let p = 0; p < 6; p++) {
+            const angle = (p / 6) * Math.PI * 2;
+            spawnParticle(
+              world,
+              bx + Math.cos(angle) * 8,
+              by - 10,
+              Math.cos(angle) * 1.5,
+              Math.sin(angle) * 1.5 - 0.5,
+              18,
+              pColor,
+              2,
+            );
+          }
+        }
 
         // Add resources to the correct faction's stockpile
         if (faction === Faction.Enemy) {
           if (heldRes === ResourceType.Clams) {
             world.enemyResources.clams += depositAmt;
-          } else {
+          } else if (heldRes === ResourceType.Twigs) {
             world.enemyResources.twigs += depositAmt;
           }
+          // Enemies don't gather pearls
         } else {
           if (heldRes === ResourceType.Clams) {
             world.resources.clams += depositAmt;
+          } else if (heldRes === ResourceType.Pearls) {
+            world.resources.pearls += depositAmt;
+            world.stats.pearlsEarned += depositAmt;
           } else {
             world.resources.twigs += depositAmt;
           }

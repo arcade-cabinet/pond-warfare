@@ -7,8 +7,10 @@
  * shift-click add/remove, and attack-move clicks.
  */
 
+import { showSelectBark } from '@/config/barks';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
+import type { EntityKind } from '@/types';
 
 export interface PointerState {
   x: number;
@@ -34,6 +36,7 @@ export interface PointerCallbacks {
   isEnemyFaction: (eid: number) => boolean;
   isBuildingEntity: (eid: number) => boolean;
   getEntityKind: (eid: number) => number;
+  getEntityPosition: (eid: number) => { x: number; y: number } | null;
   isEntityOnScreen: (eid: number) => boolean;
   getAllPlayerUnitsOfKind: (kind: number) => number[];
   selectEntity: (eid: number) => void;
@@ -372,6 +375,13 @@ export class PointerHandler {
           w.selection = [clicked];
           this.cb.selectEntity(clicked);
           w.isTracking = true;
+        }
+
+        // Selection bark
+        const pos = this.cb.getEntityPosition(clicked);
+        if (pos) {
+          const kind = this.cb.getEntityKind(clicked) as EntityKind;
+          showSelectBark(w, clicked, pos.x, pos.y, kind);
         }
       } else {
         // Clicked enemy or resource or neutral

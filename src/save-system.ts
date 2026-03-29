@@ -22,7 +22,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { type EntityKind, type Faction, UnitState } from '@/types';
+import { EntityKind, type Faction, UnitState } from '@/types';
 
 interface SavedEntity {
   kind: number;
@@ -48,9 +48,15 @@ interface SavedEntity {
 
 interface SaveData {
   version: 2;
-  resources: { clams: number; twigs: number; food: number; maxFood: number };
+  resources: { clams: number; twigs: number; pearls?: number; food: number; maxFood: number };
   enemyResources: { clams: number; twigs: number };
-  autoBehaviors: { gather: boolean; defend: boolean; attack: boolean };
+  autoBehaviors: {
+    gather: boolean;
+    defend: boolean;
+    attack: boolean;
+    build?: boolean;
+    heal?: boolean;
+  };
   tech: Record<string, boolean>;
   stats: {
     unitsKilled: number;
@@ -58,12 +64,19 @@ interface SaveData {
     resourcesGathered: number;
     buildingsBuilt: number;
     peakArmy: number;
+    pearlsEarned?: number;
   };
   frameCount: number;
   timeOfDay: number;
   gameSpeed: number;
   peaceTimer: number;
   entities: SavedEntity[];
+  enemyEvolution?: {
+    tier: number;
+    unlockedUnits: number[];
+    lastEvolutionFrame: number;
+  };
+  poisonTimers?: [number, number][];
 }
 
 /** Serialize the current game state to a JSON string. */
@@ -104,6 +117,12 @@ export function saveGame(world: GameWorld): string {
     gameSpeed: world.gameSpeed,
     peaceTimer: world.peaceTimer,
     entities,
+    enemyEvolution: {
+      tier: world.enemyEvolution.tier,
+      unlockedUnits: world.enemyEvolution.unlockedUnits.map((k) => k as number),
+      lastEvolutionFrame: world.enemyEvolution.lastEvolutionFrame,
+    },
+    poisonTimers: Array.from(world.poisonTimers.entries()),
   };
 
   return JSON.stringify(data);
@@ -143,6 +162,7 @@ export function loadGame(world: GameWorld, json: string): boolean {
   // Restore game state
   world.resources.clams = data.resources.clams;
   world.resources.twigs = data.resources.twigs;
+  world.resources.pearls = data.resources.pearls ?? 0;
   world.resources.food = data.resources.food;
   world.resources.maxFood = data.resources.maxFood;
 
@@ -157,6 +177,8 @@ export function loadGame(world: GameWorld, json: string): boolean {
     world.autoBehaviors.gather = data.autoBehaviors.gather;
     world.autoBehaviors.defend = data.autoBehaviors.defend;
     world.autoBehaviors.attack = data.autoBehaviors.attack;
+    world.autoBehaviors.build = data.autoBehaviors.build ?? false;
+    world.autoBehaviors.heal = data.autoBehaviors.heal ?? false;
   }
 
   // Restore peace timer (v2+)
@@ -175,6 +197,29 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.stats.resourcesGathered = data.stats.resourcesGathered;
   world.stats.buildingsBuilt = data.stats.buildingsBuilt;
   world.stats.peakArmy = data.stats.peakArmy;
+  world.stats.pearlsEarned = data.stats.pearlsEarned ?? 0;
+
+  // Restore enemy evolution state
+  if (data.enemyEvolution) {
+    world.enemyEvolution.tier = data.enemyEvolution.tier;
+    world.enemyEvolution.unlockedUnits = data.enemyEvolution.unlockedUnits.map(
+      (k) => k as EntityKind,
+    );
+    world.enemyEvolution.lastEvolutionFrame = data.enemyEvolution.lastEvolutionFrame;
+  } else {
+    // Old save without evolution data - reset to defaults
+    world.enemyEvolution.tier = 0;
+    world.enemyEvolution.unlockedUnits = [EntityKind.Gator, EntityKind.Snake];
+    world.enemyEvolution.lastEvolutionFrame = 0;
+  }
+
+  // Restore poison timers
+  world.poisonTimers.clear();
+  if (data.poisonTimers) {
+    for (const [eid, ticks] of data.poisonTimers) {
+      world.poisonTimers.set(eid, ticks);
+    }
+  }
 
   // Restore timing
   world.frameCount = data.frameCount;

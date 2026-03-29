@@ -1,5 +1,7 @@
 export { aiSystem } from './ai';
 export { autoBehaviorSystem } from './auto-behavior';
+export { autoBuildSystem } from './auto-build';
+export { autoTrainSystem } from './auto-train';
 export { buildingSystem } from './building';
 export { cleanupSystem } from './cleanup';
 export { collisionSystem } from './collision';

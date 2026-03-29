@@ -2,7 +2,7 @@
  * Keymap Tests
  *
  * Validates DEFAULT_KEYMAP structure, setKeymap merging,
- * and load/save with mock localStorage.
+ * and load/save with mock Capacitor Preferences.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -14,6 +14,15 @@ import {
   saveKeymapToStorage,
   setKeymap,
 } from '@/config/keymap';
+
+// Mock the native module so we don't need real Capacitor
+const mockPrefs: Record<string, string> = {};
+vi.mock('@/platform/native', () => ({
+  savePreference: vi.fn(async (key: string, value: string) => {
+    mockPrefs[key] = value;
+  }),
+  loadPreference: vi.fn(async (key: string) => mockPrefs[key] ?? null),
+}));
 
 describe('DEFAULT_KEYMAP', () => {
   it('should have all expected keys', () => {
@@ -109,39 +118,29 @@ describe('setKeymap / getKeymap', () => {
 });
 
 describe('loadKeymapFromStorage / saveKeymapToStorage', () => {
-  let mockStorage: Record<string, string>;
-
   beforeEach(() => {
-    mockStorage = {};
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn((key: string) => mockStorage[key] ?? null),
-      setItem: vi.fn((key: string, value: string) => {
-        mockStorage[key] = value;
-      }),
-      removeItem: vi.fn((key: string) => {
-        delete mockStorage[key];
-      }),
-    });
+    // Clear mock prefs
+    for (const key of Object.keys(mockPrefs)) {
+      delete mockPrefs[key];
+    }
     // Reset keymap to default
     setKeymap(DEFAULT_KEYMAP);
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
     setKeymap(DEFAULT_KEYMAP);
   });
 
-  it('should save current keymap to localStorage', () => {
+  it('should save current keymap to Preferences', async () => {
     setKeymap({ attackMove: 'z' });
-    saveKeymapToStorage();
-    expect(localStorage.setItem).toHaveBeenCalledWith('pond-warfare-keymap', expect.any(String));
-    const stored = JSON.parse(mockStorage['pond-warfare-keymap']);
+    await saveKeymapToStorage();
+    const stored = JSON.parse(mockPrefs['pond-warfare-keymap']);
     expect(stored.attackMove).toBe('z');
   });
 
-  it('should load keymap from localStorage', () => {
-    mockStorage['pond-warfare-keymap'] = JSON.stringify({ halt: 'x', speed: 'g' });
-    loadKeymapFromStorage();
+  it('should load keymap from Preferences', async () => {
+    mockPrefs['pond-warfare-keymap'] = JSON.stringify({ halt: 'x', speed: 'g' });
+    await loadKeymapFromStorage();
     const keymap = getKeymap();
     expect(keymap.halt).toBe('x');
     expect(keymap.speed).toBe('g');
@@ -149,14 +148,14 @@ describe('loadKeymapFromStorage / saveKeymapToStorage', () => {
     expect(keymap.attackMove).toBe('a');
   });
 
-  it('should handle missing localStorage entry gracefully', () => {
-    loadKeymapFromStorage();
+  it('should handle missing Preferences entry gracefully', async () => {
+    await loadKeymapFromStorage();
     expect(getKeymap().attackMove).toBe('a');
   });
 
-  it('should handle invalid JSON in localStorage gracefully', () => {
-    mockStorage['pond-warfare-keymap'] = '{invalid json!!!';
-    expect(() => loadKeymapFromStorage()).not.toThrow();
+  it('should handle invalid JSON in Preferences gracefully', async () => {
+    mockPrefs['pond-warfare-keymap'] = '{invalid json!!!';
+    await expect(loadKeymapFromStorage()).resolves.toBeUndefined();
     // Keymap should remain unchanged
     expect(getKeymap().attackMove).toBe('a');
   });

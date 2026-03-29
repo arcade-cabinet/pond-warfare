@@ -3,10 +3,11 @@
  *
  * Handles renderEntity() function, sprite management, health bars,
  * selection brackets, veteran stars, carried resource indicators,
- * and construction progress overlays.
+ * construction progress overlays, veterancy recoloring, and status
+ * effect tints (champion, poison, enrage).
  */
 
-import { Sprite, Text } from 'pixi.js';
+import { Sprite, Text, Texture } from 'pixi.js';
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { CB_PALETTE, PALETTE } from '@/constants';
@@ -21,8 +22,15 @@ import {
   Sprite as SpriteComp,
   Veterancy,
 } from '@/ecs/components';
-import { type EntityKind, ResourceType, type SpriteId } from '@/types';
+import type { GameWorld } from '@/ecs/world';
+import {
+  EntityKind,
+  type EntityKind as EntityKindType,
+  ResourceType,
+  type SpriteId,
+} from '@/types';
 import { entityScales } from '../animations';
+import { getRecoloredSprite, type RecolorPreset, veterancyPreset } from '../recolor';
 import {
   colorToHex,
   drawStar,
@@ -34,7 +42,82 @@ import {
   getTexture,
   lerpTint,
   PROGRESS_STYLE,
+  setDestroyRecoloredTexturesCallback,
 } from './init';
+
+// ---------------------------------------------------------------------------
+// Recolored texture cache: cacheKey -> PixiJS Texture
+// ---------------------------------------------------------------------------
+const recoloredTextureCache = new Map<string, Texture>();
+
+/** Get or create a PixiJS Texture for a recolored sprite. */
+function getRecoloredTexture(
+  spriteId: number,
+  preset: RecolorPreset,
+  sourceCanvas: HTMLCanvasElement,
+): Texture {
+  const key = `${spriteId}:${preset}`;
+  let tex = recoloredTextureCache.get(key);
+  if (!tex) {
+    const recoloredCanvas = getRecoloredSprite(spriteId, preset, sourceCanvas);
+    tex = Texture.from({ resource: recoloredCanvas, antialias: false });
+    recoloredTextureCache.set(key, tex);
+  }
+  return tex;
+}
+
+// ---------------------------------------------------------------------------
+// Sprite pool: reuse Sprite objects instead of create/destroy per entity
+// ---------------------------------------------------------------------------
+const spritePool: Sprite[] = [];
+
+/** Acquire a sprite from the pool or create a new one. */
+export function acquireSprite(tex: Texture): Sprite {
+  const spr = spritePool.pop();
+  if (spr) {
+    spr.texture = tex;
+    spr.visible = true;
+    spr.alpha = 1;
+    spr.tint = 0xffffff;
+    spr.scale.set(1, 1);
+    return spr;
+  }
+  const newSpr = new Sprite(tex);
+  newSpr.anchor.set(0.5, 0.5);
+  return newSpr;
+}
+
+/** Return a sprite to the pool instead of destroying it. */
+export function releaseSprite(spr: Sprite): void {
+  spr.visible = false;
+  spritePool.push(spr);
+}
+
+// ---------------------------------------------------------------------------
+// World reference (set each frame from renderEntity caller)
+// ---------------------------------------------------------------------------
+let _world: GameWorld | null = null;
+let _spriteCanvases: Map<SpriteId, HTMLCanvasElement> | null = null;
+
+/** Set world reference for status-effect queries during rendering. */
+export function setEntityRendererContext(
+  world: GameWorld,
+  spriteCanvases: Map<SpriteId, HTMLCanvasElement>,
+): void {
+  _world = world;
+  _spriteCanvases = spriteCanvases;
+}
+
+/** Clear the recolored texture cache (call on game restart). */
+export function clearRecoloredTextureCache(): void {
+  for (const tex of recoloredTextureCache.values()) {
+    tex.destroy(true);
+  }
+  recoloredTextureCache.clear();
+}
+
+// Register cleanup callback so destroyPixiApp can clear our cache
+setDestroyRecoloredTexturesCallback(clearRecoloredTextureCache);
 
 /** Render a single entity: sprite, health bar, selection brackets, etc. */
 export function renderEntity(eid: number, frameCount: number): void {
@@ -50,11 +133,27 @@ export function renderEntity(eid: number, frameCount: number): void {
 
   const ex = Position.x[eid];
   const ey = Position.y[eid];
+
+  // Viewport culling: skip rendering for off-screen entities
+  if (_world) {
+    const margin = 64;
+    if (
+      ex < _world.camX - margin ||
+      ex > _world.camX + _world.viewWidth + margin ||
+      ey < _world.camY - margin ||
+      ey > _world.camY + _world.viewHeight + margin
+    ) {
+      const spr = getEntitySprites().get(eid);
+      if (spr) spr.visible = false;
+      return;
+    }
+  }
+
   const sw = SpriteComp.width[eid];
   const sh = SpriteComp.height[eid];
   const yOff = SpriteComp.yOffset[eid];
   const facingLeft = SpriteComp.facingLeft[eid] === 1;
-  const kind = EntityTypeTag.kind[eid] as EntityKind;
+  const kind = EntityTypeTag.kind[eid] as EntityKindType;
   const def = ENTITY_DEFS[kind];
   const isBuilding = def.isBuilding;
   const isResource = def.isResource;
@@ -64,15 +163,31 @@ export function renderEntity(eid: number, frameCount: number): void {
   const flashTimer = Health.flashTimer[eid];
   const progress = isBuilding ? Building.progress[eid] : 100;
 
-  // --- Get or create sprite ---
+  // --- Determine effective texture (may be recolored for veterans) ---
+  let effectiveTex = tex;
+  const vetRank = !isBuilding && !isResource ? (Veterancy.rank[eid] ?? 0) : 0;
+  if (vetRank > 0 && _spriteCanvases) {
+    const preset = veterancyPreset(vetRank);
+    if (preset) {
+      const sourceCanvas = _spriteCanvases.get(spriteId);
+      if (sourceCanvas) {
+        effectiveTex = getRecoloredTexture(spriteId, preset, sourceCanvas);
+      }
+    }
+  }
+
+  // --- Get or create sprite (pooled) ---
   let spr = entitySprites.get(eid);
   if (!spr) {
-    spr = new Sprite(tex);
-    spr.anchor.set(0.5, 0.5);
+    spr = acquireSprite(effectiveTex);
     entitySprites.set(eid, spr);
     entityLayer.addChild(spr);
-  } else if (spr.texture !== tex) {
-    spr.texture = tex;
+  } else {
+    if (spr.texture !== effectiveTex) {
+      spr.texture = effectiveTex;
+    }
+    // Re-show sprite that may have been hidden by viewport culling
+    spr.visible = true;
   }
 
   // --- Position and Y-sort ---
@@ -92,13 +207,15 @@ export function renderEntity(eid: number, frameCount: number): void {
   }
   spr.scale.set(scaleX, scaleY);
 
-  // --- Alpha / flash ---
+  // --- Alpha / flash / status effect tints ---
   if (flashTimer > 0) {
     spr.alpha = 0.7;
     spr.tint = lerpTint(0xffffff, 0xff3c3c, Math.min(1, flashTimer / 12));
   } else {
     spr.alpha = 1;
-    spr.tint = 0xffffff;
+    // Determine tint from status effects
+    const statusTint = getStatusTint(eid, kind);
+    spr.tint = statusTint;
   }
 
   // --- Construction reveal ---
@@ -233,4 +350,42 @@ export function renderEntity(eid: number, frameCount: number): void {
       buildingProgressTexts.delete(eid);
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Status-effect tint helper
+// ---------------------------------------------------------------------------
+
+// Tint constants for status effects (PixiJS multiply-style tints)
+const TINT_CHAMPION = 0xcc88ff; // Purple tint for champion enemies
+const TINT_POISONED = 0x66ee66; // Green tint for poisoned units
+const TINT_ENRAGED = 0xff6644; // Red-orange tint for enraged BossCroc
+const TINT_NORMAL = 0xffffff; // No tint
+
+/**
+ * Determine the PixiJS tint color for an entity based on active status effects.
+ * Priority: enraged > poisoned > champion > normal.
+ */
+function getStatusTint(eid: number, kind: EntityKindType): number {
+  if (!_world) return TINT_NORMAL;
+
+  // Enraged BossCroc (below 30% HP)
+  if (kind === EntityKind.BossCroc) {
+    const maxHp = Health.max[eid];
+    if (maxHp > 0 && Health.current[eid] < maxHp * 0.3) {
+      return TINT_ENRAGED;
+    }
+  }
+
+  // Poisoned (VenomSnake poison)
+  if (_world.poisonTimers.has(eid)) {
+    return TINT_POISONED;
+  }
+
+  // Champion enemy
+  if (_world.championEnemies.has(eid)) {
+    return TINT_CHAMPION;
+  }
+
+  return TINT_NORMAL;
 }

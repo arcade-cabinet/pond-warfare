@@ -33,6 +33,19 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'catapult', id: SpriteId.Catapult },
   { name: 'wall', id: SpriteId.Wall },
   { name: 'scout_post', id: SpriteId.ScoutPost },
+  { name: 'armored_gator', id: SpriteId.ArmoredGator },
+  { name: 'venom_snake', id: SpriteId.VenomSnake },
+  { name: 'swamp_drake', id: SpriteId.SwampDrake },
+  { name: 'siege_turtle', id: SpriteId.SiegeTurtle },
+  { name: 'alpha_predator', id: SpriteId.AlphaPredator },
+  { name: 'pearl_bed', id: SpriteId.PearlBed },
+  { name: 'fishing_hut', id: SpriteId.FishingHut },
+  { name: 'herbalist_hut', id: SpriteId.HerbalistHut },
+  { name: 'swimmer', id: SpriteId.Swimmer },
+  { name: 'trapper', id: SpriteId.Trapper },
+  { name: 'commander', id: SpriteId.Commander },
+  { name: 'frog', id: SpriteId.Frog },
+  { name: 'fish', id: SpriteId.Fish },
 ];
 
 const LARGE_TYPES = new Set([
@@ -47,6 +60,10 @@ const LARGE_TYPES = new Set([
   'catapult',
   'wall',
   'scout_post',
+  'siege_turtle',
+  'alpha_predator',
+  'fishing_hut',
+  'herbalist_hut',
 ]);
 
 /**
@@ -425,6 +442,321 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(10, 26, 4, 4, PALETTE.mudDark);
     rect(18, 26, 4, 4, PALETTE.mudDark);
     rect(6, 28, 20, 2, PALETTE.mudLight);
+  } else if (type === 'armored_gator') {
+    // Bulkier body - wider and darker than regular gator
+    rect(2, 9, 12, 5, '#0f4a28'); // Darker green base
+    rect(14, 10, 2, 3, '#0f4a28'); // Thick tail
+    rect(0, 10, 4, 4, PALETTE.gatorLight); // Head
+    p(1, 9, PALETTE.gatorEye);
+    // Teeth
+    p(0, 13, '#ffffff');
+    p(1, 13, '#ffffff');
+    rect(2, 14, 3, 1, PALETTE.gatorLight);
+    rect(10, 14, 3, 1, PALETTE.gatorLight);
+    // Heavy armor plates - larger and brighter to read at scale
+    rect(3, 7, 3, 3, PALETTE.stoneL); // Front plate
+    rect(7, 7, 3, 3, PALETTE.stoneL); // Mid plate
+    rect(11, 8, 3, 2, PALETTE.stoneL); // Back plate
+    // Plate detail (rivet dots)
+    p(4, 8, '#d4d4d8');
+    p(8, 8, '#d4d4d8');
+    p(12, 9, '#d4d4d8');
+    // Dark plate edges for depth
+    rect(3, 10, 3, 1, PALETTE.stone);
+    rect(7, 10, 3, 1, PALETTE.stone);
+    rect(11, 10, 3, 1, PALETTE.stone);
+  } else if (type === 'venom_snake') {
+    // Purple/magenta snake body
+    const venomBase = '#a855f7';
+    const venomStripe = '#7c3aed';
+    rect(4, 12, 8, 2, venomBase);
+    rect(2, 10, 4, 2, venomBase);
+    rect(10, 10, 4, 2, venomBase);
+    rect(12, 8, 2, 2, venomBase);
+    p(13, 8, PALETTE.black); // Eye
+    p(14, 9, '#f87171'); // Red tongue
+    // Teeth detail
+    p(14, 10, '#ffffff');
+    // Dripping venom fangs (green pixels at mouth)
+    p(14, 11, '#22c55e');
+    p(15, 10, '#22c55e');
+    // Stripe pattern
+    p(5, 12, venomStripe);
+    p(7, 12, venomStripe);
+    p(9, 12, venomStripe);
+    // Scale highlights
+    p(6, 11, '#c084fc');
+    p(10, 11, '#c084fc');
+  } else if (type === 'swamp_drake') {
+    // Lizard body - centered higher to make room for large wings
+    rect(4, 8, 8, 4, PALETTE.gatorBase);
+    rect(12, 9, 3, 2, PALETTE.gatorBase); // Tail
+    rect(1, 9, 3, 3, PALETTE.gatorLight); // Head
+    p(2, 8, '#ff0000'); // Red eye
+    p(2, 9, '#ff4444'); // Eye glow
+    // Legs
+    rect(5, 12, 2, 2, PALETTE.gatorLight);
+    rect(10, 12, 2, 2, PALETTE.gatorLight);
+    // LARGE wings - clearly visible bat-like shape
+    // Left wing
+    rect(3, 3, 2, 5, '#2d6a4f'); // Wing bone
+    rect(1, 4, 4, 4, '#40916c'); // Wing membrane
+    p(0, 5, '#40916c');
+    p(0, 6, '#40916c');
+    p(1, 3, '#52b788'); // Wing tip highlight
+    // Right wing
+    rect(11, 3, 2, 5, '#2d6a4f'); // Wing bone
+    rect(11, 4, 4, 4, '#40916c'); // Wing membrane
+    p(15, 5, '#40916c');
+    p(15, 6, '#40916c');
+    p(14, 3, '#52b788'); // Wing tip highlight
+    // Wing connecting to body
+    rect(5, 7, 6, 1, '#2d6a4f');
+  } else if (type === 'siege_turtle') {
+    // Massive shell - clear circular shape with hexagonal pattern
+    circle(16, 16, 12, '#3d2b1f'); // Dark shell base
+    circle(16, 16, 10, PALETTE.stone); // Stone shell
+    // Hexagonal shell plates (clear pattern at 32x32)
+    rect(12, 10, 4, 4, '#64748b');
+    rect(17, 10, 4, 4, '#64748b');
+    rect(10, 15, 4, 4, '#64748b');
+    rect(15, 15, 4, 4, '#64748b');
+    rect(20, 15, 4, 4, '#64748b');
+    rect(12, 20, 4, 4, '#64748b');
+    rect(17, 20, 4, 4, '#64748b');
+    // Shell plate highlights
+    p(14, 12, PALETTE.stoneL);
+    p(19, 12, PALETTE.stoneL);
+    p(17, 17, PALETTE.stoneL);
+    // Stubby legs (clearly visible)
+    rect(7, 22, 4, 4, PALETTE.gatorLight);
+    rect(21, 22, 4, 4, PALETTE.gatorLight);
+    rect(7, 8, 4, 4, PALETTE.gatorLight);
+    rect(21, 8, 4, 4, PALETTE.gatorLight);
+    // Head extending forward with battering ram
+    rect(0, 13, 10, 6, PALETTE.gatorBase);
+    rect(1, 14, 2, 2, PALETTE.gatorLight); // Snout
+    p(3, 13, PALETTE.gatorEye); // Eye
+    // Battering ram (iron-tipped log)
+    rect(0, 15, 3, 2, '#78350f');
+    p(0, 15, PALETTE.stoneL); // Iron tip
+    p(0, 16, PALETTE.stoneL);
+  } else if (type === 'alpha_predator') {
+    // Massive gator body (larger than BossCroc)
+    rect(2, 14, 28, 10, PALETTE.gatorBase);
+    for (let i = 2; i < 30; i += 2) p(i, 13, PALETTE.gatorLight);
+    // Scale highlights
+    p(8, 16, '#34d399');
+    p(14, 15, '#34d399');
+    p(20, 16, '#34d399');
+    p(26, 15, '#34d399');
+    // Head
+    rect(0, 16, 6, 8, PALETTE.gatorLight);
+    // Glowing bright red eyes
+    p(1, 15, '#ff0000');
+    p(4, 15, '#ff0000');
+    // Eye glow effect
+    p(1, 14, '#ff4444');
+    p(4, 14, '#ff4444');
+    // Teeth
+    p(0, 23, '#ffffff');
+    p(1, 23, '#ffffff');
+    p(4, 23, '#ffffff');
+    p(5, 23, '#ffffff');
+    // Tail
+    rect(28, 16, 4, 4, PALETTE.gatorBase);
+    // Armor plates (heavier than BossCroc)
+    for (let i = 6; i < 26; i += 4) {
+      rect(i, 12, 3, 2, PALETTE.stone);
+      rect(i, 10, 3, 1, PALETTE.stoneL);
+    }
+    // Crown of bone spikes (white pixels on head)
+    p(1, 12, '#ffffff');
+    p(3, 11, '#ffffff');
+    p(5, 12, '#ffffff');
+    p(2, 10, '#e2e8f0');
+    p(4, 10, '#e2e8f0');
+    // Legs
+    rect(6, 24, 4, 2, PALETTE.gatorLight);
+    rect(22, 24, 4, 2, PALETTE.gatorLight);
+  } else if (type === 'pearl_bed') {
+    // Shallow water with iridescent pearls
+    circle(8, 10, 6, PALETTE.waterShallow);
+    // Pearl clusters (white/pink)
+    circle(6, 8, 2, '#e2e8f0');
+    p(6, 8, '#fce7f3');
+    circle(10, 11, 2, '#e2e8f0');
+    p(10, 11, '#fce7f3');
+    circle(7, 12, 1, '#e2e8f0');
+    p(7, 12, '#fce7f3');
+    // Shell bed around base
+    rect(4, 13, 3, 1, PALETTE.clamShell);
+    rect(9, 13, 3, 1, PALETTE.clamShell);
+  } else if (type === 'fishing_hut') {
+    // Stilted hut over water
+    rect(8, 14, 16, 12, PALETTE.reedBrown);
+    rect(6, 12, 20, 2, PALETTE.mudDark);
+    // Stilts into water
+    rect(10, 26, 2, 6, PALETTE.reedBrown);
+    rect(20, 26, 2, 6, PALETTE.reedBrown);
+    // Water below
+    rect(6, 28, 20, 4, PALETTE.waterShallow);
+    // Roof
+    rect(6, 8, 20, 4, PALETTE.mudLight);
+    // Doorway
+    rect(14, 18, 4, 8, PALETTE.black);
+    p(15, 19, DOORWAY_GLOW);
+    p(16, 19, DOORWAY_GLOW);
+    // Fish on rack
+    rect(22, 14, 2, 4, PALETTE.waterMid);
+  } else if (type === 'herbalist_hut') {
+    // Small round hut with green roof
+    circle(16, 20, 10, PALETTE.mudDark);
+    for (let i = 0; i < 30; i++)
+      p(8 + Math.random() * 16, 12 + Math.random() * 16, PALETTE.mudLight);
+    // Green leaf roof
+    rect(8, 8, 16, 6, PALETTE.reedGreen);
+    rect(6, 10, 20, 4, PALETTE.reedGreen);
+    // Leaf highlights
+    for (let i = 0; i < 8; i++) p(8 + Math.random() * 14, 8 + Math.random() * 6, '#86efac');
+    // Doorway
+    rect(13, 22, 6, 8, PALETTE.black);
+    p(15, 23, DOORWAY_GLOW);
+    p(16, 23, DOORWAY_GLOW);
+    // Herb bundles hanging (green dots near door)
+    p(10, 16, '#22c55e');
+    p(22, 16, '#22c55e');
+    p(11, 18, '#4ade80');
+    p(21, 18, '#4ade80');
+  } else if (type === 'swimmer') {
+    // Otter in swimming pose - horizontal body with water highlights
+    // Shadow under body
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(3, 12, 10, 1);
+    // Water splash highlights around body
+    p(2, 10, '#38bdf8');
+    p(13, 10, '#38bdf8');
+    p(1, 8, '#38bdf8');
+    p(14, 8, '#38bdf8');
+    p(3, 12, '#38bdf8');
+    p(12, 12, '#38bdf8');
+    // Horizontal otter body (swimming pose)
+    rect(4, 7, 8, 4, PALETTE.otterBase);
+    rect(5, 8, 6, 2, PALETTE.otterBelly);
+    // Head (front)
+    rect(11, 6, 3, 4, PALETTE.otterBase);
+    p(12, 6, PALETTE.black); // Eye
+    p(13, 7, PALETTE.otterNose); // Nose
+    // Flippers out
+    rect(5, 5, 2, 2, PALETTE.otterBase); // Top flipper
+    rect(5, 11, 2, 2, PALETTE.otterBase); // Bottom flipper
+    rect(9, 5, 2, 2, PALETTE.otterBase); // Top flipper
+    rect(9, 11, 2, 2, PALETTE.otterBase); // Bottom flipper
+    // Tail
+    rect(2, 8, 2, 2, PALETTE.otterBase);
+    rect(1, 9, 1, 1, PALETTE.otterBase);
+  } else if (type === 'trapper') {
+    // Otter with a net/rope item
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline
+    rect(4, 3, 1, 10, OTTER_OUTLINE);
+    rect(12, 3, 1, 10, OTTER_OUTLINE);
+    rect(5, 1, 6, 1, OTTER_OUTLINE);
+    // Otter body base (same as gatherer)
+    rect(5, 4, 6, 8, PALETTE.otterBase);
+    rect(6, 5, 4, 6, PALETTE.otterBelly);
+    rect(5, 2, 6, 4, PALETTE.otterBase);
+    p(6, 3, PALETTE.black);
+    p(9, 3, PALETTE.black);
+    p(7, 4, PALETTE.otterNose);
+    p(8, 4, PALETTE.otterNose);
+    // Nose highlight
+    p(8, 4, OTTER_NOSE_HIGHLIGHT);
+    rect(4, 5, 1, 4, PALETTE.otterBase);
+    rect(11, 5, 1, 4, PALETTE.otterBase);
+    rect(5, 12, 2, 2, PALETTE.otterBase);
+    rect(9, 12, 2, 2, PALETTE.otterBase);
+    rect(11, 10, 3, 2, PALETTE.otterBase);
+    // Rope/net item in hands (amber colored)
+    rect(2, 5, 3, 1, '#f59e0b');
+    rect(1, 6, 1, 3, '#f59e0b');
+    rect(4, 6, 1, 3, '#f59e0b');
+    rect(2, 8, 3, 1, '#f59e0b');
+    // Net cross-hatch pattern
+    p(2, 6, '#d97706');
+    p(3, 7, '#d97706');
+    p(2, 8, '#d97706');
+  } else if (type === 'commander') {
+    // Commander Otter: gatherer body + gold crown + blue cape
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline around body
+    rect(4, 3, 1, 10, OTTER_OUTLINE);
+    rect(12, 3, 1, 10, OTTER_OUTLINE);
+    rect(5, 1, 6, 1, OTTER_OUTLINE);
+    rect(5, 12, 1, 2, OTTER_OUTLINE);
+    rect(11, 12, 1, 2, OTTER_OUTLINE);
+    // Otter base body (same as gatherer)
+    rect(5, 4, 6, 8, PALETTE.otterBase);
+    rect(6, 5, 4, 6, PALETTE.otterBelly);
+    rect(5, 2, 6, 4, PALETTE.otterBase);
+    // Face
+    p(6, 3, PALETTE.black);
+    p(9, 3, PALETTE.black);
+    p(7, 4, PALETTE.otterNose);
+    p(8, 4, PALETTE.otterNose);
+    p(8, 4, OTTER_NOSE_HIGHLIGHT);
+    // Arms
+    rect(4, 5, 1, 4, PALETTE.otterBase);
+    rect(11, 5, 1, 4, PALETTE.otterBase);
+    // Legs & tail
+    rect(5, 12, 2, 2, PALETTE.otterBase);
+    rect(9, 12, 2, 2, PALETTE.otterBase);
+    rect(11, 10, 3, 2, PALETTE.otterBase);
+    // Gold crown/helmet (3 bright gold pixels on head)
+    p(6, 1, '#fbbf24');
+    p(8, 0, '#fbbf24');
+    p(10, 1, '#fbbf24');
+    // Crown band
+    rect(6, 2, 5, 1, '#fbbf24');
+    // Blue cape flowing behind (2px wide, 4px tall)
+    rect(12, 6, 2, 4, '#3b82f6');
+    rect(13, 10, 1, 2, '#3b82f6');
+    // Cape highlight
+    p(12, 7, '#60a5fa');
+  } else if (type === 'frog') {
+    // Tiny green blob (4x4 green with 2 dark eyes)
+    rect(6, 8, 4, 4, '#22c55e');
+    rect(5, 9, 6, 2, '#22c55e');
+    // Lighter belly
+    rect(7, 10, 2, 1, '#86efac');
+    // Eyes
+    p(7, 8, PALETTE.black);
+    p(9, 8, PALETTE.black);
+    // Front legs
+    p(5, 11, '#22c55e');
+    p(10, 11, '#22c55e');
+    // Back legs (splayed)
+    p(5, 12, '#166534');
+    p(10, 12, '#166534');
+  } else if (type === 'fish') {
+    // Small blue/silver horizontal shape (6x3) with tail fin
+    rect(5, 7, 6, 3, '#94a3b8');
+    // Blue top stripe
+    rect(5, 7, 6, 1, '#38bdf8');
+    // Tail fin
+    rect(3, 6, 2, 2, '#60a5fa');
+    rect(3, 9, 2, 2, '#60a5fa');
+    // Eye
+    p(10, 8, PALETTE.black);
+    // Belly highlight
+    p(7, 9, '#e2e8f0');
+    p(8, 9, '#e2e8f0');
+  } else {
+    throw new Error(`Unhandled sprite type: ${type}`);
   }
 
   // Scale up with nearest-neighbour (no smoothing)
@@ -459,19 +791,10 @@ export function generateAllSprites(): {
 }
 
 /** Convenience: get the sprite canvas dimensions for a given SpriteId. */
-const LARGE_SPRITE_IDS = new Set<SpriteId>([
-  SpriteId.Lodge,
-  SpriteId.Burrow,
-  SpriteId.Armory,
-  SpriteId.Tower,
-  SpriteId.PredatorNest,
-  SpriteId.Rubble,
-  SpriteId.Watchtower,
-  SpriteId.BossCroc,
-  SpriteId.Catapult,
-  SpriteId.Wall,
-  SpriteId.ScoutPost,
-]);
+/** Derived from LARGE_TYPES + SPRITE_NAMES so both registries stay in sync. */
+const LARGE_SPRITE_IDS = new Set<SpriteId>(
+  SPRITE_NAMES.filter(({ name }) => LARGE_TYPES.has(name)).map(({ id }) => id),
+);
 
 export function getSpriteSize(id: SpriteId): { width: number; height: number } {
   const isLarge = LARGE_SPRITE_IDS.has(id);
