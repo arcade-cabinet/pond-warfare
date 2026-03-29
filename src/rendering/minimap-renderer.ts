@@ -78,7 +78,7 @@ export function drawMinimap(
   }
 
   // Sample explored canvas to check visibility for enemy entities
-  const exploredCtx = exploredCanvas.getContext('2d');
+  const exploredCtx = exploredCanvas.getContext('2d', { willReadFrequently: true });
   let exploredData: ImageData | null = null;
   const ew = exploredCanvas.width;
   const eh = exploredCanvas.height;

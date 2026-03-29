@@ -57,9 +57,12 @@ export function gatheringSystem(world: GameWorld): void {
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const faction = FactionTag.faction[eid] as Faction;
 
-    // --- Idle auto-gather (lines 1627-1639) ---
-    // Both player and enemy gatherers auto-gather when idle near resources
-    if (state === UnitState.Idle && kind === EntityKind.Gatherer && world.frameCount % 90 === 0) {
+    // --- Idle auto-gather ---
+    // Player gatherers only auto-gather when autoBehaviors.gather is enabled
+    // Enemy gatherers always auto-gather (AI economy)
+    const canAutoGather =
+      faction === Faction.Enemy || world.autoBehaviors.gather;
+    if (state === UnitState.Idle && kind === EntityKind.Gatherer && canAutoGather && world.frameCount % 90 === 0) {
       // Only auto-gather if not holding resources
       if (Carrying.resourceType[eid] === ResourceType.None) {
         const ex = Position.x[eid];

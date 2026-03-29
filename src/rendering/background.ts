@@ -281,7 +281,7 @@ export function buildExploredCanvas(): {
   const exploredCanvas = document.createElement('canvas');
   exploredCanvas.width = Math.ceil(WORLD_WIDTH / 16);
   exploredCanvas.height = Math.ceil(WORLD_HEIGHT / 16);
-  const exploredCtx = exploredCanvas.getContext('2d')!;
+  const exploredCtx = exploredCanvas.getContext('2d', { willReadFrequently: true })!;
   exploredCtx.fillStyle = '#000';
   exploredCtx.fillRect(0, 0, exploredCanvas.width, exploredCanvas.height);
   return { exploredCanvas, exploredCtx };

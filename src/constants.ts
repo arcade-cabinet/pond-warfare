@@ -23,9 +23,9 @@ export const STARTING_TWIGS = 50;
 
 export const ENEMY_STARTING_CLAMS = 500;
 export const ENEMY_STARTING_TWIGS = 200;
-export const ENEMY_GATHERER_SPAWN_INTERVAL = 1200;
+export const ENEMY_GATHERER_SPAWN_INTERVAL = 900; // Faster early eco (was 1200)
 export const ENEMY_GATHERER_COST = 50;
-export const ENEMY_MAX_GATHERERS_PER_NEST = 3;
+export const ENEMY_MAX_GATHERERS_PER_NEST = 4; // More gatherers for stronger eco
 export const ENEMY_GATHERER_RADIUS = 500;
 
 // Enemy AI building construction
@@ -48,10 +48,18 @@ export const ENEMY_TRAIN_TIME = 240; // Frames to train one unit
 
 // Enemy AI attack decision-making
 export const ENEMY_ATTACK_CHECK_INTERVAL = 600; // Check every 10 seconds
-export const ENEMY_ARMY_ATTACK_THRESHOLD = 5; // Min army size to attack
+export const ENEMY_ARMY_ATTACK_THRESHOLD = 5; // Min army size to attack (early game)
 export const ENEMY_RETREAT_HP_PERCENT = 0.2; // Retreat below 20% HP
 export const ENEMY_SCOUT_INTERVAL = 3600; // Send scout every 60 seconds
 export const ENEMY_RALLY_RADIUS = 150; // Rally point radius for grouping
+
+// Enemy AI difficulty scaling over time
+export const ENEMY_MID_GAME_FRAME = 18000; // 5 minutes (300s * 60fps)
+export const ENEMY_LATE_GAME_FRAME = 36000; // 10 minutes (600s * 60fps)
+export const ENEMY_LATE_TRAIN_INTERVAL = 180; // Faster training checks in late game
+export const ENEMY_LATE_ATTACK_THRESHOLD = 3; // Attack with smaller armies late game
+export const ENEMY_MAX_NESTS_LATE = 5; // Allow more expansion nests in late game
+export const ENEMY_LATE_BUILD_INTERVAL = 1200; // Faster building checks in late game
 
 export const PALETTE = {
   otterBase: '#78350f',
