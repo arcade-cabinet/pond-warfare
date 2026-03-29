@@ -8,6 +8,7 @@
 
 import { PALETTE } from '@/constants';
 import { SpriteId } from '@/types';
+import { registerSpriteTexture } from './pixi-app';
 
 /** Names used internally to map to SpriteId enum values. */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
@@ -208,6 +209,8 @@ export function generateAllSprites(): {
   for (const { name, id } of SPRITE_NAMES) {
     const canvas = generateSpriteCanvas(name);
     canvases.set(id, canvas);
+    // Register as a PixiJS Texture for the main game renderer
+    registerSpriteTexture(id, canvas);
   }
 
   return { canvases };

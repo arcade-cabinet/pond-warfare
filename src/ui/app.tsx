@@ -26,7 +26,7 @@ export interface AppProps {
     minimapCanvas: HTMLCanvasElement;
     minimapCam: HTMLDivElement;
     dayNightOverlay: HTMLDivElement;
-  }) => void;
+  }) => void | Promise<void>;
 }
 
 export function App({ onMount }: AppProps) {

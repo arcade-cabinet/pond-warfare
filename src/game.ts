@@ -67,16 +67,20 @@ import { cleanupEntityAnimation, triggerCommandPulse } from '@/rendering/animati
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import { clampCamera, computeShakeOffset } from '@/rendering/camera';
 import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
-import {
-  drawGame,
-  type PlacementPreview,
-  type RenderFrameData,
-  type SelectionRect,
-  setColorBlindMode,
-} from '@/rendering/game-renderer';
+import { type PlacementPreview, setColorBlindMode } from '@/rendering/game-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
 import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
 import type { ProjectileRenderData } from '@/rendering/particles';
+import { updateProjectileTrails } from '@/rendering/particles';
+import {
+  destroyPixiApp,
+  initPixiApp,
+  type PixiRenderFrameData,
+  renderPixiFrame,
+  resizePixiApp,
+  setBackground,
+  setPixiColorBlindMode,
+} from '@/rendering/pixi-app';
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
 import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
@@ -93,7 +97,6 @@ export class Game {
   private lightCanvas!: HTMLCanvasElement;
   private minimapCanvas!: HTMLCanvasElement;
   private minimapCamElement!: HTMLElement;
-  private gameCtx!: CanvasRenderingContext2D;
   private fogCtx!: CanvasRenderingContext2D;
   private lightCtx!: CanvasRenderingContext2D;
   private minimapCtx!: CanvasRenderingContext2D;
@@ -130,14 +133,14 @@ export class Game {
    * Initialize the game with DOM elements.
    * Call after Preact has rendered the app and canvases exist in the DOM.
    */
-  init(
+  async init(
     container: HTMLElement,
     gameCanvas: HTMLCanvasElement,
     fogCanvas: HTMLCanvasElement,
     lightCanvas: HTMLCanvasElement,
     minimapCanvas: HTMLCanvasElement,
     minimapCamElement: HTMLElement,
-  ): void {
+  ): Promise<void> {
     this.container = container;
     this.gameCanvas = gameCanvas;
     this.fogCanvas = fogCanvas;
@@ -145,24 +148,37 @@ export class Game {
     this.minimapCanvas = minimapCanvas;
     this.minimapCamElement = minimapCamElement;
 
-    const gameCtx = gameCanvas.getContext('2d', { alpha: false });
     const fogCtx = fogCanvas.getContext('2d');
     const lightCtx = lightCanvas.getContext('2d');
     const minimapCtx = minimapCanvas.getContext('2d', { alpha: false });
-    if (!gameCtx || !fogCtx || !lightCtx || !minimapCtx) {
+    if (!fogCtx || !lightCtx || !minimapCtx) {
       throw new Error('Failed to acquire 2D rendering context from canvas');
     }
-    this.gameCtx = gameCtx;
     this.fogCtx = fogCtx;
     this.lightCtx = lightCtx;
     this.minimapCtx = minimapCtx;
 
-    // Generate sprites
+    // Generate sprites (also registers PixiJS textures via registerSpriteTexture)
     const { canvases } = generateAllSprites();
     this.spriteCanvases = canvases;
 
     // Generate background
     this.bgCanvas = buildBackground();
+
+    // Resize canvases before PixiJS init so viewWidth/viewHeight are set
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    this.world.viewWidth = w;
+    this.world.viewHeight = h;
+    this.fogCanvas.width = w;
+    this.fogCanvas.height = h;
+    this.lightCanvas.width = w;
+    this.lightCanvas.height = h;
+    this.fogCtx.imageSmoothingEnabled = false;
+
+    // Initialise PixiJS application on the main game canvas
+    await initPixiApp(gameCanvas, w, h);
+    setBackground(this.bgCanvas);
 
     // Fog texture
     const { fogPattern } = buildFogTexture(this.fogCtx);
@@ -345,6 +361,7 @@ export class Game {
     // Sync color blind mode signal to renderer module-level flag
     store.colorBlindMode.subscribe((enabled) => {
       setColorBlindMode(enabled);
+      setPixiColorBlindMode(enabled);
     });
 
     // Start game loop
@@ -430,13 +447,12 @@ export class Game {
     const h = this.container.clientHeight;
     this.world.viewWidth = w;
     this.world.viewHeight = h;
-    this.gameCanvas.width = w;
-    this.gameCanvas.height = h;
+    // PixiJS manages the game canvas size
+    resizePixiApp(w, h);
     this.fogCanvas.width = w;
     this.fogCanvas.height = h;
     this.lightCanvas.width = w;
     this.lightCanvas.height = h;
-    this.gameCtx.imageSmoothingEnabled = false;
     this.fogCtx.imageSmoothingEnabled = false;
   }
 
@@ -574,10 +590,10 @@ export class Game {
 
     // Build render data
     const dragRect = this.pointer.getDragRect();
-    const selectionRect: SelectionRect | null = dragRect
+    const selectionRect = dragRect
       ? { startX: dragRect.minX, startY: dragRect.minY, endX: dragRect.maxX, endY: dragRect.maxY }
       : null;
-    const placement: PlacementPreview | null = this.getPlacementPreview();
+    const placement = this.getPlacementPreview();
 
     // Query ECS for active projectile entities
     const projEids = Array.from(query(this.world.ecs, [Position, ProjectileData, IsProjectile]));
@@ -587,11 +603,16 @@ export class Game {
       trail: [] as { x: number; y: number; life: number }[],
     }));
 
-    const renderData: RenderFrameData = {
+    // Update projectile trails (mutation step, done once per frame)
+    updateProjectileTrails(projectiles);
+
+    const renderData: PixiRenderFrameData = {
       sortedEids,
       corpses: this.world.corpses,
       groundPings: this.world.groundPings,
       projectiles,
+      particles: this.world.particles,
+      floatingTexts: this.world.floatingTexts,
       frameCount: this.world.frameCount,
       shake,
       selectionRect,
@@ -599,13 +620,13 @@ export class Game {
       isDragging: this.pointer.mouse.isDown,
     };
 
-    // Main game layer
-    drawGame(this.gameCtx, this.world, this.bgCanvas, this.spriteCanvases, renderData);
+    // Main game layer (PixiJS)
+    renderPixiFrame(this.world, this.spriteCanvases, renderData);
 
-    // Fog of war
+    // Fog of war (Canvas2D overlay)
     drawFog(this.fogState, this.world, playerEids, shake.offsetX, shake.offsetY);
 
-    // Dynamic lighting
+    // Dynamic lighting (Canvas2D overlay)
     drawLighting(
       this.lightCtx,
       this.world,
@@ -615,7 +636,7 @@ export class Game {
       shake.offsetY,
     );
 
-    // Minimap
+    // Minimap (Canvas2D)
     drawMinimap(
       this.minimapCtx,
       this.world,
@@ -750,6 +771,7 @@ export class Game {
     this.keyboard.destroy();
     this.pointer.destroy();
     this.physicsManager.destroy();
+    destroyPixiApp();
   }
 }
 
