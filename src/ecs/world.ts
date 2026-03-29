@@ -1,4 +1,6 @@
 import { createWorld } from 'bitecs';
+import { createInitialTechState, type TechState } from '@/config/tech-tree';
+import { STARTING_CLAMS, STARTING_TWIGS } from '@/constants';
 import type {
   Corpse,
   Firefly,
@@ -10,8 +12,6 @@ import type {
   MinimapPing,
   Particle,
 } from '@/types';
-import { STARTING_CLAMS, STARTING_TWIGS } from '@/constants';
-import { type TechState, createInitialTechState } from '@/config/tech-tree';
 
 export interface GameWorld {
   // bitECS world

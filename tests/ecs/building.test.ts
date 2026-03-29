@@ -4,15 +4,25 @@
  * Validates construction progress and completion.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { addEntity, addComponent } from 'bitecs';
+import { addComponent, addEntity } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  Position, Health, UnitStateMachine, FactionTag, EntityTypeTag,
-  Velocity, Collider, Sprite, Building, IsBuilding, Carrying, Combat,
+  Building,
+  Carrying,
+  Collider,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  Position,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
-import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { UnitState, Faction, EntityKind, ResourceType } from '@/types';
 import { buildingSystem } from '@/ecs/systems/building';
+import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createBuilder(world: GameWorld): number {
   const eid = addEntity(world.ecs);

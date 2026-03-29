@@ -50,8 +50,13 @@ const mockContext2D = {
 };
 
 // Patch HTMLCanvasElement if getContext doesn't work in jsdom
+// biome-ignore lint/complexity/noBannedTypes: need generic function type for canvas mock
 const originalGetContext = HTMLCanvasElement.prototype.getContext as Function;
-HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type: string, options?: any) {
+HTMLCanvasElement.prototype.getContext = function (
+  this: HTMLCanvasElement,
+  type: string,
+  options?: any,
+) {
   if (type === '2d') {
     const result = originalGetContext.call(this, type, options);
     if (result) return result;

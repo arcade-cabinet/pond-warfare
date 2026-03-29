@@ -1,10 +1,10 @@
-export const enum Faction {
+export enum Faction {
   Player = 0,
   Enemy = 1,
   Neutral = 2,
 }
 
-export const enum UnitState {
+export enum UnitState {
   Idle = 0,
   Move = 1,
   GatherMove = 2,
@@ -19,7 +19,7 @@ export const enum UnitState {
   AttackMovePatrol = 11,
 }
 
-export const enum EntityKind {
+export enum EntityKind {
   Gatherer = 0,
   Brawler = 1,
   Sniper = 2,
@@ -34,13 +34,13 @@ export const enum EntityKind {
   Clambed = 11,
 }
 
-export const enum ResourceType {
+export enum ResourceType {
   None = 0,
   Clams = 1,
   Twigs = 2,
 }
 
-export const enum SpriteId {
+export enum SpriteId {
   Gatherer = 0,
   Brawler = 1,
   Sniper = 2,

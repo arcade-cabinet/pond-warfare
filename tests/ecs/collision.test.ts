@@ -4,12 +4,23 @@
  * Validates that overlapping entities are pushed apart.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { addEntity, addComponent } from 'bitecs';
-import { Position, Collider, Velocity, FactionTag, EntityTypeTag, UnitStateMachine, Sprite, Health, Combat, Carrying } from '@/ecs/components';
-import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { Faction, EntityKind, ResourceType } from '@/types';
+import { addComponent, addEntity } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  Carrying,
+  Collider,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  Position,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
+} from '@/ecs/components';
 import { collisionSystem } from '@/ecs/systems/collision';
+import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { EntityKind, Faction } from '@/types';
 
 function createUnit(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);

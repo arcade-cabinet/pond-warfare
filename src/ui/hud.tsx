@@ -7,19 +7,19 @@
  */
 
 import {
+  armyCount,
   clams,
-  twigs,
-  foodDisplay,
   foodAtCap,
+  foodDisplay,
+  gameTimeDisplay,
+  idleWorkerCount,
+  muteLabel,
+  peaceStatusColor,
+  peaceStatusText,
   rateClams,
   rateTwigs,
-  gameTimeDisplay,
-  peaceStatusText,
-  peaceStatusColor,
   speedLabel,
-  muteLabel,
-  idleWorkerCount,
-  armyCount,
+  twigs,
 } from './store';
 
 export interface HUDProps {

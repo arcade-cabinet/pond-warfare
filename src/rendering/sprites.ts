@@ -7,8 +7,8 @@
  */
 
 import { Texture } from 'pixi.js';
-import { SpriteId } from '@/types';
 import { PALETTE } from '@/constants';
+import { SpriteId } from '@/types';
 
 /** Names used internally to map to SpriteId enum values. */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
@@ -28,14 +28,7 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'rubble', id: SpriteId.Rubble },
 ];
 
-const LARGE_TYPES = new Set([
-  'lodge',
-  'burrow',
-  'armory',
-  'tower',
-  'predator_nest',
-  'rubble',
-]);
+const LARGE_TYPES = new Set(['lodge', 'burrow', 'armory', 'tower', 'predator_nest', 'rubble']);
 
 /**
  * Generate a single sprite canvas at native pixel-art resolution,
@@ -54,23 +47,12 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     ctx.fillRect(Math.floor(x), Math.floor(y), 1, 1);
   };
 
-  const rect = (
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    color: string,
-  ): void => {
+  const rect = (x: number, y: number, w: number, h: number, color: string): void => {
     ctx.fillStyle = color;
     ctx.fillRect(x, y, w, h);
   };
 
-  const circle = (
-    cx: number,
-    cy: number,
-    r: number,
-    color: string,
-  ): void => {
+  const circle = (cx: number, cy: number, r: number, color: string): void => {
     for (let y = -r; y <= r; y++) {
       for (let x = -r; x <= r; x++) {
         if (x * x + y * y <= r * r) p(cx + x, cy + y, color);
@@ -180,13 +162,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     for (let i = 0; i < 80; i++)
       p(4 + Math.random() * 24, 8 + Math.random() * 24, PALETTE.mudLight);
     for (let i = 0; i < 40; i++)
-      rect(
-        4 + Math.random() * 22,
-        10 + Math.random() * 18,
-        6,
-        2,
-        PALETTE.otterBase,
-      );
+      rect(4 + Math.random() * 22, 10 + Math.random() * 18, 6, 2, PALETTE.otterBase);
     rect(12, 22, 8, 8, PALETTE.black);
   } else if (type === 'burrow') {
     circle(16, 24, 8, PALETTE.mudDark);
@@ -243,7 +219,7 @@ export function generateAllSprites(): {
 
 /** Convenience: get the sprite canvas dimensions for a given SpriteId. */
 export function getSpriteSize(id: SpriteId): { width: number; height: number } {
-  const isLarge = id >= SpriteId.Lodge && id <= SpriteId.PredatorNest || id === SpriteId.Rubble;
+  const isLarge = (id >= SpriteId.Lodge && id <= SpriteId.PredatorNest) || id === SpriteId.Rubble;
   const baseSize = isLarge ? 32 : 16;
   const scale = isLarge ? 3 : 2.5;
   return { width: baseSize * scale, height: baseSize * scale };

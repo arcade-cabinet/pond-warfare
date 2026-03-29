@@ -7,9 +7,9 @@
  * clamping, and screen shake offset calculation.
  */
 
+import { MINIMAP_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { Health, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { WORLD_WIDTH, WORLD_HEIGHT, MINIMAP_SIZE } from '@/constants';
-import { Position, Health } from '@/ecs/components';
 
 const PAN_SPEED = 12;
 const EDGE_PAN_MARGIN = 20;
@@ -104,14 +104,8 @@ export function updateCamera(
 
 /** Clamp the camera so it cannot scroll beyond the world edges. */
 export function clampCamera(world: GameWorld): void {
-  world.camX = Math.max(
-    0,
-    Math.min(WORLD_WIDTH - world.viewWidth, world.camX),
-  );
-  world.camY = Math.max(
-    0,
-    Math.min(WORLD_HEIGHT - world.viewHeight, world.camY),
-  );
+  world.camX = Math.max(0, Math.min(WORLD_WIDTH - world.viewWidth, world.camX));
+  world.camY = Math.max(0, Math.min(WORLD_HEIGHT - world.viewHeight, world.camY));
 }
 
 /**
@@ -130,17 +124,11 @@ export function panCameraToMinimap(
 ): void {
   world.camX = Math.max(
     0,
-    Math.min(
-      WORLD_WIDTH - world.viewWidth,
-      xPercent * WORLD_WIDTH - offset.x,
-    ),
+    Math.min(WORLD_WIDTH - world.viewWidth, xPercent * WORLD_WIDTH - offset.x),
   );
   world.camY = Math.max(
     0,
-    Math.min(
-      WORLD_HEIGHT - world.viewHeight,
-      yPercent * WORLD_HEIGHT - offset.y,
-    ),
+    Math.min(WORLD_HEIGHT - world.viewHeight, yPercent * WORLD_HEIGHT - offset.y),
   );
 }
 

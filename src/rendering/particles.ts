@@ -7,8 +7,8 @@
  * These are simple Canvas2D helper functions called by the main game renderer.
  */
 
-import type { Particle, FloatingText } from '@/types';
 import { PALETTE } from '@/constants';
+import type { FloatingText, Particle } from '@/types';
 
 /** Projectile visual state for rendering. */
 export interface ProjectileRenderData {
@@ -21,10 +21,7 @@ export interface ProjectileRenderData {
  * Draw all particles with alpha fade based on remaining life.
  * Each particle is a small filled rectangle.
  */
-export function drawParticles(
-  ctx: CanvasRenderingContext2D,
-  particles: Particle[],
-): void {
+export function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]): void {
   for (const p of particles) {
     ctx.globalAlpha = Math.min(1, p.life / 10);
     ctx.fillStyle = p.color;
@@ -37,10 +34,7 @@ export function drawParticles(
  * Draw a single projectile: trail segments with fading alpha,
  * then the projectile body (stone outer + white inner).
  */
-export function drawProjectile(
-  ctx: CanvasRenderingContext2D,
-  proj: ProjectileRenderData,
-): void {
+export function drawProjectile(ctx: CanvasRenderingContext2D, proj: ProjectileRenderData): void {
   // Draw trail (iterate backwards for safe removal)
   for (let i = proj.trail.length - 1; i >= 0; i--) {
     const t = proj.trail[i];

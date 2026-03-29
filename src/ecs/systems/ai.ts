@@ -12,27 +12,20 @@
  *   frames if fewer than 4 nearby enemy units. Defenders attack nearest player unit.
  */
 
-import { query, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
-import {
-  Position,
-  Health,
-  FactionTag,
-  EntityTypeTag,
-  IsBuilding,
-  IsResource,
-  UnitStateMachine,
-  Combat,
-} from '@/ecs/components';
-import { Faction, EntityKind, UnitState } from '@/types';
-import {
-  WAVE_INTERVAL,
-  MAX_WAVE_SIZE,
-  WAVE_SCALE_INTERVAL,
-} from '@/constants';
+import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { MAX_WAVE_SIZE, WAVE_INTERVAL, WAVE_SCALE_INTERVAL } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
-
+import {
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  Position,
+  UnitStateMachine,
+} from '@/ecs/components';
+import type { GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, UnitState } from '@/types';
 
 export function aiSystem(world: GameWorld): void {
   // --- Peace timer / wave logic (lines 1211-1235) ---
@@ -55,7 +48,13 @@ export function aiSystem(world: GameWorld): void {
       // Find player lodge
       // Original: let th = this.entities.find(e => e.type === 'lodge' && e.faction === 'player');
       let lodgeEid = 0;
-      const pBuildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
+      const pBuildings = query(world.ecs, [
+        Position,
+        Health,
+        FactionTag,
+        EntityTypeTag,
+        IsBuilding,
+      ]);
       for (let i = 0; i < pBuildings.length; i++) {
         const eid = pBuildings[i];
         if (

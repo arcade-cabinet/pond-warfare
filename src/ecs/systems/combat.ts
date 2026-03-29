@@ -12,39 +12,40 @@
  * - Attack cooldown management
  */
 
-import { query, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
-import {
-  Position,
-  Velocity,
-  Combat,
-  Health,
-  UnitStateMachine,
-  EntityTypeTag,
-  FactionTag,
-  Collider,
-  IsBuilding,
-  IsResource,
-  TowerAI,
-  Building,
-  Sprite,
-  ProjectileData,
-  IsProjectile,
-} from '@/ecs/components';
-import { UnitState, EntityKind, Faction } from '@/types';
+import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import {
   AGGRO_RADIUS_ENEMY,
   AGGRO_RADIUS_PLAYER,
   ATTACK_COOLDOWN,
   TOWER_ATTACK_COOLDOWN,
 } from '@/constants';
-import { audio } from '@/audio/audio-system';
-import { spawnProjectile } from '@/ecs/systems/projectile';
+import {
+  Building,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsResource,
+  Position,
+  Sprite,
+  TowerAI,
+  UnitStateMachine,
+} from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
-
+import { spawnProjectile } from '@/ecs/systems/projectile';
+import type { GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, UnitState } from '@/types';
 
 export function combatSystem(world: GameWorld): void {
-  const units = query(world.ecs, [Position, Combat, UnitStateMachine, Health, FactionTag, EntityTypeTag]);
+  const units = query(world.ecs, [
+    Position,
+    Combat,
+    UnitStateMachine,
+    Health,
+    FactionTag,
+    EntityTypeTag,
+  ]);
   const towers = query(world.ecs, [Position, Combat, TowerAI, Health, FactionTag, Building]);
   const allTargetable = query(world.ecs, [Position, Health, FactionTag]);
 
@@ -83,7 +84,16 @@ export function combatSystem(world: GameWorld): void {
     if (closest) {
       audio.shoot();
       // Original: GAME.projectiles.push(new Projectile(this.x, this.y-20, closest.x, closest.y, closest, this.dmg, this));
-      spawnProjectile(world, ex, ey - 20, Position.x[closest], Position.y[closest], closest, Combat.damage[eid], eid);
+      spawnProjectile(
+        world,
+        ex,
+        ey - 20,
+        Position.x[closest],
+        Position.y[closest],
+        closest,
+        Combat.damage[eid],
+        eid,
+      );
       Combat.attackCooldown[eid] = TOWER_ATTACK_COOLDOWN;
     }
   }
@@ -206,16 +216,7 @@ export function combatSystem(world: GameWorld): void {
           if (kind === EntityKind.Sniper) {
             // Original: AudioSys.sfx.shoot(); GAME.projectiles.push(new Projectile(...));
             audio.shoot();
-            spawnProjectile(
-              world,
-              ex,
-              ey - 10,
-              Position.x[tEnt],
-              Position.y[tEnt],
-              tEnt,
-              dmg,
-              eid,
-            );
+            spawnProjectile(world, ex, ey - 10, Position.x[tEnt], Position.y[tEnt], tEnt, dmg, eid);
           } else {
             // Melee: direct damage
             // Original: this.tEnt.takeDamage(this.dmg, this);

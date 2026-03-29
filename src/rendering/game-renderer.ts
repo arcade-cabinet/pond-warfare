@@ -24,30 +24,28 @@
  * 11. Building placement preview with validity colouring
  */
 
-import type { GameWorld } from '@/ecs/world';
-import type { Corpse, GroundPing } from '@/types';
-import { SpriteId, EntityKind, Faction, ResourceType } from '@/types';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import { PALETTE, TILE_SIZE } from '@/constants';
 import {
-  Position,
-  Sprite,
-  Health,
-  Combat,
-  FactionTag,
-  EntityTypeTag,
-  Selectable,
   Building,
   Carrying,
-  IsBuilding as IsBuildingTag,
+  Combat,
+  EntityTypeTag,
+  Health,
+  Position,
+  Selectable,
+  Sprite,
 } from '@/ecs/components';
-import { ENTITY_DEFS } from '@/config/entity-defs';
+import type { GameWorld } from '@/ecs/world';
+import type { Corpse, GroundPing } from '@/types';
+import { type EntityKind, ResourceType, SpriteId } from '@/types';
+import type { CameraShake } from './camera';
 import {
+  drawFloatingTexts,
   drawParticles,
   drawProjectiles,
-  drawFloatingTexts,
   type ProjectileRenderData,
 } from './particles';
-import type { CameraShake } from './camera';
 
 /** Data needed to draw the selection rectangle. */
 export interface SelectionRect {
@@ -176,17 +174,7 @@ function drawEntity(
     const revealH = sh * (progress / 100);
     const srcY = sprite.height * (1 - progress / 100);
     const srcH = sprite.height * (progress / 100);
-    ctx.drawImage(
-      sprite,
-      0,
-      srcY,
-      sprite.width,
-      srcH,
-      dx,
-      dy + sh - revealH,
-      sw,
-      revealH,
-    );
+    ctx.drawImage(sprite, 0, srcY, sprite.width, srcH, dx, dy + sh - revealH, sw, revealH);
     ctx.globalAlpha = 1.0;
     // Construction frame outline
     ctx.strokeStyle = '#b45309';
@@ -214,8 +202,7 @@ function drawEntity(
   // --- Carried resource indicator ---
   const carriedRes = Carrying.resourceType[eid] as ResourceType;
   if (carriedRes !== ResourceType.None) {
-    ctx.fillStyle =
-      carriedRes === ResourceType.Clams ? PALETTE.clamShell : PALETTE.reedBrown;
+    ctx.fillStyle = carriedRes === ResourceType.Clams ? PALETTE.clamShell : PALETTE.reedBrown;
     ctx.fillRect(ex + 5, ey - 20, 6, 6);
     // Tiny sparkle on carried resource
     if (frameCount % 20 < 5) {
@@ -231,8 +218,7 @@ function drawEntity(
     ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(ex - bw / 2, dy - 8, bw, bh);
     const hpPct = hp / maxHp;
-    ctx.fillStyle =
-      hpPct > 0.6 ? '#22c55e' : hpPct > 0.3 ? '#eab308' : '#ef4444';
+    ctx.fillStyle = hpPct > 0.6 ? '#22c55e' : hpPct > 0.3 ? '#eab308' : '#ef4444';
     ctx.fillRect(ex - bw / 2, dy - 8, bw * hpPct, bh);
   }
 
@@ -275,33 +261,21 @@ export function drawGame(
   ctx.save();
 
   // --- Camera translation with screen shake ---
-  ctx.translate(
-    -Math.floor(camX) + shake.offsetX,
-    -Math.floor(camY) + shake.offsetY,
-  );
+  ctx.translate(-Math.floor(camX) + shake.offsetX, -Math.floor(camY) + shake.offsetY);
 
   // --- Background ---
   ctx.drawImage(bgCanvas, 0, 0);
 
   // --- Corpses & Ruins ---
   for (const cp of data.corpses) {
-    if (
-      cp.x + 100 < camX ||
-      cp.x - 100 > camX + w ||
-      cp.y + 100 < camY ||
-      cp.y - 100 > camY + h
-    ) {
+    if (cp.x + 100 < camX || cp.x - 100 > camX + w || cp.y + 100 < camY || cp.y - 100 > camY + h) {
       continue;
     }
     ctx.globalAlpha = Math.min(1, cp.life / 60) * 0.7;
     const sprite = spriteCanvases.get(cp.spriteId);
     if (sprite) {
       const yAdj = cp.spriteId === SpriteId.Bones ? 4 : 0;
-      ctx.drawImage(
-        sprite,
-        cp.x - sprite.width / 2,
-        cp.y - sprite.height / 2 + yAdj,
-      );
+      ctx.drawImage(sprite, cp.x - sprite.width / 2, cp.y - sprite.height / 2 + yAdj);
     }
     ctx.globalAlpha = 1.0;
   }
@@ -310,12 +284,7 @@ export function drawGame(
   for (const eid of data.sortedEids) {
     const ex = Position.x[eid];
     const ey = Position.y[eid];
-    if (
-      ex + 100 < camX ||
-      ex - 100 > camX + w ||
-      ey + 100 < camY ||
-      ey - 100 > camY + h
-    ) {
+    if (ex + 100 < camX || ex - 100 > camX + w || ey + 100 < camY || ey - 100 > camY + h) {
       continue;
     }
     drawEntity(ctx, eid, spriteCanvases, frameCount);
@@ -443,15 +412,8 @@ export function drawGame(
       if (spr) {
         ctx.globalAlpha = 0.5;
         ctx.drawImage(spr, bx - spr.width / 2, by - spr.height / 2);
-        ctx.fillStyle = canPlace
-          ? 'rgba(0,255,0,0.3)'
-          : 'rgba(255,0,0,0.5)';
-        ctx.fillRect(
-          bx - spr.width / 2,
-          by - spr.height / 2,
-          spr.width,
-          spr.height,
-        );
+        ctx.fillStyle = canPlace ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,0,0.5)';
+        ctx.fillRect(bx - spr.width / 2, by - spr.height / 2, spr.width, spr.height);
         ctx.globalAlpha = 1.0;
 
         // Placement text
@@ -459,9 +421,7 @@ export function drawGame(
         ctx.textAlign = 'center';
         ctx.fillStyle = canPlace ? '#22c55e' : '#ef4444';
         ctx.fillText(
-          canPlace
-            ? 'Click to place (Esc cancel)'
-            : 'Blocked!',
+          canPlace ? 'Click to place (Esc cancel)' : 'Blocked!',
           bx,
           by - spr.height / 2 - 8,
         );

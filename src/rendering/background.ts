@@ -9,7 +9,7 @@
  *   creates a repeating CanvasPattern from it.
  */
 
-import { WORLD_WIDTH, WORLD_HEIGHT, PALETTE, FOG_TEXTURE_SIZE } from '@/constants';
+import { FOG_TEXTURE_SIZE, PALETTE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 
 /**
  * Generate the full-world procedural water background canvas.
@@ -30,12 +30,7 @@ export function buildBackground(): HTMLCanvasElement {
   // 50 000 small speckles
   for (let i = 0; i < 50000; i++) {
     ctx.fillStyle = Math.random() > 0.5 ? PALETTE.waterMid : '#0a1d22';
-    ctx.fillRect(
-      Math.random() * WORLD_WIDTH,
-      Math.random() * WORLD_HEIGHT,
-      4,
-      4,
-    );
+    ctx.fillRect(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT, 4, 4);
   }
 
   // 100 organic terrain patches
@@ -46,8 +41,7 @@ export function buildBackground(): HTMLCanvasElement {
     for (let i = 0; i < r * 15; i++) {
       const ang = Math.random() * Math.PI * 2;
       const dist = Math.random() * r;
-      ctx.fillStyle =
-        Math.random() > 0.4 ? PALETTE.waterShallow : PALETTE.mudDark;
+      ctx.fillStyle = Math.random() > 0.4 ? PALETTE.waterShallow : PALETTE.mudDark;
       ctx.fillRect(px + Math.cos(ang) * dist, py + Math.sin(ang) * dist, 6, 6);
     }
   }
@@ -91,9 +85,15 @@ export function buildFogTexture(patternCtx: CanvasRenderingContext2D): {
 
     // Draw at all 9 tile-wrap offsets for seamless tiling
     const offsets: [number, number][] = [
-      [-1, -1], [0, -1], [1, -1],
-      [-1, 0], [0, 0], [1, 0],
-      [-1, 1], [0, 1], [1, 1],
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+      [-1, 0],
+      [0, 0],
+      [1, 0],
+      [-1, 1],
+      [0, 1],
+      [1, 1],
     ];
     for (const [ox, oy] of offsets) {
       ctx.beginPath();

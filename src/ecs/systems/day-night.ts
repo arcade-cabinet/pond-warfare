@@ -11,8 +11,8 @@
  * - Update firefly positions: random drift, velocity clamping, screen wrapping
  */
 
+import { TIME_STOPS } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
-import { TIME_STOPS, DAY_FRAMES } from '@/constants';
 
 /**
  * Interpolate the ambient color from TIME_STOPS and compute ambientDarkness.

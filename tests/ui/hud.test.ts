@@ -4,7 +4,7 @@
  * Validates that the HUD renders resource displays and clock.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('HUD', () => {
   it('should format time correctly', () => {
@@ -24,7 +24,7 @@ describe('HUD', () => {
   });
 
   it('should format resource rate', () => {
-    const formatRate = (r: number): string => r >= 0 ? `+${r}` : `${r}`;
+    const formatRate = (r: number): string => (r >= 0 ? `+${r}` : `${r}`);
     expect(formatRate(10)).toBe('+10');
     expect(formatRate(-5)).toBe('-5');
     expect(formatRate(0)).toBe('+0');

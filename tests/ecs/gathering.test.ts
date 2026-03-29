@@ -4,15 +4,25 @@
  * Validates resource gathering, timer countdown, and resource depletion.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { addEntity, addComponent } from 'bitecs';
+import { addComponent, addEntity } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  Position, Health, UnitStateMachine, FactionTag, EntityTypeTag,
-  Velocity, Collider, Sprite, Carrying, Resource, IsResource, Combat,
+  Carrying,
+  Collider,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsResource,
+  Position,
+  Resource,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
-import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { UnitState, Faction, EntityKind, ResourceType } from '@/types';
 import { gatheringSystem } from '@/ecs/systems/gathering';
+import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createGatherer(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);
@@ -55,7 +65,8 @@ function createResource(world: GameWorld, x: number, y: number, kind: EntityKind
 
   Position.x[eid] = x;
   Position.y[eid] = y;
-  Resource.resourceType[eid] = kind === EntityKind.Cattail ? ResourceType.Twigs : ResourceType.Clams;
+  Resource.resourceType[eid] =
+    kind === EntityKind.Cattail ? ResourceType.Twigs : ResourceType.Clams;
   Resource.amount[eid] = 1000;
   Health.current[eid] = 1;
   Health.max[eid] = 1;

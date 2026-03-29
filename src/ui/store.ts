@@ -5,7 +5,7 @@
  * these signals so they re-render only when their slice of state changes.
  */
 
-import { signal, computed } from '@preact/signals';
+import { computed, signal } from '@preact/signals';
 import type { GameState } from '@/types';
 
 // ---- Resources ----

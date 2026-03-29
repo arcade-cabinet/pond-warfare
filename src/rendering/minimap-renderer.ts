@@ -15,17 +15,12 @@
  * and updates the camera viewport indicator.
  */
 
+import { ENTITY_DEFS } from '@/config/entity-defs';
+import { MINIMAP_SIZE, PALETTE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { MinimapPing } from '@/types';
 import { EntityKind, Faction } from '@/types';
-import {
-  PALETTE,
-  WORLD_WIDTH,
-  WORLD_HEIGHT,
-  MINIMAP_SIZE,
-} from '@/constants';
-import { Position, FactionTag, EntityTypeTag } from '@/ecs/components';
-import { ENTITY_DEFS } from '@/config/entity-defs';
 
 /**
  * Render the minimap.
@@ -38,7 +33,7 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
  */
 export function drawMinimap(
   minimapCtx: CanvasRenderingContext2D,
-  world: GameWorld,
+  _world: GameWorld,
   entityEids: number[],
   exploredCanvas: HTMLCanvasElement,
   minimapPings: MinimapPing[],
@@ -80,12 +75,7 @@ export function drawMinimap(
     const dotSize = def.isBuilding ? 4 : 2;
     const ex = Position.x[eid];
     const ey = Position.y[eid];
-    mc.fillRect(
-      ex * sx - dotSize / 2,
-      ey * sy - dotSize / 2,
-      dotSize,
-      dotSize,
-    );
+    mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
   }
 
   // Draw animated radar-style pings
@@ -94,12 +84,7 @@ export function drawMinimap(
     const radius = 4 + Math.sin(p.life * 0.2) * 2;
     mc.strokeStyle = `rgba(239, 68, 68, ${alpha})`;
     mc.lineWidth = 1.5;
-    mc.strokeRect(
-      p.x * sx - radius,
-      p.y * sy - radius,
-      radius * 2,
-      radius * 2,
-    );
+    mc.strokeRect(p.x * sx - radius, p.y * sy - radius, radius * 2, radius * 2);
   }
 }
 
@@ -109,10 +94,7 @@ export function drawMinimap(
  * @param element - The minimap-cam div element.
  * @param world   - Game world state (camera position, viewport size).
  */
-export function updateMinimapViewport(
-  element: HTMLElement,
-  world: GameWorld,
-): void {
+export function updateMinimapViewport(element: HTMLElement, world: GameWorld): void {
   const sx = MINIMAP_SIZE / WORLD_WIDTH;
   const sy = MINIMAP_SIZE / WORLD_HEIGHT;
 

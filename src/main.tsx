@@ -8,8 +8,8 @@
 
 import '@/styles/main.css';
 import { render } from 'preact';
-import { App } from '@/ui/app';
 import { game } from '@/game';
+import { App } from '@/ui/app';
 
 // Mount the Preact application
 const root = document.getElementById('app');

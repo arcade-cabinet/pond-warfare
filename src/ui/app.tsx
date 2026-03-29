@@ -6,11 +6,11 @@
  * main game container on right (top bar + canvases + overlays).
  */
 
-import { useRef, useEffect } from 'preact/hooks';
-import { HUD } from './hud';
-import { Sidebar } from './sidebar';
+import { useEffect, useRef } from 'preact/hooks';
 import { GameOverBanner } from './game-over';
+import { HUD } from './hud';
 import { IntroOverlay } from './intro-overlay';
+import { Sidebar } from './sidebar';
 
 export interface AppProps {
   onMount: (refs: {
@@ -58,10 +58,7 @@ export function App({ onMount }: AppProps) {
   return (
     <div class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm text-slate-200">
       {/* Sidebar */}
-      <Sidebar
-        minimapCanvasRef={minimapCanvasRef}
-        minimapCamRef={minimapCamRef}
-      />
+      <Sidebar minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
 
       {/* Main game container */}
       <div

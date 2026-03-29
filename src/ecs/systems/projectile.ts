@@ -11,17 +11,11 @@
  * - Remove projectile entity on hit
  */
 
-import { query, addEntity, addComponent, removeEntity, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
-import {
-  Position,
-  ProjectileData,
-  IsProjectile,
-  Health,
-} from '@/ecs/components';
-import { PROJECTILE_SPEED, PALETTE } from '@/constants';
+import { addComponent, addEntity, hasComponent, query, removeEntity } from 'bitecs';
+import { PROJECTILE_SPEED } from '@/constants';
+import { Health, IsProjectile, Position, ProjectileData } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
-
+import type { GameWorld } from '@/ecs/world';
 
 /**
  * Helper to spawn a projectile entity. Used by combat system for snipers and towers.
@@ -66,11 +60,7 @@ export function projectileSystem(world: GameWorld): void {
 
     // Homing: update target position if target is still alive
     // Original: if (this.target && this.target.hp > 0) { this.tx = this.target.x; this.ty = this.target.y; }
-    if (
-      targetEnt &&
-      hasComponent(world.ecs, targetEnt, Health) &&
-      Health.current[targetEnt] > 0
-    ) {
+    if (targetEnt && hasComponent(world.ecs, targetEnt, Health) && Health.current[targetEnt] > 0) {
       ProjectileData.targetX[eid] = Position.x[targetEnt];
       ProjectileData.targetY[eid] = Position.y[targetEnt];
     }

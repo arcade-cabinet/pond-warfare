@@ -12,30 +12,42 @@
  * - Idle auto-gather: player gatherers near resources auto-start gathering every 90 frames
  */
 
-import { query, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
+import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
+import { AUTO_GATHER_RADIUS, GATHER_AMOUNT, PALETTE } from '@/constants';
 import {
-  Position,
-  Health,
-  UnitStateMachine,
+  Building,
+  Carrying,
   EntityTypeTag,
   FactionTag,
-  Carrying,
-  Resource,
-  IsResource,
+  Health,
   IsBuilding,
-  Building,
-  Collider,
+  IsResource,
+  Position,
+  Resource,
+  UnitStateMachine,
 } from '@/ecs/components';
-import { UnitState, EntityKind, Faction, ResourceType } from '@/types';
-import { GATHER_AMOUNT, PALETTE, AUTO_GATHER_RADIUS } from '@/constants';
-import { audio } from '@/audio/audio-system';
-
+import type { GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 export function gatheringSystem(world: GameWorld): void {
-  const gatherers = query(world.ecs, [Position, UnitStateMachine, Health, FactionTag, EntityTypeTag, Carrying]);
+  const gatherers = query(world.ecs, [
+    Position,
+    UnitStateMachine,
+    Health,
+    FactionTag,
+    EntityTypeTag,
+    Carrying,
+  ]);
   const resources = query(world.ecs, [Position, Resource, IsResource]);
-  const buildings = query(world.ecs, [Position, IsBuilding, FactionTag, EntityTypeTag, Health, Building]);
+  const buildings = query(world.ecs, [
+    Position,
+    IsBuilding,
+    FactionTag,
+    EntityTypeTag,
+    Health,
+    Building,
+  ]);
 
   for (let i = 0; i < gatherers.length; i++) {
     const eid = gatherers[i];
@@ -92,11 +104,7 @@ export function gatheringSystem(world: GameWorld): void {
     const tEnt = UnitStateMachine.targetEntity[eid];
 
     // Original: if (!this.tEnt || this.tEnt.resAmount <= 0)
-    if (
-      !tEnt ||
-      !hasComponent(world.ecs, tEnt, Resource) ||
-      Resource.amount[tEnt] <= 0
-    ) {
+    if (!tEnt || !hasComponent(world.ecs, tEnt, Resource) || Resource.amount[tEnt] <= 0) {
       // Try to find another nearby resource of same type (lines 1664-1672)
       if (tEnt && hasComponent(world.ecs, tEnt, EntityTypeTag)) {
         const resKind = EntityTypeTag.kind[tEnt] as EntityKind;

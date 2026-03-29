@@ -5,17 +5,25 @@
  * Catches balance regressions and data integrity issues.
  */
 
-import { describe, it, expect } from 'vitest';
-import { ENTITY_DEFS, entityKindName, entityKindFromString } from '@/config/entity-defs';
+import { describe, expect, it } from 'vitest';
+import { ENTITY_DEFS, entityKindFromString, entityKindName } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 
 describe('ENTITY_DEFS', () => {
   it('should have a definition for every EntityKind', () => {
     const kinds = [
-      EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Sniper,
-      EntityKind.Gator, EntityKind.Snake, EntityKind.Lodge,
-      EntityKind.Burrow, EntityKind.Armory, EntityKind.Tower,
-      EntityKind.PredatorNest, EntityKind.Cattail, EntityKind.Clambed,
+      EntityKind.Gatherer,
+      EntityKind.Brawler,
+      EntityKind.Sniper,
+      EntityKind.Gator,
+      EntityKind.Snake,
+      EntityKind.Lodge,
+      EntityKind.Burrow,
+      EntityKind.Armory,
+      EntityKind.Tower,
+      EntityKind.PredatorNest,
+      EntityKind.Cattail,
+      EntityKind.Clambed,
     ];
     for (const kind of kinds) {
       expect(ENTITY_DEFS[kind]).toBeDefined();
@@ -53,7 +61,13 @@ describe('ENTITY_DEFS', () => {
   });
 
   it('buildings should be marked as isBuilding', () => {
-    const buildings = [EntityKind.Lodge, EntityKind.Burrow, EntityKind.Armory, EntityKind.Tower, EntityKind.PredatorNest];
+    const buildings = [
+      EntityKind.Lodge,
+      EntityKind.Burrow,
+      EntityKind.Armory,
+      EntityKind.Tower,
+      EntityKind.PredatorNest,
+    ];
     for (const kind of buildings) {
       expect(ENTITY_DEFS[kind].isBuilding).toBe(true);
     }

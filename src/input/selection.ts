@@ -13,31 +13,29 @@
  * - cancelTrain() (lines 1096-1106)
  */
 
-import { query, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
+import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
+import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
+import { TILE_SIZE, TRAIN_TIMER, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
-  Position,
-  Health,
+  Building,
+  Carrying,
   Collider,
-  Sprite,
-  FactionTag,
   EntityTypeTag,
+  FactionTag,
+  Health,
   IsBuilding,
   IsResource,
-  Building,
-  UnitStateMachine,
+  Position,
+  Selectable,
+  Sprite,
   TrainingQueue,
   trainingQueueSlots,
-  Selectable,
-  Resource,
-  Carrying,
+  UnitStateMachine,
 } from '@/ecs/components';
-import { Faction, UnitState, EntityKind, ResourceType } from '@/types';
-import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
-import { TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TRAIN_TIMER } from '@/constants';
-import { spawnEntity } from '@/ecs/archetypes';
-import { audio } from '@/audio/audio-system';
-
+import type { GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 /**
  * Find the entity closest to (x, y) within click tolerance.
@@ -62,10 +60,7 @@ export function getEntityAt(world: GameWorld, x: number, y: number): number | nu
     const hitW = Math.max(25, radius + 15);
     const hitH = Math.max(25, height / 2 + 15);
 
-    if (
-      Math.abs(Position.x[eid] - x) < hitW &&
-      Math.abs(Position.y[eid] - y) < hitH
-    ) {
+    if (Math.abs(Position.x[eid] - x) < hitW && Math.abs(Position.y[eid] - y) < hitH) {
       return eid;
     }
   }
@@ -121,7 +116,10 @@ export function issueContextCommand(
   // Ground pings
   if (!target) {
     world.groundPings.push({
-      x: worldX, y: worldY, life: 20, maxLife: 20,
+      x: worldX,
+      y: worldY,
+      life: 20,
+      maxLife: 20,
       color: 'rgba(34, 197, 94, 0.8)',
     });
   } else if (
@@ -129,12 +127,18 @@ export function issueContextCommand(
     FactionTag.faction[target] === Faction.Enemy
   ) {
     world.groundPings.push({
-      x: Position.x[target], y: Position.y[target], life: 20, maxLife: 20,
+      x: Position.x[target],
+      y: Position.y[target],
+      life: 20,
+      maxLife: 20,
       color: 'rgba(239, 68, 68, 0.8)',
     });
   } else if (hasComponent(world.ecs, target, IsResource)) {
     world.groundPings.push({
-      x: Position.x[target], y: Position.y[target], life: 20, maxLife: 20,
+      x: Position.x[target],
+      y: Position.y[target],
+      life: 20,
+      maxLife: 20,
       color: 'rgba(250, 204, 21, 0.8)',
     });
   }
@@ -208,10 +212,8 @@ export function issueContextCommand(
         UnitStateMachine.state[eid] = UnitState.RepairMove;
       } else {
         // Move to target vicinity
-        UnitStateMachine.targetX[eid] =
-          worldX + (Math.random() - 0.5) * 20;
-        UnitStateMachine.targetY[eid] =
-          worldY + (Math.random() - 0.5) * 20;
+        UnitStateMachine.targetX[eid] = worldX + (Math.random() - 0.5) * 20;
+        UnitStateMachine.targetY[eid] = worldY + (Math.random() - 0.5) * 20;
         UnitStateMachine.state[eid] = UnitState.Move;
       }
     } else {
@@ -330,11 +332,7 @@ export function canPlaceBuilding(
  * Place a building at the current mouse position.
  * Ported from lines 1066-1086.
  */
-export function placeBuilding(
-  world: GameWorld,
-  worldX: number,
-  worldY: number,
-): void {
+export function placeBuilding(world: GameWorld, worldX: number, worldY: number): void {
   const type = world.placingBuilding;
   if (!type) return;
 
@@ -425,11 +423,7 @@ export function train(
  * Cancel a training queue item and refund costs.
  * Ported from lines 1096-1106.
  */
-export function cancelTrain(
-  world: GameWorld,
-  buildingEid: number,
-  index: number,
-): void {
+export function cancelTrain(world: GameWorld, buildingEid: number, index: number): void {
   const count = TrainingQueue.count[buildingEid];
   if (index >= count) return;
 

@@ -8,22 +8,10 @@
  * - Clamp entity positions to world bounds (margin of 20px)
  */
 
-import { query, hasComponent } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
+import { COLLISION_PUSH_FORCE, WORLD_BOUNDS_MARGIN, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { Collider, Health, IsBuilding, IsResource, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import {
-  Position,
-  Collider,
-  IsBuilding,
-  IsResource,
-  Health,
-} from '@/ecs/components';
-import {
-  WORLD_WIDTH,
-  WORLD_HEIGHT,
-  COLLISION_PUSH_FORCE,
-  WORLD_BOUNDS_MARGIN,
-} from '@/constants';
-
 
 export function collisionSystem(world: GameWorld): void {
   const ents = query(world.ecs, [Position, Collider]);

@@ -5,12 +5,22 @@
  * and that the bob animation is applied during movement.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createWorld, addEntity, addComponent } from 'bitecs';
-import { Position, Velocity, UnitStateMachine, Collider, Sprite, FactionTag, EntityTypeTag, Combat, Carrying } from '@/ecs/components';
-import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { UnitState, Faction, EntityKind, ResourceType } from '@/types';
+import { addComponent, addEntity } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  Carrying,
+  Collider,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Position,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
+} from '@/ecs/components';
 import { movementSystem } from '@/ecs/systems/movement';
+import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createTestUnit(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);

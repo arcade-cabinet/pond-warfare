@@ -26,10 +26,7 @@ export class AudioSystem {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
       if (slideFreq) {
-        osc.frequency.exponentialRampToValueAtTime(
-          slideFreq,
-          this.ctx.currentTime + duration,
-        );
+        osc.frequency.exponentialRampToValueAtTime(slideFreq, this.ctx.currentTime + duration);
       }
       gain.gain.setValueAtTime(vol, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);

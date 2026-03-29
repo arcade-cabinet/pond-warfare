@@ -9,8 +9,8 @@
  * on selection), Tab (cycle buildings), Q/W/E/R (action hotkeys).
  */
 
+import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
-import { WORLD_WIDTH, WORLD_HEIGHT } from '@/constants';
 
 export interface KeyboardCallbacks {
   onToggleMute: () => void;
@@ -53,21 +53,12 @@ export class KeyboardHandler {
   }
 
   /** Process camera panning each frame (WASD / arrow keys / screen-edge). */
-  updatePan(
-    mouseIn: boolean,
-    mouseX: number,
-    mouseY: number,
-    mouseIsDown: boolean,
-  ): boolean {
+  updatePan(mouseIn: boolean, mouseX: number, mouseY: number, mouseIsDown: boolean): boolean {
     const w = this.world;
     let manualPan = false;
 
     // W / ArrowUp / screen-edge top
-    if (
-      this.keys.w ||
-      this.keys.arrowup ||
-      (mouseIn && mouseY < 20 && !mouseIsDown)
-    ) {
+    if (this.keys.w || this.keys.arrowup || (mouseIn && mouseY < 20 && !mouseIsDown)) {
       w.camY -= PAN_SPEED;
       manualPan = true;
     }
@@ -81,10 +72,7 @@ export class KeyboardHandler {
       manualPan = true;
     }
     // ArrowLeft / screen-edge left (A is reserved for attack-move)
-    if (
-      this.keys.arrowleft ||
-      (mouseIn && mouseX < 20 && !mouseIsDown)
-    ) {
+    if (this.keys.arrowleft || (mouseIn && mouseX < 20 && !mouseIsDown)) {
       w.camX -= PAN_SPEED;
       manualPan = true;
     }
@@ -190,8 +178,7 @@ export class KeyboardHandler {
       e.preventDefault();
       const buildings = this.cb.getPlayerBuildings();
       if (buildings.length > 0) {
-        const curIdx =
-          w.selection.length === 1 ? buildings.indexOf(w.selection[0]) : -1;
+        const curIdx = w.selection.length === 1 ? buildings.indexOf(w.selection[0]) : -1;
         const next = buildings[(curIdx + 1) % buildings.length];
         w.selection = [next];
         w.isTracking = true;

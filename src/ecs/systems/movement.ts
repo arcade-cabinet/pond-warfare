@@ -12,24 +12,22 @@
  * - Update facingLeft based on movement direction
  */
 
-import { query, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
+import { hasComponent, query } from 'bitecs';
+import { BUILD_TIMER, GATHER_TIMER, REPAIR_TIMER } from '@/constants';
 import {
-  Position,
-  Velocity,
-  Sprite,
-  Collider,
-  UnitStateMachine,
-  Combat,
   Carrying,
-  Health,
-  Resource,
+  Collider,
+  Combat,
   EntityTypeTag,
-  FactionTag,
+  Health,
+  Position,
+  Resource,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
-import { UnitState, EntityKind, ResourceType, Faction } from '@/types';
-import { GATHER_TIMER, BUILD_TIMER, REPAIR_TIMER } from '@/constants';
-
+import type { GameWorld } from '@/ecs/world';
+import { EntityKind, ResourceType, UnitState } from '@/types';
 
 /**
  * Set of states that involve movement toward a target position.
@@ -200,11 +198,7 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
         // If the gather target still has resources, go back to it
         // Original: if (this.tEnt && this.tEnt.resAmount>0) { this.tPos={x:this.tEnt.x,y:this.tEnt.y}; this.state='g_move'; }
         const tEnt = UnitStateMachine.targetEntity[eid];
-        if (
-          tEnt &&
-          hasComponent(world.ecs, tEnt, Resource) &&
-          Resource.amount[tEnt] > 0
-        ) {
+        if (tEnt && hasComponent(world.ecs, tEnt, Resource) && Resource.amount[tEnt] > 0) {
           UnitStateMachine.targetX[eid] = Position.x[tEnt];
           UnitStateMachine.targetY[eid] = Position.y[tEnt];
           UnitStateMachine.state[eid] = UnitState.GatherMove;

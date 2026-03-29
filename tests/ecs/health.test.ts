@@ -4,15 +4,23 @@
  * Validates healing, flash timer decay, and death handling.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { addEntity, addComponent, hasComponent } from 'bitecs';
+import { addComponent, addEntity, entityExists } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  Position, Health, UnitStateMachine, FactionTag, EntityTypeTag,
-  Velocity, Collider, Sprite, Combat, Carrying, Dead,
+  Carrying,
+  Collider,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  Position,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
-import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { UnitState, Faction, EntityKind, ResourceType } from '@/types';
 import { healthSystem } from '@/ecs/systems/health';
+import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createUnit(world: GameWorld, hp: number, maxHp: number, faction: Faction): number {
   const eid = addEntity(world.ecs);
@@ -62,7 +70,6 @@ describe('healthSystem', () => {
 
   it('should remove dead entities', () => {
     const eid = createUnit(world, 0, 60, Faction.Player);
-    const { entityExists } = require('bitecs');
 
     healthSystem(world);
 
@@ -71,7 +78,7 @@ describe('healthSystem', () => {
   });
 
   it('should track stats when enemy unit dies', () => {
-    const eid = createUnit(world, 0, 60, Faction.Enemy);
+    const _eid = createUnit(world, 0, 60, Faction.Enemy);
 
     healthSystem(world);
 

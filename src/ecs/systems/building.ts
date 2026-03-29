@@ -12,24 +12,28 @@
  * - Timer management for both build and repair cycles
  */
 
-import { query, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
+import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
+import { BUILD_TIMER, PALETTE, REPAIR_TIMER } from '@/constants';
 import {
-  Position,
-  Health,
-  UnitStateMachine,
+  Building,
   EntityTypeTag,
   FactionTag,
-  Building,
-  IsBuilding,
+  Health,
+  Position,
+  UnitStateMachine,
 } from '@/ecs/components';
+import type { GameWorld } from '@/ecs/world';
 import { UnitState } from '@/types';
-import { BUILD_TIMER, REPAIR_TIMER, PALETTE } from '@/constants';
-import { audio } from '@/audio/audio-system';
-
 
 export function buildingSystem(world: GameWorld): void {
-  const builders = query(world.ecs, [Position, UnitStateMachine, Health, EntityTypeTag, FactionTag]);
+  const builders = query(world.ecs, [
+    Position,
+    UnitStateMachine,
+    Health,
+    EntityTypeTag,
+    FactionTag,
+  ]);
 
   for (let i = 0; i < builders.length; i++) {
     const eid = builders[i];
@@ -84,7 +88,6 @@ export function buildingSystem(world: GameWorld): void {
             Building.progress[tEnt] = 100;
           }
           UnitStateMachine.state[eid] = UnitState.Idle;
-          world.stats.buildingsBuilt++;
         }
 
         // Reset timer (original: this.gTimer = 30)

@@ -7,8 +7,8 @@
  * shift-click add/remove, and attack-move clicks.
  */
 
+import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
-import { WORLD_WIDTH, WORLD_HEIGHT } from '@/constants';
 
 export interface PointerState {
   x: number;
@@ -46,8 +46,15 @@ const DRAG_THRESHOLD = 10;
 
 export class PointerHandler {
   readonly mouse: PointerState = {
-    x: 0, y: 0, worldX: 0, worldY: 0,
-    startX: 0, startY: 0, isDown: false, btn: 0, in: false,
+    x: 0,
+    y: 0,
+    worldX: 0,
+    worldY: 0,
+    startX: 0,
+    startY: 0,
+    isDown: false,
+    btn: 0,
+    in: false,
   };
 
   private world: GameWorld;
@@ -91,8 +98,12 @@ export class PointerHandler {
     this.boundWindowMove = (e) => this.onWindowPointerMove(e);
     this.boundWindowUp = () => this.onWindowPointerUp();
 
-    container.addEventListener('mouseenter', () => { this.mouse.in = true; });
-    container.addEventListener('mouseleave', () => { this.mouse.in = false; });
+    container.addEventListener('mouseenter', () => {
+      this.mouse.in = true;
+    });
+    container.addEventListener('mouseleave', () => {
+      this.mouse.in = false;
+    });
     container.addEventListener('contextmenu', (e) => e.preventDefault());
     container.addEventListener('pointerdown', this.boundPointerDown);
     container.addEventListener('pointermove', this.boundPointerMove);
@@ -196,7 +207,7 @@ export class PointerHandler {
     if (!this.mouse.isDown) return;
     this.mouse.isDown = false;
 
-    const w = this.world;
+    const _w = this.world;
     const dx = this.mouse.worldX - this.mouse.startX;
     const dy = this.mouse.worldY - this.mouse.startY;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -209,9 +220,7 @@ export class PointerHandler {
       }
     } else if (e.button === 2) {
       // Right-click context command
-      this.cb.issueContextCommand(
-        this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY),
-      );
+      this.cb.issueContextCommand(this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY));
     }
   }
 
@@ -321,11 +330,11 @@ export class PointerHandler {
     // since the pointer handler doesn't have direct access to the ECS query.
     // We expose getDragRect() and let the game loop handle box selection each frame.
     // For the pointerup case, emit the final rect for one-shot processing.
-    const rect = {
+    const _rect = {
       minX: Math.min(this.mouse.startX, this.mouse.worldX),
       minY: Math.min(this.mouse.startY, this.mouse.worldY),
       maxX: Math.max(this.mouse.startX, this.mouse.worldX),
-      maxY: Math.max(this.mouse.startX, this.mouse.worldX),
+      maxY: Math.max(this.mouse.startY, this.mouse.worldY),
     };
     // The Game class should call processDragSelection(rect) after pointerup.
     // We store it for retrieval.
@@ -367,13 +376,9 @@ export class PointerHandler {
     return false; // Will be overridden by setShiftGetter
   }
 
-  private _shiftGetter: (() => boolean) | null = null;
-
   /** Provide a function that returns current shift state from keyboard handler. */
   setShiftGetter(fn: () => boolean): void {
-    this._shiftGetter = fn;
-    // Override the method
-    (this as any).isShiftDown = fn; // biome-ignore lint: intentional override
+    this.isShiftDown = fn;
   }
 
   // ---- Minimap ----
@@ -436,17 +441,11 @@ export class PointerHandler {
     const w = this.world;
     w.camX = Math.max(
       0,
-      Math.min(
-        WORLD_WIDTH - w.viewWidth,
-        xPercent * WORLD_WIDTH - this.minimapPanOffset.x,
-      ),
+      Math.min(WORLD_WIDTH - w.viewWidth, xPercent * WORLD_WIDTH - this.minimapPanOffset.x),
     );
     w.camY = Math.max(
       0,
-      Math.min(
-        WORLD_HEIGHT - w.viewHeight,
-        yPercent * WORLD_HEIGHT - this.minimapPanOffset.y,
-      ),
+      Math.min(WORLD_HEIGHT - w.viewHeight, yPercent * WORLD_HEIGHT - this.minimapPanOffset.y),
     );
   }
 }

@@ -12,11 +12,10 @@
  * The light canvas is composited via CSS `mix-blend-mode: screen`.
  */
 
+import { Building, EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { Firefly } from '@/types';
-import { EntityKind } from '@/types';
-import { Position, FactionTag, EntityTypeTag, Building } from '@/ecs/components';
-import { Faction } from '@/types';
+import { EntityKind, Faction } from '@/types';
 
 /** Entity kinds that are buildings (not units). */
 const BUILDING_KINDS = new Set([
@@ -61,12 +60,7 @@ export function drawLighting(
     const ey = Position.y[eid];
 
     // Frustum cull
-    if (
-      ex + 200 < camX ||
-      ex - 200 > camX + w ||
-      ey + 200 < camY ||
-      ey - 200 > camY + h
-    ) {
+    if (ex + 200 < camX || ex - 200 > camX + w || ey + 200 < camY || ey - 200 > camY + h) {
       continue;
     }
 

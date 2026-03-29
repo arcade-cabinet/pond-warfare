@@ -1,7 +1,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
-import type { GameWorld } from './world';
 import {
   Building,
   Carrying,
@@ -21,6 +20,7 @@ import {
   UnitStateMachine,
   Velocity,
 } from './components';
+import type { GameWorld } from './world';
 
 const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.Gatherer]: SpriteId.Gatherer,
@@ -102,11 +102,7 @@ export function spawnEntity(
     Building.hasRally[eid] = 0;
 
     // Training queue for lodge, burrow, armory
-    if (
-      kind === EntityKind.Lodge ||
-      kind === EntityKind.Burrow ||
-      kind === EntityKind.Armory
-    ) {
+    if (kind === EntityKind.Lodge || kind === EntityKind.Burrow || kind === EntityKind.Armory) {
       addComponent(world.ecs, eid, TrainingQueue);
       TrainingQueue.count[eid] = 0;
       TrainingQueue.timer[eid] = 0;
@@ -138,16 +134,11 @@ export function spawnEntity(
 
     addComponent(world.ecs, eid, Combat);
     let damage = def.damage;
-    if (faction === Faction.Player && world.tech.sharpSticks && damage > 0)
-      damage += 2;
+    if (faction === Faction.Player && world.tech.sharpSticks && damage > 0) damage += 2;
     Combat.damage[eid] = damage;
 
     let range = def.attackRange;
-    if (
-      kind === EntityKind.Sniper &&
-      faction === Faction.Player &&
-      world.tech.eagleEye
-    )
+    if (kind === EntityKind.Sniper && faction === Faction.Player && world.tech.eagleEye)
       range += 50;
     Combat.attackRange[eid] = range;
     Combat.attackCooldown[eid] = 0;

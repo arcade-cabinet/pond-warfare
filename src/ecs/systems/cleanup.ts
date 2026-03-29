@@ -13,18 +13,10 @@
  * - Building ambient particles: armory smoke (every 5 frames), lodge water bubbles (every 30 frames)
  */
 
-import { query, hasComponent } from 'bitecs';
+import { query } from 'bitecs';
+import { Building, EntityTypeTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import {
-  Position,
-  Health,
-  EntityTypeTag,
-  IsBuilding,
-  Building,
-  FactionTag,
-} from '@/ecs/components';
 import { EntityKind } from '@/types';
-
 
 export function cleanupSystem(world: GameWorld): void {
   // --- Building ambient particles (lines 1579-1584) ---

@@ -8,18 +8,17 @@
  */
 
 import {
+  hpBarColor,
+  hpPercent,
+  selectionComposition,
   selectionCount,
+  selectionDesc,
+  selectionIsMulti,
   selectionName,
   selectionNameColor,
   selectionShowHpBar,
-  selectionIsMulti,
-  selectionDesc,
-  selectionStatsHtml,
-  selectionComposition,
-  hpPercent,
-  hpBarColor,
   selectionSpriteData,
-  selectionKills,
+  selectionStatsHtml,
 } from './store';
 
 export function SelectionPanel() {
@@ -69,9 +68,7 @@ export function SelectionPanel() {
           />
 
           {/* Description / status */}
-          <p class="text-[10px] md:text-xs text-slate-400 leading-tight">
-            {selectionDesc}
-          </p>
+          <p class="text-[10px] md:text-xs text-slate-400 leading-tight">{selectionDesc}</p>
 
           {/* Multi-select composition */}
           {selectionIsMulti.value && (

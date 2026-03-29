@@ -7,56 +7,61 @@
  */
 
 import { query } from 'bitecs';
-import { WORLD_WIDTH, WORLD_HEIGHT, SPEED_LEVELS, TILE_SIZE } from '@/constants';
-import { EntityKind, Faction, SpriteId } from '@/types';
-import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { spawnEntity } from '@/ecs/archetypes';
-import { Selectable, Position, Health, FactionTag, EntityTypeTag, IsBuilding, IsResource } from '@/ecs/components';
-
-// Systems
-import { movementSystem } from '@/ecs/systems/movement';
-import { collisionSystem } from '@/ecs/systems/collision';
-import { combatSystem } from '@/ecs/systems/combat';
-import { projectileSystem } from '@/ecs/systems/projectile';
-import { gatheringSystem } from '@/ecs/systems/gathering';
-import { buildingSystem } from '@/ecs/systems/building';
-import { trainingSystem } from '@/ecs/systems/training';
-import { aiSystem } from '@/ecs/systems/ai';
-import { healthSystem } from '@/ecs/systems/health';
-import { dayNightSystem } from '@/ecs/systems/day-night';
-import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
-import { cleanupSystem } from '@/ecs/systems/cleanup';
-
-// Rendering
-import { generateAllSprites } from '@/rendering/sprites';
-import { buildBackground, buildFogTexture, buildExploredCanvas } from '@/rendering/background';
-import { drawGame, type RenderFrameData, type SelectionRect, type PlacementPreview } from '@/rendering/game-renderer';
-import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
-import { drawLighting } from '@/rendering/light-renderer';
-import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
-import { clampCamera, computeShakeOffset } from '@/rendering/camera';
-
-// Input
-import { KeyboardHandler, type KeyboardCallbacks } from '@/input/keyboard';
-import { PointerHandler, type PointerCallbacks } from '@/input/pointer';
-
 // Audio
 import { audio } from '@/audio/audio-system';
-
-// UI store
-import * as store from '@/ui/store';
-
+import { ENTITY_DEFS } from '@/config/entity-defs';
+import { SPEED_LEVELS, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { spawnEntity } from '@/ecs/archetypes';
+import {
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  Position,
+  Selectable,
+} from '@/ecs/components';
+import { aiSystem } from '@/ecs/systems/ai';
+import { buildingSystem } from '@/ecs/systems/building';
+import { cleanupSystem } from '@/ecs/systems/cleanup';
+import { collisionSystem } from '@/ecs/systems/collision';
+import { combatSystem } from '@/ecs/systems/combat';
+import { dayNightSystem } from '@/ecs/systems/day-night';
+import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
+import { gatheringSystem } from '@/ecs/systems/gathering';
+import { healthSystem } from '@/ecs/systems/health';
+// Systems
+import { movementSystem } from '@/ecs/systems/movement';
+import { projectileSystem } from '@/ecs/systems/projectile';
+import { trainingSystem } from '@/ecs/systems/training';
+import { createGameWorld, type GameWorld } from '@/ecs/world';
+// Input
+import { type KeyboardCallbacks, KeyboardHandler } from '@/input/keyboard';
+import { type PointerCallbacks, PointerHandler } from '@/input/pointer';
 // Selection utilities
 import {
   getEntityAt,
   hasPlayerUnitsSelected,
   issueContextCommand,
-  selectIdleWorker,
-  selectArmy,
   placeBuilding,
+  selectArmy,
+  selectIdleWorker,
 } from '@/input/selection';
-
-import { ENTITY_DEFS } from '@/config/entity-defs';
+import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
+import { clampCamera, computeShakeOffset } from '@/rendering/camera';
+import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
+import {
+  drawGame,
+  type PlacementPreview,
+  type RenderFrameData,
+  type SelectionRect,
+} from '@/rendering/game-renderer';
+import { drawLighting } from '@/rendering/light-renderer';
+import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
+// Rendering
+import { generateAllSprites } from '@/rendering/sprites';
+import { EntityKind, Faction, type SpriteId } from '@/types';
+// UI store
+import * as store from '@/ui/store';
 
 export class Game {
   world: GameWorld;
@@ -167,7 +172,9 @@ export class Game {
       },
       hasPlayerUnitsSelected: () => hasPlayerUnitsSelected(this.world),
       getPlayerBuildings: () => {
-        const ents = Array.from(query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]));
+        const ents = Array.from(
+          query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]),
+        );
         return ents.filter(
           (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
         );
@@ -224,8 +231,7 @@ export class Game {
         FactionTag.faction[eid] === Faction.Player &&
         !!ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding,
       isEnemyFaction: (eid) => FactionTag.faction[eid] === Faction.Enemy,
-      isBuildingEntity: (eid) =>
-        !!ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding,
+      isBuildingEntity: (eid) => !!ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding,
       getEntityKind: (eid) => EntityTypeTag.kind[eid],
       isEntityOnScreen: (eid) => {
         const ex = Position.x[eid];
@@ -238,7 +244,9 @@ export class Game {
         );
       },
       getAllPlayerUnitsOfKind: (kind) => {
-        const ents = Array.from(query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]));
+        const ents = Array.from(
+          query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]),
+        );
         return ents.filter(
           (eid) =>
             FactionTag.faction[eid] === Faction.Player &&
@@ -246,15 +254,24 @@ export class Game {
             Health.current[eid] > 0,
         );
       },
-      selectEntity: (eid) => { Selectable.selected[eid] = 1; },
-      deselectEntity: (eid) => { Selectable.selected[eid] = 0; },
+      selectEntity: (eid) => {
+        Selectable.selected[eid] = 1;
+      },
+      deselectEntity: (eid) => {
+        Selectable.selected[eid] = 0;
+      },
       deselectAll: () => {
         for (const eid of this.world.selection) {
           Selectable.selected[eid] = 0;
         }
       },
     };
-    this.pointer = new PointerHandler(this.world, this.container, this.gameCanvas, pointerCallbacks);
+    this.pointer = new PointerHandler(
+      this.world,
+      this.container,
+      this.gameCanvas,
+      pointerCallbacks,
+    );
     this.pointer.attachMinimap(this.minimapCanvas);
     this.pointer.setShiftGetter(() => !!this.keyboard.keys.shift);
 
@@ -442,12 +459,16 @@ export class Game {
     const shake = computeShakeOffset(this.world);
 
     // Build sorted entity list for rendering
-    const allEnts = Array.from(query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]));
+    const allEnts = Array.from(
+      query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]),
+    );
     const liveEnts = allEnts.filter((eid) => Health.current[eid] > 0);
     const sortedEids = liveEnts.sort((a, b) => Position.y[a] - Position.y[b]);
 
     // Player entities for fog
-    const playerEids = allEnts.filter((eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0);
+    const playerEids = allEnts.filter(
+      (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
+    );
 
     // Build render data
     const dragRect = this.pointer.getDragRect();
@@ -475,10 +496,23 @@ export class Game {
     drawFog(this.fogState, this.world, playerEids, shake.offsetX, shake.offsetY);
 
     // Dynamic lighting
-    drawLighting(this.lightCtx, this.world, liveEnts, this.world.fireflies, shake.offsetX, shake.offsetY);
+    drawLighting(
+      this.lightCtx,
+      this.world,
+      liveEnts,
+      this.world.fireflies,
+      shake.offsetX,
+      shake.offsetY,
+    );
 
     // Minimap
-    drawMinimap(this.minimapCtx, this.world, liveEnts, this.exploredCanvas, this.world.minimapPings ?? []);
+    drawMinimap(
+      this.minimapCtx,
+      this.world,
+      liveEnts,
+      this.exploredCanvas,
+      this.world.minimapPings ?? [],
+    );
     updateMinimapViewport(this.minimapCamElement, this.world);
   }
 

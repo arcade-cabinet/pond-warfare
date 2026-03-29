@@ -15,27 +15,23 @@
  * - Attack cooldown decay every frame
  */
 
-import { query, hasComponent, removeEntity } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
+import { hasComponent, query, removeEntity } from 'bitecs';
+import { audio } from '@/audio/audio-system';
+import { ALLY_ASSIST_RADIUS, PALETTE } from '@/constants';
 import {
-  Position,
-  Health,
   Combat,
-  UnitStateMachine,
+  Dead,
   EntityTypeTag,
   FactionTag,
+  Health,
   IsBuilding,
   IsResource,
+  Position,
   Sprite,
-  Selectable,
-  Building,
-  Resource,
-  Dead,
+  UnitStateMachine,
 } from '@/ecs/components';
-import { UnitState, EntityKind, Faction, SpriteId } from '@/types';
-import { PALETTE, ALLY_ASSIST_RADIUS } from '@/constants';
-import { audio } from '@/audio/audio-system';
-
+import type { GameWorld } from '@/ecs/world';
+import { Faction, SpriteId, UnitState } from '@/types';
 
 /**
  * Apply damage to an entity. Exported as a utility for use by combat and projectile systems.

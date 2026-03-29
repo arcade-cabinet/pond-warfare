@@ -9,10 +9,10 @@
  * larger vision radius (250) than units (150).
  */
 
+import { BUILDING_SIGHT_RADIUS, FOG_TEXTURE_SIZE, UNIT_SIGHT_RADIUS } from '@/constants';
+import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { FOG_TEXTURE_SIZE, BUILDING_SIGHT_RADIUS, UNIT_SIGHT_RADIUS } from '@/constants';
-import { Position, FactionTag, EntityTypeTag } from '@/ecs/components';
-import { Faction, EntityKind } from '@/types';
+import { EntityKind, Faction } from '@/types';
 
 /** Entity kinds that are buildings (get larger vision radius). */
 const BUILDING_KINDS = new Set([
@@ -70,12 +70,7 @@ export function drawFog(
     const ey = Position.y[eid];
 
     // Frustum cull: skip entities far off-screen
-    if (
-      ex + 400 < camX ||
-      ex - 400 > camX + w ||
-      ey + 400 < camY ||
-      ey - 400 > camY + h
-    ) {
+    if (ex + 400 < camX || ex - 400 > camX + w || ey + 400 < camY || ey - 400 > camY + h) {
       continue;
     }
 

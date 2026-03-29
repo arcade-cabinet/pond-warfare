@@ -14,17 +14,11 @@
  * "explored" state that reveals previously visited areas with a dimmer visibility.
  */
 
-import { query, hasComponent } from 'bitecs';
-import type { GameWorld } from '@/ecs/world';
-import {
-  Position,
-  Health,
-  FactionTag,
-  IsBuilding,
-} from '@/ecs/components';
-import { Faction } from '@/types';
+import { hasComponent, query } from 'bitecs';
 import { EXPLORED_SCALE } from '@/constants';
-
+import { FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
+import type { GameWorld } from '@/ecs/world';
+import { Faction } from '@/types';
 
 /**
  * Reference to the explored canvas 2D context. Set once via initFogOfWar().

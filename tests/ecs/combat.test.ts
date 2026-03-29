@@ -4,14 +4,31 @@
  * Validates attack behavior, cooldown management, and auto-aggro.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { addEntity, addComponent } from 'bitecs';
-import { Position, Health, Combat, UnitStateMachine, FactionTag, EntityTypeTag, Velocity, Collider, Sprite, Carrying } from '@/ecs/components';
-import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { UnitState, Faction, EntityKind, ResourceType } from '@/types';
+import { addComponent, addEntity } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  Carrying,
+  Collider,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  Position,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
+} from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
+import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
-function createCombatUnit(world: GameWorld, x: number, y: number, faction: Faction, kind: EntityKind): number {
+function createCombatUnit(
+  world: GameWorld,
+  x: number,
+  y: number,
+  faction: Faction,
+  kind: EntityKind,
+): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

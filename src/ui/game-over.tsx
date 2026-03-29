@@ -5,13 +5,7 @@
  * and Play Again button.
  */
 
-import {
-  gameState,
-  goTitle,
-  goTitleColor,
-  goDesc,
-  goStatsText,
-} from './store';
+import { gameState, goDesc, goStatsText, goTitle, goTitleColor } from './store';
 
 export interface GameOverProps {
   onRestart?: () => void;

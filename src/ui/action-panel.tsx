@@ -62,9 +62,7 @@ function QueueDisplay() {
 
   return (
     <div class="col-span-2 sm:col-span-3 mt-2 flex flex-col gap-1 border-t border-slate-600 pt-2">
-      <span class="text-[10px] text-sky-200 uppercase tracking-wider">
-        Queue (Click to Cancel)
-      </span>
+      <span class="text-[10px] text-sky-200 uppercase tracking-wider">Queue (Click to Cancel)</span>
       <div class="flex gap-2 flex-wrap">
         {items.map((item, i) => (
           <div
