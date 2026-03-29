@@ -113,6 +113,51 @@ export function aiSystem(world: GameWorld): void {
     }
   }
 
+  // --- Boss wave: after wave 10, spawn 1 boss croc per nest every 3 wave intervals ---
+  if (
+    !isPeaceful &&
+    world.frameCount > world.peaceTimer + 10 * WAVE_INTERVAL &&
+    world.frameCount % (WAVE_INTERVAL * 3) === 0
+  ) {
+    const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
+    let lodgeEid = -1;
+    const pBuildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
+    for (let i = 0; i < pBuildings.length; i++) {
+      const eid = pBuildings[i];
+      if (
+        EntityTypeTag.kind[eid] === EntityKind.Lodge &&
+        FactionTag.faction[eid] === Faction.Player &&
+        Health.current[eid] > 0
+      ) {
+        lodgeEid = eid;
+        break;
+      }
+    }
+
+    for (let i = 0; i < nests.length; i++) {
+      const nestEid = nests[i];
+      if (EntityTypeTag.kind[nestEid] !== EntityKind.PredatorNest) continue;
+      if (Health.current[nestEid] <= 0) continue;
+
+      const nx = Position.x[nestEid];
+      const ny = Position.y[nestEid];
+      const sx = nx + (Math.random() - 0.5) * 60;
+      const sy = ny + 30;
+
+      const eid = spawnEntity(world, EntityKind.BossCroc, sx, sy, Faction.Enemy);
+
+      if (lodgeEid !== -1) {
+        UnitStateMachine.targetEntity[eid] = lodgeEid;
+        UnitStateMachine.targetX[eid] = Position.x[lodgeEid];
+        UnitStateMachine.targetY[eid] = Position.y[lodgeEid];
+        UnitStateMachine.state[eid] = UnitState.AttackMove;
+
+        const speed = Velocity.speed[eid] || ENTITY_DEFS[EntityKind.BossCroc]?.speed || 1.2;
+        world.yukaManager.addEnemy(eid, sx, sy, speed, Position.x[lodgeEid], Position.y[lodgeEid]);
+      }
+    }
+  }
+
   // --- Nest defense reinforcement (lines 1757-1771) ---
   // Original: if (this.type === 'predator_nest' && this.hp < this.maxHp * 0.5 && GAME.frameCount % 600 === 0)
   if (world.frameCount % 600 === 0) {

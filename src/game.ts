@@ -10,6 +10,7 @@ import { query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS, entityKindFromString, entityKindName } from '@/config/entity-defs';
+import { canResearch, TECH_UPGRADES } from '@/config/tech-tree';
 import {
   DAY_FRAMES,
   SPEED_LEVELS,
@@ -54,6 +55,7 @@ import { type KeyboardCallbacks, KeyboardHandler } from '@/input/keyboard';
 import { type PointerCallbacks, PointerHandler } from '@/input/pointer';
 // Selection utilities
 import {
+  cancelTrain,
   canPlaceBuilding,
   getEntityAt,
   hasPlayerUnitsSelected,
@@ -61,6 +63,7 @@ import {
   placeBuilding,
   selectArmy,
   selectIdleWorker,
+  train,
 } from '@/input/selection';
 import { PhysicsManager } from '@/physics/physics-world';
 import { cleanupEntityAnimation, triggerCommandPulse } from '@/rendering/animations';
@@ -84,6 +87,12 @@ import {
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
 import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
+import {
+  type ActionButtonDef,
+  actionButtons,
+  type QueueItemDef,
+  queueItems,
+} from '@/ui/action-panel';
 // UI store
 import * as store from '@/ui/store';
 
@@ -396,7 +405,7 @@ export class Game {
     }
 
     // Scattered resources
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < 200; i++) {
       spawnEntity(
         this.world,
         EntityKind.Cattail,
@@ -405,12 +414,32 @@ export class Game {
         Faction.Neutral,
       );
     }
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 8; i++) {
       spawnEntity(
         this.world,
         EntityKind.Clambed,
         Math.random() * WORLD_WIDTH,
         Math.random() * WORLD_HEIGHT,
+        Faction.Neutral,
+      );
+    }
+
+    // Rich center cluster near world center
+    for (let i = 0; i < 10; i++) {
+      spawnEntity(
+        this.world,
+        EntityKind.Cattail,
+        sx + (Math.random() - 0.5) * 400,
+        sy + (Math.random() - 0.5) * 400,
+        Faction.Neutral,
+      );
+    }
+    for (let i = 0; i < 3; i++) {
+      spawnEntity(
+        this.world,
+        EntityKind.Clambed,
+        sx + (Math.random() - 0.5) * 300,
+        sy + (Math.random() - 0.5) * 300,
         Faction.Neutral,
       );
     }
@@ -422,6 +451,24 @@ export class Game {
       { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT - 800 },
     ];
     for (const loc of campLocs) {
+      // Cluster near each camp: 8 cattails + 1 clambed within 200px
+      for (let i = 0; i < 8; i++) {
+        spawnEntity(
+          this.world,
+          EntityKind.Cattail,
+          loc.x + (Math.random() - 0.5) * 400,
+          loc.y + (Math.random() - 0.5) * 400,
+          Faction.Neutral,
+        );
+      }
+      spawnEntity(
+        this.world,
+        EntityKind.Clambed,
+        loc.x + (Math.random() - 0.5) * 400,
+        loc.y + (Math.random() - 0.5) * 400,
+        Faction.Neutral,
+      );
+
       spawnEntity(this.world, EntityKind.PredatorNest, loc.x, loc.y, Faction.Enemy);
       for (let j = 0; j < 2; j++) {
         spawnEntity(
@@ -759,6 +806,327 @@ export class Game {
       });
     }
     store.globalProductionQueue.value = prodQueue;
+
+    // --- Action panel buttons (context-sensitive) ---
+    const btns: ActionButtonDef[] = [];
+    const qItems: QueueItemDef[] = [];
+
+    if (w.selection.length === 1) {
+      const selEid = w.selection[0];
+      const selKind = EntityTypeTag.kind[selEid] as EntityKind;
+      const selFaction = FactionTag.faction[selEid] as Faction;
+
+      if (selFaction === Faction.Player) {
+        // Gatherer selected: build buttons
+        if (selKind === EntityKind.Gatherer) {
+          const burrowDef = ENTITY_DEFS[EntityKind.Burrow];
+          btns.push({
+            title: 'Burrow',
+            cost: `${burrowDef.twigCost}T`,
+            hotkey: 'Q',
+            affordable: w.resources.twigs >= (burrowDef.twigCost ?? 0),
+            description: 'Housing (+4 food cap)',
+            onClick: () => {
+              w.placingBuilding = 'burrow';
+            },
+          });
+          const armoryDef = ENTITY_DEFS[EntityKind.Armory];
+          btns.push({
+            title: 'Armory',
+            cost: `${armoryDef.clamCost}C ${armoryDef.twigCost}T`,
+            hotkey: 'W',
+            affordable:
+              w.resources.clams >= (armoryDef.clamCost ?? 0) &&
+              w.resources.twigs >= (armoryDef.twigCost ?? 0),
+            description: 'Train combat units',
+            onClick: () => {
+              w.placingBuilding = 'armory';
+            },
+          });
+          const towerDef = ENTITY_DEFS[EntityKind.Tower];
+          btns.push({
+            title: 'Tower',
+            cost: `${towerDef.clamCost}C ${towerDef.twigCost}T`,
+            hotkey: 'E',
+            affordable:
+              w.resources.clams >= (towerDef.clamCost ?? 0) &&
+              w.resources.twigs >= (towerDef.twigCost ?? 0),
+            description: 'Defensive tower',
+            onClick: () => {
+              w.placingBuilding = 'tower';
+            },
+          });
+          const wtDef = ENTITY_DEFS[EntityKind.Watchtower];
+          btns.push({
+            title: 'Watchtower',
+            cost: `${wtDef.clamCost}C ${wtDef.twigCost}T`,
+            hotkey: 'R',
+            affordable:
+              w.resources.clams >= (wtDef.clamCost ?? 0) &&
+              w.resources.twigs >= (wtDef.twigCost ?? 0) &&
+              w.tech.eagleEye,
+            description: 'Long-range tower (requires Eagle Eye)',
+            onClick: () => {
+              if (w.tech.eagleEye) w.placingBuilding = 'watchtower';
+            },
+          });
+        }
+
+        // Lodge selected: train gatherer + techs
+        if (selKind === EntityKind.Lodge) {
+          const gDef = ENTITY_DEFS[EntityKind.Gatherer];
+          btns.push({
+            title: 'Gatherer',
+            cost: `${gDef.clamCost}C ${gDef.foodCost}F`,
+            hotkey: 'Q',
+            affordable:
+              w.resources.clams >= (gDef.clamCost ?? 0) &&
+              w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
+            description: 'Worker unit',
+            onClick: () => {
+              train(
+                w,
+                selEid,
+                EntityKind.Gatherer,
+                gDef.clamCost ?? 0,
+                gDef.twigCost ?? 0,
+                gDef.foodCost ?? 1,
+              );
+            },
+          });
+          const smTech = TECH_UPGRADES.sturdyMud;
+          btns.push({
+            title: smTech.name,
+            cost: `${smTech.clamCost}C ${smTech.twigCost}T`,
+            hotkey: 'W',
+            affordable:
+              canResearch('sturdyMud', w.tech) &&
+              w.resources.clams >= smTech.clamCost &&
+              w.resources.twigs >= smTech.twigCost,
+            description: smTech.description,
+            onClick: () => {
+              if (
+                canResearch('sturdyMud', w.tech) &&
+                w.resources.clams >= smTech.clamCost &&
+                w.resources.twigs >= smTech.twigCost
+              ) {
+                w.resources.clams -= smTech.clamCost;
+                w.resources.twigs -= smTech.twigCost;
+                w.tech.sturdyMud = true;
+              }
+            },
+          });
+          const spTech = TECH_UPGRADES.swiftPaws;
+          btns.push({
+            title: spTech.name,
+            cost: `${spTech.clamCost}C ${spTech.twigCost}T`,
+            hotkey: 'E',
+            affordable:
+              canResearch('swiftPaws', w.tech) &&
+              w.resources.clams >= spTech.clamCost &&
+              w.resources.twigs >= spTech.twigCost,
+            description: spTech.description,
+            onClick: () => {
+              if (
+                canResearch('swiftPaws', w.tech) &&
+                w.resources.clams >= spTech.clamCost &&
+                w.resources.twigs >= spTech.twigCost
+              ) {
+                w.resources.clams -= spTech.clamCost;
+                w.resources.twigs -= spTech.twigCost;
+                w.tech.swiftPaws = true;
+              }
+            },
+          });
+        }
+
+        // Armory selected: train brawler/sniper/healer + techs
+        if (selKind === EntityKind.Armory) {
+          const bDef = ENTITY_DEFS[EntityKind.Brawler];
+          btns.push({
+            title: 'Brawler',
+            cost: `${bDef.clamCost}C ${bDef.twigCost}T ${bDef.foodCost}F`,
+            hotkey: 'Q',
+            affordable:
+              w.resources.clams >= (bDef.clamCost ?? 0) &&
+              w.resources.twigs >= (bDef.twigCost ?? 0) &&
+              w.resources.food + (bDef.foodCost ?? 1) <= w.resources.maxFood,
+            description: 'Melee fighter',
+            onClick: () => {
+              train(
+                w,
+                selEid,
+                EntityKind.Brawler,
+                bDef.clamCost ?? 0,
+                bDef.twigCost ?? 0,
+                bDef.foodCost ?? 1,
+              );
+            },
+          });
+          const sDef = ENTITY_DEFS[EntityKind.Sniper];
+          btns.push({
+            title: 'Sniper',
+            cost: `${sDef.clamCost}C ${sDef.twigCost}T ${sDef.foodCost}F`,
+            hotkey: 'W',
+            affordable:
+              w.resources.clams >= (sDef.clamCost ?? 0) &&
+              w.resources.twigs >= (sDef.twigCost ?? 0) &&
+              w.resources.food + (sDef.foodCost ?? 1) <= w.resources.maxFood,
+            description: 'Ranged attacker',
+            onClick: () => {
+              train(
+                w,
+                selEid,
+                EntityKind.Sniper,
+                sDef.clamCost ?? 0,
+                sDef.twigCost ?? 0,
+                sDef.foodCost ?? 1,
+              );
+            },
+          });
+          const hDef = ENTITY_DEFS[EntityKind.Healer];
+          btns.push({
+            title: 'Healer',
+            cost: `${hDef.clamCost}C ${hDef.twigCost}T ${hDef.foodCost}F`,
+            hotkey: 'E',
+            affordable:
+              w.resources.clams >= (hDef.clamCost ?? 0) &&
+              w.resources.twigs >= (hDef.twigCost ?? 0) &&
+              w.resources.food + (hDef.foodCost ?? 1) <= w.resources.maxFood,
+            description: 'Heals nearby friendlies',
+            onClick: () => {
+              train(
+                w,
+                selEid,
+                EntityKind.Healer,
+                hDef.clamCost ?? 0,
+                hDef.twigCost ?? 0,
+                hDef.foodCost ?? 1,
+              );
+            },
+          });
+          const ssTech = TECH_UPGRADES.sharpSticks;
+          btns.push({
+            title: ssTech.name,
+            cost: `${ssTech.clamCost}C ${ssTech.twigCost}T`,
+            hotkey: 'R',
+            affordable:
+              canResearch('sharpSticks', w.tech) &&
+              w.resources.clams >= ssTech.clamCost &&
+              w.resources.twigs >= ssTech.twigCost,
+            description: ssTech.description,
+            onClick: () => {
+              if (
+                canResearch('sharpSticks', w.tech) &&
+                w.resources.clams >= ssTech.clamCost &&
+                w.resources.twigs >= ssTech.twigCost
+              ) {
+                w.resources.clams -= ssTech.clamCost;
+                w.resources.twigs -= ssTech.twigCost;
+                w.tech.sharpSticks = true;
+              }
+            },
+          });
+          const eeTech = TECH_UPGRADES.eagleEye;
+          btns.push({
+            title: eeTech.name,
+            cost: `${eeTech.clamCost}C ${eeTech.twigCost}T`,
+            hotkey: 'T',
+            affordable:
+              canResearch('eagleEye', w.tech) &&
+              w.resources.clams >= eeTech.clamCost &&
+              w.resources.twigs >= eeTech.twigCost,
+            description: eeTech.description,
+            onClick: () => {
+              if (
+                canResearch('eagleEye', w.tech) &&
+                w.resources.clams >= eeTech.clamCost &&
+                w.resources.twigs >= eeTech.twigCost
+              ) {
+                w.resources.clams -= eeTech.clamCost;
+                w.resources.twigs -= eeTech.twigCost;
+                w.tech.eagleEye = true;
+              }
+            },
+          });
+          const hsTech = TECH_UPGRADES.hardenedShells;
+          btns.push({
+            title: hsTech.name,
+            cost: `${hsTech.clamCost}C ${hsTech.twigCost}T`,
+            hotkey: 'Y',
+            affordable:
+              canResearch('hardenedShells', w.tech) &&
+              w.resources.clams >= hsTech.clamCost &&
+              w.resources.twigs >= hsTech.twigCost,
+            description: hsTech.description,
+            onClick: () => {
+              if (
+                canResearch('hardenedShells', w.tech) &&
+                w.resources.clams >= hsTech.clamCost &&
+                w.resources.twigs >= hsTech.twigCost
+              ) {
+                w.resources.clams -= hsTech.clamCost;
+                w.resources.twigs -= hsTech.twigCost;
+                w.tech.hardenedShells = true;
+              }
+            },
+          });
+
+          // Training queue display for armory
+          const slots = trainingQueueSlots.get(selEid) ?? [];
+          for (let qi = 0; qi < slots.length; qi++) {
+            const unitKind = slots[qi] as EntityKind;
+            const progress =
+              qi === 0
+                ? Math.max(
+                    0,
+                    Math.min(
+                      100,
+                      ((TRAIN_TIMER - TrainingQueue.timer[selEid]) / TRAIN_TIMER) * 100,
+                    ),
+                  )
+                : 0;
+            const idx = qi;
+            qItems.push({
+              label: entityKindName(unitKind).charAt(0),
+              progressPct: progress,
+              onCancel: () => {
+                cancelTrain(w, selEid, idx);
+              },
+            });
+          }
+        }
+
+        // Lodge/Burrow training queue display
+        if (selKind === EntityKind.Lodge || selKind === EntityKind.Burrow) {
+          const slots = trainingQueueSlots.get(selEid) ?? [];
+          for (let qi = 0; qi < slots.length; qi++) {
+            const unitKind = slots[qi] as EntityKind;
+            const progress =
+              qi === 0
+                ? Math.max(
+                    0,
+                    Math.min(
+                      100,
+                      ((TRAIN_TIMER - TrainingQueue.timer[selEid]) / TRAIN_TIMER) * 100,
+                    ),
+                  )
+                : 0;
+            const idx = qi;
+            qItems.push({
+              label: entityKindName(unitKind).charAt(0),
+              progressPct: progress,
+              onCancel: () => {
+                cancelTrain(w, selEid, idx);
+              },
+            });
+          }
+        }
+      }
+    }
+
+    actionButtons.value = btns;
+    queueItems.value = qItems;
   }
 
   /** Get sprite canvas by SpriteId */

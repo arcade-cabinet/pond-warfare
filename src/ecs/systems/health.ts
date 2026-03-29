@@ -249,6 +249,21 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     });
   }
 
+  // Boss croc loot
+  if (
+    hasComponent(world.ecs, eid, EntityTypeTag) &&
+    (EntityTypeTag.kind[eid] as EntityKind) === EntityKind.BossCroc
+  ) {
+    world.resources.clams += 100;
+    world.floatingTexts.push({
+      x: ex,
+      y: ey - 30,
+      text: '+100 Clams!',
+      color: '#facc15',
+      life: 60,
+    });
+  }
+
   // Credit kill to attacker (original lines 1836-1843)
   if (attackerEid !== undefined && hasComponent(world.ecs, attackerEid, Combat)) {
     Combat.kills[attackerEid]++;
@@ -315,7 +330,56 @@ export function healthSystem(world: GameWorld): void {
         state === UnitState.GatherMove ||
         state === UnitState.ReturnMove
       ) {
-        Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + 1);
+        const healAmount = world.tech.hardenedShells ? 5 : 1;
+        Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + healAmount);
+      }
+    }
+  }
+
+  // --- Healer aura: healers heal nearest friendly within 80px every 60 frames ---
+  if (world.frameCount % 60 === 0) {
+    const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+    for (let i = 0; i < allUnits.length; i++) {
+      const hEid = allUnits[i];
+      if ((EntityTypeTag.kind[hEid] as EntityKind) !== EntityKind.Healer) continue;
+      if ((FactionTag.faction[hEid] as Faction) !== Faction.Player) continue;
+      if (Health.current[hEid] <= 0) continue;
+
+      const hx = Position.x[hEid];
+      const hy = Position.y[hEid];
+      let bestEid = -1;
+      let bestDistSq = 80 * 80;
+
+      for (let j = 0; j < allUnits.length; j++) {
+        const tEid = allUnits[j];
+        if (tEid === hEid) continue;
+        if ((FactionTag.faction[tEid] as Faction) !== Faction.Player) continue;
+        if (hasComponent(world.ecs, tEid, IsBuilding)) continue;
+        if (hasComponent(world.ecs, tEid, IsResource)) continue;
+        if ((EntityTypeTag.kind[tEid] as EntityKind) === EntityKind.Healer) continue;
+        if (Health.current[tEid] <= 0) continue;
+        if (Health.current[tEid] >= Health.max[tEid]) continue;
+
+        const dx = Position.x[tEid] - hx;
+        const dy = Position.y[tEid] - hy;
+        const dSq = dx * dx + dy * dy;
+        if (dSq < bestDistSq) {
+          bestDistSq = dSq;
+          bestEid = tEid;
+        }
+      }
+
+      if (bestEid !== -1) {
+        Health.current[bestEid] = Math.min(Health.max[bestEid], Health.current[bestEid] + 2);
+        world.particles.push({
+          x: Position.x[bestEid],
+          y: Position.y[bestEid] - 10,
+          vx: (Math.random() - 0.5) * 1,
+          vy: -Math.random() * 1.5,
+          life: 20,
+          color: '#22c55e',
+          size: 3,
+        });
       }
     }
   }

@@ -26,6 +26,9 @@ describe('ENTITY_DEFS', () => {
       EntityKind.PredatorNest,
       EntityKind.Cattail,
       EntityKind.Clambed,
+      EntityKind.Healer,
+      EntityKind.Watchtower,
+      EntityKind.BossCroc,
     ];
     for (const kind of kinds) {
       expect(ENTITY_DEFS[kind]).toBeDefined();
@@ -69,6 +72,7 @@ describe('ENTITY_DEFS', () => {
       EntityKind.Armory,
       EntityKind.Tower,
       EntityKind.PredatorNest,
+      EntityKind.Watchtower,
     ];
     for (const kind of buildings) {
       expect(ENTITY_DEFS[kind].isBuilding).toBe(true);

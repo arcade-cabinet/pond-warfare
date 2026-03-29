@@ -159,6 +159,41 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     resourceType: ResourceType.Clams,
     resourceAmount: 25000,
   },
+  [EntityKind.Healer]: {
+    hp: 25,
+    speed: 1.8,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 80,
+    twigCost: 60,
+    foodCost: 1,
+  },
+  [EntityKind.Watchtower]: {
+    hp: 800,
+    speed: 0,
+    damage: 15,
+    attackRange: 280,
+    isBuilding: true,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 400,
+    twigCost: 350,
+  },
+  [EntityKind.BossCroc]: {
+    hp: 200,
+    speed: 1.2,
+    damage: 15,
+    attackRange: 50,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+  },
 };
 
 export function entityKindFromString(name: string): EntityKind | undefined {
@@ -175,6 +210,9 @@ export function entityKindFromString(name: string): EntityKind | undefined {
     predator_nest: EntityKind.PredatorNest,
     cattail: EntityKind.Cattail,
     clambed: EntityKind.Clambed,
+    healer: EntityKind.Healer,
+    watchtower: EntityKind.Watchtower,
+    boss_croc: EntityKind.BossCroc,
   };
   return map[name];
 }
@@ -193,6 +231,9 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.PredatorNest]: 'Predator Nest',
     [EntityKind.Cattail]: 'Cattail',
     [EntityKind.Clambed]: 'Clambed',
+    [EntityKind.Healer]: 'Healer',
+    [EntityKind.Watchtower]: 'Watchtower',
+    [EntityKind.BossCroc]: 'Boss Croc',
   };
   return names[kind];
 }

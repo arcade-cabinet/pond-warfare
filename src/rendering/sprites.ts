@@ -26,9 +26,21 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'clambed', id: SpriteId.Clambed },
   { name: 'bones', id: SpriteId.Bones },
   { name: 'rubble', id: SpriteId.Rubble },
+  { name: 'healer', id: SpriteId.Healer },
+  { name: 'watchtower', id: SpriteId.Watchtower },
+  { name: 'boss_croc', id: SpriteId.BossCroc },
 ];
 
-const LARGE_TYPES = new Set(['lodge', 'burrow', 'armory', 'tower', 'predator_nest', 'rubble']);
+const LARGE_TYPES = new Set([
+  'lodge',
+  'burrow',
+  'armory',
+  'tower',
+  'predator_nest',
+  'rubble',
+  'watchtower',
+  'boss_croc',
+]);
 
 /**
  * Generate a single sprite canvas at native pixel-art resolution,
@@ -169,6 +181,46 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     for (let i = 0; i < 20; i++)
       p(8 + Math.random() * 16, 16 + Math.random() * 8, PALETTE.mudLight);
     rect(14, 24, 4, 6, PALETTE.black);
+  } else if (type === 'healer') {
+    // Otter body (same as gatherer base)
+    rect(5, 4, 6, 8, PALETTE.otterBase);
+    rect(6, 5, 4, 6, PALETTE.otterBelly);
+    rect(5, 2, 6, 4, PALETTE.otterBase);
+    p(6, 3, PALETTE.black);
+    p(9, 3, PALETTE.black);
+    p(7, 4, PALETTE.otterNose);
+    p(8, 4, PALETTE.otterNose);
+    rect(4, 5, 1, 4, PALETTE.otterBase);
+    rect(11, 5, 1, 4, PALETTE.otterBase);
+    rect(5, 12, 2, 2, PALETTE.otterBase);
+    rect(9, 12, 2, 2, PALETTE.otterBase);
+    rect(11, 10, 3, 2, PALETTE.otterBase);
+    // Green cross (healer mark)
+    rect(7, 6, 2, 5, '#22c55e');
+    rect(6, 8, 4, 1, '#22c55e');
+  } else if (type === 'watchtower') {
+    rect(6, 12, 20, 18, PALETTE.stone);
+    for (let i = 0; i < 40; i++) p(6 + Math.random() * 20, 12 + Math.random() * 18, PALETTE.stoneL);
+    rect(4, 6, 24, 6, PALETTE.stone);
+    rect(8, 2, 16, 4, '#64748b');
+    rect(12, 22, 8, 10, PALETTE.black);
+    // Flag
+    rect(22, 0, 1, 8, PALETTE.otterBase);
+    rect(23, 0, 6, 4, '#ef4444');
+  } else if (type === 'boss_croc') {
+    // Large body
+    rect(4, 14, 24, 8, PALETTE.gatorBase);
+    for (let i = 4; i < 28; i += 2) p(i, 13, PALETTE.gatorLight);
+    rect(0, 16, 8, 6, PALETTE.gatorLight); // Head
+    p(2, 15, PALETTE.gatorEye);
+    p(5, 15, PALETTE.gatorEye);
+    rect(26, 16, 6, 4, PALETTE.gatorBase); // Tail
+    // Armor plates
+    for (let i = 8; i < 24; i += 4) {
+      rect(i, 12, 3, 2, PALETTE.stone);
+    }
+    rect(4, 22, 4, 2, PALETTE.gatorLight);
+    rect(20, 22, 4, 2, PALETTE.gatorLight);
   } else if (type === 'armory') {
     rect(4, 12, 24, 16, PALETTE.waterMid);
     rect(2, 10, 28, 4, PALETTE.mudDark);
@@ -224,6 +276,8 @@ const LARGE_SPRITE_IDS = new Set<SpriteId>([
   SpriteId.Tower,
   SpriteId.PredatorNest,
   SpriteId.Rubble,
+  SpriteId.Watchtower,
+  SpriteId.BossCroc,
 ]);
 
 export function getSpriteSize(id: SpriteId): { width: number; height: number } {

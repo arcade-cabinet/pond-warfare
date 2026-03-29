@@ -1,4 +1,4 @@
-export type TechId = 'sturdyMud' | 'swiftPaws' | 'sharpSticks' | 'eagleEye';
+export type TechId = 'sturdyMud' | 'swiftPaws' | 'sharpSticks' | 'eagleEye' | 'hardenedShells';
 
 export interface TechUpgrade {
   id: TechId;
@@ -39,6 +39,14 @@ export const TECH_UPGRADES = {
     clamCost: 400,
     twigCost: 300,
     requires: 'sharpSticks',
+  },
+  hardenedShells: {
+    id: 'hardenedShells',
+    name: 'Hardened Shells',
+    description: '+5 HP regen for all units',
+    clamCost: 500,
+    twigCost: 400,
+    requires: 'eagleEye',
   },
 } as const satisfies Record<TechId, TechUpgrade>;
 

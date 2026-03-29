@@ -32,6 +32,9 @@ export enum EntityKind {
   PredatorNest = 9,
   Cattail = 10,
   Clambed = 11,
+  Healer = 12,
+  Watchtower = 13,
+  BossCroc = 14,
 }
 
 /** Entity kinds that represent buildings (get larger vision radius, etc.). */
@@ -41,6 +44,7 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
   EntityKind.Armory,
   EntityKind.Tower,
   EntityKind.PredatorNest,
+  EntityKind.Watchtower,
 ]);
 
 export enum ResourceType {
@@ -64,6 +68,9 @@ export enum SpriteId {
   Clambed = 11,
   Bones = 12,
   Rubble = 13,
+  Healer = 14,
+  Watchtower = 15,
+  BossCroc = 16,
 }
 
 export interface GameResources {

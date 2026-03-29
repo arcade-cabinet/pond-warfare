@@ -35,6 +35,9 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.PredatorNest]: SpriteId.PredatorNest,
   [EntityKind.Cattail]: SpriteId.Cattail,
   [EntityKind.Clambed]: SpriteId.Clambed,
+  [EntityKind.Healer]: SpriteId.Healer,
+  [EntityKind.Watchtower]: SpriteId.Watchtower,
+  [EntityKind.BossCroc]: SpriteId.BossCroc,
 };
 
 export function spawnEntity(
@@ -109,7 +112,7 @@ export function spawnEntity(
     }
 
     // Tower AI
-    if (kind === EntityKind.Tower) {
+    if (kind === EntityKind.Tower || kind === EntityKind.Watchtower) {
       addComponent(world.ecs, eid, TowerAI);
       addComponent(world.ecs, eid, Combat);
       Combat.damage[eid] = def.damage;
