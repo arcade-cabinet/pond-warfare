@@ -137,6 +137,7 @@ export class Game {
   private lastTime = 0;
   private accumulator = 0;
   private running = false;
+  private rafId: number | null = null;
 
   // Audio/music state tracking
   private audioInitialized = false;
@@ -178,6 +179,9 @@ export class Game {
     // Reset the world so re-initialisation (e.g. restarting the game) starts
     // from a clean slate instead of accumulating stale ECS state.
     this.world = createGameWorld();
+    // Reset match-scoped audio/game flags for clean session
+    this.wasPeaceful = true;
+    this.wasGameOver = false;
 
     this.container = container;
     this.gameCanvas = gameCanvas;
@@ -404,29 +408,35 @@ export class Game {
     });
 
     // Initialize audio on first user interaction (AudioContext policy)
-    this.initAudioHandler = async () => {
-      if (this.audioInitialized) return;
-      try {
-        await audio.init();
-        audio.startAmbient();
-        audio.startMusic(true);
-        this.audioInitialized = true;
-      } catch (_err) {
-        return;
-      }
-      if (this.initAudioHandler) {
-        document.removeEventListener('pointerdown', this.initAudioHandler);
-        document.removeEventListener('keydown', this.initAudioHandler);
-        this.initAudioHandler = null;
-      }
-    };
+    if (this.audioInitialized) {
+      // Already initialized from a previous session - just restart music
+      audio.startAmbient();
+      audio.startMusic(true);
+    } else {
+      this.initAudioHandler = async () => {
+        if (this.audioInitialized) return;
+        try {
+          await audio.init();
+          audio.startAmbient();
+          audio.startMusic(true);
+          this.audioInitialized = true;
+        } catch (_err) {
+          return;
+        }
+        if (this.initAudioHandler) {
+          document.removeEventListener('pointerdown', this.initAudioHandler);
+          document.removeEventListener('keydown', this.initAudioHandler);
+          this.initAudioHandler = null;
+        }
+      };
+    }
     document.addEventListener('pointerdown', this.initAudioHandler, { once: false });
     document.addEventListener('keydown', this.initAudioHandler, { once: false });
 
     // Start game loop
     this.lastTime = performance.now();
     this.running = true;
-    requestAnimationFrame((t) => this.loop(t));
+    this.rafId = requestAnimationFrame((t) => this.loop(t));
   }
 
   private spawnInitialEntities(): void {
@@ -705,7 +715,7 @@ export class Game {
 
     this.draw();
 
-    requestAnimationFrame((t) => this.loop(t));
+    this.rafId = requestAnimationFrame((t) => this.loop(t));
   }
 
   /** Run one frame of game logic */
@@ -1248,7 +1258,7 @@ export class Game {
       store.selectionNameColor.value = 'text-sky-400';
       store.selectionShowHpBar.value = false;
       store.selectionIsMulti.value = false;
-      store.selectionStatsHtml.value = `Idle: ${idleWorkers} | Army: ${armyUnits} | Pop: ${curFood}/${maxFoodCap}`;
+      store.selectionStatsHtml.value = `Idle: ${idleWorkers} | Army: ${armyUnits} | Pop: ${w.resources.food}/${maxFoodCap}`;
       store.selectionDesc.value = '';
       store.selectionSpriteData.value = null;
       store.selectionKills.value = 0;
@@ -1771,6 +1781,11 @@ export class Game {
 
   destroy(): void {
     this.running = false;
+    // Cancel pending RAF to prevent stale callbacks
+    if (this.rafId != null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
     // Stop camera pan animation
     this._panAnim?.pause();
     this._panAnim = null;
