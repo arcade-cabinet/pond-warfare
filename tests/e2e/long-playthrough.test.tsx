@@ -14,7 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { game } from '@/game';
 import { App } from '@/ui/app';
 import '@/styles/main.css';
-import { type GovernorSnapshot, run as runGovernor, takeSnapshot } from './governor';
+import { type GovernorSnapshot, run as runGovernor } from './governor';
 
 // ---------------------------------------------------------------------------
 // Bootstrap — mount the game in the browser test iframe
