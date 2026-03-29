@@ -24,7 +24,10 @@ export function ProductionQueue() {
             class="absolute bottom-0 left-0 h-full transition-all duration-75"
             style={{ width: `${item.progress}%`, background: 'var(--pw-success)', opacity: 0.5 }}
           />
-          <span class="relative text-[8px] font-numbers font-bold z-10 truncate px-0.5" style={{ color: 'var(--pw-text-primary)' }}>
+          <span
+            class="relative text-[8px] font-numbers font-bold z-10 truncate px-0.5"
+            style={{ color: 'var(--pw-text-primary)' }}
+          >
             {item.unitLabel}
           </span>
         </div>

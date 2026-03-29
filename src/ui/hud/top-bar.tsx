@@ -123,8 +123,7 @@ export function TopBar(props: TopBarProps) {
           <div
             class="w-3 h-3 md:w-4 md:h-4 shadow-sm"
             style={{
-              background:
-                'linear-gradient(135deg, var(--pw-twig), #8a4820)',
+              background: 'linear-gradient(135deg, var(--pw-twig), #8a4820)',
               border: '1px solid var(--pw-otter)',
             }}
           />
@@ -189,17 +188,17 @@ export function TopBar(props: TopBarProps) {
             <span
               class="ml-2 font-numbers text-[10px] md:text-xs"
               style={{
-                color:
-                  waveCountdown.value < 10
-                    ? 'var(--pw-enemy-light)'
-                    : 'var(--pw-warning)',
+                color: waveCountdown.value < 10 ? 'var(--pw-enemy-light)' : 'var(--pw-warning)',
               }}
             >
               Wave in {waveCountdown.value}s
             </span>
           )}
         </div>
-        <div class="font-heading text-xs md:text-sm font-bold" style={{ color: 'var(--pw-accent)' }}>
+        <div
+          class="font-heading text-xs md:text-sm font-bold"
+          style={{ color: 'var(--pw-accent)' }}
+        >
           {gameTimeDisplay}
         </div>
         <div class="flex items-center gap-1">

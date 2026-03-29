@@ -83,7 +83,10 @@ function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
     >
       <span class="hotkey-badge">{def.hotkey}</span>
       <span class="font-heading">{def.title}</span>
-      <span class="font-numbers font-normal text-[8px] md:text-[10px] mt-1 whitespace-pre-line" style={{ color: 'var(--pw-accent)' }}>
+      <span
+        class="font-numbers font-normal text-[8px] md:text-[10px] mt-1 whitespace-pre-line"
+        style={{ color: 'var(--pw-accent)' }}
+      >
         {def.cost}
       </span>
     </button>
@@ -95,8 +98,16 @@ function QueueDisplay() {
   if (items.length === 0) return null;
 
   return (
-    <div class="col-span-2 mt-1 flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid var(--pw-border)' }}>
-      <span class="font-heading text-[10px] uppercase tracking-wider" style={{ color: 'var(--pw-accent)' }}>Queue (Click to Cancel)</span>
+    <div
+      class="col-span-2 mt-1 flex flex-col gap-1 pt-1"
+      style={{ borderTop: '1px solid var(--pw-border)' }}
+    >
+      <span
+        class="font-heading text-[10px] uppercase tracking-wider"
+        style={{ color: 'var(--pw-accent)' }}
+      >
+        Queue (Click to Cancel)
+      </span>
       <div class="flex gap-2 flex-wrap">
         {items.map((item, i) => (
           <button
@@ -114,7 +125,11 @@ function QueueDisplay() {
           >
             <div
               class="absolute bottom-0 left-0 w-full transition-all duration-75"
-              style={{ height: `${item.progressPct}%`, background: 'var(--pw-success)', opacity: 0.6 }}
+              style={{
+                height: `${item.progressPct}%`,
+                background: 'var(--pw-success)',
+                opacity: 0.6,
+              }}
             />
             <span class="absolute inset-0 flex items-center justify-center text-xs font-numbers font-bold text-white z-10 shadow-sm">
               {item.label}
@@ -127,9 +142,9 @@ function QueueDisplay() {
 }
 
 const TAB_ICONS: Record<ActionCategory, string> = {
-  train: '\u2694',  // crossed swords
-  build: '\u{1F3D7}',  // building construction
-  tech: '\u{1F4DC}',   // scroll
+  train: '\u2694', // crossed swords
+  build: '\u{1F3D7}', // building construction
+  tech: '\u{1F4DC}', // scroll
 };
 
 const TAB_LABELS: Record<ActionCategory, string> = {
@@ -155,7 +170,11 @@ function TabButton({
       class={`flex-1 py-1.5 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[44px] md:min-h-0 font-heading`}
       style={{
         background: active ? 'var(--pw-bg-elevated)' : 'var(--pw-bg-surface)',
-        color: active ? 'var(--pw-accent)' : count > 0 ? 'var(--pw-text-secondary)' : 'var(--pw-text-muted)',
+        color: active
+          ? 'var(--pw-accent)'
+          : count > 0
+            ? 'var(--pw-text-secondary)'
+            : 'var(--pw-text-muted)',
         borderBottom: active ? '2px solid var(--pw-accent)' : '2px solid transparent',
       }}
       onClick={onClick}
@@ -164,7 +183,9 @@ function TabButton({
       <span class="mr-0.5">{TAB_ICONS[tab]}</span>
       <span class="hidden md:inline">{TAB_LABELS[tab]}</span>
       {count > 0 && (
-        <span class="ml-0.5 text-[8px] md:text-[9px]" style={{ color: 'var(--pw-text-muted)' }}>({count})</span>
+        <span class="ml-0.5 text-[8px] md:text-[9px]" style={{ color: 'var(--pw-text-muted)' }}>
+          ({count})
+        </span>
       )}
     </button>
   );
@@ -192,11 +213,7 @@ export function ActionPanel() {
   })();
 
   const effectiveButtons =
-    effectiveTab === 'train'
-      ? trainButtons
-      : effectiveTab === 'build'
-        ? buildButtons
-        : techButtons;
+    effectiveTab === 'train' ? trainButtons : effectiveTab === 'build' ? buildButtons : techButtons;
 
   // Sync the signal if we auto-switched
   if (effectiveTab !== tab) {
@@ -254,7 +271,9 @@ export function ActionPanel() {
       {/* Empty state */}
       {buttons.length === 0 && (
         <div class="flex-1 flex items-center justify-center p-2">
-          <span class="font-game text-xs italic" style={{ color: 'var(--pw-text-muted)' }}>No actions available</span>
+          <span class="font-game text-xs italic" style={{ color: 'var(--pw-text-muted)' }}>
+            No actions available
+          </span>
         </div>
       )}
     </div>

@@ -83,7 +83,12 @@ function getNodeState(id: TechId, techState: TechState, clams: number, twigs: nu
   return 'unaffordable';
 }
 
-function stateStyles(state: NodeState): { border: string; background: string; color: string; extra: string } {
+function stateStyles(state: NodeState): {
+  border: string;
+  background: string;
+  color: string;
+  extra: string;
+} {
   switch (state) {
     case 'researched':
       return {
@@ -156,7 +161,9 @@ function TechNode({
       }}
     >
       {state === 'researched' && (
-        <span class="absolute top-1 right-1 text-xs" style={{ color: 'var(--pw-success)' }}>&#10003;</span>
+        <span class="absolute top-1 right-1 text-xs" style={{ color: 'var(--pw-success)' }}>
+          &#10003;
+        </span>
       )}
       <span class="font-heading text-xs font-bold leading-tight">{upgrade.name}</span>
       <span
@@ -165,7 +172,9 @@ function TechNode({
       >
         {upgrade.clamCost}C {upgrade.twigCost}T
       </span>
-      <span class="font-game text-[9px] leading-tight mt-0.5 opacity-80">{upgrade.description}</span>
+      <span class="font-game text-[9px] leading-tight mt-0.5 opacity-80">
+        {upgrade.description}
+      </span>
       {state === 'locked' && 'requires' in upgrade && upgrade.requires && (
         <span class="font-game text-[8px] mt-0.5" style={{ color: 'var(--pw-text-muted)' }}>
           Needs:{' '}
@@ -173,7 +182,9 @@ function TechNode({
         </span>
       )}
       {node.unlocks && (
-        <span class="font-game text-[8px] mt-0.5" style={{ color: 'var(--pw-warning)' }}>Unlocks: {node.unlocks}</span>
+        <span class="font-game text-[8px] mt-0.5" style={{ color: 'var(--pw-warning)' }}>
+          Unlocks: {node.unlocks}
+        </span>
       )}
     </div>
   );
@@ -215,8 +226,7 @@ function EdgeLines({
         const partial = techState[edge.from as TechId];
 
         let stroke = 'var(--pw-border)';
-        if (researched)
-          stroke = 'var(--pw-success)';
+        if (researched) stroke = 'var(--pw-success)';
         else if (partial) stroke = 'var(--pw-warning)';
 
         return (
@@ -271,7 +281,12 @@ function BranchPanel({
 
   return (
     <div class="flex flex-col items-center">
-      <h3 class="font-heading text-sm uppercase tracking-wider mb-3" style={{ color: 'var(--pw-warning)' }}>{title}</h3>
+      <h3
+        class="font-heading text-sm uppercase tracking-wider mb-3"
+        style={{ color: 'var(--pw-warning)' }}
+      >
+        {title}
+      </h3>
       <div class="relative" style={{ width: `${gridW}px`, height: `${gridH}px` }}>
         <EdgeLines edges={edges} nodes={activeNodes} techState={techState} />
         {activeNodes.map((node) => {
@@ -315,7 +330,12 @@ export function TechTreePanel({
     >
       {/* Header */}
       <div class="w-full flex items-center justify-between px-6 pt-4 pb-2 max-w-4xl mx-auto">
-        <h2 class="font-title text-lg uppercase tracking-widest" style={{ color: 'var(--pw-text-primary)' }}>Tech Tree</h2>
+        <h2
+          class="font-title text-lg uppercase tracking-widest"
+          style={{ color: 'var(--pw-text-primary)' }}
+        >
+          Tech Tree
+        </h2>
         <button
           type="button"
           class="w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded text-lg font-bold transition-colors"
@@ -335,10 +355,16 @@ export function TechTreePanel({
       {/* Resources bar */}
       <div class="flex gap-4 text-xs mb-4 font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
         <span>
-          Clams: <span class="font-bold" style={{ color: 'var(--pw-clam)' }}>{clams}</span>
+          Clams:{' '}
+          <span class="font-bold" style={{ color: 'var(--pw-clam)' }}>
+            {clams}
+          </span>
         </span>
         <span>
-          Twigs: <span class="font-bold" style={{ color: 'var(--pw-twig)' }}>{twigs}</span>
+          Twigs:{' '}
+          <span class="font-bold" style={{ color: 'var(--pw-twig)' }}>
+            {twigs}
+          </span>
         </span>
       </div>
 

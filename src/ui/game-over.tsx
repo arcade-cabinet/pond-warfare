@@ -44,7 +44,10 @@ function StarRating({ stars }: { stars: number }) {
   return (
     <div class="text-3xl mt-2">
       {Array.from({ length: 3 }, (_, i) => (
-        <span key={`star-${i}`} style={{ color: i < stars ? 'var(--pw-clam)' : 'var(--pw-text-muted)' }}>
+        <span
+          key={`star-${i}`}
+          style={{ color: i < stars ? 'var(--pw-clam)' : 'var(--pw-text-muted)' }}
+        >
           {'\u2605'}
         </span>
       ))}
@@ -93,7 +96,12 @@ export function GameOverBanner(props: GameOverProps) {
       <StarRating stars={stars} />
       <div ref={statsContainerRef} class="mt-4 flex flex-col items-center gap-1">
         {lines.map((line, i) => (
-          <p key={`stat-${i}`} data-stat-line class="font-numbers text-sm" style={{ opacity: 0, color: 'var(--pw-text-secondary)' }}>
+          <p
+            key={`stat-${i}`}
+            data-stat-line
+            class="font-numbers text-sm"
+            style={{ opacity: 0, color: 'var(--pw-text-secondary)' }}
+          >
             {line}
           </p>
         ))}

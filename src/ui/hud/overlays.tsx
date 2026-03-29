@@ -16,14 +16,26 @@ export function Overlays() {
             border: '1px solid var(--pw-enemy)',
           }}
         >
-          <span class="font-heading font-bold" style={{ color: 'var(--pw-enemy-light)' }}>Enemy:</span>
+          <span class="font-heading font-bold" style={{ color: 'var(--pw-enemy-light)' }}>
+            Enemy:
+          </span>
           <div class="flex items-center gap-1">
-            <div class="w-2 h-2 rounded-full" style={{ background: 'var(--pw-clam)', border: '1px solid var(--pw-otter-light)' }} />
-            <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>{enemyClams}</span>
+            <div
+              class="w-2 h-2 rounded-full"
+              style={{ background: 'var(--pw-clam)', border: '1px solid var(--pw-otter-light)' }}
+            />
+            <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
+              {enemyClams}
+            </span>
           </div>
           <div class="flex items-center gap-1">
-            <div class="w-2 h-2" style={{ background: 'var(--pw-twig)', border: '1px solid var(--pw-otter)' }} />
-            <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>{enemyTwigs}</span>
+            <div
+              class="w-2 h-2"
+              style={{ background: 'var(--pw-twig)', border: '1px solid var(--pw-otter)' }}
+            />
+            <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
+              {enemyTwigs}
+            </span>
           </div>
         </div>
       )}
@@ -44,8 +56,16 @@ export function Overlays() {
 
       {/* Pause overlay */}
       {paused.value && (
-        <div class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none" style={{ background: 'rgba(12, 26, 31, 0.6)' }}>
-          <span class="font-title text-6xl font-bold tracking-widest" style={{ color: 'var(--pw-text-primary)' }}>PAUSED</span>
+        <div
+          class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+          style={{ background: 'rgba(12, 26, 31, 0.6)' }}
+        >
+          <span
+            class="font-title text-6xl font-bold tracking-widest"
+            style={{ color: 'var(--pw-text-primary)' }}
+          >
+            PAUSED
+          </span>
         </div>
       )}
     </>

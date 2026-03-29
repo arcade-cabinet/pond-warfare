@@ -9,8 +9,12 @@
  */
 
 import {
+  armyCount,
+  food,
   hpBarColor,
   hpPercent,
+  idleWorkerCount,
+  maxFood,
   selectionComposition,
   selectionCount,
   selectionDesc,
@@ -21,10 +25,6 @@ import {
   selectionShowHpBar,
   selectionSpriteData,
   selectionStatsHtml,
-  idleWorkerCount,
-  armyCount,
-  food,
-  maxFood,
 } from './store';
 
 export interface SelectionPanelProps {
