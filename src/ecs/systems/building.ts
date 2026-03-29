@@ -88,10 +88,10 @@ export function buildingSystem(world: GameWorld): void {
             Building.progress[tEnt] = 100;
           }
           UnitStateMachine.state[eid] = UnitState.Idle;
+        } else {
+          // Reset timer only when not yet complete (original: this.gTimer = 30)
+          UnitStateMachine.gatherTimer[eid] = BUILD_TIMER;
         }
-
-        // Reset timer (original: this.gTimer = 30)
-        UnitStateMachine.gatherTimer[eid] = BUILD_TIMER;
       }
       continue;
     }
@@ -137,6 +137,9 @@ export function buildingSystem(world: GameWorld): void {
           Health.current[tEnt] = Math.min(Health.max[tEnt], Health.current[tEnt] + 5);
           if (Health.current[tEnt] >= Health.max[tEnt]) {
             UnitStateMachine.state[eid] = UnitState.Idle;
+          } else {
+            // Reset timer only when not yet complete (original: this.gTimer = 40)
+            UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
           }
         } else {
           // Original: GAME.floatingTexts.push({...}); this.state = 'idle';
@@ -149,9 +152,6 @@ export function buildingSystem(world: GameWorld): void {
           });
           UnitStateMachine.state[eid] = UnitState.Idle;
         }
-
-        // Reset timer (original: this.gTimer = 40)
-        UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
       }
     }
   }

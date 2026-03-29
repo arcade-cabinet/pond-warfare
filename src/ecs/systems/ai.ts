@@ -126,7 +126,8 @@ export function aiSystem(world: GameWorld): void {
 
         const dx = Position.x[u] - nx;
         const dy = Position.y[u] - ny;
-        if (Math.sqrt(dx * dx + dy * dy) < 300) {
+        const dSq = dx * dx + dy * dy;
+        if (dSq < 300 * 300) {
           defenderCount++;
         }
       }
@@ -142,7 +143,7 @@ export function aiSystem(world: GameWorld): void {
         // Find nearest player unit to attack
         // Original: let targets = GAME.entities.filter(e => e.faction === 'player' && e.hp > 0);
         let closestTarget = 0;
-        let minDist = 400;
+        let minDistSq = 400 * 400;
         for (let j = 0; j < allUnits.length; j++) {
           const u = allUnits[j];
           if (FactionTag.faction[u] !== Faction.Player) continue;
@@ -150,9 +151,9 @@ export function aiSystem(world: GameWorld): void {
 
           const dx = Position.x[u] - nx;
           const dy = Position.y[u] - ny;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < minDist) {
-            minDist = d;
+          const dSq = dx * dx + dy * dy;
+          if (dSq < minDistSq) {
+            minDistSq = dSq;
             closestTarget = u;
           }
         }

@@ -121,7 +121,7 @@ export function spawnEntity(
     addComponent(world.ecs, eid, IsResource);
     addComponent(world.ecs, eid, Resource);
     Resource.resourceType[eid] = def.resourceType as ResourceType;
-    Resource.amount[eid] = def.resourceAmount!;
+    Resource.amount[eid] = def.resourceAmount ?? 0;
     Health.current[eid] = 1;
   } else {
     // Unit
@@ -150,6 +150,8 @@ export function spawnEntity(
     UnitStateMachine.returnEntity[eid] = 0;
     UnitStateMachine.gatherTimer[eid] = 0;
     UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+    UnitStateMachine.targetX[eid] = 0;
+    UnitStateMachine.targetY[eid] = 0;
 
     addComponent(world.ecs, eid, Carrying);
     Carrying.resourceType[eid] = 0; // None

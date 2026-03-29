@@ -14,6 +14,7 @@ import {
   selectionCount,
   selectionDesc,
   selectionIsMulti,
+  selectionKills,
   selectionName,
   selectionNameColor,
   selectionShowHpBar,
@@ -33,12 +34,19 @@ export function SelectionPanel() {
       <div class="flex flex-col sm:flex-row gap-2 md:gap-3 items-start">
         {/* Portrait (single selection only) */}
         {!selectionIsMulti.value && count > 0 && selectionSpriteData.value && (
-          <img
-            src={selectionSpriteData.value}
-            alt="portrait"
-            class="bg-slate-800 border-2 border-slate-600 rounded-sm shadow-inner w-12 h-12 md:w-16 md:h-16 render-pixelated flex-shrink-0 cursor-pointer hover:border-sky-400 transition-colors"
-            title="Click to track unit"
-          />
+          <div class="relative flex-shrink-0">
+            <img
+              src={selectionSpriteData.value}
+              alt="portrait"
+              class="bg-slate-800 border-2 border-slate-600 rounded-sm shadow-inner w-12 h-12 md:w-16 md:h-16 render-pixelated cursor-pointer hover:border-sky-400 transition-colors"
+              title="Click to track unit"
+            />
+            {selectionKills.value > 0 && (
+              <span class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] md:text-[10px] font-bold rounded-full px-1 leading-tight">
+                {selectionKills.value}
+              </span>
+            )}
+          </div>
         )}
 
         <div class="flex-1 w-full">
@@ -60,12 +68,9 @@ export function SelectionPanel() {
           )}
 
           {/* Stats */}
-          <div
-            id="sel-stats"
-            class="text-slate-300 text-xs md:text-sm mt-1"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: game UI
-            dangerouslySetInnerHTML={{ __html: selectionStatsHtml.value }}
-          />
+          <div id="sel-stats" class="text-slate-300 text-xs md:text-sm mt-1">
+            {selectionStatsHtml}
+          </div>
 
           {/* Description / status */}
           <p class="text-[10px] md:text-xs text-slate-400 leading-tight">{selectionDesc}</p>

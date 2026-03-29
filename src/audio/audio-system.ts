@@ -10,6 +10,9 @@ export class AudioSystem {
   init(): void {
     if (this.ctx) return;
     this.ctx = new AudioContext();
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
   }
 
   private play(

@@ -6,6 +6,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { WORLD_BOUNDS_MARGIN } from '@/constants';
 import {
   Carrying,
   Collider,
@@ -84,7 +85,7 @@ describe('collisionSystem', () => {
 
     collisionSystem(world);
 
-    expect(Position.x[eid]).toBeGreaterThanOrEqual(20);
-    expect(Position.y[eid]).toBeGreaterThanOrEqual(20);
+    expect(Position.x[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN);
+    expect(Position.y[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN);
   });
 });

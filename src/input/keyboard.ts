@@ -9,6 +9,7 @@
  * on selection), Tab (cycle buildings), Q/W/E/R (action hotkeys).
  */
 
+import { entityExists } from 'bitecs';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
 
@@ -148,7 +149,9 @@ export class KeyboardHandler {
       const group = Number.parseInt(k, 10);
       const g = w.ctrlGroups[group];
       if (g && g.length > 0) {
-        w.selection = [...g];
+        const alive = g.filter((eid) => entityExists(w.ecs, eid));
+        w.ctrlGroups[group] = alive;
+        w.selection = [...alive];
         w.isTracking = true;
         this.cb.onPlaySound('selectUnit');
         this.cb.onUpdateUI();
@@ -197,6 +200,6 @@ export class KeyboardHandler {
   private onKeyUp(e: KeyboardEvent): void {
     const k = e.key.toLowerCase();
     this.keys[k] = false;
-    if (e.key === 'Shift') this.keys.shift = false;
+    if (k === 'shift') this.keys.shift = false;
   }
 }

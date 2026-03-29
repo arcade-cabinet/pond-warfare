@@ -19,6 +19,7 @@ import {
   Collider,
   Combat,
   EntityTypeTag,
+  FactionTag,
   Health,
   Position,
   Resource,
@@ -44,7 +45,18 @@ const MOVE_STATES = new Set<number>([
 ]);
 
 export function movementSystem(world: GameWorld): void {
-  const ents = query(world.ecs, [Position, Velocity, UnitStateMachine, Sprite, Collider]);
+  const ents = query(world.ecs, [
+    Position,
+    Velocity,
+    UnitStateMachine,
+    Sprite,
+    Collider,
+    Health,
+    Combat,
+    EntityTypeTag,
+    FactionTag,
+    Carrying,
+  ]);
 
   for (let i = 0; i < ents.length; i++) {
     const eid = ents[i];

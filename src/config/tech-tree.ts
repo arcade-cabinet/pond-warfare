@@ -7,7 +7,7 @@ export interface TechUpgrade {
   requires?: string;
 }
 
-export const TECH_UPGRADES: Record<string, TechUpgrade> = {
+export const TECH_UPGRADES = {
   sturdyMud: {
     id: 'sturdyMud',
     name: 'Sturdy Mud',
@@ -38,24 +38,24 @@ export const TECH_UPGRADES: Record<string, TechUpgrade> = {
     twigCost: 300,
     requires: 'sharpSticks',
   },
-};
+} as const satisfies Record<string, TechUpgrade>;
 
 export type TechId = keyof typeof TECH_UPGRADES;
 
 export type TechState = Record<TechId, boolean>;
 
 export function createInitialTechState(): TechState {
-  return {
-    sturdyMud: false,
-    swiftPaws: false,
-    sharpSticks: false,
-    eagleEye: false,
-  };
+  const state = {} as TechState;
+  for (const key of Object.keys(TECH_UPGRADES) as TechId[]) {
+    state[key] = false;
+  }
+  return state;
 }
 
 export function canResearch(techId: TechId, techState: TechState): boolean {
   if (techState[techId]) return false;
   const upgrade = TECH_UPGRADES[techId];
-  if (upgrade.requires && !techState[upgrade.requires]) return false;
+  if ('requires' in upgrade && upgrade.requires && !techState[upgrade.requires as TechId])
+    return false;
   return true;
 }

@@ -36,6 +36,7 @@ export function trainingSystem(world: GameWorld): void {
     FactionTag,
     IsBuilding,
     Health,
+    Sprite,
   ]);
 
   for (let i = 0; i < buildings.length; i++) {
@@ -45,8 +46,10 @@ export function trainingSystem(world: GameWorld): void {
     // Original: if (this.isBuilding && this.faction === 'player' && this.q && this.q.length > 0)
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
+    if (Building.progress[eid] < 100) continue;
 
-    const count = TrainingQueue.count[eid];
+    const slots = trainingQueueSlots.get(eid) ?? [];
+    const count = slots.length;
     if (count === 0) continue;
 
     // Count down timer
@@ -55,7 +58,6 @@ export function trainingSystem(world: GameWorld): void {
     if (TrainingQueue.timer[eid] <= 0) {
       // Get the first queued unit type from the slots map
       // Original: let t = this.q.shift()
-      const slots = trainingQueueSlots.get(eid) ?? [];
       const unitKind = slots[0] as EntityKind;
 
       // Spawn position: offset from building
@@ -82,7 +84,7 @@ export function trainingSystem(world: GameWorld): void {
       // Original: this.q.shift() already removed index 0
       slots.shift();
       trainingQueueSlots.set(eid, slots);
-      TrainingQueue.count[eid] = count - 1;
+      TrainingQueue.count[eid] = slots.length;
 
       // Set timer for next unit if queue still has entries
       // Original: if (this.q.length > 0) this.qTimer = 180;

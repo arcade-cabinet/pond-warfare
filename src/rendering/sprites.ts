@@ -6,7 +6,6 @@
  * to PixiJS Textures. Every pixel placement matches the original exactly.
  */
 
-import { Texture } from 'pixi.js';
 import { PALETTE } from '@/constants';
 import { SpriteId } from '@/types';
 
@@ -198,23 +197,20 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
 }
 
 /**
- * Generate all 14 sprite types and return both a Map<SpriteId, Texture>
- * for PixiJS usage and a Map<SpriteId, HTMLCanvasElement> for Canvas2D usage.
+ * Generate all 14 sprite types and return a Map<SpriteId, HTMLCanvasElement>
+ * for Canvas2D usage.
  */
 export function generateAllSprites(): {
-  textures: Map<SpriteId, Texture>;
   canvases: Map<SpriteId, HTMLCanvasElement>;
 } {
-  const textures = new Map<SpriteId, Texture>();
   const canvases = new Map<SpriteId, HTMLCanvasElement>();
 
   for (const { name, id } of SPRITE_NAMES) {
     const canvas = generateSpriteCanvas(name);
     canvases.set(id, canvas);
-    textures.set(id, Texture.from(canvas));
   }
 
-  return { textures, canvases };
+  return { canvases };
 }
 
 /** Convenience: get the sprite canvas dimensions for a given SpriteId. */

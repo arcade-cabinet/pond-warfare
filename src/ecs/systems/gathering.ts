@@ -70,7 +70,7 @@ export function gatheringSystem(world: GameWorld): void {
       if (Carrying.resourceType[eid] === ResourceType.None) {
         const ex = Position.x[eid];
         const ey = Position.y[eid];
-        let closest = 0;
+        let closest = -1;
         let minDist = AUTO_GATHER_RADIUS;
 
         // Original: let nearRes = GAME.entities.filter(e => e.isResource && e.resAmount > 0);
@@ -86,7 +86,7 @@ export function gatheringSystem(world: GameWorld): void {
           }
         }
 
-        if (closest) {
+        if (closest !== -1) {
           // cmdGather(closest)
           UnitStateMachine.targetEntity[eid] = closest;
           UnitStateMachine.targetX[eid] = Position.x[closest];
@@ -110,7 +110,7 @@ export function gatheringSystem(world: GameWorld): void {
         const resKind = EntityTypeTag.kind[tEnt] as EntityKind;
         const ex = Position.x[eid];
         const ey = Position.y[eid];
-        let closest = 0;
+        let closest = -1;
         let minDist = 300;
 
         for (let j = 0; j < resources.length; j++) {
@@ -126,7 +126,7 @@ export function gatheringSystem(world: GameWorld): void {
           }
         }
 
-        if (closest) {
+        if (closest !== -1) {
           // cmdGather(closest)
           UnitStateMachine.targetEntity[eid] = closest;
           UnitStateMachine.targetX[eid] = Position.x[closest];
@@ -195,7 +195,7 @@ export function gatheringSystem(world: GameWorld): void {
 
       // Find lodge to return to
       // Original: let h = GAME.entities.find(e=>e.type==='lodge' && e.faction==='player');
-      let lodge = 0;
+      let lodge = -1;
       for (let j = 0; j < buildings.length; j++) {
         const b = buildings[j];
         if (
@@ -208,7 +208,7 @@ export function gatheringSystem(world: GameWorld): void {
         }
       }
 
-      if (lodge) {
+      if (lodge !== -1) {
         // Original: this.rEnt = h; this.tPos={x:h.x,y:h.y}; this.state='r_move';
         UnitStateMachine.returnEntity[eid] = lodge;
         UnitStateMachine.targetX[eid] = Position.x[lodge];

@@ -128,7 +128,7 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 
-@keyframes screenShake {
+@keyframes screen-shake-anim {
   0%,
   100% {
     transform: translate(0, 0);
@@ -145,7 +145,7 @@ body {
 }
 
 .screen-shake {
-  animation: screenShake 0.15s ease-in-out;
+  animation: screen-shake-anim 0.15s ease-in-out;
 }
 
 @keyframes pulse-ring {

@@ -13,6 +13,7 @@ import {
   Combat,
   EntityTypeTag,
   FactionTag,
+  Health,
   Position,
   Sprite,
   UnitStateMachine,
@@ -33,6 +34,7 @@ function createTestUnit(world: GameWorld, x: number, y: number): number {
   addComponent(world.ecs, eid, EntityTypeTag);
   addComponent(world.ecs, eid, Combat);
   addComponent(world.ecs, eid, Carrying);
+  addComponent(world.ecs, eid, Health);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -43,6 +45,8 @@ function createTestUnit(world: GameWorld, x: number, y: number): number {
   EntityTypeTag.kind[eid] = EntityKind.Gatherer;
   Combat.attackRange[eid] = 40;
   Carrying.resourceType[eid] = ResourceType.None;
+  Health.current[eid] = 100;
+  Health.max[eid] = 100;
 
   return eid;
 }

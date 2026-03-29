@@ -22,10 +22,10 @@ export function GameOverBanner(props: GameOverProps) {
       <h1
         class={`text-4xl md:text-6xl font-black mb-4 tracking-widest uppercase shadow-lg ${goTitleColor.value}`}
       >
-        {goTitle}
+        {goTitle.value}
       </h1>
-      <p class="text-xl md:text-2xl text-white font-bold">{goDesc}</p>
-      <p class="text-sm text-slate-300 mt-2">{goStatsText}</p>
+      <p class="text-xl md:text-2xl text-white font-bold">{goDesc.value}</p>
+      <p class="text-sm text-slate-300 mt-2">{goStatsText.value}</p>
       <button
         type="button"
         id="restart-btn"

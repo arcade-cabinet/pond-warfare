@@ -11,6 +11,8 @@ import { EntityKind } from '@/types';
 
 describe('ENTITY_DEFS', () => {
   it('should have a definition for every EntityKind', () => {
+    // Hardcoded list required because const enums are erased at compile time
+    // and cannot be iterated with Object.values()
     const kinds = [
       EntityKind.Gatherer,
       EntityKind.Brawler,

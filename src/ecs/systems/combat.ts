@@ -62,7 +62,7 @@ export function combatSystem(world: GameWorld): void {
     const ex = Position.x[eid];
     const ey = Position.y[eid];
 
-    let closest = 0;
+    let closest = -1;
     let minDist = range;
 
     // Original: let targets = GAME.entities.filter(e => e.faction !== this.faction && e.hp > 0 && !e.isResource);
@@ -81,7 +81,7 @@ export function combatSystem(world: GameWorld): void {
       }
     }
 
-    if (closest) {
+    if (closest !== -1) {
       audio.shoot();
       // Original: GAME.projectiles.push(new Projectile(this.x, this.y-20, closest.x, closest.y, closest, this.dmg, this));
       spawnProjectile(
@@ -143,7 +143,7 @@ export function combatSystem(world: GameWorld): void {
       const atkRange = Combat.attackRange[eid];
       const scanRad = atkRange > 60 ? atkRange : 150;
 
-      let closeTarget = 0;
+      let closeTarget = -1;
       let minDist = scanRad;
 
       for (let j = 0; j < allTargetable.length; j++) {
@@ -162,7 +162,7 @@ export function combatSystem(world: GameWorld): void {
         }
       }
 
-      if (closeTarget) {
+      if (closeTarget !== -1) {
         // Save current attack-move destination so we can resume later
         // Original: this.attackMoveTarget = this.tPos; this.cmdAtk(closeTarget);
         UnitStateMachine.attackMoveTargetX[eid] = UnitStateMachine.targetX[eid];

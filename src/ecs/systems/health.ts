@@ -28,6 +28,7 @@ import {
   IsResource,
   Position,
   Sprite,
+  trainingQueueSlots,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -232,6 +233,9 @@ function processDeath(world: GameWorld, eid: number): void {
       break;
     }
   }
+
+  // Clean up training queue slots
+  trainingQueueSlots.delete(eid);
 
   // Remove from selection array if selected
   const selIdx = world.selection.indexOf(eid);

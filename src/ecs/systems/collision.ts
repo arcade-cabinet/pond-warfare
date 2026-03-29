@@ -14,7 +14,7 @@ import { Collider, Health, IsBuilding, IsResource, Position } from '@/ecs/compon
 import type { GameWorld } from '@/ecs/world';
 
 export function collisionSystem(world: GameWorld): void {
-  const ents = query(world.ecs, [Position, Collider]);
+  const ents = query(world.ecs, [Position, Collider, Health]);
 
   // Original iterates each non-building/non-resource entity against all others.
   // For each mobile entity (not building, not resource), push apart overlapping circles.
@@ -26,7 +26,7 @@ export function collisionSystem(world: GameWorld): void {
     if (hasComponent(world.ecs, eid, IsBuilding)) continue;
     if (hasComponent(world.ecs, eid, IsResource)) continue;
     // Skip dead entities
-    if (Health.current[eid] <= 0) continue;
+    if (hasComponent(world.ecs, eid, Health) && Health.current[eid] <= 0) continue;
 
     const ax = Position.x[eid];
     const ay = Position.y[eid];

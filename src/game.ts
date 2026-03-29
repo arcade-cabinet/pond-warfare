@@ -19,6 +19,7 @@ import {
   IsBuilding,
   Position,
   Selectable,
+  UnitStateMachine,
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
 import { buildingSystem } from '@/ecs/systems/building';
@@ -59,7 +60,7 @@ import { drawLighting } from '@/rendering/light-renderer';
 import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
-import { EntityKind, Faction, type SpriteId } from '@/types';
+import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
 
@@ -187,8 +188,6 @@ export class Game {
             !ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding
           ) {
             // Set to idle
-            const { UnitStateMachine } = require('@/ecs/components');
-            const { UnitState } = require('@/types');
             UnitStateMachine.state[eid] = UnitState.Idle;
             UnitStateMachine.targetEntity[eid] = 0;
           }
