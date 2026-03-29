@@ -20,6 +20,7 @@ import {
   peaceStatusColor,
   peaceStatusStyle,
   peaceStatusText,
+  pearls,
   rateClams,
   rateTwigs,
   speedLabel,
@@ -94,8 +95,8 @@ export function TopBar(props: TopBarProps) {
             Clams:{' '}
           </span>
           <span
-            class={`font-numbers font-bold ${clamsFlash ? 'animate-resource-flash' : ''}`}
-            style={{ color: 'var(--pw-clam)' }}
+            class={`font-numbers font-bold ${clamsFlash ? 'animate-resource-flash' : ''} ${lowClams.value ? 'animate-pulse' : ''}`}
+            style={{ color: lowClams.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
           >
             {clams}
           </span>
@@ -133,8 +134,8 @@ export function TopBar(props: TopBarProps) {
             Twigs:{' '}
           </span>
           <span
-            class={`font-numbers font-bold ${twigsFlash ? 'animate-resource-flash' : ''}`}
-            style={{ color: 'var(--pw-twig)' }}
+            class={`font-numbers font-bold ${twigsFlash ? 'animate-resource-flash' : ''} ${lowTwigs.value ? 'animate-pulse' : ''}`}
+            style={{ color: lowTwigs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
           >
             {twigs}
           </span>

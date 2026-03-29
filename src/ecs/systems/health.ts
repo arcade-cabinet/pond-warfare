@@ -19,6 +19,7 @@ import { hasComponent, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { ALLY_ASSIST_RADIUS, PALETTE } from '@/constants';
 import {
+  Building,
   Combat,
   EntityTypeTag,
   FactionTag,
@@ -316,6 +317,46 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     Combat.kills[attackerEid]++;
   }
 
+  // Kill streak tracking: player kills of enemy units (non-building, non-resource)
+  if (
+    !isBuilding &&
+    !isResource &&
+    attackerEid !== undefined &&
+    hasComponent(world.ecs, attackerEid, FactionTag) &&
+    FactionTag.faction[attackerEid] === Faction.Player &&
+    hasComponent(world.ecs, eid, FactionTag) &&
+    FactionTag.faction[eid] === Faction.Enemy
+  ) {
+    const STREAK_WINDOW = 300; // 5 seconds at 60fps
+    if (world.frameCount - world.killStreak.lastKillFrame <= STREAK_WINDOW) {
+      world.killStreak.count++;
+    } else {
+      world.killStreak.count = 1;
+    }
+    world.killStreak.lastKillFrame = world.frameCount;
+
+    // Streak milestones
+    if (world.killStreak.count === 3) {
+      world.floatingTexts.push({
+        x: ex,
+        y: ey - 40,
+        text: 'TRIPLE KILL',
+        color: '#facc15',
+        life: 100,
+      });
+      world.shakeTimer = Math.max(world.shakeTimer, 8);
+    } else if (world.killStreak.count === 5) {
+      world.floatingTexts.push({
+        x: ex,
+        y: ey - 40,
+        text: 'RAMPAGE',
+        color: '#ef4444',
+        life: 120,
+      });
+      world.shakeTimer = Math.max(world.shakeTimer, 15);
+    }
+  }
+
   // Clean up Yuka vehicle for enemy entities
   world.yukaManager.removeEnemy(eid);
 
@@ -444,6 +485,42 @@ export function healthSystem(world: GameWorld): void {
           20,
           '#22c55e',
           3,
+        );
+      }
+    }
+  }
+
+  // --- Herbalist Hut area heal: every 120 frames, heals all player units within 150px by 2 HP ---
+  if (world.frameCount % 120 === 0) {
+    const huts = query(world.ecs, [Position, Health, IsBuilding, EntityTypeTag, FactionTag]);
+    for (let i = 0; i < huts.length; i++) {
+      const hut = huts[i];
+      if (EntityTypeTag.kind[hut] !== EntityKind.HerbalistHut) continue;
+      if (FactionTag.faction[hut] !== Faction.Player) continue;
+      if (Health.current[hut] <= 0) continue;
+      if (!hasComponent(world.ecs, hut, Building) || Building.progress[hut] < 100) continue;
+      // Heal nearby player units
+      const hx = Position.x[hut];
+      const hy = Position.y[hut];
+      const nearby = world.spatialHash.query(hx, hy, 150);
+      for (let j = 0; j < nearby.length; j++) {
+        const uid = nearby[j];
+        if (!hasComponent(world.ecs, uid, FactionTag)) continue;
+        if (FactionTag.faction[uid] !== Faction.Player) continue;
+        if (hasComponent(world.ecs, uid, IsBuilding)) continue;
+        if (!hasComponent(world.ecs, uid, Health)) continue;
+        if (Health.current[uid] <= 0 || Health.current[uid] >= Health.max[uid]) continue;
+        Health.current[uid] = Math.min(Health.max[uid], Health.current[uid] + 2);
+        // Green heal particle
+        spawnParticle(
+          world,
+          Position.x[uid],
+          Position.y[uid] - 8,
+          (Math.random() - 0.5) * 0.8,
+          -Math.random() * 1,
+          15,
+          '#86efac',
+          2,
         );
       }
     }

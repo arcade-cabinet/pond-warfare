@@ -16,6 +16,7 @@ export const Position = soa({
 
 export const Velocity = soa({
   speed: [] as number[],
+  speedDebuffTimer: [] as number[],
 });
 
 // Rendering

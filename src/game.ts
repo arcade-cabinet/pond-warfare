@@ -31,6 +31,7 @@ import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { collisionSystem } from '@/ecs/systems/collision';
 import { combatSystem } from '@/ecs/systems/combat';
 import { dayNightSystem } from '@/ecs/systems/day-night';
+import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
@@ -718,6 +719,7 @@ export class Game {
     projectileSystem(this.world);
     trainingSystem(this.world);
     aiSystem(this.world);
+    evolutionSystem(this.world);
     autoBehaviorSystem(this.world);
     autoBuildSystem(this.world);
     healthSystem(this.world);

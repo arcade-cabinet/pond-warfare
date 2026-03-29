@@ -14,6 +14,7 @@ import {
   ENEMY_MAX_GATHERERS_PER_NEST,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
+import { triggerSpawnPop } from '@/rendering/animations';
 import {
   Carrying,
   EntityTypeTag,
@@ -104,6 +105,21 @@ export function enemyEconomyTick(world: GameWorld): void {
 
     const gEid = spawnEntity(world, EntityKind.Gatherer, sx, sy, Faction.Enemy);
     if (gEid < 0) continue;
+
+    // Spawn pop animation + dust
+    triggerSpawnPop(gEid);
+    for (let j = 0; j < 6; j++) {
+      const angle = (j / 6) * Math.PI * 2;
+      world.particles.push({
+        x: sx,
+        y: sy + 8,
+        vx: Math.cos(angle) * 1.5,
+        vy: Math.sin(angle) * 0.5 + 0.5,
+        life: 15,
+        color: '#a8a29e',
+        size: 2,
+      });
+    }
 
     world.enemyResources.clams -= ENEMY_GATHERER_COST;
 

@@ -241,6 +241,22 @@ export function spawnInitialEntities(world: GameWorld): void {
     }
   }
 
+  // ---- Pearl Beds: rare resource nodes in contested mid-map areas ----
+  const pearlBedCount = rng.int(2, 4); // 2-3 pearl beds
+  for (let i = 0; i < pearlBedCount; i++) {
+    // Place between player and enemy territory (contested ground)
+    const t = rng.float(0.35, 0.65);
+    const pbx = sx + (enemyCenter.x - sx) * t + rng.float(-250, 250);
+    const pby = sy + (enemyCenter.y - sy) * t + rng.float(-250, 250);
+    spawnEntity(
+      world,
+      EntityKind.PearlBed,
+      clampWorld(pbx, WORLD_WIDTH),
+      clampWorld(pby, WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
   // ---- Contested resource hotspots: midpoints between player and each enemy camp ----
   for (const camp of campLocs) {
     const mx = (sx + camp.x) / 2;

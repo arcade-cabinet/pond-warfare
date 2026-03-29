@@ -23,8 +23,13 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { audio } from '@/audio/audio-system';
 import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
+
+/** Track previous low-resource state to fire alert only on threshold crossing. */
+let _prevLowClams = false;
+let _prevLowTwigs = false;
 
 export interface PopulationResult {
   idleWorkers: number;
@@ -43,6 +48,7 @@ export function syncPopulationAndTimers(
   const w = world;
   store.clams.value = w.resources.clams;
   store.twigs.value = w.resources.twigs;
+  store.pearls.value = w.resources.pearls;
 
   // Resource income rate tracking: compute per-second deltas every 60 frames
   if (w.frameCount > 0 && w.frameCount % 60 === 0) {
@@ -91,8 +97,20 @@ export function syncPopulationAndTimers(
   w.autoBehaviors.heal = store.autoHealEnabled.value;
   w.autoBehaviors.scout = store.autoScoutEnabled.value;
 
-  store.lowClams.value = w.resources.clams < 50;
-  store.lowTwigs.value = w.resources.twigs < 50;
+  const nowLowClams = w.resources.clams < 100;
+  const nowLowTwigs = w.resources.twigs < 50;
+  store.lowClams.value = nowLowClams;
+  store.lowTwigs.value = nowLowTwigs;
+
+  // Audio alert on threshold crossing (fire once, not every frame)
+  if (nowLowClams && !_prevLowClams) {
+    audio.alert();
+  }
+  if (nowLowTwigs && !_prevLowTwigs) {
+    audio.alert();
+  }
+  _prevLowClams = nowLowClams;
+  _prevLowTwigs = nowLowTwigs;
 
   // --- Control group counts ---
   const groupCounts: Record<number, number> = {};
@@ -195,9 +213,22 @@ export function syncPopulationAndTimers(
   const peaceful = w.frameCount < w.peaceTimer;
   store.isPeaceful.value = peaceful;
   if (peaceful) {
-    store.peaceCountdown.value = Math.ceil((w.peaceTimer - w.frameCount) / 60);
+    const peaceSecondsLeft = Math.ceil((w.peaceTimer - w.frameCount) / 60);
+    store.peaceCountdown.value = peaceSecondsLeft;
+
+    // Peace warning: show alert banner when < 30 seconds remain
+    if (peaceSecondsLeft <= 30 && peaceSecondsLeft > 0) {
+      store.peaceWarningCountdown.value = peaceSecondsLeft;
+      // Tension audio cue: play once at the 30-second mark
+      if (peaceSecondsLeft === 30 && w.frameCount % 60 < 2) {
+        audio.alert();
+      }
+    } else {
+      store.peaceWarningCountdown.value = -1;
+    }
   } else {
     store.peaceCountdown.value = -1;
+    store.peaceWarningCountdown.value = -1;
   }
 
   // --- Time display ---

@@ -14,6 +14,7 @@ export interface UnitDef {
   foodCost?: number;
   clamCost?: number;
   twigCost?: number;
+  pearlCost?: number;
   foodProvided?: number;
 }
 
@@ -259,6 +260,119 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     clamCost: 100,
     twigCost: 75,
   },
+  [EntityKind.ArmoredGator]: {
+    hp: 120,
+    speed: 1.0,
+    damage: 8,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
+  [EntityKind.VenomSnake]: {
+    hp: 40,
+    speed: 2.2,
+    damage: 3,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
+  [EntityKind.SwampDrake]: {
+    hp: 50,
+    speed: 2.0,
+    damage: 6,
+    attackRange: 60,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
+  [EntityKind.SiegeTurtle]: {
+    hp: 300,
+    speed: 0.5,
+    damage: 25,
+    attackRange: 50,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+  },
+  [EntityKind.AlphaPredator]: {
+    hp: 500,
+    speed: 1.0,
+    damage: 12,
+    attackRange: 50,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+  },
+  [EntityKind.PearlBed]: {
+    hp: 1,
+    speed: 0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: false,
+    isResource: true,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    resourceType: ResourceType.Pearls,
+    resourceAmount: 500,
+  },
+  [EntityKind.FishingHut]: {
+    hp: 250,
+    speed: 0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: true,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 100,
+    twigCost: 75,
+    foodProvided: 2,
+  },
+  [EntityKind.HerbalistHut]: {
+    hp: 300,
+    speed: 0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: true,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 150,
+    twigCost: 100,
+  },
+  [EntityKind.Swimmer]: {
+    hp: 35,
+    speed: 2.8,
+    damage: 4,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 60,
+    twigCost: 30,
+    foodCost: 1,
+  },
+  [EntityKind.Trapper]: {
+    hp: 30,
+    speed: 1.6,
+    damage: 0,
+    attackRange: 100,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 80,
+    twigCost: 60,
+    foodCost: 1,
+  },
 };
 
 /**
@@ -290,6 +404,26 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
     [EntityKind.Shieldbearer]: {
       [EntityKind.Sniper]: 1.5,
       [EntityKind.Gator]: 0.75,
+    },
+    [EntityKind.ArmoredGator]: {
+      [EntityKind.Brawler]: 1.5,
+      [EntityKind.Sniper]: 0.75,
+    },
+    [EntityKind.VenomSnake]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Brawler]: 0.75,
+    },
+    [EntityKind.SwampDrake]: {
+      [EntityKind.Gatherer]: 1.5,
+      [EntityKind.Shieldbearer]: 0.75,
+    },
+    [EntityKind.SiegeTurtle]: {
+      // Building bonus handled in combat.ts (3x vs buildings)
+      [EntityKind.Brawler]: 0.5,
+    },
+    [EntityKind.AlphaPredator]: {
+      [EntityKind.Brawler]: 1.25,
+      [EntityKind.Sniper]: 1.25,
     },
   };
 
@@ -323,6 +457,16 @@ export function entityKindFromString(name: string): EntityKind {
     catapult: EntityKind.Catapult,
     wall: EntityKind.Wall,
     scout_post: EntityKind.ScoutPost,
+    armored_gator: EntityKind.ArmoredGator,
+    venom_snake: EntityKind.VenomSnake,
+    swamp_drake: EntityKind.SwampDrake,
+    siege_turtle: EntityKind.SiegeTurtle,
+    alpha_predator: EntityKind.AlphaPredator,
+    pearl_bed: EntityKind.PearlBed,
+    fishing_hut: EntityKind.FishingHut,
+    herbalist_hut: EntityKind.HerbalistHut,
+    swimmer: EntityKind.Swimmer,
+    trapper: EntityKind.Trapper,
   };
   const kind = map[name];
   if (kind === undefined) {
@@ -353,6 +497,16 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.Catapult]: 'Catapult',
     [EntityKind.Wall]: 'Wall',
     [EntityKind.ScoutPost]: 'Scout Post',
+    [EntityKind.ArmoredGator]: 'Armored Gator',
+    [EntityKind.VenomSnake]: 'Venom Snake',
+    [EntityKind.SwampDrake]: 'Swamp Drake',
+    [EntityKind.SiegeTurtle]: 'Siege Turtle',
+    [EntityKind.AlphaPredator]: 'Alpha Predator',
+    [EntityKind.PearlBed]: 'Pearl Bed',
+    [EntityKind.FishingHut]: 'Fishing Hut',
+    [EntityKind.HerbalistHut]: 'Herbalist Hut',
+    [EntityKind.Swimmer]: 'Swimmer',
+    [EntityKind.Trapper]: 'Trapper',
   };
   return names[kind];
 }

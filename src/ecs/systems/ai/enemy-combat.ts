@@ -24,6 +24,7 @@ import {
 import { spawnEntity } from '@/ecs/archetypes';
 import { Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import {
   countEnemyArmy,
@@ -175,6 +176,21 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
 
   const scoutEid = spawnEntity(world, EntityKind.Snake, sx, sy, Faction.Enemy);
   if (scoutEid < 0) return;
+
+  // Spawn pop animation + dust
+  triggerSpawnPop(scoutEid);
+  for (let j = 0; j < 6; j++) {
+    const angle = (j / 6) * Math.PI * 2;
+    world.particles.push({
+      x: sx,
+      y: sy + 8,
+      vx: Math.cos(angle) * 1.5,
+      vy: Math.sin(angle) * 0.5 + 0.5,
+      life: 15,
+      color: '#a8a29e',
+      size: 2,
+    });
+  }
 
   res.clams -= ENEMY_SNAKE_COST_CLAMS;
   res.twigs -= ENEMY_SNAKE_COST_TWIGS;

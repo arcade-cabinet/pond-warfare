@@ -64,6 +64,12 @@ interface SaveData {
   gameSpeed: number;
   peaceTimer: number;
   entities: SavedEntity[];
+  enemyEvolution?: {
+    tier: number;
+    unlockedUnits: number[];
+    lastEvolutionFrame: number;
+  };
+  poisonTimers?: [number, number][];
 }
 
 /** Serialize the current game state to a JSON string. */
@@ -104,6 +110,12 @@ export function saveGame(world: GameWorld): string {
     gameSpeed: world.gameSpeed,
     peaceTimer: world.peaceTimer,
     entities,
+    enemyEvolution: {
+      tier: world.enemyEvolution.tier,
+      unlockedUnits: world.enemyEvolution.unlockedUnits.map((k) => k as number),
+      lastEvolutionFrame: world.enemyEvolution.lastEvolutionFrame,
+    },
+    poisonTimers: Array.from(world.poisonTimers.entries()),
   };
 
   return JSON.stringify(data);
@@ -175,6 +187,23 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.stats.resourcesGathered = data.stats.resourcesGathered;
   world.stats.buildingsBuilt = data.stats.buildingsBuilt;
   world.stats.peakArmy = data.stats.peakArmy;
+
+  // Restore enemy evolution state
+  if (data.enemyEvolution) {
+    world.enemyEvolution.tier = data.enemyEvolution.tier;
+    world.enemyEvolution.unlockedUnits = data.enemyEvolution.unlockedUnits.map(
+      (k) => k as EntityKind,
+    );
+    world.enemyEvolution.lastEvolutionFrame = data.enemyEvolution.lastEvolutionFrame;
+  }
+
+  // Restore poison timers
+  world.poisonTimers.clear();
+  if (data.poisonTimers) {
+    for (const [eid, ticks] of data.poisonTimers) {
+      world.poisonTimers.set(eid, ticks);
+    }
+  }
 
   // Restore timing
   world.frameCount = data.frameCount;

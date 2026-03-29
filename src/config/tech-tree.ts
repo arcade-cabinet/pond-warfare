@@ -8,7 +8,12 @@ export type TechId =
   | 'siegeWorks'
   | 'cartography'
   | 'tidalHarvest'
-  | 'battleRoar';
+  | 'battleRoar'
+  | 'herbalMedicine'
+  | 'aquaticTraining'
+  | 'deepDiving'
+  | 'cunningTraps'
+  | 'camouflage';
 
 export interface TechUpgrade {
   id: TechId;
@@ -95,6 +100,45 @@ export const TECH_UPGRADES = {
     clamCost: 350,
     twigCost: 250,
     requires: 'sharpSticks',
+  },
+  herbalMedicine: {
+    id: 'herbalMedicine',
+    name: 'Herbal Medicine',
+    description: 'Ancient pond remedies heal nearby wounded',
+    clamCost: 100,
+    twigCost: 80,
+  },
+  aquaticTraining: {
+    id: 'aquaticTraining',
+    name: 'Aquatic Training',
+    description: 'Train otters for amphibious warfare',
+    clamCost: 150,
+    twigCost: 100,
+    requires: 'herbalMedicine',
+  },
+  deepDiving: {
+    id: 'deepDiving',
+    name: 'Deep Diving',
+    description: 'Dive deeper for precious pearls (+30%)',
+    clamCost: 200,
+    twigCost: 150,
+    requires: 'aquaticTraining',
+  },
+  cunningTraps: {
+    id: 'cunningTraps',
+    name: 'Cunning Traps',
+    description: 'Ingenious snares slow enemy advances',
+    clamCost: 200,
+    twigCost: 150,
+    requires: 'sharpSticks',
+  },
+  camouflage: {
+    id: 'camouflage',
+    name: 'Camouflage',
+    description: 'Blend into the reeds and strike unseen',
+    clamCost: 300,
+    twigCost: 200,
+    requires: 'cunningTraps',
   },
 } as const satisfies Record<TechId, TechUpgrade>;
 

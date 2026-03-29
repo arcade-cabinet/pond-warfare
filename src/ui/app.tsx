@@ -360,12 +360,47 @@ export function App({ onMount }: AppProps) {
           }}
         >
           <div class="font-heading font-bold">{store.tooltipData.value.title}</div>
-          <div class="font-numbers" style={{ color: 'var(--pw-accent)' }}>
-            {store.tooltipData.value.cost}
-          </div>
-          <div class="text-xs font-game" style={{ color: 'var(--pw-text-muted)' }}>
-            {store.tooltipData.value.description}
-          </div>
+          {store.tooltipData.value.costBreakdown ? (
+            <div class="flex gap-2 font-numbers text-[10px]">
+              {store.tooltipData.value.costBreakdown.clams != null &&
+                store.tooltipData.value.costBreakdown.clams > 0 && (
+                  <span style={{ color: 'var(--pw-clam)' }}>
+                    {store.tooltipData.value.costBreakdown.clams} Clams
+                  </span>
+                )}
+              {store.tooltipData.value.costBreakdown.twigs != null &&
+                store.tooltipData.value.costBreakdown.twigs > 0 && (
+                  <span style={{ color: 'var(--pw-twig)' }}>
+                    {store.tooltipData.value.costBreakdown.twigs} Twigs
+                  </span>
+                )}
+              {store.tooltipData.value.costBreakdown.food != null &&
+                store.tooltipData.value.costBreakdown.food > 0 && (
+                  <span style={{ color: 'var(--pw-food)' }}>
+                    {store.tooltipData.value.costBreakdown.food} Food
+                  </span>
+                )}
+            </div>
+          ) : (
+            store.tooltipData.value.cost && (
+              <div class="font-numbers" style={{ color: 'var(--pw-accent)' }}>
+                {store.tooltipData.value.cost}
+              </div>
+            )
+          )}
+          {store.tooltipData.value.description && (
+            <div class="text-xs font-game" style={{ color: 'var(--pw-text-muted)' }}>
+              {store.tooltipData.value.description}
+            </div>
+          )}
+          {store.tooltipData.value.requires && (
+            <div
+              class="text-[10px] font-game italic"
+              style={{ color: 'var(--pw-warning)' }}
+            >
+              {store.tooltipData.value.requires}
+            </div>
+          )}
           <div class="text-xs font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
             [{store.tooltipData.value.hotkey}]
           </div>

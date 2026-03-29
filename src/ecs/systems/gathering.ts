@@ -150,6 +150,17 @@ export function gatheringSystem(world: GameWorld): void {
           color: PALETTE.reedBrown,
           size: 2,
         });
+      } else if (resKind === EntityKind.PearlBed) {
+        audio.mine();
+        world.particles.push({
+          x: Position.x[tEnt] + (Math.random() - 0.5) * 20,
+          y: Position.y[tEnt] - 10,
+          vx: (Math.random() - 0.5) * 1,
+          vy: -Math.random() * 1.5,
+          life: 15,
+          color: '#a5b4fc', // Pearl blue shimmer
+          size: 2,
+        });
       } else {
         audio.mine();
         world.particles.push({
@@ -171,7 +182,11 @@ export function gatheringSystem(world: GameWorld): void {
 
       // Set carried resource type
       Carrying.resourceType[eid] =
-        resKind === EntityKind.Cattail ? ResourceType.Twigs : ResourceType.Clams;
+        resKind === EntityKind.Cattail
+          ? ResourceType.Twigs
+          : resKind === EntityKind.PearlBed
+            ? ResourceType.Pearls
+            : ResourceType.Clams;
 
       // Deplete resource (Tidal Harvest: +50%)
       let gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;
@@ -241,6 +256,28 @@ export function gatheringSystem(world: GameWorld): void {
       } else {
         UnitStateMachine.state[eid] = UnitState.Idle;
       }
+    }
+  }
+
+  // ---- Fishing Hut passive income ----
+  // Every 300 frames, completed player-owned FishingHuts generate +5 clams
+  if (world.frameCount % 300 === 0) {
+    for (let i = 0; i < buildings.length; i++) {
+      const bid = buildings[i];
+      if (EntityTypeTag.kind[bid] !== EntityKind.FishingHut) continue;
+      if (FactionTag.faction[bid] !== Faction.Player) continue;
+      if (Health.current[bid] <= 0 || Building.progress[bid] < 100) continue;
+      world.resources.clams += 5;
+      // Small water particle effect
+      world.particles.push({
+        x: Position.x[bid] + (Math.random() - 0.5) * 20,
+        y: Position.y[bid] - 5,
+        vx: (Math.random() - 0.5) * 1,
+        vy: -Math.random() * 1,
+        life: 15,
+        color: '#38bdf8',
+        size: 2,
+      });
     }
   }
 }

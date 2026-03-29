@@ -147,7 +147,11 @@ export function combatSystem(world: GameWorld): void {
 
     // --- Idle auto-aggro (lines 1598-1603) ---
     if (state === UnitState.Idle && dmg > 0 && world.frameCount % 30 === 0) {
-      const aggroRad = faction === Faction.Enemy ? AGGRO_RADIUS_ENEMY : AGGRO_RADIUS_PLAYER;
+      let aggroRad = faction === Faction.Enemy ? AGGRO_RADIUS_ENEMY : AGGRO_RADIUS_PLAYER;
+      // Camouflage: enemies detect player units 33% less far
+      if (faction === Faction.Enemy && world.tech.camouflage) {
+        aggroRad = Math.round(aggroRad * 0.67);
+      }
 
       let closestAggro = -1;
       let closestAggroDist = aggroRad;
@@ -330,12 +334,47 @@ export function combatSystem(world: GameWorld): void {
                 life: 90,
               });
             }
+          } else if (kind === EntityKind.SiegeTurtle) {
+            // Siege Turtle: 3x damage to buildings, normal to units
+            const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
+            const mult = getDamageMultiplier(kind, targetKind);
+            const isTargetBuilding = hasComponent(world.ecs, tEnt, IsBuilding);
+            const siegeMult = isTargetBuilding ? 3.0 : 1.0;
+            const siegeDmg = Math.round(dmg * mult * siegeMult);
+            takeDamage(world, tEnt, siegeDmg, eid, mult * siegeMult);
+            if (isTargetBuilding) {
+              world.shakeTimer = Math.max(world.shakeTimer, 3);
+            }
+          } else if (kind === EntityKind.Trapper) {
+            // Trapper: apply speed debuff (50% slow for 180 frames) instead of damage
+            if (hasComponent(world.ecs, tEnt, Velocity)) {
+              Velocity.speedDebuffTimer[tEnt] = 180;
+            }
+            // Visual feedback
+            world.floatingTexts.push({
+              x: Position.x[tEnt],
+              y: Position.y[tEnt] - 20,
+              text: 'TRAPPED!',
+              color: '#f59e0b',
+              life: 60,
+            });
           } else {
             // Melee: direct damage with counter multiplier
             const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
             const mult = getDamageMultiplier(kind, targetKind);
-            const meleeDmg = Math.round(dmg * mult);
+            let meleeDmg = Math.round(dmg * mult);
+
+            // Alpha Predator aura: +20% damage if buffed
+            if (world.alphaDamageBuff.has(eid)) {
+              meleeDmg = Math.round(meleeDmg * 1.2);
+            }
+
             takeDamage(world, tEnt, meleeDmg, eid, mult);
+
+            // Venom Snake: apply poison (2 damage/sec for 5 seconds = 5 ticks)
+            if (kind === EntityKind.VenomSnake) {
+              world.poisonTimers.set(tEnt, 5);
+            }
           }
           Combat.attackCooldown[eid] =
             faction === Faction.Player && world.tech.battleRoar

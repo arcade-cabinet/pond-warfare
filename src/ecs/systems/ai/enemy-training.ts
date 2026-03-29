@@ -40,6 +40,42 @@ import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { countPlayerUnitsOfKind, findPlayerLodge, getEnemyNests } from './helpers';
 
+/** Resource costs for all enemy-trainable unit types. */
+const ENEMY_UNIT_COSTS: Partial<
+  Record<EntityKind, { clams: number; twigs: number; weight: number }>
+> = {
+  [EntityKind.Gator]: { clams: ENEMY_GATOR_COST_CLAMS, twigs: ENEMY_GATOR_COST_TWIGS, weight: 10 },
+  [EntityKind.Snake]: {
+    clams: ENEMY_SNAKE_COST_CLAMS,
+    twigs: ENEMY_SNAKE_COST_TWIGS,
+    weight: 10,
+  },
+  [EntityKind.ArmoredGator]: { clams: 150, twigs: 80, weight: 6 },
+  [EntityKind.VenomSnake]: { clams: 100, twigs: 50, weight: 7 },
+  [EntityKind.SwampDrake]: { clams: 120, twigs: 60, weight: 5 },
+  [EntityKind.SiegeTurtle]: { clams: 300, twigs: 200, weight: 3 },
+  [EntityKind.AlphaPredator]: { clams: 500, twigs: 300, weight: 1 },
+};
+
+/**
+ * Pick a unit kind from unlocked units using weighted random selection.
+ * Higher-tier units have lower weights, so they train less frequently.
+ */
+function pickEnemyUnit(unlockedUnits: EntityKind[]): EntityKind {
+  let totalWeight = 0;
+  for (const kind of unlockedUnits) {
+    totalWeight += ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+  }
+  if (totalWeight === 0) return EntityKind.Gator;
+
+  let roll = Math.random() * totalWeight;
+  for (const kind of unlockedUnits) {
+    roll -= ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+    if (roll <= 0) return kind;
+  }
+  return unlockedUnits[0];
+}
+
 /**
  * Enemy army training via TrainingQueue (task #13).
  * Adapts unit composition to counter the player's army.
@@ -98,21 +134,12 @@ export function enemyTrainingTick(world: GameWorld): void {
     const slots = trainingQueueSlots.get(nestEid) ?? [];
     if (slots.length >= maxQueueSize) continue;
 
-    // Decide what to train
-    const trainGator = Math.random() < gatorWeight;
-    let unitKind: EntityKind;
-    let costClams: number;
-    let costTwigs: number;
-
-    if (trainGator) {
-      unitKind = EntityKind.Gator;
-      costClams = ENEMY_GATOR_COST_CLAMS;
-      costTwigs = ENEMY_GATOR_COST_TWIGS;
-    } else {
-      unitKind = EntityKind.Snake;
-      costClams = ENEMY_SNAKE_COST_CLAMS;
-      costTwigs = ENEMY_SNAKE_COST_TWIGS;
-    }
+    // Decide what to train from unlocked units (evolution system)
+    const unitKind = pickEnemyUnit(world.enemyEvolution.unlockedUnits);
+    const costs = ENEMY_UNIT_COSTS[unitKind];
+    if (!costs) continue;
+    const costClams = costs.clams;
+    const costTwigs = costs.twigs;
 
     if (res.clams < costClams || res.twigs < costTwigs) continue;
 

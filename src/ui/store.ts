@@ -11,6 +11,7 @@ import type { GameState, TooltipData } from '@/types';
 // ---- Resources ----
 export const clams = signal(200);
 export const twigs = signal(50);
+export const pearls = signal(0);
 export const food = signal(0);
 export const maxFood = signal(0);
 export const rateClams = signal(0);
@@ -53,6 +54,9 @@ export const waveCountdown = signal(-1);
 export const lowClams = signal(false);
 export const lowTwigs = signal(false);
 export const attackMoveActive = signal(false);
+
+/** Countdown seconds when peace timer is about to expire (< 30s remaining), -1 otherwise */
+export const peaceWarningCountdown = signal(-1);
 
 /** True when enemies are within 400px of the player's Lodge. */
 export const baseUnderAttack = signal(false);
@@ -154,7 +158,7 @@ export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
 /** True when the player chose "Continue" from the main menu (load save on init). */
 export const continueRequested = signal(false);
 export const hasSaveGame = signal(
-  typeof localStorage !== 'undefined' && !!localStorage.getItem('pond-warfare-save'),
+  typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function' && !!localStorage.getItem('pond-warfare-save'),
 );
 export const gameName = signal('');
 export const gameSeed = signal(0);

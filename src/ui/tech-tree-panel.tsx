@@ -32,9 +32,15 @@ interface TreeEdge {
 const LODGE_NODES: TreeNode[] = [
   { id: 'cartography', col: 0, row: 0, unlocks: 'Scout Post' },
   { id: 'tidalHarvest', col: 1, row: 0 },
+  { id: 'herbalMedicine', col: 2, row: 0, unlocks: 'Herbalist Hut' },
+  { id: 'aquaticTraining', col: 2, row: 1, unlocks: 'Swimmer' },
+  { id: 'deepDiving', col: 2, row: 2 },
 ];
 
-const LODGE_EDGES: TreeEdge[] = [];
+const LODGE_EDGES: TreeEdge[] = [
+  { from: 'herbalMedicine', to: 'aquaticTraining' },
+  { from: 'aquaticTraining', to: 'deepDiving' },
+];
 
 // Armory branch layout
 const ARMORY_NODES: TreeNode[] = [
@@ -45,7 +51,9 @@ const ARMORY_NODES: TreeNode[] = [
   { id: 'battleRoar', col: 2, row: 1 },
   { id: 'eagleEye', col: 0, row: 2 },
   { id: 'siegeWorks', col: 1, row: 2, unlocks: 'Catapult' },
+  { id: 'cunningTraps', col: 2, row: 2, unlocks: 'Trapper' },
   { id: 'hardenedShells', col: 0, row: 3 },
+  { id: 'camouflage', col: 2, row: 3 },
 ];
 
 const ARMORY_EDGES: TreeEdge[] = [
@@ -53,8 +61,10 @@ const ARMORY_EDGES: TreeEdge[] = [
   { from: 'sharpSticks', to: 'ironShell' },
   { from: 'sharpSticks', to: 'battleRoar' },
   { from: 'sharpSticks', to: 'eagleEye' },
+  { from: 'sharpSticks', to: 'cunningTraps' },
   { from: 'eagleEye', to: 'siegeWorks' },
   { from: 'eagleEye', to: 'hardenedShells' },
+  { from: 'cunningTraps', to: 'camouflage' },
 ];
 
 // -------------------------------------------------------------------

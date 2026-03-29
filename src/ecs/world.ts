@@ -7,16 +7,17 @@ import {
   STARTING_CLAMS,
   STARTING_TWIGS,
 } from '@/constants';
-import type {
-  Corpse,
-  Firefly,
-  FloatingText,
-  GameResources,
-  GameState,
-  GameStats,
-  GroundPing,
-  MinimapPing,
-  Particle,
+import {
+  EntityKind,
+  type Corpse,
+  type Firefly,
+  type FloatingText,
+  type GameResources,
+  type GameState,
+  type GameStats,
+  type GroundPing,
+  type MinimapPing,
+  type Particle,
 } from '@/types';
 import { ObjectPool } from '@/utils/pool';
 import { SpatialHash } from '@/utils/spatial-hash';
@@ -109,6 +110,25 @@ export interface GameWorld {
 
   // Performance: object pool for particles
   particlePool: ObjectPool<Particle>;
+
+  // Kill streak tracking (world-level, player faction kills)
+  killStreak: {
+    count: number;
+    lastKillFrame: number;
+  };
+
+  // Enemy evolution system (tier-based unlocking of advanced enemy units)
+  enemyEvolution: {
+    tier: number; // 0-5, increases over time
+    unlockedUnits: EntityKind[]; // which enemy types are available
+    lastEvolutionFrame: number;
+  };
+
+  // Poison tracking: entity ID -> remaining poison ticks
+  poisonTimers: Map<number, number>;
+
+  // Alpha Predator aura: entity ID -> expiry frame for +20% damage buff
+  alphaDamageBuff: Map<number, number>;
 }
 
 export function createGameWorld(): GameWorld {
@@ -123,6 +143,7 @@ export function createGameWorld(): GameWorld {
     resources: {
       clams: STARTING_CLAMS,
       twigs: STARTING_TWIGS,
+      pearls: 0,
       food: 0,
       maxFood: 0,
     },
@@ -183,5 +204,16 @@ export function createGameWorld(): GameWorld {
       () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0, color: '', size: 0 }),
       100,
     ),
+    killStreak: {
+      count: 0,
+      lastKillFrame: 0,
+    },
+    enemyEvolution: {
+      tier: 0,
+      unlockedUnits: [EntityKind.Gator, EntityKind.Snake],
+      lastEvolutionFrame: 0,
+    },
+    poisonTimers: new Map(),
+    alphaDamageBuff: new Map(),
   };
 }

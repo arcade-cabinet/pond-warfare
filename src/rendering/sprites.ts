@@ -33,6 +33,16 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'catapult', id: SpriteId.Catapult },
   { name: 'wall', id: SpriteId.Wall },
   { name: 'scout_post', id: SpriteId.ScoutPost },
+  { name: 'armored_gator', id: SpriteId.ArmoredGator },
+  { name: 'venom_snake', id: SpriteId.VenomSnake },
+  { name: 'swamp_drake', id: SpriteId.SwampDrake },
+  { name: 'siege_turtle', id: SpriteId.SiegeTurtle },
+  { name: 'alpha_predator', id: SpriteId.AlphaPredator },
+  { name: 'pearl_bed', id: SpriteId.PearlBed },
+  { name: 'fishing_hut', id: SpriteId.FishingHut },
+  { name: 'herbalist_hut', id: SpriteId.HerbalistHut },
+  { name: 'swimmer', id: SpriteId.Swimmer },
+  { name: 'trapper', id: SpriteId.Trapper },
 ];
 
 const LARGE_TYPES = new Set([
@@ -47,6 +57,10 @@ const LARGE_TYPES = new Set([
   'catapult',
   'wall',
   'scout_post',
+  'siege_turtle',
+  'alpha_predator',
+  'fishing_hut',
+  'herbalist_hut',
 ]);
 
 /**
@@ -425,6 +439,241 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(10, 26, 4, 4, PALETTE.mudDark);
     rect(18, 26, 4, 4, PALETTE.mudDark);
     rect(6, 28, 20, 2, PALETTE.mudLight);
+  } else if (type === 'armored_gator') {
+    // Body (same base as gator)
+    rect(3, 10, 10, 4, PALETTE.gatorBase);
+    for (let i = 3; i < 12; i += 2) p(i, 9, PALETTE.gatorLight);
+    rect(13, 11, 3, 2, PALETTE.gatorBase);
+    rect(0, 11, 4, 3, PALETTE.gatorLight);
+    p(3, 10, PALETTE.gatorEye);
+    // Teeth detail
+    p(0, 13, '#ffffff');
+    p(1, 13, '#ffffff');
+    rect(3, 14, 2, 1, PALETTE.gatorLight);
+    rect(9, 14, 2, 1, PALETTE.gatorLight);
+    // Stone-colored armor plates on back (3-4 gray rects)
+    rect(4, 9, 2, 2, PALETTE.stone);
+    rect(7, 9, 2, 2, PALETTE.stone);
+    rect(10, 9, 2, 2, PALETTE.stone);
+    rect(12, 10, 2, 1, PALETTE.stoneL);
+    // Stone highlight on plates
+    p(5, 9, PALETTE.stoneL);
+    p(8, 9, PALETTE.stoneL);
+    p(11, 9, PALETTE.stoneL);
+  } else if (type === 'venom_snake') {
+    // Purple/magenta snake body
+    const venomBase = '#a855f7';
+    const venomStripe = '#7c3aed';
+    rect(4, 12, 8, 2, venomBase);
+    rect(2, 10, 4, 2, venomBase);
+    rect(10, 10, 4, 2, venomBase);
+    rect(12, 8, 2, 2, venomBase);
+    p(13, 8, PALETTE.black); // Eye
+    p(14, 9, '#f87171'); // Red tongue
+    // Teeth detail
+    p(14, 10, '#ffffff');
+    // Dripping venom fangs (green pixels at mouth)
+    p(14, 11, '#22c55e');
+    p(15, 10, '#22c55e');
+    // Stripe pattern
+    p(5, 12, venomStripe);
+    p(7, 12, venomStripe);
+    p(9, 12, venomStripe);
+    // Scale highlights
+    p(6, 11, '#c084fc');
+    p(10, 11, '#c084fc');
+  } else if (type === 'swamp_drake') {
+    // Lizard body
+    rect(4, 10, 8, 4, PALETTE.gatorBase);
+    rect(12, 11, 3, 2, PALETTE.gatorBase); // Tail
+    rect(1, 11, 3, 2, PALETTE.gatorLight); // Head
+    p(2, 10, '#ff0000'); // Red eye
+    // Legs
+    rect(5, 14, 2, 1, PALETTE.gatorLight);
+    rect(10, 14, 2, 1, PALETTE.gatorLight);
+    // Wings (two triangle shapes on sides)
+    p(6, 7, PALETTE.gatorBase);
+    p(5, 8, PALETTE.gatorBase);
+    p(6, 8, PALETTE.gatorBase);
+    p(4, 9, PALETTE.gatorBase);
+    p(5, 9, PALETTE.gatorBase);
+    p(6, 9, PALETTE.gatorBase);
+    p(10, 7, PALETTE.gatorBase);
+    p(10, 8, PALETTE.gatorBase);
+    p(11, 8, PALETTE.gatorBase);
+    p(10, 9, PALETTE.gatorBase);
+    p(11, 9, PALETTE.gatorBase);
+    p(12, 9, PALETTE.gatorBase);
+    // Wing membrane highlights
+    p(5, 8, PALETTE.gatorLight);
+    p(11, 8, PALETTE.gatorLight);
+  } else if (type === 'siege_turtle') {
+    // Large shell (oval in brown/stone)
+    circle(16, 16, 10, PALETTE.mudDark);
+    circle(16, 16, 8, PALETTE.stone);
+    circle(16, 16, 6, PALETTE.stoneL);
+    // Shell pattern
+    rect(12, 12, 2, 8, PALETTE.mudDark);
+    rect(18, 12, 2, 8, PALETTE.mudDark);
+    rect(12, 16, 8, 2, PALETTE.mudDark);
+    // Tiny legs
+    rect(8, 22, 3, 3, PALETTE.gatorLight);
+    rect(21, 22, 3, 3, PALETTE.gatorLight);
+    rect(8, 10, 3, 3, PALETTE.gatorLight);
+    rect(21, 10, 3, 3, PALETTE.gatorLight);
+    // Head with battering ram (brown rectangle extending from front)
+    rect(2, 14, 8, 4, PALETTE.gatorBase);
+    p(3, 14, PALETTE.gatorEye); // Eye
+    // Battering ram
+    rect(0, 15, 4, 2, PALETTE.reedBrown);
+    rect(0, 14, 2, 4, PALETTE.mudLight);
+  } else if (type === 'alpha_predator') {
+    // Massive gator body (larger than BossCroc)
+    rect(2, 14, 28, 10, PALETTE.gatorBase);
+    for (let i = 2; i < 30; i += 2) p(i, 13, PALETTE.gatorLight);
+    // Scale highlights
+    p(8, 16, '#34d399');
+    p(14, 15, '#34d399');
+    p(20, 16, '#34d399');
+    p(26, 15, '#34d399');
+    // Head
+    rect(0, 16, 6, 8, PALETTE.gatorLight);
+    // Glowing bright red eyes
+    p(1, 15, '#ff0000');
+    p(4, 15, '#ff0000');
+    // Eye glow effect
+    p(1, 14, '#ff4444');
+    p(4, 14, '#ff4444');
+    // Teeth
+    p(0, 23, '#ffffff');
+    p(1, 23, '#ffffff');
+    p(4, 23, '#ffffff');
+    p(5, 23, '#ffffff');
+    // Tail
+    rect(28, 16, 4, 4, PALETTE.gatorBase);
+    // Armor plates (heavier than BossCroc)
+    for (let i = 6; i < 26; i += 4) {
+      rect(i, 12, 3, 2, PALETTE.stone);
+      rect(i, 10, 3, 1, PALETTE.stoneL);
+    }
+    // Crown of bone spikes (white pixels on head)
+    p(1, 12, '#ffffff');
+    p(3, 11, '#ffffff');
+    p(5, 12, '#ffffff');
+    p(2, 10, '#e2e8f0');
+    p(4, 10, '#e2e8f0');
+    // Legs
+    rect(6, 24, 4, 2, PALETTE.gatorLight);
+    rect(22, 24, 4, 2, PALETTE.gatorLight);
+  } else if (type === 'pearl_bed') {
+    // Shallow water with iridescent pearls
+    circle(8, 10, 6, PALETTE.waterShallow);
+    // Pearl clusters (white/pink)
+    circle(6, 8, 2, '#e2e8f0');
+    p(6, 8, '#fce7f3');
+    circle(10, 11, 2, '#e2e8f0');
+    p(10, 11, '#fce7f3');
+    circle(7, 12, 1, '#e2e8f0');
+    p(7, 12, '#fce7f3');
+    // Shell bed around base
+    rect(4, 13, 3, 1, PALETTE.clamShell);
+    rect(9, 13, 3, 1, PALETTE.clamShell);
+  } else if (type === 'fishing_hut') {
+    // Stilted hut over water
+    rect(8, 14, 16, 12, PALETTE.reedBrown);
+    rect(6, 12, 20, 2, PALETTE.mudDark);
+    // Stilts into water
+    rect(10, 26, 2, 6, PALETTE.reedBrown);
+    rect(20, 26, 2, 6, PALETTE.reedBrown);
+    // Water below
+    rect(6, 28, 20, 4, PALETTE.waterShallow);
+    // Roof
+    rect(6, 8, 20, 4, PALETTE.mudLight);
+    // Doorway
+    rect(14, 18, 4, 8, PALETTE.black);
+    p(15, 19, DOORWAY_GLOW);
+    p(16, 19, DOORWAY_GLOW);
+    // Fish on rack
+    rect(22, 14, 2, 4, PALETTE.waterMid);
+  } else if (type === 'herbalist_hut') {
+    // Small round hut with green roof
+    circle(16, 20, 10, PALETTE.mudDark);
+    for (let i = 0; i < 30; i++)
+      p(8 + Math.random() * 16, 12 + Math.random() * 16, PALETTE.mudLight);
+    // Green leaf roof
+    rect(8, 8, 16, 6, PALETTE.reedGreen);
+    rect(6, 10, 20, 4, PALETTE.reedGreen);
+    // Leaf highlights
+    for (let i = 0; i < 8; i++) p(8 + Math.random() * 14, 8 + Math.random() * 6, '#86efac');
+    // Doorway
+    rect(13, 22, 6, 8, PALETTE.black);
+    p(15, 23, DOORWAY_GLOW);
+    p(16, 23, DOORWAY_GLOW);
+    // Herb bundles hanging (green dots near door)
+    p(10, 16, '#22c55e');
+    p(22, 16, '#22c55e');
+    p(11, 18, '#4ade80');
+    p(21, 18, '#4ade80');
+  } else if (type === 'swimmer') {
+    // Otter in swimming pose - horizontal body with water highlights
+    // Shadow under body
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(3, 12, 10, 1);
+    // Water splash highlights around body
+    p(2, 10, '#38bdf8');
+    p(13, 10, '#38bdf8');
+    p(1, 8, '#38bdf8');
+    p(14, 8, '#38bdf8');
+    p(3, 12, '#38bdf8');
+    p(12, 12, '#38bdf8');
+    // Horizontal otter body (swimming pose)
+    rect(4, 7, 8, 4, PALETTE.otterBase);
+    rect(5, 8, 6, 2, PALETTE.otterBelly);
+    // Head (front)
+    rect(11, 6, 3, 4, PALETTE.otterBase);
+    p(12, 6, PALETTE.black); // Eye
+    p(13, 7, PALETTE.otterNose); // Nose
+    // Flippers out
+    rect(5, 5, 2, 2, PALETTE.otterBase); // Top flipper
+    rect(5, 11, 2, 2, PALETTE.otterBase); // Bottom flipper
+    rect(9, 5, 2, 2, PALETTE.otterBase); // Top flipper
+    rect(9, 11, 2, 2, PALETTE.otterBase); // Bottom flipper
+    // Tail
+    rect(2, 8, 2, 2, PALETTE.otterBase);
+    rect(1, 9, 1, 1, PALETTE.otterBase);
+  } else if (type === 'trapper') {
+    // Otter with a net/rope item
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline
+    rect(4, 3, 1, 10, OTTER_OUTLINE);
+    rect(12, 3, 1, 10, OTTER_OUTLINE);
+    rect(5, 1, 6, 1, OTTER_OUTLINE);
+    // Otter body base (same as gatherer)
+    rect(5, 4, 6, 8, PALETTE.otterBase);
+    rect(6, 5, 4, 6, PALETTE.otterBelly);
+    rect(5, 2, 6, 4, PALETTE.otterBase);
+    p(6, 3, PALETTE.black);
+    p(9, 3, PALETTE.black);
+    p(7, 4, PALETTE.otterNose);
+    p(8, 4, PALETTE.otterNose);
+    // Nose highlight
+    p(8, 4, OTTER_NOSE_HIGHLIGHT);
+    rect(4, 5, 1, 4, PALETTE.otterBase);
+    rect(11, 5, 1, 4, PALETTE.otterBase);
+    rect(5, 12, 2, 2, PALETTE.otterBase);
+    rect(9, 12, 2, 2, PALETTE.otterBase);
+    rect(11, 10, 3, 2, PALETTE.otterBase);
+    // Rope/net item in hands (amber colored)
+    rect(2, 5, 3, 1, '#f59e0b');
+    rect(1, 6, 1, 3, '#f59e0b');
+    rect(4, 6, 1, 3, '#f59e0b');
+    rect(2, 8, 3, 1, '#f59e0b');
+    // Net cross-hatch pattern
+    p(2, 6, '#d97706');
+    p(3, 7, '#d97706');
+    p(2, 8, '#d97706');
   }
 
   // Scale up with nearest-neighbour (no smoothing)
@@ -471,6 +720,10 @@ const LARGE_SPRITE_IDS = new Set<SpriteId>([
   SpriteId.Catapult,
   SpriteId.Wall,
   SpriteId.ScoutPost,
+  SpriteId.SiegeTurtle,
+  SpriteId.AlphaPredator,
+  SpriteId.FishingHut,
+  SpriteId.HerbalistHut,
 ]);
 
 export function getSpriteSize(id: SpriteId): { width: number; height: number } {

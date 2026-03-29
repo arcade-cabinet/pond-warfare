@@ -44,6 +44,16 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.Catapult]: SpriteId.Catapult,
   [EntityKind.Wall]: SpriteId.Wall,
   [EntityKind.ScoutPost]: SpriteId.ScoutPost,
+  [EntityKind.ArmoredGator]: SpriteId.ArmoredGator,
+  [EntityKind.VenomSnake]: SpriteId.VenomSnake,
+  [EntityKind.SwampDrake]: SpriteId.SwampDrake,
+  [EntityKind.SiegeTurtle]: SpriteId.SiegeTurtle,
+  [EntityKind.AlphaPredator]: SpriteId.AlphaPredator,
+  [EntityKind.PearlBed]: SpriteId.PearlBed,
+  [EntityKind.FishingHut]: SpriteId.FishingHut,
+  [EntityKind.HerbalistHut]: SpriteId.HerbalistHut,
+  [EntityKind.Swimmer]: SpriteId.Swimmer,
+  [EntityKind.Trapper]: SpriteId.Trapper,
 };
 
 export function spawnEntity(

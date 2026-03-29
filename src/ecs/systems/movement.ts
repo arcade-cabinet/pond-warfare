@@ -72,7 +72,13 @@ export function movementSystem(world: GameWorld): void {
 
     const tx = UnitStateMachine.targetX[eid];
     const ty = UnitStateMachine.targetY[eid];
-    const speed = Velocity.speed[eid];
+    let speed = Velocity.speed[eid];
+
+    // Apply speed debuff from Trapper traps (50% slow)
+    if (Velocity.speedDebuffTimer[eid] > 0) {
+      speed *= 0.5;
+      Velocity.speedDebuffTimer[eid]--;
+    }
 
     const dx = tx - Position.x[eid];
     const dy = ty - Position.y[eid];
@@ -191,27 +197,66 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
         // Use actual carried amount (may differ from GATHER_AMOUNT due to Tidal Harvest)
         const depositAmt = Carrying.resourceAmount[eid] || GATHER_AMOUNT;
 
-        // Floating text for returned resources
-        const resName = heldRes === ResourceType.Clams ? 'Clams' : 'Twigs';
-        const color = heldRes === ResourceType.Clams ? '#fde047' : '#f97316';
+        // Floating text for returned resources (slightly bigger life for visibility)
+        const resName =
+          heldRes === ResourceType.Clams
+            ? 'Clams'
+            : heldRes === ResourceType.Pearls
+              ? 'Pearls'
+              : 'Twigs';
+        const color =
+          heldRes === ResourceType.Clams
+            ? '#fde047'
+            : heldRes === ResourceType.Pearls
+              ? '#a5b4fc'
+              : '#f97316';
         world.floatingTexts.push({
           x: Position.x[eid],
-          y: Position.y[eid] - 20,
+          y: Position.y[eid] - 24,
           text: `+${depositAmt} ${resName}`,
           color,
-          life: 60,
+          life: 75,
         });
+
+        // Particle burst at the return building (lodge/nest) to celebrate deposit
+        const returnBld = UnitStateMachine.returnEntity[eid];
+        if (returnBld !== -1) {
+          const bx = Position.x[returnBld];
+          const by = Position.y[returnBld];
+          const pColor =
+            heldRes === ResourceType.Clams
+              ? '#fde047'
+              : heldRes === ResourceType.Pearls
+                ? '#a5b4fc'
+                : '#92400e';
+          for (let p = 0; p < 6; p++) {
+            const angle = (p / 6) * Math.PI * 2;
+            spawnParticle(
+              world,
+              bx + Math.cos(angle) * 8,
+              by - 10,
+              Math.cos(angle) * 1.5,
+              Math.sin(angle) * 1.5 - 0.5,
+              18,
+              pColor,
+              2,
+            );
+          }
+        }
 
         // Add resources to the correct faction's stockpile
         if (faction === Faction.Enemy) {
           if (heldRes === ResourceType.Clams) {
             world.enemyResources.clams += depositAmt;
-          } else {
+          } else if (heldRes === ResourceType.Twigs) {
             world.enemyResources.twigs += depositAmt;
           }
+          // Enemies don't gather pearls
         } else {
           if (heldRes === ResourceType.Clams) {
             world.resources.clams += depositAmt;
+          } else if (heldRes === ResourceType.Pearls) {
+            world.resources.pearls += depositAmt;
           } else {
             world.resources.twigs += depositAmt;
           }
