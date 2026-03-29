@@ -6,7 +6,7 @@
  * Faithful port of GAME.init() and GAME.loop() from pond_craft.html.
  */
 
-import { query } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS, entityKindFromString, entityKindName } from '@/config/entity-defs';
@@ -24,11 +24,13 @@ import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
   Collider,
+  Combat,
   EntityTypeTag,
   FactionTag,
   Health,
   IsBuilding,
   IsProjectile,
+  IsResource,
   Position,
   ProjectileData,
   Selectable,
@@ -37,6 +39,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
+import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
 import { buildingSystem } from '@/ecs/systems/building';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { collisionSystem } from '@/ecs/systems/collision';
@@ -603,6 +606,7 @@ export class Game {
     projectileSystem(this.world);
     trainingSystem(this.world);
     aiSystem(this.world);
+    autoBehaviorSystem(this.world);
     healthSystem(this.world);
     fogOfWarSystem(this.world);
     cleanupSystem(this.world);
@@ -722,8 +726,7 @@ export class Game {
     const w = this.world;
     store.clams.value = w.resources.clams;
     store.twigs.value = w.resources.twigs;
-    store.food.value = w.resources.food;
-    store.maxFood.value = w.resources.maxFood;
+    // food and maxFood are calculated below from entity counts
     store.rateClams.value = w.resTracker.rateClams;
     store.rateTwigs.value = w.resTracker.rateTwigs;
     store.gameSpeed.value = w.gameSpeed;
@@ -731,8 +734,79 @@ export class Game {
     store.muted.value = audio.muted;
     store.paused.value = w.paused;
     store.attackMoveActive.value = w.attackMoveMode;
+    store.hasPlayerUnits.value = hasPlayerUnitsSelected(this.world);
+
+    // Sync auto-behavior toggles from UI store into game world
+    w.autoBehaviors.gather = store.autoGatherEnabled.value;
+    w.autoBehaviors.defend = store.autoDefendEnabled.value;
+    w.autoBehaviors.attack = store.autoAttackEnabled.value;
+
     store.lowClams.value = w.resources.clams < 50;
     store.lowTwigs.value = w.resources.twigs < 50;
+
+    // --- Food population system (POC lines 1261-1270) ---
+    // Count current population (all player non-building non-resource entities)
+    // and max food capacity (sum of foodProvided from completed lodges/burrows)
+    const allEntsForFood = query(w.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+    let curFood = 0;
+    let maxFoodCap = 0;
+    let idleWorkers = 0;
+    let armyUnits = 0;
+
+    for (let i = 0; i < allEntsForFood.length; i++) {
+      const eid = allEntsForFood[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+
+      const kind = EntityTypeTag.kind[eid] as EntityKind;
+
+      if (hasComponent(w.ecs, eid, IsBuilding)) {
+        // Completed buildings with foodProvided contribute to max food
+        if (Building.progress[eid] >= 100) {
+          const def = ENTITY_DEFS[kind];
+          if (def.foodProvided) {
+            maxFoodCap += def.foodProvided;
+          }
+        }
+      } else if (!hasComponent(w.ecs, eid, IsResource)) {
+        // Non-building, non-resource player entities count as population
+        curFood++;
+        if (kind === EntityKind.Gatherer) {
+          if (UnitStateMachine.state[eid] === UnitState.Idle) {
+            idleWorkers++;
+          }
+        } else {
+          armyUnits++;
+        }
+      }
+    }
+
+    w.resources.food = curFood;
+    w.resources.maxFood = maxFoodCap;
+    store.food.value = curFood;
+    store.maxFood.value = maxFoodCap;
+    store.idleWorkerCount.value = idleWorkers;
+    store.armyCount.value = armyUnits;
+
+    // Track peak army
+    if (armyUnits > w.stats.peakArmy) {
+      w.stats.peakArmy = armyUnits;
+    }
+
+    // --- Peace timer display ---
+    const peaceful = w.frameCount < w.peaceTimer;
+    store.isPeaceful.value = peaceful;
+    if (peaceful) {
+      store.peaceCountdown.value = Math.ceil((w.peaceTimer - w.frameCount) / 60);
+    }
+
+    // --- Time display ---
+    const totalMinutes = w.timeOfDay;
+    const displayHours = Math.floor(totalMinutes / 60) % 24;
+    const displayMinutes = Math.floor(totalMinutes) % 60;
+    const day = Math.floor(w.frameCount / DAY_FRAMES) + 1;
+    store.gameDay.value = day;
+    store.gameTimeDisplay.value = `Day ${day} - ${String(displayHours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}`;
 
     // Game over stats
     if (w.state === 'win' || w.state === 'lose') {
@@ -812,11 +886,198 @@ export class Game {
     }
     store.globalProductionQueue.value = prodQueue;
 
+    // --- Selection info sync ---
+    if (w.selection.length === 0) {
+      // No selection: show global Command Center
+      store.selectionCount.value = 0;
+      store.selectionName.value = 'Command Center';
+      store.selectionNameColor.value = 'text-sky-400';
+      store.selectionShowHpBar.value = false;
+      store.selectionIsMulti.value = false;
+      store.selectionStatsHtml.value = `Idle: ${idleWorkers} | Army: ${armyUnits} | Pop: ${curFood}/${maxFoodCap}`;
+      store.selectionDesc.value = '';
+      store.selectionSpriteData.value = null;
+      store.selectionKills.value = 0;
+    } else if (w.selection.length === 1) {
+      const selEid = w.selection[0];
+      const kind = EntityTypeTag.kind[selEid] as EntityKind;
+      const faction = FactionTag.faction[selEid] as Faction;
+      store.selectionCount.value = 1;
+      store.selectionName.value = entityKindName(kind);
+      store.selectionIsMulti.value = false;
+      store.selectionNameColor.value =
+        faction === Faction.Player
+          ? 'text-green-400'
+          : faction === Faction.Enemy
+            ? 'text-red-400'
+            : 'text-slate-400';
+      store.selectionHp.value = Health.current[selEid];
+      store.selectionMaxHp.value = Health.max[selEid];
+      store.selectionShowHpBar.value = !hasComponent(w.ecs, selEid, IsResource);
+      store.selectionKills.value = hasComponent(w.ecs, selEid, Combat)
+        ? Combat.kills[selEid]
+        : 0;
+      // Build stats string
+      const def = ENTITY_DEFS[kind];
+      const statParts: string[] = [];
+      statParts.push(`HP: ${Health.current[selEid]}/${Health.max[selEid]}`);
+      if (def.damage > 0) statParts.push(`Dmg: ${def.damage}`);
+      if (def.attackRange > 0) statParts.push(`Range: ${def.attackRange}`);
+      if (def.speed > 0 && !def.isBuilding) statParts.push(`Spd: ${def.speed}`);
+      store.selectionStatsHtml.value = statParts.join(' | ');
+      // Describe current state
+      const state = UnitStateMachine.state[selEid] as UnitState;
+      const stateNames: Record<number, string> = {
+        [UnitState.Idle]: 'Idle',
+        [UnitState.Move]: 'Moving',
+        [UnitState.GatherMove]: 'Moving to gather',
+        [UnitState.Gathering]: 'Gathering',
+        [UnitState.ReturnMove]: 'Returning resources',
+        [UnitState.BuildMove]: 'Moving to build',
+        [UnitState.Building]: 'Building',
+        [UnitState.RepairMove]: 'Moving to repair',
+        [UnitState.Repairing]: 'Repairing',
+        [UnitState.AttackMove]: 'Attack-moving',
+        [UnitState.Attacking]: 'Attacking',
+        [UnitState.AttackMovePatrol]: 'Patrolling',
+      };
+      store.selectionDesc.value = stateNames[state] ?? '';
+      store.selectionSpriteData.value = null;
+    } else {
+      // Multiple selected
+      store.selectionIsMulti.value = true;
+      store.selectionCount.value = w.selection.length;
+      store.selectionName.value = `${w.selection.length} Units`;
+      store.selectionNameColor.value = 'text-green-400';
+      store.selectionShowHpBar.value = false;
+      store.selectionSpriteData.value = null;
+      // Build composition string
+      const kindCounts = new Map<EntityKind, number>();
+      for (const eid of w.selection) {
+        const k = EntityTypeTag.kind[eid] as EntityKind;
+        kindCounts.set(k, (kindCounts.get(k) ?? 0) + 1);
+      }
+      const compParts: string[] = [];
+      for (const [k, count] of kindCounts) {
+        compParts.push(`${count} ${entityKindName(k)}`);
+      }
+      store.selectionComposition.value = compParts.join(', ');
+      store.selectionStatsHtml.value = '';
+      store.selectionDesc.value = '';
+      store.selectionKills.value = 0;
+    }
+
     // --- Action panel buttons (context-sensitive) ---
     const btns: ActionButtonDef[] = [];
     const qItems: QueueItemDef[] = [];
 
-    if (w.selection.length === 1) {
+    if (w.selection.length === 0) {
+      // Global Command Center: find first completed player Lodge and show its actions
+      const allBuildings = query(w.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
+      let lodgeEid = -1;
+      for (let i = 0; i < allBuildings.length; i++) {
+        const eid = allBuildings[i];
+        if (
+          FactionTag.faction[eid] === Faction.Player &&
+          EntityTypeTag.kind[eid] === EntityKind.Lodge &&
+          Health.current[eid] > 0 &&
+          Building.progress[eid] >= 100
+        ) {
+          lodgeEid = eid;
+          break;
+        }
+      }
+      if (lodgeEid >= 0) {
+        const gDef = ENTITY_DEFS[EntityKind.Gatherer];
+        btns.push({
+          title: 'Gatherer',
+          cost: `${gDef.clamCost}C ${gDef.foodCost}F`,
+          hotkey: 'Q',
+          affordable:
+            w.resources.clams >= (gDef.clamCost ?? 0) &&
+            w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
+          description: 'Worker unit',
+          onClick: () => {
+            train(
+              w,
+              lodgeEid,
+              EntityKind.Gatherer,
+              gDef.clamCost ?? 0,
+              gDef.twigCost ?? 0,
+              gDef.foodCost ?? 1,
+            );
+          },
+        });
+        const smTech = TECH_UPGRADES.sturdyMud;
+        btns.push({
+          title: smTech.name,
+          cost: `${smTech.clamCost}C ${smTech.twigCost}T`,
+          hotkey: 'W',
+          affordable:
+            canResearch('sturdyMud', w.tech) &&
+            w.resources.clams >= smTech.clamCost &&
+            w.resources.twigs >= smTech.twigCost,
+          description: smTech.description,
+          onClick: () => {
+            if (
+              canResearch('sturdyMud', w.tech) &&
+              w.resources.clams >= smTech.clamCost &&
+              w.resources.twigs >= smTech.twigCost
+            ) {
+              w.resources.clams -= smTech.clamCost;
+              w.resources.twigs -= smTech.twigCost;
+              w.tech.sturdyMud = true;
+            }
+          },
+        });
+        const spTech = TECH_UPGRADES.swiftPaws;
+        btns.push({
+          title: spTech.name,
+          cost: `${spTech.clamCost}C ${spTech.twigCost}T`,
+          hotkey: 'E',
+          affordable:
+            canResearch('swiftPaws', w.tech) &&
+            w.resources.clams >= spTech.clamCost &&
+            w.resources.twigs >= spTech.twigCost,
+          description: spTech.description,
+          onClick: () => {
+            if (
+              canResearch('swiftPaws', w.tech) &&
+              w.resources.clams >= spTech.clamCost &&
+              w.resources.twigs >= spTech.twigCost
+            ) {
+              w.resources.clams -= spTech.clamCost;
+              w.resources.twigs -= spTech.twigCost;
+              w.tech.swiftPaws = true;
+            }
+          },
+        });
+
+        // Show Lodge training queue in global view
+        const lodgeSlots = trainingQueueSlots.get(lodgeEid) ?? [];
+        for (let qi = 0; qi < lodgeSlots.length; qi++) {
+          const unitKind = lodgeSlots[qi] as EntityKind;
+          const progress =
+            qi === 0
+              ? Math.max(
+                  0,
+                  Math.min(
+                    100,
+                    ((TRAIN_TIMER - TrainingQueue.timer[lodgeEid]) / TRAIN_TIMER) * 100,
+                  ),
+                )
+              : 0;
+          const idx = qi;
+          qItems.push({
+            label: entityKindName(unitKind).charAt(0),
+            progressPct: progress,
+            onCancel: () => {
+              cancelTrain(w, lodgeEid, idx);
+            },
+          });
+        }
+      }
+    } else if (w.selection.length === 1) {
       const selEid = w.selection[0];
       const selKind = EntityTypeTag.kind[selEid] as EntityKind;
       const selFaction = FactionTag.faction[selEid] as Faction;
@@ -861,20 +1122,21 @@ export class Game {
               w.placingBuilding = 'tower';
             },
           });
-          const wtDef = ENTITY_DEFS[EntityKind.Watchtower];
-          btns.push({
-            title: 'Watchtower',
-            cost: `${wtDef.clamCost}C ${wtDef.twigCost}T`,
-            hotkey: 'R',
-            affordable:
-              w.resources.clams >= (wtDef.clamCost ?? 0) &&
-              w.resources.twigs >= (wtDef.twigCost ?? 0) &&
-              w.tech.eagleEye,
-            description: 'Long-range tower (requires Eagle Eye)',
-            onClick: () => {
-              if (w.tech.eagleEye) w.placingBuilding = 'watchtower';
-            },
-          });
+          if (w.tech.eagleEye) {
+            const wtDef = ENTITY_DEFS[EntityKind.Watchtower];
+            btns.push({
+              title: 'Watchtower',
+              cost: `${wtDef.clamCost}C ${wtDef.twigCost}T`,
+              hotkey: 'R',
+              affordable:
+                w.resources.clams >= (wtDef.clamCost ?? 0) &&
+                w.resources.twigs >= (wtDef.twigCost ?? 0),
+              description: 'Long-range tower',
+              onClick: () => {
+                w.placingBuilding = 'watchtower';
+              },
+            });
+          }
         }
 
         // Lodge selected: train gatherer + techs

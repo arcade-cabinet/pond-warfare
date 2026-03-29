@@ -2,11 +2,10 @@
  * Yuka.js AI Manager
  *
  * Wraps Yuka's EntityManager to provide steering behaviors (seek, arrive, flee)
- * for enemy units. Player units remain direct-command driven for snappy response.
- *
- * Each enemy ECS entity gets a paired Yuka Vehicle with appropriate steering
- * behaviors. The Yuka update loop runs each frame, and resulting velocities are
- * synced back to ECS Position components in the movement system.
+ * for all units (both player and enemy). Each ECS entity gets a paired Yuka
+ * Vehicle with appropriate steering behaviors. The Yuka update loop runs each
+ * frame, and resulting velocities are synced back to ECS Position components
+ * in the movement system.
  */
 
 import { entityExists } from 'bitecs';
@@ -20,10 +19,10 @@ export class YukaManager {
   private vehicles = new Map<number, Vehicle>();
 
   /**
-   * Register an enemy entity with a Yuka Vehicle using ArriveBehavior toward a target.
+   * Register a unit (any faction) with a Yuka Vehicle using ArriveBehavior toward a target.
    * ArriveBehavior gives smooth deceleration near the target position.
    */
-  addEnemy(
+  addUnit(
     eid: number,
     x: number,
     y: number,
@@ -47,7 +46,7 @@ export class YukaManager {
   }
 
   /**
-   * Update the steering target for an existing enemy vehicle.
+   * Update the steering target for an existing vehicle.
    * Switches to SeekBehavior when chasing a moving entity, ArriveBehavior for static targets.
    */
   setTarget(eid: number, targetX: number, targetY: number, isChasing: boolean): void {
@@ -69,12 +68,33 @@ export class YukaManager {
     }
   }
 
-  /** Remove an enemy entity's Yuka vehicle (on death or cleanup). */
-  removeEnemy(eid: number): void {
+  /**
+   * @deprecated Use addUnit() instead. Kept for backward compatibility.
+   */
+  addEnemy(
+    eid: number,
+    x: number,
+    y: number,
+    speed: number,
+    targetX: number,
+    targetY: number,
+  ): void {
+    this.addUnit(eid, x, y, speed, targetX, targetY);
+  }
+
+  /** Remove a unit's Yuka vehicle (on death or cleanup). */
+  removeUnit(eid: number): void {
     const vehicle = this.vehicles.get(eid);
     if (!vehicle) return;
     this.entityManager.remove(vehicle);
     this.vehicles.delete(eid);
+  }
+
+  /**
+   * @deprecated Use removeUnit() instead. Kept for backward compatibility.
+   */
+  removeEnemy(eid: number): void {
+    this.removeUnit(eid);
   }
 
   /** Returns true if the given ECS entity has a registered Yuka vehicle. */

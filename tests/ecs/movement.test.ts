@@ -65,6 +65,9 @@ describe('movementSystem', () => {
     UnitStateMachine.targetY[eid] = 100;
 
     const startX = Position.x[eid];
+    // First tick registers with Yuka; Yuka update + second tick moves the entity
+    movementSystem(world);
+    world.yukaManager.update(1 / 60, world.ecs);
     movementSystem(world);
     expect(Position.x[eid]).toBeGreaterThan(startX);
     expect(Position.y[eid]).toBeCloseTo(100, 0);

@@ -53,6 +53,19 @@ export const attackMoveActive = signal(false);
 export const idleWorkerCount = signal(0);
 export const armyCount = signal(0);
 
+/** True when the current selection contains at least one player-owned mobile unit */
+export const hasPlayerUnits = signal(false);
+
+// ---- Radial menu ----
+export const radialMenuOpen = signal(false);
+export const radialMenuX = signal(0);
+export const radialMenuY = signal(0);
+
+// Auto-behavior toggle states (persist across menu opens)
+export const autoGatherEnabled = signal(false);
+export const autoDefendEnabled = signal(false);
+export const autoAttackEnabled = signal(false);
+
 // ---- Game over stats ----
 export const goTitle = signal('Victory');
 export const goTitleColor = signal('text-amber-400');

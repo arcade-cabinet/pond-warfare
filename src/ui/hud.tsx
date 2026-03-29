@@ -15,6 +15,7 @@ import {
   foodDisplay,
   gameTimeDisplay,
   globalProductionQueue,
+  hasPlayerUnits,
   idleWorkerCount,
   isPeaceful,
   lowClams,
@@ -23,12 +24,17 @@ import {
   paused,
   peaceStatusColor,
   peaceStatusText,
+  radialMenuOpen,
+  radialMenuX,
+  radialMenuY,
   rateClams,
   rateTwigs,
+  selectionCount,
   speedLabel,
   twigs,
   waveCountdown,
 } from './store';
+import { RadialMenu } from './radial-menu';
 
 /** Format time-of-day (in minutes) to HH:MM string. */
 export function formatTime(timeOfDay: number): string {
@@ -53,6 +59,8 @@ export interface HUDProps {
   onColorBlindToggle?: () => void;
   onIdleWorkerClick?: () => void;
   onArmyClick?: () => void;
+  onPauseClick?: () => void;
+  onAttackMoveClick?: () => void;
 }
 
 export function HUD(props: HUDProps) {
@@ -125,6 +133,15 @@ export function HUD(props: HUDProps) {
           <div class="flex items-center gap-1">
             <button
               type="button"
+              id="pause-btn"
+              class={`text-[10px] md:text-xs px-1 md:px-2 py-0.5 border rounded cursor-pointer hover:bg-slate-600 font-bold ${paused.value ? 'bg-amber-700 border-amber-500 text-amber-200' : 'bg-slate-700 border-slate-500 text-slate-300'}`}
+              title="Pause (P)"
+              onClick={props.onPauseClick}
+            >
+              {paused.value ? '\u25B6' : '\u23F8'}
+            </button>
+            <button
+              type="button"
               id="speed-btn"
               class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-sky-300 font-bold"
               title="Game Speed (F)"
@@ -178,18 +195,33 @@ export function HUD(props: HUDProps) {
         </div>
       )}
 
-      {/* Idle worker button */}
+      {/* Idle worker button - opens radial menu */}
       {idleWorkerCount.value > 0 && (
         <button
           type="button"
           id="idle-worker-btn"
           class="absolute top-14 right-2 md:right-6 ui-panel border-2 border-amber-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-amber-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
-          title="Select idle worker (.)"
-          onClick={props.onIdleWorkerClick}
+          title="Idle units menu (.)"
+          onClick={(e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            const rect = btn.getBoundingClientRect();
+            radialMenuX.value = rect.left + rect.width / 2;
+            radialMenuY.value = rect.top + rect.height / 2;
+            radialMenuOpen.value = !radialMenuOpen.value;
+          }}
         >
           <span class="w-3 h-3 bg-amber-400 rounded-full animate-pulse" />
           <span class="text-xs md:text-sm">{idleWorkerCount} Idle</span>
         </button>
+      )}
+
+      {/* Radial menu for idle units */}
+      {radialMenuOpen.value && (
+        <RadialMenu
+          onSelectAll={() => {
+            if (props.onIdleWorkerClick) props.onIdleWorkerClick();
+          }}
+        />
       )}
 
       {/* Army select button */}
@@ -202,6 +234,19 @@ export function HUD(props: HUDProps) {
           onClick={props.onArmyClick}
         >
           <span class="text-xs md:text-sm">Army ({armyCount})</span>
+        </button>
+      )}
+
+      {/* Attack-move button (visible when player units are selected) */}
+      {hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
+        <button
+          type="button"
+          id="attack-move-btn"
+          class="absolute top-36 md:top-40 right-2 md:right-6 ui-panel border-2 border-orange-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-orange-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          title="Attack-Move (A)"
+          onClick={props.onAttackMoveClick}
+        >
+          <span class="text-xs md:text-sm">A-Move</span>
         </button>
       )}
 

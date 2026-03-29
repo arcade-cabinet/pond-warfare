@@ -61,8 +61,15 @@ export interface GameWorld {
   attackMoveMode: boolean;
   idleWorkerIdx: number;
 
-  // Yuka AI manager for enemy steering behaviors
+  // Yuka AI manager for steering behaviors (all factions)
   yukaManager: YukaManager;
+
+  // Auto-behavior toggles (synced from UI store signals)
+  autoBehaviors: {
+    gather: boolean;
+    defend: boolean;
+    attack: boolean;
+  };
 
   // Resource tracking
   resTracker: {
@@ -114,6 +121,7 @@ export function createGameWorld(): GameWorld {
     selection: [],
     ctrlGroups: {},
     yukaManager: new YukaManager(),
+    autoBehaviors: { gather: false, defend: false, attack: false },
     placingBuilding: null,
     attackMoveMode: false,
     idleWorkerIdx: 0,

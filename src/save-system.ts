@@ -22,7 +22,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { type EntityKind, Faction } from '@/types';
+import { type EntityKind, Faction, UnitState } from '@/types';
 
 interface SavedEntity {
   kind: number;
@@ -198,10 +198,15 @@ export function loadGame(world: GameWorld, json: string): boolean {
       UnitStateMachine.targetY[eid] = saved.targetY;
       Carrying.resourceType[eid] = saved.carryingType;
 
-      // Register enemy units with Yuka
-      if (faction === Faction.Enemy) {
+      // Register units in movement states with Yuka (all factions)
+      const moveStates: number[] = [
+        UnitState.Move, UnitState.GatherMove, UnitState.ReturnMove,
+        UnitState.AttackMove, UnitState.BuildMove, UnitState.AttackMovePatrol,
+        UnitState.RepairMove,
+      ];
+      if (moveStates.includes(saved.state)) {
         const speed = Velocity.speed[eid] || ENTITY_DEFS[kind]?.speed || 1.5;
-        world.yukaManager.addEnemy(eid, saved.x, saved.y, speed, saved.targetX, saved.targetY);
+        world.yukaManager.addUnit(eid, saved.x, saved.y, speed, saved.targetX, saved.targetY);
       }
     }
   }

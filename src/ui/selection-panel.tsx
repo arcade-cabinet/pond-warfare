@@ -22,15 +22,34 @@ import {
   selectionStatsHtml,
 } from './store';
 
-export function SelectionPanel() {
+export interface SelectionPanelProps {
+  onDeselect?: () => void;
+}
+
+export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
   const count = selectionCount.value;
   const showHp = selectionShowHpBar.value;
 
   return (
     <div
       id="selection-info"
-      class="w-1/3 md:w-full flex-1 p-2 md:p-4 border-r-2 md:border-r-0 md:border-b-4 border-slate-700 flex flex-col gap-1 md:gap-2 overflow-y-auto bg-slate-900"
+      class="w-1/3 md:w-full flex-1 p-2 md:p-4 border-r-2 md:border-r-0 md:border-b-4 border-slate-700 flex flex-col gap-1 md:gap-2 overflow-y-auto bg-slate-900 relative"
     >
+      {/* Deselect button */}
+      {count > 0 && onDeselect && (
+        <button
+          type="button"
+          class="absolute top-1 right-1 bg-slate-700 hover:bg-red-700 text-slate-300 rounded-full w-6 h-6 flex items-center justify-center cursor-pointer text-xs font-bold z-10"
+          title="Clear selection (Esc)"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeselect();
+          }}
+        >
+          X
+        </button>
+      )}
+
       <div class="flex flex-col sm:flex-row gap-2 md:gap-3 items-start">
         {/* Portrait (single selection only) */}
         {!selectionIsMulti.value && count > 0 && selectionSpriteData.value && (

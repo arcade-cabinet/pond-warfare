@@ -7,9 +7,11 @@
  */
 
 import { useEffect, useRef } from 'preact/hooks';
+import { hasComponent } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { Selectable } from '@/ecs/components';
 import { game } from '@/game';
-import { selectArmy, selectIdleWorker } from '@/input/selection';
+import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/game-renderer';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
@@ -63,7 +65,21 @@ export function App({ onMount }: AppProps) {
   return (
     <div class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm text-slate-200">
       {/* Sidebar */}
-      <Sidebar minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
+      <Sidebar
+        minimapCanvasRef={minimapCanvasRef}
+        minimapCamRef={minimapCamRef}
+        onDeselect={() => {
+          const w = game.world;
+          for (const eid of w.selection) {
+            if (hasComponent(w.ecs, eid, Selectable)) {
+              Selectable.selected[eid] = 0;
+            }
+          }
+          w.selection = [];
+          w.isTracking = false;
+          game.syncUIStore();
+        }}
+      />
 
       {/* Main game container */}
       <div
@@ -89,6 +105,16 @@ export function App({ onMount }: AppProps) {
           onArmyClick={() => {
             selectArmy(game.world);
             game.syncUIStore();
+          }}
+          onPauseClick={() => {
+            game.world.paused = !game.world.paused;
+            game.syncUIStore();
+          }}
+          onAttackMoveClick={() => {
+            if (hasPlayerUnitsSelected(game.world)) {
+              game.world.attackMoveMode = true;
+              game.syncUIStore();
+            }
           }}
         />
 
