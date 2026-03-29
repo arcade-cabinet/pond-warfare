@@ -1,0 +1,16 @@
+export {
+  closeDatabase,
+  deleteSave,
+  getLatestSave,
+  getSetting,
+  initDatabase,
+  isDatabaseReady,
+  listSaves,
+  loadSave,
+  persist,
+  recordGameResult,
+  saveGameToDb,
+  type SaveRow,
+  setSetting,
+  updateSave,
+} from './database';

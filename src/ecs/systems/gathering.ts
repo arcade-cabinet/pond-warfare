@@ -174,7 +174,11 @@ export function gatheringSystem(world: GameWorld): void {
         resKind === EntityKind.Cattail ? ResourceType.Twigs : ResourceType.Clams;
 
       // Deplete resource (Tidal Harvest: +50%)
-      const gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;
+      let gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;
+      // Permadeath rewards modifier: +50% gathered resources for player
+      if (faction === Faction.Player && world.rewardsModifier > 1.0) {
+        gatherAmt = Math.round(gatherAmt * world.rewardsModifier);
+      }
       Carrying.resourceAmount[eid] = gatherAmt;
       Resource.amount[tEnt] -= gatherAmt;
       // Track stats

@@ -85,7 +85,11 @@ export interface GameWorld {
   };
 
   // Difficulty setting (affects enemy eco speed, army size, aggression)
-  difficulty: 'easy' | 'normal' | 'hard';
+  difficulty: 'easy' | 'normal' | 'hard' | 'nightmare' | 'ultraNightmare';
+
+  // Permadeath mode
+  permadeath: boolean;
+  rewardsModifier: number; // 1.0 normal, 1.5 with permadeath
 
   // Map seed for reproducible random generation
   mapSeed: number;
@@ -153,6 +157,8 @@ export function createGameWorld(): GameWorld {
     yukaManager: new YukaManager(),
     autoBehaviors: { gather: false, defend: false, attack: false, scout: false },
     difficulty: 'normal',
+    permadeath: false,
+    rewardsModifier: 1.0,
     mapSeed: Math.floor(Math.random() * 2147483647),
     placingBuilding: null,
     attackMoveMode: false,

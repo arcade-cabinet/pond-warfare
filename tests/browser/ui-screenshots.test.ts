@@ -15,7 +15,7 @@ import { ErrorBoundary } from '@/ui/error-boundary';
 import { GameOverBanner } from '@/ui/game-over';
 // Components under test
 import { HUD } from '@/ui/hud';
-import { IntroOverlay } from '@/ui/intro-overlay';
+import { MainMenu } from '@/ui/main-menu';
 import { MinimapPanel } from '@/ui/minimap-panel';
 import { SelectionPanel } from '@/ui/selection-panel';
 // Store signals — we set these directly to control component state
@@ -817,15 +817,15 @@ describe('Game Over screenshots', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Intro Overlay Screenshots
+// Main Menu Screenshots
 // ---------------------------------------------------------------------------
-describe('Intro Overlay screenshots', () => {
-  it('IntroOverlay - initial splash', async () => {
+describe('Main Menu screenshots', () => {
+  it('MainMenu - initial splash', async () => {
     render(
       h(
         'div',
         { style: 'position:relative;width:800px;height:600px;background:#000' },
-        h(IntroOverlay, null),
+        h(MainMenu, null),
       ),
     );
 

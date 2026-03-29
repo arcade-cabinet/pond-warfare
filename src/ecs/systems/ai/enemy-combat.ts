@@ -66,6 +66,12 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   } else if (world.difficulty === 'hard') {
     baseThreshold = 3;
     lateThreshold = 2;
+  } else if (world.difficulty === 'nightmare') {
+    baseThreshold = 3;
+    lateThreshold = 2;
+  } else if (world.difficulty === 'ultraNightmare') {
+    baseThreshold = 2;
+    lateThreshold = 1;
   }
   const attackThreshold = world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
   if (armySize < attackThreshold) return;

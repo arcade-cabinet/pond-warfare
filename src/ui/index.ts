@@ -19,11 +19,14 @@ export { GameOverBanner, type GameOverProps } from './game-over';
 // HUD (barrel re-exports from hud/)
 export { formatRate, formatTime, frameToDay, HUD, type HUDProps } from './hud';
 
-// Intro overlay
-export { IntroOverlay } from './intro-overlay';
+// Main menu
+export { MainMenu } from './main-menu';
 
 // Minimap panel
 export { MinimapPanel, type MinimapPanelProps } from './minimap-panel';
+
+// New game modal
+export { NewGameModal } from './new-game-modal';
 
 // Radial menu
 export { RadialMenu, type RadialMenuProps } from './radial-menu';

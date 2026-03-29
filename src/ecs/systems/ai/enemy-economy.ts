@@ -37,6 +37,10 @@ function getGathererSpawnInterval(world: GameWorld): number {
       return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 1.5);
     case 'hard':
       return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.75);
+    case 'nightmare':
+      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.5);
+    case 'ultraNightmare':
+      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.33);
     default:
       return ENEMY_GATHERER_SPAWN_INTERVAL;
   }

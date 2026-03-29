@@ -53,6 +53,10 @@ export function enemyTrainingTick(world: GameWorld): void {
       : ENEMY_TRAIN_CHECK_INTERVAL;
   if (world.difficulty === 'hard') {
     trainInterval = Math.floor(trainInterval * 0.75);
+  } else if (world.difficulty === 'nightmare') {
+    trainInterval = Math.floor(trainInterval * 0.5);
+  } else if (world.difficulty === 'ultraNightmare') {
+    trainInterval = Math.floor(trainInterval * 0.33);
   } else if (world.difficulty === 'easy') {
     trainInterval = Math.floor(trainInterval * 1.25);
   }
