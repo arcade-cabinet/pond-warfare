@@ -3,11 +3,12 @@
  *
  * Minimap container with camera viewport indicator div.
  * Desktop: 150px max. Mobile: 100px max.
+ * Shows the current map scenario label below the minimap.
  */
 
 import type { Ref } from 'preact';
 import { MINIMAP_SIZE } from '@/constants';
-import { baseUnderAttack } from '@/ui/store';
+import { baseUnderAttack, mapScenario } from '@/ui/store';
 
 export interface MinimapPanelProps {
   canvasRef: Ref<HTMLCanvasElement>;
@@ -15,9 +16,12 @@ export interface MinimapPanelProps {
 }
 
 export function MinimapPanel({ canvasRef, camRef }: MinimapPanelProps) {
+  const scenario = mapScenario.value;
+  const label = scenario ? scenario.charAt(0).toUpperCase() + scenario.slice(1) : '';
+
   return (
     <div
-      class="w-1/3 md:w-full flex-shrink-0 p-1 md:p-2 flex justify-center items-center border-r-2 md:border-r-0 md:border-b-2 md:max-h-[166px]"
+      class="w-1/3 md:w-full flex-shrink-0 p-1 md:p-2 flex flex-col justify-center items-center border-r-2 md:border-r-0 md:border-b-2 md:max-h-[190px]"
       style={{ background: 'var(--pw-bg-deep)', borderColor: 'var(--pw-border)' }}
     >
       <div
@@ -39,6 +43,14 @@ export function MinimapPanel({ canvasRef, camRef }: MinimapPanelProps) {
           style={{ left: 0, top: 0 }}
         />
       </div>
+      {label && (
+        <span
+          class="mt-1 text-[9px] md:text-[10px] font-heading tracking-wide uppercase"
+          style={{ color: 'var(--pw-text-muted)' }}
+        >
+          {label}
+        </span>
+      )}
     </div>
   );
 }

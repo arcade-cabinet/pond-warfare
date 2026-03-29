@@ -342,6 +342,7 @@ export class Game {
       isEnemyFaction: (eid) => FactionTag.faction[eid] === Faction.Enemy,
       isBuildingEntity: (eid) => !!ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding,
       getEntityKind: (eid) => EntityTypeTag.kind[eid],
+      getEntityPosition: (eid) => ({ x: Position.x[eid], y: Position.y[eid] }),
       isEntityOnScreen: (eid) => {
         const ex = Position.x[eid];
         const ey = Position.y[eid];

@@ -12,6 +12,7 @@
  */
 
 import { query } from 'bitecs';
+import { showBark } from '@/config/barks';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import {
   EntityTypeTag,
@@ -26,6 +27,9 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
+
+/** Track how many consecutive frames each entity has been idle. */
+const idleFrameCount = new Map<number, number>();
 
 export function autoBehaviorSystem(world: GameWorld): void {
   // Only check every 60 frames (~1 second)

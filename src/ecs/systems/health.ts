@@ -17,6 +17,7 @@
 
 import { hasComponent, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { showBark, shouldLowHpBark } from '@/config/barks';
 import { ALLY_ASSIST_RADIUS, PALETTE } from '@/constants';
 import {
   Building,
@@ -202,6 +203,20 @@ export function takeDamage(
     }
   }
 
+  // Low HP bark: when unit drops below 30% HP (once per entity)
+  if (
+    Health.current[targetEid] > 0 &&
+    Health.max[targetEid] > 0 &&
+    Health.current[targetEid] < Health.max[targetEid] * 0.3 &&
+    hasComponent(world.ecs, targetEid, EntityTypeTag) &&
+    hasComponent(world.ecs, targetEid, FactionTag) &&
+    FactionTag.faction[targetEid] === Faction.Player &&
+    shouldLowHpBark(targetEid)
+  ) {
+    const lhKind = EntityTypeTag.kind[targetEid] as EntityKind;
+    showBark(world, targetEid, tx, ty, lhKind, 'low_hp', { color: '#ef4444', force: true });
+  }
+
   // Check for death
   if (Health.current[targetEid] <= 0) {
     processDeath(world, targetEid, attackerEid);
@@ -342,9 +357,40 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     });
   }
 
+  // Death bark (player units only, before entity removal)
+  if (
+    !isBuilding &&
+    !isResource &&
+    hasComponent(world.ecs, eid, FactionTag) &&
+    FactionTag.faction[eid] === Faction.Player &&
+    hasComponent(world.ecs, eid, EntityTypeTag)
+  ) {
+    const deathKind = EntityTypeTag.kind[eid] as EntityKind;
+    showBark(world, eid, ex, ey, deathKind, 'death', { color: '#ef4444', life: 120, force: true });
+  }
+
   // Credit kill to attacker (original lines 1836-1843)
   if (attackerEid !== undefined && hasComponent(world.ecs, attackerEid, Combat)) {
     Combat.kills[attackerEid]++;
+
+    // Kill bark: 30% chance for player attackers
+    if (
+      hasComponent(world.ecs, attackerEid, FactionTag) &&
+      FactionTag.faction[attackerEid] === Faction.Player &&
+      hasComponent(world.ecs, attackerEid, EntityTypeTag) &&
+      Math.random() < 0.3
+    ) {
+      const killKind = EntityTypeTag.kind[attackerEid] as EntityKind;
+      showBark(
+        world,
+        attackerEid,
+        Position.x[attackerEid],
+        Position.y[attackerEid],
+        killKind,
+        'kill',
+        { color: '#fbbf24' },
+      );
+    }
   }
 
   // Kill streak tracking: player kills of enemy units (non-building, non-resource)
@@ -519,6 +565,11 @@ export function healthSystem(world: GameWorld): void {
           '#22c55e',
           3,
         );
+
+        // Healer bark: 20% chance when healing
+        if (Math.random() < 0.2) {
+          showBark(world, hEid, Position.x[hEid], Position.y[hEid], EntityKind.Healer, 'heal');
+        }
       }
     }
   }

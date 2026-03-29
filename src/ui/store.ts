@@ -107,6 +107,10 @@ export const goTimeSurvived = signal('');
 export const goFrameCount = signal(0);
 export const goMapSeed = signal(0);
 
+// ---- Map scenario ----
+export type MapScenario = 'standard' | 'island' | 'contested';
+export const mapScenario = signal<MapScenario>('standard');
+
 // ---- Map seed input (for intro screen) ----
 export const customMapSeed = signal('');
 

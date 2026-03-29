@@ -14,6 +14,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { showBark } from '@/config/barks';
 import { getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
 import {
   AGGRO_RADIUS_ENEMY,
@@ -430,6 +431,11 @@ export function combatSystem(world: GameWorld): void {
             faction === Faction.Player && world.tech.battleRoar
               ? Math.round(ATTACK_COOLDOWN * 0.9)
               : ATTACK_COOLDOWN;
+
+          // Combat bark: ~10% chance on attack (don't spam)
+          if (faction === Faction.Player && Math.random() < 0.1) {
+            showBark(world, eid, ex, ey, kind, 'combat', { color: '#ef4444' });
+          }
         }
       } else {
         // Out of range - chase target
