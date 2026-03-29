@@ -2,15 +2,17 @@
 
 ## Overview
 
-Pond Warfare is a real-time strategy / tower defense hybrid where otters defend their pond from predator attacks. The game combines resource gathering, base building, unit training, and combat with idle-game automation options.
+Pond Warfare is a Warcraft II-style real-time strategy game set in a pond ecosystem. Two factions -- otters and predators -- compete for the same finite resource nodes, build economies, train armies, and fight for map control. The enemy AI runs its own economy with gatherers, funds army production from collected resources, and makes strategic attack decisions.
 
 ## Factions
 
 | Faction | Units | Role |
 |---------|-------|------|
 | **Player** (Otters) | Gatherer, Brawler, Sniper, Healer | Build, gather, fight |
-| **Enemy** (Predators) | Gator, Snake, Boss Croc | Attack in waves |
-| **Neutral** | Cattail, Clambed | Harvestable resources |
+| **Enemy** (Predators) | Gatherer, Gator, Snake, Boss Croc | Gather, build, fight |
+| **Neutral** | Cattail, Clambed | Harvestable resources (shared) |
+
+Both factions harvest from the same neutral resource nodes. The enemy AI spawns its own gatherers from Predator Nests and collects resources into its own stockpile (`enemyResources` in GameWorld).
 
 ## Resources
 
@@ -22,11 +24,24 @@ Pond Warfare is a real-time strategy / tower defense hybrid where otters defend 
 
 Food works as a population system: each non-building player entity counts as 1 food. Max food comes from completed Lodges (+4) and Burrows (+4).
 
+### Resource Scarcity
+
+Resources are finite and shared between factions. Both player and enemy gatherers harvest from the same clam beds and cattail nodes. When a node is depleted, it's gone -- forcing expansion to control new resource areas. Strategic resource denial (harvesting nodes near the enemy, or defending key nodes) is a core part of gameplay.
+
+## Expansion
+
+Players can build multiple Lodges across the map. Each Lodge:
+- Provides +4 population cap
+- Serves as a resource drop-off point for gatherers
+- Can train Gatherers and research Lodge-tier tech
+
+Expanding to new Lodges near fresh resource nodes is essential as nearby deposits deplete. Losing a Lodge reduces your population cap and economy.
+
 ## Buildings
 
 | Building | Cost | Provides |
 |----------|------|----------|
-| **Lodge** | Starting | Trains Gatherers, +4 food cap, tech research |
+| **Lodge** | Starting (additional: buildable) | Trains Gatherers, +4 food cap, tech research, resource drop-off |
 | **Burrow** | 100T | +4 food cap |
 | **Armory** | 250C 150T | Trains Brawler/Sniper/Healer, combat tech |
 | **Tower** | 200C 250T | Auto-attack turret (200px range) |
@@ -49,29 +64,91 @@ Buildings start at 1 HP and must be constructed by Gatherers. Progress shown as 
 
 | Unit | HP | Speed | Damage | Range | Special |
 |------|----|----|--------|-------|---------|
+| **Gatherer** | 30 | 2.0 | 2 | 40 | Collects resources for enemy economy |
 | **Gator** | 60 | 1.8 | 6 | 40 | Basic melee |
 | **Snake** | 60 | 2.0 | 4 | 40 | Fast melee |
 | **Boss Croc** | 200 | 1.2 | 15 | 50 | AoE stomp, enrage at 30% HP |
 
+## Unit Counter System
+
+A damage multiplier table creates rock-paper-scissors dynamics between unit types. Multipliers above 1.0 mean the attacker is strong against that defender; below 1.0 means weak. Unlisted matchups default to 1.0 (neutral).
+
+| Attacker | Strong vs (1.5x) | Weak vs (0.75x) |
+|----------|-------------------|------------------|
+| **Brawler** | Sniper, Healer | Gator |
+| **Sniper** | Healer, Snake | Brawler |
+| **Gator** | Brawler | Sniper |
+| **Snake** | Sniper | Brawler |
+
+Boss Croc has no counter multipliers -- it deals full damage to all targets.
+
+This system rewards army composition decisions: a pure Brawler army will struggle against Gators, while mixing in Snipers creates a balanced force.
+
+## Formation Movement
+
+When multiple units are selected and given a move command, they arrange into role-based formation rows:
+
+| Row | Position | Unit Types |
+|-----|----------|------------|
+| **Front** | Closest to target | Brawler, Gator (melee) |
+| **Middle** | One row back | Sniper (ranged) |
+| **Back** | Furthest from target | Healer, Gatherer (support) |
+
+Each row is centered horizontally with 40px spacing between units. Formation movement uses Yuka.js AlignmentBehavior and CohesionBehavior for coordinated flocking, keeping the group together while each unit seeks its individual formation position.
+
+## Veterancy System
+
+Combat units gain experience from kills and rank up with cumulative stat bonuses. Rank-ups are announced with floating text and gold particle effects.
+
+| Rank | Kills Required | HP Bonus | Damage Bonus | Speed Bonus |
+|------|---------------|----------|--------------|-------------|
+| **Recruit** | 0 | -- | -- | -- |
+| **Veteran** | 3 | +10% | +15% | -- |
+| **Elite** | 7 | +20% | +25% | +10% |
+| **Hero** | 15 | +35% | +40% | +15% |
+
+Bonuses are percentages of the unit's base stats. For example, a Brawler (base 60 HP, 6 damage) at Hero rank has 81 HP and 8 damage. The veterancy system checks every 60 frames and applies incremental bonuses when a new rank threshold is crossed.
+
+## Enemy AI Economy
+
+The enemy faction runs a parallel economy:
+
+- **Starting resources**: 500 clams, 200 twigs
+- **Gatherer spawning**: Every 1200 frames (~20s), each Predator Nest spawns an enemy gatherer if the nest has enough clams (cost: 50C) and fewer than 3 gatherers are nearby
+- **Resource collection**: Enemy gatherers seek the nearest resource node, harvest, and return resources to their nest
+- **Army funding**: Wave units and army production are funded from the enemy resource stockpile
+
+This creates economic pressure: the enemy competes for the same resource nodes, and raiding enemy gatherers disrupts their economy.
+
 ## Tech Tree
 
-Researched at the Lodge or Armory:
+Researched at the Lodge or Armory. Some techs have prerequisites:
 
-| Tech | Cost | Effect | Building |
-|------|------|--------|----------|
-| **Sturdy Mud** | 200C 300T | +300 HP to all player buildings | Lodge |
-| **Swift Paws** | 250C 200T | +0.4 speed to all player units | Lodge |
-| **Sharp Sticks** | 300C 200T | +2 damage to all combat units | Armory |
-| **Eagle Eye** | 350C 250T | +50 range for snipers, unlocks Watchtower | Armory |
-| **Hardened Shells** | 400C 300T | Passive regen +5 HP (instead of +1) when idle | Armory |
+| Tech | Cost | Effect | Building | Requires |
+|------|------|--------|----------|----------|
+| **Sturdy Mud** | 200C 300T | +300 HP to all player buildings | Lodge | -- |
+| **Swift Paws** | 250C 200T | +0.4 speed to all player units | Lodge | Sturdy Mud |
+| **Sharp Sticks** | 300C 200T | +2 damage to all combat units | Armory | -- |
+| **Eagle Eye** | 400C 300T | +50 range for snipers, unlocks Watchtower | Armory | Sharp Sticks |
+| **Hardened Shells** | 500C 400T | +5 HP regen for all units | Armory | Eagle Eye |
 
 ## Combat Mechanics
 
-- **Auto-aggro**: Idle combat units engage enemies within aggro radius every 30 frames
+- **Auto-aggro**: Idle combat units engage enemies within aggro radius every 30 frames (player: 200px, enemy: 250px)
 - **Retaliation**: Units under attack fight back (gatherers flee first for 1.5s)
 - **Ally assist**: Nearby idle allies join combat within 300px
 - **Attack-move patrol**: Units scan for enemies every 15 frames while moving
 - **Towers**: Auto-target nearest enemy within range, fire projectiles
+- **Damage multipliers**: Applied to both melee and ranged attacks based on the counter table
+- **Healer auto-follow**: Idle healers seek nearest wounded ally within 150px
+
+## Fog of War
+
+- Unexplored areas of the map are hidden
+- Player units and buildings reveal a circle around their position
+- Buildings reveal a larger area (radius 16) than units (radius 10) on the explored canvas
+- Previously explored areas remain dimly visible but don't show current enemy positions
+- Scouting is essential to locate enemy nests, resource nodes, and incoming attacks
 
 ## Wave System
 
@@ -94,7 +171,7 @@ Toggled via the radial menu on the idle worker button:
 ## Win/Lose Conditions
 
 - **Win**: All Predator Nests destroyed
-- **Lose**: Player Lodge destroyed
+- **Lose**: Player Lodge destroyed (any Lodge -- if all are destroyed)
 - **Rating**: 1-3 stars based on time survived and kill ratio
 
 ## Day/Night Cycle

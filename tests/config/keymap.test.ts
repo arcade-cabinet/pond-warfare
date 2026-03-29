@@ -54,9 +54,9 @@ describe('DEFAULT_KEYMAP', () => {
     expect(typeof DEFAULT_KEYMAP.escape).toBe('string');
   });
 
-  it('should have 4 action slots (Q, W, E, R)', () => {
-    expect(DEFAULT_KEYMAP.actionSlots).toHaveLength(4);
-    expect(DEFAULT_KEYMAP.actionSlots).toEqual(['q', 'w', 'e', 'r']);
+  it('should have 6 action slots (Q, W, E, R, T, Y)', () => {
+    expect(DEFAULT_KEYMAP.actionSlots).toHaveLength(6);
+    expect(DEFAULT_KEYMAP.actionSlots).toEqual(['q', 'w', 'e', 'r', 't', 'y']);
   });
 });
 

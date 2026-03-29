@@ -120,7 +120,7 @@ function isValidPartialKeyMap(obj: any): boolean {
   if (
     obj.actionSlots !== undefined &&
     (!Array.isArray(obj.actionSlots) ||
-      obj.actionSlots.length !== 4 ||
+      obj.actionSlots.length !== 6 ||
       !obj.actionSlots.every((s: any) => typeof s === 'string'))
   ) {
     return false;

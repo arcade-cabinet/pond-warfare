@@ -147,7 +147,7 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     spriteSize: 16,
     spriteScale: 2.5,
     resourceType: ResourceType.Twigs,
-    resourceAmount: 1000,
+    resourceAmount: 300,
   },
   [EntityKind.Clambed]: {
     hp: 1,
@@ -159,7 +159,7 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     spriteSize: 16,
     spriteScale: 2.5,
     resourceType: ResourceType.Clams,
-    resourceAmount: 25000,
+    resourceAmount: 3000,
   },
   [EntityKind.Healer]: {
     hp: 25,

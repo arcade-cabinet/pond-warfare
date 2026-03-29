@@ -949,7 +949,7 @@ export class Game {
       store.goTitle.value = w.state === 'win' ? 'Victory' : 'Defeat';
       store.goTitleColor.value = w.state === 'win' ? 'text-amber-400' : 'text-red-500';
       store.goDesc.value =
-        w.state === 'win' ? 'All predator nests destroyed!' : 'Your lodge was destroyed!';
+        w.state === 'win' ? 'All predator nests destroyed!' : 'All lodges destroyed!';
 
       const days = Math.floor(w.frameCount / DAY_FRAMES);
       const remainFrames = w.frameCount % DAY_FRAMES;
