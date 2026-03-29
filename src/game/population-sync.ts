@@ -281,8 +281,14 @@ export function syncPopulationAndTimers(
 
     // Permadeath: delete save on loss
     if (w.state === 'lose' && w.permadeath) {
-      localStorage.removeItem('pond-warfare-save');
       store.hasSaveGame.value = false;
+      import('@/storage').then(({ getLatestSave, deleteSave }) =>
+        getLatestSave().then((save) => {
+          if (save) return deleteSave(save.id);
+        }),
+      ).catch(() => {
+        /* best-effort cleanup */
+      });
     }
   }
 

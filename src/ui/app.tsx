@@ -16,7 +16,7 @@ import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
-import { getLatestSave, isDatabaseReady, persist, saveGameToDb } from '@/storage';
+import { getLatestSave, saveGameToDb } from '@/storage';
 import { ErrorOverlay } from './error-overlay';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
@@ -158,19 +158,16 @@ export function App({ onMount }: AppProps) {
           }}
           onSaveClick={() => {
             const json = saveGame(game.world);
-            // Always write to localStorage as a fallback / quick-check source
-            localStorage.setItem('pond-warfare-save', json);
-
-            // Persist to SQLite when available
-            if (isDatabaseReady()) {
-              const difficulty = store.selectedDifficulty.value ?? 'normal';
-              const seed = store.goMapSeed.value ?? 0;
-              saveGameToDb('quicksave', difficulty, seed, json, false)
-                .then(() => persist())
-                .catch(() => {
-                  /* localStorage fallback already written */
-                });
-            }
+            const difficulty = store.selectedDifficulty.value ?? 'normal';
+            const seed = store.goMapSeed.value ?? 0;
+            saveGameToDb('quicksave', difficulty, seed, json, false)
+              .then(() => {
+                store.hasSaveGame.value = true;
+              })
+              .catch((err) => {
+                // biome-ignore lint/suspicious/noConsole: surface save failures
+                console.error('Failed to save game to DB', err);
+              });
 
             game.world.floatingTexts.push({
               x: game.world.camX + (game.world.viewWidth || 400) / 2,
@@ -182,32 +179,18 @@ export function App({ onMount }: AppProps) {
             audio.click();
           }}
           onLoadClick={() => {
-            const doLoad = (json: string) => {
-              loadGame(game.world, json);
-              game.syncUIStore();
-              audio.click();
-            };
-
-            // Try SQLite first, fall back to localStorage
-            if (isDatabaseReady()) {
-              getLatestSave()
-                .then((row) => {
-                  if (row?.data) {
-                    doLoad(row.data);
-                  } else {
-                    // Fall back to localStorage if no DB save exists
-                    const json = localStorage.getItem('pond-warfare-save');
-                    if (json) doLoad(json);
-                  }
-                })
-                .catch(() => {
-                  const json = localStorage.getItem('pond-warfare-save');
-                  if (json) doLoad(json);
-                });
-            } else {
-              const json = localStorage.getItem('pond-warfare-save');
-              if (json) doLoad(json);
-            }
+            getLatestSave()
+              .then((row) => {
+                if (row?.data) {
+                  loadGame(game.world, row.data);
+                  game.syncUIStore();
+                  audio.click();
+                }
+              })
+              .catch((err) => {
+                // biome-ignore lint/suspicious/noConsole: surface load failures
+                console.error('Failed to load game from DB', err);
+              });
           }}
           onSettingsClick={() => {
             store.settingsOpen.value = !store.settingsOpen.value;

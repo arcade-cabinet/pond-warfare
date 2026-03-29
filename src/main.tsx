@@ -12,7 +12,8 @@ import { render } from 'preact';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
 import { game } from '@/game';
 import { loadGame } from '@/save-system';
-import { initDatabase } from '@/storage';
+import { getLatestSave, initDatabase } from '@/storage';
+import { loadKeymapFromStorage } from '@/config/keymap';
 
 // Install global error handlers FIRST — before anything else can fail
 installGlobalErrorHandlers();
@@ -45,11 +46,11 @@ function startGame(isContinue: boolean) {
       storedRefs.minimapCanvas,
       storedRefs.minimapCam,
     )
-    .then(() => {
+    .then(async () => {
       if (isContinue) {
-        const json = localStorage.getItem('pond-warfare-save');
-        if (json) {
-          loadGame(game.world, json);
+        const save = await getLatestSave();
+        if (save?.data) {
+          loadGame(game.world, save.data);
           game.syncUIStore();
         }
       }
@@ -66,8 +67,10 @@ function startGame(isContinue: boolean) {
     // Still render the app so the ErrorOverlay can show the fatal error
   }
 
+  // Load keymap from Capacitor Preferences
+  await loadKeymapFromStorage();
+
   // Check for existing saves in SQLite
-  const { getLatestSave } = await import('@/storage');
   const latestSave = await getLatestSave();
   hasSaveGame.value = latestSave !== null;
 

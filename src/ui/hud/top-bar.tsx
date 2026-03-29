@@ -12,6 +12,7 @@ import {
   foodAtCap,
   foodDisplay,
   gameTimeDisplay,
+  hasSaveGame,
   isPeaceful,
   lowClams,
   lowTwigs,
@@ -72,7 +73,7 @@ export function TopBar(props: TopBarProps) {
     prevTwigs.current = currentTwigs;
   }, [currentTwigs]);
 
-  const hasSave = localStorage.getItem('pond-warfare-save');
+  const hasSave = hasSaveGame.value;
 
   return (
     <div
