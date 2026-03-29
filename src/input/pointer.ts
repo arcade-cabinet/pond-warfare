@@ -218,9 +218,7 @@ export class PointerHandler {
         this.longPressTimer = setTimeout(() => {
           this.longPressFired = true;
           // Fire right-click equivalent (context command)
-          this.cb.issueContextCommand(
-            this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY),
-          );
+          this.cb.issueContextCommand(this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY));
           this.cb.onUpdateUI();
           // Reset mouse state so pointerup doesn't fire a click
           this.mouse.isDown = false;

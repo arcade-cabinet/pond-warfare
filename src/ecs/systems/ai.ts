@@ -50,12 +50,6 @@ import {
   ENEMY_TOWER_COST_TWIGS,
   ENEMY_TRAIN_CHECK_INTERVAL,
   ENEMY_TRAIN_TIME,
-  ENEMY_LATE_ATTACK_THRESHOLD,
-  ENEMY_LATE_BUILD_INTERVAL,
-  ENEMY_LATE_GAME_FRAME,
-  ENEMY_LATE_TRAIN_INTERVAL,
-  ENEMY_MAX_NESTS_LATE,
-  ENEMY_MID_GAME_FRAME,
   TILE_SIZE,
   WAVE_INTERVAL,
   WORLD_HEIGHT,
@@ -81,6 +75,14 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { canPlaceBuilding } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
+
+// Enemy AI timing constants
+const ENEMY_MID_GAME_FRAME = 10800 * 2; // ~6 minutes
+const ENEMY_LATE_GAME_FRAME = 10800 * 4; // ~12 minutes
+const ENEMY_LATE_BUILD_INTERVAL = 900; // Build every 15s in late game
+const ENEMY_LATE_TRAIN_INTERVAL = 600; // Train every 10s in late game
+const ENEMY_MAX_NESTS_LATE = 5; // Max nests allowed in late game
+const ENEMY_LATE_ATTACK_THRESHOLD = 3; // Attack with fewer units in late game
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -479,8 +481,7 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
 
   // Priority 3: Expansion nest if we have resources and few nests
   // Late game allows more expansion nests for increased pressure
-  const maxNests =
-    world.frameCount >= ENEMY_LATE_GAME_FRAME ? ENEMY_MAX_NESTS_LATE : 3;
+  const maxNests = world.frameCount >= ENEMY_LATE_GAME_FRAME ? ENEMY_MAX_NESTS_LATE : 3;
   if (
     nestEids.length < maxNests &&
     res.clams >= ENEMY_NEST_COST_CLAMS &&
@@ -540,7 +541,11 @@ function enemyArmyTraining(world: GameWorld, isPeaceful: boolean): void {
   // Mid game: normal training (max 2 in queue)
   // Late game: aggressive training (max 3 in queue)
   const maxQueueSize =
-    world.frameCount >= ENEMY_LATE_GAME_FRAME ? 3 : world.frameCount >= ENEMY_MID_GAME_FRAME ? 2 : 1;
+    world.frameCount >= ENEMY_LATE_GAME_FRAME
+      ? 3
+      : world.frameCount >= ENEMY_MID_GAME_FRAME
+        ? 2
+        : 1;
   for (const nestEid of nestEids) {
     const slots = trainingQueueSlots.get(nestEid) ?? [];
     if (slots.length >= maxQueueSize) continue;

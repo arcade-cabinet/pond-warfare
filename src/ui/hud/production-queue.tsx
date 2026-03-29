@@ -12,9 +12,7 @@ export function ProductionQueue() {
       {globalProductionQueue.value.map((item, i) => (
         <div
           key={
-            item.entityId !== undefined
-              ? `prod-${item.entityId}`
-              : `prod-${item.unitLabel}-${i}`
+            item.entityId !== undefined ? `prod-${item.entityId}` : `prod-${item.unitLabel}-${i}`
           }
           class="relative w-10 h-6 bg-slate-800 border border-slate-600 rounded overflow-hidden flex items-center justify-center"
         >

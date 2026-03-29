@@ -9,12 +9,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
-import {
-  DAY_FRAMES,
-  EXPLORED_SCALE,
-  TRAIN_TIMER,
-  WAVE_INTERVAL,
-} from '@/constants';
+import { DAY_FRAMES, EXPLORED_SCALE, TRAIN_TIMER, WAVE_INTERVAL } from '@/constants';
 import {
   Building,
   EntityTypeTag,

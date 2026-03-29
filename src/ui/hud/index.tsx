@@ -5,11 +5,11 @@
  * from '@/ui/hud' or './hud' continue to work.
  */
 
-import { TopBar } from './top-bar';
-import { ProductionQueue } from './production-queue';
-import { UnitCommands } from './unit-commands';
 import { CtrlGroups } from './ctrl-groups';
 import { Overlays } from './overlays';
+import { ProductionQueue } from './production-queue';
+import { TopBar } from './top-bar';
+import { UnitCommands } from './unit-commands';
 
 /** Format time-of-day (in minutes) to HH:MM string. */
 export function formatTime(timeOfDay: number): string {

@@ -19,7 +19,7 @@ import {
   Veterancy,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { type EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 
 /**

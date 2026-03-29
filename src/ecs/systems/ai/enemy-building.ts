@@ -121,8 +121,7 @@ export function enemyBuildingTick(world: GameWorld): void {
 
   // Priority 3: Expansion nest if we have resources and few nests
   // Late game allows more expansion nests for increased pressure
-  const maxNests =
-    world.frameCount >= ENEMY_LATE_GAME_FRAME ? ENEMY_MAX_NESTS_LATE : 3;
+  const maxNests = world.frameCount >= ENEMY_LATE_GAME_FRAME ? ENEMY_MAX_NESTS_LATE : 3;
   if (
     nestEids.length < maxNests &&
     res.clams >= ENEMY_NEST_COST_CLAMS &&

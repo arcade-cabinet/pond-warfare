@@ -6,11 +6,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import {
-  ENEMY_BUILD_RADIUS,
-  TILE_SIZE,
-} from '@/constants';
-import { spawnEntity } from '@/ecs/archetypes';
+import { ENEMY_BUILD_RADIUS, TILE_SIZE } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -19,7 +15,6 @@ import {
   IsBuilding,
   IsResource,
   Position,
-  Resource,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';

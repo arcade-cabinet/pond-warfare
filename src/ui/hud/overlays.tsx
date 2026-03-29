@@ -2,13 +2,7 @@
  * Overlays - Pause overlay, attack-move banner, enemy economy display.
  */
 
-import {
-  attackMoveActive,
-  enemyClams,
-  enemyEconomyVisible,
-  enemyTwigs,
-  paused,
-} from '../store';
+import { attackMoveActive, enemyClams, enemyEconomyVisible, enemyTwigs, paused } from '../store';
 
 export function Overlays() {
   return (

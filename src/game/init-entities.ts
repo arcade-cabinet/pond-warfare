@@ -5,8 +5,8 @@
  * contested hotspots, and randomized enemy nest positions.
  */
 
-import { spawnEntity } from '@/ecs/archetypes';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { spawnEntity } from '@/ecs/archetypes';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 
