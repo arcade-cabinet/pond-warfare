@@ -388,7 +388,12 @@ function enemyGathererSpawning(world: GameWorld, isPeaceful: boolean): void {
  */
 function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void {
   if (isPeaceful) return;
-  if (world.frameCount % ENEMY_BUILD_CHECK_INTERVAL !== 0) return;
+  // Scale building frequency: faster checks in late game
+  const buildInterval =
+    world.frameCount >= ENEMY_LATE_GAME_FRAME
+      ? ENEMY_LATE_BUILD_INTERVAL
+      : ENEMY_BUILD_CHECK_INTERVAL;
+  if (world.frameCount % buildInterval !== 0) return;
 
   const nestEids = getEnemyNests(world);
   if (nestEids.length === 0) return;
@@ -416,8 +421,9 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
       if (EntityTypeTag.kind[b] === EntityKind.Burrow) nearbyBurrows++;
     }
 
-    // Priority 1: Build a tower if none near this nest
+    // Priority 1: Build a tower if none near this nest (mid-game onward)
     if (
+      world.frameCount >= ENEMY_MID_GAME_FRAME &&
       nearbyTowers < 1 &&
       res.clams >= ENEMY_TOWER_COST_CLAMS &&
       res.twigs >= ENEMY_TOWER_COST_TWIGS
@@ -466,8 +472,11 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
   }
 
   // Priority 3: Expansion nest if we have resources and few nests
+  // Late game allows more expansion nests for increased pressure
+  const maxNests =
+    world.frameCount >= ENEMY_LATE_GAME_FRAME ? ENEMY_MAX_NESTS_LATE : 3;
   if (
-    nestEids.length < 3 &&
+    nestEids.length < maxNests &&
     res.clams >= ENEMY_NEST_COST_CLAMS &&
     res.twigs >= ENEMY_NEST_COST_TWIGS
   ) {
@@ -492,7 +501,12 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
  */
 function enemyArmyTraining(world: GameWorld, isPeaceful: boolean): void {
   if (isPeaceful) return;
-  if (world.frameCount % ENEMY_TRAIN_CHECK_INTERVAL !== 0) return;
+  // Scale training frequency: faster checks in late game
+  const trainInterval =
+    world.frameCount >= ENEMY_LATE_GAME_FRAME
+      ? ENEMY_LATE_TRAIN_INTERVAL
+      : ENEMY_TRAIN_CHECK_INTERVAL;
+  if (world.frameCount % trainInterval !== 0) return;
 
   const nestEids = getEnemyNests(world);
   if (nestEids.length === 0) return;
@@ -516,9 +530,14 @@ function enemyArmyTraining(world: GameWorld, isPeaceful: boolean): void {
   }
 
   // Queue training at each nest that isn't already training
+  // Early game (before mid-game): only train 1 unit per check, max 1 in queue
+  // Mid game: normal training (max 2 in queue)
+  // Late game: aggressive training (max 3 in queue)
+  const maxQueueSize =
+    world.frameCount >= ENEMY_LATE_GAME_FRAME ? 3 : world.frameCount >= ENEMY_MID_GAME_FRAME ? 2 : 1;
   for (const nestEid of nestEids) {
     const slots = trainingQueueSlots.get(nestEid) ?? [];
-    if (slots.length >= 3) continue; // Max 3 in queue
+    if (slots.length >= maxQueueSize) continue;
 
     // Decide what to train
     const trainGator = Math.random() < gatorWeight;
@@ -615,7 +634,12 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   if (world.frameCount % ENEMY_ATTACK_CHECK_INTERVAL !== 0) return;
 
   const armySize = countEnemyArmy(world);
-  if (armySize < ENEMY_ARMY_ATTACK_THRESHOLD) return;
+  // Scale attack threshold: attack with smaller armies as game progresses
+  const attackThreshold =
+    world.frameCount >= ENEMY_LATE_GAME_FRAME
+      ? ENEMY_LATE_ATTACK_THRESHOLD
+      : ENEMY_ARMY_ATTACK_THRESHOLD;
+  if (armySize < attackThreshold) return;
 
   // Find target: weakest player building
   const target = findWeakestPlayerBuilding(world);

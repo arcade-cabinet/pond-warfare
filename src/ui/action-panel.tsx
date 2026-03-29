@@ -65,7 +65,7 @@ function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
   return (
     <button
       type="button"
-      class={`action-btn relative flex flex-col items-center justify-center p-1 md:p-2 rounded text-[10px] md:text-xs font-bold shadow-md ${
+      class={`action-btn relative flex flex-col items-center justify-center p-1 md:p-2 rounded text-[10px] md:text-xs font-bold shadow-md min-w-[44px] min-h-[44px] ${
         !def.affordable ? 'opacity-50 grayscale cursor-not-allowed' : ''
       }`}
       disabled={!def.affordable}
@@ -97,7 +97,7 @@ function QueueDisplay() {
           <button
             type="button"
             key={`q-${i}`}
-            class="relative w-8 h-8 bg-slate-700 border border-slate-500 hover:border-red-500 rounded cursor-pointer overflow-hidden"
+            class="relative w-8 h-8 min-w-[44px] min-h-[44px] bg-slate-700 border border-slate-500 hover:border-red-500 rounded cursor-pointer overflow-hidden"
             onClick={(e) => {
               e.stopPropagation();
               item.onCancel();

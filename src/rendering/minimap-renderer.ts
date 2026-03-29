@@ -95,16 +95,36 @@ export function drawMinimap(
     const ex = Position.x[eid];
     const ey = Position.y[eid];
 
-    // Hide enemy and neutral resource entities in unexplored areas on the minimap
-    if (faction !== Faction.Player && exploredData) {
-      const epx = Math.floor(ex / EXPLORED_SCALE);
-      const epy = Math.floor(ey / EXPLORED_SCALE);
-      if (epx >= 0 && epx < ew && epy >= 0 && epy < eh) {
-        // Check alpha channel of the explored canvas at this position
-        // The explored canvas starts black (0,0,0,1) and gets white circles painted on it
-        // We check the red channel since white = 255 and black = 0
-        const idx = (epy * ew + epx) * 4;
-        if (exploredData.data[idx] < 10) continue; // Still dark = unexplored
+    // Fog of war: hide non-player entities unless currently visible to a player unit
+    // Buildings show if the area was ever explored (like WC2 reveals buildings permanently)
+    // Units only show if a player unit can currently see them
+    if (faction !== Faction.Player) {
+      // Check explored canvas first - if never explored, always hide
+      if (exploredData) {
+        const epx = Math.floor(ex / EXPLORED_SCALE);
+        const epy = Math.floor(ey / EXPLORED_SCALE);
+        if (epx >= 0 && epx < ew && epy >= 0 && epy < eh) {
+          const idx = (epy * ew + epx) * 4;
+          if (exploredData.data[idx] < 10) continue; // Never explored
+        }
+      }
+
+      // For non-building units, require CURRENT visibility (within player sight range)
+      const isBuilding = BUILDING_KINDS.has(kind);
+      if (!isBuilding && playerEids) {
+        let visible = false;
+        for (const pid of playerEids) {
+          if (Health.current[pid] <= 0) continue;
+          const pkind = EntityTypeTag.kind[pid] as EntityKind;
+          const sightRad = BUILDING_KINDS.has(pkind) ? BUILDING_SIGHT_RADIUS : UNIT_SIGHT_RADIUS;
+          const dx = Position.x[pid] - ex;
+          const dy = Position.y[pid] - ey;
+          if (dx * dx + dy * dy < sightRad * sightRad) {
+            visible = true;
+            break;
+          }
+        }
+        if (!visible) continue; // Not currently in any player unit's sight
       }
     }
 

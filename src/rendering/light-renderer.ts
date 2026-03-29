@@ -35,13 +35,17 @@ export function drawLighting(
   shakeY: number,
 ): void {
   const { camX, camY, viewWidth: w, viewHeight: h, ambientDarkness, frameCount } = world;
+  const zoom = world.zoomLevel;
   const lc = lightCtx;
+  const canvasW = lc.canvas.width;
+  const canvasH = lc.canvas.height;
 
-  lc.clearRect(0, 0, w, h);
+  lc.clearRect(0, 0, canvasW, canvasH);
 
   if (ambientDarkness <= 0.05) return;
 
   lc.save();
+  lc.scale(zoom, zoom);
   lc.translate(-Math.floor(camX) + Math.floor(shakeX), -Math.floor(camY) + Math.floor(shakeY));
 
   // --- Entity lights ---

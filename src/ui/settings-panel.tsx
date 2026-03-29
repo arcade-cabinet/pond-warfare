@@ -35,7 +35,7 @@ function VolumeSlider({
   onChange: (v: number) => void;
 }) {
   return (
-    <label class="flex items-center gap-3 w-full">
+    <label class="flex items-center gap-3 w-full min-h-[44px]">
       <span class="text-slate-300 text-xs w-24 shrink-0">{label}</span>
       <input
         type="range"
@@ -43,7 +43,7 @@ function VolumeSlider({
         max="100"
         value={value}
         onInput={(e) => onChange(Number((e.target as HTMLInputElement).value))}
-        class="flex-1 h-2 appearance-none bg-slate-600 rounded cursor-pointer accent-sky-500"
+        class="flex-1 h-6 appearance-none bg-slate-600 rounded cursor-pointer accent-sky-500 touch-none"
       />
       <span class="text-slate-400 text-xs w-8 text-right">{value}</span>
     </label>
@@ -64,13 +64,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
       <div class="absolute inset-0 bg-black bg-opacity-70" />
 
       {/* Panel card */}
-      <div class="relative bg-slate-800 border-2 border-slate-600 rounded-lg shadow-2xl w-80 max-w-[90vw] p-5 font-mono text-sm text-slate-200 z-10">
+      <div class="relative bg-slate-800 border-2 border-slate-600 rounded-lg shadow-2xl w-80 max-w-[90vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 font-mono text-sm text-slate-200 z-10">
         {/* Header */}
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-sky-300 tracking-wide">Settings</h2>
           <button
             type="button"
-            class="text-slate-400 hover:text-slate-200 text-xl leading-none cursor-pointer px-1"
+            class="text-slate-400 hover:text-slate-200 text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
             onClick={props.onClose}
             title="Close Settings"
           >
@@ -106,7 +106,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
               <button
                 type="button"
                 key={`speed-${s}`}
-                class={`flex-1 py-1.5 rounded border font-bold text-xs cursor-pointer transition-colors ${
+                class={`flex-1 py-1.5 min-h-[44px] rounded border font-bold text-xs cursor-pointer transition-colors ${
                   currentSpeed === s
                     ? 'bg-sky-700 border-sky-500 text-sky-200'
                     : 'bg-slate-700 border-slate-500 text-slate-400 hover:bg-slate-600'
@@ -124,18 +124,18 @@ export function SettingsPanel(props: SettingsPanelProps) {
           <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Options</div>
 
           {/* Color Blind Mode */}
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between min-h-[44px]">
             <span class="text-slate-300 text-xs">Color Blind Mode</span>
             <button
               type="button"
-              class={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${
+              class={`w-12 h-7 rounded-full relative cursor-pointer transition-colors ${
                 colorBlindMode.value ? 'bg-amber-600' : 'bg-slate-600'
               }`}
               onClick={props.onColorBlindToggle}
               title="Toggle Color Blind Mode"
             >
               <span
-                class={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                class={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
                   colorBlindMode.value ? 'translate-x-5' : 'translate-x-0.5'
                 }`}
               />
@@ -143,18 +143,18 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </div>
 
           {/* Auto-save */}
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between min-h-[44px]">
             <span class="text-slate-300 text-xs">Auto-save (every 60s)</span>
             <button
               type="button"
-              class={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${
+              class={`w-12 h-7 rounded-full relative cursor-pointer transition-colors ${
                 autoSaveEnabled.value ? 'bg-green-600' : 'bg-slate-600'
               }`}
               onClick={props.onAutoSaveToggle}
               title="Toggle Auto-save"
             >
               <span
-                class={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                class={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
                   autoSaveEnabled.value ? 'translate-x-5' : 'translate-x-0.5'
                 }`}
               />

@@ -36,13 +36,23 @@ export function drawFog(
   shakeY: number,
 ): void {
   const { fogCtx: fc, fogPattern } = state;
-  const { camX, camY, viewWidth: w, viewHeight: h, frameCount } = world;
+  const { camX, camY, frameCount } = world;
+  const zoom = world.zoomLevel;
+  // Canvas is sized to the full screen pixel dimensions
+  const canvasW = fc.canvas.width;
+  const canvasH = fc.canvas.height;
+  // Logical view size (in world units)
+  const w = world.viewWidth;
+  const h = world.viewHeight;
 
-  fc.clearRect(0, 0, w, h);
+  fc.clearRect(0, 0, canvasW, canvasH);
 
   // --- Draw drifting fog pattern (source-over) ---
   fc.globalCompositeOperation = 'source-over';
   fc.save();
+
+  // Apply zoom transform so fog matches the zoomed game view
+  fc.scale(zoom, zoom);
 
   const size = FOG_TEXTURE_SIZE; // 256
   const driftX = -(camX * 0.2 + frameCount * 0.1) % size;
@@ -55,6 +65,8 @@ export function drawFog(
 
   // --- Punch out vision circles (destination-out) ---
   fc.globalCompositeOperation = 'destination-out';
+  fc.save();
+  fc.scale(zoom, zoom);
 
   for (const eid of playerEids) {
     const ex = Position.x[eid];
@@ -82,6 +94,8 @@ export function drawFog(
     fc.arc(sx, sy, rad, 0, Math.PI * 2);
     fc.fill();
   }
+
+  fc.restore();
 
   // Reset composite operation
   fc.globalCompositeOperation = 'source-over';

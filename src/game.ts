@@ -378,6 +378,7 @@ export class Game {
     );
     this.pointer.attachMinimap(this.minimapCanvas);
     this.pointer.setShiftGetter(() => !!this.keyboard.keys.shift);
+    this.pointer.onZoomChange = (zoom) => this.setZoom(zoom);
 
     // Initialize physics
     this.physicsManager = new PhysicsManager();
@@ -623,8 +624,9 @@ export class Game {
   resize(): void {
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
-    this.world.viewWidth = w;
-    this.world.viewHeight = h;
+    const zoom = this.world.zoomLevel;
+    this.world.viewWidth = w / zoom;
+    this.world.viewHeight = h / zoom;
     // PixiJS manages the game canvas size
     resizePixiApp(w, h);
     this.fogCanvas.width = w;
@@ -632,6 +634,13 @@ export class Game {
     this.lightCanvas.width = w;
     this.lightCanvas.height = h;
     this.fogCtx.imageSmoothingEnabled = false;
+  }
+
+  /** Apply a new zoom level, clamped between 0.5 and 2.0. */
+  setZoom(level: number): void {
+    this.world.zoomLevel = Math.max(0.5, Math.min(2.0, level));
+    this.resize();
+    clampCamera(this.world);
   }
 
   /** Cycle game speed (1x -> 2x -> 3x -> 1x) */

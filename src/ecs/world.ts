@@ -60,6 +60,7 @@ export interface GameWorld {
   viewHeight: number;
   isTracking: boolean;
   shakeTimer: number;
+  zoomLevel: number;
 
   // Selection
   selection: number[];
@@ -132,6 +133,7 @@ export function createGameWorld(): GameWorld {
     viewHeight: 0,
     isTracking: false,
     shakeTimer: 0,
+    zoomLevel: 1,
     selection: [],
     ctrlGroups: {},
     yukaManager: new YukaManager(),

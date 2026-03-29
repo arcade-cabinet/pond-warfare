@@ -113,7 +113,7 @@ export function HUD(props: HUDProps) {
   return (
     <>
       {/* Top bar */}
-      <div class="absolute top-0 left-0 w-full h-10 md:h-12 ui-panel border-0 border-b-2 md:border-b-4 flex items-center justify-between px-2 md:px-6 z-20 bg-opacity-95 text-xs md:text-sm">
+      <div class="absolute top-0 left-0 w-full h-11 md:h-12 ui-panel border-0 border-b-2 md:border-b-4 flex items-center justify-between px-2 md:px-6 z-20 bg-opacity-95 text-xs md:text-sm">
         <div class="flex space-x-3 md:space-x-6">
           {/* Clams */}
           <div class="flex items-center space-x-1 md:space-x-2">
@@ -181,7 +181,7 @@ export function HUD(props: HUDProps) {
             <button
               type="button"
               id="pause-btn"
-              class={`text-[10px] md:text-xs px-1 md:px-2 py-0.5 border rounded cursor-pointer hover:bg-slate-600 font-bold ${paused.value ? 'bg-amber-700 border-amber-500 text-amber-200' : 'bg-slate-700 border-slate-500 text-slate-300'}`}
+              class={`text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 border rounded cursor-pointer hover:bg-slate-600 font-bold flex items-center justify-center ${paused.value ? 'bg-amber-700 border-amber-500 text-amber-200' : 'bg-slate-700 border-slate-500 text-slate-300'}`}
               title="Pause (P)"
               onClick={props.onPauseClick}
             >
@@ -190,7 +190,7 @@ export function HUD(props: HUDProps) {
             <button
               type="button"
               id="speed-btn"
-              class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-sky-300 font-bold"
+              class="text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-sky-300 font-bold flex items-center justify-center"
               title="Game Speed (F)"
               onClick={props.onSpeedClick}
             >
@@ -199,7 +199,7 @@ export function HUD(props: HUDProps) {
             <button
               type="button"
               id="mute-btn"
-              class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600"
+              class="text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 flex items-center justify-center"
               title="Toggle Sound (M)"
               onClick={props.onMuteClick}
             >
@@ -208,7 +208,7 @@ export function HUD(props: HUDProps) {
             <button
               type="button"
               id="cb-btn"
-              class={`text-[10px] md:text-xs px-1 md:px-2 py-0.5 border rounded cursor-pointer hover:bg-slate-600 font-bold ${colorBlindMode.value ? 'bg-amber-700 border-amber-500 text-amber-200' : 'bg-slate-700 border-slate-500 text-slate-400'}`}
+              class={`text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 border rounded cursor-pointer hover:bg-slate-600 font-bold flex items-center justify-center ${colorBlindMode.value ? 'bg-amber-700 border-amber-500 text-amber-200' : 'bg-slate-700 border-slate-500 text-slate-400'}`}
               title="Color Blind Mode"
               onClick={props.onColorBlindToggle}
             >
@@ -217,7 +217,7 @@ export function HUD(props: HUDProps) {
             <button
               type="button"
               id="save-btn"
-              class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-green-400 font-bold"
+              class="text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-green-400 font-bold flex items-center justify-center"
               title="Save Game"
               onClick={props.onSaveClick}
             >
@@ -226,7 +226,7 @@ export function HUD(props: HUDProps) {
             <button
               type="button"
               id="load-btn"
-              class={`text-[10px] md:text-xs px-1 md:px-2 py-0.5 border rounded font-bold ${
+              class={`text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 border rounded font-bold flex items-center justify-center ${
                 localStorage.getItem('pond-warfare-save')
                   ? 'bg-slate-700 border-slate-500 cursor-pointer hover:bg-slate-600 text-amber-400'
                   : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'
@@ -240,7 +240,7 @@ export function HUD(props: HUDProps) {
             <button
               type="button"
               id="settings-btn"
-              class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-slate-300"
+              class="text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-slate-300 flex items-center justify-center"
               title="Settings"
               onClick={props.onSettingsClick}
             >
@@ -298,7 +298,7 @@ export function HUD(props: HUDProps) {
               <button
                 type="button"
                 key={`cg-${gnum}`}
-                class="w-7 h-7 bg-slate-800 border border-sky-600 rounded text-sky-300 font-bold text-xs hover:bg-slate-700 hover:border-sky-400 cursor-pointer flex items-center justify-center transition-colors"
+                class="w-7 h-7 min-w-[44px] min-h-[44px] bg-slate-800 border border-sky-600 rounded text-sky-300 font-bold text-xs hover:bg-slate-700 hover:border-sky-400 cursor-pointer flex items-center justify-center transition-colors"
                 title={`Group ${gnum} (${count} units) - press ${gnum} to recall`}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -316,7 +316,7 @@ export function HUD(props: HUDProps) {
         <button
           type="button"
           id="idle-worker-btn"
-          class="absolute top-14 right-2 md:right-6 ui-panel border-2 border-amber-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-amber-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-14 right-2 md:right-6 ui-panel border-2 border-amber-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-amber-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
           title="Idle units menu (.)"
           onClick={(e) => {
             const btn = e.currentTarget as HTMLButtonElement;
@@ -345,7 +345,7 @@ export function HUD(props: HUDProps) {
         <button
           type="button"
           id="select-army-btn"
-          class="absolute top-24 md:top-28 right-2 md:right-6 ui-panel border-2 border-red-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-red-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-24 md:top-28 right-2 md:right-6 ui-panel border-2 border-red-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-red-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
           title="Select all army (,)"
           onClick={props.onArmyClick}
         >
@@ -358,7 +358,7 @@ export function HUD(props: HUDProps) {
         <button
           type="button"
           id="attack-move-btn"
-          class="absolute top-36 md:top-40 right-2 md:right-6 ui-panel border-2 border-orange-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-orange-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-36 md:top-40 right-2 md:right-6 ui-panel border-2 border-orange-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-orange-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
           title="Attack-Move (A)"
           onClick={props.onAttackMoveClick}
         >
@@ -371,7 +371,7 @@ export function HUD(props: HUDProps) {
         <button
           type="button"
           id="halt-btn"
-          class="absolute top-48 md:top-52 right-2 md:right-6 ui-panel border-2 border-slate-500 px-3 py-1 md:px-4 md:py-2 rounded-full text-slate-300 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-48 md:top-52 right-2 md:right-6 ui-panel border-2 border-slate-500 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-slate-300 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
           title="Stop/Halt (H)"
           onClick={props.onHaltClick}
         >
@@ -385,7 +385,7 @@ export function HUD(props: HUDProps) {
           {!saveGroupOpen ? (
             <button
               type="button"
-              class="ui-panel border-2 border-purple-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-purple-400 font-bold flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+              class="ui-panel border-2 border-purple-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-purple-400 font-bold flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
               title="Save selection to a control group"
               onClick={(e) => {
                 e.stopPropagation();
@@ -400,7 +400,7 @@ export function HUD(props: HUDProps) {
                 <button
                   type="button"
                   key={`sg-${n}`}
-                  class="w-7 h-7 bg-slate-800 border border-purple-500 rounded text-purple-300 font-bold text-xs hover:bg-purple-900 hover:border-purple-400 cursor-pointer flex items-center justify-center transition-colors"
+                  class="w-7 h-7 min-w-[44px] min-h-[44px] bg-slate-800 border border-purple-500 rounded text-purple-300 font-bold text-xs hover:bg-purple-900 hover:border-purple-400 cursor-pointer flex items-center justify-center transition-colors"
                   title={`Save to group ${n}`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -413,7 +413,7 @@ export function HUD(props: HUDProps) {
               ))}
               <button
                 type="button"
-                class="w-7 h-7 bg-slate-800 border border-slate-600 rounded text-slate-400 font-bold text-xs hover:bg-slate-700 cursor-pointer flex items-center justify-center transition-colors"
+                class="w-7 h-7 min-w-[44px] min-h-[44px] bg-slate-800 border border-slate-600 rounded text-slate-400 font-bold text-xs hover:bg-slate-700 cursor-pointer flex items-center justify-center transition-colors"
                 title="Cancel"
                 onClick={(e) => {
                   e.stopPropagation();

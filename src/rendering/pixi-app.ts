@@ -294,13 +294,16 @@ export function renderPixiFrame(
   const { camX, camY } = world;
   const { shake, frameCount } = data;
 
-  // --- Camera transform (applied to stage) ---
-  const stageX = -Math.floor(camX) + shake.offsetX;
-  const stageY = -Math.floor(camY) + shake.offsetY;
+  // --- Camera transform (applied to stage) with zoom ---
+  const zoom = world.zoomLevel;
+  const stageX = -Math.floor(camX) * zoom + shake.offsetX;
+  const stageY = -Math.floor(camY) * zoom + shake.offsetY;
+  app.stage.scale.set(zoom, zoom);
   app.stage.position.set(stageX, stageY);
 
   // Position the screen layer inversely so its children draw in screen space.
-  screenLayer.position.set(-stageX, -stageY);
+  screenLayer.position.set(-stageX / zoom, -stageY / zoom);
+  screenLayer.scale.set(1 / zoom, 1 / zoom);
 
   // --- Clear reusable graphics ---
   entityOverlayGfx.clear();

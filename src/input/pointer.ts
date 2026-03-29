@@ -43,6 +43,10 @@ export interface PointerCallbacks {
 
 const DOUBLE_CLICK_MS = 350;
 const DRAG_THRESHOLD = 10;
+const LONG_PRESS_MS = 500;
+const LONG_PRESS_MOVE_THRESHOLD = 10;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2.0;
 
 export class PointerHandler {
   readonly mouse: PointerState = {
@@ -64,8 +68,18 @@ export class PointerHandler {
 
   private activePointers = new Map<number, { x: number; y: number }>();
   private lastPanCenter: { x: number; y: number } | null = null;
+  private lastPinchDist: number | null = null;
   private lastClickTime = 0;
   private lastClickEntity: number | null = null;
+
+  // Long-press state for touch right-click emulation
+  private longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  private longPressStartX = 0;
+  private longPressStartY = 0;
+  private longPressFired = false;
+
+  /** Callback invoked when pinch-to-zoom changes the zoom level. */
+  onZoomChange: ((zoom: number) => void) | null = null;
 
   // Minimap
   private minimapCanvas: HTMLCanvasElement | null = null;
@@ -134,6 +148,7 @@ export class PointerHandler {
   }
 
   destroy(): void {
+    this.cancelLongPress();
     this.container.removeEventListener('mouseenter', this.boundMouseEnter);
     this.container.removeEventListener('mouseleave', this.boundMouseLeave);
     this.container.removeEventListener('contextmenu', this.boundContextMenu);
@@ -168,8 +183,9 @@ export class PointerHandler {
 
   private updateMouseCoords(e: PointerEvent): void {
     const rect = this.canvas.getBoundingClientRect();
-    this.mouse.x = e.clientX - rect.left;
-    this.mouse.y = e.clientY - rect.top;
+    const zoom = this.world.zoomLevel;
+    this.mouse.x = (e.clientX - rect.left) / zoom;
+    this.mouse.y = (e.clientY - rect.top) / zoom;
     this.mouse.worldX = this.mouse.x + this.world.camX;
     this.mouse.worldY = this.mouse.y + this.world.camY;
   }
@@ -192,6 +208,27 @@ export class PointerHandler {
       this.mouse.startX = this.mouse.worldX;
       this.mouse.startY = this.mouse.worldY;
       this.mouse.btn = e.button;
+
+      // Start long-press timer for touch devices (emulates right-click)
+      if (e.pointerType === 'touch') {
+        this.cancelLongPress();
+        this.longPressStartX = e.clientX;
+        this.longPressStartY = e.clientY;
+        this.longPressFired = false;
+        this.longPressTimer = setTimeout(() => {
+          this.longPressFired = true;
+          // Fire right-click equivalent (context command)
+          this.cb.issueContextCommand(
+            this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY),
+          );
+          this.cb.onUpdateUI();
+          // Reset mouse state so pointerup doesn't fire a click
+          this.mouse.isDown = false;
+        }, LONG_PRESS_MS);
+      }
+    } else {
+      // Multiple fingers -- cancel long-press
+      this.cancelLongPress();
     }
   }
 
@@ -200,28 +237,61 @@ export class PointerHandler {
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     }
 
-    // Two-finger pan
+    // Cancel long-press if finger moved beyond threshold
+    if (this.longPressTimer && e.pointerType === 'touch') {
+      const dx = e.clientX - this.longPressStartX;
+      const dy = e.clientY - this.longPressStartY;
+      if (Math.sqrt(dx * dx + dy * dy) > LONG_PRESS_MOVE_THRESHOLD) {
+        this.cancelLongPress();
+      }
+    }
+
+    // Two-finger pan + pinch-to-zoom
     if (this.activePointers.size === 2) {
       this.world.isTracking = false;
       const pts = Array.from(this.activePointers.values());
       const cx = (pts[0].x + pts[1].x) / 2;
       const cy = (pts[0].y + pts[1].y) / 2;
+
+      // Pan
       if (this.lastPanCenter) {
-        this.world.camX += (this.lastPanCenter.x - cx) * 1.5;
-        this.world.camY += (this.lastPanCenter.y - cy) * 1.5;
+        this.world.camX += (this.lastPanCenter.x - cx) * (1.5 / this.world.zoomLevel);
+        this.world.camY += (this.lastPanCenter.y - cy) * (1.5 / this.world.zoomLevel);
       }
       this.lastPanCenter = { x: cx, y: cy };
+
+      // Pinch-to-zoom
+      const dx = pts[1].x - pts[0].x;
+      const dy = pts[1].y - pts[0].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (this.lastPinchDist !== null) {
+        const scale = dist / this.lastPinchDist;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, this.world.zoomLevel * scale));
+        if (newZoom !== this.world.zoomLevel && this.onZoomChange) {
+          this.onZoomChange(newZoom);
+        }
+      }
+      this.lastPinchDist = dist;
       return;
     }
 
     this.lastPanCenter = null;
+    this.lastPinchDist = null;
     this.updateMouseCoords(e);
   }
 
   private onPointerUp(e: PointerEvent): void {
     this.activePointers.delete(e.pointerId);
+    this.cancelLongPress();
     if (this.activePointers.size > 0) return;
     this.lastPanCenter = null;
+    this.lastPinchDist = null;
+
+    if (this.longPressFired) {
+      this.longPressFired = false;
+      this.mouse.isDown = false;
+      return;
+    }
 
     if (!this.mouse.isDown) return;
     this.mouse.isDown = false;
@@ -428,11 +498,21 @@ export class PointerHandler {
     }
   }
 
+  /** Cancel any pending long-press timer. */
+  private cancelLongPress(): void {
+    if (this.longPressTimer !== null) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = null;
+    }
+  }
+
   /** Shared cleanup for pointer release (main or window). */
   private clearPointerState(): void {
     this.activePointers.clear();
     this.mouse.isDown = false;
     this.lastPanCenter = null;
+    this.lastPinchDist = null;
+    this.cancelLongPress();
   }
 
   private onWindowPointerMove(e: PointerEvent): void {

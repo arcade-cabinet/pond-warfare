@@ -281,7 +281,7 @@ export function TechTreePanel({
 }: TechTreePanelProps) {
   return (
     <div
-      class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center overflow-auto"
+      class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center overflow-auto overscroll-contain touch-pan-y"
       onClick={(e) => {
         // Close when clicking the backdrop
         if (e.target === e.currentTarget) onClose();
@@ -292,7 +292,7 @@ export function TechTreePanel({
         <h2 class="text-lg font-bold text-slate-100 uppercase tracking-widest">Tech Tree</h2>
         <button
           type="button"
-          class="w-8 h-8 flex items-center justify-center rounded bg-slate-700 hover:bg-red-700 text-slate-300 hover:text-white text-lg font-bold transition-colors"
+          class="w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded bg-slate-700 hover:bg-red-700 text-slate-300 hover:text-white text-lg font-bold transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             onClose();

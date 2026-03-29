@@ -39,7 +39,7 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
       {count > 0 && onDeselect && (
         <button
           type="button"
-          class="absolute top-1 right-1 bg-slate-700 hover:bg-red-700 text-slate-300 rounded-full w-6 h-6 flex items-center justify-center cursor-pointer text-xs font-bold z-10"
+          class="absolute top-1 right-1 bg-slate-700 hover:bg-red-700 text-slate-300 rounded-full w-6 h-6 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10"
           title="Clear selection (Esc)"
           onClick={(e) => {
             e.stopPropagation();
