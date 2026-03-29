@@ -10,7 +10,7 @@ import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
-import { Health, Position, Selectable } from '@/ecs/components';
+import { Health, Position, Selectable, UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
@@ -131,6 +131,17 @@ export function App({ onMount }: AppProps) {
               game.world.attackMoveMode = true;
               game.syncUIStore();
             }
+          }}
+          onHaltClick={() => {
+            const w = game.world;
+            for (const eid of w.selection) {
+              if (hasComponent(w.ecs, eid, UnitStateMachine)) {
+                UnitStateMachine.state[eid] = 0; // UnitState.Idle
+                UnitStateMachine.targetEntity[eid] = -1;
+                w.yukaManager.removeUnit(eid);
+              }
+            }
+            game.syncUIStore();
           }}
           onCtrlGroupClick={(group) => {
             const w = game.world;

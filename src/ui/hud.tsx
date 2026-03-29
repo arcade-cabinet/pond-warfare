@@ -63,6 +63,7 @@ export interface HUDProps {
   onArmyClick?: () => void;
   onPauseClick?: () => void;
   onAttackMoveClick?: () => void;
+  onHaltClick?: () => void;
   onCtrlGroupClick?: (group: number) => void;
 }
 
@@ -305,6 +306,19 @@ export function HUD(props: HUDProps) {
           onClick={props.onAttackMoveClick}
         >
           <span class="text-xs md:text-sm">A-Move</span>
+        </button>
+      )}
+
+      {/* Halt/Stop button (visible when player units are selected) */}
+      {hasPlayerUnits.value && selectionCount.value > 0 && (
+        <button
+          type="button"
+          id="halt-btn"
+          class="absolute top-48 md:top-52 right-2 md:right-6 ui-panel border-2 border-slate-500 px-3 py-1 md:px-4 md:py-2 rounded-full text-slate-300 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          title="Stop/Halt (H)"
+          onClick={props.onHaltClick}
+        >
+          <span class="text-xs md:text-sm">Stop</span>
         </button>
       )}
 

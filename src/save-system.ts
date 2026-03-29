@@ -47,8 +47,10 @@ interface SavedEntity {
 }
 
 interface SaveData {
-  version: 1;
+  version: 2;
   resources: { clams: number; twigs: number; food: number; maxFood: number };
+  enemyResources: { clams: number; twigs: number };
+  autoBehaviors: { gather: boolean; defend: boolean; attack: boolean };
   tech: Record<string, boolean>;
   stats: {
     unitsKilled: number;
@@ -60,6 +62,7 @@ interface SaveData {
   frameCount: number;
   timeOfDay: number;
   gameSpeed: number;
+  peaceTimer: number;
   entities: SavedEntity[];
 }
 
@@ -90,13 +93,16 @@ export function saveGame(world: GameWorld): string {
   }));
 
   const data: SaveData = {
-    version: 1,
+    version: 2,
     resources: { ...world.resources },
+    enemyResources: { ...world.enemyResources },
+    autoBehaviors: { ...world.autoBehaviors },
     tech: { ...world.tech },
     stats: { ...world.stats },
     frameCount: world.frameCount,
     timeOfDay: world.timeOfDay,
     gameSpeed: world.gameSpeed,
+    peaceTimer: world.peaceTimer,
     entities,
   };
 
@@ -107,7 +113,7 @@ export function saveGame(world: GameWorld): string {
 export function isValidSave(json: string): boolean {
   try {
     const data = JSON.parse(json);
-    return data?.version === 1 && Array.isArray(data?.entities);
+    return (data?.version === 1 || data?.version === 2) && Array.isArray(data?.entities);
   } catch {
     return false;
   }
@@ -139,6 +145,24 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.resources.twigs = data.resources.twigs;
   world.resources.food = data.resources.food;
   world.resources.maxFood = data.resources.maxFood;
+
+  // Restore enemy resources (v2+)
+  if (data.enemyResources) {
+    world.enemyResources.clams = data.enemyResources.clams;
+    world.enemyResources.twigs = data.enemyResources.twigs;
+  }
+
+  // Restore auto-behaviors (v2+)
+  if (data.autoBehaviors) {
+    world.autoBehaviors.gather = data.autoBehaviors.gather;
+    world.autoBehaviors.defend = data.autoBehaviors.defend;
+    world.autoBehaviors.attack = data.autoBehaviors.attack;
+  }
+
+  // Restore peace timer (v2+)
+  if (data.peaceTimer !== undefined) {
+    world.peaceTimer = data.peaceTimer;
+  }
 
   // Restore tech
   for (const key of Object.keys(data.tech)) {
