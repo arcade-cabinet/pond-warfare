@@ -1,0 +1,18 @@
+appId: com.arcadecabinet.pondwarfare
+name: Open Tech Tree Panel
+tags:
+  - ui
+---
+- runFlow: 01-launch-and-start.yaml
+# Lodge should be selected, tap TECH tab then Tech Tree button
+- tapOn: "TECH"
+- tapOn: "Tech Tree"
+- waitForAnimationToEnd
+# Verify tech tree panel opened
+- assertVisible: "Sturdy Mud"
+- assertVisible: "Sharp Sticks"
+- takeScreenshot: tech-tree-open
+# Close it
+- tapOn:
+    point: "95%,5%"
+- waitForAnimationToEnd

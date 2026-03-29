@@ -1,0 +1,137 @@
+# AGENTS.md - AI Agent Instructions for Pond Warfare
+
+## Project Overview
+
+Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Both factions gather resources, build bases, train armies, and fight for map control. Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js.
+
+## Quick Start
+
+```bash
+pnpm install    # Install dependencies
+pnpm dev        # Start dev server (Vite 8)
+pnpm test       # Run tests (Vitest 4)
+pnpm typecheck  # TypeScript 6 strict mode
+pnpm build      # Production build
+pnpm lint:fix   # Biome auto-fix
+```
+
+## Architecture
+
+See [docs/architecture.md](docs/architecture.md) for the full system overview.
+
+**Key pattern:** ECS game state lives in `GameWorld` (src/ecs/world.ts). UI reads from reactive `signal()` values in `src/ui/store.ts`. The game orchestrator (`src/game.ts`) syncs world -> store every 30 frames via `syncUIStore()`.
+
+## Core Conventions
+
+### ECS Components (bitECS 0.4)
+
+Components are SoA typed arrays created with `soa()`:
+```typescript
+export const Health = soa({ current: [] as number[], max: [] as number[], flashTimer: [] as number[] });
+```
+
+Access: `Health.current[eid]`, `Position.x[eid]`, etc.
+
+Queries: `query(world.ecs, [Position, Health, FactionTag])` returns entity ID arrays.
+
+### Adding a New Entity Type
+
+1. Add to `EntityKind` enum in `src/types.ts`
+2. Add stats to `ENTITY_DEFS` in `src/config/entity-defs.ts`
+3. Add damage multipliers to `DAMAGE_MULTIPLIERS` if the unit has counter relationships
+4. Add sprite to `SpriteId` enum and `generateSprites()` in `src/rendering/sprites.ts`
+5. Add spawn mapping in `src/ecs/archetypes.ts` (`KIND_TO_SPRITE`)
+6. Add string mapping in `entityKindFromString()` and `entityKindName()`
+
+### Adding a New ECS System
+
+1. Create `src/ecs/systems/my-system.ts` exporting `function mySystem(world: GameWorld): void`
+2. Import and add to the system execution chain in `src/game.ts` `updateLogic()` (order matters)
+3. Add tests in `tests/ecs/my-system.test.ts`
+
+### Unit Counter System
+
+Damage multipliers are defined in `DAMAGE_MULTIPLIERS` (src/config/entity-defs.ts). Use `getDamageMultiplier(attackerKind, defenderKind)` in combat calculations. Returns 1.0 for unlisted matchups. Both melee and projectile damage apply the multiplier.
+
+### Veterancy System
+
+Units track kills in `Combat.kills[eid]`. The `Veterancy` component stores `rank` and `appliedRank`. The `veterancySystem` (src/ecs/systems/veterancy.ts) checks kills against thresholds every 60 frames and applies incremental stat bonuses. Rank thresholds and bonus percentages are in `src/constants.ts` (`VET_THRESHOLDS`, `VET_HP_BONUS`, `VET_DMG_BONUS`, `VET_SPD_BONUS`).
+
+### Formation Movement
+
+Group move commands trigger role-based formation positioning in `issueContextCommand()` (src/input/selection.ts). Units are sorted into melee/ranged/support rows via `calculateFormationPositions()`. The `YukaManager.setFormation()` method adds AlignmentBehavior and CohesionBehavior for flocking. Formation behaviors are cleared on arrival.
+
+### Enemy AI
+
+The enemy runs a full parallel economy and strategic AI tracked in `world.enemyResources`. The `aiSystem` (src/ecs/systems/ai.ts) is decomposed into sub-functions:
+- `enemyGathererSpawning` - spawns gatherers from nests (50C, max 3/nest, every 1200 frames)
+- `enemyBuildingConstruction` - builds Towers, Burrows, expansion Nests (every 1800 frames)
+- `enemyArmyTraining` - queues Gators/Snakes at nests via TrainingQueue, adapts composition to counter player army
+- `enemyAttackDecision` - attacks when army >= 5 idle units, targets weakest player building
+- `enemyRetreatLogic` - retreats units below 20% HP to nearest nest
+- `enemyScoutLogic` - sends Snake scouts every 3600 frames, 70% biased toward player Lodge
+- `nestDefenseReinforcement` - spawns defenders when nest HP < 50%
+- `bossWaveLogic` - Boss Crocs spawn every 3 wave intervals after wave 10
+
+All costs/intervals are in `src/constants.ts` (`ENEMY_*` constants).
+
+### UI Components (Preact + Signals)
+
+- Components are in `src/ui/`
+- State flows: `GameWorld` -> `syncUIStore()` -> `store.ts` signals -> UI components
+- User actions flow back: UI `onClick` -> modify `world` state directly (via game instance)
+- All UI must be mouse/touch accessible - no keyboard-only actions
+
+### Steering Behaviors (Yuka.js)
+
+All units use Yuka.js for movement (not just enemies). The `YukaManager`:
+- `addUnit(eid, x, y, speed, targetX, targetY)` - register any unit
+- `removeUnit(eid)` - unregister on arrival/death
+- `setWander(eid)` - idle patrol behavior
+- `setFlee(eid, x, y)` - temporary escape (auto-expires after 90 frames)
+- `setFormation(eids, targetX, targetY)` - add flocking behaviors for group movement
+- `isInFormation(eid)` - check if unit has flocking behaviors
+- All vehicles have `SeparationBehavior` (weight 0.6) to prevent stacking
+
+### Audio (Tone.js)
+
+- SFX: Call `audio.hit()`, `audio.shoot()`, etc. (see AudioSystem class)
+- Music: `audio.startMusic(peaceful)` / `audio.stopMusic()`
+- Ambient: `audio.updateAmbient(darkness)` syncs day/night sounds
+- All audio respects `audio.muted` toggle
+
+## File Map
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| `src/game.ts` | Game orchestrator, loop, UI sync | ~1200 |
+| `src/rendering/pixi-app.ts` | PixiJS 8 renderer | ~860 |
+| `src/ecs/systems/*.ts` | 14 ECS game systems | ~50-800 each |
+| `src/ecs/systems/ai.ts` | Enemy AI economy, training, attack decisions | ~800 |
+| `src/ecs/systems/veterancy.ts` | Veterancy rank-up system | ~130 |
+| `src/ui/store.ts` | 30+ reactive signals | ~120 |
+| `src/audio/audio-system.ts` | SFX + music + ambient | ~350 |
+| `src/ai/yuka-manager.ts` | Steering + formation flocking manager | ~380 |
+| `src/config/entity-defs.ts` | Entity stats, damage multipliers | ~280 |
+| `src/input/selection.ts` | Selection, commands, formation positioning | ~550 |
+| `src/constants.ts` | Tuning constants (vet thresholds, enemy economy, AI timers) | ~130 |
+
+## Testing
+
+Tests mirror the `src/` structure under `tests/`. Use `createGameWorld()` and manual component setup for ECS tests. Movement tests need `world.yukaManager.update()` between ticks since all units use Yuka steering.
+
+## Documentation
+
+- [Architecture](docs/architecture.md) - System overview, game loop, data flow, enemy AI, veterancy, formations
+- [Gameplay](docs/gameplay.md) - Units, buildings, tech tree, combat, counters, veterancy, enemy economy
+- [Libraries](docs/libraries.md) - How each dependency is utilized
+
+## Important Notes
+
+- **Mouse/touch first**: Every game action must have a clickable UI element. Mobile (Capacitor/Android) is a first-class target.
+- **Auto-behaviors are optional**: Auto-gather/defend/attack are toggled via the idle radial menu, not hardcoded.
+- **Buildings unlock through gameplay**: Watchtower requires Eagle Eye tech. Don't show locked buildings.
+- **Player units use Yuka too**: Not just enemies. All moving entities register with YukaManager for smooth steering.
+- **Both factions use the same systems**: Gathering, movement, and combat work identically for player and enemy units. The enemy just gets its orders from the AI system instead of user input.
+- **Damage multipliers are centralized**: All counter relationships live in `DAMAGE_MULTIPLIERS` in entity-defs.ts. Don't hardcode damage modifiers elsewhere.
+- **Veterancy bonuses are incremental**: The system applies the delta between old and new rank bonuses, not the full bonus, to prevent double-counting.

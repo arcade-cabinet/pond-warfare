@@ -1,0 +1,38 @@
+appId: com.arcadecabinet.pondwarfare
+name: Full Gameplay Playthrough (5 min at 10x)
+tags:
+  - e2e
+  - playthrough
+---
+- runFlow: 01-launch-and-start.yaml
+# Speed up to 10x
+- tapOn: "1x"
+- tapOn: "2x"
+- tapOn: "3x"
+- tapOn: "5x"
+- assertVisible: "10x"
+- takeScreenshot: speed-10x
+# Enable auto-gather via radial menu
+- extendedWaitUntil:
+    visible: "Idle"
+    timeout: 15000
+- tapOn: "Idle"
+- waitForAnimationToEnd
+- tapOn: "Gather"
+- waitForAnimationToEnd
+# Train extra gatherers
+- tapOn: "TRAIN"
+- tapOn: "Gatherer"
+- tapOn: "Gatherer"
+# Let the game run for 2 minutes real time (~20 min game time at 10x)
+- takeScreenshot: playthrough-start
+- wait: 30000
+- takeScreenshot: playthrough-30s
+- wait: 30000
+- takeScreenshot: playthrough-60s
+- wait: 30000
+- takeScreenshot: playthrough-90s
+- wait: 30000
+- takeScreenshot: playthrough-120s
+# Final state
+- takeScreenshot: playthrough-final

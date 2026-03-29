@@ -1,0 +1,22 @@
+appId: com.arcadecabinet.pondwarfare
+name: Speed Controls and Pause
+tags:
+  - ui
+  - controls
+---
+- runFlow: 01-launch-and-start.yaml
+# Tap speed button to cycle through speeds
+- tapOn: "1x"
+- assertVisible: "2x"
+- tapOn: "2x"
+- assertVisible: "3x"
+- takeScreenshot: speed-3x
+# Tap pause
+- tapOn:
+    id: "pause-btn"
+- waitForAnimationToEnd
+- assertVisible: "PAUSED"
+- takeScreenshot: paused
+# Unpause
+- tapOn:
+    id: "pause-btn"

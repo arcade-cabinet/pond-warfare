@@ -1,3 +1,23 @@
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Capacitor
+android/
+ios/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
 # Logs
 logs
 *.log
@@ -38,7 +58,6 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -80,7 +99,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -137,3 +155,7 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Test screenshots
+tests/browser/screenshots/
+tests/e2e/screenshots/

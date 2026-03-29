@@ -1,0 +1,52 @@
+{
+  "name": "pond-warfare",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.3.0",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/screen-orientation": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
+    "@preact/signals": "^2.9.0",
+    "animejs": "^4.3.6",
+    "bitecs": "^0.4.0",
+    "pixi.js": "^8.17.1",
+    "planck": "^1.4.3",
+    "preact": "^10.29.0",
+    "tone": "^15.1.22",
+    "yuka": "^0.7.8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.9",
+    "@capacitor/cli": "^8.3.0",
+    "@preact/preset-vite": "^2.10.5",
+    "@tailwindcss/vite": "^4.2.2",
+    "@testing-library/preact": "^3.2.4",
+    "@vitest/browser": "^4.1.2",
+    "@vitest/browser-playwright": "^4.1.2",
+    "jsdom": "^29.0.1",
+    "playwright": "^1.58.2",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
+  }
+}

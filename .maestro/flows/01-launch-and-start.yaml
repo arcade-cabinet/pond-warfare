@@ -1,0 +1,13 @@
+appId: com.arcadecabinet.pondwarfare
+name: Launch and Start Game
+---
+- launchApp
+- waitForAnimationToEnd
+# Intro overlay - tap difficulty and start
+- tapOn: "NORMAL"
+- tapOn: "Click to Begin"
+- waitForAnimationToEnd
+# Verify game loaded - HUD should be visible
+- assertVisible: "Clams"
+- assertVisible: "PEACEFUL"
+- takeScreenshot: launch-complete

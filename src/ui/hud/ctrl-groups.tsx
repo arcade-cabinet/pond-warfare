@@ -1,0 +1,38 @@
+/**
+ * CtrlGroups - Control group badge buttons.
+ */
+
+import { ctrlGroupCounts } from '../store';
+
+export interface CtrlGroupsProps {
+  onCtrlGroupClick?: (group: number) => void;
+}
+
+export function CtrlGroups(props: CtrlGroupsProps) {
+  if (Object.keys(ctrlGroupCounts.value).length === 0) return null;
+
+  return (
+    <div class="absolute top-11 md:top-12 right-2 md:right-6 z-20 flex gap-1">
+      {Object.entries(ctrlGroupCounts.value)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([gnum, count]) => (
+          <button
+            type="button"
+            key={`cg-${gnum}`}
+            class="hud-btn w-7 h-7 min-w-[44px] min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer flex items-center justify-center"
+            style={{
+              color: 'var(--pw-accent)',
+              borderColor: 'var(--pw-accent)',
+            }}
+            title={`Group ${gnum} (${count} units) - press ${gnum} to recall`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (props.onCtrlGroupClick) props.onCtrlGroupClick(Number(gnum));
+            }}
+          >
+            {gnum}
+          </button>
+        ))}
+    </div>
+  );
+}

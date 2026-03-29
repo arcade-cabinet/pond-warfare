@@ -1,0 +1,22 @@
+appId: com.arcadecabinet.pondwarfare
+name: Pinch to Zoom
+tags:
+  - touch
+  - mobile
+---
+- runFlow: 01-launch-and-start.yaml
+- takeScreenshot: before-zoom
+# Pinch out to zoom in
+- pinch:
+    id: "game-canvas"
+    scale: 1.5
+    speed: 50
+- waitForAnimationToEnd
+- takeScreenshot: zoomed-in
+# Pinch in to zoom out
+- pinch:
+    id: "game-canvas"
+    scale: 0.5
+    speed: 50
+- waitForAnimationToEnd
+- takeScreenshot: zoomed-out

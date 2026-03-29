@@ -1,0 +1,179 @@
+import { addComponent, addEntity } from 'bitecs';
+import { ENTITY_DEFS } from '@/config/entity-defs';
+import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
+import {
+  Building,
+  Carrying,
+  Collider,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  IsResource,
+  Position,
+  Resource,
+  Selectable,
+  Sprite,
+  TowerAI,
+  TrainingQueue,
+  UnitStateMachine,
+  Velocity,
+  Veterancy,
+} from './components';
+import type { GameWorld } from './world';
+
+const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
+  [EntityKind.Gatherer]: SpriteId.Gatherer,
+  [EntityKind.Brawler]: SpriteId.Brawler,
+  [EntityKind.Sniper]: SpriteId.Sniper,
+  [EntityKind.Gator]: SpriteId.Gator,
+  [EntityKind.Snake]: SpriteId.Snake,
+  [EntityKind.Lodge]: SpriteId.Lodge,
+  [EntityKind.Burrow]: SpriteId.Burrow,
+  [EntityKind.Armory]: SpriteId.Armory,
+  [EntityKind.Tower]: SpriteId.Tower,
+  [EntityKind.PredatorNest]: SpriteId.PredatorNest,
+  [EntityKind.Cattail]: SpriteId.Cattail,
+  [EntityKind.Clambed]: SpriteId.Clambed,
+  [EntityKind.Healer]: SpriteId.Healer,
+  [EntityKind.Watchtower]: SpriteId.Watchtower,
+  [EntityKind.BossCroc]: SpriteId.BossCroc,
+  [EntityKind.Shieldbearer]: SpriteId.Shieldbearer,
+  [EntityKind.Scout]: SpriteId.Scout,
+  [EntityKind.Catapult]: SpriteId.Catapult,
+  [EntityKind.Wall]: SpriteId.Wall,
+  [EntityKind.ScoutPost]: SpriteId.ScoutPost,
+};
+
+export function spawnEntity(
+  world: GameWorld,
+  kind: EntityKind,
+  x: number,
+  y: number,
+  faction: Faction,
+): number {
+  const eid = addEntity(world.ecs);
+  const def = ENTITY_DEFS[kind];
+
+  const spriteW = def.spriteSize * def.spriteScale;
+  const spriteH = def.spriteSize * def.spriteScale;
+
+  // Core components
+  addComponent(world.ecs, eid, Position);
+  Position.x[eid] = x;
+  Position.y[eid] = y;
+
+  addComponent(world.ecs, eid, Sprite);
+  Sprite.textureId[eid] = KIND_TO_SPRITE[kind];
+  Sprite.width[eid] = spriteW;
+  Sprite.height[eid] = spriteH;
+  Sprite.facingLeft[eid] = 0;
+  Sprite.yOffset[eid] = 0;
+
+  addComponent(world.ecs, eid, FactionTag);
+  FactionTag.faction[eid] = faction;
+
+  addComponent(world.ecs, eid, EntityTypeTag);
+  EntityTypeTag.kind[eid] = kind;
+
+  addComponent(world.ecs, eid, Collider);
+  Collider.radius[eid] = spriteW / 2.5;
+
+  addComponent(world.ecs, eid, Selectable);
+  Selectable.selected[eid] = 0;
+
+  // Health
+  let hp = def.hp;
+  let maxHp = def.hp;
+
+  // Apply tech bonuses for player buildings
+  if (faction === Faction.Player && def.isBuilding && world.tech.sturdyMud) {
+    hp += 300;
+    maxHp += 300;
+  }
+
+  addComponent(world.ecs, eid, Health);
+  Health.max[eid] = maxHp;
+  Health.flashTimer[eid] = 0;
+
+  if (def.isBuilding) {
+    addComponent(world.ecs, eid, IsBuilding);
+    addComponent(world.ecs, eid, Building);
+
+    if (faction === Faction.Player && kind !== EntityKind.Lodge) {
+      Building.progress[eid] = 1;
+      Health.current[eid] = 1;
+    } else {
+      Building.progress[eid] = 100;
+      Health.current[eid] = maxHp;
+    }
+    Building.hasRally[eid] = 0;
+
+    // Training queue for lodge, burrow, armory, and predator nests (enemy training)
+    if (
+      kind === EntityKind.Lodge ||
+      kind === EntityKind.Burrow ||
+      kind === EntityKind.Armory ||
+      kind === EntityKind.PredatorNest
+    ) {
+      addComponent(world.ecs, eid, TrainingQueue);
+      TrainingQueue.count[eid] = 0;
+      TrainingQueue.timer[eid] = 0;
+    }
+
+    // Tower AI
+    if (kind === EntityKind.Tower || kind === EntityKind.Watchtower) {
+      addComponent(world.ecs, eid, TowerAI);
+      addComponent(world.ecs, eid, Combat);
+      Combat.damage[eid] = def.damage;
+      Combat.attackRange[eid] = def.attackRange;
+      Combat.attackCooldown[eid] = 0;
+      Combat.kills[eid] = 0;
+    }
+  } else if (def.isResource) {
+    addComponent(world.ecs, eid, IsResource);
+    addComponent(world.ecs, eid, Resource);
+    Resource.resourceType[eid] = def.resourceType as ResourceType;
+    Resource.amount[eid] = def.resourceAmount ?? 0;
+    Health.current[eid] = 1;
+  } else {
+    // Unit
+    Health.current[eid] = hp;
+
+    addComponent(world.ecs, eid, Velocity);
+    let speed = def.speed;
+    if (faction === Faction.Player && world.tech.swiftPaws) speed += 0.4;
+    Velocity.speed[eid] = speed;
+
+    addComponent(world.ecs, eid, Combat);
+    let damage = def.damage;
+    if (faction === Faction.Player && world.tech.sharpSticks && damage > 0) damage += 2;
+    Combat.damage[eid] = damage;
+
+    let range = def.attackRange;
+    if (kind === EntityKind.Sniper && faction === Faction.Player && world.tech.eagleEye)
+      range += 50;
+    Combat.attackRange[eid] = range;
+    Combat.attackCooldown[eid] = 0;
+    Combat.kills[eid] = 0;
+
+    addComponent(world.ecs, eid, UnitStateMachine);
+    UnitStateMachine.state[eid] = 0; // Idle
+    UnitStateMachine.targetEntity[eid] = -1;
+    UnitStateMachine.returnEntity[eid] = -1;
+    UnitStateMachine.gatherTimer[eid] = 0;
+    UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+    UnitStateMachine.targetX[eid] = 0;
+    UnitStateMachine.targetY[eid] = 0;
+
+    addComponent(world.ecs, eid, Carrying);
+    Carrying.resourceType[eid] = 0; // None
+
+    addComponent(world.ecs, eid, Veterancy);
+    Veterancy.rank[eid] = 0;
+    Veterancy.appliedRank[eid] = 0;
+  }
+
+  return eid;
+}
