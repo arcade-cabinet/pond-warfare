@@ -18,6 +18,11 @@ export class ErrorBoundary extends Component<{ children: any }, ErrorBoundarySta
     return { error };
   }
 
+  componentDidCatch(error: Error, errorInfo: unknown) {
+    // Replace with project logger/telemetry sink if available.
+    console.error('Unhandled UI error', { error, errorInfo });
+  }
+
   render() {
     if (this.state.error) {
       return (
