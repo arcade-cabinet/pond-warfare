@@ -57,28 +57,15 @@ export async function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'light'
   }
 }
 
-/** Save a preference (native or localStorage). */
+/** Save a preference via Capacitor Preferences (works on all platforms). */
 export async function savePreference(key: string, value: string): Promise<void> {
-  if (!isNative) {
-    localStorage.setItem(key, value);
-    return;
-  }
-  try {
-    const { Preferences } = await import('@capacitor/preferences');
-    await Preferences.set({ key, value });
-  } catch {
-    localStorage.setItem(key, value);
-  }
+  const { Preferences } = await import('@capacitor/preferences');
+  await Preferences.set({ key, value });
 }
 
-/** Load a preference (native or localStorage). */
+/** Load a preference via Capacitor Preferences (works on all platforms). */
 export async function loadPreference(key: string): Promise<string | null> {
-  if (!isNative) return localStorage.getItem(key);
-  try {
-    const { Preferences } = await import('@capacitor/preferences');
-    const { value } = await Preferences.get({ key });
-    return value;
-  } catch {
-    return localStorage.getItem(key);
-  }
+  const { Preferences } = await import('@capacitor/preferences');
+  const { value } = await Preferences.get({ key });
+  return value;
 }

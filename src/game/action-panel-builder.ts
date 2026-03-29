@@ -382,6 +382,36 @@ export function buildActionPanel(world: GameWorld): void {
             },
           });
         }
+        const fhDef = ENTITY_DEFS[EntityKind.FishingHut];
+        btns.push({
+          title: 'Fishing Hut',
+          cost: `${fhDef.clamCost}C ${fhDef.twigCost}T`,
+          hotkey: 'I',
+          affordable:
+            w.resources.clams >= (fhDef.clamCost ?? 0) &&
+            w.resources.twigs >= (fhDef.twigCost ?? 0),
+          description: 'Passive income building. Generates +5 clams every 5 seconds. +2 food cap.',
+          category: 'build',
+          costBreakdown: { clams: fhDef.clamCost, twigs: fhDef.twigCost },
+          onClick: () => {
+            w.placingBuilding = 'fishing_hut';
+          },
+        });
+        const hhDef = ENTITY_DEFS[EntityKind.HerbalistHut];
+        btns.push({
+          title: 'Herbalist Hut',
+          cost: `${hhDef.clamCost}C ${hhDef.twigCost}T`,
+          hotkey: 'O',
+          affordable:
+            w.resources.clams >= (hhDef.clamCost ?? 0) &&
+            w.resources.twigs >= (hhDef.twigCost ?? 0),
+          description: 'Heals all player units within range by 2 HP every 2 seconds.',
+          category: 'build',
+          costBreakdown: { clams: hhDef.clamCost, twigs: hhDef.twigCost },
+          onClick: () => {
+            w.placingBuilding = 'herbalist_hut';
+          },
+        });
       }
 
       // Lodge selected: train gatherer + techs (only when construction is complete)
@@ -636,26 +666,30 @@ export function buildActionPanel(world: GameWorld): void {
           },
         });
         const hsTech = TECH_UPGRADES.hardenedShells;
+        const hsPearlCost = hsTech.pearlCost ?? 0;
         btns.push({
           title: hsTech.name,
-          cost: `${hsTech.clamCost}C ${hsTech.twigCost}T`,
+          cost: `${hsTech.clamCost}C ${hsTech.twigCost}T${hsPearlCost > 0 ? ` ${hsPearlCost}P` : ''}`,
           hotkey: 'Y',
           affordable:
             canResearch('hardenedShells', w.tech) &&
             w.resources.clams >= hsTech.clamCost &&
-            w.resources.twigs >= hsTech.twigCost,
+            w.resources.twigs >= hsTech.twigCost &&
+            w.resources.pearls >= hsPearlCost,
           description: hsTech.description,
           category: 'tech',
-          costBreakdown: { clams: hsTech.clamCost, twigs: hsTech.twigCost },
+          costBreakdown: { clams: hsTech.clamCost, twigs: hsTech.twigCost, pearls: hsPearlCost },
           requires: techRequiresLabel('hardenedShells'),
           onClick: () => {
             if (
               canResearch('hardenedShells', w.tech) &&
               w.resources.clams >= hsTech.clamCost &&
-              w.resources.twigs >= hsTech.twigCost
+              w.resources.twigs >= hsTech.twigCost &&
+              w.resources.pearls >= hsPearlCost
             ) {
               w.resources.clams -= hsTech.clamCost;
               w.resources.twigs -= hsTech.twigCost;
+              w.resources.pearls -= hsPearlCost;
               w.tech.hardenedShells = true;
             }
           },
@@ -738,26 +772,30 @@ export function buildActionPanel(world: GameWorld): void {
           },
         });
         const swTech = TECH_UPGRADES.siegeWorks;
+        const swPearlCost = swTech.pearlCost ?? 0;
         btns.push({
           title: swTech.name,
-          cost: `${swTech.clamCost}C ${swTech.twigCost}T`,
+          cost: `${swTech.clamCost}C ${swTech.twigCost}T${swPearlCost > 0 ? ` ${swPearlCost}P` : ''}`,
           hotkey: 'X',
           affordable:
             canResearch('siegeWorks', w.tech) &&
             w.resources.clams >= swTech.clamCost &&
-            w.resources.twigs >= swTech.twigCost,
+            w.resources.twigs >= swTech.twigCost &&
+            w.resources.pearls >= swPearlCost,
           description: swTech.description,
           category: 'tech',
-          costBreakdown: { clams: swTech.clamCost, twigs: swTech.twigCost },
+          costBreakdown: { clams: swTech.clamCost, twigs: swTech.twigCost, pearls: swPearlCost },
           requires: techRequiresLabel('siegeWorks'),
           onClick: () => {
             if (
               canResearch('siegeWorks', w.tech) &&
               w.resources.clams >= swTech.clamCost &&
-              w.resources.twigs >= swTech.twigCost
+              w.resources.twigs >= swTech.twigCost &&
+              w.resources.pearls >= swPearlCost
             ) {
               w.resources.clams -= swTech.clamCost;
               w.resources.twigs -= swTech.twigCost;
+              w.resources.pearls -= swPearlCost;
               w.tech.siegeWorks = true;
             }
           },

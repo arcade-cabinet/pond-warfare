@@ -48,7 +48,7 @@ interface SavedEntity {
 
 interface SaveData {
   version: 2;
-  resources: { clams: number; twigs: number; food: number; maxFood: number };
+  resources: { clams: number; twigs: number; pearls?: number; food: number; maxFood: number };
   enemyResources: { clams: number; twigs: number };
   autoBehaviors: { gather: boolean; defend: boolean; attack: boolean };
   tech: Record<string, boolean>;
@@ -155,6 +155,7 @@ export function loadGame(world: GameWorld, json: string): boolean {
   // Restore game state
   world.resources.clams = data.resources.clams;
   world.resources.twigs = data.resources.twigs;
+  world.resources.pearls = data.resources.pearls ?? 0;
   world.resources.food = data.resources.food;
   world.resources.maxFood = data.resources.maxFood;
 

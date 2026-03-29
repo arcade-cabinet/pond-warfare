@@ -160,6 +160,29 @@ export function TopBar(props: TopBarProps) {
           )}
         </div>
 
+        {/* Pearls (only show when > 0) */}
+        {pearls.value > 0 && (
+          <div class="flex items-center space-x-1 md:space-x-2">
+            <div
+              class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm"
+              style={{
+                background: 'radial-gradient(circle at 35% 35%, #e0e7ff, #a5b4fc)',
+                border: '1px solid #a5b4fc',
+                boxShadow: '0 0 4px rgba(165, 180, 252, 0.4)',
+              }}
+            />
+            <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+              Pearls:{' '}
+            </span>
+            <span
+              class="font-numbers font-bold"
+              style={{ color: '#a5b4fc' }}
+            >
+              {pearls}
+            </span>
+          </div>
+        )}
+
         {/* Food */}
         <div class="flex items-center space-x-1 md:space-x-2">
           <div

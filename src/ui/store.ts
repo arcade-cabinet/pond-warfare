@@ -157,9 +157,7 @@ export const selectedDifficulty = signal<DifficultyLevel>('normal');
 export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
 /** True when the player chose "Continue" from the main menu (load save on init). */
 export const continueRequested = signal(false);
-export const hasSaveGame = signal(
-  typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function' && !!localStorage.getItem('pond-warfare-save'),
-);
+export const hasSaveGame = signal(false);
 export const gameName = signal('');
 export const gameSeed = signal(0);
 export const permadeathEnabled = signal(false);

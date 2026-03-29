@@ -27,7 +27,7 @@ export interface ActionButtonDef {
   category: ActionCategory;
   onClick: () => void;
   /** Individual resource costs for detailed tooltip breakdown */
-  costBreakdown?: { clams?: number; twigs?: number; food?: number };
+  costBreakdown?: { clams?: number; twigs?: number; pearls?: number; food?: number };
   /** Tech requirement label, e.g. "Requires: Eagle Eye" */
   requires?: string;
 }

@@ -21,6 +21,7 @@ export interface TechUpgrade {
   description: string;
   clamCost: number;
   twigCost: number;
+  pearlCost?: number;
   requires?: TechId;
 }
 
@@ -61,6 +62,7 @@ export const TECH_UPGRADES = {
     description: '+5 HP regen for all units',
     clamCost: 500,
     twigCost: 400,
+    pearlCost: 30,
     requires: 'eagleEye',
   },
   ironShell: {
@@ -77,6 +79,7 @@ export const TECH_UPGRADES = {
     description: 'Unlocks Catapult unit',
     clamCost: 400,
     twigCost: 350,
+    pearlCost: 50,
     requires: 'eagleEye',
   },
   cartography: {
