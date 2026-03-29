@@ -35,8 +35,8 @@ function VolumeSlider({
   onChange: (v: number) => void;
 }) {
   return (
-    <div class="flex items-center gap-3 w-full">
-      <label class="text-slate-300 text-xs w-24 shrink-0">{label}</label>
+    <label class="flex items-center gap-3 w-full">
+      <span class="text-slate-300 text-xs w-24 shrink-0">{label}</span>
       <input
         type="range"
         min="0"
@@ -46,7 +46,7 @@ function VolumeSlider({
         class="flex-1 h-2 appearance-none bg-slate-600 rounded cursor-pointer accent-sky-500"
       />
       <span class="text-slate-400 text-xs w-8 text-right">{value}</span>
-    </div>
+    </label>
   );
 }
 
