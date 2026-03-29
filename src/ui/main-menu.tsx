@@ -12,13 +12,13 @@
  */
 
 import { useEffect, useState } from 'preact/hooks';
-import { getRank, type RankInfo } from '@/systems/leaderboard';
 import { getPlayerProfile } from '@/storage';
+import { getRank, type RankInfo } from '@/systems/leaderboard';
 import {
   achievementsOpen,
   campaignOpen,
-  cosmeticsOpen,
   continueRequested,
+  cosmeticsOpen,
   hasSaveGame,
   leaderboardOpen,
   menuState,
@@ -202,7 +202,6 @@ export function MainMenu() {
             class="font-heading font-bold text-[11px] tracking-wider uppercase block text-center mt-1"
             style={{ color: rank.color }}
           >
-
             {rank.label}
           </span>
         </div>
@@ -210,7 +209,6 @@ export function MainMenu() {
 
       {/* ---- Hero CTA: Shield-shaped NEW GAME button ---- */}
       <div class="relative z-10 mt-8 flex flex-col items-center">
-
         <button
           type="button"
           class="shield-btn font-heading font-bold text-lg md:text-xl tracking-widest flex flex-col items-center justify-center"
@@ -224,9 +222,7 @@ export function MainMenu() {
           }}
         >
           <span class="shield-btn-inner" />
-          <span style={{ fontSize: '28px', lineHeight: '1', marginBottom: '8px' }}>
-            &#x2694;
-          </span>
+          <span style={{ fontSize: '28px', lineHeight: '1', marginBottom: '8px' }}>&#x2694;</span>
           <span>NEW</span>
           <span>GAME</span>
         </button>
@@ -256,7 +252,6 @@ export function MainMenu() {
         <button
           type="button"
           class="wood-sign-btn font-heading font-bold text-sm md:text-base tracking-wider"
-
           disabled={!hasSaveGame.value}
           style={{
             minWidth: '180px',
@@ -423,13 +418,8 @@ export function MainMenu() {
       </p>
 
       {/* ---- Version on driftwood ---- */}
-      <div
-        class="driftwood relative z-10 mt-4 mb-6 px-6 py-1"
-      >
-        <span
-          class="font-game text-[10px]"
-          style={{ color: 'rgba(160, 140, 110, 0.7)' }}
-        >
+      <div class="driftwood relative z-10 mt-4 mb-6 px-6 py-1">
+        <span class="font-game text-[10px]" style={{ color: 'rgba(160, 140, 110, 0.7)' }}>
           v1.0 &middot; Defend the Pond
         </span>
       </div>

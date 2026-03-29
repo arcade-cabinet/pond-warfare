@@ -13,8 +13,8 @@ import { entityExists, hasComponent } from 'bitecs';
 import { getKeymap } from '@/config/keymap';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Selectable } from '@/ecs/components';
-import { fpsCounterVisible } from '@/ui/store';
 import type { GameWorld } from '@/ecs/world';
+import { fpsCounterVisible } from '@/ui/store';
 
 export interface KeyboardCallbacks {
   onToggleMute: () => void;

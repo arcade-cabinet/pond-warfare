@@ -5,10 +5,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  ACHIEVEMENTS,
-  type AchievementSnapshot,
-} from '@/systems/achievements';
+import { ACHIEVEMENTS, type AchievementSnapshot } from '@/systems/achievements';
 
 // Mock the @/storage module to avoid SQLite dependency in tests
 vi.mock('@/storage', () => ({

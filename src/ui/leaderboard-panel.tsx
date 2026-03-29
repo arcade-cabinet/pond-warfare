@@ -72,10 +72,7 @@ export function LeaderboardPanel() {
         </div>
 
         {loading || !data ? (
-          <div
-            class="text-center py-8 font-game text-sm"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
+          <div class="text-center py-8 font-game text-sm" style={{ color: 'var(--pw-text-muted)' }}>
             Loading...
           </div>
         ) : (
@@ -95,17 +92,11 @@ export function LeaderboardPanel() {
                 {data.rank.label}
               </div>
               {winsToNextRank(data.totalWins) > 0 ? (
-                <div
-                  class="font-game text-xs mt-1"
-                  style={{ color: 'var(--pw-text-muted)' }}
-                >
+                <div class="font-game text-xs mt-1" style={{ color: 'var(--pw-text-muted)' }}>
                   {winsToNextRank(data.totalWins)} wins to next rank
                 </div>
               ) : (
-                <div
-                  class="font-game text-xs mt-1"
-                  style={{ color: data.rank.color }}
-                >
+                <div class="font-game text-xs mt-1" style={{ color: data.rank.color }}>
                   Max rank achieved
                 </div>
               )}

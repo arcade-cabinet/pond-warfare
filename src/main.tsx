@@ -9,11 +9,11 @@
 
 import '@/styles/main.css';
 import { render } from 'preact';
+import { loadKeymapFromStorage } from '@/config/keymap';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
 import { game } from '@/game';
 import { loadGame } from '@/save-system';
 import { getLatestSave, initDatabase } from '@/storage';
-import { loadKeymapFromStorage } from '@/config/keymap';
 
 // Install global error handlers FIRST — before anything else can fail
 installGlobalErrorHandlers();

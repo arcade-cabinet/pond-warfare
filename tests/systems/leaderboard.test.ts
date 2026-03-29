@@ -5,10 +5,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import {
-  getRank,
-  winsToNextRank,
-} from '@/systems/leaderboard';
+import { getRank, winsToNextRank } from '@/systems/leaderboard';
 
 // Mock the @/storage module to avoid SQLite dependency
 vi.mock('@/storage', () => ({

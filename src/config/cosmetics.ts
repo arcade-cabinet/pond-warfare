@@ -6,8 +6,8 @@
  * and has an unlock requirement checked against the player profile.
  */
 
-import type { PlayerProfile } from '@/storage/database';
 import type { RecolorPreset } from '@/rendering/recolor';
+import type { PlayerProfile } from '@/storage/database';
 import { EntityKind } from '@/types';
 
 export interface CosmeticDef {

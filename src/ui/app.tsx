@@ -100,7 +100,10 @@ export function App({ onMount }: AppProps) {
   // ---------- Fullscreen menu (no game chrome) ----------
   if (store.menuState.value === 'main' || store.menuState.value === 'newGame') {
     return (
-      <div class="relative h-screen w-screen overflow-hidden" style={{ color: 'var(--pw-text-primary)' }}>
+      <div
+        class="relative h-screen w-screen overflow-hidden"
+        style={{ color: 'var(--pw-text-primary)' }}
+      >
         {/* Error overlay -- always rendered */}
         <ErrorOverlay />
 
@@ -378,7 +381,6 @@ export function App({ onMount }: AppProps) {
 
         {/* Campaign objective tracker (shown during gameplay) */}
         {store.campaignMissionId.value && <ObjectiveTracker />}
-
 
         {/* Campaign objective tracker (shown during gameplay) */}
         {store.menuState.value === 'playing' && store.campaignMissionId.value && (

@@ -175,10 +175,7 @@ export function TopBar(props: TopBarProps) {
             <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
               Pearls:{' '}
             </span>
-            <span
-              class="font-numbers font-bold"
-              style={{ color: '#a5b4fc' }}
-            >
+            <span class="font-numbers font-bold" style={{ color: '#a5b4fc' }}>
               {pearls}
             </span>
           </div>

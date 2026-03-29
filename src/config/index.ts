@@ -7,14 +7,6 @@ export {
 } from './ai-personalities';
 export { COMMANDERS, type CommanderDef, getCommanderDef } from './commanders';
 export {
-  type FactionConfig,
-  getAIFaction,
-  getFactionConfig,
-  OTTER_FACTION,
-  type PlayableFaction,
-  PREDATOR_FACTION,
-} from './factions';
-export {
   DAMAGE_MULTIPLIERS,
   ENTITY_DEFS,
   entityKindFromString,
@@ -22,6 +14,14 @@ export {
   getDamageMultiplier,
   type UnitDef,
 } from './entity-defs';
+export {
+  type FactionConfig,
+  getAIFaction,
+  getFactionConfig,
+  OTTER_FACTION,
+  type PlayableFaction,
+  PREDATOR_FACTION,
+} from './factions';
 export {
   DEFAULT_KEYMAP,
   getKeymap,

@@ -249,9 +249,9 @@ export const autoSaveEnabled = signal(false);
 // ---- Commander selection ----
 export const selectedCommander = signal('marshal');
 
+export type { AIPersonality } from '@/config/ai-personalities';
 // ---- Faction & AI personality ----
 export type { PlayableFaction } from '@/config/factions';
-export type { AIPersonality } from '@/config/ai-personalities';
 export const playerFaction = signal<import('@/config/factions').PlayableFaction>('otter');
 export const aiPersonality = signal<import('@/config/ai-personalities').AIPersonality>('balanced');
 

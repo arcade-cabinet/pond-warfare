@@ -14,7 +14,6 @@ import {
   ENEMY_MAX_GATHERERS_PER_NEST,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
-import { triggerSpawnPop } from '@/rendering/animations';
 import {
   Carrying,
   EntityTypeTag,
@@ -28,6 +27,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
 import { getEnemyNests } from './helpers';

@@ -118,7 +118,14 @@ export interface GameWorld {
   /** Custom starting unit count (replaces default 4). */
   startingUnitCount: number;
   /** Custom scenario override (null = use seeded random). */
-  scenarioOverride: 'standard' | 'island' | 'contested' | 'labyrinth' | 'river' | 'peninsula' | null;
+  scenarioOverride:
+    | 'standard'
+    | 'island'
+    | 'contested'
+    | 'labyrinth'
+    | 'river'
+    | 'peninsula'
+    | null;
   /** Custom nest count override (-1 = use difficulty default). */
   nestCountOverride: number;
   /** Resource density override for map generation. */

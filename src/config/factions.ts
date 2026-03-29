@@ -5,8 +5,8 @@
  * When the player picks a faction, the other faction is controlled by the AI.
  */
 
-import type { TechId } from './tech-tree';
 import { EntityKind } from '@/types';
+import type { TechId } from './tech-tree';
 
 export type PlayableFaction = 'otter' | 'predator';
 

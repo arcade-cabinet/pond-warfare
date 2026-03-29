@@ -158,7 +158,10 @@ export function enemyTrainingTick(world: GameWorld): void {
 
     // Decide what to train from unlocked units (evolution system + personality bias)
     const personality = resolvePersonality(world.aiPersonality, world.frameCount);
-    const unitKind = pickEnemyUnit(world.enemyEvolution.unlockedUnits, personality.trainingPreference);
+    const unitKind = pickEnemyUnit(
+      world.enemyEvolution.unlockedUnits,
+      personality.trainingPreference,
+    );
     const costs = ENEMY_UNIT_COSTS[unitKind];
     if (!costs) continue;
     const costClams = costs.clams;

@@ -7,27 +7,13 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-} from '@/ecs/components';
-import {
-  fogOfWarSystem,
-  initFogOfWar,
-  resetFogOfWar,
-} from '@/ecs/systems/fog-of-war';
+import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 
 /** Create a player unit at a given position. */
-function createPlayerUnit(
-  world: GameWorld,
-  kind: EntityKind,
-  x: number,
-  y: number,
-): number {
+function createPlayerUnit(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

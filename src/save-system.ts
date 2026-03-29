@@ -50,7 +50,13 @@ interface SaveData {
   version: 2;
   resources: { clams: number; twigs: number; pearls?: number; food: number; maxFood: number };
   enemyResources: { clams: number; twigs: number };
-  autoBehaviors: { gather: boolean; defend: boolean; attack: boolean; build?: boolean; heal?: boolean };
+  autoBehaviors: {
+    gather: boolean;
+    defend: boolean;
+    attack: boolean;
+    build?: boolean;
+    heal?: boolean;
+  };
   tech: Record<string, boolean>;
   stats: {
     unitsKilled: number;

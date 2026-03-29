@@ -86,10 +86,7 @@ export function CampaignPanel() {
             >
               {selectedMission.title}
             </h2>
-            <p
-              class="font-game text-sm mt-1"
-              style={{ color: 'var(--pw-text-secondary)' }}
-            >
+            <p class="font-game text-sm mt-1" style={{ color: 'var(--pw-text-secondary)' }}>
               {selectedMission.subtitle}
             </p>
           </div>
@@ -166,10 +163,7 @@ export function CampaignPanel() {
       >
         CAMPAIGN
       </h2>
-      <p
-        class="font-game text-sm mb-8"
-        style={{ color: 'var(--pw-text-muted)' }}
-      >
+      <p class="font-game text-sm mb-8" style={{ color: 'var(--pw-text-muted)' }}>
         Complete missions in order to unlock the next
       </p>
 
@@ -213,10 +207,7 @@ export function CampaignPanel() {
                 >
                   {mission.title}
                 </div>
-                <div
-                  class="font-game text-xs"
-                  style={{ color: 'var(--pw-text-muted)' }}
-                >
+                <div class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
                   {unlocked ? mission.subtitle : 'Locked'}
                 </div>
               </div>
@@ -274,10 +265,7 @@ export function ObjectiveTracker() {
       {mission.objectives.map((obj) => {
         const done = statuses[obj.id] ?? false;
         return (
-          <div
-            key={obj.id}
-            class="flex items-center gap-2 text-[10px] md:text-xs font-game"
-          >
+          <div key={obj.id} class="flex items-center gap-2 text-[10px] md:text-xs font-game">
             <span
               style={{
                 color: done ? 'var(--pw-success)' : 'var(--pw-text-muted)',

@@ -135,7 +135,8 @@ function warDrumsAura(world: GameWorld): void {
         continue;
       if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
       if (!hasComponent(world.ecs, t, Combat)) continue;
-      if (hasComponent(world.ecs, t, IsBuilding) || hasComponent(world.ecs, t, IsResource)) continue;
+      if (hasComponent(world.ecs, t, IsBuilding) || hasComponent(world.ecs, t, IsResource))
+        continue;
 
       const dx = Position.x[t] - ax;
       const dy = Position.y[t] - ay;

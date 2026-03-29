@@ -28,9 +28,7 @@ async function ensureCampaignTable(): Promise<void> {
   const { isDatabaseReady } = await import('@/storage');
   if (!isDatabaseReady()) return;
 
-  const { CapacitorSQLite, SQLiteConnection } = await import(
-    '@capacitor-community/sqlite'
-  );
+  const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
   const sqlite = new SQLiteConnection(CapacitorSQLite);
   const db = await sqlite.retrieveConnection('pond_warfare', false);
   await db.execute(`
@@ -46,15 +44,10 @@ async function ensureCampaignTable(): Promise<void> {
 }
 
 /** Mark a mission as completed in SQLite. */
-export async function saveMissionCompleted(
-  missionId: string,
-  frames: number,
-): Promise<void> {
+export async function saveMissionCompleted(missionId: string, frames: number): Promise<void> {
   try {
     await ensureCampaignTable();
-    const { CapacitorSQLite, SQLiteConnection } = await import(
-      '@capacitor-community/sqlite'
-    );
+    const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
     const sqlite = new SQLiteConnection(CapacitorSQLite);
     const db = await sqlite.retrieveConnection('pond_warfare', false);
     // Upsert: insert or update best time
@@ -78,14 +71,10 @@ export async function loadCampaignProgress(): Promise<Set<string>> {
   const completed = new Set<string>();
   try {
     await ensureCampaignTable();
-    const { CapacitorSQLite, SQLiteConnection } = await import(
-      '@capacitor-community/sqlite'
-    );
+    const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
     const sqlite = new SQLiteConnection(CapacitorSQLite);
     const db = await sqlite.retrieveConnection('pond_warfare', false);
-    const result = await db.query(
-      'SELECT mission_id FROM campaign_progress WHERE completed = 1',
-    );
+    const result = await db.query('SELECT mission_id FROM campaign_progress WHERE completed = 1');
     if (result.values) {
       for (const row of result.values) {
         completed.add((row as { mission_id: string }).mission_id);
@@ -123,9 +112,7 @@ export interface CampaignState {
 export function createCampaignState(mission: MissionDef | null): CampaignState {
   return {
     mission,
-    objectiveStatus: new Map(
-      (mission?.objectives ?? []).map((o) => [o.id, false]),
-    ),
+    objectiveStatus: new Map((mission?.objectives ?? []).map((o) => [o.id, false])),
     allObjectivesComplete: false,
     completedAtFrame: 0,
     celebrationShown: false,
@@ -140,13 +127,7 @@ export function createCampaignState(mission: MissionDef | null): CampaignState {
 // ---------------------------------------------------------------------------
 
 function countPlayerBuildings(world: GameWorld, kind: number): number {
-  const ents = query(world.ecs, [
-    Position,
-    Health,
-    FactionTag,
-    EntityTypeTag,
-    IsBuilding,
-  ]);
+  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
   let count = 0;
   for (let i = 0; i < ents.length; i++) {
     const eid = ents[i];
@@ -181,11 +162,7 @@ function getExploredPercent(world: GameWorld): number {
   return (world as GameWorld & { exploredPercent?: number }).exploredPercent ?? 0;
 }
 
-function checkObjective(
-  world: GameWorld,
-  campaign: CampaignState,
-  obj: MissionObjective,
-): boolean {
+function checkObjective(world: GameWorld, campaign: CampaignState, obj: MissionObjective): boolean {
   switch (obj.type) {
     case 'build':
       return countPlayerBuildings(world, obj.entityKind!) >= (obj.count ?? 1);
@@ -315,20 +292,14 @@ export function campaignSystem(world: GameWorld): void {
 export function campaignNotifyTrained(world: GameWorld, kind: number): void {
   const campaign = (world as GameWorld & { campaign?: CampaignState }).campaign;
   if (!campaign?.mission) return;
-  campaign.trainedCounts.set(
-    kind,
-    (campaign.trainedCounts.get(kind) ?? 0) + 1,
-  );
+  campaign.trainedCounts.set(kind, (campaign.trainedCounts.get(kind) ?? 0) + 1);
 }
 
 /** Notify the campaign that an enemy entity was killed. */
 export function campaignNotifyKilled(world: GameWorld, kind: number): void {
   const campaign = (world as GameWorld & { campaign?: CampaignState }).campaign;
   if (!campaign?.mission) return;
-  campaign.killedCounts.set(
-    kind,
-    (campaign.killedCounts.get(kind) ?? 0) + 1,
-  );
+  campaign.killedCounts.set(kind, (campaign.killedCounts.get(kind) ?? 0) + 1);
 }
 
 /** Check whether enemy attacks should be suppressed for the current mission. */

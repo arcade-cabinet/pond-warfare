@@ -13,8 +13,8 @@
  *   - Contested: both sides start close, rich zone between them
  */
 
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { getFactionConfig } from '@/config/factions';
+import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Combat, Health, Resource, Velocity } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -113,7 +113,14 @@ function spawnClambed(
 
 /** Pick a scenario deterministically from the seeded RNG. */
 function pickScenario(rng: SeededRandom): MapScenario {
-  const scenarios: MapScenario[] = ['standard', 'island', 'contested', 'labyrinth', 'river', 'peninsula'];
+  const scenarios: MapScenario[] = [
+    'standard',
+    'island',
+    'contested',
+    'labyrinth',
+    'river',
+    'peninsula',
+  ];
   return rng.pick(scenarios);
 }
 
@@ -170,13 +177,7 @@ function spawnPlayerBase(ctx: SpawnContext): number {
     dirX /= dirLen;
     dirY /= dirLen;
   }
-  spawnEntity(
-    world,
-    EntityKind.Scout,
-    sx + dirX * 60,
-    sy + dirY * 60,
-    Faction.Player,
-  );
+  spawnEntity(world, EntityKind.Scout, sx + dirX * 60, sy + dirY * 60, Faction.Player);
 
   // Center camera on Commander
   world.camX = sx - world.viewWidth / 2;
@@ -195,16 +196,14 @@ function spawnPlayerResources(ctx: SpawnContext): void {
 }
 
 /** Spawn an enemy camp (nest + units + surrounding resources). */
-function spawnEnemyCamp(
-  ctx: SpawnContext,
-  loc: { x: number; y: number },
-  unitsPerNest = 2,
-): void {
+function spawnEnemyCamp(ctx: SpawnContext, loc: { x: number; y: number }, unitsPerNest = 2): void {
   const { world, rng, resourceMultiplier } = ctx;
 
   // Determine enemy faction config (the AI's side, opposite of the player)
   const aiFactionKey = world.playerFaction === 'otter' ? 'predator' : 'otter';
-  const aiFactionCfg = getFactionConfig(aiFactionKey as import('@/config/factions').PlayableFaction);
+  const aiFactionCfg = getFactionConfig(
+    aiFactionKey as import('@/config/factions').PlayableFaction,
+  );
 
   // Resources near each enemy camp
   const campCattail = Math.floor(8 * resourceMultiplier);
@@ -401,23 +400,11 @@ function spawnIsland(ctx: SpawnContext, targetNestCount: number): void {
   // ---- Rich resources in the center (player's economic advantage) ----
   const richCattailCount = Math.floor(14 * resourceMultiplier);
   for (let i = 0; i < richCattailCount; i++) {
-    spawnCattail(
-      world,
-      rng,
-      sx + rng.float(-250, 250),
-      sy + rng.float(-250, 250),
-      true,
-    );
+    spawnCattail(world, rng, sx + rng.float(-250, 250), sy + rng.float(-250, 250), true);
   }
   const richClambedCount = Math.floor(4 * resourceMultiplier);
   for (let i = 0; i < richClambedCount; i++) {
-    spawnClambed(
-      world,
-      rng,
-      sx + rng.float(-200, 200),
-      sy + rng.float(-200, 200),
-      true,
-    );
+    spawnClambed(world, rng, sx + rng.float(-200, 200), sy + rng.float(-200, 200), true);
   }
 
   // Pearl beds near center
@@ -557,23 +544,11 @@ function spawnContested(ctx: SpawnContext, targetNestCount: number): void {
   // Dense rich resources in the contested middle
   const richCattailCount = Math.floor(16 * resourceMultiplier);
   for (let i = 0; i < richCattailCount; i++) {
-    spawnCattail(
-      world,
-      rng,
-      midX + rng.float(-200, 200),
-      midY + rng.float(-200, 200),
-      true,
-    );
+    spawnCattail(world, rng, midX + rng.float(-200, 200), midY + rng.float(-200, 200), true);
   }
   const richClambedCount = Math.floor(5 * resourceMultiplier);
   for (let i = 0; i < richClambedCount; i++) {
-    spawnClambed(
-      world,
-      rng,
-      midX + rng.float(-150, 150),
-      midY + rng.float(-150, 150),
-      true,
-    );
+    spawnClambed(world, rng, midX + rng.float(-150, 150), midY + rng.float(-150, 150), true);
   }
 
   // Pearl beds in the contested zone
@@ -758,21 +733,11 @@ function spawnRiver(ctx: SpawnContext, targetNestCount: number): void {
   // Resources on both sides
   const leftCattail = Math.floor(40 * resourceMultiplier);
   for (let i = 0; i < leftCattail; i++) {
-    spawnCattail(
-      world,
-      rng,
-      rng.float(60, riverX - 80),
-      rng.float(60, WORLD_HEIGHT - 60),
-    );
+    spawnCattail(world, rng, rng.float(60, riverX - 80), rng.float(60, WORLD_HEIGHT - 60));
   }
   const leftClambed = Math.floor(3 * resourceMultiplier);
   for (let i = 0; i < leftClambed; i++) {
-    spawnClambed(
-      world,
-      rng,
-      rng.float(60, riverX - 80),
-      rng.float(60, WORLD_HEIGHT - 60),
-    );
+    spawnClambed(world, rng, rng.float(60, riverX - 80), rng.float(60, WORLD_HEIGHT - 60));
   }
 
   const rightCattail = Math.floor(40 * resourceMultiplier);
@@ -902,21 +867,11 @@ function spawnPeninsula(ctx: SpawnContext, targetNestCount: number): void {
   // Rich resources in the mainland (north of peninsula)
   const mainlandCattail = Math.floor(60 * resourceMultiplier);
   for (let i = 0; i < mainlandCattail; i++) {
-    spawnCattail(
-      world,
-      rng,
-      rng.float(60, WORLD_WIDTH - 60),
-      rng.float(60, penTop - 60),
-    );
+    spawnCattail(world, rng, rng.float(60, WORLD_WIDTH - 60), rng.float(60, penTop - 60));
   }
   const mainlandClambed = Math.floor(4 * resourceMultiplier);
   for (let i = 0; i < mainlandClambed; i++) {
-    spawnClambed(
-      world,
-      rng,
-      rng.float(60, WORLD_WIDTH - 60),
-      rng.float(60, penTop - 60),
-    );
+    spawnClambed(world, rng, rng.float(60, WORLD_WIDTH - 60), rng.float(60, penTop - 60));
   }
 
   // Pearl beds in the mainland
@@ -1065,7 +1020,11 @@ export function spawnInitialEntities(world: GameWorld): void {
   });
 
   // ---- Campaign-specific spawning ----
-  const campaign = (world as GameWorld & { campaign?: { mission: { worldOverrides?: { spawnAlphaPredator?: boolean } } | null } }).campaign;
+  const campaign = (
+    world as GameWorld & {
+      campaign?: { mission: { worldOverrides?: { spawnAlphaPredator?: boolean } } | null };
+    }
+  ).campaign;
   if (campaign?.mission?.worldOverrides?.spawnAlphaPredator) {
     // Spawn Alpha Predator near the enemy side
     const alphaX = clampWorld(WORLD_WIDTH - sx, WORLD_WIDTH, 200);
