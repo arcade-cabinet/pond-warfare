@@ -80,6 +80,18 @@ describe('collisionSystem', () => {
     expect(Position.x[b]).toBeCloseTo(bx, 1);
   });
 
+  it('should push apart three overlapping units', () => {
+    const a = createUnit(world, 100, 100);
+    createUnit(world, 105, 100);
+    const c = createUnit(world, 110, 100);
+
+    collisionSystem(world);
+
+    // Leftmost should move left, rightmost should move right
+    expect(Position.x[a]).toBeLessThan(100);
+    expect(Position.x[c]).toBeGreaterThan(110);
+  });
+
   it('should clamp units to world bounds', () => {
     const eid = createUnit(world, 5, 5); // Near edge
 

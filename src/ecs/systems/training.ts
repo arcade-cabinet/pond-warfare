@@ -71,6 +71,10 @@ export function trainingSystem(world: GameWorld): void {
       // Spawn the unit
       // Original: let newEnt = new Entity(t, sx, sy, 'player');
       const newEid = spawnEntity(world, unitKind, sx, sy, Faction.Player);
+      if (newEid < 0) {
+        TrainingQueue.timer[eid] = TRAIN_TIMER;
+        continue;
+      }
 
       // Apply rally point if set
       // Original: if (this.rallyPos) newEnt.cmdMove(this.rallyPos.x, this.rallyPos.y);

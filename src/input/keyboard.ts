@@ -9,8 +9,9 @@
  * on selection), Tab (cycle buildings), Q/W/E/R (action hotkeys).
  */
 
-import { entityExists } from 'bitecs';
+import { entityExists, hasComponent } from 'bitecs';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { Selectable } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 
 export interface KeyboardCallbacks {
@@ -114,6 +115,9 @@ export class KeyboardHandler {
       } else if (w.placingBuilding) {
         w.placingBuilding = null;
       } else {
+        for (const s of w.selection) {
+          if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 0;
+        }
         w.selection = [];
         w.isTracking = false;
         this.cb.onUpdateUI();
@@ -151,7 +155,13 @@ export class KeyboardHandler {
       if (g && g.length > 0) {
         const alive = g.filter((eid) => entityExists(w.ecs, eid));
         w.ctrlGroups[group] = alive;
+        for (const s of w.selection) {
+          if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 0;
+        }
         w.selection = [...alive];
+        for (const s of w.selection) {
+          if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 1;
+        }
         w.isTracking = true;
         this.cb.onPlaySound('selectUnit');
         this.cb.onUpdateUI();
@@ -183,7 +193,11 @@ export class KeyboardHandler {
       if (buildings.length > 0) {
         const curIdx = w.selection.length === 1 ? buildings.indexOf(w.selection[0]) : -1;
         const next = buildings[(curIdx + 1) % buildings.length];
+        for (const s of w.selection) {
+          if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 0;
+        }
         w.selection = [next];
+        if (hasComponent(w.ecs, next, Selectable)) Selectable.selected[next] = 1;
         w.isTracking = true;
         this.cb.onPlaySound('selectBuild');
         this.cb.onUpdateUI();

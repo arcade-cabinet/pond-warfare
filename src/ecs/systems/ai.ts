@@ -47,7 +47,7 @@ export function aiSystem(world: GameWorld): void {
 
       // Find player lodge
       // Original: let th = this.entities.find(e => e.type === 'lodge' && e.faction === 'player');
-      let lodgeEid = 0;
+      let lodgeEid = -1;
       const pBuildings = query(world.ecs, [
         Position,
         Health,
@@ -67,7 +67,7 @@ export function aiSystem(world: GameWorld): void {
         }
       }
 
-      if (nestEids.length > 0 && lodgeEid) {
+      if (nestEids.length > 0 && lodgeEid !== -1) {
         audio.alert();
 
         // Wave size scales with time

@@ -23,7 +23,7 @@ export interface ProjectileRenderData {
  */
 export function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]): void {
   for (const p of particles) {
-    ctx.globalAlpha = Math.min(1, p.life / 10);
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 10));
     ctx.fillStyle = p.color;
     ctx.fillRect(p.x, p.y, p.size, p.size);
   }
@@ -90,10 +90,9 @@ export function drawFloatingTexts(
   ctx.strokeStyle = '#000';
   for (const f of floatingTexts) {
     ctx.fillStyle = f.color;
-    ctx.globalAlpha = Math.min(1, f.life / 30);
+    ctx.globalAlpha = Math.max(0, Math.min(1, f.life / 30));
     ctx.fillText(f.text, f.x, f.y);
     ctx.strokeText(f.text, f.x, f.y);
   }
-  ctx.globalAlpha = 1.0;
   ctx.globalAlpha = 1.0;
 }

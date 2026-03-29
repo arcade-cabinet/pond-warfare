@@ -404,6 +404,9 @@ export function train(
   twigCost: number,
   foodCost: number,
 ): void {
+  const count = TrainingQueue.count[buildingEid];
+  if (count >= 8) return;
+
   if (
     world.resources.clams >= clamCost &&
     world.resources.twigs >= twigCost &&
@@ -413,8 +416,7 @@ export function train(
     world.resources.twigs -= twigCost;
     world.resources.food += foodCost;
 
-    const count = TrainingQueue.count[buildingEid];
-    if (count < 8) {
+    {
       const slots = trainingQueueSlots.get(buildingEid) ?? [];
       slots[count] = kind;
       trainingQueueSlots.set(buildingEid, slots);
@@ -432,10 +434,11 @@ export function train(
  */
 export function cancelTrain(world: GameWorld, buildingEid: number, index: number): void {
   const count = TrainingQueue.count[buildingEid];
-  if (index >= count) return;
+  if (!Number.isInteger(index) || index < 0 || index >= count) return;
 
   const slots = trainingQueueSlots.get(buildingEid) ?? [];
-  const kind = slots[index] as EntityKind;
+  const kind = slots[index] as EntityKind | undefined;
+  if (kind == null) return;
 
   // Refund costs
   const def = ENTITY_DEFS[kind];

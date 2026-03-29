@@ -9,7 +9,7 @@
 import { query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
-import { ENTITY_DEFS } from '@/config/entity-defs';
+import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
 import { SPEED_LEVELS, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -42,6 +42,7 @@ import { type KeyboardCallbacks, KeyboardHandler } from '@/input/keyboard';
 import { type PointerCallbacks, PointerHandler } from '@/input/pointer';
 // Selection utilities
 import {
+  canPlaceBuilding,
   getEntityAt,
   hasPlayerUnitsSelected,
   issueContextCommand,
@@ -314,6 +315,7 @@ export class Game {
     this.syncUIStore();
 
     // Start game loop
+    this.lastTime = performance.now();
     this.running = true;
     requestAnimationFrame((t) => this.loop(t));
   }
@@ -547,11 +549,16 @@ export class Game {
     const my = this.pointer.mouse.worldY;
     const bx = Math.round(mx / TILE_SIZE) * TILE_SIZE;
     const by = Math.round(my / TILE_SIZE) * TILE_SIZE;
+    const type = this.world.placingBuilding;
+    const kind = entityKindFromString(type);
+    const def = kind !== undefined ? ENTITY_DEFS[kind] : undefined;
+    const spriteW = def ? def.spriteSize * def.spriteScale : 64;
+    const spriteH = def ? def.spriteSize * def.spriteScale : 64;
     return {
-      buildingType: this.world.placingBuilding,
+      buildingType: type,
       worldX: bx,
       worldY: by,
-      canPlace: true, // Validation checked in selection.ts
+      canPlace: canPlaceBuilding(this.world, bx, by, spriteW, spriteH),
     };
   }
 

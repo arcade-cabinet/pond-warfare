@@ -27,15 +27,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
           cache: gradle
 
       - name: Install dependencies

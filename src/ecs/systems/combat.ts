@@ -205,7 +205,7 @@ export function combatSystem(world: GameWorld): void {
       const tEnt = UnitStateMachine.targetEntity[eid];
 
       // Original: if (!this.tEnt || this.tEnt.hp <= 0) { this.state = 'idle'; return; }
-      if (!tEnt || !hasComponent(world.ecs, tEnt, Health) || Health.current[tEnt] <= 0) {
+      if (tEnt === -1 || !hasComponent(world.ecs, tEnt, Health) || Health.current[tEnt] <= 0) {
         UnitStateMachine.state[eid] = UnitState.Idle;
         continue;
       }

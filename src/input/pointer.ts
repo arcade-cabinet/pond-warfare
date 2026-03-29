@@ -249,7 +249,7 @@ export class PointerHandler {
     if (w.attackMoveMode) {
       w.attackMoveMode = false;
       const clicked = this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY);
-      if (clicked && this.cb.isEnemyFaction(clicked)) {
+      if (clicked !== null && this.cb.isEnemyFaction(clicked)) {
         this.cb.issueContextCommand(clicked);
       } else {
         // Attack-move to ground
@@ -268,7 +268,7 @@ export class PointerHandler {
     const clicked = this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY);
     const now = performance.now();
 
-    if (clicked) {
+    if (clicked !== null) {
       if (this.cb.isBuildingEntity(clicked)) {
         this.cb.onPlaySound('selectBuild');
       } else {

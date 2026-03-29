@@ -19,7 +19,7 @@ import type { GameWorld } from '@/ecs/world';
  * Direct port of GAME.getLerpedColor() (lines 1126-1133).
  *
  * @param timeInHours - Current time expressed in hours (0-24)
- * @returns The RGB color string for the day-night overlay
+ * @returns Darkness value between 0 (bright) and 1 (dark)
  */
 function getAmbientDarkness(timeInHours: number): number {
   // Find the two TIME_STOPS bracketing the current hour

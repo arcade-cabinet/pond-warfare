@@ -2,7 +2,7 @@
  * Movement System Tests
  *
  * Validates that entities move toward targets, arrive and transition states,
- * and that the bob animation is applied during movement.
+ * and that the bob animation offset is set during movement.
  */
 
 import { addComponent, addEntity } from 'bitecs';
@@ -99,6 +99,18 @@ describe('movementSystem', () => {
     movementSystem(world);
     expect(Position.x[eid]).toBe(100);
     expect(Position.y[eid]).toBe(100);
+  });
+
+  it('should set bob animation offset during movement', () => {
+    const eid = createTestUnit(world, 100, 100);
+    UnitStateMachine.state[eid] = UnitState.Move;
+    UnitStateMachine.targetX[eid] = 200;
+    UnitStateMachine.targetY[eid] = 100;
+
+    // Advance frameCount so sin-based bob is non-zero
+    world.frameCount = 10;
+    movementSystem(world);
+    expect(Sprite.yOffset[eid]).not.toBe(0);
   });
 
   it('should update facingLeft based on movement direction', () => {
