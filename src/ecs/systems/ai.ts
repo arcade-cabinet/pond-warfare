@@ -52,6 +52,8 @@ import {
   ENEMY_TRAIN_TIME,
   TILE_SIZE,
   WAVE_INTERVAL,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -716,8 +718,8 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
     scoutY = Position.y[lodgeEid] + (Math.random() - 0.5) * 600;
   } else {
     // Random map exploration
-    scoutX = 200 + Math.random() * 2160; // Stay within world bounds roughly
-    scoutY = 200 + Math.random() * 2160;
+    scoutX = 200 + Math.random() * (WORLD_WIDTH - 400);
+    scoutY = 200 + Math.random() * (WORLD_HEIGHT - 400);
   }
 
   UnitStateMachine.targetX[scoutEid] = scoutX;

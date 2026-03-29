@@ -16,11 +16,19 @@
  */
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { EXPLORED_SCALE, MINIMAP_SIZE, PALETTE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
-import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
+import {
+  BUILDING_SIGHT_RADIUS,
+  EXPLORED_SCALE,
+  MINIMAP_SIZE,
+  PALETTE,
+  UNIT_SIGHT_RADIUS,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from '@/constants';
+import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { MinimapPing } from '@/types';
-import { EntityKind, Faction } from '@/types';
+import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
 
 /**
  * Render the minimap.
@@ -37,6 +45,7 @@ export function drawMinimap(
   entityEids: number[],
   exploredCanvas: HTMLCanvasElement,
   minimapPings: MinimapPing[],
+  playerEids?: number[],
 ): void {
   const mc = minimapCtx;
   const sx = MINIMAP_SIZE / WORLD_WIDTH;
@@ -46,16 +55,58 @@ export function drawMinimap(
   mc.fillStyle = PALETTE.waterDeep;
   mc.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
 
-  // Draw explored areas with subtle tint
-  mc.globalAlpha = 0.15;
+  // Draw explored areas with subtle tint (previously seen but not currently visible)
+  mc.globalAlpha = 0.12;
   mc.drawImage(exploredCanvas, 0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
   mc.globalAlpha = 1;
+
+  // Draw current visibility circles — brighter than explored tint
+  if (playerEids) {
+    mc.globalAlpha = 0.25;
+    mc.fillStyle = '#1e3a5f';
+    for (const eid of playerEids) {
+      if (Health.current[eid] <= 0) continue;
+      const ex = Position.x[eid] * sx;
+      const ey = Position.y[eid] * sy;
+      const kind = EntityTypeTag.kind[eid] as EntityKind;
+      const rad = (BUILDING_KINDS.has(kind) ? BUILDING_SIGHT_RADIUS : UNIT_SIGHT_RADIUS) * sx;
+      mc.beginPath();
+      mc.arc(ex, ey, rad, 0, Math.PI * 2);
+      mc.fill();
+    }
+    mc.globalAlpha = 1;
+  }
+
+  // Sample explored canvas to check visibility for enemy entities
+  const exploredCtx = exploredCanvas.getContext('2d');
+  let exploredData: ImageData | null = null;
+  const ew = exploredCanvas.width;
+  const eh = exploredCanvas.height;
+  if (exploredCtx) {
+    exploredData = exploredCtx.getImageData(0, 0, ew, eh);
+  }
 
   // Draw entity dots
   for (const eid of entityEids) {
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const faction = FactionTag.faction[eid] as Faction;
     const def = ENTITY_DEFS[kind];
+
+    const ex = Position.x[eid];
+    const ey = Position.y[eid];
+
+    // Hide enemy and neutral resource entities in unexplored areas on the minimap
+    if (faction !== Faction.Player && exploredData) {
+      const epx = Math.floor(ex / EXPLORED_SCALE);
+      const epy = Math.floor(ey / EXPLORED_SCALE);
+      if (epx >= 0 && epx < ew && epy >= 0 && epy < eh) {
+        // Check alpha channel of the explored canvas at this position
+        // The explored canvas starts black (0,0,0,1) and gets white circles painted on it
+        // We check the red channel since white = 255 and black = 0
+        const idx = (epy * ew + epx) * 4;
+        if (exploredData.data[idx] < 10) continue; // Still dark = unexplored
+      }
+    }
 
     // Choose color
     if (kind === EntityKind.Cattail) {
@@ -73,8 +124,6 @@ export function drawMinimap(
     }
 
     const dotSize = def.isBuilding ? 4 : 2;
-    const ex = Position.x[eid];
-    const ey = Position.y[eid];
     mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
   }
 
