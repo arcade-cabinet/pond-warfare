@@ -59,6 +59,7 @@ body {
   border-right-color: #0f172a;
   cursor: pointer;
   transition: filter 0.1s;
+  position: relative;
 }
 
 .action-btn:active {

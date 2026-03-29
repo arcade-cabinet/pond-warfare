@@ -59,11 +59,7 @@ export function gatheringSystem(world: GameWorld): void {
 
     // --- Idle auto-gather (lines 1627-1639) ---
     // Both player and enemy gatherers auto-gather when idle near resources
-    if (
-      state === UnitState.Idle &&
-      kind === EntityKind.Gatherer &&
-      world.frameCount % 90 === 0
-    ) {
+    if (state === UnitState.Idle && kind === EntityKind.Gatherer && world.frameCount % 90 === 0) {
       // Only auto-gather if not holding resources
       if (Carrying.resourceType[eid] === ResourceType.None) {
         const ex = Position.x[eid];
@@ -190,10 +186,7 @@ export function gatheringSystem(world: GameWorld): void {
         const ey = Position.y[eid];
         for (let j = 0; j < buildings.length; j++) {
           const b = buildings[j];
-          if (
-            EntityTypeTag.kind[b] === EntityKind.PredatorNest &&
-            Health.current[b] > 0
-          ) {
+          if (EntityTypeTag.kind[b] === EntityKind.PredatorNest && Health.current[b] > 0) {
             const bdx = Position.x[b] - ex;
             const bdy = Position.y[b] - ey;
             const bDistSq = bdx * bdx + bdy * bdy;

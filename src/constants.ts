@@ -122,7 +122,7 @@ export const PROJECTILE_SPEED = 8;
 
 // Veterancy system
 export const VET_THRESHOLDS = [0, 3, 7, 15]; // kills needed for each rank
-export const VET_HP_BONUS = [0, 0.10, 0.20, 0.35];
-export const VET_DMG_BONUS = [0, 0.15, 0.25, 0.40];
-export const VET_SPD_BONUS = [0, 0, 0.10, 0.15];
+export const VET_HP_BONUS = [0, 0.1, 0.2, 0.35];
+export const VET_DMG_BONUS = [0, 0.15, 0.25, 0.4];
+export const VET_SPD_BONUS = [0, 0, 0.1, 0.15];
 export const VET_RANK_NAMES = ['Recruit', 'Veteran', 'Elite', 'Hero'];

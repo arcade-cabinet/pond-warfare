@@ -42,7 +42,7 @@ export function drawLighting(
   if (ambientDarkness <= 0.05) return;
 
   lc.save();
-  lc.translate(-Math.floor(camX) + shakeX, -Math.floor(camY) + shakeY);
+  lc.translate(-Math.floor(camX) + Math.floor(shakeX), -Math.floor(camY) + Math.floor(shakeY));
 
   // --- Entity lights ---
   for (const eid of entityEids) {

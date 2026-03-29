@@ -151,7 +151,7 @@ export function issueContextCommand(
       FactionTag.faction[eid] === Faction.Player &&
       !hasComponent(world.ecs, eid, IsBuilding),
   );
-  const count = movableUnits.length;
+  const _count = movableUnits.length;
 
   for (let idx = 0; idx < world.selection.length; idx++) {
     const eid = world.selection[idx];
@@ -278,7 +278,7 @@ function calculateFormationPositions(
   units: number[],
   targetX: number,
   targetY: number,
-  world: GameWorld,
+  _world: GameWorld,
 ): { eid: number; x: number; y: number }[] {
   // Separate into roles
   const melee: number[] = [];

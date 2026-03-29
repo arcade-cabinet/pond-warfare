@@ -11,6 +11,7 @@ import { VET_DMG_BONUS, VET_HP_BONUS, VET_SPD_BONUS } from '@/constants';
 import {
   Combat,
   EntityTypeTag,
+  FactionTag,
   Health,
   Position,
   Sprite,
@@ -20,7 +21,6 @@ import {
 import { rankFromKills, veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
-import { FactionTag } from '@/ecs/components';
 
 function createVetUnit(
   world: GameWorld,
@@ -261,7 +261,7 @@ describe('veterancySystem', () => {
 
   it('should not double-apply bonuses when rank unchanged', () => {
     const eid = createVetUnit(world, EntityKind.Brawler);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const _def = ENTITY_DEFS[EntityKind.Brawler];
     Combat.kills[eid] = 3;
 
     veterancySystem(world);

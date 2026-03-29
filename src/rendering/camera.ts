@@ -26,11 +26,12 @@ export function clampCamera(world: GameWorld): void {
  * When shakeTimer > 0, returns random offsets proportional to the remaining
  * shake strength. When shakeTimer <= 0, returns zero offset.
  */
+const MAX_SHAKE_OFFSET = 10;
 export function computeShakeOffset(world: GameWorld): CameraShake {
   if (world.shakeTimer > 0) {
     return {
-      offsetX: (Math.random() - 0.5) * world.shakeTimer,
-      offsetY: (Math.random() - 0.5) * world.shakeTimer,
+      offsetX: (Math.random() - 0.5) * Math.min(world.shakeTimer, MAX_SHAKE_OFFSET),
+      offsetY: (Math.random() - 0.5) * Math.min(world.shakeTimer, MAX_SHAKE_OFFSET),
     };
   }
   return { offsetX: 0, offsetY: 0 };

@@ -33,11 +33,11 @@ import {
   ENEMY_BUILD_RADIUS,
   ENEMY_BURROW_COST_CLAMS,
   ENEMY_BURROW_COST_TWIGS,
-  ENEMY_GATOR_COST_CLAMS,
-  ENEMY_GATOR_COST_TWIGS,
   ENEMY_GATHERER_COST,
   ENEMY_GATHERER_RADIUS,
   ENEMY_GATHERER_SPAWN_INTERVAL,
+  ENEMY_GATOR_COST_CLAMS,
+  ENEMY_GATOR_COST_TWIGS,
   ENEMY_MAX_GATHERERS_PER_NEST,
   ENEMY_NEST_COST_CLAMS,
   ENEMY_NEST_COST_TWIGS,
@@ -161,7 +161,7 @@ function countPlayerUnitsOfKind(world: GameWorld, targetKind: EntityKind): numbe
 }
 
 /** Count alive enemy buildings of a specific kind */
-function countEnemyBuildings(world: GameWorld, kind: EntityKind): number {
+function _countEnemyBuildings(world: GameWorld, kind: EntityKind): number {
   const buildings = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
   let count = 0;
   for (let i = 0; i < buildings.length; i++) {
@@ -672,14 +672,7 @@ function enemyRetreatLogic(world: GameWorld): void {
     UnitStateMachine.state[eid] = UnitState.Move;
 
     const speed = Velocity.speed[eid] || 1.5;
-    world.yukaManager.addUnit(
-      eid,
-      ex,
-      ey,
-      speed,
-      Position.x[nearestNest],
-      Position.y[nearestNest],
-    );
+    world.yukaManager.addUnit(eid, ex, ey, speed, Position.x[nearestNest], Position.y[nearestNest]);
   }
 }
 

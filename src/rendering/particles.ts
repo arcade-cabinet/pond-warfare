@@ -52,7 +52,7 @@ export function updateProjectileTrails(projectiles: ProjectileRenderData[]): voi
 export function drawProjectile(ctx: CanvasRenderingContext2D, proj: ProjectileRenderData): void {
   // Draw trail
   for (const t of proj.trail) {
-    const alpha = t.life / 8;
+    const alpha = Math.max(0, Math.min(1, t.life / 8));
     ctx.fillStyle = `rgba(156, 163, 175, ${alpha * 0.6})`;
     ctx.fillRect(t.x - 1, t.y - 1, 2, 2);
   }

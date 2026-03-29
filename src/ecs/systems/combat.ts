@@ -14,6 +14,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { getDamageMultiplier } from '@/config/entity-defs';
 import {
   AGGRO_RADIUS_ENEMY,
   AGGRO_RADIUS_PLAYER,
@@ -33,7 +34,6 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
-import { getDamageMultiplier } from '@/config/entity-defs';
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
