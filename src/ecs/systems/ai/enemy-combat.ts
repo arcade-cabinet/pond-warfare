@@ -67,8 +67,7 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
     baseThreshold = 3;
     lateThreshold = 2;
   }
-  const attackThreshold =
-    world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
+  const attackThreshold = world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
   if (armySize < attackThreshold) return;
 
   // Find target: weakest player building

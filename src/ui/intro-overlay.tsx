@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { animateIntroSubtitle, animateIntroTitle } from '@/rendering/animations';
-import { selectedDifficulty, type Difficulty } from '@/ui/store';
+import { type Difficulty, selectedDifficulty } from '@/ui/store';
 
 const DIFFICULTY_OPTIONS: {
   key: Difficulty;
@@ -162,9 +162,7 @@ export function IntroOverlay() {
               <span
                 class="font-game text-[10px] md:text-xs mt-1"
                 style={{
-                  color: isSelected
-                    ? 'var(--pw-text-secondary)'
-                    : 'var(--pw-text-muted)',
+                  color: isSelected ? 'var(--pw-text-secondary)' : 'var(--pw-text-muted)',
                   opacity: isSelected ? 1 : 0.6,
                 }}
               >

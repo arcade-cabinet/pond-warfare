@@ -18,9 +18,7 @@ import { SeededRandom } from '@/utils/random';
 /** Quadrant labels and their approximate center positions (30% inset from edge). */
 const QUADRANTS = ['NW', 'NE', 'SW', 'SE'] as const;
 
-function quadrantCenter(
-  q: (typeof QUADRANTS)[number],
-): { x: number; y: number } {
+function quadrantCenter(q: (typeof QUADRANTS)[number]): { x: number; y: number } {
   const insetX = WORLD_WIDTH * 0.3;
   const insetY = WORLD_HEIGHT * 0.3;
   switch (q) {
@@ -36,9 +34,7 @@ function quadrantCenter(
 }
 
 /** Return the quadrant diagonally opposite. */
-function oppositeQuadrant(
-  q: (typeof QUADRANTS)[number],
-): (typeof QUADRANTS)[number] {
+function oppositeQuadrant(q: (typeof QUADRANTS)[number]): (typeof QUADRANTS)[number] {
   switch (q) {
     case 'NW':
       return 'SE';
@@ -133,12 +129,7 @@ export function spawnInitialEntities(world: GameWorld): void {
   // ---- Guaranteed starting resources near player ----
   spawnClambed(world, rng, sx - 120, sy - 40);
   for (let i = 0; i < 6; i++) {
-    spawnCattail(
-      world,
-      rng,
-      sx + 100 + rng.float(0, 60),
-      sy - 60 + rng.float(0, 80),
-    );
+    spawnCattail(world, rng, sx + 100 + rng.float(0, 60), sy - 60 + rng.float(0, 80));
   }
 
   // ---- Enemy nests: opposite side of map ----
@@ -159,10 +150,7 @@ export function spawnInitialEntities(world: GameWorld): void {
   // Add some positions along the adjacent edges for variety
   const midX = WORLD_WIDTH / 2;
   const midY = WORLD_HEIGHT / 2;
-  edgeCandidates.push(
-    { x: midX, y: enemyCenter.y },
-    { x: enemyCenter.x, y: midY },
-  );
+  edgeCandidates.push({ x: midX, y: enemyCenter.y }, { x: enemyCenter.x, y: midY });
 
   rng.shuffle(edgeCandidates);
 
@@ -193,37 +181,19 @@ export function spawnInitialEntities(world: GameWorld): void {
   // Fallback: if we didn't get enough nests, place at enemy center
   while (campLocs.length < Math.max(1, targetNestCount)) {
     campLocs.push({
-      x: clampWorld(
-        enemyCenter.x + rng.float(-200, 200),
-        WORLD_WIDTH,
-        200,
-      ),
-      y: clampWorld(
-        enemyCenter.y + rng.float(-200, 200),
-        WORLD_HEIGHT,
-        200,
-      ),
+      x: clampWorld(enemyCenter.x + rng.float(-200, 200), WORLD_WIDTH, 200),
+      y: clampWorld(enemyCenter.y + rng.float(-200, 200), WORLD_HEIGHT, 200),
     });
   }
 
   // ---- Scattered resources across the map ----
   const scatteredCattail = Math.floor(80 * resourceMultiplier);
   for (let i = 0; i < scatteredCattail; i++) {
-    spawnCattail(
-      world,
-      rng,
-      rng.float(60, WORLD_WIDTH - 60),
-      rng.float(60, WORLD_HEIGHT - 60),
-    );
+    spawnCattail(world, rng, rng.float(60, WORLD_WIDTH - 60), rng.float(60, WORLD_HEIGHT - 60));
   }
   const scatteredClambed = Math.floor(4 * resourceMultiplier);
   for (let i = 0; i < scatteredClambed; i++) {
-    spawnClambed(
-      world,
-      rng,
-      rng.float(60, WORLD_WIDTH - 60),
-      rng.float(60, WORLD_HEIGHT - 60),
-    );
+    spawnClambed(world, rng, rng.float(60, WORLD_WIDTH - 60), rng.float(60, WORLD_HEIGHT - 60));
   }
 
   // ---- 2-3 Rich zones at random contested positions ----
@@ -264,19 +234,9 @@ export function spawnInitialEntities(world: GameWorld): void {
     const my = (sy + camp.y) / 2;
     const hotspotCattail = Math.floor(6 * resourceMultiplier);
     for (let i = 0; i < hotspotCattail; i++) {
-      spawnCattail(
-        world,
-        rng,
-        mx + rng.float(-125, 125),
-        my + rng.float(-125, 125),
-      );
+      spawnCattail(world, rng, mx + rng.float(-125, 125), my + rng.float(-125, 125));
     }
-    spawnClambed(
-      world,
-      rng,
-      mx + rng.float(-100, 100),
-      my + rng.float(-100, 100),
-    );
+    spawnClambed(world, rng, mx + rng.float(-100, 100), my + rng.float(-100, 100));
   }
 
   // ---- Enemy camps with surrounding resources ----
@@ -284,19 +244,9 @@ export function spawnInitialEntities(world: GameWorld): void {
     // Resources near each enemy camp
     const campCattail = Math.floor(8 * resourceMultiplier);
     for (let i = 0; i < campCattail; i++) {
-      spawnCattail(
-        world,
-        rng,
-        loc.x + rng.float(-200, 200),
-        loc.y + rng.float(-200, 200),
-      );
+      spawnCattail(world, rng, loc.x + rng.float(-200, 200), loc.y + rng.float(-200, 200));
     }
-    spawnClambed(
-      world,
-      rng,
-      loc.x + rng.float(-200, 200),
-      loc.y + rng.float(-200, 200),
-    );
+    spawnClambed(world, rng, loc.x + rng.float(-200, 200), loc.y + rng.float(-200, 200));
 
     // Enemy nest
     spawnEntity(world, EntityKind.PredatorNest, loc.x, loc.y, Faction.Enemy);

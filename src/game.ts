@@ -488,7 +488,6 @@ export class Game {
         this.world.enemyResources.clams = 1000;
         this.world.enemyResources.twigs = 400;
         break;
-      case 'normal':
       default:
         // Normal: keep defaults from createGameWorld
         break;
