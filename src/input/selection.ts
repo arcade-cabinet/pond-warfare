@@ -529,11 +529,10 @@ export function cancelTrain(world: GameWorld, buildingEid: number, index: number
   const kind = slots[index] as EntityKind | undefined;
   if (kind == null) return;
 
-  // Refund costs
+  // Refund costs (food is auto-recalculated by syncUIStore from queued units)
   const def = ENTITY_DEFS[kind];
   world.resources.clams += def.clamCost ?? 0;
   world.resources.twigs += def.twigCost ?? 0;
-  world.resources.food -= def.foodCost ?? 1;
 
   // Shift remaining queue items down
   slots.splice(index, 1);
