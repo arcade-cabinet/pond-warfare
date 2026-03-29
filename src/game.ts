@@ -1255,6 +1255,16 @@ export class Game {
             }
           },
         });
+        btns.push({
+          title: 'Tech Tree',
+          cost: '',
+          hotkey: 'T',
+          affordable: true,
+          description: 'View full tech tree',
+          onClick: () => {
+            store.techTreeOpen.value = true;
+          },
+        });
 
         // Show Lodge training queue in global view
         const lodgeSlots = trainingQueueSlots.get(lodgeEid) ?? [];
@@ -1353,6 +1363,32 @@ export class Game {
               },
             });
           }
+          const wallDef = ENTITY_DEFS[EntityKind.Wall];
+          btns.push({
+            title: 'Wall',
+            cost: `${wallDef.twigCost}T`,
+            hotkey: 'Y',
+            affordable: w.resources.twigs >= (wallDef.twigCost ?? 0),
+            description: 'Defensive barrier',
+            onClick: () => {
+              w.placingBuilding = 'wall';
+            },
+          });
+          if (w.tech.cartography) {
+            const spDef = ENTITY_DEFS[EntityKind.ScoutPost];
+            btns.push({
+              title: 'Scout Post',
+              cost: `${spDef.clamCost}C ${spDef.twigCost}T`,
+              hotkey: 'U',
+              affordable:
+                w.resources.clams >= (spDef.clamCost ?? 0) &&
+                w.resources.twigs >= (spDef.twigCost ?? 0),
+              description: 'Reveals large area',
+              onClick: () => {
+                w.placingBuilding = 'scout_post';
+              },
+            });
+          }
         }
 
         // Lodge selected: train gatherer + techs
@@ -1419,6 +1455,80 @@ export class Game {
                 w.resources.twigs -= spTech.twigCost;
                 w.tech.swiftPaws = true;
               }
+            },
+          });
+          const scoutDef = ENTITY_DEFS[EntityKind.Scout];
+          btns.push({
+            title: 'Scout',
+            cost: `${scoutDef.clamCost}C ${scoutDef.foodCost}F`,
+            hotkey: 'R',
+            affordable:
+              w.resources.clams >= (scoutDef.clamCost ?? 0) &&
+              w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
+            description: 'Fast recon, wide vision',
+            onClick: () => {
+              train(
+                w,
+                selEid,
+                EntityKind.Scout,
+                scoutDef.clamCost ?? 0,
+                scoutDef.twigCost ?? 0,
+                scoutDef.foodCost ?? 1,
+              );
+            },
+          });
+          const cartoTech = TECH_UPGRADES.cartography;
+          btns.push({
+            title: cartoTech.name,
+            cost: `${cartoTech.clamCost}C ${cartoTech.twigCost}T`,
+            hotkey: 'Y',
+            affordable:
+              canResearch('cartography', w.tech) &&
+              w.resources.clams >= cartoTech.clamCost &&
+              w.resources.twigs >= cartoTech.twigCost,
+            description: cartoTech.description,
+            onClick: () => {
+              if (
+                canResearch('cartography', w.tech) &&
+                w.resources.clams >= cartoTech.clamCost &&
+                w.resources.twigs >= cartoTech.twigCost
+              ) {
+                w.resources.clams -= cartoTech.clamCost;
+                w.resources.twigs -= cartoTech.twigCost;
+                w.tech.cartography = true;
+              }
+            },
+          });
+          const thTech = TECH_UPGRADES.tidalHarvest;
+          btns.push({
+            title: thTech.name,
+            cost: `${thTech.clamCost}C ${thTech.twigCost}T`,
+            hotkey: 'U',
+            affordable:
+              canResearch('tidalHarvest', w.tech) &&
+              w.resources.clams >= thTech.clamCost &&
+              w.resources.twigs >= thTech.twigCost,
+            description: thTech.description,
+            onClick: () => {
+              if (
+                canResearch('tidalHarvest', w.tech) &&
+                w.resources.clams >= thTech.clamCost &&
+                w.resources.twigs >= thTech.twigCost
+              ) {
+                w.resources.clams -= thTech.clamCost;
+                w.resources.twigs -= thTech.twigCost;
+                w.tech.tidalHarvest = true;
+              }
+            },
+          });
+          btns.push({
+            title: 'Tech Tree',
+            cost: '',
+            hotkey: 'T',
+            affordable: true,
+            description: 'View full tech tree',
+            onClick: () => {
+              store.techTreeOpen.value = true;
             },
           });
         }

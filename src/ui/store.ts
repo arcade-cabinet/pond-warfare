@@ -56,6 +56,9 @@ export const armyCount = signal(0);
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);
 
+// ---- Tech tree panel ----
+export const techTreeOpen = signal(false);
+
 // ---- Radial menu ----
 export const radialMenuOpen = signal(false);
 export const radialMenuX = signal(0);

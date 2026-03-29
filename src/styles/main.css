@@ -196,6 +196,21 @@ body {
   }
 }
 
+/* Tech tree node subtle pulse for available techs */
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.5);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
 /* Action panel button entrance */
 .action-btn {
   animation: panel-fade-in 0.12s ease-out;

@@ -39,6 +39,11 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.Healer]: SpriteId.Healer,
   [EntityKind.Watchtower]: SpriteId.Watchtower,
   [EntityKind.BossCroc]: SpriteId.BossCroc,
+  [EntityKind.Shieldbearer]: SpriteId.Shieldbearer,
+  [EntityKind.Scout]: SpriteId.Scout,
+  [EntityKind.Catapult]: SpriteId.Catapult,
+  [EntityKind.Wall]: SpriteId.Wall,
+  [EntityKind.ScoutPost]: SpriteId.ScoutPost,
 };
 
 export function spawnEntity(

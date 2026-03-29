@@ -35,6 +35,11 @@ export enum EntityKind {
   Healer = 12,
   Watchtower = 13,
   BossCroc = 14,
+  Shieldbearer = 15,
+  Scout = 16,
+  Catapult = 17,
+  Wall = 18,
+  ScoutPost = 19,
 }
 
 /** Entity kinds that represent buildings (get larger vision radius, etc.). */
@@ -45,6 +50,8 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
   EntityKind.Tower,
   EntityKind.PredatorNest,
   EntityKind.Watchtower,
+  EntityKind.Wall,
+  EntityKind.ScoutPost,
 ]);
 
 export enum ResourceType {
@@ -80,9 +87,14 @@ export enum SpriteId {
   Healer = EntityKind.Healer,
   Watchtower = EntityKind.Watchtower,
   BossCroc = EntityKind.BossCroc,
+  Shieldbearer = EntityKind.Shieldbearer,
+  Scout = EntityKind.Scout,
+  Catapult = EntityKind.Catapult,
+  Wall = EntityKind.Wall,
+  ScoutPost = EntityKind.ScoutPost,
   // Non-entity visual sprites
-  Bones = 15,
-  Rubble = 16,
+  Bones = 20,
+  Rubble = 21,
 }
 
 export interface GameResources {

@@ -61,6 +61,8 @@ describe('ENTITY_DEFS', () => {
       EntityKind.Tower,
       EntityKind.PredatorNest,
       EntityKind.Watchtower,
+      EntityKind.Wall,
+      EntityKind.ScoutPost,
     ];
     for (const kind of buildings) {
       expect(ENTITY_DEFS[kind].isBuilding).toBe(true);
@@ -144,7 +146,7 @@ describe('getDamageMultiplier', () => {
   });
 
   it('should only contain multipliers for combat unit types', () => {
-    const combatKinds = [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Gator, EntityKind.Snake];
+    const combatKinds = [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Gator, EntityKind.Snake, EntityKind.Shieldbearer];
     for (const kind of Object.keys(DAMAGE_MULTIPLIERS)) {
       expect(combatKinds).toContain(Number(kind));
     }

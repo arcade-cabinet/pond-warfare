@@ -16,9 +16,9 @@
 
 import { hasComponent, query } from 'bitecs';
 import { EXPLORED_SCALE } from '@/constants';
-import { FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { Faction } from '@/types';
+import { EntityKind, Faction } from '@/types';
 
 /**
  * Reference to the explored canvas 2D context. Set once via initFogOfWar().
@@ -52,9 +52,16 @@ export function fogOfWarSystem(world: GameWorld): void {
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
 
-    // Buildings get a larger reveal radius
+    // Buildings get a larger reveal radius; Scout and ScoutPost get extra
     const isBuilding = hasComponent(world.ecs, eid, IsBuilding);
-    const rad = isBuilding ? 16 : 10;
+    const kind = hasComponent(world.ecs, eid, EntityTypeTag)
+      ? (EntityTypeTag.kind[eid] as EntityKind)
+      : undefined;
+    let rad = isBuilding ? 16 : 10;
+    if (kind === EntityKind.Scout) rad = 16;
+    if (kind === EntityKind.ScoutPost) rad = 24;
+    // Cartography: +25% fog reveal radius for all units
+    if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
 
     // Scale position down to explored canvas coordinates
     const ex = Math.floor(Position.x[eid] / EXPLORED_SCALE);

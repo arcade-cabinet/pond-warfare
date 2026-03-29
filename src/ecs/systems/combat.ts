@@ -256,6 +256,36 @@ export function combatSystem(world: GameWorld): void {
               eid,
               mult,
             );
+          } else if (kind === EntityKind.Catapult) {
+            // Catapult: ranged AoE projectile
+            audio.shoot();
+            spawnProjectile(
+              world,
+              ex,
+              ey - 10,
+              Position.x[tEnt],
+              Position.y[tEnt],
+              tEnt,
+              dmg,
+              eid,
+            );
+            // AoE: also damage enemies near the target
+            const tx = Position.x[tEnt];
+            const ty = Position.y[tEnt];
+            const aoeRadius = 60;
+            for (let j = 0; j < allTargetable.length; j++) {
+              const t = allTargetable[j];
+              if (t === tEnt) continue;
+              if (FactionTag.faction[t] === faction) continue;
+              if (Health.current[t] <= 0) continue;
+              if (hasComponent(world.ecs, t, IsResource)) continue;
+              const adx = Position.x[t] - tx;
+              const ady = Position.y[t] - ty;
+              if (Math.sqrt(adx * adx + ady * ady) <= aoeRadius) {
+                takeDamage(world, t, Math.round(dmg * 0.5), eid);
+              }
+            }
+            world.shakeTimer = Math.max(world.shakeTimer, 3);
           } else if (kind === EntityKind.BossCroc) {
             // Boss Croc: enrage below 30% HP doubles damage, AoE stomp hits all nearby
             const enraged = Health.current[eid] < Health.max[eid] * 0.3 && Health.max[eid] > 0;
@@ -295,7 +325,9 @@ export function combatSystem(world: GameWorld): void {
             const meleeDmg = Math.round(dmg * mult);
             takeDamage(world, tEnt, meleeDmg, eid, mult);
           }
-          Combat.attackCooldown[eid] = ATTACK_COOLDOWN;
+          Combat.attackCooldown[eid] = (faction === Faction.Player && world.tech.battleRoar)
+            ? Math.round(ATTACK_COOLDOWN * 0.9)
+            : ATTACK_COOLDOWN;
         }
       } else {
         // Out of range - chase target

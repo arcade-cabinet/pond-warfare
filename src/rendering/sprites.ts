@@ -28,6 +28,11 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'healer', id: SpriteId.Healer },
   { name: 'watchtower', id: SpriteId.Watchtower },
   { name: 'boss_croc', id: SpriteId.BossCroc },
+  { name: 'shieldbearer', id: SpriteId.Shieldbearer },
+  { name: 'scout', id: SpriteId.Scout },
+  { name: 'catapult', id: SpriteId.Catapult },
+  { name: 'wall', id: SpriteId.Wall },
+  { name: 'scout_post', id: SpriteId.ScoutPost },
 ];
 
 const LARGE_TYPES = new Set([
@@ -39,6 +44,9 @@ const LARGE_TYPES = new Set([
   'rubble',
   'watchtower',
   'boss_croc',
+  'catapult',
+  'wall',
+  'scout_post',
 ]);
 
 /**
@@ -230,6 +238,86 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(22, 4, 4, 8, PALETTE.stoneL);
     p(23, 4, PALETTE.black);
     p(24, 4, PALETTE.black);
+  } else if (type === 'shieldbearer') {
+    // Otter body base (same as gatherer)
+    rect(5, 4, 6, 8, PALETTE.otterBase);
+    rect(6, 5, 4, 6, PALETTE.otterBelly);
+    rect(5, 2, 6, 4, PALETTE.otterBase);
+    p(6, 3, PALETTE.black);
+    p(9, 3, PALETTE.black);
+    p(7, 4, PALETTE.otterNose);
+    p(8, 4, PALETTE.otterNose);
+    rect(4, 5, 1, 4, PALETTE.otterBase);
+    rect(11, 5, 1, 4, PALETTE.otterBase);
+    rect(5, 12, 2, 2, PALETTE.otterBase);
+    rect(9, 12, 2, 2, PALETTE.otterBase);
+    rect(11, 10, 3, 2, PALETTE.otterBase);
+    // Large clamshell shield in front
+    rect(2, 5, 4, 6, PALETTE.clamShell);
+    rect(1, 6, 1, 4, PALETTE.stoneL);
+    p(3, 7, PALETTE.stone);
+    p(3, 9, PALETTE.stone);
+  } else if (type === 'scout') {
+    // Smaller crouching otter body
+    rect(5, 6, 6, 6, PALETTE.otterBase);
+    rect(6, 7, 4, 4, PALETTE.otterBelly);
+    rect(5, 4, 6, 4, PALETTE.otterBase);
+    p(6, 5, PALETTE.black);
+    p(9, 5, PALETTE.black);
+    p(7, 6, PALETTE.otterNose);
+    p(8, 6, PALETTE.otterNose);
+    // Goggles (cyan pixels)
+    p(5, 5, '#06b6d4');
+    p(10, 5, '#06b6d4');
+    rect(4, 7, 1, 3, PALETTE.otterBase);
+    rect(11, 7, 1, 3, PALETTE.otterBase);
+    rect(5, 12, 2, 2, PALETTE.otterBase);
+    rect(9, 12, 2, 2, PALETTE.otterBase);
+    rect(11, 10, 3, 1, PALETTE.otterBase);
+  } else if (type === 'catapult') {
+    // Wooden frame
+    rect(4, 20, 24, 4, PALETTE.reedBrown);
+    rect(6, 14, 4, 10, PALETTE.reedBrown);
+    rect(22, 14, 4, 10, PALETTE.reedBrown);
+    // Bowl/basket on top
+    rect(8, 10, 10, 4, PALETTE.mudDark);
+    rect(10, 8, 6, 2, PALETTE.mudDark);
+    // Arm
+    rect(14, 4, 2, 10, PALETTE.reedBrown);
+    // Wheels
+    circle(8, 26, 3, PALETTE.stoneL);
+    circle(24, 26, 3, PALETTE.stoneL);
+    p(8, 26, PALETTE.stone);
+    p(24, 26, PALETTE.stone);
+    // Small otter operator
+    rect(16, 18, 4, 4, PALETTE.otterBase);
+    rect(16, 16, 4, 2, PALETTE.otterBase);
+    p(17, 17, PALETTE.black);
+    p(19, 17, PALETTE.black);
+  } else if (type === 'wall') {
+    // Horizontal mud/stick barrier
+    rect(2, 12, 28, 8, PALETTE.mudDark);
+    rect(4, 10, 24, 2, PALETTE.mudLight);
+    rect(4, 20, 24, 2, PALETTE.mudLight);
+    // Stick texture
+    for (let i = 0; i < 6; i++) {
+      rect(4 + i * 4, 12, 2, 8, PALETTE.otterBase);
+    }
+    // Top ridge
+    rect(6, 8, 20, 2, PALETTE.reedBrown);
+  } else if (type === 'scout_post') {
+    // Tall vertical pole
+    rect(14, 4, 4, 24, PALETTE.reedBrown);
+    // Platform at top
+    rect(10, 4, 12, 3, PALETTE.mudLight);
+    rect(8, 2, 16, 2, PALETTE.mudDark);
+    // Flag (sky blue)
+    rect(24, 0, 1, 8, PALETTE.reedBrown);
+    rect(25, 0, 6, 4, '#38bdf8');
+    // Base stakes
+    rect(10, 26, 4, 4, PALETTE.mudDark);
+    rect(18, 26, 4, 4, PALETTE.mudDark);
+    rect(6, 28, 20, 2, PALETTE.mudLight);
   }
 
   // Scale up with nearest-neighbour (no smoothing)
@@ -273,6 +361,9 @@ const LARGE_SPRITE_IDS = new Set<SpriteId>([
   SpriteId.Rubble,
   SpriteId.Watchtower,
   SpriteId.BossCroc,
+  SpriteId.Catapult,
+  SpriteId.Wall,
+  SpriteId.ScoutPost,
 ]);
 
 export function getSpriteSize(id: SpriteId): { width: number; height: number } {

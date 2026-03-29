@@ -13,11 +13,13 @@ import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
+import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
 import { IntroOverlay } from './intro-overlay';
 import { Sidebar } from './sidebar';
 import * as store from './store';
+import { TechTreePanel } from './tech-tree-panel';
 
 export interface AppProps {
   onMount: (refs: {
@@ -162,6 +164,33 @@ export function App({ onMount }: AppProps) {
 
         {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />
+
+        {/* Tech tree overlay */}
+        {store.techTreeOpen.value && (
+          <TechTreePanel
+            techState={{ ...game.world.tech }}
+            clams={store.clams.value}
+            twigs={store.twigs.value}
+            onResearch={(id: TechId) => {
+              const w = game.world;
+              const upgrade = TECH_UPGRADES[id as keyof typeof TECH_UPGRADES];
+              if (
+                upgrade &&
+                canResearch(id, w.tech) &&
+                w.resources.clams >= upgrade.clamCost &&
+                w.resources.twigs >= upgrade.twigCost
+              ) {
+                w.resources.clams -= upgrade.clamCost;
+                w.resources.twigs -= upgrade.twigCost;
+                w.tech[id] = true;
+                game.syncUIStore();
+              }
+            }}
+            onClose={() => {
+              store.techTreeOpen.value = false;
+            }}
+          />
+        )}
       </div>
 
       {/* Tooltip overlay */}

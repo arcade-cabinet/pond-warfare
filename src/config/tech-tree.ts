@@ -1,4 +1,4 @@
-export type TechId = 'sturdyMud' | 'swiftPaws' | 'sharpSticks' | 'eagleEye' | 'hardenedShells';
+export type TechId = 'sturdyMud' | 'swiftPaws' | 'sharpSticks' | 'eagleEye' | 'hardenedShells' | 'ironShell' | 'siegeWorks' | 'cartography' | 'tidalHarvest' | 'battleRoar';
 
 export interface TechUpgrade {
   id: TechId;
@@ -47,6 +47,44 @@ export const TECH_UPGRADES = {
     clamCost: 500,
     twigCost: 400,
     requires: 'eagleEye',
+  },
+  ironShell: {
+    id: 'ironShell',
+    name: 'Iron Shell',
+    description: 'Unlocks Shieldbearer unit',
+    clamCost: 200,
+    twigCost: 200,
+    requires: 'sharpSticks',
+  },
+  siegeWorks: {
+    id: 'siegeWorks',
+    name: 'Siege Works',
+    description: 'Unlocks Catapult unit',
+    clamCost: 400,
+    twigCost: 350,
+    requires: 'eagleEye',
+  },
+  cartography: {
+    id: 'cartography',
+    name: 'Cartography',
+    description: 'Unlocks Scout Post. +25% fog reveal.',
+    clamCost: 150,
+    twigCost: 100,
+  },
+  tidalHarvest: {
+    id: 'tidalHarvest',
+    name: 'Tidal Harvest',
+    description: 'Gatherers collect +50% resources',
+    clamCost: 200,
+    twigCost: 150,
+  },
+  battleRoar: {
+    id: 'battleRoar',
+    name: 'Battle Roar',
+    description: '+10% attack speed for all units',
+    clamCost: 350,
+    twigCost: 250,
+    requires: 'sharpSticks',
   },
 } as const satisfies Record<TechId, TechUpgrade>;
 

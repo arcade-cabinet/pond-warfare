@@ -196,6 +196,69 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     spriteSize: 32,
     spriteScale: 3,
   },
+  [EntityKind.Shieldbearer]: {
+    hp: 100,
+    speed: 1.4,
+    damage: 3,
+    attackRange: 35,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 150,
+    twigCost: 100,
+    foodCost: 1,
+  },
+  [EntityKind.Scout]: {
+    hp: 15,
+    speed: 3.0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 30,
+    twigCost: 0,
+    foodCost: 1,
+  },
+  [EntityKind.Catapult]: {
+    hp: 50,
+    speed: 0.8,
+    damage: 20,
+    attackRange: 250,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 300,
+    twigCost: 200,
+    foodCost: 1,
+  },
+  [EntityKind.Wall]: {
+    hp: 400,
+    speed: 0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: true,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 0,
+    twigCost: 50,
+  },
+  [EntityKind.ScoutPost]: {
+    hp: 200,
+    speed: 0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: true,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 100,
+    twigCost: 75,
+  },
 };
 
 /**
@@ -224,6 +287,10 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [EntityKind.Sniper]: 1.5,
       [EntityKind.Brawler]: 0.75,
     },
+    [EntityKind.Shieldbearer]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Gator]: 0.75,
+    },
   };
 
 /**
@@ -251,6 +318,11 @@ export function entityKindFromString(name: string): EntityKind {
     healer: EntityKind.Healer,
     watchtower: EntityKind.Watchtower,
     boss_croc: EntityKind.BossCroc,
+    shieldbearer: EntityKind.Shieldbearer,
+    scout: EntityKind.Scout,
+    catapult: EntityKind.Catapult,
+    wall: EntityKind.Wall,
+    scout_post: EntityKind.ScoutPost,
   };
   const kind = map[name];
   if (kind === undefined) {
@@ -276,6 +348,11 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.Healer]: 'Healer',
     [EntityKind.Watchtower]: 'Watchtower',
     [EntityKind.BossCroc]: 'Boss Croc',
+    [EntityKind.Shieldbearer]: 'Shieldbearer',
+    [EntityKind.Scout]: 'Scout',
+    [EntityKind.Catapult]: 'Catapult',
+    [EntityKind.Wall]: 'Wall',
+    [EntityKind.ScoutPost]: 'Scout Post',
   };
   return names[kind];
 }
