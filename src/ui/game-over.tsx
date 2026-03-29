@@ -1,31 +1,109 @@
 /**
  * Game Over Overlay
  *
- * Victory/Defeat overlay with stats (Day, Kills, Lost, Gathered, Buildings)
- * and Play Again button.
+ * Victory/Defeat overlay with animated stat reveal, performance rating,
+ * confetti for victory, and Play Again button.
  */
 
-import { gameState, goDesc, goStatsText, goTitle, goTitleColor } from './store';
+import { useEffect, useState } from 'preact/hooks';
+import { gameState, goDesc, goRating, goStatLines, goTitle, goTitleColor } from './store';
 
 export interface GameOverProps {
   onRestart: () => void;
 }
 
+function ConfettiDots() {
+  const dots = Array.from({ length: 30 }, (_, i) => {
+    const left = Math.random() * 100;
+    const delay = Math.random() * 2;
+    const duration = 2 + Math.random() * 2;
+    const colors = ['#fbbf24', '#38bdf8', '#f87171', '#4ade80', '#a78bfa', '#fb923c'];
+    const color = colors[i % colors.length];
+    return (
+      <span
+        key={`confetti-${i}`}
+        style={{
+          position: 'absolute',
+          left: `${left}%`,
+          top: '-10px',
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          backgroundColor: color,
+          animation: `confetti-fall ${duration}s ${delay}s ease-in infinite`,
+          opacity: 0.8,
+        }}
+      />
+    );
+  });
+  return <>{dots}</>;
+}
+
+function StarRating({ stars }: { stars: number }) {
+  return (
+    <div class="text-3xl mt-2">
+      {Array.from({ length: 3 }, (_, i) => (
+        <span key={`star-${i}`} style={{ color: i < stars ? '#fbbf24' : '#475569' }}>
+          {'\u2605'}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function GameOverBanner(props: GameOverProps) {
-  if (gameState.value === 'playing') return null;
+  const [visibleLines, setVisibleLines] = useState(0);
+  const state = gameState.value;
+
+  useEffect(() => {
+    if (state === 'playing') {
+      setVisibleLines(0);
+      return;
+    }
+    const lines = goStatLines.value;
+    if (lines.length === 0) return;
+
+    let current = 0;
+    const timer = setInterval(() => {
+      current++;
+      setVisibleLines(current);
+      if (current >= lines.length) {
+        clearInterval(timer);
+      }
+    }, 200);
+    return () => clearInterval(timer);
+  }, [state]);
+
+  if (state === 'playing') return null;
+
+  const lines = goStatLines.value;
+  const stars = goRating.value;
+  const isVictory = state === 'win';
 
   return (
     <div
       id="game-over-banner"
-      class="absolute inset-0 flex flex-col items-center justify-center z-30 bg-black bg-opacity-50"
+      class="absolute inset-0 flex flex-col items-center justify-center z-30 bg-black bg-opacity-50 overflow-hidden"
     >
+      {isVictory && <ConfettiDots />}
       <h1
         class={`text-4xl md:text-6xl font-black mb-4 tracking-widest uppercase shadow-lg ${goTitleColor.value}`}
       >
         {goTitle}
       </h1>
       <p class="text-xl md:text-2xl text-white font-bold">{goDesc}</p>
-      <p class="text-sm text-slate-300 mt-2">{goStatsText}</p>
+      <StarRating stars={stars} />
+      <div class="mt-4 flex flex-col items-center gap-1">
+        {lines.map((line, i) => (
+          <p
+            key={`stat-${i}`}
+            class="text-sm text-slate-300 transition-opacity duration-300"
+            style={{ opacity: i < visibleLines ? 1 : 0 }}
+          >
+            {line}
+          </p>
+        ))}
+      </div>
       <button
         type="button"
         id="restart-btn"
@@ -34,6 +112,14 @@ export function GameOverBanner(props: GameOverProps) {
       >
         Play Again
       </button>
+      <style>
+        {`
+          @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+          }
+        `}
+      </style>
     </div>
   );
 }

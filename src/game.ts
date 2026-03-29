@@ -9,10 +9,19 @@
 import { query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
-import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
-import { SPEED_LEVELS, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { ENTITY_DEFS, entityKindFromString, entityKindName } from '@/config/entity-defs';
+import {
+  DAY_FRAMES,
+  SPEED_LEVELS,
+  TILE_SIZE,
+  TRAIN_TIMER,
+  WAVE_INTERVAL,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
+  Building,
   EntityTypeTag,
   FactionTag,
   Health,
@@ -21,6 +30,8 @@ import {
   Position,
   ProjectileData,
   Selectable,
+  TrainingQueue,
+  trainingQueueSlots,
   UnitStateMachine,
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
@@ -427,7 +438,7 @@ export class Game {
     this.accumulator += Math.min(dt, 200);
 
     while (this.accumulator >= FIXED_DT) {
-      if (this.world.state === 'playing') {
+      if (this.world.state === 'playing' && !this.world.paused) {
         for (let i = 0; i < this.world.gameSpeed; i++) {
           this.updateLogic();
         }
@@ -466,6 +477,12 @@ export class Game {
     healthSystem(this.world);
     fogOfWarSystem(this.world);
     cleanupSystem(this.world);
+
+    // Apply camera velocity and friction
+    this.world.camX += this.world.camVelX;
+    this.world.camY += this.world.camVelY;
+    this.world.camVelX *= 0.85;
+    this.world.camVelY *= 0.85;
 
     // Sync UI store periodically
     if (this.world.frameCount % 30 === 0) {
@@ -574,6 +591,87 @@ export class Game {
     store.gameSpeed.value = w.gameSpeed;
     store.gameState.value = w.state;
     store.muted.value = audio.muted;
+    store.paused.value = w.paused;
+    store.attackMoveActive.value = w.attackMoveMode;
+    store.lowClams.value = w.resources.clams < 50;
+    store.lowTwigs.value = w.resources.twigs < 50;
+
+    // Game over stats
+    if (w.state === 'win' || w.state === 'lose') {
+      store.goTitle.value = w.state === 'win' ? 'Victory' : 'Defeat';
+      store.goTitleColor.value = w.state === 'win' ? 'text-amber-400' : 'text-red-500';
+      store.goDesc.value =
+        w.state === 'win' ? 'All predator nests destroyed!' : 'Your lodge was destroyed!';
+
+      const days = Math.floor(w.frameCount / DAY_FRAMES);
+      const remainFrames = w.frameCount % DAY_FRAMES;
+      const hours = Math.floor((remainFrames / DAY_FRAMES) * 24);
+      store.goTimeSurvived.value = `${days} day${days !== 1 ? 's' : ''}, ${hours} hour${hours !== 1 ? 's' : ''}`;
+      store.goFrameCount.value = w.frameCount;
+
+      const statLines = [
+        `Time: ${store.goTimeSurvived.value}`,
+        `Kills: ${w.stats.unitsKilled}`,
+        `Losses: ${w.stats.unitsLost}`,
+        `Resources gathered: ${w.stats.resourcesGathered}`,
+        `Buildings built: ${w.stats.buildingsBuilt}`,
+        `Peak army: ${w.stats.peakArmy}`,
+      ];
+      store.goStatLines.value = statLines;
+      store.goStatsText.value = statLines.join(' | ');
+
+      // Performance rating: 1-3 stars
+      const daysSurvived = Math.max(1, days);
+      const killRatio = w.stats.unitsLost > 0 ? w.stats.unitsKilled / w.stats.unitsLost : 10;
+      let stars = 1;
+      if (w.state === 'win') {
+        stars = 2;
+        if (daysSurvived <= 10 && killRatio >= 2) stars = 3;
+        else if (daysSurvived <= 20 || killRatio >= 1.5) stars = 2;
+      } else {
+        if (daysSurvived >= 10 && killRatio >= 1) stars = 2;
+        if (daysSurvived >= 20 && killRatio >= 2) stars = 3;
+      }
+      store.goRating.value = stars;
+    }
+
+    // Wave countdown timer
+    if (w.frameCount >= w.peaceTimer) {
+      const framesSinceLastWave = w.frameCount % WAVE_INTERVAL;
+      const framesUntilNext = WAVE_INTERVAL - framesSinceLastWave;
+      store.waveCountdown.value = Math.ceil(framesUntilNext / 60);
+    } else {
+      store.waveCountdown.value = -1;
+    }
+
+    // Global production queue
+    const trainingBuildings = query(w.ecs, [
+      Position,
+      TrainingQueue,
+      Building,
+      FactionTag,
+      IsBuilding,
+      Health,
+    ]);
+    const prodQueue: store.QueueItem[] = [];
+    for (let i = 0; i < trainingBuildings.length; i++) {
+      const eid = trainingBuildings[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      const slots = trainingQueueSlots.get(eid) ?? [];
+      if (slots.length === 0) continue;
+      const unitKind = slots[0] as EntityKind;
+      const progress = Math.max(
+        0,
+        Math.min(100, ((TRAIN_TIMER - TrainingQueue.timer[eid]) / TRAIN_TIMER) * 100),
+      );
+      prodQueue.push({
+        buildingKind: EntityTypeTag.kind[eid],
+        unitLabel: entityKindName(unitKind),
+        progress,
+      });
+    }
+    store.globalProductionQueue.value = prodQueue;
   }
 
   /** Get sprite canvas by SpriteId */

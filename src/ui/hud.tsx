@@ -8,18 +8,25 @@
 
 import {
   armyCount,
+  attackMoveActive,
   clams,
   foodAtCap,
   foodDisplay,
   gameTimeDisplay,
+  globalProductionQueue,
   idleWorkerCount,
+  isPeaceful,
+  lowClams,
+  lowTwigs,
   muteLabel,
+  paused,
   peaceStatusColor,
   peaceStatusText,
   rateClams,
   rateTwigs,
   speedLabel,
   twigs,
+  waveCountdown,
 } from './store';
 
 /** Format time-of-day (in minutes) to HH:MM string. */
@@ -60,6 +67,11 @@ export function HUD(props: HUDProps) {
             <div class="w-3 h-3 md:w-4 md:h-4 bg-slate-300 border border-slate-100 shadow-sm rounded-full" />
             <span class="hidden md:inline">Clams: </span>
             <span class="text-slate-200 font-bold">{clams}</span>
+            {lowClams.value && (
+              <span class="text-amber-400 font-bold animate-pulse" title="Low clams!">
+                !
+              </span>
+            )}
             {clamsRate !== 0 && (
               <span
                 class={`text-[10px] hidden md:inline ${clamsRate >= 0 ? 'text-green-400' : 'text-red-400'}`}
@@ -74,6 +86,11 @@ export function HUD(props: HUDProps) {
             <div class="w-3 h-3 md:w-4 md:h-4 bg-amber-700 border border-amber-500 shadow-sm" />
             <span class="hidden md:inline">Twigs: </span>
             <span class="text-amber-600 font-bold">{twigs}</span>
+            {lowTwigs.value && (
+              <span class="text-amber-400 font-bold animate-pulse" title="Low twigs!">
+                !
+              </span>
+            )}
             {twigsRate !== 0 && (
               <span
                 class={`text-[10px] hidden md:inline ${twigsRate >= 0 ? 'text-green-400' : 'text-red-400'}`}
@@ -94,7 +111,14 @@ export function HUD(props: HUDProps) {
         </div>
 
         <div class="flex items-center space-x-2 md:space-x-4">
-          <div class={peaceStatusColor.value}>{peaceStatusText}</div>
+          <div class={peaceStatusColor.value}>
+            {peaceStatusText}
+            {!isPeaceful.value && waveCountdown.value > 0 && (
+              <span class={`ml-2 ${waveCountdown.value < 10 ? 'text-red-400' : 'text-amber-400'}`}>
+                Wave in {waveCountdown.value}s
+              </span>
+            )}
+          </div>
           <div class="text-sky-200 font-bold">{gameTimeDisplay}</div>
           <div class="flex items-center gap-1">
             <button
@@ -118,6 +142,26 @@ export function HUD(props: HUDProps) {
           </div>
         </div>
       </div>
+
+      {/* Production queue */}
+      {globalProductionQueue.value.length > 0 && (
+        <div class="absolute top-10 md:top-12 left-2 md:left-6 z-20 flex gap-1">
+          {globalProductionQueue.value.map((item, i) => (
+            <div
+              key={`prod-${i}`}
+              class="relative w-10 h-6 bg-slate-800 border border-slate-600 rounded overflow-hidden flex items-center justify-center"
+            >
+              <div
+                class="absolute bottom-0 left-0 h-full bg-green-700 opacity-60 transition-all duration-75"
+                style={{ width: `${item.progress}%` }}
+              />
+              <span class="relative text-[8px] font-bold text-slate-200 z-10 truncate px-0.5">
+                {item.unitLabel}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Idle worker button */}
       {idleWorkerCount.value > 0 && (
@@ -144,6 +188,20 @@ export function HUD(props: HUDProps) {
         >
           <span class="text-xs md:text-sm">Army ({armyCount})</span>
         </button>
+      )}
+
+      {/* Attack-move mode banner */}
+      {attackMoveActive.value && (
+        <div class="absolute top-12 md:top-14 left-1/2 -translate-x-1/2 z-30 px-4 py-1 bg-red-900 bg-opacity-80 border border-red-500 rounded text-red-300 font-bold text-xs md:text-sm whitespace-nowrap">
+          ATTACK MOVE - Click target or Esc to cancel
+        </div>
+      )}
+
+      {/* Pause overlay */}
+      {paused.value && (
+        <div class="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 pointer-events-none">
+          <span class="text-white text-6xl font-bold tracking-widest">PAUSED</span>
+        </div>
       )}
     </>
   );

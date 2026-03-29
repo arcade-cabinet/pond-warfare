@@ -12,6 +12,7 @@
  */
 
 import { query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -95,6 +96,9 @@ export function trainingSystem(world: GameWorld): void {
       if (TrainingQueue.count[eid] > 0) {
         TrainingQueue.timer[eid] = TRAIN_TIMER;
       }
+
+      // Training complete sound
+      audio.trainComplete();
 
       // Training complete particle burst
       // Original: for(let j=0; j<8; j++) GAME.particles.push({x: sx, y: sy, vx:(Math.random()-.5)*3, vy:Math.random()*2, life:20, c:'#38bdf8', s:3});

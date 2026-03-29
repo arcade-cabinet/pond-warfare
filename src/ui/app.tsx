@@ -103,6 +103,22 @@ export function App({ onMount }: AppProps) {
         {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />
       </div>
+
+      {/* Tooltip overlay */}
+      {store.tooltipVisible.value && store.tooltipData.value && (
+        <div
+          class="tooltip"
+          style={{
+            left: `${store.tooltipX.value}px`,
+            top: `${store.tooltipY.value}px`,
+          }}
+        >
+          <div class="font-bold">{store.tooltipData.value.title}</div>
+          <div class="text-sky-200">{store.tooltipData.value.cost}</div>
+          <div class="text-xs text-slate-400">{store.tooltipData.value.description}</div>
+          <div class="text-xs text-slate-500">[{store.tooltipData.value.hotkey}]</div>
+        </div>
+      )}
     </div>
   );
 }

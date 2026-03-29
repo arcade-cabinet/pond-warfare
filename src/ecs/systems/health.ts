@@ -188,20 +188,54 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
 
   // Screen shake for building destruction (original: if (this.isBuilding) GAME.triggerShake())
   if (isBuilding) {
-    world.shakeTimer = 15;
+    world.shakeTimer = 20;
+    audio.deathBuilding();
+  } else if (!isResource) {
+    audio.deathUnit();
   }
 
-  // Death particle burst (original: for(let j=0; j<20; j++) GAME.particles.push({...}))
-  for (let j = 0; j < 20; j++) {
-    world.particles.push({
-      x: ex,
-      y: ey,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4 + 2,
-      life: 30,
-      color: isBuilding ? PALETTE.mudLight : PALETTE.clamMeat,
-      size: 4,
-    });
+  // Death particle burst
+  if (isBuilding) {
+    // Ring pattern for buildings
+    for (let j = 0; j < 35; j++) {
+      const angle = (j / 35) * Math.PI * 2;
+      const spread = 2 + Math.random() * 3;
+      world.particles.push({
+        x: ex,
+        y: ey,
+        vx: Math.cos(angle) * spread,
+        vy: Math.sin(angle) * spread + 2,
+        life: 30,
+        color: PALETTE.mudLight,
+        size: 4,
+      });
+    }
+  } else {
+    for (let j = 0; j < 20; j++) {
+      world.particles.push({
+        x: ex,
+        y: ey,
+        vx: (Math.random() - 0.5) * 4,
+        vy: (Math.random() - 0.5) * 4 + 2,
+        life: 30,
+        color: PALETTE.clamMeat,
+        size: 4,
+      });
+    }
+    // Splat variant particles for units
+    if (!isResource) {
+      for (let j = 0; j < 5; j++) {
+        world.particles.push({
+          x: ex + (Math.random() - 0.5) * 10,
+          y: ey + (Math.random() - 0.5) * 10,
+          vx: (Math.random() - 0.5) * 2,
+          vy: Math.random() * 2 + 1,
+          life: 15,
+          color: PALETTE.clamMeat,
+          size: 6,
+        });
+      }
+    }
   }
 
   // Battlefield corpses/ruins (original lines 1828-1834)

@@ -29,6 +29,7 @@ export interface KeyboardCallbacks {
 }
 
 const PAN_SPEED = 12;
+const PAN_ACCEL = 2;
 
 export class KeyboardHandler {
   readonly keys: Record<string, boolean> = {};
@@ -61,7 +62,7 @@ export class KeyboardHandler {
 
     // W / ArrowUp / screen-edge top
     if (this.keys.w || this.keys.arrowup || (mouseIn && mouseY < 20 && !mouseIsDown)) {
-      w.camY -= PAN_SPEED;
+      w.camVelY -= PAN_ACCEL;
       manualPan = true;
     }
     // S / ArrowDown / screen-edge bottom
@@ -70,12 +71,12 @@ export class KeyboardHandler {
       this.keys.arrowdown ||
       (mouseIn && mouseY > w.viewHeight - 20 && !mouseIsDown)
     ) {
-      w.camY += PAN_SPEED;
+      w.camVelY += PAN_ACCEL;
       manualPan = true;
     }
     // ArrowLeft / screen-edge left (A is reserved for attack-move)
     if (this.keys.arrowleft || (mouseIn && mouseX < 20 && !mouseIsDown)) {
-      w.camX -= PAN_SPEED;
+      w.camVelX -= PAN_ACCEL;
       manualPan = true;
     }
     // D / ArrowRight / screen-edge right
@@ -84,9 +85,13 @@ export class KeyboardHandler {
       this.keys.arrowright ||
       (mouseIn && mouseX > w.viewWidth - 20 && !mouseIsDown)
     ) {
-      w.camX += PAN_SPEED;
+      w.camVelX += PAN_ACCEL;
       manualPan = true;
     }
+
+    // Clamp velocity to max pan speed
+    w.camVelX = Math.max(-PAN_SPEED, Math.min(PAN_SPEED, w.camVelX));
+    w.camVelY = Math.max(-PAN_SPEED, Math.min(PAN_SPEED, w.camVelY));
 
     if (manualPan) {
       w.isTracking = false;
@@ -126,6 +131,13 @@ export class KeyboardHandler {
     }
 
     if (w.state !== 'playing') return;
+
+    // Pause toggle (P key)
+    if (k === 'p') {
+      w.paused = !w.paused;
+      this.cb.onUpdateUI();
+      return;
+    }
 
     // Attack-move mode (A key): enables attack-move cursor; next click issues an attack-move command
     if (k === 'a' && !e.ctrlKey && this.cb.hasPlayerUnitsSelected()) {

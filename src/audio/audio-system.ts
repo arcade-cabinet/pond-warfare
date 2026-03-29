@@ -125,6 +125,28 @@ export class AudioSystem {
   error(): void {
     this.play(150, 'square', 0.15, 0.08, 80);
   }
+
+  deathUnit(): void {
+    this.play(120, 'sawtooth', 0.15, 0.08, 60);
+  }
+
+  deathBuilding(): void {
+    this.play(80, 'sawtooth', 0.3, 0.15, 30);
+    setTimeout(() => {
+      if (!this._muted && this.ctx) this.play(50, 'square', 0.4, 0.1, 25);
+    }, 150);
+  }
+
+  trainComplete(): void {
+    this.play(500, 'sine', 0.1, 0.06, 800);
+  }
+
+  buildComplete(): void {
+    this.play(300, 'sine', 0.15, 0.08, 500);
+    setTimeout(() => {
+      if (!this._muted && this.ctx) this.play(400, 'sine', 0.15, 0.06, 600);
+    }, 100);
+  }
 }
 
 /** Singleton audio system instance */

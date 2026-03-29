@@ -38,9 +38,14 @@ export interface GameWorld {
   gameSpeed: number;
   ambientDarkness: number;
 
+  // Pause
+  paused: boolean;
+
   // Camera
   camX: number;
   camY: number;
+  camVelX: number;
+  camVelY: number;
   viewWidth: number;
   viewHeight: number;
   isTracking: boolean;
@@ -93,8 +98,11 @@ export function createGameWorld(): GameWorld {
     peaceTimer: 10800,
     gameSpeed: 1,
     ambientDarkness: 0,
+    paused: false,
     camX: 0,
     camY: 0,
+    camVelX: 0,
+    camVelY: 0,
     viewWidth: 0,
     viewHeight: 0,
     isTracking: false,

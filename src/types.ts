@@ -142,3 +142,10 @@ export interface ProjectileTrail {
 }
 
 export type GameState = 'playing' | 'win' | 'lose';
+
+export interface TooltipData {
+  title: string;
+  cost: string;
+  description: string;
+  hotkey: string;
+}

@@ -9,6 +9,7 @@
  */
 
 import { signal } from '@preact/signals';
+import * as store from './store';
 
 /**
  * An action button definition pushed by the game orchestrator.
@@ -18,6 +19,7 @@ export interface ActionButtonDef {
   cost: string;
   hotkey: string;
   affordable: boolean;
+  description?: string;
   onClick: () => void;
 }
 
@@ -35,6 +37,23 @@ export const actionButtons = signal<ActionButtonDef[]>([]);
 export const queueItems = signal<QueueItemDef[]>([]);
 
 function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
+  const showTooltip = (e: MouseEvent) => {
+    store.tooltipData.value = {
+      title: def.title,
+      cost: def.cost,
+      description: def.description ?? '',
+      hotkey: def.hotkey,
+    };
+    store.tooltipX.value = e.clientX + 12;
+    store.tooltipY.value = e.clientY - 10;
+    store.tooltipVisible.value = true;
+  };
+
+  const hideTooltip = () => {
+    store.tooltipVisible.value = false;
+    store.tooltipData.value = null;
+  };
+
   return (
     <button
       type="button"
@@ -46,6 +65,8 @@ function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
         e.stopPropagation();
         if (def.affordable) def.onClick();
       }}
+      onMouseEnter={showTooltip}
+      onMouseLeave={hideTooltip}
     >
       <span class="hotkey-badge">{def.hotkey}</span>
       <span>{def.title}</span>

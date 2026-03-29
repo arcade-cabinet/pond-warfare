@@ -87,6 +87,7 @@ export function buildingSystem(world: GameWorld): void {
           if (hasComponent(world.ecs, tEnt, Building)) {
             Building.progress[tEnt] = 100;
           }
+          audio.buildComplete();
           UnitStateMachine.state[eid] = UnitState.Idle;
         } else {
           // Reset timer only when not yet complete (original: this.gTimer = 30)

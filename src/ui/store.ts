@@ -6,7 +6,7 @@
  */
 
 import { computed, signal } from '@preact/signals';
-import type { GameState } from '@/types';
+import type { GameState, TooltipData } from '@/types';
 
 // ---- Resources ----
 export const clams = signal(200);
@@ -43,6 +43,11 @@ export const isPeaceful = signal(true);
 export const peaceCountdown = signal(0);
 export const gameSpeed = signal(1);
 export const muted = signal(false);
+export const paused = signal(false);
+export const waveCountdown = signal(-1);
+export const lowClams = signal(false);
+export const lowTwigs = signal(false);
+export const attackMoveActive = signal(false);
 
 // ---- Counts ----
 export const idleWorkerCount = signal(0);
@@ -53,6 +58,24 @@ export const goTitle = signal('Victory');
 export const goTitleColor = signal('text-amber-400');
 export const goDesc = signal('');
 export const goStatsText = signal('');
+export const goStatLines = signal<string[]>([]);
+export const goRating = signal(0);
+export const goTimeSurvived = signal('');
+export const goFrameCount = signal(0);
+
+// ---- Tooltip ----
+export const tooltipVisible = signal(false);
+export const tooltipData = signal<TooltipData | null>(null);
+export const tooltipX = signal(0);
+export const tooltipY = signal(0);
+
+// ---- Production queue ----
+export interface QueueItem {
+  buildingKind: number;
+  unitLabel: string;
+  progress: number;
+}
+export const globalProductionQueue = signal<QueueItem[]>([]);
 
 // ---- Derived ----
 export const foodDisplay = computed(() => `${food.value}/${maxFood.value}`);
