@@ -11,7 +11,7 @@
  *   Diamond  — 30+ wins
  */
 
-import { getPlayerProfile, type PlayerProfile } from '@/storage';
+import { getPlayerProfile } from '@/storage';
 
 // ---------------------------------------------------------------------------
 // Rank definitions
@@ -74,7 +74,7 @@ export interface LeaderboardData {
  */
 export async function loadLeaderboardData(): Promise<LeaderboardData> {
   const profile = await getPlayerProfile();
-  const { currentStreak, bestStreak } = await computeWinStreaks(profile);
+  const { currentStreak, bestStreak } = await computeWinStreaks();
 
   return {
     rank: getRank(profile.total_wins),
@@ -105,9 +105,7 @@ export async function loadLeaderboardData(): Promise<LeaderboardData> {
  *
  * To get accurate streaks we store them in the settings table.
  */
-async function computeWinStreaks(
-  _profile: PlayerProfile,
-): Promise<{ currentStreak: number; bestStreak: number }> {
+async function computeWinStreaks(): Promise<{ currentStreak: number; bestStreak: number }> {
   // Win streaks are tracked via settings keys for accuracy
   const { getSetting } = await import('@/storage');
   const current = Number(await getSetting('win_streak_current', '0'));

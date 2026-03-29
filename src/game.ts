@@ -9,6 +9,9 @@ import { animate } from 'animejs';
 import { query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
+// Campaign
+import { type CampaignState, campaignSystem, createCampaignState } from '@/campaign';
+import { getMission } from '@/campaign/missions';
 import { resetBarkState } from '@/config/barks';
 import { getCommanderDef } from '@/config/commanders';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
@@ -47,7 +50,7 @@ import { dayNightSystem } from '@/ecs/systems/day-night';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { gatheringSystem } from '@/ecs/systems/gathering';
-import { healthSystem } from '@/ecs/systems/health';
+import { healthSystem, takeDamage } from '@/ecs/systems/health';
 // Systems
 import { movementSystem } from '@/ecs/systems/movement';
 import { projectileSystem } from '@/ecs/systems/projectile';
@@ -55,13 +58,6 @@ import { trainingSystem } from '@/ecs/systems/training';
 import { tutorialSystem } from '@/ecs/systems/tutorial';
 import { veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-// Campaign
-import {
-  campaignSystem,
-  createCampaignState,
-  type CampaignState,
-} from '@/campaign';
-import { getMission } from '@/campaign/missions';
 // Extracted sub-modules
 import { buildActionPanel } from '@/game/action-panel-builder';
 import { spawnInitialEntities } from '@/game/init-entities';
@@ -862,8 +858,7 @@ export class Game {
       this.fpsFrameTimes.push(dt);
       if (this.fpsFrameTimes.length > 60) this.fpsFrameTimes.shift();
       if (timestamp - this.fpsLastUpdate > 500) {
-        const avg =
-          this.fpsFrameTimes.reduce((a, b) => a + b, 0) / this.fpsFrameTimes.length;
+        const avg = this.fpsFrameTimes.reduce((a, b) => a + b, 0) / this.fpsFrameTimes.length;
         store.fpsDisplay.value = avg > 0 ? Math.round(1000 / avg) : 0;
         this.fpsLastUpdate = timestamp;
       }
@@ -1336,8 +1331,7 @@ export class Game {
       const eid = allEnts[i];
       if (FactionTag.faction[eid] !== Faction.Enemy) continue;
       if (Health.current[eid] <= 0) continue;
-      Health.current[eid] -= 50;
-      Health.flashTimer[eid] = 8;
+      takeDamage(this.world, eid, 50, -1);
       // Blue surge particle
       this.world.particles.push({
         x: Position.x[eid],

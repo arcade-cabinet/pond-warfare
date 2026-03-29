@@ -40,6 +40,9 @@ import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 import { findPlayerLodge, getEnemyNests } from './ai/helpers';
 
+/** Stores original speeds for entities affected by swarm speed buff, so we can restore them on expiry. */
+const swarmBuffOriginalSpeeds = new Map<number, number>();
+
 /** Minutes after peace ends at which each evolution tier triggers. */
 const THRESHOLDS = [5, 10, 15, 25, 40];
 
@@ -251,9 +254,15 @@ function threatEscalationSystem(world: GameWorld): void {
     evo.nestProductionMultiplier = 1;
   }
 
-  // --- Swarm speed buff expiry ---
+  // --- Swarm speed buff expiry: restore original speeds ---
   if (evo.swarmSpeedBuffExpiry > 0 && world.frameCount >= evo.swarmSpeedBuffExpiry) {
     evo.swarmSpeedBuffExpiry = 0;
+    for (const [eid, origSpeed] of swarmBuffOriginalSpeeds) {
+      if (Health.current[eid] > 0) {
+        Velocity.speed[eid] = origSpeed;
+      }
+    }
+    swarmBuffOriginalSpeeds.clear();
   }
 
   // --- Mega-wave check (every 18000 frames = 5 min after peace) ---
@@ -412,6 +421,7 @@ function triggerMegaWave(world: GameWorld, waveNumber: number): void {
   // Swarm speed buff: apply +10% speed to all current enemy units for 60 seconds
   if (swarmSpeedBuff) {
     world.enemyEvolution.swarmSpeedBuffExpiry = world.frameCount + 3600;
+    swarmBuffOriginalSpeeds.clear();
     const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Velocity]);
     for (let i = 0; i < allUnits.length; i++) {
       const eid = allUnits[i];
@@ -419,6 +429,7 @@ function triggerMegaWave(world: GameWorld, waveNumber: number): void {
       if (hasComponent(world.ecs, eid, IsBuilding)) continue;
       if (hasComponent(world.ecs, eid, IsResource)) continue;
       if (Health.current[eid] <= 0) continue;
+      swarmBuffOriginalSpeeds.set(eid, Velocity.speed[eid]);
       Velocity.speed[eid] *= 1.1;
     }
   }
@@ -522,8 +533,34 @@ function triggerRandomEvent(world: GameWorld): void {
   } else {
     // --- Alpha Appearance ---
     if (!world.enemyEvolution.unlockedUnits.includes(EntityKind.AlphaPredator)) {
-      // Fall back to predator migration if alpha not unlocked
-      triggerRandomEvent(world);
+      // Fall back to nest fury (or predator migration if no nests)
+      const fallbackNests = getEnemyNests(world);
+      if (fallbackNests.length > 0) {
+        // Trigger a nest fury inline instead of recursing
+        const targetNest = fallbackNests[Math.floor(Math.random() * fallbackNests.length)];
+        const fnx = Position.x[targetNest];
+        const fny = Position.y[targetNest];
+        world.floatingTexts.push({
+          x: fnx,
+          y: fny - 40,
+          text: 'Nest Fury!',
+          color: '#f59e0b',
+          life: 180,
+        });
+        world.minimapPings.push({ x: fnx, y: fny, life: 180, maxLife: 180 });
+        audio.alert();
+        const fallbackBurst = 3 + Math.floor(Math.random() * 3);
+        for (let fb = 0; fb < fallbackBurst; fb++) {
+          const unitKind = pickRandomUnlocked(world.enemyEvolution.unlockedUnits);
+          const fsx = fnx + (Math.random() - 0.5) * 60;
+          const fsy = fny + 30 + Math.random() * 20;
+          const feid = spawnEntity(world, unitKind, fsx, fsy, Faction.Enemy);
+          if (feid < 0) continue;
+          triggerSpawnPop(feid);
+          spawnDustParticles(world, fsx, fsy);
+        }
+      }
+      // else: no nests left, skip event entirely
       return;
     }
 

@@ -9,8 +9,8 @@
 
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import {
-  customGameSettings,
   type CustomGameSettings,
+  customGameSettings,
   customMapSeed,
   DEFAULT_CUSTOM_SETTINGS,
   type DifficultyLevel,
@@ -285,9 +285,7 @@ function OptionRow<T extends string | number>({
               style={{
                 minWidth: '44px',
                 minHeight: '44px',
-                background: isSelected
-                  ? 'rgba(64, 200, 208, 0.2)'
-                  : 'rgba(20, 30, 35, 0.8)',
+                background: isSelected ? 'rgba(64, 200, 208, 0.2)' : 'rgba(20, 30, 35, 0.8)',
                 borderColor: isSelected ? 'var(--pw-accent)' : 'var(--pw-border)',
                 color: isSelected ? 'var(--pw-accent-bright)' : 'var(--pw-text-muted)',
                 boxShadow: isSelected ? '0 0 8px rgba(64, 200, 208, 0.2)' : 'none',
@@ -330,10 +328,7 @@ function SliderRow({
         >
           {label}
         </span>
-        <span
-          class="font-numbers text-xs"
-          style={{ color: 'var(--pw-accent)' }}
-        >
+        <span class="font-numbers text-xs" style={{ color: 'var(--pw-accent)' }}>
           {renderValue ? renderValue(value) : value}
         </span>
       </div>
@@ -563,14 +558,11 @@ export function NewGameModal() {
   const [seedText, setSeedText] = useState('');
   const [shuffleAnim, setShuffleAnim] = useState(false);
 
-  const handleUpdate = useCallback(
-    (patch: Partial<CustomGameSettings>) => {
-      setSettings((prev) => ({ ...prev, ...patch }));
-      // Clear active preset when user tweaks individual settings
-      setActivePreset(null);
-    },
-    [],
-  );
+  const handleUpdate = useCallback((patch: Partial<CustomGameSettings>) => {
+    setSettings((prev) => ({ ...prev, ...patch }));
+    // Clear active preset when user tweaks individual settings
+    setActivePreset(null);
+  }, []);
 
   const handlePreset = useCallback((key: PresetKey) => {
     const preset = PRESETS[key];
@@ -766,9 +758,7 @@ export function NewGameModal() {
                 class="hud-btn rounded px-3 py-1.5 font-heading font-bold text-[10px] md:text-xs tracking-wider flex-1"
                 style={{
                   minHeight: '44px',
-                  background: isActive
-                    ? 'rgba(64, 200, 208, 0.15)'
-                    : undefined,
+                  background: isActive ? 'rgba(64, 200, 208, 0.15)' : undefined,
                   borderColor: isActive ? 'var(--pw-accent)' : undefined,
                   color: isActive ? 'var(--pw-accent-bright)' : 'var(--pw-text-muted)',
                   boxShadow: isActive ? '0 0 8px rgba(64, 200, 208, 0.15)' : undefined,
@@ -815,7 +805,7 @@ export function NewGameModal() {
                   class="stone-node rounded px-2 py-1 font-heading font-bold text-[9px] md:text-[10px] tracking-wider cursor-pointer transition-all duration-150"
                   style={{
                     minWidth: '44px',
-                    minHeight: '36px',
+                    minHeight: '44px',
                     background: isActive ? `${color}25` : 'rgba(20, 30, 35, 0.8)',
                     borderColor: isActive ? color : 'var(--pw-border)',
                     color: isActive ? color : 'var(--pw-text-muted)',
