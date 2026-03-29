@@ -169,6 +169,11 @@ export class Game {
     minimapCanvas: HTMLCanvasElement,
     minimapCamElement: HTMLElement,
   ): Promise<void> {
+    // Tear down any previous session to prevent duplicate loops/listeners
+    if (this.running) {
+      this.destroy();
+    }
+
     // Reset the world so re-initialisation (e.g. restarting the game) starts
     // from a clean slate instead of accumulating stale ECS state.
     this.world = createGameWorld();
