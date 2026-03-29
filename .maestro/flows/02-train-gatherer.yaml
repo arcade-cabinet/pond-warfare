@@ -1,0 +1,14 @@
+appId: com.arcadecabinet.pondwarfare
+name: Train a Gatherer
+tags:
+  - gameplay
+---
+- runFlow: 01-launch-and-start.yaml
+# Lodge should be auto-selected
+- assertVisible: "Lodge"
+# Tap TRAIN tab then Gatherer button
+- tapOn: "TRAIN"
+- tapOn: "Gatherer"
+- waitForAnimationToEnd
+# Verify food increased (unit queued/trained)
+- takeScreenshot: gatherer-trained

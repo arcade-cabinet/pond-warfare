@@ -1,0 +1,24 @@
+appId: com.arcadecabinet.pondwarfare
+name: Build a Burrow
+tags:
+  - gameplay
+  - building
+---
+- runFlow: 01-launch-and-start.yaml
+# Deselect lodge first
+- tapOn:
+    id: "selection-info"
+    point: "90%,5%"
+# Wait for a gatherer to go idle then select one
+- waitForAnimationToEnd
+- tapOn: "Idle"
+- waitForAnimationToEnd
+# Tap BUILD tab
+- tapOn: "BUILD"
+- tapOn: "Burrow"
+# Tap on the game canvas to place the building
+- tapOn:
+    id: "game-canvas"
+    point: "50%,60%"
+- waitForAnimationToEnd
+- takeScreenshot: burrow-placed

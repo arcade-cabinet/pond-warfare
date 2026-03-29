@@ -1,0 +1,16 @@
+appId: com.arcadecabinet.pondwarfare
+name: Save and Load Game
+tags:
+  - persistence
+---
+- runFlow: 01-launch-and-start.yaml
+# Wait for some game progress
+- wait: 5000
+# Tap save button
+- tapOn: "Save"
+- waitForAnimationToEnd
+- takeScreenshot: game-saved
+# Tap load button
+- tapOn: "Load"
+- waitForAnimationToEnd
+- takeScreenshot: game-loaded

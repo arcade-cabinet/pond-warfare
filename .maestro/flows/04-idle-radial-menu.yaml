@@ -1,0 +1,19 @@
+appId: com.arcadecabinet.pondwarfare
+name: Open Idle Radial Menu and Toggle Auto-Gather
+tags:
+  - ui
+  - touch
+---
+- runFlow: 01-launch-and-start.yaml
+# Wait for idle workers to appear
+- extendedWaitUntil:
+    visible: "Idle"
+    timeout: 30000
+# Tap the idle button to open radial menu
+- tapOn: "Idle"
+- waitForAnimationToEnd
+- takeScreenshot: radial-menu-open
+# Tap Auto-Gather option
+- tapOn: "Gather"
+- waitForAnimationToEnd
+- takeScreenshot: auto-gather-enabled
