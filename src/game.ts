@@ -142,6 +142,7 @@ export class Game {
   private audioInitialized = false;
   private initAudioHandler: ((e: Event) => void) | null = null;
   private wasPeaceful = true;
+  private colorBlindUnsubscribe: (() => void) | null = null;
   private wasGameOver = false;
 
   // Smooth camera pan animation (anime.js)
@@ -398,7 +399,7 @@ export class Game {
     this.syncUIStore();
 
     // Sync color blind mode signal to renderer module-level flag
-    store.colorBlindMode.subscribe((enabled) => {
+    this.colorBlindUnsubscribe = store.colorBlindMode.subscribe((enabled) => {
       setColorBlindMode(enabled);
     });
 
@@ -910,6 +911,27 @@ export class Game {
    * Scout, Tech Tree) used by both the Global Command Center and the
    * selected-Lodge panel. Returns buttons to push into the action panel.
    */
+  /** Build training queue display items for any building with an active queue. */
+  private buildTrainingQueueItems(w: GameWorld, buildingEid: number, qItems: QueueItemDef[]): void {
+    const slots = trainingQueueSlots.get(buildingEid) ?? [];
+    for (let qi = 0; qi < slots.length; qi++) {
+      const unitKind = slots[qi] as EntityKind;
+      const progress =
+        qi === 0
+          ? Math.max(
+              0,
+              Math.min(100, ((TRAIN_TIMER - TrainingQueue.timer[buildingEid]) / TRAIN_TIMER) * 100),
+            )
+          : 0;
+      const idx = qi;
+      qItems.push({
+        label: entityKindName(unitKind).charAt(0),
+        progressPct: progress,
+        onCancel: () => cancelTrain(w, buildingEid, idx),
+      });
+    }
+  }
+
   private buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
     const btns: ActionButtonDef[] = [];
     const gDef = ENTITY_DEFS[EntityKind.Gatherer];
@@ -1749,55 +1771,12 @@ export class Game {
             },
           });
 
-          // Training queue display for armory
-          const slots = trainingQueueSlots.get(selEid) ?? [];
-          for (let qi = 0; qi < slots.length; qi++) {
-            const unitKind = slots[qi] as EntityKind;
-            const progress =
-              qi === 0
-                ? Math.max(
-                    0,
-                    Math.min(
-                      100,
-                      ((TRAIN_TIMER - TrainingQueue.timer[selEid]) / TRAIN_TIMER) * 100,
-                    ),
-                  )
-                : 0;
-            const idx = qi;
-            qItems.push({
-              label: entityKindName(unitKind).charAt(0),
-              progressPct: progress,
-              onCancel: () => {
-                cancelTrain(w, selEid, idx);
-              },
-            });
-          }
+          this.buildTrainingQueueItems(w, selEid, qItems);
         }
 
         // Lodge/Burrow training queue display
         if (selKind === EntityKind.Lodge || selKind === EntityKind.Burrow) {
-          const slots = trainingQueueSlots.get(selEid) ?? [];
-          for (let qi = 0; qi < slots.length; qi++) {
-            const unitKind = slots[qi] as EntityKind;
-            const progress =
-              qi === 0
-                ? Math.max(
-                    0,
-                    Math.min(
-                      100,
-                      ((TRAIN_TIMER - TrainingQueue.timer[selEid]) / TRAIN_TIMER) * 100,
-                    ),
-                  )
-                : 0;
-            const idx = qi;
-            qItems.push({
-              label: entityKindName(unitKind).charAt(0),
-              progressPct: progress,
-              onCancel: () => {
-                cancelTrain(w, selEid, idx);
-              },
-            });
-          }
+          this.buildTrainingQueueItems(w, selEid, qItems);
         }
       }
     }
@@ -1813,6 +1792,12 @@ export class Game {
 
   destroy(): void {
     this.running = false;
+    // Stop camera pan animation
+    this._panAnim?.pause();
+    this._panAnim = null;
+    // Unsubscribe color blind mode listener
+    this.colorBlindUnsubscribe?.();
+    this.colorBlindUnsubscribe = null;
     window.removeEventListener('resize', this.boundResize);
     if (this.initAudioHandler) {
       document.removeEventListener('pointerdown', this.initAudioHandler);
