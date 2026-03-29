@@ -6,8 +6,8 @@
  * research state (researched/available/locked/unaffordable) with dependency lines.
  */
 
-import { type TechId, TECH_UPGRADES, canResearch } from '@/config/tech-tree';
 import type { TechState } from '@/config/tech-tree';
+import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 
 // -------------------------------------------------------------------
 // Tree layout definition
@@ -74,12 +74,7 @@ const CELL_H = NODE_H + GAP_Y;
 
 type NodeState = 'researched' | 'available' | 'unaffordable' | 'locked';
 
-function getNodeState(
-  id: TechId,
-  techState: TechState,
-  clams: number,
-  twigs: number,
-): NodeState {
+function getNodeState(id: TechId, techState: TechState, clams: number, twigs: number): NodeState {
   const upgrade = TECH_UPGRADES[id];
   if (!upgrade) return 'locked';
   if (techState[id]) return 'researched';
@@ -148,7 +143,8 @@ function TechNode({
       <span class="text-[9px] leading-tight mt-0.5 opacity-80">{upgrade.description}</span>
       {state === 'locked' && 'requires' in upgrade && upgrade.requires && (
         <span class="text-[8px] text-slate-500 mt-0.5">
-          Needs: {TECH_UPGRADES[upgrade.requires as keyof typeof TECH_UPGRADES]?.name ?? upgrade.requires}
+          Needs:{' '}
+          {TECH_UPGRADES[upgrade.requires as keyof typeof TECH_UPGRADES]?.name ?? upgrade.requires}
         </span>
       )}
       {node.unlocks && (
@@ -174,6 +170,8 @@ function EdgeLines({
     <svg
       class="absolute inset-0 pointer-events-none"
       style={{ overflow: 'visible' }}
+      role="img"
+      aria-label="Tech tree dependency lines"
     >
       {edges.map((edge) => {
         const fromNode = nodeMap.get(edge.from);
@@ -188,12 +186,12 @@ function EdgeLines({
         const x2 = toNode.col * CELL_W + NODE_W / 2;
         const y2 = toNode.row * CELL_H + NODE_H / 2;
 
-        const researched =
-          techState[edge.from as TechId] && techState[edge.to as TechId];
+        const researched = techState[edge.from as TechId] && techState[edge.to as TechId];
         const partial = techState[edge.from as TechId];
 
         let stroke = '#475569'; // slate-600
-        if (researched) stroke = '#22c55e'; // green-500
+        if (researched)
+          stroke = '#22c55e'; // green-500
         else if (partial) stroke = '#f59e0b'; // amber-500
 
         return (
@@ -248,20 +246,13 @@ function BranchPanel({
 
   return (
     <div class="flex flex-col items-center">
-      <h3 class="text-amber-400 font-bold text-sm uppercase tracking-wider mb-3">
-        {title}
-      </h3>
+      <h3 class="text-amber-400 font-bold text-sm uppercase tracking-wider mb-3">{title}</h3>
       <div class="relative" style={{ width: `${gridW}px`, height: `${gridH}px` }}>
         <EdgeLines edges={edges} nodes={activeNodes} techState={techState} />
         {activeNodes.map((node) => {
           const state = getNodeState(node.id, techState, clams, twigs);
           return (
-            <TechNode
-              key={node.id}
-              node={node}
-              state={state}
-              onClick={() => onResearch(node.id)}
-            />
+            <TechNode key={node.id} node={node} state={state} onClick={() => onResearch(node.id)} />
           );
         })}
       </div>
@@ -298,9 +289,7 @@ export function TechTreePanel({
     >
       {/* Header */}
       <div class="w-full flex items-center justify-between px-6 pt-4 pb-2 max-w-4xl mx-auto">
-        <h2 class="text-lg font-bold text-slate-100 uppercase tracking-widest">
-          Tech Tree
-        </h2>
+        <h2 class="text-lg font-bold text-slate-100 uppercase tracking-widest">Tech Tree</h2>
         <button
           type="button"
           class="w-8 h-8 flex items-center justify-center rounded bg-slate-700 hover:bg-red-700 text-slate-300 hover:text-white text-lg font-bold transition-colors"
