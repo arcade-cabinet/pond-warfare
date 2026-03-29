@@ -379,6 +379,12 @@ export function App({ onMount }: AppProps) {
         {/* Campaign objective tracker (shown during gameplay) */}
         {store.campaignMissionId.value && <ObjectiveTracker />}
 
+
+        {/* Campaign objective tracker (shown during gameplay) */}
+        {store.menuState.value === 'playing' && store.campaignMissionId.value && (
+          <ObjectiveTracker />
+        )}
+
         {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />
 

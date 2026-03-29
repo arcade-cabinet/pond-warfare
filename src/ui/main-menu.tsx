@@ -202,6 +202,7 @@ export function MainMenu() {
             class="font-heading font-bold text-[11px] tracking-wider uppercase block text-center mt-1"
             style={{ color: rank.color }}
           >
+
             {rank.label}
           </span>
         </div>
@@ -209,6 +210,7 @@ export function MainMenu() {
 
       {/* ---- Hero CTA: Shield-shaped NEW GAME button ---- */}
       <div class="relative z-10 mt-8 flex flex-col items-center">
+
         <button
           type="button"
           class="shield-btn font-heading font-bold text-lg md:text-xl tracking-widest flex flex-col items-center justify-center"
@@ -254,6 +256,7 @@ export function MainMenu() {
         <button
           type="button"
           class="wood-sign-btn font-heading font-bold text-sm md:text-base tracking-wider"
+
           disabled={!hasSaveGame.value}
           style={{
             minWidth: '180px',
@@ -332,6 +335,70 @@ export function MainMenu() {
             padding: '8px 20px',
             color: 'var(--pw-text-muted)',
             borderColor: 'rgba(42, 80, 96, 0.5)',
+          }}
+          onClick={() => {
+            leaderboardOpen.value = true;
+          }}
+        >
+          LEADERBOARD
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-secondary)',
+          }}
+          onClick={() => {
+            achievementsOpen.value = true;
+          }}
+        >
+          ACHIEVEMENTS
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-secondary)',
+          }}
+          onClick={() => {
+            unlocksOpen.value = true;
+          }}
+        >
+          UNLOCKS
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-secondary)',
+          }}
+          onClick={() => {
+            cosmeticsOpen.value = true;
+          }}
+        >
+          COSMETICS
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-secondary)',
           }}
           onClick={() => {
             settingsOpen.value = true;
