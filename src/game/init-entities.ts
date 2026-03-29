@@ -1063,4 +1063,42 @@ export function spawnInitialEntities(world: GameWorld): void {
     color: '#38bdf8',
     life: 180, // 3 seconds at 60fps
   });
+
+  // ---- Campaign-specific spawning ----
+  const campaign = (world as GameWorld & { campaign?: { mission: { worldOverrides?: { spawnAlphaPredator?: boolean } } | null } }).campaign;
+  if (campaign?.mission?.worldOverrides?.spawnAlphaPredator) {
+    // Spawn Alpha Predator near the enemy side
+    const alphaX = clampWorld(WORLD_WIDTH - sx, WORLD_WIDTH, 200);
+    const alphaY = clampWorld(WORLD_HEIGHT - sy, WORLD_HEIGHT, 200);
+    spawnEntity(world, EntityKind.AlphaPredator, alphaX, alphaY, Faction.Enemy);
+
+    // Spawn escort army around the Alpha
+    for (let i = 0; i < 6; i++) {
+      spawnEntity(
+        world,
+        EntityKind.ArmoredGator,
+        alphaX + rng.float(-100, 100),
+        alphaY + rng.float(-100, 100),
+        Faction.Enemy,
+      );
+    }
+    for (let i = 0; i < 4; i++) {
+      spawnEntity(
+        world,
+        EntityKind.VenomSnake,
+        alphaX + rng.float(-100, 100),
+        alphaY + rng.float(-100, 100),
+        Faction.Enemy,
+      );
+    }
+    for (let i = 0; i < 2; i++) {
+      spawnEntity(
+        world,
+        EntityKind.SwampDrake,
+        alphaX + rng.float(-80, 80),
+        alphaY + rng.float(-80, 80),
+        Faction.Enemy,
+      );
+    }
+  }
 }

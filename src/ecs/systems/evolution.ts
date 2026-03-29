@@ -121,6 +121,41 @@ export function evolutionSystem(world: GameWorld): void {
     }
   }
 
+  // --- Venom Coating poison tick: 1 damage per second (every 60 frames) ---
+  if (world.frameCount % 60 === 0) {
+    for (const [eid, remaining] of world.venomCoatingTimers) {
+      if (!hasComponent(world.ecs, eid, Health) || Health.current[eid] <= 0) {
+        world.venomCoatingTimers.delete(eid);
+        continue;
+      }
+
+      Health.current[eid] -= 1;
+      Health.flashTimer[eid] = 4;
+
+      // Purple-green poison particles (lighter than VenomSnake)
+      if (hasComponent(world.ecs, eid, Position)) {
+        for (let i = 0; i < 2; i++) {
+          spawnParticle(
+            world,
+            Position.x[eid] + (Math.random() - 0.5) * 8,
+            Position.y[eid] - 5,
+            (Math.random() - 0.5) * 0.8,
+            -Math.random() * 1,
+            12,
+            '#66ee66',
+            2,
+          );
+        }
+      }
+
+      if (remaining <= 1) {
+        world.venomCoatingTimers.delete(eid);
+      } else {
+        world.venomCoatingTimers.set(eid, remaining - 1);
+      }
+    }
+  }
+
   // --- Alpha Predator damage aura: +20% damage to nearby enemies ---
   if (world.frameCount % 60 === 0) {
     const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);

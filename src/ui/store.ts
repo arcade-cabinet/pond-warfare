@@ -236,6 +236,9 @@ export const leaderboardOpen = signal(false);
 // ---- Unlocks panel ----
 export const unlocksOpen = signal(false);
 
+// ---- Cosmetics panel ----
+export const cosmeticsOpen = signal(false);
+
 // ---- Keyboard reference overlay ----
 export const keyboardRefOpen = signal(false);
 export const masterVolume = signal(80);
@@ -259,6 +262,22 @@ export const airdropCooldown = signal(0);
 // ---- Checkpoint/Evacuation ----
 export const evacuationActive = signal(false);
 export const checkpointCount = signal(0);
+
+// ---- Active abilities (tech tree) ----
+/** Rally Cry available (researched) */
+export const rallyCryAvailable = signal(false);
+/** Rally Cry cooldown seconds remaining (0 = ready) */
+export const rallyCryCooldown = signal(0);
+/** Rally Cry active (buff is currently applied) */
+export const rallyCryActive = signal(false);
+/** Pond Blessing available (researched and not yet used) */
+export const pondBlessingAvailable = signal(false);
+/** Tidal Surge available (researched and not yet used) */
+export const tidalSurgeAvailable = signal(false);
+
+// ---- FPS counter ----
+export const fpsDisplay = signal(0);
+export const fpsCounterVisible = signal(false);
 
 // ---- Campaign ----
 export const campaignOpen = signal(false);

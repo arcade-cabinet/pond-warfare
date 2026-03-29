@@ -1416,6 +1416,26 @@ export class Game {
 
     // Action panel buttons and queue
     buildActionPanel(w, this.recorder);
+
+    // Active ability signals sync
+    store.rallyCryAvailable.value = w.tech.rallyCry;
+    store.rallyCryActive.value = w.rallyCryExpiry > 0 && w.frameCount < w.rallyCryExpiry;
+    store.rallyCryCooldown.value =
+      w.rallyCryCooldownUntil > w.frameCount
+        ? Math.ceil((w.rallyCryCooldownUntil - w.frameCount) / 60)
+        : 0;
+    store.pondBlessingAvailable.value = w.tech.pondBlessing && !w.pondBlessingUsed;
+    store.tidalSurgeAvailable.value = w.tech.tidalSurge && !w.tidalSurgeUsed;
+
+    // Campaign objective status sync
+    const campaign = (w as GameWorld & { campaign?: CampaignState }).campaign;
+    if (campaign?.mission) {
+      const statuses: Record<string, boolean> = {};
+      for (const [id, done] of campaign.objectiveStatus) {
+        statuses[id] = done;
+      }
+      store.campaignObjectiveStatuses.value = statuses;
+    }
   }
 
   /** Get sprite canvas by SpriteId */

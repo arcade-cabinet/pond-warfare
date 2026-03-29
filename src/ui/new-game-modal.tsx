@@ -417,7 +417,7 @@ function MapTab({
     <div>
       <OptionRow
         label="Scenario"
-        options={['standard', 'island', 'contested'] as const}
+        options={['standard', 'island', 'contested', 'labyrinth', 'river', 'peninsula'] as const}
         value={settings.scenario}
         onChange={(v) => onUpdate({ scenario: v })}
         renderLabel={(v) => v.charAt(0).toUpperCase() + v.slice(1)}

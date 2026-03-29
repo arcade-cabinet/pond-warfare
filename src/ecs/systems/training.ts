@@ -13,6 +13,7 @@
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { campaignNotifyTrained } from '@/campaign';
 import { TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -73,6 +74,9 @@ export function trainingSystem(world: GameWorld): void {
         TrainingQueue.timer[eid] = TRAIN_TIMER;
         continue;
       }
+
+      // Notify campaign system of trained unit
+      campaignNotifyTrained(world, unitKind);
 
       // Apply rally point if set
       if (Building.hasRally[eid]) {

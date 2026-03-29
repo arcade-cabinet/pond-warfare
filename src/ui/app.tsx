@@ -19,10 +19,12 @@ import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
 import { AchievementsPanel } from './achievements-panel';
 import { CampaignPanel, ObjectiveTracker } from './campaign-panel';
+import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
+import { AbilityBar } from './hud/ability-bar';
 import { AirdropButton } from './hud/airdrop-button';
 import { KeyboardReference } from './keyboard-reference';
 import { LeaderboardPanel } from './leaderboard-panel';
@@ -377,6 +379,9 @@ export function App({ onMount }: AppProps) {
 
         {/* Unlocks panel overlay */}
         {store.unlocksOpen.value && <UnlocksPanel />}
+
+        {/* Cosmetics panel overlay */}
+        {store.cosmeticsOpen.value && <CosmeticsPanel />}
       </div>
 
       {/* Tooltip overlay */}

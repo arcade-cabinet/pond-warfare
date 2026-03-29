@@ -17,6 +17,7 @@
 
 import { hasComponent, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { campaignNotifyKilled } from '@/campaign';
 import { shouldLowHpBark, showBark } from '@/config/barks';
 import { ALLY_ASSIST_RADIUS, PALETTE } from '@/constants';
 import {
@@ -243,8 +244,12 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     if (faction === Faction.Player && !isBuilding && !isResource) {
       world.stats.unitsLost++;
     }
-    if (faction === Faction.Enemy && !isBuilding) {
-      world.stats.unitsKilled++;
+    if (faction === Faction.Enemy) {
+      if (!isBuilding) {
+        world.stats.unitsKilled++;
+      }
+      // Notify campaign of enemy kill (units and buildings like nests)
+      campaignNotifyKilled(world, EntityTypeTag.kind[eid]);
     }
   }
 
