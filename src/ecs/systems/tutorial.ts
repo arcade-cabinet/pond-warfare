@@ -27,22 +27,22 @@ interface TutorialStep {
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     frame: 60,
-    text: "Welcome to the pond! Click me to select, then right-click to move.",
+    text: 'Welcome to the pond! Click me to select, then right-click to move.',
     duration: 180,
   },
   {
     frame: 300,
-    text: "Send gatherers to those Clam deposits. We need resources!",
+    text: 'Send gatherers to those Clam deposits. We need resources!',
     duration: 180,
   },
   {
     frame: 600,
-    text: "Send the Scout into the fog to explore!",
+    text: 'Send the Scout into the fog to explore!',
     duration: 150,
   },
   {
     frame: 1200,
-    text: "Build an Armory so we can train fighters.",
+    text: 'Build an Armory so we can train fighters.',
     duration: 150,
   },
   {
@@ -53,7 +53,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     frameBefore: 'peace',
     offset: 1800,
-    text: "I sense danger approaching. Prepare for battle!",
+    text: 'I sense danger approaching. Prepare for battle!',
     duration: 180,
   },
 ];

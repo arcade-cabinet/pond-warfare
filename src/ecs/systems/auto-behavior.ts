@@ -173,4 +173,45 @@ export function autoBehaviorSystem(world: GameWorld): void {
       }
     }
   }
+
+  // --- Neutral wildlife wander: Frogs and Fish move randomly ---
+  neutralWildlifeWander(world);
+}
+
+/**
+ * Makes neutral Frog and Fish entities wander randomly.
+ * Every 120 frames, idle neutral wildlife picks a new nearby random target.
+ */
+function neutralWildlifeWander(world: GameWorld): void {
+  if (world.frameCount % 120 !== 0) return;
+
+  const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
+  for (let i = 0; i < units.length; i++) {
+    const eid = units[i];
+    if (FactionTag.faction[eid] !== Faction.Neutral) continue;
+    if (Health.current[eid] <= 0) continue;
+
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    if (kind !== EntityKind.Frog && kind !== EntityKind.Fish) continue;
+
+    const state = UnitStateMachine.state[eid] as UnitState;
+    if (state !== UnitState.Idle) continue;
+
+    // Wander within a small radius around current position
+    const wanderRadius = kind === EntityKind.Frog ? 80 : 120;
+    const cx = Position.x[eid];
+    const cy = Position.y[eid];
+    const newX = Math.max(
+      60,
+      Math.min(WORLD_WIDTH - 60, cx + (Math.random() - 0.5) * wanderRadius),
+    );
+    const newY = Math.max(
+      60,
+      Math.min(WORLD_HEIGHT - 60, cy + (Math.random() - 0.5) * wanderRadius),
+    );
+
+    UnitStateMachine.targetX[eid] = newX;
+    UnitStateMachine.targetY[eid] = newY;
+    UnitStateMachine.state[eid] = UnitState.Move;
+  }
 }

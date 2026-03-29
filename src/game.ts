@@ -744,6 +744,7 @@ export class Game {
     autoTrainSystem(this.world);
     autoBehaviorSystem(this.world);
     healthSystem(this.world);
+    tutorialSystem(this.world);
     veterancySystem(this.world);
     fogOfWarSystem(this.world);
     cleanupSystem(this.world);

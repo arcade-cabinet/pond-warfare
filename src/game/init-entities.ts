@@ -157,7 +157,7 @@ export function spawnInitialEntities(world: GameWorld): void {
 
   // Center camera on Commander
   world.camX = sx - world.viewWidth / 2;
-  world.camY = (sy + 40) - world.viewHeight / 2;
+  world.camY = sy + 40 - world.viewHeight / 2;
 
   // ---- Guaranteed starting resources near player ----
   spawnClambed(world, rng, sx - 120, sy - 40);
