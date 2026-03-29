@@ -81,6 +81,13 @@ describe('trainingSystem', () => {
     expect(TrainingQueue.count[armory]).toBe(0);
     // Particles should have been spawned (training complete effect)
     expect(world.particles.length).toBeGreaterThan(0);
+    // Verify a Brawler was actually spawned (query for new entities)
+    const units = query(world.ecs, [FactionTag, EntityTypeTag]);
+    const brawlers = units.filter(eid => 
+      EntityTypeTag.kind[eid] === EntityKind.Brawler && 
+      FactionTag.faction[eid] === Faction.Player
+    );
+    expect(brawlers.length).toBe(1);
   });
 
   it('should not train when building is incomplete (progress < 100)', () => {
