@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Both factions gather resources, build bases, train armies, and fight for map control. Features 30 entity types, 15 techs across 3 branches, an enemy evolution system with 5 tiers, pressure-based auto-building, permadeath mode, 5 difficulty levels, and kill streaks. Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
+Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Two playable factions gather resources, build bases, train armies, and fight for map control. Features 33 entity types, 25 techs across 3 branches (with 3 active abilities), 5 campaign missions, 2 playable factions, 5 AI personalities, 7 commanders, 4 ranked tiers, 6 map scenarios, 15 achievements, 18 unlockables, unit-specific SFX, an enemy evolution system with 5 tiers + threat escalation, pressure-based auto-building, permadeath mode, 5 difficulty levels, custom game settings, cosmetic system, and kill streaks. Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
 
 ## Quick Start
 
@@ -129,19 +129,30 @@ All units use Yuka.js for movement (not just enemies). The `YukaManager`:
 | File | Purpose | Lines |
 |------|---------|-------|
 | `src/game.ts` | Game orchestrator, loop, UI sync | ~1200 |
-| `src/rendering/pixi-app.ts` | PixiJS 8 renderer | ~860 |
-| `src/ecs/systems/*.ts` | 16 ECS game systems | ~50-800 each |
+| `src/rendering/pixi/entity-renderer.ts` | PixiJS entity rendering, recoloring, health bars | ~371 |
+| `src/rendering/recolor.ts` | Sprite recoloring: 14 presets for cosmetics/veterancy/champions | ~224 |
+| `src/ecs/systems/*.ts` | 18 ECS game systems | ~50-800 each |
 | `src/ecs/systems/ai.ts` | Enemy AI economy, training, attack decisions | ~800 |
 | `src/ecs/systems/veterancy.ts` | Veterancy rank-up system | ~130 |
-| `src/ui/store.ts` | 30+ reactive signals | ~120 |
-| `src/audio/audio-system.ts` | SFX + music + ambient | ~350 |
+| `src/ui/store.ts` | 60+ reactive signals | ~308 |
+| `src/audio/audio-system.ts` | SFX orchestrator + music + ambient | ~350 |
+| `src/audio/sfx.ts` | SfxManager: 25+ synth SFX with spatial panning | ~318 |
 | `src/ai/yuka-manager.ts` | Steering + formation flocking manager | ~380 |
-| `src/config/entity-defs.ts` | 30 entity types, stats, damage multipliers | ~510 |
-| `src/config/tech-tree.ts` | 15 technologies with prerequisite chains | ~165 |
-| `src/ecs/systems/evolution.ts` | Enemy evolution (5 tiers), poison ticks, alpha aura | ~160 |
+| `src/config/entity-defs.ts` | 33 entity types, stats, damage multipliers | ~510 |
+| `src/config/tech-tree.ts` | 25 technologies with prerequisite chains + active abilities | ~263 |
+| `src/config/ai-personalities.ts` | 5 AI personalities with multiplier configs | ~88 |
+| `src/config/commanders.ts` | 7 commander definitions with aura/passive bonuses | ~168 |
+| `src/config/factions.ts` | 2 playable factions with unit mappings | ~88 |
+| `src/config/unlocks.ts` | 18 unlockable items across 5 categories | ~184 |
+| `src/campaign/missions.ts` | 5 campaign missions with objectives + dialogue | ~445 |
+| `src/systems/achievements.ts` | 15 achievements with SQLite persistence | ~326 |
+| `src/systems/leaderboard.ts` | Ranked progression + win streak tracking | ~159 |
+| `src/ecs/systems/evolution.ts` | Enemy evolution (5 tiers) + threat escalation | ~160 |
 | `src/ecs/systems/auto-build.ts` | Pressure-based auto-building | ~260 |
 | `src/input/selection.ts` | Selection, commands, formation positioning | ~550 |
-| `src/storage/database.ts` | SQLite persistence (capacitor-sqlite + jeep-sqlite) | ~100 |
+| `src/storage/database.ts` | SQLite: saves, settings, game_history, unlocks, player_profile | ~100 |
+| `src/utils/spatial-hash.ts` | SpatialHash grid for O(n) proximity queries | ~80 |
+| `src/utils/particles.ts` | Particle spawning with pool + throttling | ~68 |
 | `src/constants.ts` | Tuning constants (vet thresholds, enemy economy, AI timers) | ~140 |
 
 ## Testing
@@ -150,9 +161,10 @@ Tests mirror the `src/` structure under `tests/`. Use `createGameWorld()` and ma
 
 ## Documentation
 
-- [Architecture](docs/architecture.md) - System overview, game loop, data flow, enemy AI, veterancy, formations
-- [Gameplay](docs/gameplay.md) - Units, buildings, tech tree, combat, counters, veterancy, enemy economy
+- [Architecture](docs/architecture.md) - System overview, game loop, data flow, enemy AI, veterancy, formations, performance
+- [Gameplay](docs/gameplay.md) - Units, buildings, 25 techs, combat, campaign, factions, AI personalities, leaderboards, commanders, cosmetics
 - [Libraries](docs/libraries.md) - How each dependency is utilized
+- [Design Bible](docs/design-bible.md) - Vision, macro/meso/micro design, completed roadmap
 
 ## Important Notes
 

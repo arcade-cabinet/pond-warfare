@@ -228,6 +228,15 @@ src/
     +-- spatial-hash.ts # SpatialHash grid for O(n) proximity queries
 ```
 
+## Performance Optimizations
+
+- **SpatialHash grid** (`src/utils/spatial-hash.ts`) - O(n) proximity queries for aggro, healing, aura buffs. Rebuilt each frame with 200px cell size
+- **ObjectPool** (`src/utils/pool.ts`) - Reusable particle allocations to avoid GC pressure
+- **Particle throttling** (`src/utils/particles.ts`) - Probabilistic skip when particle count exceeds thresholds (>200: skip 50%, >400: skip 75%)
+- **Synth pool** (`src/audio/sfx.ts`) - 16 pre-allocated Tone.js synth+panner pairs, eviction on pool exhaustion
+- **Sprite recolor cache** (`src/rendering/recolor.ts`) - Recolored textures cached by preset+spriteId key
+- **30-frame UI sync** - Game state synced to Preact signals every 30 frames (not every frame) to minimize reactive updates
+
 ## Key Design Decisions
 
 - **bitECS SoA components** over traditional OOP entities for cache-friendly iteration
@@ -242,3 +251,6 @@ src/
 - **SQLite persistence** - uses capacitor-sqlite + jeep-sqlite for ALL platforms (web: sql.js + IndexedDB, native: native SQLite). No localStorage fallback -- SQLite is required
 - **Enemy evolution system** - tier-based progressive difficulty that unlocks new enemy types over time, encouraging player adaptation
 - **Pressure-based auto-build** - scores building needs by urgency (attack defense, pop cap, military production, resource expansion) rather than simple timers
+- **Faction-agnostic systems** - same ECS systems handle both player and AI factions; faction selection only swaps unit mappings
+- **AI personality multipliers** - personality configs apply multipliers to base AI behavior (attack threshold, tower rate, expansion rate) rather than branching logic
+- **Active abilities tracked in GameWorld** - Rally Cry/Pond Blessing/Tidal Surge use frame-based cooldown/expiry fields on the world object, checked by existing systems
