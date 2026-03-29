@@ -16,9 +16,9 @@ import {
   getPlayerProfile,
   getUnlock,
   isDatabaseReady,
+  type PlayerProfile,
   setUnlock,
   updatePlayerProfile,
-  type PlayerProfile,
 } from '@/storage';
 import { EntityKind, Faction } from '@/types';
 
@@ -116,10 +116,7 @@ export async function updateProfileAndCheckUnlocks(world: GameWorld): Promise<st
     }
 
     // Fastest win
-    if (
-      profile.fastest_win_seconds === 0 ||
-      durationSeconds < profile.fastest_win_seconds
-    ) {
+    if (profile.fastest_win_seconds === 0 || durationSeconds < profile.fastest_win_seconds) {
       updates.fastest_win_seconds = durationSeconds;
     }
 

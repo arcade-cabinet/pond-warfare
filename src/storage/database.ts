@@ -282,7 +282,9 @@ export async function listUnlocks(): Promise<
   const result = await conn.query(
     'SELECT id, category, unlocked_at FROM unlocks WHERE unlocked = 1 ORDER BY unlocked_at DESC',
   );
-  return (result.values as { id: string; category: string; unlocked_at: string }[] | undefined) ?? [];
+  return (
+    (result.values as { id: string; category: string; unlocked_at: string }[] | undefined) ?? []
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -343,9 +345,7 @@ export async function updatePlayerProfile(updates: Partial<PlayerProfile>): Prom
   const conn = getDb();
 
   // Ensure profile row exists
-  await conn.run(
-    `INSERT OR IGNORE INTO player_profile (id) VALUES (1)`,
-  );
+  await conn.run(`INSERT OR IGNORE INTO player_profile (id) VALUES (1)`);
 
   const fields: string[] = [];
   const values: (string | number)[] = [];

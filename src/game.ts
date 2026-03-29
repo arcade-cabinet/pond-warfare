@@ -100,6 +100,7 @@ import {
   loadAchievements,
   resetAchievementMatchState,
 } from '@/systems/achievements';
+import { loadUnlocks, updateProfileAndCheckUnlocks } from '@/systems/unlock-tracker';
 import { type EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
@@ -190,8 +191,11 @@ export class Game {
     // Reset bark and achievement tracking state for the new session
     resetBarkState();
     resetAchievementMatchState();
-    // Load earned achievements from DB (async, fire-and-forget)
+    // Load earned achievements and unlocks from DB (async, fire-and-forget)
     loadAchievements().catch(() => {
+      /* best-effort */
+    });
+    loadUnlocks().catch(() => {
       /* best-effort */
     });
     // Reset match-scoped audio/game flags for clean session
@@ -1007,11 +1011,14 @@ export class Game {
       audio.updateAmbient(w.ambientDarkness);
     }
 
-    // Game over: stop music (once) and check achievements
+    // Game over: stop music (once), check achievements, and update player profile/unlocks
     if ((w.state === 'win' || w.state === 'lose') && this.audioInitialized && !this.wasGameOver) {
       audio.stopMusic();
       this.wasGameOver = true;
       checkAchievements(w).catch(() => {
+        /* best-effort */
+      });
+      updateProfileAndCheckUnlocks(w).catch(() => {
         /* best-effort */
       });
     }

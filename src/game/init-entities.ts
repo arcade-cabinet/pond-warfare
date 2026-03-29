@@ -15,7 +15,7 @@
 
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
-import { Resource } from '@/ecs/components';
+import { Combat, Health, Resource, Velocity } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 import type { MapScenario } from '@/ui/store';
@@ -143,6 +143,14 @@ function spawnPlayerBase(ctx: SpawnContext): number {
 
   const commanderEid = spawnEntity(world, EntityKind.Commander, sx, sy + 40, Faction.Player);
   world.selection = [commanderEid];
+
+  // Hero mode: boost commander HP, damage, and speed
+  if (world.heroMode) {
+    Health.max[commanderEid] = Math.round(Health.max[commanderEid] * 2);
+    Health.current[commanderEid] = Health.max[commanderEid];
+    Combat.damage[commanderEid] = Math.round(Combat.damage[commanderEid] * 1.5);
+    Velocity.speed[commanderEid] = Velocity.speed[commanderEid] * 1.25;
+  }
 
   spawnEntity(world, EntityKind.Gatherer, sx - 40, sy + 40, Faction.Player);
   spawnEntity(world, EntityKind.Gatherer, sx + 40, sy + 40, Faction.Player);

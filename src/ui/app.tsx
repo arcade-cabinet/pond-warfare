@@ -28,6 +28,7 @@ import { SettingsPanel } from './settings-panel';
 import { Sidebar } from './sidebar';
 import * as store from './store';
 import { TechTreePanel } from './tech-tree-panel';
+import { UnlocksPanel } from './unlocks-panel';
 
 export interface AppProps {
   onMount: (refs: {
@@ -345,6 +346,9 @@ export function App({ onMount }: AppProps) {
 
         {/* Achievements panel overlay */}
         {store.achievementsOpen.value && <AchievementsPanel />}
+
+        {/* Unlocks panel overlay */}
+        {store.unlocksOpen.value && <UnlocksPanel />}
       </div>
 
       {/* Tooltip overlay */}
