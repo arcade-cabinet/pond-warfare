@@ -92,9 +92,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Volume section */}
         <div class="space-y-3 mb-5">
-          <div class="section-header mb-1">
-            Audio
-          </div>
+          <div class="section-header mb-1">Audio</div>
           <VolumeSlider
             label="Master Volume"
             value={masterVolume.value}
@@ -114,9 +112,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Game Speed section */}
         <div class="mb-5">
-          <div class="section-header mb-2">
-            Game Speed
-          </div>
+          <div class="section-header mb-2">Game Speed</div>
           <div class="flex gap-2">
             {[1, 2, 3].map((s) => (
               <button
@@ -124,9 +120,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 key={`speed-${s}`}
                 class={`flex-1 py-1.5 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn`}
                 style={{
-                  background: currentSpeed === s
-                    ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
-                    : undefined,
+                  background:
+                    currentSpeed === s
+                      ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
+                      : undefined,
                   borderColor: currentSpeed === s ? 'var(--pw-accent)' : undefined,
                   color: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
                 }}
@@ -140,9 +137,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Toggles section */}
         <div class="space-y-3">
-          <div class="section-header mb-1">
-            Options
-          </div>
+          <div class="section-header mb-1">Options</div>
 
           {/* Color Blind Mode */}
           <div class="flex items-center justify-between min-h-[44px]">
