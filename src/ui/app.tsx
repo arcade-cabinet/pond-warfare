@@ -18,6 +18,7 @@ import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
 import { AchievementsPanel } from './achievements-panel';
+import { CampaignPanel, ObjectiveTracker } from './campaign-panel';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
@@ -267,9 +268,15 @@ export function App({ onMount }: AppProps) {
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
 
-        {/* Main menu / New game modal */}
+        {/* Main menu / New game modal / Campaign */}
         {store.menuState.value === 'main' && <MainMenu />}
+        {store.menuState.value === 'main' && store.campaignOpen.value && <CampaignPanel />}
         {store.menuState.value === 'newGame' && <NewGameModal />}
+
+        {/* Campaign objective tracker (shown during gameplay) */}
+        {store.menuState.value === 'playing' && store.campaignMissionId.value && (
+          <ObjectiveTracker />
+        )}
 
         {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />
@@ -364,6 +371,9 @@ export function App({ onMount }: AppProps) {
 
         {/* Achievements panel overlay */}
         {store.achievementsOpen.value && <AchievementsPanel />}
+
+        {/* Leaderboard panel overlay */}
+        {store.leaderboardOpen.value && <LeaderboardPanel />}
 
         {/* Unlocks panel overlay */}
         {store.unlocksOpen.value && <UnlocksPanel />}

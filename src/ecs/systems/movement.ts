@@ -87,6 +87,40 @@ export function movementSystem(world: GameWorld): void {
       speed += world.commanderModifiers.auraSpeedBonus;
     }
 
+    // Rally Cry: +30% speed to all player units while active
+    if (
+      FactionTag.faction[eid] === Faction.Player &&
+      world.rallyCryExpiry > 0 &&
+      world.frameCount < world.rallyCryExpiry
+    ) {
+      speed *= 1.3;
+    }
+
+    // Fortified Walls: enemies near player walls are slowed by 30%
+    if (world.tech.fortifiedWalls && FactionTag.faction[eid] === Faction.Enemy) {
+      const ex = Position.x[eid];
+      const ey = Position.y[eid];
+      const wallSlowRange = 80;
+      const wallCandidates = world.spatialHash
+        ? world.spatialHash.query(ex, ey, wallSlowRange)
+        : [];
+      for (let w = 0; w < wallCandidates.length; w++) {
+        const wid = wallCandidates[w];
+        if (
+          (EntityTypeTag.kind[wid] as EntityKind) === EntityKind.Wall &&
+          FactionTag.faction[wid] === Faction.Player &&
+          Health.current[wid] > 0
+        ) {
+          const wdx = Position.x[wid] - ex;
+          const wdy = Position.y[wid] - ey;
+          if (Math.sqrt(wdx * wdx + wdy * wdy) <= wallSlowRange) {
+            speed *= 0.7;
+            break;
+          }
+        }
+      }
+    }
+
     const dx = tx - Position.x[eid];
     const dy = ty - Position.y[eid];
     const dist = Math.sqrt(dx * dx + dy * dy);

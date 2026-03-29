@@ -113,7 +113,7 @@ function spawnClambed(
 
 /** Pick a scenario deterministically from the seeded RNG. */
 function pickScenario(rng: SeededRandom): MapScenario {
-  const scenarios: MapScenario[] = ['standard', 'island', 'contested'];
+  const scenarios: MapScenario[] = ['standard', 'island', 'contested', 'labyrinth', 'river', 'peninsula'];
   return rng.pick(scenarios);
 }
 
@@ -154,8 +154,8 @@ function spawnPlayerBase(ctx: SpawnContext): number {
     Velocity.speed[commanderEid] = Velocity.speed[commanderEid] * 1.25;
   }
 
-  spawnEntity(world, EntityKind.Gatherer, sx - 40, sy + 40, Faction.Player);
-  spawnEntity(world, EntityKind.Gatherer, sx + 40, sy + 40, Faction.Player);
+  spawnEntity(world, factionCfg.gathererKind, sx - 40, sy + 40, Faction.Player);
+  spawnEntity(world, factionCfg.gathererKind, sx + 40, sy + 40, Faction.Player);
 
   const mapCenterX = WORLD_WIDTH / 2;
   const mapCenterY = WORLD_HEIGHT / 2;
@@ -202,6 +202,10 @@ function spawnEnemyCamp(
 ): void {
   const { world, rng, resourceMultiplier } = ctx;
 
+  // Determine enemy faction config (the AI's side, opposite of the player)
+  const aiFactionKey = world.playerFaction === 'otter' ? 'predator' : 'otter';
+  const aiFactionCfg = getFactionConfig(aiFactionKey as import('@/config/factions').PlayableFaction);
+
   // Resources near each enemy camp
   const campCattail = Math.floor(8 * resourceMultiplier);
   for (let i = 0; i < campCattail; i++) {
@@ -209,21 +213,21 @@ function spawnEnemyCamp(
   }
   spawnClambed(world, rng, loc.x + rng.float(-200, 200), loc.y + rng.float(-200, 200));
 
-  // Enemy nest
-  spawnEntity(world, EntityKind.PredatorNest, loc.x, loc.y, Faction.Enemy);
+  // Enemy nest/lodge
+  spawnEntity(world, aiFactionCfg.lodgeKind, loc.x, loc.y, Faction.Enemy);
 
-  // Starting enemy units
+  // Starting enemy units (melee + ranged from the AI faction)
   for (let j = 0; j < unitsPerNest; j++) {
     spawnEntity(
       world,
-      EntityKind.Gator,
+      aiFactionCfg.meleeKind,
       loc.x + rng.float(-75, 75),
       loc.y + rng.float(-75, 75),
       Faction.Enemy,
     );
     spawnEntity(
       world,
-      EntityKind.Snake,
+      aiFactionCfg.rangedKind,
       loc.x + rng.float(-75, 75),
       loc.y + rng.float(-75, 75),
       Faction.Enemy,
@@ -601,6 +605,347 @@ function spawnContested(ctx: SpawnContext, targetNestCount: number): void {
 }
 
 // ---------------------------------------------------------------------------
+// Labyrinth scenario: maze corridors with resources in dead ends
+// ---------------------------------------------------------------------------
+
+function spawnLabyrinth(ctx: SpawnContext, targetNestCount: number): void {
+  const { world, rng, sx, sy, resourceMultiplier } = ctx;
+
+  // Generate maze-like wall segments creating corridors.
+  // We use a grid-based approach: divide the map into cells and create
+  // walls along cell boundaries with random openings.
+  const cellSize = 200;
+  const cols = Math.floor(WORLD_WIDTH / cellSize);
+  const rows = Math.floor(WORLD_HEIGHT / cellSize);
+  const wallSegmentLen = 40;
+
+  // Spawn horizontal wall segments with gaps
+  for (let row = 1; row < rows; row++) {
+    const wy = row * cellSize;
+    for (let col = 0; col < cols; col++) {
+      const wx = col * cellSize + cellSize / 2;
+      // Skip walls near player start
+      if (dist(wx, wy, sx, sy) < 250) continue;
+      // Random gap probability (30% chance of gap)
+      if (rng.float(0, 1) < 0.3) continue;
+      spawnEntity(
+        world,
+        EntityKind.Wall,
+        clampWorld(wx, WORLD_WIDTH),
+        clampWorld(wy, WORLD_HEIGHT),
+        Faction.Neutral,
+      );
+    }
+  }
+
+  // Spawn vertical wall segments with gaps
+  for (let col = 1; col < cols; col++) {
+    const wx = col * cellSize;
+    for (let row = 0; row < rows; row++) {
+      const wy = row * cellSize + cellSize / 2;
+      if (dist(wx, wy, sx, sy) < 250) continue;
+      if (rng.float(0, 1) < 0.3) continue;
+      spawnEntity(
+        world,
+        EntityKind.Wall,
+        clampWorld(wx, WORLD_WIDTH),
+        clampWorld(wy, WORLD_HEIGHT),
+        Faction.Neutral,
+      );
+    }
+  }
+
+  // Place rich resources in dead-end areas (corners and edges of cells)
+  const deadEndCount = Math.floor(6 * resourceMultiplier);
+  for (let i = 0; i < deadEndCount; i++) {
+    const cellCol = rng.int(0, cols);
+    const cellRow = rng.int(0, rows);
+    const dex = cellCol * cellSize + rng.float(wallSegmentLen, cellSize - wallSegmentLen);
+    const dey = cellRow * cellSize + rng.float(wallSegmentLen, cellSize - wallSegmentLen);
+    if (dist(dex, dey, sx, sy) < 200) continue;
+    spawnClambed(world, rng, dex, dey, true);
+    for (let j = 0; j < 3; j++) {
+      spawnCattail(world, rng, dex + rng.float(-60, 60), dey + rng.float(-60, 60), true);
+    }
+  }
+
+  // Scattered resources in corridors
+  const scatteredCattail = Math.floor(50 * resourceMultiplier);
+  for (let i = 0; i < scatteredCattail; i++) {
+    spawnCattail(world, rng, rng.float(60, WORLD_WIDTH - 60), rng.float(60, WORLD_HEIGHT - 60));
+  }
+  const scatteredClambed = Math.floor(3 * resourceMultiplier);
+  for (let i = 0; i < scatteredClambed; i++) {
+    spawnClambed(world, rng, rng.float(60, WORLD_WIDTH - 60), rng.float(60, WORLD_HEIGHT - 60));
+  }
+
+  // Pearl beds in central corridor junctions
+  const pearlBedCount = rng.int(2, 4);
+  for (let i = 0; i < pearlBedCount; i++) {
+    spawnEntity(
+      world,
+      EntityKind.PearlBed,
+      clampWorld(rng.float(WORLD_WIDTH * 0.3, WORLD_WIDTH * 0.7), WORLD_WIDTH),
+      clampWorld(rng.float(WORLD_HEIGHT * 0.3, WORLD_HEIGHT * 0.7), WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
+  // Enemy nests placed in far corners of the maze
+  const cornerPositions = [
+    { x: WORLD_WIDTH * 0.15, y: WORLD_HEIGHT * 0.15 },
+    { x: WORLD_WIDTH * 0.85, y: WORLD_HEIGHT * 0.15 },
+    { x: WORLD_WIDTH * 0.15, y: WORLD_HEIGHT * 0.85 },
+    { x: WORLD_WIDTH * 0.85, y: WORLD_HEIGHT * 0.85 },
+  ];
+  // Sort by distance from player (farthest first)
+  cornerPositions.sort((a, b) => dist(b.x, b.y, sx, sy) - dist(a.x, a.y, sx, sy));
+
+  const campLocs: { x: number; y: number }[] = [];
+  for (let i = 0; i < targetNestCount && i < cornerPositions.length; i++) {
+    campLocs.push(cornerPositions[i]);
+  }
+
+  for (const loc of campLocs) {
+    spawnEnemyCamp(ctx, loc, 1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// River scenario: vertical water divide with bridge choke points
+// ---------------------------------------------------------------------------
+
+function spawnRiver(ctx: SpawnContext, targetNestCount: number): void {
+  const { world, rng, sx, sy, resourceMultiplier } = ctx;
+
+  // Create a vertical "river" of walls down the center of the map
+  // with 2-3 bridge gaps (choke points)
+  const riverX = WORLD_WIDTH / 2;
+  const bridgeCount = rng.int(2, 4);
+  const bridgeGap = 100; // gap size for each bridge
+
+  // Determine bridge Y positions (evenly spaced with some randomness)
+  const bridgeYs: number[] = [];
+  const sectionHeight = WORLD_HEIGHT / (bridgeCount + 1);
+  for (let i = 0; i < bridgeCount; i++) {
+    bridgeYs.push(sectionHeight * (i + 1) + rng.float(-50, 50));
+  }
+
+  // Spawn wall segments along the river line, skipping bridge positions
+  const wallSpacing = 40;
+  for (let wy = 60; wy < WORLD_HEIGHT - 60; wy += wallSpacing) {
+    // Check if this Y is within a bridge gap
+    let inBridge = false;
+    for (const by of bridgeYs) {
+      if (Math.abs(wy - by) < bridgeGap) {
+        inBridge = true;
+        break;
+      }
+    }
+    if (inBridge) continue;
+
+    // Spawn wall with slight random offset for natural look
+    spawnEntity(
+      world,
+      EntityKind.Wall,
+      clampWorld(riverX + rng.float(-15, 15), WORLD_WIDTH),
+      clampWorld(wy, WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
+  // Player is on the left side, enemy on the right
+  // Resources on both sides
+  const leftCattail = Math.floor(40 * resourceMultiplier);
+  for (let i = 0; i < leftCattail; i++) {
+    spawnCattail(
+      world,
+      rng,
+      rng.float(60, riverX - 80),
+      rng.float(60, WORLD_HEIGHT - 60),
+    );
+  }
+  const leftClambed = Math.floor(3 * resourceMultiplier);
+  for (let i = 0; i < leftClambed; i++) {
+    spawnClambed(
+      world,
+      rng,
+      rng.float(60, riverX - 80),
+      rng.float(60, WORLD_HEIGHT - 60),
+    );
+  }
+
+  const rightCattail = Math.floor(40 * resourceMultiplier);
+  for (let i = 0; i < rightCattail; i++) {
+    spawnCattail(
+      world,
+      rng,
+      rng.float(riverX + 80, WORLD_WIDTH - 60),
+      rng.float(60, WORLD_HEIGHT - 60),
+    );
+  }
+  const rightClambed = Math.floor(3 * resourceMultiplier);
+  for (let i = 0; i < rightClambed; i++) {
+    spawnClambed(
+      world,
+      rng,
+      rng.float(riverX + 80, WORLD_WIDTH - 60),
+      rng.float(60, WORLD_HEIGHT - 60),
+    );
+  }
+
+  // Rich resources near bridge choke points (contested areas)
+  for (const by of bridgeYs) {
+    const richCount = Math.floor(4 * resourceMultiplier);
+    for (let i = 0; i < richCount; i++) {
+      spawnCattail(world, rng, riverX + rng.float(-100, 100), by + rng.float(-60, 60), true);
+    }
+    spawnClambed(world, rng, riverX + rng.float(-60, 60), by + rng.float(-40, 40), true);
+  }
+
+  // Pearl beds near bridges
+  const pearlBedCount = Math.min(bridgeCount, rng.int(1, 3));
+  for (let i = 0; i < pearlBedCount; i++) {
+    spawnEntity(
+      world,
+      EntityKind.PearlBed,
+      clampWorld(riverX + rng.float(-80, 80), WORLD_WIDTH),
+      clampWorld(bridgeYs[i] + rng.float(-50, 50), WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
+  // Enemy nests on the right side of the river
+  const campLocs: { x: number; y: number }[] = [];
+  for (let i = 0; i < targetNestCount; i++) {
+    campLocs.push({
+      x: clampWorld(rng.float(riverX + 200, WORLD_WIDTH - 200), WORLD_WIDTH, 200),
+      y: clampWorld(rng.float(200, WORLD_HEIGHT - 200), WORLD_HEIGHT, 200),
+    });
+  }
+
+  for (const loc of campLocs) {
+    spawnEnemyCamp(ctx, loc);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Peninsula scenario: player on narrow land jutting from bottom
+// ---------------------------------------------------------------------------
+
+function spawnPeninsula(ctx: SpawnContext, targetNestCount: number): void {
+  const { world, rng, sx, sy, resourceMultiplier } = ctx;
+
+  // Create peninsula walls: a narrow corridor from bottom center,
+  // opening up to the main land area at the top.
+  const penWidth = WORLD_WIDTH * 0.35; // peninsula width
+  const penLeft = (WORLD_WIDTH - penWidth) / 2;
+  const penRight = penLeft + penWidth;
+  const penTop = WORLD_HEIGHT * 0.45; // where peninsula meets mainland
+
+  // Spawn walls on left side of peninsula
+  const wallSpacing = 40;
+  for (let wy = penTop; wy < WORLD_HEIGHT - 60; wy += wallSpacing) {
+    // Left wall
+    spawnEntity(
+      world,
+      EntityKind.Wall,
+      clampWorld(penLeft + rng.float(-10, 10), WORLD_WIDTH),
+      clampWorld(wy, WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+    // Right wall
+    spawnEntity(
+      world,
+      EntityKind.Wall,
+      clampWorld(penRight + rng.float(-10, 10), WORLD_WIDTH),
+      clampWorld(wy, WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
+  // Add a partial wall across the top of the peninsula (entry point)
+  // with a gap in the center for the single entry
+  const gapWidth = 120;
+  const gapCenter = WORLD_WIDTH / 2;
+  for (let wx = penLeft; wx < penRight; wx += wallSpacing) {
+    if (Math.abs(wx - gapCenter) < gapWidth / 2) continue;
+    spawnEntity(
+      world,
+      EntityKind.Wall,
+      clampWorld(wx, WORLD_WIDTH),
+      clampWorld(penTop + rng.float(-10, 10), WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
+  // Resources inside the peninsula (player's safe zone, limited)
+  const penCattail = Math.floor(20 * resourceMultiplier);
+  for (let i = 0; i < penCattail; i++) {
+    spawnCattail(
+      world,
+      rng,
+      rng.float(penLeft + 40, penRight - 40),
+      rng.float(penTop + 40, WORLD_HEIGHT - 60),
+    );
+  }
+  const penClambed = Math.floor(2 * resourceMultiplier);
+  for (let i = 0; i < penClambed; i++) {
+    spawnClambed(
+      world,
+      rng,
+      rng.float(penLeft + 40, penRight - 40),
+      rng.float(penTop + 40, WORLD_HEIGHT - 60),
+    );
+  }
+
+  // Rich resources in the mainland (north of peninsula)
+  const mainlandCattail = Math.floor(60 * resourceMultiplier);
+  for (let i = 0; i < mainlandCattail; i++) {
+    spawnCattail(
+      world,
+      rng,
+      rng.float(60, WORLD_WIDTH - 60),
+      rng.float(60, penTop - 60),
+    );
+  }
+  const mainlandClambed = Math.floor(4 * resourceMultiplier);
+  for (let i = 0; i < mainlandClambed; i++) {
+    spawnClambed(
+      world,
+      rng,
+      rng.float(60, WORLD_WIDTH - 60),
+      rng.float(60, penTop - 60),
+    );
+  }
+
+  // Pearl beds in the mainland
+  const pearlBedCount = rng.int(2, 4);
+  for (let i = 0; i < pearlBedCount; i++) {
+    spawnEntity(
+      world,
+      EntityKind.PearlBed,
+      clampWorld(rng.float(WORLD_WIDTH * 0.2, WORLD_WIDTH * 0.8), WORLD_WIDTH),
+      clampWorld(rng.float(WORLD_HEIGHT * 0.1, penTop - 80), WORLD_HEIGHT),
+      Faction.Neutral,
+    );
+  }
+
+  // Enemy nests spread across the mainland (north half)
+  const campLocs: { x: number; y: number }[] = [];
+  for (let i = 0; i < targetNestCount; i++) {
+    campLocs.push({
+      x: clampWorld(rng.float(200, WORLD_WIDTH - 200), WORLD_WIDTH, 200),
+      y: clampWorld(rng.float(200, penTop - 200), WORLD_HEIGHT, 200),
+    });
+  }
+
+  for (const loc of campLocs) {
+    spawnEnemyCamp(ctx, loc);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main entry point
 // ---------------------------------------------------------------------------
 
@@ -637,6 +982,20 @@ export function spawnInitialEntities(world: GameWorld): void {
     // Player starts in the center
     sx = WORLD_WIDTH / 2;
     sy = WORLD_HEIGHT / 2;
+  } else if (scenario === 'river') {
+    // Player starts on the left side of the river
+    sx = WORLD_WIDTH * 0.25;
+    sy = WORLD_HEIGHT / 2;
+  } else if (scenario === 'peninsula') {
+    // Player starts at the bottom center (on the peninsula)
+    sx = WORLD_WIDTH / 2;
+    sy = WORLD_HEIGHT * 0.75;
+  } else if (scenario === 'labyrinth') {
+    // Player starts in a random quadrant
+    const playerQuad = rng.pick(QUADRANTS);
+    const center = quadrantCenter(playerQuad);
+    sx = center.x;
+    sy = center.y;
   } else if (scenario === 'contested') {
     // Player starts in a random quadrant (same as standard)
     const playerQuad = rng.pick(QUADRANTS);
@@ -658,12 +1017,13 @@ export function spawnInitialEntities(world: GameWorld): void {
   spawnPlayerResources(ctx);
 
   // ---- Spawn extra starting units if configured ----
+  const playerFactionCfg = getFactionConfig(world.playerFaction);
   const extraUnits = world.startingUnitCount - 4; // base is 4 (commander + 2 gatherers + scout)
   for (let i = 0; i < extraUnits; i++) {
     const angle = (i / Math.max(extraUnits, 1)) * Math.PI * 2;
     spawnEntity(
       world,
-      EntityKind.Gatherer,
+      playerFactionCfg.gathererKind,
       sx + Math.cos(angle) * 50,
       sy + Math.sin(angle) * 50 + 40,
       Faction.Player,
@@ -677,6 +1037,15 @@ export function spawnInitialEntities(world: GameWorld): void {
       break;
     case 'contested':
       spawnContested(ctx, targetNestCount);
+      break;
+    case 'labyrinth':
+      spawnLabyrinth(ctx, targetNestCount);
+      break;
+    case 'river':
+      spawnRiver(ctx, targetNestCount);
+      break;
+    case 'peninsula':
+      spawnPeninsula(ctx, targetNestCount);
       break;
     default:
       spawnStandard(ctx, targetNestCount);

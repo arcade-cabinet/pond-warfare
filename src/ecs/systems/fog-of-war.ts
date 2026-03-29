@@ -15,6 +15,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
+import { Building } from '@/ecs/components';
 import { EXPLORED_SCALE } from '@/constants';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -73,5 +74,40 @@ export function fogOfWarSystem(world: GameWorld): void {
     exploredCtx.beginPath();
     exploredCtx.arc(ex, ey, rad, 0, Math.PI * 2);
     exploredCtx.fill();
+  }
+
+  // Root Network: all player buildings share the largest vision radius
+  if (world.tech.rootNetwork) {
+    // Find the max reveal radius among all player buildings
+    let maxBuildingRad = 16;
+    for (let i = 0; i < entities.length; i++) {
+      const eid = entities[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if (!hasComponent(world.ecs, eid, IsBuilding)) continue;
+      const kind = hasComponent(world.ecs, eid, EntityTypeTag)
+        ? (EntityTypeTag.kind[eid] as EntityKind)
+        : undefined;
+      let rad = 16;
+      if (kind === EntityKind.ScoutPost) rad = 24;
+      if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
+      if (rad > maxBuildingRad) maxBuildingRad = rad;
+    }
+
+    // Draw shared vision for ALL player buildings at max radius
+    for (let i = 0; i < entities.length; i++) {
+      const eid = entities[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if (!hasComponent(world.ecs, eid, IsBuilding)) continue;
+
+      const ex = Math.floor(Position.x[eid] / EXPLORED_SCALE);
+      const ey = Math.floor(Position.y[eid] / EXPLORED_SCALE);
+
+      exploredCtx.fillStyle = 'rgba(255,255,255,0.15)';
+      exploredCtx.beginPath();
+      exploredCtx.arc(ex, ey, maxBuildingRad, 0, Math.PI * 2);
+      exploredCtx.fill();
+    }
   }
 }

@@ -26,7 +26,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { triggerBuildingComplete } from '@/rendering/animations';
-import { type EntityKind, UnitState } from '@/types';
+import { EntityKind, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
 export function buildingSystem(world: GameWorld): void {
@@ -82,6 +82,16 @@ export function buildingSystem(world: GameWorld): void {
           if (hasComponent(world.ecs, tEnt, Building)) {
             Building.progress[tEnt] = 100;
           }
+          // Fortified Walls: +100 HP to Wall buildings on completion
+          if (
+            world.tech.fortifiedWalls &&
+            hasComponent(world.ecs, tEnt, EntityTypeTag) &&
+            (EntityTypeTag.kind[tEnt] as EntityKind) === EntityKind.Wall
+          ) {
+            Health.max[tEnt] += 100;
+            Health.current[tEnt] = Health.max[tEnt];
+          }
+
           audio.buildComplete();
           triggerBuildingComplete(tEnt);
 

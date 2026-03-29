@@ -11,6 +11,7 @@ import { getRank, type RankInfo } from '@/systems/leaderboard';
 import { getPlayerProfile } from '@/storage';
 import {
   achievementsOpen,
+  campaignOpen,
   continueRequested,
   hasSaveGame,
   leaderboardOpen,
@@ -94,6 +95,22 @@ export function MainMenu() {
           }}
         >
           NEW GAME
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-primary)',
+          }}
+          onClick={() => {
+            campaignOpen.value = true;
+          }}
+        >
+          CAMPAIGN
         </button>
 
         <button

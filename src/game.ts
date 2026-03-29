@@ -55,6 +55,13 @@ import { trainingSystem } from '@/ecs/systems/training';
 import { tutorialSystem } from '@/ecs/systems/tutorial';
 import { veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+// Campaign
+import {
+  campaignSystem,
+  createCampaignState,
+  type CampaignState,
+} from '@/campaign';
+import { getMission } from '@/campaign/missions';
 // Extracted sub-modules
 import { buildActionPanel } from '@/game/action-panel-builder';
 import { spawnInitialEntities } from '@/game/init-entities';
@@ -440,6 +447,9 @@ export class Game {
       }
     }
 
+    // Apply campaign mission overrides if launching a campaign mission
+    this.applyCampaignMission();
+
     // Spawn initial entities
     spawnInitialEntities(this.world);
 
@@ -626,12 +636,114 @@ export class Game {
     store.airdropsRemaining.value = this.world.airdropsRemaining;
     store.airdropCooldown.value = 0;
 
+    // ---- Player faction & AI personality ----
+    this.world.playerFaction = store.playerFaction.value;
+    this.world.aiPersonality = store.aiPersonality.value;
+
     // ---- Checkpoint/evacuation reset ----
     this.world.checkpoints = [];
     this.world.lastCheckpointFrame = 0;
     this.world.evacuationTriggered = false;
     store.evacuationActive.value = false;
     store.checkpointCount.value = 0;
+  }
+
+  /**
+   * Apply campaign mission overrides to the world if a campaign mission
+   * is being launched. Must be called after applyDifficultyModifiers
+   * and before spawnInitialEntities.
+   */
+  private applyCampaignMission(): void {
+    const missionId = store.campaignMissionId.value;
+    if (!missionId) {
+      // Freeplay mode — no campaign state
+      (this.world as GameWorld & { campaign?: CampaignState }).campaign = undefined;
+      store.campaignObjectiveStatuses.value = {};
+      return;
+    }
+
+    const mission = getMission(missionId);
+    if (!mission) {
+      store.campaignMissionId.value = '';
+      return;
+    }
+
+    // Apply settings overrides from the mission definition
+    const cfg = mission.settingsOverrides;
+    if (cfg.scenario) this.world.scenarioOverride = cfg.scenario;
+    if (cfg.enemyNests != null) this.world.nestCountOverride = cfg.enemyNests;
+    if (cfg.enemyAggression) this.world.enemyAggressionLevel = cfg.enemyAggression;
+    if (cfg.peaceMinutes != null) this.world.peaceTimer = cfg.peaceMinutes * 3600;
+    if (cfg.fogOfWar) this.world.fogOfWarMode = cfg.fogOfWar;
+    if (cfg.resourceDensity) {
+      const densityMap: Record<string, number> = {
+        sparse: 0.5,
+        normal: 1.0,
+        rich: 1.5,
+        abundant: 2.0,
+      };
+      this.world.resourceDensityMod = densityMap[cfg.resourceDensity] ?? 1.0;
+    }
+    if (cfg.evolutionSpeed) {
+      const evoMap: Record<string, number> = {
+        slow: 1.5,
+        normal: 1.0,
+        fast: 0.5,
+        instant: 0.1,
+      };
+      this.world.evolutionSpeedMod = evoMap[cfg.evolutionSpeed] ?? 1.0;
+    }
+    if (cfg.startingResourcesMult != null) {
+      this.world.resources.clams = Math.round(
+        this.world.resources.clams * cfg.startingResourcesMult,
+      );
+      this.world.resources.twigs = Math.round(
+        this.world.resources.twigs * cfg.startingResourcesMult,
+      );
+      this.world.resTracker.lastClams = this.world.resources.clams;
+      this.world.resTracker.lastTwigs = this.world.resources.twigs;
+    }
+
+    // Apply world-level overrides
+    const wo = mission.worldOverrides;
+    if (wo) {
+      if (wo.evolutionSpeedMod != null) this.world.evolutionSpeedMod = wo.evolutionSpeedMod;
+      if (wo.heroMode != null) this.world.heroMode = wo.heroMode;
+      if (wo.fogOfWar) this.world.fogOfWarMode = wo.fogOfWar;
+      if (wo.startingResourcesMult != null) {
+        this.world.resources.clams = Math.round(
+          this.world.resources.clams * wo.startingResourcesMult,
+        );
+        this.world.resources.twigs = Math.round(
+          this.world.resources.twigs * wo.startingResourcesMult,
+        );
+        this.world.resTracker.lastClams = this.world.resources.clams;
+        this.world.resTracker.lastTwigs = this.world.resources.twigs;
+      }
+      if (wo.fullTechTree) {
+        // Unlock all tech
+        for (const key of Object.keys(this.world.tech)) {
+          (this.world.tech as Record<string, boolean>)[key] = true;
+        }
+      }
+      if (wo.maxEnemyEvolution) {
+        this.world.enemyEvolution.tier = 5;
+      }
+    }
+
+    // Attach campaign state to the world
+    const campaign = createCampaignState(mission);
+    (this.world as GameWorld & { campaign?: CampaignState }).campaign = campaign;
+
+    // Initialize objective statuses in the store
+    const statuses: Record<string, boolean> = {};
+    for (const obj of mission.objectives) {
+      statuses[obj.id] = false;
+    }
+    store.campaignObjectiveStatuses.value = statuses;
+
+    // Disable the normal tutorial for campaign missions (campaign has its own dialogues)
+    this.world.isFirstGame = false;
   }
 
   resize(): void {
@@ -844,6 +956,7 @@ export class Game {
     autoBehaviorSystem(this.world);
     healthSystem(this.world);
     tutorialSystem(this.world);
+    campaignSystem(this.world);
     veterancySystem(this.world);
     fogOfWarSystem(this.world);
     cleanupSystem(this.world);

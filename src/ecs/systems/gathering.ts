@@ -263,6 +263,27 @@ export function gatheringSystem(world: GameWorld): void {
     }
   }
 
+  // ---- Trade Routes passive income ----
+  // Every 300 frames (~5 sec), completed player-owned Lodges generate +3 clams each
+  if (world.tech.tradeRoutes && world.frameCount % 300 === 0) {
+    for (let i = 0; i < buildings.length; i++) {
+      const bid = buildings[i];
+      if (EntityTypeTag.kind[bid] !== EntityKind.Lodge) continue;
+      if (FactionTag.faction[bid] !== Faction.Player) continue;
+      if (Health.current[bid] <= 0 || Building.progress[bid] < 100) continue;
+      world.resources.clams += 3;
+      world.particles.push({
+        x: Position.x[bid] + (Math.random() - 0.5) * 16,
+        y: Position.y[bid] - 8,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: -Math.random() * 0.8,
+        life: 12,
+        color: '#fde047',
+        size: 2,
+      });
+    }
+  }
+
   // ---- Fishing Hut passive income ----
   // Every 300 frames, completed player-owned FishingHuts generate +5 clams
   if (world.frameCount % 300 === 0) {

@@ -260,6 +260,13 @@ export const airdropCooldown = signal(0);
 export const evacuationActive = signal(false);
 export const checkpointCount = signal(0);
 
+// ---- Campaign ----
+export const campaignOpen = signal(false);
+/** Active campaign mission ID, or empty string for freeplay. */
+export const campaignMissionId = signal('');
+/** Per-objective completion statuses (objective ID -> boolean). */
+export const campaignObjectiveStatuses = signal<Record<string, boolean>>({});
+
 export const speedLabel = computed(() => `${gameSpeed.value}x`);
 export const muteLabel = computed(() => (muted.value ? '\u{1F507}' : '\u{1F50A}'));
 

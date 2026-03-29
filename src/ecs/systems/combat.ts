@@ -35,6 +35,7 @@ import {
   TowerAI,
   UnitStateMachine,
   Velocity,
+  Carrying,
 } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';
@@ -103,9 +104,54 @@ function commanderAura(world: GameWorld): void {
   }
 }
 
+/**
+ * War Drums aura: every 60 frames, find player Armory buildings and
+ * buff all player combat units within 200px with +15% damage.
+ */
+function warDrumsAura(world: GameWorld): void {
+  if (!world.tech.warDrums) return;
+  if (world.frameCount % 60 !== 0) return;
+
+  world.warDrumsBuff.clear();
+
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
+
+  // Find living player Armories
+  for (let i = 0; i < allUnits.length; i++) {
+    const eid = allUnits[i];
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    if ((EntityTypeTag.kind[eid] as EntityKind) !== EntityKind.Armory) continue;
+    if (!hasComponent(world.ecs, eid, Building) || Building.progress[eid] < 100) continue;
+
+    const ax = Position.x[eid];
+    const ay = Position.y[eid];
+    const auraRadius = 200;
+
+    const candidates = world.spatialHash ? world.spatialHash.query(ax, ay, auraRadius) : allUnits;
+    for (let j = 0; j < candidates.length; j++) {
+      const t = candidates[j];
+      if (t === eid) continue;
+      if (!hasComponent(world.ecs, t, FactionTag) || FactionTag.faction[t] !== Faction.Player)
+        continue;
+      if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
+      if (!hasComponent(world.ecs, t, Combat)) continue;
+      if (hasComponent(world.ecs, t, IsBuilding) || hasComponent(world.ecs, t, IsResource)) continue;
+
+      const dx = Position.x[t] - ax;
+      const dy = Position.y[t] - ay;
+      if (Math.sqrt(dx * dx + dy * dy) <= auraRadius) {
+        world.warDrumsBuff.add(t);
+      }
+    }
+  }
+}
+
 export function combatSystem(world: GameWorld): void {
   // Process Commander aura
   commanderAura(world);
+  // Process War Drums aura
+  warDrumsAura(world);
   const units = query(world.ecs, [
     Position,
     Combat,
@@ -329,8 +375,16 @@ export function combatSystem(world: GameWorld): void {
         if (Combat.attackCooldown[eid] <= 0) {
           if (kind === EntityKind.Sniper) {
             const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
-            const mult = getDamageMultiplier(kind, targetKind);
-            const sniperDmg = Math.round(dmg * mult);
+            let mult = getDamageMultiplier(kind, targetKind);
+            // Piercing Shot: snipers ignore 50% of damage reduction (counter multiplier lifted halfway to 1.0)
+            if (world.tech.piercingShot && mult < 1.0) {
+              mult = mult + (1.0 - mult) * 0.5;
+            }
+            let sniperDmg = Math.round(dmg * mult);
+            // War Drums aura: +15% damage
+            if (world.warDrumsBuff.has(eid)) {
+              sniperDmg = Math.round(sniperDmg * 1.15);
+            }
             audio.shoot();
             spawnProjectile(
               world,
@@ -448,17 +502,40 @@ export function combatSystem(world: GameWorld): void {
               meleeDmg = Math.round(meleeDmg * (1 + world.commanderModifiers.auraDamageBonus));
             }
 
+            // War Drums aura: +15% damage for melee
+            if (world.warDrumsBuff.has(eid)) {
+              meleeDmg = Math.round(meleeDmg * 1.15);
+            }
+
             takeDamage(world, tEnt, meleeDmg, eid, mult);
 
             // Venom Snake: apply poison (2 damage/sec for 5 seconds = 5 ticks)
             if (kind === EntityKind.VenomSnake) {
               world.poisonTimers.set(tEnt, 5);
             }
+
+            // Venom Coating tech: all player melee attacks apply 1 dmg/sec poison for 3 seconds
+            if (
+              faction === Faction.Player &&
+              world.tech.venomCoating &&
+              kind !== EntityKind.VenomSnake
+            ) {
+              // Only apply if not already poisoned by VenomSnake (which is stronger)
+              if (!world.poisonTimers.has(tEnt)) {
+                world.venomCoatingTimers.set(tEnt, 3);
+              }
+            }
           }
-          Combat.attackCooldown[eid] =
-            faction === Faction.Player && world.tech.battleRoar
-              ? Math.round(ATTACK_COOLDOWN * 0.9)
-              : ATTACK_COOLDOWN;
+          // Attack cooldown: base modified by battleRoar and siegeEngineering
+          let cooldown = ATTACK_COOLDOWN;
+          if (faction === Faction.Player && world.tech.battleRoar) {
+            cooldown = Math.round(cooldown * 0.9);
+          }
+          // Siege Engineering: catapults fire 25% faster
+          if (kind === EntityKind.Catapult && world.tech.siegeEngineering) {
+            cooldown = Math.round(cooldown * 0.75);
+          }
+          Combat.attackCooldown[eid] = cooldown;
 
           // Combat bark: ~10% chance on attack (don't spam)
           if (faction === Faction.Player && Math.random() < 0.1) {
