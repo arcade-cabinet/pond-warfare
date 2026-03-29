@@ -6,16 +6,28 @@
  * over a dark pond gradient background.
  */
 
+import { useEffect, useState } from 'preact/hooks';
+import { getRank, type RankInfo } from '@/systems/leaderboard';
+import { getPlayerProfile } from '@/storage';
 import {
   achievementsOpen,
   continueRequested,
   hasSaveGame,
+  leaderboardOpen,
   menuState,
   settingsOpen,
   unlocksOpen,
 } from './store';
 
 export function MainMenu() {
+  const [rank, setRank] = useState<RankInfo | null>(null);
+
+  useEffect(() => {
+    getPlayerProfile()
+      .then((p) => setRank(getRank(p.total_wins)))
+      .catch(() => {});
+  }, []);
+
   return (
     <div
       id="intro-overlay"
@@ -53,6 +65,19 @@ export function MainMenu() {
         Defend the Pond. Conquer the Wild.
       </p>
 
+      {/* Rank badge */}
+      {rank && (
+        <div
+          class="flex items-center gap-2 mt-3 relative z-10"
+          style={{ color: rank.color }}
+        >
+          <span class="text-lg">{rank.icon}</span>
+          <span class="font-heading font-bold text-sm tracking-wider uppercase">
+            {rank.label}
+          </span>
+        </div>
+      )}
+
       {/* Menu buttons */}
       <div class="flex flex-col gap-4 mt-10 relative z-10 items-center">
         <button
@@ -89,6 +114,22 @@ export function MainMenu() {
           }}
         >
           CONTINUE
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-secondary)',
+          }}
+          onClick={() => {
+            leaderboardOpen.value = true;
+          }}
+        >
+          LEADERBOARD
         </button>
 
         <button

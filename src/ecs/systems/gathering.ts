@@ -190,6 +190,10 @@ export function gatheringSystem(world: GameWorld): void {
 
       // Deplete resource (Tidal Harvest: +50%)
       let gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;
+      // Commander passive: gather bonus for player gatherers
+      if (faction === Faction.Player && world.commanderModifiers.passiveGatherBonus > 0) {
+        gatherAmt = Math.round(gatherAmt * (1 + world.commanderModifiers.passiveGatherBonus));
+      }
       // Permadeath rewards modifier: +50% gathered resources for player
       if (faction === Faction.Player && world.rewardsModifier > 1.0) {
         gatherAmt = Math.round(gatherAmt * world.rewardsModifier);

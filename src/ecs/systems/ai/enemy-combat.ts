@@ -7,6 +7,7 @@
  */
 
 import { audio } from '@/audio/audio-system';
+import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   ENEMY_ARMY_ATTACK_THRESHOLD,
@@ -58,7 +59,7 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   if (world.frameCount % ENEMY_ATTACK_CHECK_INTERVAL !== 0) return;
 
   const armySize = countEnemyArmy(world);
-  // Scale attack threshold: by difficulty and game phase
+  // Scale attack threshold: by difficulty, game phase, and AI personality
   let baseThreshold = ENEMY_ARMY_ATTACK_THRESHOLD;
   let lateThreshold = ENEMY_LATE_ATTACK_THRESHOLD;
   if (world.difficulty === 'easy') {
@@ -74,6 +75,10 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
     baseThreshold = 2;
     lateThreshold = 1;
   }
+  // AI personality modifier: adjusts how large the army must be before attacking
+  const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+  baseThreshold = Math.max(1, Math.round(baseThreshold * personality.attackThresholdMult));
+  lateThreshold = Math.max(1, Math.round(lateThreshold * personality.attackThresholdMult));
   const attackThreshold = world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
   if (armySize < attackThreshold) return;
 

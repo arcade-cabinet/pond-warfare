@@ -19,9 +19,12 @@ import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
 import { AchievementsPanel } from './achievements-panel';
 import { ErrorOverlay } from './error-overlay';
+import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
+import { AirdropButton } from './hud/airdrop-button';
 import { KeyboardReference } from './keyboard-reference';
+import { LeaderboardPanel } from './leaderboard-panel';
 import { MainMenu } from './main-menu';
 import { NewGameModal } from './new-game-modal';
 import { SettingsPanel } from './settings-panel';
@@ -246,6 +249,14 @@ export function App({ onMount }: AppProps) {
           }}
         />
 
+        {/* Airdrop button */}
+        <AirdropButton
+          onAirdrop={() => {
+            game.useAirdrop();
+            game.syncUIStore();
+          }}
+        />
+
         {/* Canvases */}
         <canvas ref={gameCanvasRef} id="game-canvas" />
         <canvas ref={fogCanvasRef} id="fog-canvas" />
@@ -262,6 +273,13 @@ export function App({ onMount }: AppProps) {
 
         {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />
+
+        {/* Evacuation overlay */}
+        <EvacuationOverlay
+          onChoice={(choice) => {
+            game.handleEvacuationChoice(choice);
+          }}
+        />
 
         {/* Tech tree overlay */}
         {store.techTreeOpen.value && (

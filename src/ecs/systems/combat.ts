@@ -48,9 +48,11 @@ import { EntityKind, Faction, UnitState } from '@/types';
 function commanderAura(world: GameWorld): void {
   if (world.frameCount % 60 !== 0) return;
 
-  // Clear previous buff set; we rebuild each tick
+  // Clear previous buff sets; we rebuild each tick
   world.commanderDamageBuff.clear();
+  world.commanderSpeedBuff.clear();
 
+  const mods = world.commanderModifiers;
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
 
   // Find living player Commanders
@@ -64,6 +66,7 @@ function commanderAura(world: GameWorld): void {
     const cy = Position.y[eid];
     const auraRadius = 150;
 
+    // Query all nearby entities for both unit and building buffs
     const candidates = world.spatialHash ? world.spatialHash.query(cx, cy, auraRadius) : allUnits;
     for (let j = 0; j < candidates.length; j++) {
       const t = candidates[j];
@@ -71,14 +74,30 @@ function commanderAura(world: GameWorld): void {
       if (!hasComponent(world.ecs, t, FactionTag) || FactionTag.faction[t] !== Faction.Player)
         continue;
       if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
-      if (!hasComponent(world.ecs, t, Combat)) continue;
-      if (hasComponent(world.ecs, t, IsBuilding)) continue;
-      if (hasComponent(world.ecs, t, IsResource)) continue;
 
       const dx = Position.x[t] - cx;
       const dy = Position.y[t] - cy;
-      if (Math.sqrt(dx * dx + dy * dy) <= auraRadius) {
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > auraRadius) continue;
+
+      const isBuil = hasComponent(world.ecs, t, IsBuilding);
+      const isRes = hasComponent(world.ecs, t, IsResource);
+
+      // Building HP bonus: apply once per building entering the aura
+      if (isBuil && mods.auraHpBonus > 0 && !world.commanderHpBuffApplied.has(t)) {
+        Health.max[t] += mods.auraHpBonus;
+        Health.current[t] += mods.auraHpBonus;
+        world.commanderHpBuffApplied.add(t);
+      }
+
+      // Unit buffs (non-building, non-resource)
+      if (!isBuil && !isRes && hasComponent(world.ecs, t, Combat)) {
         world.commanderDamageBuff.add(t);
+
+        // Speed buff: mark for movement system
+        if (mods.auraSpeedBonus > 0) {
+          world.commanderSpeedBuff.add(t);
+        }
       }
     }
   }
@@ -142,7 +161,13 @@ export function combatSystem(world: GameWorld): void {
         Combat.damage[eid],
         eid,
       );
-      Combat.attackCooldown[eid] = TOWER_ATTACK_COOLDOWN;
+      // Commander passive: towers attack faster
+      const towerSpeedBonus =
+        faction === Faction.Player ? world.commanderModifiers.passiveTowerAttackSpeed : 0;
+      Combat.attackCooldown[eid] =
+        towerSpeedBonus > 0
+          ? Math.round(TOWER_ATTACK_COOLDOWN * (1 - towerSpeedBonus))
+          : TOWER_ATTACK_COOLDOWN;
     }
   }
 
@@ -415,9 +440,12 @@ export function combatSystem(world: GameWorld): void {
               meleeDmg = Math.round(meleeDmg * 1.2);
             }
 
-            // Commander aura: +10% damage for player units near Commander
-            if (world.commanderDamageBuff.has(eid)) {
-              meleeDmg = Math.round(meleeDmg * 1.1);
+            // Commander aura: damage bonus for player units near Commander
+            if (
+              world.commanderDamageBuff.has(eid) &&
+              world.commanderModifiers.auraDamageBonus > 0
+            ) {
+              meleeDmg = Math.round(meleeDmg * (1 + world.commanderModifiers.auraDamageBonus));
             }
 
             takeDamage(world, tEnt, meleeDmg, eid, mult);

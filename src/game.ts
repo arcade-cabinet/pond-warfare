@@ -22,6 +22,7 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from '@/constants';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
   Collider,
   EntityTypeTag,
@@ -94,7 +95,7 @@ import {
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
 import { ReplayRecorder } from '@/replay';
-import { saveGame } from '@/save-system';
+import { loadGame as loadGameFromSave, saveGame } from '@/save-system';
 import { saveGameToDb } from '@/storage';
 import {
   checkAchievements,
@@ -102,7 +103,7 @@ import {
   resetAchievementMatchState,
 } from '@/systems/achievements';
 import { loadUnlocks, updateProfileAndCheckUnlocks } from '@/systems/unlock-tracker';
-import { type EntityKind, Faction, type SpriteId, UnitState } from '@/types';
+import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
 
@@ -151,6 +152,10 @@ export class Game {
   private wasPeaceful = true;
   private colorBlindUnsubscribe: (() => void) | null = null;
   private wasGameOver = false;
+
+  // Checkpoint event tracking
+  private lastKnownNestsDestroyed = 0;
+  private lastKnownTechCount = 0;
 
   // Smooth camera pan animation (anime.js)
   private _panAnim: { pause: () => void } | null = null;
@@ -919,8 +924,27 @@ export class Game {
       this.createCheckpoint();
     }
 
+    // Checkpoint on nest destruction
+    if (this.world.state === 'playing') {
+      const currentNestsDestroyed = store.destroyedEnemyNests.value;
+      if (currentNestsDestroyed > this.lastKnownNestsDestroyed) {
+        this.lastKnownNestsDestroyed = currentNestsDestroyed;
+        this.createCheckpoint();
+      }
+
+      // Checkpoint on tech research
+      const techCount = Object.values(this.world.tech).filter(Boolean).length;
+      if (techCount > this.lastKnownTechCount) {
+        this.lastKnownTechCount = techCount;
+        this.createCheckpoint();
+      }
+    }
+
     // Airdrop cooldown sync to store
-    if (this.world.airdropCooldownUntil > 0 && this.world.frameCount >= this.world.airdropCooldownUntil) {
+    if (
+      this.world.airdropCooldownUntil > 0 &&
+      this.world.frameCount >= this.world.airdropCooldownUntil
+    ) {
       this.world.airdropCooldownUntil = 0;
       store.airdropCooldown.value = 0;
     } else if (this.world.airdropCooldownUntil > this.world.frameCount) {
@@ -939,6 +963,199 @@ export class Game {
       checkAchievements(this.world).catch(() => {
         /* best-effort */
       });
+    }
+  }
+
+  // ---- Checkpoint system ----
+
+  /** Create a rolling checkpoint (max 5). */
+  createCheckpoint(): void {
+    const json = saveGame(this.world);
+    this.world.checkpoints.push(json);
+    if (this.world.checkpoints.length > 5) {
+      this.world.checkpoints.shift();
+    }
+    this.world.lastCheckpointFrame = this.world.frameCount;
+    store.checkpointCount.value = this.world.checkpoints.length;
+    this.world.floatingTexts.push({
+      x: this.world.camX + (this.world.viewWidth || 400) / 2,
+      y: this.world.camY + 60,
+      text: 'Checkpoint \u2713',
+      color: '#4ade80',
+      life: 60,
+    });
+  }
+
+  /** Load the most recent checkpoint into the world. Returns false if none exist. */
+  loadCheckpoint(): boolean {
+    if (this.world.checkpoints.length === 0) return false;
+    const latest = this.world.checkpoints[this.world.checkpoints.length - 1];
+    const success = loadGameFromSave(this.world, latest);
+    if (success) {
+      this.world.evacuationTriggered = false;
+      store.evacuationActive.value = false;
+    }
+    return success;
+  }
+
+  // ---- Airdrop system ----
+
+  /** Use an airdrop: spawn resources and units at the Lodge position. */
+  useAirdrop(): boolean {
+    if (this.world.airdropsRemaining <= 0) return false;
+    if (this.world.frameCount < this.world.airdropCooldownUntil) return false;
+
+    // Find the player Lodge position
+    const buildings = query(this.world.ecs, [
+      Position,
+      Health,
+      IsBuilding,
+      FactionTag,
+      EntityTypeTag,
+    ]);
+    let lodgeX = 0;
+    let lodgeY = 0;
+    let foundLodge = false;
+    for (let i = 0; i < buildings.length; i++) {
+      const eid = buildings[i];
+      if (
+        EntityTypeTag.kind[eid] === EntityKind.Lodge &&
+        FactionTag.faction[eid] === Faction.Player &&
+        Health.current[eid] > 0
+      ) {
+        lodgeX = Position.x[eid];
+        lodgeY = Position.y[eid];
+        foundLodge = true;
+        break;
+      }
+    }
+    if (!foundLodge) return false;
+
+    // Grant resources
+    this.world.resources.clams += 200;
+    this.world.resources.twigs += 100;
+
+    // Spawn units near Lodge
+    const offsets = [
+      { x: -40, y: 60 },
+      { x: 40, y: 60 },
+      { x: 0, y: 80 },
+    ];
+    // 2 Brawlers
+    spawnEntity(
+      this.world,
+      EntityKind.Brawler,
+      lodgeX + offsets[0].x,
+      lodgeY + offsets[0].y,
+      Faction.Player,
+    );
+    spawnEntity(
+      this.world,
+      EntityKind.Brawler,
+      lodgeX + offsets[1].x,
+      lodgeY + offsets[1].y,
+      Faction.Player,
+    );
+    // 1 Healer
+    spawnEntity(
+      this.world,
+      EntityKind.Healer,
+      lodgeX + offsets[2].x,
+      lodgeY + offsets[2].y,
+      Faction.Player,
+    );
+
+    // Decrement and set cooldown
+    this.world.airdropsRemaining--;
+    this.world.airdropCooldownUntil = this.world.frameCount + 600; // 10 seconds
+    store.airdropsRemaining.value = this.world.airdropsRemaining;
+    store.airdropCooldown.value = 10;
+
+    // Visual feedback
+    this.world.floatingTexts.push({
+      x: lodgeX,
+      y: lodgeY - 40,
+      text: 'SUPPLIES INCOMING!',
+      color: '#facc15',
+      life: 120,
+    });
+
+    // Particle burst around the lodge
+    for (let p = 0; p < 20; p++) {
+      this.world.particles.push({
+        x: lodgeX + (Math.random() - 0.5) * 60,
+        y: lodgeY + (Math.random() - 0.5) * 60,
+        vx: (Math.random() - 0.5) * 3,
+        vy: -Math.random() * 3 - 1,
+        life: 40,
+        color: '#facc15',
+        size: 4,
+      });
+    }
+
+    return true;
+  }
+
+  // ---- Evacuation system ----
+
+  /** Check if the player qualifies for emergency evacuation. */
+  private checkEvacuation(): void {
+    if (this.world.evacuationTriggered) return;
+
+    const allEnts = query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+
+    let lodgeHp = 0;
+    let playerCombatUnits = 0;
+    let playerGatherers = 0;
+    let commanderAlive = false;
+
+    for (let i = 0; i < allEnts.length; i++) {
+      const eid = allEnts[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+
+      const kind = EntityTypeTag.kind[eid] as EntityKind;
+      if (kind === EntityKind.Lodge) {
+        lodgeHp = Health.current[eid];
+      } else if (kind === EntityKind.Commander) {
+        commanderAlive = true;
+      } else if (kind === EntityKind.Gatherer) {
+        playerGatherers++;
+      } else if (!ENTITY_DEFS[kind]?.isBuilding) {
+        playerCombatUnits++;
+      }
+    }
+
+    if (
+      lodgeHp > 0 &&
+      lodgeHp < 150 &&
+      playerCombatUnits === 0 &&
+      playerGatherers === 0 &&
+      commanderAlive
+    ) {
+      this.world.evacuationTriggered = true;
+      this.world.paused = true;
+      store.paused.value = true;
+      store.evacuationActive.value = true;
+    }
+  }
+
+  /** Handle evacuation choice from the UI. */
+  handleEvacuationChoice(choice: 'checkpoint' | 'restart' | 'quit'): void {
+    this.world.evacuationTriggered = false;
+    store.evacuationActive.value = false;
+    this.world.paused = false;
+    store.paused.value = false;
+
+    if (choice === 'checkpoint') {
+      this.loadCheckpoint();
+    } else if (choice === 'restart') {
+      // Re-init with same settings
+      store.menuState.value = 'playing';
+    } else {
+      // Quit to menu
+      store.menuState.value = 'main';
+      store.gameState.value = 'playing'; // reset the game state signal
     }
   }
 

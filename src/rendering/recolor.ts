@@ -20,7 +20,14 @@ export type RecolorPreset =
   | 'champion'
   | 'enraged'
   | 'poisoned'
-  | 'shielded';
+  | 'shielded'
+  | 'cmd_blue'
+  | 'cmd_green'
+  | 'cmd_gold'
+  | 'cmd_cyan'
+  | 'cmd_purple'
+  | 'cmd_red'
+  | 'cmd_yellow';
 
 interface RecolorParams {
   hueShift: number;
@@ -36,6 +43,15 @@ const PRESETS: Record<RecolorPreset, RecolorParams> = {
   enraged: { hueShift: 0, satMult: 1.5, brightMult: 1.4 }, // Red-hot
   poisoned: { hueShift: 90, satMult: 0.8, brightMult: 0.9 }, // Sickly green
   shielded: { hueShift: 200, satMult: 0.7, brightMult: 1.3 }, // Blue glow
+
+  // Commander sprite variants (cape/color recolors)
+  cmd_blue: { hueShift: 0, satMult: 1.0, brightMult: 1.0 }, // Default (no change)
+  cmd_green: { hueShift: 100, satMult: 1.1, brightMult: 1.05 }, // Sage green
+  cmd_gold: { hueShift: 40, satMult: 1.3, brightMult: 1.2 }, // Warden gold
+  cmd_cyan: { hueShift: 160, satMult: 1.1, brightMult: 1.1 }, // Tidekeeper cyan
+  cmd_purple: { hueShift: -60, satMult: 1.2, brightMult: 0.95 }, // Shadowfang purple
+  cmd_red: { hueShift: -10, satMult: 1.4, brightMult: 1.1 }, // Ironpaw red
+  cmd_yellow: { hueShift: 50, satMult: 1.3, brightMult: 1.25 }, // Stormcaller yellow
 };
 
 // ---------------------------------------------------------------------------
@@ -194,4 +210,15 @@ export function veterancyPreset(rank: number): RecolorPreset | undefined {
     default:
       return undefined;
   }
+}
+
+/**
+ * Map commander sprite variant string to a recolor preset.
+ * Returns undefined for 'blue' (the default, no recolor needed).
+ */
+export function commanderVariantPreset(variant: string): RecolorPreset | undefined {
+  const key = `cmd_${variant}` as RecolorPreset;
+  if (key === 'cmd_blue') return undefined; // Default, no recolor
+  if (key in PRESETS) return key;
+  return undefined;
 }

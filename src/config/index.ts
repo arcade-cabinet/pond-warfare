@@ -1,4 +1,20 @@
 export {
+  AI_PERSONALITIES,
+  type AIPersonality,
+  type PersonalityConfig,
+  RANDOM_SWITCH_INTERVAL,
+  resolvePersonality,
+} from './ai-personalities';
+export { COMMANDERS, type CommanderDef, getCommanderDef } from './commanders';
+export {
+  type FactionConfig,
+  getAIFaction,
+  getFactionConfig,
+  OTTER_FACTION,
+  type PlayableFaction,
+  PREDATOR_FACTION,
+} from './factions';
+export {
   DAMAGE_MULTIPLIERS,
   ENTITY_DEFS,
   entityKindFromString,

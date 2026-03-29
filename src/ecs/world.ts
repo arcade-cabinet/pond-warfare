@@ -1,5 +1,7 @@
 import { createWorld } from 'bitecs';
 import { YukaManager } from '@/ai/yuka-manager';
+import type { AIPersonality } from '@/config/ai-personalities';
+import type { PlayableFaction } from '@/config/factions';
 import { createInitialTechState, type TechState } from '@/config/tech-tree';
 import {
   ENEMY_STARTING_CLAMS,
@@ -116,7 +118,7 @@ export interface GameWorld {
   /** Custom starting unit count (replaces default 4). */
   startingUnitCount: number;
   /** Custom scenario override (null = use seeded random). */
-  scenarioOverride: 'standard' | 'island' | 'contested' | null;
+  scenarioOverride: 'standard' | 'island' | 'contested' | 'labyrinth' | 'river' | 'peninsula' | null;
   /** Custom nest count override (-1 = use difficulty default). */
   nestCountOverride: number;
   /** Resource density override for map generation. */
@@ -178,8 +180,11 @@ export interface GameWorld {
   tutorialShownSteps: Set<number>;
   isFirstGame: boolean;
 
-  // Commander aura: entity ID -> expiry frame for +10% damage buff
+  // Commander aura: entity IDs within commander aura range
   commanderDamageBuff: Set<number>;
+  commanderSpeedBuff: Set<number>;
+  /** Building IDs that have already received the commander aura HP bonus. */
+  commanderHpBuffApplied: Set<number>;
 
   // Commander selection
   commanderId: string;
@@ -195,6 +200,26 @@ export interface GameWorld {
 
   // Evacuation state
   evacuationTriggered: boolean;
+
+  // Faction selection: which faction the player controls
+  playerFaction: PlayableFaction;
+
+  // AI personality: modifies enemy AI behavior
+  aiPersonality: AIPersonality;
+
+  // Active ability state (tech tree abilities)
+  /** Rally Cry: frame at which the buff expires (0 = inactive). */
+  rallyCryExpiry: number;
+  /** Rally Cry: frame at which the ability can be used again (0 = ready). */
+  rallyCryCooldownUntil: number;
+  /** Pond Blessing: true if already used this game. */
+  pondBlessingUsed: boolean;
+  /** Tidal Surge: true if already used this game. */
+  tidalSurgeUsed: boolean;
+  /** War Drums: set of entity IDs within armory aura range (rebuilt periodically). */
+  warDrumsBuff: Set<number>;
+  /** Venom Coating: poison timers applied by tech (entity ID -> remaining ticks). */
+  venomCoatingTimers: Map<number, number>;
 }
 
 export function createGameWorld(): GameWorld {
@@ -300,6 +325,8 @@ export function createGameWorld(): GameWorld {
     tutorialShownSteps: new Set(),
     isFirstGame: true,
     commanderDamageBuff: new Set(),
+    commanderSpeedBuff: new Set(),
+    commanderHpBuffApplied: new Set(),
 
     commanderId: 'marshal',
     commanderModifiers: {
@@ -318,5 +345,15 @@ export function createGameWorld(): GameWorld {
     lastCheckpointFrame: 0,
 
     evacuationTriggered: false,
+
+    playerFaction: 'otter',
+    aiPersonality: 'balanced',
+
+    rallyCryExpiry: 0,
+    rallyCryCooldownUntil: 0,
+    pondBlessingUsed: false,
+    tidalSurgeUsed: false,
+    warDrumsBuff: new Set(),
+    venomCoatingTimers: new Map(),
   };
 }

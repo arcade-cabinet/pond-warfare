@@ -8,6 +8,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   ENEMY_GATOR_COST_CLAMS,
@@ -58,20 +59,40 @@ const ENEMY_UNIT_COSTS: Partial<
   [EntityKind.AlphaPredator]: { clams: 500, twigs: 300, weight: 1 },
 };
 
+/** Melee-type enemy units (short range, high HP). */
+const MELEE_KINDS = new Set([EntityKind.Gator, EntityKind.ArmoredGator]);
+/** Ranged-type enemy units. */
+const RANGED_KINDS = new Set([EntityKind.Snake, EntityKind.VenomSnake, EntityKind.SwampDrake]);
+/** Siege-type enemy units. */
+const SIEGE_KINDS = new Set([EntityKind.SiegeTurtle]);
+
 /**
  * Pick a unit kind from unlocked units using weighted random selection.
  * Higher-tier units have lower weights, so they train less frequently.
+ * The trainingPreference param biases selection toward a unit category.
  */
-function pickEnemyUnit(unlockedUnits: EntityKind[]): EntityKind {
+function pickEnemyUnit(
+  unlockedUnits: EntityKind[],
+  trainingPreference: 'melee' | 'ranged' | 'balanced' | 'siege' = 'balanced',
+): EntityKind {
   let totalWeight = 0;
   for (const kind of unlockedUnits) {
-    totalWeight += ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+    let w = ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+    // Bias weight by personality preference
+    if (trainingPreference === 'melee' && MELEE_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'ranged' && RANGED_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'siege' && SIEGE_KINDS.has(kind)) w *= 3;
+    totalWeight += w;
   }
   if (totalWeight === 0) return EntityKind.Gator;
 
   let roll = Math.random() * totalWeight;
   for (const kind of unlockedUnits) {
-    roll -= ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+    let w = ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+    if (trainingPreference === 'melee' && MELEE_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'ranged' && RANGED_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'siege' && SIEGE_KINDS.has(kind)) w *= 3;
+    roll -= w;
     if (roll <= 0) return kind;
   }
   return unlockedUnits[0];
@@ -135,8 +156,9 @@ export function enemyTrainingTick(world: GameWorld): void {
     const slots = trainingQueueSlots.get(nestEid) ?? [];
     if (slots.length >= maxQueueSize) continue;
 
-    // Decide what to train from unlocked units (evolution system)
-    const unitKind = pickEnemyUnit(world.enemyEvolution.unlockedUnits);
+    // Decide what to train from unlocked units (evolution system + personality bias)
+    const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+    const unitKind = pickEnemyUnit(world.enemyEvolution.unlockedUnits, personality.trainingPreference);
     const costs = ENEMY_UNIT_COSTS[unitKind];
     if (!costs) continue;
     const costClams = costs.clams;

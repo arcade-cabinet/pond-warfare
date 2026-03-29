@@ -15,12 +15,14 @@
 import { hasComponent, query } from 'bitecs';
 import { BUILD_TIMER, GATHER_AMOUNT, GATHER_TIMER, REPAIR_TIMER } from '@/constants';
 import {
+  Building,
   Carrying,
   Collider,
   Combat,
   EntityTypeTag,
   FactionTag,
   Health,
+  IsBuilding,
   Position,
   Resource,
   Sprite,
@@ -78,6 +80,11 @@ export function movementSystem(world: GameWorld): void {
     if (Velocity.speedDebuffTimer[eid] > 0) {
       speed *= 0.5;
       Velocity.speedDebuffTimer[eid]--;
+    }
+
+    // Commander aura: speed bonus for buffed player units
+    if (world.commanderSpeedBuff.has(eid)) {
+      speed += world.commanderModifiers.auraSpeedBonus;
     }
 
     const dx = tx - Position.x[eid];

@@ -13,7 +13,20 @@ export type TechId =
   | 'aquaticTraining'
   | 'deepDiving'
   | 'cunningTraps'
-  | 'camouflage';
+  | 'camouflage'
+  // Lodge branch additions
+  | 'fortifiedWalls'
+  | 'tradeRoutes'
+  | 'rallyCry'
+  | 'pondBlessing'
+  // Armory branch additions
+  | 'piercingShot'
+  | 'warDrums'
+  | 'venomCoating'
+  | 'siegeEngineering'
+  // Nature branch additions
+  | 'rootNetwork'
+  | 'tidalSurge';
 
 export interface TechUpgrade {
   id: TechId;
@@ -142,6 +155,92 @@ export const TECH_UPGRADES = {
     clamCost: 300,
     twigCost: 200,
     requires: 'cunningTraps',
+  },
+  // Lodge branch additions
+  fortifiedWalls: {
+    id: 'fortifiedWalls',
+    name: 'Fortified Walls',
+    description: 'Wall HP +100, walls slow nearby enemies',
+    clamCost: 150,
+    twigCost: 100,
+    requires: 'sturdyMud',
+  },
+  tradeRoutes: {
+    id: 'tradeRoutes',
+    name: 'Trade Routes',
+    description: '+3 clams/5sec passive income per Lodge',
+    clamCost: 200,
+    twigCost: 150,
+    requires: 'cartography',
+  },
+  rallyCry: {
+    id: 'rallyCry',
+    name: 'Rally Cry',
+    description: 'Activate: all units +30% speed for 10s',
+    clamCost: 250,
+    twigCost: 200,
+    requires: 'swiftPaws',
+  },
+  pondBlessing: {
+    id: 'pondBlessing',
+    name: 'Pond Blessing',
+    description: 'One-time: heal all units to full HP',
+    clamCost: 300,
+    twigCost: 200,
+    pearlCost: 20,
+    requires: 'herbalMedicine',
+  },
+  // Armory branch additions
+  piercingShot: {
+    id: 'piercingShot',
+    name: 'Piercing Shot',
+    description: 'Snipers ignore 50% of damage reduction',
+    clamCost: 200,
+    twigCost: 150,
+    requires: 'eagleEye',
+  },
+  warDrums: {
+    id: 'warDrums',
+    name: 'War Drums',
+    description: '+15% damage within 200px of Armory',
+    clamCost: 250,
+    twigCost: 200,
+    requires: 'battleRoar',
+  },
+  venomCoating: {
+    id: 'venomCoating',
+    name: 'Venom Coating',
+    description: 'Melee attacks apply 1 dmg/sec poison 3s',
+    clamCost: 200,
+    twigCost: 150,
+    requires: 'cunningTraps',
+  },
+  siegeEngineering: {
+    id: 'siegeEngineering',
+    name: 'Siege Engineering',
+    description: 'Catapults fire 25% faster',
+    clamCost: 300,
+    twigCost: 250,
+    requires: 'siegeWorks',
+  },
+  // Nature branch additions
+  rootNetwork: {
+    id: 'rootNetwork',
+    name: 'Root Network',
+    description: 'Buildings share vision radius',
+    clamCost: 200,
+    twigCost: 150,
+    pearlCost: 15,
+    requires: 'deepDiving',
+  },
+  tidalSurge: {
+    id: 'tidalSurge',
+    name: 'Tidal Surge',
+    description: 'One-time: deal 50 damage to all enemies',
+    clamCost: 400,
+    twigCost: 300,
+    pearlCost: 40,
+    requires: 'deepDiving',
   },
 } as const satisfies Record<TechId, TechUpgrade>;
 

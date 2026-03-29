@@ -108,7 +108,7 @@ export const goFrameCount = signal(0);
 export const goMapSeed = signal(0);
 
 // ---- Map scenario ----
-export type MapScenario = 'standard' | 'island' | 'contested';
+export type MapScenario = 'standard' | 'island' | 'contested' | 'labyrinth' | 'river' | 'peninsula';
 export const mapScenario = signal<MapScenario>('standard');
 
 // ---- Map seed input (for intro screen) ----
@@ -176,7 +176,7 @@ export const selectedDifficulty = signal<DifficultyLevel>('normal');
 // ---- Custom game settings ----
 export interface CustomGameSettings {
   // Map
-  scenario: 'standard' | 'island' | 'contested';
+  scenario: MapScenario;
   resourceDensity: 'sparse' | 'normal' | 'rich' | 'abundant';
 
   // Economy
@@ -230,6 +230,9 @@ export const settingsOpen = signal(false);
 // ---- Achievements panel ----
 export const achievementsOpen = signal(false);
 
+// ---- Leaderboard panel ----
+export const leaderboardOpen = signal(false);
+
 // ---- Unlocks panel ----
 export const unlocksOpen = signal(false);
 
@@ -242,6 +245,12 @@ export const autoSaveEnabled = signal(false);
 
 // ---- Commander selection ----
 export const selectedCommander = signal('marshal');
+
+// ---- Faction & AI personality ----
+export type { PlayableFaction } from '@/config/factions';
+export type { AIPersonality } from '@/config/ai-personalities';
+export const playerFaction = signal<import('@/config/factions').PlayableFaction>('otter');
+export const aiPersonality = signal<import('@/config/ai-personalities').AIPersonality>('balanced');
 
 // ---- Airdrop system ----
 export const airdropsRemaining = signal(0);

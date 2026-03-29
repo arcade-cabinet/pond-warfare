@@ -14,6 +14,7 @@
  */
 
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { getFactionConfig } from '@/config/factions';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Combat, Health, Resource, Velocity } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -138,10 +139,11 @@ interface SpawnContext {
 /** Spawn the player lodge, commander, gatherers, and scout. Returns commander eid. */
 function spawnPlayerBase(ctx: SpawnContext): number {
   const { world, sx, sy } = ctx;
+  const factionCfg = getFactionConfig(world.playerFaction);
 
-  spawnEntity(world, EntityKind.Lodge, sx, sy, Faction.Player);
+  spawnEntity(world, factionCfg.lodgeKind, sx, sy, Faction.Player);
 
-  const commanderEid = spawnEntity(world, EntityKind.Commander, sx, sy + 40, Faction.Player);
+  const commanderEid = spawnEntity(world, factionCfg.heroKind, sx, sy + 40, Faction.Player);
   world.selection = [commanderEid];
 
   // Hero mode: boost commander HP, damage, and speed
