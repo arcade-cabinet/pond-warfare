@@ -177,7 +177,11 @@ export function IntroOverlay() {
 
       {/* Map seed input */}
       <div class="flex items-center gap-2 mt-4 relative z-10">
-        <label htmlFor="map-seed-input" class="font-numbers text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+        <label
+          htmlFor="map-seed-input"
+          class="font-numbers text-xs"
+          style={{ color: 'var(--pw-text-muted)' }}
+        >
           Seed:
         </label>
         <input
