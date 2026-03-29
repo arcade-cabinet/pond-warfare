@@ -106,12 +106,25 @@ function spawnClambed(
 export function spawnInitialEntities(world: GameWorld): void {
   const rng = new SeededRandom(world.mapSeed);
 
-  // Difficulty-based nest count: Easy=1, Normal=2, Hard=3
-  const nestCountByDifficulty = { easy: 1, normal: 2, hard: 3 } as const;
+  // Difficulty-based nest count
+  const nestCountByDifficulty: Record<string, number> = {
+    easy: 1,
+    normal: 2,
+    hard: 3,
+    nightmare: 4,
+    ultraNightmare: 5,
+  };
   const targetNestCount = nestCountByDifficulty[world.difficulty] ?? 2;
 
-  // Hard mode: resources on map reduced by 25%
-  const resourceMultiplier = world.difficulty === 'hard' ? 0.75 : 1.0;
+  // Map resource multiplier by difficulty
+  const resourceMultiplierByDifficulty: Record<string, number> = {
+    easy: 1.0,
+    normal: 1.0,
+    hard: 0.75,
+    nightmare: 0.5,
+    ultraNightmare: 0.4,
+  };
+  const resourceMultiplier = resourceMultiplierByDifficulty[world.difficulty] ?? 1.0;
 
   // ---- Player start: random quadrant ----
   const playerQuad = rng.pick(QUADRANTS);

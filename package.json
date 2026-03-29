@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "copywasm": "cp node_modules/.pnpm/sql.js@*/node_modules/sql.js/dist/sql-wasm.wasm public/",
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "pnpm copywasm && tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,6 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@capacitor-community/sqlite": "^8.0.1",
     "@capacitor/android": "^8.3.0",
     "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.3.0",
@@ -28,6 +30,7 @@
     "@preact/signals": "^2.9.0",
     "animejs": "^4.3.6",
     "bitecs": "^0.4.0",
+    "jeep-sqlite": "^2.8.0",
     "pixi.js": "^8.17.1",
     "planck": "^1.4.3",
     "preact": "^10.29.0",
