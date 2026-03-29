@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "copywasm": "cp node_modules/.pnpm/sql.js@*/node_modules/sql.js/dist/sql-wasm.wasm public/",
+    "copywasm": "mkdir -p public/assets && cp node_modules/.pnpm/sql.js@*/node_modules/sql.js/dist/sql-wasm.wasm public/assets/",
     "dev": "vite",
     "build": "pnpm copywasm && tsc --noEmit && vite build",
     "preview": "vite preview",
