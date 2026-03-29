@@ -223,6 +223,12 @@ export function syncPopulationAndTimers(
       if (daysSurvived >= 20 && killRatio >= 2) stars = 3;
     }
     store.goRating.value = stars;
+
+    // Permadeath: delete save on loss
+    if (w.state === 'lose' && w.permadeath) {
+      localStorage.removeItem('pond-warfare-save');
+      store.hasSaveGame.value = false;
+    }
   }
 
   // Wave countdown timer

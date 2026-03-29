@@ -16,9 +16,11 @@ import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
+import { persist, getLatestSave, isDatabaseReady, saveGameToDb } from '@/storage';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
-import { IntroOverlay } from './intro-overlay';
+import { MainMenu } from './main-menu';
+import { NewGameModal } from './new-game-modal';
 import { SettingsPanel } from './settings-panel';
 import { Sidebar } from './sidebar';
 import * as store from './store';
@@ -151,7 +153,20 @@ export function App({ onMount }: AppProps) {
           }}
           onSaveClick={() => {
             const json = saveGame(game.world);
+            // Always write to localStorage as a fallback / quick-check source
             localStorage.setItem('pond-warfare-save', json);
+
+            // Persist to SQLite when available
+            if (isDatabaseReady()) {
+              const difficulty = store.selectedDifficulty.value ?? 'normal';
+              const seed = store.goMapSeed.value ?? 0;
+              saveGameToDb('quicksave', difficulty, seed, json, false)
+                .then(() => persist())
+                .catch(() => {
+                  /* localStorage fallback already written */
+                });
+            }
+
             game.world.floatingTexts.push({
               x: game.world.camX + (game.world.viewWidth || 400) / 2,
               y: game.world.camY + 60,
@@ -162,11 +177,31 @@ export function App({ onMount }: AppProps) {
             audio.click();
           }}
           onLoadClick={() => {
-            const json = localStorage.getItem('pond-warfare-save');
-            if (json) {
+            const doLoad = (json: string) => {
               loadGame(game.world, json);
               game.syncUIStore();
               audio.click();
+            };
+
+            // Try SQLite first, fall back to localStorage
+            if (isDatabaseReady()) {
+              getLatestSave()
+                .then((row) => {
+                  if (row?.data) {
+                    doLoad(row.data);
+                  } else {
+                    // Fall back to localStorage if no DB save exists
+                    const json = localStorage.getItem('pond-warfare-save');
+                    if (json) doLoad(json);
+                  }
+                })
+                .catch(() => {
+                  const json = localStorage.getItem('pond-warfare-save');
+                  if (json) doLoad(json);
+                });
+            } else {
+              const json = localStorage.getItem('pond-warfare-save');
+              if (json) doLoad(json);
             }
           }}
           onSettingsClick={() => {
@@ -227,8 +262,9 @@ export function App({ onMount }: AppProps) {
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
 
-        {/* Intro overlay */}
-        <IntroOverlay />
+        {/* Main menu / New game modal */}
+        {store.menuState.value === 'main' && <MainMenu />}
+        {store.menuState.value === 'newGame' && <NewGameModal />}
 
         {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />

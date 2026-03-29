@@ -483,6 +483,11 @@ export class Game {
     const diff = store.selectedDifficulty.value;
     this.world.difficulty = diff;
 
+    // Permadeath
+    const permadeath = diff === 'ultraNightmare' || store.permadeathEnabled.value;
+    this.world.permadeath = permadeath;
+    this.world.rewardsModifier = permadeath ? 1.5 : 1.0;
+
     switch (diff) {
       case 'easy':
         // Peace timer: 1.5x longer
@@ -503,6 +508,20 @@ export class Game {
         // Enemy starting resources: 2x
         this.world.enemyResources.clams = 1000;
         this.world.enemyResources.twigs = 400;
+        break;
+      case 'nightmare':
+        // Peace timer: 45 seconds
+        this.world.peaceTimer = 2700;
+        // Enemy starting resources: 2x
+        this.world.enemyResources.clams = 1000;
+        this.world.enemyResources.twigs = 400;
+        break;
+      case 'ultraNightmare':
+        // Peace timer: 30 seconds
+        this.world.peaceTimer = 1800;
+        // Enemy starting resources: 3x
+        this.world.enemyResources.clams = 1500;
+        this.world.enemyResources.twigs = 600;
         break;
       default:
         // Normal: keep defaults from createGameWorld

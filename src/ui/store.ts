@@ -130,8 +130,21 @@ export const hpBarColor = computed(() => {
 export const colorBlindMode = signal(false);
 
 // ---- Difficulty ----
-export type Difficulty = 'easy' | 'normal' | 'hard';
-export const selectedDifficulty = signal<Difficulty>('normal');
+export type DifficultyLevel = 'easy' | 'normal' | 'hard' | 'nightmare' | 'ultraNightmare';
+/** @deprecated Use DifficultyLevel instead */
+export type Difficulty = DifficultyLevel;
+export const selectedDifficulty = signal<DifficultyLevel>('normal');
+
+// ---- Menu state ----
+export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
+/** True when the player chose "Continue" from the main menu (load save on init). */
+export const continueRequested = signal(false);
+export const hasSaveGame = signal(
+  typeof localStorage !== 'undefined' && !!localStorage.getItem('pond-warfare-save'),
+);
+export const gameName = signal('');
+export const gameSeed = signal(0);
+export const permadeathEnabled = signal(false);
 
 // ---- Settings panel ----
 export const settingsOpen = signal(false);

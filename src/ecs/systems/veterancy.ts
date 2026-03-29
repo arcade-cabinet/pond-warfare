@@ -34,11 +34,17 @@ import type { EntityKind } from '@/types';
 /**
  * Calculate the veterancy rank for a given kill count.
  * Returns 0 (Recruit), 1 (Veteran), 2 (Elite), or 3 (Hero).
+ * @param rewardsModifier - When > 1.0, thresholds are divided by this value
+ *   (e.g. 1.5 means 25% fewer kills needed, since thresholds are reduced).
  */
-export function rankFromKills(kills: number): number {
+export function rankFromKills(kills: number, rewardsModifier = 1.0): number {
   let rank = 0;
   for (let i = VET_THRESHOLDS.length - 1; i >= 1; i--) {
-    if (kills >= VET_THRESHOLDS[i]) {
+    const threshold =
+      rewardsModifier > 1.0
+        ? Math.max(1, Math.floor(VET_THRESHOLDS[i] / rewardsModifier))
+        : VET_THRESHOLDS[i];
+    if (kills >= threshold) {
       rank = i;
       break;
     }
@@ -61,7 +67,7 @@ export function veterancySystem(world: GameWorld): void {
     if (Health.current[eid] <= 0) continue;
 
     const kills = Combat.kills[eid];
-    const newRank = rankFromKills(kills);
+    const newRank = rankFromKills(kills, world.rewardsModifier);
     const appliedRank = Veterancy.appliedRank[eid];
 
     if (newRank > appliedRank) {
