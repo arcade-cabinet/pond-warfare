@@ -521,6 +521,12 @@ export function App({ onMount }: AppProps) {
                     {store.tooltipData.value.costBreakdown.food} Food
                   </span>
                 )}
+              {store.tooltipData.value.costBreakdown.pearls != null &&
+                store.tooltipData.value.costBreakdown.pearls > 0 && (
+                  <span style={{ color: 'var(--pw-pearl, #e0b0ff)' }}>
+                    {store.tooltipData.value.costBreakdown.pearls} Pearls
+                  </span>
+                )}
             </div>
           ) : (
             store.tooltipData.value.cost && (

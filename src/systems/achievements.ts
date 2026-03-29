@@ -140,9 +140,13 @@ const allEarned = new Set<string>();
 /** Whether we've loaded from DB yet. */
 let loaded = false;
 
-/** Track cumulative pearl income this match. */
+/** Track cumulative pearl income this match (read from world.stats.pearlsEarned). */
 let totalPearlsThisMatch = 0;
-let lastPearlCount = 0;
+
+/** Get the cumulative pearl income for the current match. */
+export function getTotalPearlsThisMatch(): number {
+  return totalPearlsThisMatch;
+}
 
 /** Track peak kill streak this match. */
 let peakKillStreak = 0;
@@ -172,7 +176,6 @@ export async function loadAchievements(): Promise<void> {
 export function resetAchievementMatchState(): void {
   earnedThisSession.clear();
   totalPearlsThisMatch = 0;
-  lastPearlCount = 0;
   peakKillStreak = 0;
   commanderDied = false;
 }
@@ -188,11 +191,8 @@ export function getEarnedAchievements(): ReadonlySet<string> {
  * Build a snapshot of the current world state for achievement checking.
  */
 function buildSnapshot(world: GameWorld): AchievementSnapshot {
-  // Track cumulative pearls (pearls can be spent, so we track income)
-  if (world.resources.pearls > lastPearlCount) {
-    totalPearlsThisMatch += world.resources.pearls - lastPearlCount;
-  }
-  lastPearlCount = world.resources.pearls;
+  // Use the authoritative pearlsEarned counter from stats (only increments)
+  totalPearlsThisMatch = world.stats.pearlsEarned;
 
   // Track peak kill streak
   if (world.killStreak.count > peakKillStreak) {

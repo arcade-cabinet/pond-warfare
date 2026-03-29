@@ -105,7 +105,11 @@ import {
   loadAchievements,
   resetAchievementMatchState,
 } from '@/systems/achievements';
-import { loadUnlocks, updateProfileAndCheckUnlocks } from '@/systems/unlock-tracker';
+import {
+  loadUnlocks,
+  resetMatchUpdateGuard,
+  updateProfileAndCheckUnlocks,
+} from '@/systems/unlock-tracker';
 import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
@@ -204,6 +208,7 @@ export class Game {
     // Reset bark and achievement tracking state for the new session
     resetBarkState();
     resetAchievementMatchState();
+    resetMatchUpdateGuard();
     // Load earned achievements and unlocks from DB (async, fire-and-forget)
     loadAchievements().catch(() => {
       /* best-effort */
@@ -1411,8 +1416,18 @@ export class Game {
     if (choice === 'checkpoint') {
       this.loadCheckpoint();
     } else if (choice === 'restart') {
-      // Re-init with same settings
-      store.menuState.value = 'playing';
+      // Re-init with same settings — must call init() to rebuild the world
+      this.init(
+        this.container,
+        this.gameCanvas,
+        this.fogCanvas,
+        this.lightCanvas,
+        this.minimapCanvas,
+        this.minimapCamElement,
+      ).catch(() => {
+        /* fallback: reload page */
+        window.location.reload();
+      });
     } else {
       // Quit to menu
       store.menuState.value = 'main';

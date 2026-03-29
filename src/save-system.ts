@@ -22,7 +22,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { type EntityKind, type Faction, UnitState } from '@/types';
+import { EntityKind, type Faction, UnitState } from '@/types';
 
 interface SavedEntity {
   kind: number;
@@ -64,6 +64,7 @@ interface SaveData {
     resourcesGathered: number;
     buildingsBuilt: number;
     peakArmy: number;
+    pearlsEarned?: number;
   };
   frameCount: number;
   timeOfDay: number;
@@ -196,6 +197,7 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.stats.resourcesGathered = data.stats.resourcesGathered;
   world.stats.buildingsBuilt = data.stats.buildingsBuilt;
   world.stats.peakArmy = data.stats.peakArmy;
+  world.stats.pearlsEarned = data.stats.pearlsEarned ?? 0;
 
   // Restore enemy evolution state
   if (data.enemyEvolution) {
@@ -204,6 +206,11 @@ export function loadGame(world: GameWorld, json: string): boolean {
       (k) => k as EntityKind,
     );
     world.enemyEvolution.lastEvolutionFrame = data.enemyEvolution.lastEvolutionFrame;
+  } else {
+    // Old save without evolution data - reset to defaults
+    world.enemyEvolution.tier = 0;
+    world.enemyEvolution.unlockedUnits = [EntityKind.Gator, EntityKind.Snake];
+    world.enemyEvolution.lastEvolutionFrame = 0;
   }
 
   // Restore poison timers

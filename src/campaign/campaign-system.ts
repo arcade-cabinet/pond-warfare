@@ -159,7 +159,7 @@ function getExploredPercent(world: GameWorld): number {
   // The fog system marks cells as explored; we count non-zero alpha pixels.
   // This is computed by the fog system and we'll read the signal from the world.
   // Fallback: return 0 until we have a way to read it.
-  return (world as GameWorld & { exploredPercent?: number }).exploredPercent ?? 0;
+  return world.exploredPercent;
 }
 
 function checkObjective(world: GameWorld, campaign: CampaignState, obj: MissionObjective): boolean {

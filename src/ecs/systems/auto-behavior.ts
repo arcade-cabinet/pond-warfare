@@ -35,6 +35,9 @@ export function autoBehaviorSystem(world: GameWorld): void {
   // Only check every 60 frames (~1 second)
   if (world.frameCount % 60 !== 0) return;
 
+  // Wildlife always wanders regardless of toggle state
+  neutralWildlifeWander(world);
+
   const { gather, defend, attack, heal, scout } = world.autoBehaviors;
   if (!gather && !defend && !attack && !heal && !scout) return;
 
@@ -198,8 +201,6 @@ export function autoBehaviorSystem(world: GameWorld): void {
     }
   }
 
-  // --- Neutral wildlife wander: Frogs and Fish move randomly ---
-  neutralWildlifeWander(world);
 }
 
 /**

@@ -25,6 +25,8 @@ vi.mock('@/storage', () => ({
     total_buildings_built: 0,
     hero_units_earned: 0,
     wins_commander_alive: 0,
+    total_pearls: 0,
+    wins_zero_losses: 0,
   }),
   updatePlayerProfile: vi.fn().mockResolvedValue(undefined),
 }));
@@ -44,6 +46,8 @@ describe('unlock-tracker', () => {
       total_buildings_built: 0,
       hero_units_earned: 0,
       wins_commander_alive: 0,
+      total_pearls: 0,
+      wins_zero_losses: 0,
       ...overrides,
     };
   }

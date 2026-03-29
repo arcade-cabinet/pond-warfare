@@ -233,9 +233,6 @@ const mission2: MissionDef = {
     fogOfWar: 'full',
     resourceDensity: 'rich',
   },
-  worldOverrides: {
-    startingResourcesMult: 1.5,
-  },
 };
 
 // ---------------------------------------------------------------------------

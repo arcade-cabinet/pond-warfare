@@ -102,7 +102,7 @@ export const COMMANDERS: CommanderDef[] = [
     spriteVariant: 'cyan',
     unlock: {
       requirement: 'Collect 200 pearls total',
-      check: (p) => ((p as unknown as Record<string, unknown>).total_pearls as number) >= 200,
+      check: (p) => p.total_pearls >= 200,
     },
   },
   {
@@ -120,7 +120,7 @@ export const COMMANDERS: CommanderDef[] = [
     spriteVariant: 'purple',
     unlock: {
       requirement: 'Win with 0 unit losses',
-      check: (p) => ((p as unknown as Record<string, unknown>).wins_zero_losses as number) >= 1,
+      check: (p) => p.wins_zero_losses >= 1,
     },
   },
   {
