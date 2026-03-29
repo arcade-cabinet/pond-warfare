@@ -18,6 +18,7 @@ import {
   muteLabel,
   paused,
   peaceStatusColor,
+  peaceStatusStyle,
   peaceStatusText,
   rateClams,
   rateTwigs,
@@ -182,7 +183,7 @@ export function TopBar(props: TopBarProps) {
 
       {/* Status + Controls */}
       <div class="flex items-center space-x-2 md:space-x-4">
-        <div class={peaceStatusColor.value}>
+        <div class={peaceStatusColor.value} style={peaceStatusStyle.value}>
           <span class="font-heading text-xs md:text-sm">{peaceStatusText}</span>
           {!isPeaceful.value && waveCountdown.value > 0 && (
             <span

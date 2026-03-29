@@ -24,6 +24,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { cancelTrain, train } from '@/input/selection';
+import type { ReplayRecorder } from '@/replay';
 import { EntityKind, Faction } from '@/types';
 import {
   type ActionButtonDef,
@@ -34,7 +35,12 @@ import {
 import * as store from '@/ui/store';
 
 /** Build training queue display items for any building with an active queue. */
-function buildTrainingQueueItems(w: GameWorld, buildingEid: number, qItems: QueueItemDef[]): void {
+function buildTrainingQueueItems(
+  w: GameWorld,
+  buildingEid: number,
+  qItems: QueueItemDef[],
+  recorder?: ReplayRecorder,
+): void {
   const slots = trainingQueueSlots.get(buildingEid) ?? [];
   for (let qi = 0; qi < slots.length; qi++) {
     const unitKind = slots[qi] as EntityKind;
@@ -49,7 +55,14 @@ function buildTrainingQueueItems(w: GameWorld, buildingEid: number, qItems: Queu
     qItems.push({
       label: entityKindName(unitKind).charAt(0),
       progressPct: progress,
-      onCancel: () => cancelTrain(w, buildingEid, idx),
+      onCancel: () => {
+        cancelTrain(w, buildingEid, idx);
+        recorder?.record(w.frameCount, 'cancel-train', {
+          buildingEid,
+          index: idx,
+          unitKind,
+        });
+      },
     });
   }
 }
@@ -59,7 +72,11 @@ function buildTrainingQueueItems(w: GameWorld, buildingEid: number, qItems: Queu
  * Scout, Tech Tree) used by both the Global Command Center and the
  * selected-Lodge panel.
  */
-function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
+function buildLodgeButtons(
+  w: GameWorld,
+  lodgeEid: number,
+  recorder?: ReplayRecorder,
+): ActionButtonDef[] {
   const btns: ActionButtonDef[] = [];
   const gDef = ENTITY_DEFS[EntityKind.Gatherer];
   btns.push({
@@ -80,6 +97,10 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
         gDef.twigCost ?? 0,
         gDef.foodCost ?? 1,
       );
+      recorder?.record(w.frameCount, 'train', {
+        buildingEid: lodgeEid,
+        unitKind: EntityKind.Gatherer,
+      });
     },
   });
   const smTech = TECH_UPGRADES.sturdyMud;
@@ -102,6 +123,7 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
         w.resources.clams -= smTech.clamCost;
         w.resources.twigs -= smTech.twigCost;
         w.tech.sturdyMud = true;
+        recorder?.record(w.frameCount, 'research', { tech: 'sturdyMud' });
       }
     },
   });
@@ -125,6 +147,7 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
         w.resources.clams -= spTech.clamCost;
         w.resources.twigs -= spTech.twigCost;
         w.tech.swiftPaws = true;
+        recorder?.record(w.frameCount, 'research', { tech: 'swiftPaws' });
       }
     },
   });
@@ -147,6 +170,10 @@ function buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
         scoutDef.twigCost ?? 0,
         scoutDef.foodCost ?? 1,
       );
+      recorder?.record(w.frameCount, 'train', {
+        buildingEid: lodgeEid,
+        unitKind: EntityKind.Scout,
+      });
     },
   });
   btns.push({

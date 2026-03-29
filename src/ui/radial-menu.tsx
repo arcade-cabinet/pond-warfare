@@ -26,10 +26,9 @@ interface RadialOption {
   label: string;
   /** Angle in degrees: 0=top, 90=right, 180=bottom, 270=left */
   angle: number;
-  colorClass: string;
+  color: string;
   borderColor: string;
-  hoverColor: string;
-  activeColor: string;
+  activeBackground: string;
   toggleSignal?: typeof autoGatherEnabled;
   action?: () => void;
 }
@@ -40,46 +39,41 @@ const OPTIONS: RadialOption[] = [
   {
     label: 'Gather',
     angle: 288,
-    colorClass: 'text-amber-300',
-    borderColor: 'border-amber-500',
-    hoverColor: 'hover:bg-amber-900',
-    activeColor: 'bg-amber-800',
+    color: 'var(--pw-warning)',
+    borderColor: 'var(--pw-warning)',
+    activeBackground: 'rgba(232, 160, 48, 0.3)',
     toggleSignal: autoGatherEnabled,
   },
   {
     label: 'Defend',
     angle: 0,
-    colorClass: 'text-sky-300',
-    borderColor: 'border-sky-500',
-    hoverColor: 'hover:bg-sky-900',
-    activeColor: 'bg-sky-800',
+    color: 'var(--pw-accent)',
+    borderColor: 'var(--pw-accent)',
+    activeBackground: 'rgba(64, 200, 208, 0.3)',
     toggleSignal: autoDefendEnabled,
   },
   {
     label: 'Attack',
     angle: 72,
-    colorClass: 'text-red-300',
-    borderColor: 'border-red-500',
-    hoverColor: 'hover:bg-red-900',
-    activeColor: 'bg-red-800',
+    color: 'var(--pw-enemy-light)',
+    borderColor: 'var(--pw-enemy-light)',
+    activeBackground: 'rgba(224, 96, 96, 0.3)',
     toggleSignal: autoAttackEnabled,
   },
   {
     label: 'Scout',
     angle: 144,
-    colorClass: 'text-purple-300',
-    borderColor: 'border-purple-500',
-    hoverColor: 'hover:bg-purple-900',
-    activeColor: 'bg-purple-800',
+    color: '#b090d8',
+    borderColor: '#8a6ab8',
+    activeBackground: 'rgba(138, 106, 184, 0.3)',
     toggleSignal: autoScoutEnabled,
   },
   {
     label: 'Select',
     angle: 216,
-    colorClass: 'text-green-300',
-    borderColor: 'border-green-500',
-    hoverColor: 'hover:bg-green-900',
-    activeColor: 'bg-green-800',
+    color: 'var(--pw-success)',
+    borderColor: 'var(--pw-success)',
+    activeBackground: 'rgba(64, 184, 104, 0.3)',
   },
 ];
 
@@ -131,7 +125,8 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
   return (
     <div
       ref={overlayRef}
-      class="fixed inset-0 z-40 bg-black/40"
+      class="fixed inset-0 z-40"
+      style={{ background: 'rgba(12, 26, 31, 0.5)' }}
       onClick={handleOverlayClick}
       onTouchEnd={handleOverlayClick}
     >
@@ -147,10 +142,15 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
       >
         {/* Center hub */}
         <div
-          class="absolute w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-500 flex items-center justify-center z-50 shadow-lg"
-          style={{ left: '-24px', top: '-24px' }}
+          class="absolute w-12 h-12 rounded-full flex items-center justify-center z-50 shadow-lg"
+          style={{
+            left: '-24px',
+            top: '-24px',
+            background: 'var(--pw-bg-surface)',
+            border: '2px solid var(--pw-border)',
+          }}
         >
-          <span class="text-amber-400 font-bold text-sm">{idleWorkerCount.value}</span>
+          <span class="font-numbers font-bold text-sm" style={{ color: 'var(--pw-warning)' }}>{idleWorkerCount.value}</span>
         </div>
 
         {/* Radial options */}
@@ -165,18 +165,15 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
             <button
               key={opt.label}
               type="button"
-              class={[
-                'absolute w-14 h-14 rounded-full border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-150 shadow-lg z-50',
-                opt.borderColor,
-                isActive ? opt.activeColor : 'bg-slate-700',
-                opt.hoverColor,
-                opt.colorClass,
-              ].join(' ')}
+              class="absolute w-14 h-14 rounded-full border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-150 shadow-lg z-50"
               style={{
                 left: `${x - 28}px`,
                 top: `${y - 28}px`,
                 animation: 'radial-sprout 150ms ease-out both',
                 animationDelay: `${optIndex * 30}ms`,
+                borderColor: opt.borderColor,
+                background: isActive ? opt.activeBackground : 'var(--pw-bg-elevated)',
+                color: opt.color,
               }}
               title={opt.label}
               onClick={(e) => {
@@ -187,15 +184,14 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
               {/* Toggle indicator for auto-behavior options */}
               {isToggle && (
                 <span
-                  class={[
-                    'w-2.5 h-2.5 rounded-full border mb-0.5',
-                    isActive
-                      ? `${opt.borderColor} bg-current`
-                      : `${opt.borderColor} bg-transparent`,
-                  ].join(' ')}
+                  class="w-2.5 h-2.5 rounded-full mb-0.5"
+                  style={{
+                    border: `1px solid ${opt.borderColor}`,
+                    background: isActive ? opt.color : 'transparent',
+                  }}
                 />
               )}
-              <span class="text-[10px] font-bold leading-tight">{opt.label}</span>
+              <span class="font-heading text-[10px] font-bold leading-tight">{opt.label}</span>
             </button>
           );
         })}

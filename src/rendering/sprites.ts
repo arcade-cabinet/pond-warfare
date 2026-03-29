@@ -79,7 +79,24 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     }
   };
 
+  // Derived colors for sprite detail enhancements
+  const OTTER_OUTLINE = '#4a2000'; // Darker than otterBase (#78350f)
+  const OTTER_NOSE_HIGHLIGHT = '#a0703a'; // Lighter nose highlight for 3D feel
+  const GATOR_SCALE_HIGHLIGHT = '#34d399'; // Lighter green for scale highlights
+  const DOORWAY_GLOW = '#d97706'; // Warm amber for building entrance glow
+  const FLAME_ORANGE = '#f97316'; // Flame pixel
+  const FLAME_YELLOW = '#facc15'; // Flame tip
+
   if (type === 'gatherer' || type === 'brawler' || type === 'sniper') {
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline around body for definition
+    rect(4, 3, 1, 10, OTTER_OUTLINE);
+    rect(12, 3, 1, 10, OTTER_OUTLINE);
+    rect(5, 1, 6, 1, OTTER_OUTLINE);
+    rect(5, 12, 1, 2, OTTER_OUTLINE);
+    rect(11, 12, 1, 2, OTTER_OUTLINE);
     // Otter base body
     rect(5, 4, 6, 8, PALETTE.otterBase);
     rect(6, 5, 4, 6, PALETTE.otterBelly);
@@ -89,6 +106,8 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(9, 3, PALETTE.black);
     p(7, 4, PALETTE.otterNose);
     p(8, 4, PALETTE.otterNose);
+    // Nose highlight for 3D feel
+    p(8, 4, OTTER_NOSE_HIGHLIGHT);
     // Arms
     rect(4, 5, 1, 4, PALETTE.otterBase);
     rect(11, 5, 1, 4, PALETTE.otterBase);
@@ -112,9 +131,16 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
   } else if (type === 'gator') {
     rect(3, 10, 10, 4, PALETTE.gatorBase);
     for (let i = 3; i < 12; i += 2) p(i, 9, PALETTE.gatorLight);
+    // Scale highlight pattern
+    p(5, 11, GATOR_SCALE_HIGHLIGHT);
+    p(8, 10, GATOR_SCALE_HIGHLIGHT);
+    p(11, 11, GATOR_SCALE_HIGHLIGHT);
     rect(13, 11, 3, 2, PALETTE.gatorBase);
     rect(0, 11, 4, 3, PALETTE.gatorLight);
     p(3, 10, PALETTE.gatorEye);
+    // Teeth detail (white pixels at mouth)
+    p(0, 13, '#ffffff');
+    p(1, 13, '#ffffff');
     rect(3, 14, 2, 1, PALETTE.gatorLight);
     rect(9, 14, 2, 1, PALETTE.gatorLight);
   } else if (type === 'snake') {
@@ -124,6 +150,11 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(12, 8, 2, 2, PALETTE.snakeBase);
     p(13, 8, PALETTE.black);
     p(14, 9, PALETTE.clamMeat);
+    // Teeth detail
+    p(14, 10, '#ffffff');
+    // Scale highlights
+    p(6, 11, GATOR_SCALE_HIGHLIGHT);
+    p(10, 11, GATOR_SCALE_HIGHLIGHT);
     p(5, 12, PALETTE.snakeStripe);
     p(7, 12, PALETTE.snakeStripe);
     p(9, 12, PALETTE.snakeStripe);
@@ -160,10 +191,20 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(8, 16, 16, 14, PALETTE.mudLight);
     for (let i = 0; i < 30; i++)
       p(8 + Math.random() * 16, 16 + Math.random() * 14, PALETTE.mudDark);
+    // Wood grain texture
+    for (let i = 0; i < 15; i++)
+      p(9 + Math.random() * 14, 17 + Math.random() * 12, '#5c2d0a');
     rect(6, 8, 20, 8, PALETTE.mudDark);
     rect(10, 4, 12, 4, PALETTE.reedGreen);
     rect(14, 22, 4, 8, PALETTE.black);
+    // Doorway glow
+    p(15, 23, DOORWAY_GLOW);
+    p(16, 23, DOORWAY_GLOW);
     rect(14, 12, 4, 2, PALETTE.black);
+    // Flame at top
+    p(15, 5, FLAME_ORANGE);
+    p(16, 5, FLAME_ORANGE);
+    p(15, 4, FLAME_YELLOW);
   } else if (type === 'predator_nest') {
     circle(16, 16, 12, PALETTE.mudDark);
     circle(16, 18, 8, PALETTE.black);
@@ -178,13 +219,34 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
       p(4 + Math.random() * 24, 8 + Math.random() * 24, PALETTE.mudLight);
     for (let i = 0; i < 40; i++)
       rect(4 + Math.random() * 22, 10 + Math.random() * 18, 6, 2, PALETTE.otterBase);
+    // Wood grain texture (random darker pixels within brown areas)
+    for (let i = 0; i < 25; i++)
+      p(6 + Math.random() * 20, 10 + Math.random() * 18, '#5c2d0a');
     rect(12, 22, 8, 8, PALETTE.black);
+    // Doorway glow effect
+    p(15, 23, DOORWAY_GLOW);
+    p(16, 23, DOORWAY_GLOW);
+    p(15, 24, DOORWAY_GLOW);
+    p(16, 24, DOORWAY_GLOW);
   } else if (type === 'burrow') {
     circle(16, 24, 8, PALETTE.mudDark);
     for (let i = 0; i < 20; i++)
       p(8 + Math.random() * 16, 16 + Math.random() * 8, PALETTE.mudLight);
+    // Wood grain texture
+    for (let i = 0; i < 10; i++)
+      p(10 + Math.random() * 12, 18 + Math.random() * 6, '#5c2d0a');
     rect(14, 24, 4, 6, PALETTE.black);
+    // Doorway glow effect
+    p(15, 25, DOORWAY_GLOW);
+    p(16, 25, DOORWAY_GLOW);
   } else if (type === 'healer') {
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline
+    rect(4, 3, 1, 10, OTTER_OUTLINE);
+    rect(12, 3, 1, 10, OTTER_OUTLINE);
+    rect(5, 1, 6, 1, OTTER_OUTLINE);
     // Otter body (same as gatherer base)
     rect(5, 4, 6, 8, PALETTE.otterBase);
     rect(6, 5, 4, 6, PALETTE.otterBelly);
@@ -193,6 +255,8 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(9, 3, PALETTE.black);
     p(7, 4, PALETTE.otterNose);
     p(8, 4, PALETTE.otterNose);
+    // Nose highlight
+    p(8, 4, OTTER_NOSE_HIGHLIGHT);
     rect(4, 5, 1, 4, PALETTE.otterBase);
     rect(11, 5, 1, 4, PALETTE.otterBase);
     rect(5, 12, 2, 2, PALETTE.otterBase);
@@ -204,9 +268,19 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
   } else if (type === 'watchtower') {
     rect(6, 12, 20, 18, PALETTE.stone);
     for (let i = 0; i < 40; i++) p(6 + Math.random() * 20, 12 + Math.random() * 18, PALETTE.stoneL);
+    // Wood grain texture in stone areas
+    for (let i = 0; i < 15; i++)
+      p(8 + Math.random() * 16, 14 + Math.random() * 14, '#374151');
     rect(4, 6, 24, 6, PALETTE.stone);
     rect(8, 2, 16, 4, '#64748b');
     rect(12, 22, 8, 10, PALETTE.black);
+    // Doorway glow
+    p(15, 23, DOORWAY_GLOW);
+    p(16, 23, DOORWAY_GLOW);
+    // Flame at top
+    p(15, 4, FLAME_ORANGE);
+    p(16, 4, FLAME_ORANGE);
+    p(15, 3, FLAME_YELLOW);
     // Flag
     rect(22, 0, 1, 8, PALETTE.otterBase);
     rect(23, 0, 6, 4, '#ef4444');
@@ -214,9 +288,23 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     // Large body
     rect(4, 14, 24, 8, PALETTE.gatorBase);
     for (let i = 4; i < 28; i += 2) p(i, 13, PALETTE.gatorLight);
+    // Scale highlight pattern
+    p(8, 16, GATOR_SCALE_HIGHLIGHT);
+    p(14, 15, GATOR_SCALE_HIGHLIGHT);
+    p(20, 16, GATOR_SCALE_HIGHLIGHT);
+    p(24, 15, GATOR_SCALE_HIGHLIGHT);
     rect(0, 16, 8, 6, PALETTE.gatorLight); // Head
-    p(2, 15, PALETTE.gatorEye);
-    p(5, 15, PALETTE.gatorEye);
+    // Glowing red eyes (bright red instead of gatorEye)
+    p(2, 15, '#ff0000');
+    p(5, 15, '#ff0000');
+    // Eye glow (slightly larger highlight)
+    p(2, 14, '#cc0000');
+    p(5, 14, '#cc0000');
+    // Teeth detail
+    p(0, 21, '#ffffff');
+    p(1, 21, '#ffffff');
+    p(6, 21, '#ffffff');
+    p(7, 21, '#ffffff');
     rect(26, 16, 6, 4, PALETTE.gatorBase); // Tail
     // Armor plates
     for (let i = 8; i < 24; i += 4) {
@@ -234,11 +322,24 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
       p(2 + Math.random() * 28, 10 + Math.random() * 4, PALETTE.otterBase);
       p(2 + Math.random() * 28, 26 + Math.random() * 4, PALETTE.otterBase);
     }
+    // Wood grain texture on frame
+    for (let i = 0; i < 20; i++)
+      p(3 + Math.random() * 26, 10 + Math.random() * 20, '#5c2d0a');
     rect(12, 24, 8, 8, PALETTE.waterShallow);
+    // Doorway glow
+    p(15, 25, DOORWAY_GLOW);
+    p(16, 25, DOORWAY_GLOW);
     rect(22, 4, 4, 8, PALETTE.stoneL);
     p(23, 4, PALETTE.black);
     p(24, 4, PALETTE.black);
   } else if (type === 'shieldbearer') {
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline
+    rect(4, 3, 1, 10, OTTER_OUTLINE);
+    rect(12, 3, 1, 10, OTTER_OUTLINE);
+    rect(5, 1, 6, 1, OTTER_OUTLINE);
     // Otter body base (same as gatherer)
     rect(5, 4, 6, 8, PALETTE.otterBase);
     rect(6, 5, 4, 6, PALETTE.otterBelly);
@@ -247,6 +348,8 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(9, 3, PALETTE.black);
     p(7, 4, PALETTE.otterNose);
     p(8, 4, PALETTE.otterNose);
+    // Nose highlight
+    p(8, 4, OTTER_NOSE_HIGHLIGHT);
     rect(4, 5, 1, 4, PALETTE.otterBase);
     rect(11, 5, 1, 4, PALETTE.otterBase);
     rect(5, 12, 2, 2, PALETTE.otterBase);
@@ -258,6 +361,13 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(3, 7, PALETTE.stone);
     p(3, 9, PALETTE.stone);
   } else if (type === 'scout') {
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline
+    rect(4, 5, 1, 8, OTTER_OUTLINE);
+    rect(12, 5, 1, 8, OTTER_OUTLINE);
+    rect(5, 3, 6, 1, OTTER_OUTLINE);
     // Smaller crouching otter body
     rect(5, 6, 6, 6, PALETTE.otterBase);
     rect(6, 7, 4, 4, PALETTE.otterBelly);
@@ -266,6 +376,8 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(9, 5, PALETTE.black);
     p(7, 6, PALETTE.otterNose);
     p(8, 6, PALETTE.otterNose);
+    // Nose highlight
+    p(8, 6, OTTER_NOSE_HIGHLIGHT);
     // Goggles (cyan pixels)
     p(5, 5, '#06b6d4');
     p(10, 5, '#06b6d4');

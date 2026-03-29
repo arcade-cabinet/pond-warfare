@@ -78,6 +78,7 @@ import {
 } from '@/rendering/pixi-app';
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
+import { ReplayRecorder } from '@/replay';
 import { saveGame } from '@/save-system';
 import { type EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
@@ -86,6 +87,7 @@ import * as store from '@/ui/store';
 export class Game {
   world: GameWorld;
   spriteCanvases: Map<SpriteId, HTMLCanvasElement> = new Map();
+  recorder = new ReplayRecorder();
 
   // Canvases
   private gameCanvas!: HTMLCanvasElement;
@@ -271,6 +273,9 @@ export class Game {
             UnitStateMachine.hasAttackMoveTarget[eid] = 0;
           }
         }
+        this.recorder.record(this.world.frameCount, 'stop', {
+          selection: [...this.world.selection],
+        });
       },
       onAttackMoveMode: () => {
         this.world.attackMoveMode = true;
@@ -289,16 +294,32 @@ export class Game {
         for (const eid of this.world.selection) {
           triggerCommandPulse(eid);
         }
-        issueContextCommand(
-          this.world,
+        const wx = this.pointer.mouse.worldX;
+        const wy = this.pointer.mouse.worldY;
+        issueContextCommand(this.world, target, wx, wy);
+
+        // Record for replay: determine command type from target
+        const cmdType = target != null && FactionTag.faction[target] === Faction.Enemy
+          ? 'attack' as const
+          : 'move' as const;
+        this.recorder.record(this.world.frameCount, cmdType, {
           target,
-          this.pointer.mouse.worldX,
-          this.pointer.mouse.worldY,
-        );
+          worldX: wx,
+          worldY: wy,
+          selection: [...this.world.selection],
+        });
       },
       onUpdateUI: () => this.syncUIStore(),
       onPlaceBuilding: () => {
-        placeBuilding(this.world, this.pointer.mouse.worldX, this.pointer.mouse.worldY);
+        const buildType = this.world.placingBuilding;
+        const wx = this.pointer.mouse.worldX;
+        const wy = this.pointer.mouse.worldY;
+        placeBuilding(this.world, wx, wy);
+        this.recorder.record(this.world.frameCount, 'build', {
+          buildingType: buildType,
+          worldX: wx,
+          worldY: wy,
+        });
         this.syncUIStore();
       },
       onPlaySound: (name) => {
@@ -425,6 +446,9 @@ export class Game {
       document.addEventListener('keydown', this.initAudioHandler);
     }
 
+    // Start replay recording
+    this.recorder.start();
+
     // Start game loop
     this.lastTime = performance.now();
     this.running = true;
@@ -460,6 +484,9 @@ export class Game {
     this.world.gameSpeed = SPEED_LEVELS[(idx + 1) % SPEED_LEVELS.length];
     store.gameSpeed.value = this.world.gameSpeed;
     audio.click();
+    this.recorder.record(this.world.frameCount, 'speed', {
+      gameSpeed: this.world.gameSpeed,
+    });
   }
 
   /**

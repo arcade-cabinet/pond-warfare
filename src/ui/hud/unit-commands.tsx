@@ -35,7 +35,8 @@ export function UnitCommands(props: UnitCommandsProps) {
         <button
           type="button"
           id="idle-worker-btn"
-          class="absolute top-14 right-2 md:right-6 ui-panel border-2 border-amber-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-amber-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-14 right-2 md:right-6 cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          style={{ borderColor: 'var(--pw-warning)', color: 'var(--pw-warning)' }}
           title="Idle units menu (.)"
           onClick={(e) => {
             const btn = e.currentTarget as HTMLButtonElement;
@@ -45,8 +46,8 @@ export function UnitCommands(props: UnitCommandsProps) {
             radialMenuOpen.value = !radialMenuOpen.value;
           }}
         >
-          <span class="w-3 h-3 bg-amber-400 rounded-full animate-pulse" />
-          <span class="text-xs md:text-sm">{idleWorkerCount} Idle</span>
+          <span class="w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--pw-warning)' }} />
+          <span class="font-heading text-xs md:text-sm">{idleWorkerCount} Idle</span>
         </button>
       )}
 
@@ -64,11 +65,12 @@ export function UnitCommands(props: UnitCommandsProps) {
         <button
           type="button"
           id="select-army-btn"
-          class="absolute top-24 md:top-28 right-2 md:right-6 ui-panel border-2 border-red-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-red-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-24 md:top-28 right-2 md:right-6 cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          style={{ borderColor: 'var(--pw-enemy)', color: 'var(--pw-enemy-light)' }}
           title="Select all army (,)"
           onClick={props.onArmyClick}
         >
-          <span class="text-xs md:text-sm">Army ({armyCount})</span>
+          <span class="font-heading text-xs md:text-sm">Army ({armyCount})</span>
         </button>
       )}
 
@@ -77,11 +79,12 @@ export function UnitCommands(props: UnitCommandsProps) {
         <button
           type="button"
           id="attack-move-btn"
-          class="absolute top-36 md:top-40 right-2 md:right-6 ui-panel border-2 border-orange-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-orange-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-36 md:top-40 right-2 md:right-6 cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          style={{ borderColor: 'var(--pw-twig)', color: 'var(--pw-otter)' }}
           title="Attack-Move (A)"
           onClick={props.onAttackMoveClick}
         >
-          <span class="text-xs md:text-sm">A-Move</span>
+          <span class="font-heading text-xs md:text-sm">A-Move</span>
         </button>
       )}
 
@@ -90,11 +93,12 @@ export function UnitCommands(props: UnitCommandsProps) {
         <button
           type="button"
           id="halt-btn"
-          class="absolute top-48 md:top-52 right-2 md:right-6 ui-panel border-2 border-slate-500 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-slate-300 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-48 md:top-52 right-2 md:right-6 cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          style={{ borderColor: 'var(--pw-border)', color: 'var(--pw-text-secondary)' }}
           title="Stop/Halt (H)"
           onClick={props.onHaltClick}
         >
-          <span class="text-xs md:text-sm">Stop</span>
+          <span class="font-heading text-xs md:text-sm">Stop</span>
         </button>
       )}
 
@@ -104,22 +108,34 @@ export function UnitCommands(props: UnitCommandsProps) {
           {!saveGroupOpen ? (
             <button
               type="button"
-              class="ui-panel border-2 border-purple-600 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full text-purple-400 font-bold flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+              class="cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+              style={{ borderColor: '#8a6ab8', color: '#b090d8' }}
               title="Save selection to a control group"
               onClick={(e) => {
                 e.stopPropagation();
                 setSaveGroupOpen(true);
               }}
             >
-              <span class="text-xs md:text-sm">Save Group</span>
+              <span class="font-heading text-xs md:text-sm">Save Group</span>
             </button>
           ) : (
-            <div class="flex gap-1 items-center bg-slate-900 bg-opacity-90 border border-purple-600 rounded-full px-2 py-1 shadow-lg">
+            <div
+              class="flex gap-1 items-center rounded-full px-2 py-1 shadow-lg"
+              style={{
+                background: 'rgba(12, 26, 31, 0.9)',
+                border: '1px solid #8a6ab8',
+              }}
+            >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
                 <button
                   type="button"
                   key={`sg-${n}`}
-                  class="w-7 h-7 min-w-[44px] min-h-[44px] bg-slate-800 border border-purple-500 rounded text-purple-300 font-bold text-xs hover:bg-purple-900 hover:border-purple-400 cursor-pointer flex items-center justify-center transition-colors"
+                  class="w-7 h-7 min-w-[44px] min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
+                  style={{
+                    background: 'var(--pw-bg-surface)',
+                    border: '1px solid #8a6ab8',
+                    color: '#b090d8',
+                  }}
                   title={`Save to group ${n}`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -132,7 +148,12 @@ export function UnitCommands(props: UnitCommandsProps) {
               ))}
               <button
                 type="button"
-                class="w-7 h-7 min-w-[44px] min-h-[44px] bg-slate-800 border border-slate-600 rounded text-slate-400 font-bold text-xs hover:bg-slate-700 cursor-pointer flex items-center justify-center transition-colors"
+                class="w-7 h-7 min-w-[44px] min-h-[44px] rounded font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
+                style={{
+                  background: 'var(--pw-bg-surface)',
+                  border: '1px solid var(--pw-border)',
+                  color: 'var(--pw-text-muted)',
+                }}
                 title="Cancel"
                 onClick={(e) => {
                   e.stopPropagation();

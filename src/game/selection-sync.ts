@@ -40,7 +40,7 @@ export function syncSelectionInfo(
     // No selection: show global Command Center
     store.selectionCount.value = 0;
     store.selectionName.value = 'Command Center';
-    store.selectionNameColor.value = 'text-sky-400';
+    store.selectionNameColor.value = '';
     store.selectionShowHpBar.value = false;
     store.selectionIsMulti.value = false;
     store.selectionStatsHtml.value = `Idle: ${idleWorkers} | Army: ${armyUnits} | Pop: ${w.resources.food}/${maxFoodCap}`;
@@ -56,10 +56,10 @@ export function syncSelectionInfo(
     store.selectionIsMulti.value = false;
     store.selectionNameColor.value =
       faction === Faction.Player
-        ? 'text-green-400'
+        ? 'pw-name-player'
         : faction === Faction.Enemy
-          ? 'text-red-400'
-          : 'text-slate-400';
+          ? 'pw-name-enemy'
+          : 'pw-name-neutral';
     store.selectionHp.value = Health.current[selEid];
     store.selectionMaxHp.value = Health.max[selEid];
     store.selectionShowHpBar.value = !hasComponent(w.ecs, selEid, IsResource);
@@ -106,7 +106,7 @@ export function syncSelectionInfo(
     store.selectionIsMulti.value = true;
     store.selectionCount.value = w.selection.length;
     store.selectionName.value = `${w.selection.length} Units`;
-    store.selectionNameColor.value = 'text-green-400';
+    store.selectionNameColor.value = 'pw-name-player';
     store.selectionShowHpBar.value = false;
     store.selectionSpriteData.value = null;
     // Build composition string

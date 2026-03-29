@@ -24,7 +24,7 @@ export const enemyEconomyVisible = signal(false);
 // ---- Selection info ----
 export const selectionCount = signal(0);
 export const selectionName = signal('No Selection');
-export const selectionNameColor = signal('text-slate-500');
+export const selectionNameColor = signal('');
 export const selectionHp = signal(0);
 export const selectionMaxHp = signal(0);
 export const selectionShowHpBar = signal(false);
@@ -144,6 +144,10 @@ export const peaceStatusText = computed(() => {
 
 export const peaceStatusColor = computed(() =>
   isPeaceful.value
-    ? 'text-green-400 font-bold uppercase tracking-widest hidden sm:block'
-    : 'text-red-500 font-bold uppercase tracking-widest animate-pulse hidden sm:block',
+    ? 'font-bold uppercase tracking-widest hidden sm:block'
+    : 'font-bold uppercase tracking-widest animate-pulse hidden sm:block',
 );
+
+export const peaceStatusStyle = computed(() => ({
+  color: isPeaceful.value ? 'var(--pw-success)' : 'var(--pw-enemy-light)',
+}));

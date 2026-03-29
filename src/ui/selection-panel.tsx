@@ -36,8 +36,8 @@ function CommandCenterOverview() {
   return (
     <div class="flex flex-col gap-1">
       <h2
-        class="font-heading text-sm md:text-base font-bold leading-tight"
-        style={{ color: 'var(--pw-text-muted)' }}
+        class="font-heading text-sm md:text-base leading-tight"
+        style={{ color: 'var(--pw-accent-dim)' }}
       >
         Command Center
       </h2>
@@ -77,7 +77,7 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
       id="selection-info"
       class="w-1/3 md:w-full flex-shrink-0 p-2 md:p-3 border-r-2 md:border-r-0 md:border-b-2 flex flex-col gap-1 md:gap-1.5 overflow-y-auto relative"
       style={{
-        background: 'var(--pw-bg-deep)',
+        background: 'linear-gradient(180deg, var(--pw-bg-surface) 0%, var(--pw-bg-deep) 100%)',
         borderColor: 'var(--pw-border)',
       }}
     >
@@ -85,11 +85,7 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
       {count > 0 && onDeselect && (
         <button
           type="button"
-          class="absolute top-1 right-1 rounded-full w-6 h-6 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors"
-          style={{
-            background: 'var(--pw-bg-elevated)',
-            color: 'var(--pw-text-secondary)',
-          }}
+          class="absolute top-1 right-1 rounded-full w-6 h-6 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors hud-btn"
           title="Clear selection (Esc)"
           onClick={(e) => {
             e.stopPropagation();
@@ -116,13 +112,17 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
                 style={{
                   background: 'var(--pw-bg-surface)',
                   border: '2px solid var(--pw-border)',
+                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.5), 0 0 4px rgba(64, 200, 208, 0.1)',
                 }}
                 title="Click to track unit"
               />
               {selectionKills.value > 0 && (
                 <span
                   class="absolute -top-1 -right-1 text-white text-[9px] md:text-[10px] font-numbers font-bold rounded-full px-1 leading-tight"
-                  style={{ background: 'var(--pw-enemy)' }}
+                  style={{
+                    background: 'linear-gradient(135deg, var(--pw-enemy), #801818)',
+                    border: '1px solid var(--pw-enemy-light)',
+                  }}
                 >
                   {selectionKills.value}
                 </span>
@@ -132,25 +132,20 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
 
           <div class="flex-1 w-full">
             <h2
-              class={`font-heading text-sm md:text-lg font-bold leading-tight ${selectionNameColor.value}`}
+              class={`font-heading text-sm md:text-lg leading-tight ${selectionNameColor.value}`}
             >
               {selectionName}
             </h2>
 
-            {/* HP bar */}
+            {/* HP bar with themed track */}
             {showHp && (
-              <div
-                class="w-full h-2.5 md:h-3 mt-1"
-                style={{
-                  background: 'rgba(192, 48, 48, 0.3)',
-                  border: '1px solid var(--pw-bg-deep)',
-                }}
-              >
+              <div class="w-full h-2.5 md:h-3 mt-1 hp-bar-track rounded-sm overflow-hidden">
                 <div
-                  class="h-full transition-all duration-200"
+                  class="h-full transition-all duration-200 rounded-sm"
                   style={{
                     width: `${hpPercent.value}%`,
                     background: hpBarColor.value,
+                    boxShadow: `0 0 4px ${hpBarColor.value}40`,
                   }}
                 />
               </div>

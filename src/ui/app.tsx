@@ -82,7 +82,7 @@ export function App({ onMount }: AppProps) {
   }, [onMount]);
 
   return (
-    <div class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm text-slate-200">
+    <div class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm font-game" style={{ color: 'var(--pw-text-primary)' }}>
       {/* Sidebar */}
       <Sidebar
         minimapCanvasRef={minimapCanvasRef}
@@ -302,10 +302,10 @@ export function App({ onMount }: AppProps) {
             top: `${store.tooltipY.value}px`,
           }}
         >
-          <div class="font-bold">{store.tooltipData.value.title}</div>
-          <div class="text-sky-200">{store.tooltipData.value.cost}</div>
-          <div class="text-xs text-slate-400">{store.tooltipData.value.description}</div>
-          <div class="text-xs text-slate-500">[{store.tooltipData.value.hotkey}]</div>
+          <div class="font-heading font-bold">{store.tooltipData.value.title}</div>
+          <div class="font-numbers" style={{ color: 'var(--pw-accent)' }}>{store.tooltipData.value.cost}</div>
+          <div class="text-xs font-game" style={{ color: 'var(--pw-text-muted)' }}>{store.tooltipData.value.description}</div>
+          <div class="text-xs font-numbers" style={{ color: 'var(--pw-text-muted)' }}>[{store.tooltipData.value.hotkey}]</div>
         </div>
       )}
     </div>

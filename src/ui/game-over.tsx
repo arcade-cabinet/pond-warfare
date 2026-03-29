@@ -3,6 +3,8 @@
  *
  * Victory/Defeat overlay with animated stat reveal (anime.js stagger),
  * performance rating, confetti for victory, and Play Again button.
+ * Victory: gold/amber tones with Cinzel title.
+ * Defeat: crimson tones. Stats on parchment-style card.
  */
 
 import { useEffect, useRef } from 'preact/hooks';
@@ -18,7 +20,7 @@ function ConfettiDots() {
     const left = Math.random() * 100;
     const delay = Math.random() * 2;
     const duration = 2 + Math.random() * 2;
-    const colors = ['#f0d060', '#40c8d0', '#e05050', '#40b868', '#a78bfa', '#e8a030'];
+    const colors = ['#f0d060', '#40c8d0', '#e05050', '#40b868', '#e8b878', '#e8a030'];
     const color = colors[i % colors.length];
     return (
       <span
@@ -42,11 +44,14 @@ function ConfettiDots() {
 
 function StarRating({ stars }: { stars: number }) {
   return (
-    <div class="text-3xl mt-2">
+    <div class="text-3xl mt-3 flex gap-1">
       {Array.from({ length: 3 }, (_, i) => (
         <span
           key={`star-${i}`}
-          style={{ color: i < stars ? 'var(--pw-clam)' : 'var(--pw-text-muted)' }}
+          style={{
+            color: i < stars ? 'var(--pw-clam)' : 'var(--pw-text-muted)',
+            textShadow: i < stars ? '0 0 8px rgba(240, 208, 96, 0.4)' : 'none',
+          }}
         >
           {'\u2605'}
         </span>
@@ -83,18 +88,51 @@ export function GameOverBanner(props: GameOverProps) {
       aria-modal="true"
       aria-labelledby="game-over-title"
       class="absolute inset-0 flex flex-col items-center justify-center z-30 overflow-hidden"
-      style={{ background: 'rgba(12, 26, 31, 0.7)' }}
+      style={{
+        background: isVictory
+          ? 'radial-gradient(ellipse at 50% 40%, rgba(240, 208, 96, 0.08), rgba(12, 26, 31, 0.85) 60%)'
+          : 'radial-gradient(ellipse at 50% 40%, rgba(192, 48, 48, 0.1), rgba(12, 26, 31, 0.85) 60%)',
+      }}
     >
       {isVictory && <ConfettiDots />}
+
       <h1
         id="game-over-title"
-        class={`font-title text-4xl md:text-6xl mb-4 tracking-widest uppercase shadow-lg ${goTitleColor.value}`}
+        class={`font-title text-4xl md:text-6xl mb-3 tracking-widest uppercase ${goTitleColor.value}`}
+        style={{
+          textShadow: isVictory
+            ? '0 0 40px rgba(240, 208, 96, 0.4), 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000'
+            : '0 0 40px rgba(192, 48, 48, 0.4), 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
+        }}
       >
         {goTitle}
       </h1>
-      <p class="font-heading text-xl md:text-2xl text-white font-bold">{goDesc}</p>
+
+      <p
+        class="font-heading text-xl md:text-2xl font-bold"
+        style={{
+          color: isVictory ? 'var(--pw-otter-light)' : 'var(--pw-enemy-light)',
+        }}
+      >
+        {goDesc}
+      </p>
+
       <StarRating stars={stars} />
-      <div ref={statsContainerRef} class="mt-4 flex flex-col items-center gap-1">
+
+      {/* Parchment stat card */}
+      <div
+        ref={statsContainerRef}
+        class="parchment-panel mt-5 px-6 py-4 rounded-lg flex flex-col items-center gap-1.5 min-w-[240px]"
+      >
+        <span
+          class="section-header w-full text-center mb-1"
+          style={{
+            color: isVictory ? 'var(--pw-clam)' : 'var(--pw-enemy-light)',
+            borderColor: isVictory ? 'rgba(240, 208, 96, 0.2)' : 'rgba(192, 48, 48, 0.2)',
+          }}
+        >
+          Battle Report
+        </span>
         {lines.map((line, i) => (
           <p
             key={`stat-${i}`}
@@ -106,28 +144,20 @@ export function GameOverBanner(props: GameOverProps) {
           </p>
         ))}
       </div>
+
       <button
         ref={restartButtonRef}
         type="button"
         id="restart-btn"
-        class="mt-6 px-6 py-3 font-heading text-white font-bold rounded-lg text-lg cursor-pointer shadow-xl transition-colors"
+        class="action-btn mt-6 px-8 py-3 font-heading text-lg rounded-lg"
         style={{
-          background: 'var(--pw-bg-elevated)',
-          border: '2px solid var(--pw-accent)',
-          color: 'var(--pw-accent-bright)',
+          color: isVictory ? 'var(--pw-clam)' : 'var(--pw-accent-bright)',
+          borderColor: isVictory ? 'var(--pw-otter)' : 'var(--pw-accent)',
         }}
         onClick={props.onRestart}
       >
         Play Again
       </button>
-      <style>
-        {`
-          @keyframes confetti-fall {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-          }
-        `}
-      </style>
     </div>
   );
 }
