@@ -16,7 +16,7 @@ import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
-import { persist, getLatestSave, isDatabaseReady, saveGameToDb } from '@/storage';
+import { getLatestSave, isDatabaseReady, persist, saveGameToDb } from '@/storage';
 import { ErrorOverlay } from './error-overlay';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';

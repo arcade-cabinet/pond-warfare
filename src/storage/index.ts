@@ -9,8 +9,8 @@ export {
   loadSave,
   persist,
   recordGameResult,
-  saveGameToDb,
   type SaveRow,
+  saveGameToDb,
   setSetting,
   updateSave,
 } from './database';

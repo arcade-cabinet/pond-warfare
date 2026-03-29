@@ -16,6 +16,7 @@ import { initDatabase } from '@/storage';
 
 // Install global error handlers FIRST — before anything else can fail
 installGlobalErrorHandlers();
+
 import { App } from '@/ui/app';
 import { continueRequested, hasSaveGame, menuState } from '@/ui/store';
 
