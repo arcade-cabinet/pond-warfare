@@ -167,7 +167,12 @@ function EdgeLines({
   for (const n of nodes) nodeMap.set(n.id, n);
 
   return (
-    <svg class="absolute inset-0 pointer-events-none" style={{ overflow: 'visible' }} role="img" aria-label="Tech tree dependency lines">
+    <svg
+      class="absolute inset-0 pointer-events-none"
+      style={{ overflow: 'visible' }}
+      role="img"
+      aria-label="Tech tree dependency lines"
+    >
       {edges.map((edge) => {
         const fromNode = nodeMap.get(edge.from);
         const toNode = nodeMap.get(edge.to);
