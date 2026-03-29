@@ -142,6 +142,9 @@ export class Game {
   // Smooth camera pan animation (anime.js)
   private _panAnim: { pause: () => void } | null = null;
 
+  // Bound resize handler for cleanup
+  private boundResize!: () => void;
+
   // Container element
   private container!: HTMLElement;
 
@@ -217,7 +220,8 @@ export class Game {
 
     // Resize
     this.resize();
-    window.addEventListener('resize', () => this.resize());
+    this.boundResize = () => this.resize();
+    window.addEventListener('resize', this.boundResize);
 
     // Input
     const keyboardCallbacks: KeyboardCallbacks = {
@@ -680,6 +684,35 @@ export class Game {
     healthSystem(this.world);
     fogOfWarSystem(this.world);
     cleanupSystem(this.world);
+
+    // Consume pending drag-select rectangle from pointer handler
+    const pendingDrag = this.pointer.consumeDragRect();
+    if (pendingDrag) {
+      const dragEnts = query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+      for (let i = 0; i < dragEnts.length; i++) {
+        const eid = dragEnts[i];
+        if (FactionTag.faction[eid] !== Faction.Player) continue;
+        if (Health.current[eid] <= 0) continue;
+        if (ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding) continue;
+        const ex = Position.x[eid];
+        const ey = Position.y[eid];
+        if (
+          ex >= pendingDrag.minX &&
+          ex <= pendingDrag.maxX &&
+          ey >= pendingDrag.minY &&
+          ey <= pendingDrag.maxY
+        ) {
+          if (!this.world.selection.includes(eid)) {
+            this.world.selection.push(eid);
+            Selectable.selected[eid] = 1;
+          }
+        }
+      }
+      if (this.world.selection.length > 0) {
+        this.world.isTracking = true;
+      }
+      this.syncUIStore();
+    }
 
     // Apply camera velocity and friction
     this.world.camX += this.world.camVelX;
@@ -1498,6 +1531,7 @@ export class Game {
 
   destroy(): void {
     this.running = false;
+    window.removeEventListener('resize', this.boundResize);
     this.keyboard.destroy();
     this.pointer.destroy();
     this.physicsManager.destroy();

@@ -11,9 +11,7 @@ import { EntityKind } from '@/types';
 
 describe('ENTITY_DEFS', () => {
   it('should have a definition for every EntityKind', () => {
-    const kinds = Object.values(EntityKind).filter(
-      (v): v is EntityKind => typeof v === 'number',
-    );
+    const kinds = Object.values(EntityKind).filter((v): v is EntityKind => typeof v === 'number');
     for (const kind of kinds) {
       expect(ENTITY_DEFS[kind]).toBeDefined();
     }
