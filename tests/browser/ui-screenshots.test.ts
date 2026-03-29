@@ -6,24 +6,20 @@
  * baselines for the mobile-first game UI.
  */
 
-import { render, cleanup } from '@testing-library/preact';
-import { page } from 'vitest/browser';
+import { cleanup, render } from '@testing-library/preact';
 import { h } from 'preact';
-import { describe, it, afterEach, beforeEach, vi } from 'vitest';
-
-// Store signals — we set these directly to control component state
-import * as store from '@/ui/store';
-import { actionButtons, queueItems, type ActionButtonDef } from '@/ui/action-panel';
-
+import { afterEach, beforeEach, describe, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
+import { ActionPanel, actionButtons, queueItems } from '@/ui/action-panel';
+import { ErrorBoundary } from '@/ui/error-boundary';
+import { GameOverBanner } from '@/ui/game-over';
 // Components under test
 import { HUD } from '@/ui/hud';
-import { SelectionPanel } from '@/ui/selection-panel';
-import { ActionPanel } from '@/ui/action-panel';
-import { GameOverBanner } from '@/ui/game-over';
 import { IntroOverlay } from '@/ui/intro-overlay';
-import { Sidebar } from '@/ui/sidebar';
 import { MinimapPanel } from '@/ui/minimap-panel';
-import { ErrorBoundary } from '@/ui/error-boundary';
+import { SelectionPanel } from '@/ui/selection-panel';
+// Store signals — we set these directly to control component state
+import * as store from '@/ui/store';
 
 // Mock animejs — the game-over and intro components import animation helpers
 vi.mock('@/rendering/animations', () => ({
@@ -133,9 +129,13 @@ describe('HUD screenshots', () => {
     store.maxFood.value = 8;
     store.gameTimeDisplay.value = 'Day 1 - 08:00';
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-peaceful.png', element: document.body });
   });
@@ -152,9 +152,13 @@ describe('HUD screenshots', () => {
     store.gameTimeDisplay.value = 'Day 5 - 14:30';
     store.gameSpeed.value = 2;
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-hunting.png', element: document.body });
   });
@@ -169,9 +173,13 @@ describe('HUD screenshots', () => {
     store.maxFood.value = 16;
     store.gameTimeDisplay.value = 'Day 8 - 22:00';
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-low-resources.png', element: document.body });
   });
@@ -180,9 +188,13 @@ describe('HUD screenshots', () => {
     store.paused.value = true;
     store.gameTimeDisplay.value = 'Day 3 - 12:00';
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-paused.png', element: document.body });
   });
@@ -193,9 +205,13 @@ describe('HUD screenshots', () => {
     store.selectionCount.value = 5;
     store.gameTimeDisplay.value = 'Day 4 - 10:15';
 
-    render(h('div', { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-attack-move.png', element: document.body });
   });
@@ -207,9 +223,13 @@ describe('HUD screenshots', () => {
     store.selectionCount.value = 2;
     store.gameTimeDisplay.value = 'Day 6 - 16:45';
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-idle-army.png', element: document.body });
   });
@@ -221,9 +241,13 @@ describe('HUD screenshots', () => {
     ];
     store.gameTimeDisplay.value = 'Day 2 - 09:30';
 
-    render(h('div', { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-production-queue.png', element: document.body });
   });
@@ -232,9 +256,13 @@ describe('HUD screenshots', () => {
     store.ctrlGroupCounts.value = { 1: 5, 2: 3, 4: 8 };
     store.gameTimeDisplay.value = 'Day 3 - 11:00';
 
-    render(h('div', { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-ctrl-groups.png', element: document.body });
   });
@@ -245,9 +273,13 @@ describe('HUD screenshots', () => {
     store.peaceCountdown.value = 90;
     store.gameTimeDisplay.value = 'Day 1 - 08:30';
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, hudProps),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/hud-colorblind.png', element: document.body });
   });
@@ -263,9 +295,13 @@ describe('Selection Panel screenshots', () => {
     store.selectionNameColor.value = 'text-sky-400';
     store.selectionStatsHtml.value = 'Idle: 2 | Army: 5 | Pop: 7/12';
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: noop }),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/selection-empty.png', element: document.body });
   });
@@ -282,11 +318,18 @@ describe('Selection Panel screenshots', () => {
     store.selectionIsMulti.value = false;
     store.selectionKills.value = 0;
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: noop }),
+      ),
+    );
 
-    await page.screenshot({ path: 'screenshots/selection-single-gatherer.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/selection-single-gatherer.png',
+      element: document.body,
+    });
   });
 
   it('SelectionPanel - single unit low HP (Brawler)', async () => {
@@ -300,11 +343,18 @@ describe('Selection Panel screenshots', () => {
     store.selectionDesc.value = 'Attacking';
     store.selectionKills.value = 4;
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: noop }),
+      ),
+    );
 
-    await page.screenshot({ path: 'screenshots/selection-single-low-hp.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/selection-single-low-hp.png',
+      element: document.body,
+    });
   });
 
   it('SelectionPanel - single enemy unit', async () => {
@@ -317,11 +367,18 @@ describe('Selection Panel screenshots', () => {
     store.selectionStatsHtml.value = 'HP: 200/200 | Dmg: 25 | Range: 35';
     store.selectionDesc.value = 'Idle';
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: noop }),
+      ),
+    );
 
-    await page.screenshot({ path: 'screenshots/selection-single-enemy.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/selection-single-enemy.png',
+      element: document.body,
+    });
   });
 
   it('SelectionPanel - single building (Lodge)', async () => {
@@ -334,11 +391,18 @@ describe('Selection Panel screenshots', () => {
     store.selectionStatsHtml.value = 'HP: 500/500';
     store.selectionDesc.value = '';
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: noop }),
+      ),
+    );
 
-    await page.screenshot({ path: 'screenshots/selection-single-building.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/selection-single-building.png',
+      element: document.body,
+    });
   });
 
   it('SelectionPanel - multi-select squad', async () => {
@@ -349,9 +413,13 @@ describe('Selection Panel screenshots', () => {
     store.selectionComposition.value = '3 Brawler, 2 Sniper, 1 Healer';
     store.selectionShowHpBar.value = false;
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: noop }),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/selection-multi.png', element: document.body });
   });
@@ -364,9 +432,13 @@ describe('Selection Panel screenshots', () => {
     store.selectionStatsHtml.value = 'HP: 500/500';
     store.selectionDesc.value = 'Resource';
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: noop }),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/selection-resource.png', element: document.body });
   });
@@ -380,60 +452,147 @@ describe('Action Panel screenshots', () => {
     actionButtons.value = [];
     queueItems.value = [];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     await page.screenshot({ path: 'screenshots/action-empty.png', element: document.body });
   });
 
   it('ActionPanel - gatherer build buttons', async () => {
     actionButtons.value = [
-      { title: 'Lodge', cost: '150C 100T', hotkey: 'Q', affordable: true, description: 'Expansion (+4 food cap)', onClick: noop },
-      { title: 'Burrow', cost: '75T', hotkey: 'W', affordable: true, description: 'Housing (+4 food cap)', onClick: noop },
-      { title: 'Armory', cost: '200C 150T', hotkey: 'E', affordable: false, description: 'Train combat units', onClick: noop },
-      { title: 'Tower', cost: '100C 200T', hotkey: 'R', affordable: false, description: 'Defensive tower', onClick: noop },
+      {
+        title: 'Lodge',
+        cost: '150C 100T',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Expansion (+4 food cap)',
+        onClick: noop,
+      },
+      {
+        title: 'Burrow',
+        cost: '75T',
+        hotkey: 'W',
+        affordable: true,
+        description: 'Housing (+4 food cap)',
+        onClick: noop,
+      },
+      {
+        title: 'Armory',
+        cost: '200C 150T',
+        hotkey: 'E',
+        affordable: false,
+        description: 'Train combat units',
+        onClick: noop,
+      },
+      {
+        title: 'Tower',
+        cost: '100C 200T',
+        hotkey: 'R',
+        affordable: false,
+        description: 'Defensive tower',
+        onClick: noop,
+      },
     ];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
-    await page.screenshot({ path: 'screenshots/action-gatherer-build.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/action-gatherer-build.png',
+      element: document.body,
+    });
   });
 
   it('ActionPanel - lodge train + tech buttons', async () => {
     actionButtons.value = [
-      { title: 'Gatherer', cost: '50C 1F', hotkey: 'Q', affordable: true, description: 'Worker unit', onClick: noop },
-      { title: 'Sturdy Mud', cost: '100C 50T', hotkey: 'W', affordable: true, description: '+20% building HP', onClick: noop },
-      { title: 'Swift Paws', cost: '75C 75T', hotkey: 'E', affordable: false, description: '+15% unit speed', onClick: noop },
+      {
+        title: 'Gatherer',
+        cost: '50C 1F',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Worker unit',
+        onClick: noop,
+      },
+      {
+        title: 'Sturdy Mud',
+        cost: '100C 50T',
+        hotkey: 'W',
+        affordable: true,
+        description: '+20% building HP',
+        onClick: noop,
+      },
+      {
+        title: 'Swift Paws',
+        cost: '75C 75T',
+        hotkey: 'E',
+        affordable: false,
+        description: '+15% unit speed',
+        onClick: noop,
+      },
     ];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     await page.screenshot({ path: 'screenshots/action-lodge-train.png', element: document.body });
   });
 
   it('ActionPanel - armory train buttons', async () => {
     actionButtons.value = [
-      { title: 'Brawler', cost: '80C 30T 2F', hotkey: 'Q', affordable: true, description: 'Melee fighter', onClick: noop },
-      { title: 'Sniper', cost: '60C 40T 2F', hotkey: 'W', affordable: true, description: 'Ranged attacker', onClick: noop },
-      { title: 'Healer', cost: '100C 50T 2F', hotkey: 'E', affordable: true, description: 'Heals nearby friendlies', onClick: noop },
-      { title: 'Sharp Sticks', cost: '150C 100T', hotkey: 'R', affordable: false, description: '+25% melee damage', onClick: noop },
+      {
+        title: 'Brawler',
+        cost: '80C 30T 2F',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Melee fighter',
+        onClick: noop,
+      },
+      {
+        title: 'Sniper',
+        cost: '60C 40T 2F',
+        hotkey: 'W',
+        affordable: true,
+        description: 'Ranged attacker',
+        onClick: noop,
+      },
+      {
+        title: 'Healer',
+        cost: '100C 50T 2F',
+        hotkey: 'E',
+        affordable: true,
+        description: 'Heals nearby friendlies',
+        onClick: noop,
+      },
+      {
+        title: 'Sharp Sticks',
+        cost: '150C 100T',
+        hotkey: 'R',
+        affordable: false,
+        description: '+25% melee damage',
+        onClick: noop,
+      },
     ];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     await page.screenshot({ path: 'screenshots/action-armory-train.png', element: document.body });
   });
 
   it('ActionPanel - with training queue', async () => {
     actionButtons.value = [
-      { title: 'Gatherer', cost: '50C 1F', hotkey: 'Q', affordable: true, description: 'Worker unit', onClick: noop },
+      {
+        title: 'Gatherer',
+        cost: '50C 1F',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Worker unit',
+        onClick: noop,
+      },
     ];
     queueItems.value = [
       { label: 'G', progressPct: 72, onCancel: noop },
@@ -441,9 +600,9 @@ describe('Action Panel screenshots', () => {
       { label: 'G', progressPct: 0, onCancel: noop },
     ];
 
-    render(h('div', { style: 'width:256px;height:300px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:300px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     await page.screenshot({ path: 'screenshots/action-with-queue.png', element: document.body });
   });
@@ -459,18 +618,22 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuY.value = 200;
     store.idleWorkerCount.value = 5;
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: noop,
-        onMuteClick: noop,
-        onColorBlindToggle: noop,
-        onIdleWorkerClick: noop,
-        onArmyClick: noop,
-        onPauseClick: noop,
-        onAttackMoveClick: noop,
-        onCtrlGroupClick: noop,
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: noop,
+          onMuteClick: noop,
+          onColorBlindToggle: noop,
+          onIdleWorkerClick: noop,
+          onArmyClick: noop,
+          onPauseClick: noop,
+          onAttackMoveClick: noop,
+          onCtrlGroupClick: noop,
+        }),
+      ),
+    );
 
     // Wait for sprout animations
     await new Promise((r) => setTimeout(r, 250));
@@ -485,22 +648,29 @@ describe('Radial Menu screenshots', () => {
     store.idleWorkerCount.value = 3;
     store.autoGatherEnabled.value = true;
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: noop,
-        onMuteClick: noop,
-        onColorBlindToggle: noop,
-        onIdleWorkerClick: noop,
-        onArmyClick: noop,
-        onPauseClick: noop,
-        onAttackMoveClick: noop,
-        onCtrlGroupClick: noop,
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: noop,
+          onMuteClick: noop,
+          onColorBlindToggle: noop,
+          onIdleWorkerClick: noop,
+          onArmyClick: noop,
+          onPauseClick: noop,
+          onAttackMoveClick: noop,
+          onCtrlGroupClick: noop,
+        }),
+      ),
+    );
 
     await new Promise((r) => setTimeout(r, 250));
 
-    await page.screenshot({ path: 'screenshots/radial-menu-gather-on.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/radial-menu-gather-on.png',
+      element: document.body,
+    });
   });
 
   it('Radial menu - all auto-behaviors toggled', async () => {
@@ -513,18 +683,22 @@ describe('Radial Menu screenshots', () => {
     store.autoAttackEnabled.value = true;
     store.autoScoutEnabled.value = true;
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: noop,
-        onMuteClick: noop,
-        onColorBlindToggle: noop,
-        onIdleWorkerClick: noop,
-        onArmyClick: noop,
-        onPauseClick: noop,
-        onAttackMoveClick: noop,
-        onCtrlGroupClick: noop,
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: noop,
+          onMuteClick: noop,
+          onColorBlindToggle: noop,
+          onIdleWorkerClick: noop,
+          onArmyClick: noop,
+          onPauseClick: noop,
+          onAttackMoveClick: noop,
+          onCtrlGroupClick: noop,
+        }),
+      ),
+    );
 
     await new Promise((r) => setTimeout(r, 250));
 
@@ -551,13 +725,20 @@ describe('Game Over screenshots', () => {
     ];
     store.goRating.value = 3;
 
-    render(h('div', { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
-      h(GameOverBanner, { onRestart: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(GameOverBanner, { onRestart: noop }),
+      ),
+    );
 
     await new Promise((r) => setTimeout(r, 100));
 
-    await page.screenshot({ path: 'screenshots/gameover-victory-3star.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/gameover-victory-3star.png',
+      element: document.body,
+    });
   });
 
   it('GameOver - victory with 2 stars', async () => {
@@ -575,13 +756,20 @@ describe('Game Over screenshots', () => {
     ];
     store.goRating.value = 2;
 
-    render(h('div', { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
-      h(GameOverBanner, { onRestart: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(GameOverBanner, { onRestart: noop }),
+      ),
+    );
 
     await new Promise((r) => setTimeout(r, 100));
 
-    await page.screenshot({ path: 'screenshots/gameover-victory-2star.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/gameover-victory-2star.png',
+      element: document.body,
+    });
   });
 
   it('GameOver - defeat with 1 star', async () => {
@@ -599,13 +787,20 @@ describe('Game Over screenshots', () => {
     ];
     store.goRating.value = 1;
 
-    render(h('div', { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
-      h(GameOverBanner, { onRestart: noop }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(GameOverBanner, { onRestart: noop }),
+      ),
+    );
 
     await new Promise((r) => setTimeout(r, 100));
 
-    await page.screenshot({ path: 'screenshots/gameover-defeat-1star.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/gameover-defeat-1star.png',
+      element: document.body,
+    });
   });
 });
 
@@ -614,9 +809,13 @@ describe('Game Over screenshots', () => {
 // ---------------------------------------------------------------------------
 describe('Intro Overlay screenshots', () => {
   it('IntroOverlay - initial splash', async () => {
-    render(h('div', { style: 'position:relative;width:800px;height:600px;background:#000' },
-      h(IntroOverlay, null),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#000' },
+        h(IntroOverlay, null),
+      ),
+    );
 
     // Wait for animations to begin
     await new Promise((r) => setTimeout(r, 200));
@@ -630,9 +829,13 @@ describe('Intro Overlay screenshots', () => {
 // ---------------------------------------------------------------------------
 describe('Minimap Panel screenshots', () => {
   it('MinimapPanel - default canvas', async () => {
-    render(h('div', { style: 'width:256px;height:256px;background:#000' },
-      h(MinimapPanel, { canvasRef: { current: null }, camRef: { current: null } }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:256px;background:#000' },
+        h(MinimapPanel, { canvasRef: { current: null }, camRef: { current: null } }),
+      ),
+    );
 
     await page.screenshot({ path: 'screenshots/minimap-panel.png', element: document.body });
   });
@@ -647,11 +850,13 @@ describe('Error Boundary screenshots', () => {
       throw new Error('Test render error');
     }
 
-    render(h('div', { style: 'width:400px;background:#0f172a' },
-      h(ErrorBoundary, null,
-        h(BrokenChild, null),
+    render(
+      h(
+        'div',
+        { style: 'width:400px;background:#0f172a' },
+        h(ErrorBoundary, null, h(BrokenChild, null)),
       ),
-    ));
+    );
 
     await page.screenshot({ path: 'screenshots/error-boundary.png', element: document.body });
   });

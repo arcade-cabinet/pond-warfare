@@ -259,16 +259,7 @@ export function combatSystem(world: GameWorld): void {
           } else if (kind === EntityKind.Catapult) {
             // Catapult: ranged AoE projectile
             audio.shoot();
-            spawnProjectile(
-              world,
-              ex,
-              ey - 10,
-              Position.x[tEnt],
-              Position.y[tEnt],
-              tEnt,
-              dmg,
-              eid,
-            );
+            spawnProjectile(world, ex, ey - 10, Position.x[tEnt], Position.y[tEnt], tEnt, dmg, eid);
             // AoE: also damage enemies near the target
             const tx = Position.x[tEnt];
             const ty = Position.y[tEnt];
@@ -325,9 +316,10 @@ export function combatSystem(world: GameWorld): void {
             const meleeDmg = Math.round(dmg * mult);
             takeDamage(world, tEnt, meleeDmg, eid, mult);
           }
-          Combat.attackCooldown[eid] = (faction === Faction.Player && world.tech.battleRoar)
-            ? Math.round(ATTACK_COOLDOWN * 0.9)
-            : ATTACK_COOLDOWN;
+          Combat.attackCooldown[eid] =
+            faction === Faction.Player && world.tech.battleRoar
+              ? Math.round(ATTACK_COOLDOWN * 0.9)
+              : ATTACK_COOLDOWN;
         }
       } else {
         // Out of range - chase target

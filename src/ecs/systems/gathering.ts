@@ -167,7 +167,7 @@ export function gatheringSystem(world: GameWorld): void {
         resKind === EntityKind.Cattail ? ResourceType.Twigs : ResourceType.Clams;
 
       // Deplete resource (Tidal Harvest: +50%)
-      const gatherAmt = (faction === Faction.Player && world.tech.tidalHarvest) ? 15 : GATHER_AMOUNT;
+      const gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;
       Resource.amount[tEnt] -= gatherAmt;
       // Track stats
       world.stats.resourcesGathered += gatherAmt;

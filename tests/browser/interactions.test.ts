@@ -6,18 +6,14 @@
  * Each test clicks an element and asserts the expected state change.
  */
 
-import { render, cleanup, fireEvent } from '@testing-library/preact';
-import { page } from 'vitest/browser';
+import { cleanup, fireEvent, render } from '@testing-library/preact';
 import { h } from 'preact';
-import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
-
-import * as store from '@/ui/store';
-import { actionButtons, queueItems, type ActionButtonDef, type QueueItemDef } from '@/ui/action-panel';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ActionPanel, actionButtons, queueItems } from '@/ui/action-panel';
+import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
 import { SelectionPanel } from '@/ui/selection-panel';
-import { ActionPanel } from '@/ui/action-panel';
-import { GameOverBanner } from '@/ui/game-over';
-import { Sidebar } from '@/ui/sidebar';
+import * as store from '@/ui/store';
 
 // Mock animation module
 vi.mock('@/rendering/animations', () => ({
@@ -108,18 +104,22 @@ describe('HUD button interactions', () => {
     const onSpeedClick = vi.fn();
     store.gameTimeDisplay.value = 'Day 1 - 08:00';
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick,
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick,
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     const speedBtn = document.getElementById('speed-btn')!;
     expect(speedBtn).toBeTruthy();
@@ -130,18 +130,22 @@ describe('HUD button interactions', () => {
   it('pause button click calls onPauseClick', async () => {
     const onPauseClick = vi.fn();
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick,
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick,
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     const pauseBtn = document.getElementById('pause-btn')!;
     expect(pauseBtn).toBeTruthy();
@@ -152,18 +156,22 @@ describe('HUD button interactions', () => {
   it('mute button click calls onMuteClick', async () => {
     const onMuteClick = vi.fn();
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick,
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick,
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     const muteBtn = document.getElementById('mute-btn')!;
     expect(muteBtn).toBeTruthy();
@@ -174,18 +182,22 @@ describe('HUD button interactions', () => {
   it('color blind button click calls onColorBlindToggle', async () => {
     const onColorBlindToggle = vi.fn();
 
-    render(h('div', { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle,
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle,
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     const cbBtn = document.getElementById('cb-btn')!;
     expect(cbBtn).toBeTruthy();
@@ -196,18 +208,22 @@ describe('HUD button interactions', () => {
   it('idle worker button click opens radial menu', async () => {
     store.idleWorkerCount.value = 3;
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     expect(store.radialMenuOpen.value).toBe(false);
 
@@ -222,18 +238,22 @@ describe('HUD button interactions', () => {
     const onArmyClick = vi.fn();
     store.armyCount.value = 5;
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick,
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick,
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     const armyBtn = document.getElementById('select-army-btn')!;
     expect(armyBtn).toBeTruthy();
@@ -246,18 +266,22 @@ describe('HUD button interactions', () => {
     store.hasPlayerUnits.value = true;
     store.selectionCount.value = 3;
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick,
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick,
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     const aMoveBtn = document.getElementById('attack-move-btn')!;
     expect(aMoveBtn).toBeTruthy();
@@ -269,18 +293,22 @@ describe('HUD button interactions', () => {
     const onCtrlGroupClick = vi.fn();
     store.ctrlGroupCounts.value = { 1: 4, 3: 7 };
 
-    render(h('div', { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick,
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:80px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick,
+        }),
+      ),
+    );
 
     // Click the first control group badge (group 1)
     const badges = document.querySelectorAll('[title^="Group"]');
@@ -304,18 +332,22 @@ describe('Radial menu interactions', () => {
     store.radialMenuY.value = 200;
     store.idleWorkerCount.value = 5;
 
-    return render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    return render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
   }
 
   it('radial menu auto-gather toggle click toggles signal', async () => {
@@ -381,18 +413,22 @@ describe('Radial menu interactions', () => {
     store.radialMenuY.value = 200;
     store.idleWorkerCount.value = 5;
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick,
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick,
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     await new Promise((r) => setTimeout(r, 200));
 
@@ -429,9 +465,13 @@ describe('Selection Panel interactions', () => {
     store.selectionName.value = 'Gatherer';
     store.selectionNameColor.value = 'text-green-400';
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect }),
+      ),
+    );
 
     // Find the X deselect button
     const xBtn = document.querySelector('#selection-info button') as HTMLButtonElement;
@@ -445,9 +485,13 @@ describe('Selection Panel interactions', () => {
   it('deselect button hidden when nothing selected', async () => {
     store.selectionCount.value = 0;
 
-    render(h('div', { style: 'width:256px;height:300px;background:#0f172a' },
-      h(SelectionPanel, { onDeselect: vi.fn() }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'width:256px;height:300px;background:#0f172a' },
+        h(SelectionPanel, { onDeselect: vi.fn() }),
+      ),
+    );
 
     const xBtn = document.querySelector('#selection-info button');
     expect(xBtn).toBeNull();
@@ -461,12 +505,19 @@ describe('Action Panel interactions', () => {
   it('affordable action button click calls onClick handler', async () => {
     const onClick = vi.fn();
     actionButtons.value = [
-      { title: 'Lodge', cost: '150C 100T', hotkey: 'Q', affordable: true, description: 'Expansion', onClick },
+      {
+        title: 'Lodge',
+        cost: '150C 100T',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Expansion',
+        onClick,
+      },
     ];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     const btn = document.querySelector('.action-btn') as HTMLButtonElement;
     expect(btn).toBeTruthy();
@@ -478,12 +529,19 @@ describe('Action Panel interactions', () => {
   it('unaffordable action button click does NOT call onClick', async () => {
     const onClick = vi.fn();
     actionButtons.value = [
-      { title: 'Armory', cost: '200C 150T', hotkey: 'E', affordable: false, description: 'Train combat', onClick },
+      {
+        title: 'Armory',
+        cost: '200C 150T',
+        hotkey: 'E',
+        affordable: false,
+        description: 'Train combat',
+        onClick,
+      },
     ];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     const btn = document.querySelector('.action-btn') as HTMLButtonElement;
     expect(btn).toBeTruthy();
@@ -499,14 +557,35 @@ describe('Action Panel interactions', () => {
     const onArmory = vi.fn();
 
     actionButtons.value = [
-      { title: 'Lodge', cost: '150C 100T', hotkey: 'Q', affordable: true, description: 'Expansion', onClick: onLodge },
-      { title: 'Burrow', cost: '75T', hotkey: 'W', affordable: true, description: 'Housing', onClick: onBurrow },
-      { title: 'Armory', cost: '200C 150T', hotkey: 'E', affordable: true, description: 'Train combat', onClick: onArmory },
+      {
+        title: 'Lodge',
+        cost: '150C 100T',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Expansion',
+        onClick: onLodge,
+      },
+      {
+        title: 'Burrow',
+        cost: '75T',
+        hotkey: 'W',
+        affordable: true,
+        description: 'Housing',
+        onClick: onBurrow,
+      },
+      {
+        title: 'Armory',
+        cost: '200C 150T',
+        hotkey: 'E',
+        affordable: true,
+        description: 'Train combat',
+        onClick: onArmory,
+      },
     ];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     const btns = document.querySelectorAll('.action-btn') as NodeListOf<HTMLButtonElement>;
     expect(btns.length).toBe(3);
@@ -527,21 +606,32 @@ describe('Action Panel interactions', () => {
     const onCancel2 = vi.fn();
 
     actionButtons.value = [
-      { title: 'Gatherer', cost: '50C 1F', hotkey: 'Q', affordable: true, description: 'Worker', onClick: vi.fn() },
+      {
+        title: 'Gatherer',
+        cost: '50C 1F',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Worker',
+        onClick: vi.fn(),
+      },
     ];
     queueItems.value = [
       { label: 'G', progressPct: 65, onCancel: onCancel1 },
       { label: 'G', progressPct: 0, onCancel: onCancel2 },
     ];
 
-    render(h('div', { style: 'width:256px;height:300px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:300px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     // Queue cancel buttons are the ones inside the queue section
-    const queueBtns = document.querySelectorAll('.action-btn ~ div button, [class*="col-span"] button') as NodeListOf<HTMLButtonElement>;
+    const _queueBtns = document.querySelectorAll(
+      '.action-btn ~ div button, [class*="col-span"] button',
+    ) as NodeListOf<HTMLButtonElement>;
     // Find buttons that are not action-btns (queue items)
-    const allBtns = document.querySelectorAll('#action-panel button:not(.action-btn)') as NodeListOf<HTMLButtonElement>;
+    const allBtns = document.querySelectorAll(
+      '#action-panel button:not(.action-btn)',
+    ) as NodeListOf<HTMLButtonElement>;
     expect(allBtns.length).toBe(2);
 
     allBtns[0].click();
@@ -553,12 +643,19 @@ describe('Action Panel interactions', () => {
 
   it('action button hover shows tooltip, leave hides it', async () => {
     actionButtons.value = [
-      { title: 'Lodge', cost: '150C 100T', hotkey: 'Q', affordable: true, description: 'Build a lodge', onClick: vi.fn() },
+      {
+        title: 'Lodge',
+        cost: '150C 100T',
+        hotkey: 'Q',
+        affordable: true,
+        description: 'Build a lodge',
+        onClick: vi.fn(),
+      },
     ];
 
-    render(h('div', { style: 'width:256px;height:256px;background:#1e293b' },
-      h(ActionPanel, null),
-    ));
+    render(
+      h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
+    );
 
     const btn = document.querySelector('.action-btn') as HTMLButtonElement;
     expect(btn).toBeTruthy();
@@ -568,10 +665,10 @@ describe('Action Panel interactions', () => {
 
     expect(store.tooltipVisible.value).toBe(true);
     expect(store.tooltipData.value).not.toBeNull();
-    expect(store.tooltipData.value!.title).toBe('Lodge');
-    expect(store.tooltipData.value!.cost).toBe('150C 100T');
-    expect(store.tooltipData.value!.description).toBe('Build a lodge');
-    expect(store.tooltipData.value!.hotkey).toBe('Q');
+    expect(store.tooltipData.value?.title).toBe('Lodge');
+    expect(store.tooltipData.value?.cost).toBe('150C 100T');
+    expect(store.tooltipData.value?.description).toBe('Build a lodge');
+    expect(store.tooltipData.value?.hotkey).toBe('Q');
 
     // Simulate mouseleave
     fireEvent.mouseLeave(btn);
@@ -594,9 +691,13 @@ describe('Game Over interactions', () => {
     store.goStatLines.value = ['Time: 5 days', 'Kills: 20'];
     store.goRating.value = 3;
 
-    render(h('div', { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
-      h(GameOverBanner, { onRestart }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(GameOverBanner, { onRestart }),
+      ),
+    );
 
     const restartBtn = document.getElementById('restart-btn')!;
     expect(restartBtn).toBeTruthy();
@@ -609,9 +710,13 @@ describe('Game Over interactions', () => {
   it('game over banner hidden during playing state', async () => {
     store.gameState.value = 'playing';
 
-    render(h('div', { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
-      h(GameOverBanner, { onRestart: vi.fn() }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(GameOverBanner, { onRestart: vi.fn() }),
+      ),
+    );
 
     const banner = document.getElementById('game-over-banner');
     expect(banner).toBeNull();
@@ -626,9 +731,13 @@ describe('Game Over interactions', () => {
     store.goStatLines.value = ['Time: 3 days'];
     store.goRating.value = 1;
 
-    render(h('div', { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
-      h(GameOverBanner, { onRestart }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(GameOverBanner, { onRestart }),
+      ),
+    );
 
     const banner = document.getElementById('game-over-banner');
     expect(banner).toBeTruthy();
@@ -647,18 +756,22 @@ describe('Idle worker to radial menu flow', () => {
     const onIdleWorkerClick = vi.fn();
     store.idleWorkerCount.value = 4;
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick,
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick,
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     // Step 1: Click idle worker button
     const idleBtn = document.getElementById('idle-worker-btn')!;
@@ -680,21 +793,25 @@ describe('Idle worker to radial menu flow', () => {
   it('click idle worker -> toggle auto-gather -> toggle auto-defend -> close overlay', async () => {
     store.idleWorkerCount.value = 6;
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     // Open radial menu
-    document.getElementById('idle-worker-btn')!.click();
+    document.getElementById('idle-worker-btn')?.click();
     await new Promise((r) => setTimeout(r, 250));
 
     // Toggle gather on
@@ -722,18 +839,22 @@ describe('HUD conditional element visibility', () => {
   it('idle worker button hidden when no idle workers', async () => {
     store.idleWorkerCount.value = 0;
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     expect(document.getElementById('idle-worker-btn')).toBeNull();
   });
@@ -741,18 +862,22 @@ describe('HUD conditional element visibility', () => {
   it('army button hidden when no army units', async () => {
     store.armyCount.value = 0;
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     expect(document.getElementById('select-army-btn')).toBeNull();
   });
@@ -761,18 +886,22 @@ describe('HUD conditional element visibility', () => {
     store.hasPlayerUnits.value = false;
     store.selectionCount.value = 0;
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     expect(document.getElementById('attack-move-btn')).toBeNull();
   });
@@ -782,18 +911,22 @@ describe('HUD conditional element visibility', () => {
     store.selectionCount.value = 3;
     store.attackMoveActive.value = true;
 
-    render(h('div', { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     // Button should not be shown when attack-move is already active
     expect(document.getElementById('attack-move-btn')).toBeNull();
@@ -802,21 +935,25 @@ describe('HUD conditional element visibility', () => {
   it('pause overlay visible when paused', async () => {
     store.paused.value = true;
 
-    render(h('div', { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-      h(HUD, {
-        onSpeedClick: vi.fn(),
-        onMuteClick: vi.fn(),
-        onColorBlindToggle: vi.fn(),
-        onIdleWorkerClick: vi.fn(),
-        onArmyClick: vi.fn(),
-        onPauseClick: vi.fn(),
-        onAttackMoveClick: vi.fn(),
-        onCtrlGroupClick: vi.fn(),
-      }),
-    ));
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
 
     const pauseOverlay = document.querySelector('.pointer-events-none');
     expect(pauseOverlay).toBeTruthy();
-    expect(pauseOverlay!.textContent).toContain('PAUSED');
+    expect(pauseOverlay?.textContent).toContain('PAUSED');
   });
 });

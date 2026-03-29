@@ -9,11 +9,11 @@
 import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
+import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
-import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
 import { IntroOverlay } from './intro-overlay';

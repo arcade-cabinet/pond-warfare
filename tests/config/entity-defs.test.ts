@@ -146,7 +146,13 @@ describe('getDamageMultiplier', () => {
   });
 
   it('should only contain multipliers for combat unit types', () => {
-    const combatKinds = [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Gator, EntityKind.Snake, EntityKind.Shieldbearer];
+    const combatKinds = [
+      EntityKind.Brawler,
+      EntityKind.Sniper,
+      EntityKind.Gator,
+      EntityKind.Snake,
+      EntityKind.Shieldbearer,
+    ];
     for (const kind of Object.keys(DAMAGE_MULTIPLIERS)) {
       expect(combatKinds).toContain(Number(kind));
     }

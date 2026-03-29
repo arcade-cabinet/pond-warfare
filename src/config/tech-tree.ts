@@ -1,4 +1,14 @@
-export type TechId = 'sturdyMud' | 'swiftPaws' | 'sharpSticks' | 'eagleEye' | 'hardenedShells' | 'ironShell' | 'siegeWorks' | 'cartography' | 'tidalHarvest' | 'battleRoar';
+export type TechId =
+  | 'sturdyMud'
+  | 'swiftPaws'
+  | 'sharpSticks'
+  | 'eagleEye'
+  | 'hardenedShells'
+  | 'ironShell'
+  | 'siegeWorks'
+  | 'cartography'
+  | 'tidalHarvest'
+  | 'battleRoar';
 
 export interface TechUpgrade {
   id: TechId;
