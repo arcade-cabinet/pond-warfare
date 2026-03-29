@@ -55,11 +55,6 @@ function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-/** Get the game canvas element. */
-function getCanvas(): HTMLCanvasElement {
-  return document.getElementById('game-canvas') as HTMLCanvasElement;
-}
-
 /**
  * Dispatch a synthetic pointer event on an element at (clientX, clientY).
  * This is the primary mechanism for simulating mouse input on the canvas.
@@ -99,7 +94,7 @@ function clickScreen(screenX: number, screenY: number, button = 0): void {
  * accounting for camera position and the canvas offset in the page.
  */
 function worldToScreen(worldX: number, worldY: number): { x: number; y: number } {
-  const canvas = getCanvas();
+  const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
   const rect = canvas.getBoundingClientRect();
   const w = game.world;
   return {
@@ -231,8 +226,38 @@ function gameSeconds(): number {
  * Select an entity by left-clicking its world position.
  * Waits a tick for the selection to register.
  */
-async function selectEntity(eid: number): Promise<void> {
-  clickWorld(Position.x[eid], Position.y[eid]);
+async function selectEntity(eid: number, additive = false): Promise<void> {
+  if (additive) {
+    // Hold shift for additive selection
+    const container = document.getElementById('game-container');
+    if (container) {
+      const { x, y } = worldToScreen(Position.x[eid], Position.y[eid]);
+      const downEv = new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+        shiftKey: true,
+      });
+      const upEv = new PointerEvent('pointerup', {
+        bubbles: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+        shiftKey: true,
+      });
+      container.dispatchEvent(downEv);
+      container.dispatchEvent(upEv);
+    }
+  } else {
+    clickWorld(Position.x[eid], Position.y[eid]);
+  }
   await delay(50);
 }
 

@@ -502,7 +502,8 @@ export function train(
   ) {
     world.resources.clams -= clamCost;
     world.resources.twigs -= twigCost;
-    world.resources.food += foodCost;
+    // Food reservation is handled by syncUIStore counting queued units;
+    // no need to increment food here.
 
     {
       const slots = trainingQueueSlots.get(buildingEid) ?? [];

@@ -52,15 +52,26 @@ export function App({ onMount }: AppProps) {
       minimapCamRef.current &&
       dayNightRef.current
     ) {
-      onMount({
-        container: containerRef.current,
-        gameCanvas: gameCanvasRef.current,
-        fogCanvas: fogCanvasRef.current,
-        lightCanvas: lightCanvasRef.current,
-        minimapCanvas: minimapCanvasRef.current,
-        minimapCam: minimapCamRef.current,
-        dayNightOverlay: dayNightRef.current,
-      });
+      const container = containerRef.current;
+      const gameCanvas = gameCanvasRef.current;
+      const fogCanvas = fogCanvasRef.current;
+      const lightCanvas = lightCanvasRef.current;
+      const minimapCanvas = minimapCanvasRef.current;
+      const minimapCam = minimapCamRef.current;
+      const dayNight = dayNightRef.current;
+      (async () => {
+        try {
+          await onMount({
+            container,
+            gameCanvas,
+            fogCanvas,
+            lightCanvas,
+            minimapCanvas,
+            minimapCam,
+            dayNightOverlay: dayNight,
+          });
+        } catch (_err) {}
+      })();
     }
   }, [onMount]);
 

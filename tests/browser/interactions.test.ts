@@ -624,10 +624,6 @@ describe('Action Panel interactions', () => {
       h('div', { style: 'width:256px;height:300px;background:#1e293b' }, h(ActionPanel, null)),
     );
 
-    // Queue cancel buttons are the ones inside the queue section
-    const _queueBtns = document.querySelectorAll(
-      '.action-btn ~ div button, [class*="col-span"] button',
-    ) as NodeListOf<HTMLButtonElement>;
     // Find buttons that are not action-btns (queue items)
     const allBtns = document.querySelectorAll(
       '#action-panel button:not(.action-btn)',

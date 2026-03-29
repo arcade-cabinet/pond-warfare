@@ -50,6 +50,7 @@ export function takeDamage(
 
   // Guard against negative damage (would heal the target)
   const effectiveAmount = Math.max(0, amount);
+  if (effectiveAmount === 0) return;
 
   // Apply damage
   Health.current[targetEid] -= effectiveAmount;
@@ -81,7 +82,7 @@ export function takeDamage(
   world.floatingTexts.push({
     x: tx + (Math.random() * 10 - 5),
     y: ty - spriteH / 2 - 5,
-    text: `-${amount}`,
+    text: `-${effectiveAmount}`,
     color: dmgColor,
     life: 40,
   });

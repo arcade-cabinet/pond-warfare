@@ -222,6 +222,9 @@ export function destroyPixiApp(): void {
   // Clean up building progress texts
   for (const t of buildingProgressTexts.values()) t.destroy();
   buildingProgressTexts.clear();
+  // Clean up corpse sprites
+  for (const spr of corpseSprites.values()) spr.destroy();
+  corpseSprites.clear();
   // Clean up floating text pool
   for (const t of floatingTextSprites) t.destroy();
   floatingTextSprites.length = 0;
@@ -800,6 +803,9 @@ function renderPlacementPreview(
   else if (buildingType === 'armory') placeSpriteId = SpriteId.Armory;
   else if (buildingType === 'tower') placeSpriteId = SpriteId.Tower;
   else if (buildingType === 'watchtower') placeSpriteId = SpriteId.Watchtower;
+  else if (buildingType === 'lodge') placeSpriteId = SpriteId.Lodge;
+  else if (buildingType === 'wall') placeSpriteId = SpriteId.Wall;
+  else if (buildingType === 'scout_post') placeSpriteId = SpriteId.ScoutPost;
 
   if (placeSpriteId !== null) {
     const sprCanvas = spriteCanvases.get(placeSpriteId);
@@ -827,7 +833,8 @@ function colorToHex(color: string): number {
   if (color.startsWith('#')) {
     return Number.parseInt(color.slice(1), 16);
   }
-  // Fallback for rgb() strings - just return white
+  if (color.startsWith('rgb')) return parseRgbString(color);
+  // Fallback - return white for unknown formats
   return 0xffffff;
 }
 

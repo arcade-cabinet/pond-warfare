@@ -148,6 +148,10 @@ let nextCorpseId = 1;
 export function createCorpseId(): number {
   return nextCorpseId++;
 }
+/** Reset the corpse ID counter (useful for tests and game restarts). */
+export function resetCorpseIdCounter(): void {
+  nextCorpseId = 1;
+}
 
 export interface MinimapPing {
   x: number;

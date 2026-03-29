@@ -27,6 +27,7 @@ import {
   EntityTypeTag,
   FactionTag,
   Health,
+  IsBuilding,
   IsResource,
   Position,
   Sprite,
@@ -118,6 +119,7 @@ export function combatSystem(world: GameWorld): void {
         if (t === eid) continue;
         if (FactionTag.faction[t] !== faction) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
+        if (hasComponent(world.ecs, t, IsBuilding)) continue;
         if (Health.current[t] <= 0) continue;
         if (Health.current[t] >= Health.max[t]) continue;
 

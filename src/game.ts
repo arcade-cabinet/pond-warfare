@@ -395,10 +395,14 @@ export class Game {
     // Initialize audio on first user interaction (AudioContext policy)
     const initAudioOnce = async () => {
       if (this.audioInitialized) return;
-      this.audioInitialized = true;
-      await audio.init();
-      audio.startAmbient();
-      audio.startMusic(true);
+      try {
+        await audio.init();
+        audio.startAmbient();
+        audio.startMusic(true);
+        this.audioInitialized = true;
+      } catch (_err) {
+        return;
+      }
       document.removeEventListener('pointerdown', initAudioOnce);
       document.removeEventListener('keydown', initAudioOnce);
     };
@@ -959,9 +963,25 @@ export class Game {
       }
     }
 
-    w.resources.food = curFood;
+    // Count food reserved by units currently in training queues so that
+    // syncUIStore's entity-based recount doesn't lose the reservation made
+    // when the player clicked "Train".
+    let queuedFood = 0;
+    const allTrainingBldgs = query(w.ecs, [TrainingQueue, FactionTag, IsBuilding]);
+    for (let i = 0; i < allTrainingBldgs.length; i++) {
+      const bEid = allTrainingBldgs[i];
+      if (FactionTag.faction[bEid] !== Faction.Player) continue;
+      const slots = trainingQueueSlots.get(bEid);
+      if (!slots) continue;
+      for (let qi = 0; qi < slots.length; qi++) {
+        const def = ENTITY_DEFS[slots[qi] as EntityKind];
+        queuedFood += def.foodCost ?? 1;
+      }
+    }
+
+    w.resources.food = curFood + queuedFood;
     w.resources.maxFood = maxFoodCap;
-    store.food.value = curFood;
+    store.food.value = curFood + queuedFood;
     store.maxFood.value = maxFoodCap;
     store.idleWorkerCount.value = idleWorkers;
     store.armyCount.value = armyUnits;
@@ -1128,8 +1148,9 @@ export class Game {
         }
       }
       store.selectionStatsHtml.value = statParts.join(' | ');
-      // Describe current state
-      const state = UnitStateMachine.state[selEid] as UnitState;
+      // Describe current state (only for units with a state machine, not buildings/resources)
+      const hasStateMachine = hasComponent(w.ecs, selEid, UnitStateMachine);
+      const state = hasStateMachine ? (UnitStateMachine.state[selEid] as UnitState) : -1;
       const stateNames: Record<number, string> = {
         [UnitState.Idle]: 'Idle',
         [UnitState.Move]: 'Moving',
@@ -1411,8 +1432,8 @@ export class Game {
           }
         }
 
-        // Lodge selected: train gatherer + techs
-        if (selKind === EntityKind.Lodge) {
+        // Lodge selected: train gatherer + techs (only when construction is complete)
+        if (selKind === EntityKind.Lodge && Building.progress[selEid] >= 100) {
           const gDef = ENTITY_DEFS[EntityKind.Gatherer];
           btns.push({
             title: 'Gatherer',
@@ -1553,8 +1574,8 @@ export class Game {
           });
         }
 
-        // Armory selected: train brawler/sniper/healer + techs
-        if (selKind === EntityKind.Armory) {
+        // Armory selected: train brawler/sniper/healer + techs (only when construction is complete)
+        if (selKind === EntityKind.Armory && Building.progress[selEid] >= 100) {
           const bDef = ENTITY_DEFS[EntityKind.Brawler];
           btns.push({
             title: 'Brawler',

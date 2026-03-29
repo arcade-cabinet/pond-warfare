@@ -86,7 +86,11 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
   if (keymap.escape !== undefined) merged.escape = keymap.escape;
   if (keymap.actionSlots !== undefined) {
     const slots = [...keymap.actionSlots];
-    // Normalize to exactly 6 items: pad with defaults or truncate
+    // Normalize to exactly 6 items: pad with defaults or truncate.
+    // Note: short arrays are padded with defaults here, but the validator
+    // (isValidPartialKeyMap) requires exactly 6 items. This asymmetry is
+    // intentional — setKeymap is lenient to simplify programmatic callers,
+    // while the validator is strict for untrusted input (e.g. localStorage).
     while (slots.length < 6) slots.push(DEFAULT_KEYMAP.actionSlots[slots.length]);
     merged.actionSlots = slots.slice(0, 6);
   }

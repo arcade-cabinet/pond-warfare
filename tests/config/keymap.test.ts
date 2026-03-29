@@ -93,6 +93,19 @@ describe('setKeymap / getKeymap', () => {
     setKeymap({ actionSlots: ['1', '2', '3', '4', '5', '6'] });
     expect(getKeymap().actionSlots).toEqual(['1', '2', '3', '4', '5', '6']);
   });
+
+  it('should pad short actionSlots with defaults', () => {
+    setKeymap({ actionSlots: ['1', '2'] as any });
+    const slots = getKeymap().actionSlots;
+    expect(slots).toHaveLength(6);
+    // First two are overridden, rest are defaults
+    expect(slots[0]).toBe('1');
+    expect(slots[1]).toBe('2');
+    expect(slots[2]).toBe(DEFAULT_KEYMAP.actionSlots[2]);
+    expect(slots[3]).toBe(DEFAULT_KEYMAP.actionSlots[3]);
+    expect(slots[4]).toBe(DEFAULT_KEYMAP.actionSlots[4]);
+    expect(slots[5]).toBe(DEFAULT_KEYMAP.actionSlots[5]);
+  });
 });
 
 describe('loadKeymapFromStorage / saveKeymapToStorage', () => {
