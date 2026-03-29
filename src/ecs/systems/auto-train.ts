@@ -154,11 +154,7 @@ export function autoTrainSystem(world: GameWorld): void {
   }
 
   // --- Train gatherers at Lodges ---
-  if (
-    lodges.length > 0 &&
-    gatherers < 4 &&
-    world.resources.food < world.resources.maxFood
-  ) {
+  if (lodges.length > 0 && gatherers < 4 && world.resources.food < world.resources.maxFood) {
     // Pick the lodge with the shortest queue
     let bestLodge = lodges[0];
     let bestCount = TrainingQueue.count[lodges[0]];

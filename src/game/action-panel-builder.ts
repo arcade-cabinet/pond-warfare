@@ -732,7 +732,11 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
               w.resources.food + (catDef.foodCost ?? 1) <= w.resources.maxFood,
             description: 'Siege unit. Area-of-effect damage at long range.',
             category: 'train',
-            costBreakdown: { clams: catDef.clamCost, twigs: catDef.twigCost, food: catDef.foodCost },
+            costBreakdown: {
+              clams: catDef.clamCost,
+              twigs: catDef.twigCost,
+              food: catDef.foodCost,
+            },
             requires: 'Requires: Siege Works',
             onClick: () => {
               train(

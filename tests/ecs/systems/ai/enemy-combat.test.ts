@@ -7,10 +7,7 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import {
-  ENEMY_ATTACK_CHECK_INTERVAL,
-  ENEMY_RETREAT_HP_PERCENT,
-} from '@/constants';
+import { ENEMY_ATTACK_CHECK_INTERVAL, ENEMY_RETREAT_HP_PERCENT } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -77,12 +74,7 @@ function createEnemyCombatUnit(
 }
 
 /** Create a player building (target for attacks). */
-function createPlayerBuilding(
-  world: GameWorld,
-  kind: EntityKind,
-  x: number,
-  y: number,
-): number {
+function createPlayerBuilding(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

@@ -204,8 +204,8 @@ export async function initPixiApp(
     height: viewHeight,
     backgroundColor: 0x000000,
     antialias: false,
-    resolution: 1,
-    autoDensity: false,
+    resolution: Math.min(window.devicePixelRatio || 1, 2), // Cap at 2x to prevent perf issues
+    autoDensity: true,
     preference: 'webgl',
   });
 

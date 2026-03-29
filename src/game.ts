@@ -9,6 +9,9 @@ import { animate } from 'animejs';
 import { query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
+// Campaign
+import { type CampaignState, campaignSystem, createCampaignState } from '@/campaign';
+import { getMission } from '@/campaign/missions';
 import { resetBarkState } from '@/config/barks';
 import { getCommanderDef } from '@/config/commanders';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
@@ -47,7 +50,7 @@ import { dayNightSystem } from '@/ecs/systems/day-night';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { gatheringSystem } from '@/ecs/systems/gathering';
-import { healthSystem } from '@/ecs/systems/health';
+import { healthSystem, takeDamage } from '@/ecs/systems/health';
 // Systems
 import { movementSystem } from '@/ecs/systems/movement';
 import { projectileSystem } from '@/ecs/systems/projectile';
@@ -55,13 +58,6 @@ import { trainingSystem } from '@/ecs/systems/training';
 import { tutorialSystem } from '@/ecs/systems/tutorial';
 import { veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-// Campaign
-import {
-  campaignSystem,
-  createCampaignState,
-  type CampaignState,
-} from '@/campaign';
-import { getMission } from '@/campaign/missions';
 // Extracted sub-modules
 import { buildActionPanel } from '@/game/action-panel-builder';
 import { spawnInitialEntities } from '@/game/init-entities';
@@ -109,10 +105,18 @@ import {
   loadAchievements,
   resetAchievementMatchState,
 } from '@/systems/achievements';
-import { loadUnlocks, updateProfileAndCheckUnlocks } from '@/systems/unlock-tracker';
+import {
+  loadUnlocks,
+  resetMatchUpdateGuard,
+  updateProfileAndCheckUnlocks,
+} from '@/systems/unlock-tracker';
+import { isNative } from '@/platform';
 import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
+
+/** Module-level flag: ensure lifecycle listeners are only added once. */
+let lifecycleListenersInstalled = false;
 
 export class Game {
   world: GameWorld;
@@ -174,6 +178,12 @@ export class Game {
   // Bound resize handler for cleanup
   private boundResize!: () => void;
 
+  // WebGL context loss recovery
+  private webglContextLost = false;
+  private boundContextLost: ((e: Event) => void) | null = null;
+  private boundContextRestored: (() => void) | null = null;
+  private boundVisibilityChange: (() => void) | null = null;
+
   // Container element
   private container!: HTMLElement;
 
@@ -208,6 +218,7 @@ export class Game {
     // Reset bark and achievement tracking state for the new session
     resetBarkState();
     resetAchievementMatchState();
+    resetMatchUpdateGuard();
     // Load earned achievements and unlocks from DB (async, fire-and-forget)
     loadAchievements().catch(() => {
       /* best-effort */
@@ -246,13 +257,20 @@ export class Game {
     // Resize canvases before PixiJS init so viewWidth/viewHeight are set
     const w = container.clientWidth;
     const h = container.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.world.viewWidth = w;
     this.world.viewHeight = h;
-    this.fogCanvas.width = w;
-    this.fogCanvas.height = h;
-    this.lightCanvas.width = w;
-    this.lightCanvas.height = h;
+    this.fogCanvas.width = w * dpr;
+    this.fogCanvas.height = h * dpr;
+    this.fogCanvas.style.width = `${w}px`;
+    this.fogCanvas.style.height = `${h}px`;
+    this.lightCanvas.width = w * dpr;
+    this.lightCanvas.height = h * dpr;
+    this.lightCanvas.style.width = `${w}px`;
+    this.lightCanvas.style.height = `${h}px`;
+    this.fogCtx.scale(dpr, dpr);
     this.fogCtx.imageSmoothingEnabled = false;
+    this.lightCtx.scale(dpr, dpr);
 
     // Initialise PixiJS application on the main game canvas
     await initPixiApp(gameCanvas, w, h);
@@ -495,6 +513,36 @@ export class Game {
       setColorBlindMode(enabled);
     });
 
+    // --- WebGL context loss recovery ---
+    // PixiJS 8 internally calls preventDefault() and re-uploads textures on
+    // restore, but we still need to pause game logic while the context is gone
+    // and resume when the browser restores it.
+    this.webglContextLost = false;
+    this.boundContextLost = (e: Event) => {
+      e.preventDefault(); // required — tells browser we want to restore
+      this.webglContextLost = true;
+      this.world.paused = true;
+      store.paused.value = true;
+      console.warn('[PondWarfare] WebGL context lost — pausing game');
+    };
+    this.boundContextRestored = () => {
+      this.webglContextLost = false;
+      this.world.paused = false;
+      store.paused.value = false;
+      console.info('[PondWarfare] WebGL context restored — resuming');
+    };
+    gameCanvas.addEventListener('webglcontextlost', this.boundContextLost);
+    gameCanvas.addEventListener('webglcontextrestored', this.boundContextRestored);
+
+    // Pause game when tab/app is backgrounded (mobile browsers kill GL contexts)
+    this.boundVisibilityChange = () => {
+      if (document.hidden && store.menuState.value === 'playing' && !this.world.paused) {
+        this.world.paused = true;
+        store.paused.value = true;
+      }
+    };
+    document.addEventListener('visibilitychange', this.boundVisibilityChange);
+
     // Initialize audio on first user interaction (AudioContext policy)
     if (this.audioInitialized) {
       // Already initialized from a previous session - just restart music
@@ -534,6 +582,40 @@ export class Game {
     this.running = true;
     this.initializing = false;
     this.rafId = requestAnimationFrame((t) => this.loop(t));
+
+    // --- Pause / resume lifecycle listeners (added once) ---
+    if (!lifecycleListenersInstalled) {
+      lifecycleListenersInstalled = true;
+
+      // Pause on browser visibility change (tab switch, screen off on mobile web)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && store.menuState.value === 'playing') {
+          this.world.paused = true;
+          store.paused.value = true;
+        }
+      });
+
+      // Capacitor native: pause when app goes to background
+      window.addEventListener('native-pause', () => {
+        if (store.menuState.value === 'playing') {
+          this.world.paused = true;
+          store.paused.value = true;
+        }
+      });
+
+      // Capacitor native: back button toggles pause during gameplay, exits on menu
+      window.addEventListener('native-back', () => {
+        if (store.menuState.value === 'playing') {
+          this.world.paused = !this.world.paused;
+          store.paused.value = this.world.paused;
+        } else {
+          // On menu screens, let the back button exit the app
+          if (isNative) {
+            import('@capacitor/app').then(({ App: A }) => A.exitApp());
+          }
+        }
+      });
+    }
   }
 
   /** Apply difficulty modifiers to world state before entities are spawned */
@@ -753,16 +835,24 @@ export class Game {
   resize(): void {
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const zoom = this.world.zoomLevel;
     this.world.viewWidth = w / zoom;
     this.world.viewHeight = h / zoom;
-    // PixiJS manages the game canvas size
+    // PixiJS manages the game canvas size (autoDensity handles DPR internally)
     resizePixiApp(w, h);
-    this.fogCanvas.width = w;
-    this.fogCanvas.height = h;
-    this.lightCanvas.width = w;
-    this.lightCanvas.height = h;
+    this.fogCanvas.width = w * dpr;
+    this.fogCanvas.height = h * dpr;
+    this.fogCanvas.style.width = `${w}px`;
+    this.fogCanvas.style.height = `${h}px`;
+    this.lightCanvas.width = w * dpr;
+    this.lightCanvas.height = h * dpr;
+    this.lightCanvas.style.width = `${w}px`;
+    this.lightCanvas.style.height = `${h}px`;
+    // Setting canvas width/height resets the context transform, so re-apply DPR scale
+    this.fogCtx.scale(dpr, dpr);
     this.fogCtx.imageSmoothingEnabled = false;
+    this.lightCtx.scale(dpr, dpr);
   }
 
   /** Apply a new zoom level, clamped between 0.5 and 2.0. */
@@ -862,8 +952,7 @@ export class Game {
       this.fpsFrameTimes.push(dt);
       if (this.fpsFrameTimes.length > 60) this.fpsFrameTimes.shift();
       if (timestamp - this.fpsLastUpdate > 500) {
-        const avg =
-          this.fpsFrameTimes.reduce((a, b) => a + b, 0) / this.fpsFrameTimes.length;
+        const avg = this.fpsFrameTimes.reduce((a, b) => a + b, 0) / this.fpsFrameTimes.length;
         store.fpsDisplay.value = avg > 0 ? Math.round(1000 / avg) : 0;
         this.fpsLastUpdate = timestamp;
       }
@@ -1336,8 +1425,7 @@ export class Game {
       const eid = allEnts[i];
       if (FactionTag.faction[eid] !== Faction.Enemy) continue;
       if (Health.current[eid] <= 0) continue;
-      Health.current[eid] -= 50;
-      Health.flashTimer[eid] = 8;
+      takeDamage(this.world, eid, 50, -1);
       // Blue surge particle
       this.world.particles.push({
         x: Position.x[eid],
@@ -1417,8 +1505,18 @@ export class Game {
     if (choice === 'checkpoint') {
       this.loadCheckpoint();
     } else if (choice === 'restart') {
-      // Re-init with same settings
-      store.menuState.value = 'playing';
+      // Re-init with same settings — must call init() to rebuild the world
+      this.init(
+        this.container,
+        this.gameCanvas,
+        this.fogCanvas,
+        this.lightCanvas,
+        this.minimapCanvas,
+        this.minimapCamElement,
+      ).catch(() => {
+        /* fallback: reload page */
+        window.location.reload();
+      });
     } else {
       // Quit to menu
       store.menuState.value = 'main';
@@ -1428,6 +1526,10 @@ export class Game {
 
   /** Render one frame */
   private draw(): void {
+    // Skip rendering entirely while the WebGL context is lost — no point
+    // building render data when the GPU cannot draw anything.
+    if (this.webglContextLost) return;
+
     const shake = computeShakeOffset(this.world);
 
     // Build sorted entity list for rendering
@@ -1612,6 +1714,20 @@ export class Game {
     this.colorBlindUnsubscribe?.();
     this.colorBlindUnsubscribe = null;
     window.removeEventListener('resize', this.boundResize);
+    // Remove WebGL context loss and visibility handlers
+    if (this.boundContextLost) {
+      this.gameCanvas?.removeEventListener('webglcontextlost', this.boundContextLost);
+      this.boundContextLost = null;
+    }
+    if (this.boundContextRestored) {
+      this.gameCanvas?.removeEventListener('webglcontextrestored', this.boundContextRestored);
+      this.boundContextRestored = null;
+    }
+    if (this.boundVisibilityChange) {
+      document.removeEventListener('visibilitychange', this.boundVisibilityChange);
+      this.boundVisibilityChange = null;
+    }
+    this.webglContextLost = false;
     if (this.initAudioHandler) {
       document.removeEventListener('pointerdown', this.initAudioHandler);
       document.removeEventListener('keydown', this.initAudioHandler);

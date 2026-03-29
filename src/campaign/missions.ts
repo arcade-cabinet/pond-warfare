@@ -26,12 +26,12 @@ export interface MissionDialogue {
 // ---------------------------------------------------------------------------
 
 export type ObjectiveType =
-  | 'build'       // Build a specific building kind
-  | 'train'       // Train N units of a specific kind
-  | 'explore'     // Explore X% of the map
+  | 'build' // Build a specific building kind
+  | 'train' // Train N units of a specific kind
+  | 'explore' // Explore X% of the map
   | 'destroyNest' // Destroy N enemy nests
-  | 'survive'     // Survive until a condition (evolution tier)
-  | 'kill'        // Kill a specific entity kind (e.g., AlphaPredator)
+  | 'survive' // Survive until a condition (evolution tier)
+  | 'kill' // Kill a specific entity kind (e.g., AlphaPredator)
   | 'buildCount'; // Build N of a specific building (e.g., second Lodge)
 
 export interface MissionObjective {
@@ -233,9 +233,6 @@ const mission2: MissionDef = {
     fogOfWar: 'full',
     resourceDensity: 'rich',
   },
-  worldOverrides: {
-    startingResourcesMult: 1.5,
-  },
 };
 
 // ---------------------------------------------------------------------------
@@ -430,13 +427,7 @@ const mission5: MissionDef = {
 // All missions in order
 // ---------------------------------------------------------------------------
 
-export const CAMPAIGN_MISSIONS: MissionDef[] = [
-  mission1,
-  mission2,
-  mission3,
-  mission4,
-  mission5,
-];
+export const CAMPAIGN_MISSIONS: MissionDef[] = [mission1, mission2, mission3, mission4, mission5];
 
 /** Look up a mission by its string ID. */
 export function getMission(id: string): MissionDef | undefined {

@@ -133,6 +133,22 @@ export function renderEntity(eid: number, frameCount: number): void {
 
   const ex = Position.x[eid];
   const ey = Position.y[eid];
+
+  // Viewport culling: skip rendering for off-screen entities
+  if (_world) {
+    const margin = 64;
+    if (
+      ex < _world.camX - margin ||
+      ex > _world.camX + _world.viewWidth + margin ||
+      ey < _world.camY - margin ||
+      ey > _world.camY + _world.viewHeight + margin
+    ) {
+      const spr = getEntitySprites().get(eid);
+      if (spr) spr.visible = false;
+      return;
+    }
+  }
+
   const sw = SpriteComp.width[eid];
   const sh = SpriteComp.height[eid];
   const yOff = SpriteComp.yOffset[eid];
@@ -166,8 +182,12 @@ export function renderEntity(eid: number, frameCount: number): void {
     spr = acquireSprite(effectiveTex);
     entitySprites.set(eid, spr);
     entityLayer.addChild(spr);
-  } else if (spr.texture !== effectiveTex) {
-    spr.texture = effectiveTex;
+  } else {
+    if (spr.texture !== effectiveTex) {
+      spr.texture = effectiveTex;
+    }
+    // Re-show sprite that may have been hidden by viewport culling
+    spr.visible = true;
   }
 
   // --- Position and Y-sort ---

@@ -29,12 +29,7 @@ import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 /** Create a completed player building with training queue support. */
-function createPlayerBuilding(
-  world: GameWorld,
-  kind: EntityKind,
-  x: number,
-  y: number,
-): number {
+function createPlayerBuilding(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
@@ -60,12 +55,7 @@ function createPlayerBuilding(
 }
 
 /** Create a player unit (non-building). */
-function createPlayerUnit(
-  world: GameWorld,
-  kind: EntityKind,
-  x: number,
-  y: number,
-): number {
+function createPlayerUnit(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

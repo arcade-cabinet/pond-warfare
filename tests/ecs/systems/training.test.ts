@@ -4,7 +4,7 @@
  * Validates countdown timer, spawn on completion, and queue advancement.
  */
 
-import { addComponent, addEntity } from 'bitecs';
+import { addComponent, addEntity, query } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { TRAIN_TIMER } from '@/constants';
@@ -24,12 +24,7 @@ import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 
 /** Create a completed player building with a training queue. */
-function createTrainingBuilding(
-  world: GameWorld,
-  kind: EntityKind,
-  x: number,
-  y: number,
-): number {
+function createTrainingBuilding(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
@@ -81,6 +76,14 @@ describe('trainingSystem', () => {
     expect(TrainingQueue.count[armory]).toBe(0);
     // Particles should have been spawned (training complete effect)
     expect(world.particles.length).toBeGreaterThan(0);
+    // Verify a Brawler was actually spawned (query for new entities)
+    const units = query(world.ecs, [FactionTag, EntityTypeTag]);
+    const brawlers = units.filter(
+      (eid: number) =>
+        EntityTypeTag.kind[eid] === EntityKind.Brawler &&
+        FactionTag.faction[eid] === Faction.Player,
+    );
+    expect(brawlers.length).toBe(1);
   });
 
   it('should not train when building is incomplete (progress < 100)', () => {

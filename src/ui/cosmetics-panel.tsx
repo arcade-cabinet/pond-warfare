@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { COSMETICS, type CosmeticDef } from '@/config/cosmetics';
-import { getPlayerProfile, getSetting, setSetting, type PlayerProfile } from '@/storage';
+import { getPlayerProfile, getSetting, type PlayerProfile, setSetting } from '@/storage';
 import { cosmeticsOpen } from './store';
 
 /** Key prefix for cosmetic activation in the settings table. */
@@ -109,10 +109,7 @@ export function CosmeticsPanel() {
         </div>
 
         {loading || !profile ? (
-          <div
-            class="text-center py-8 font-game text-sm"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
+          <div class="text-center py-8 font-game text-sm" style={{ color: 'var(--pw-text-muted)' }}>
             Loading...
           </div>
         ) : (
@@ -172,12 +169,8 @@ function CosmeticRow({
     <div
       class="flex items-center gap-3 rounded-lg px-3 py-2"
       style={{
-        background: active
-          ? 'rgba(64, 200, 208, 0.1)'
-          : 'rgba(20, 30, 35, 0.6)',
-        border: active
-          ? '1px solid var(--pw-accent-dim)'
-          : '1px solid var(--pw-border)',
+        background: active ? 'rgba(64, 200, 208, 0.1)' : 'rgba(20, 30, 35, 0.6)',
+        border: active ? '1px solid var(--pw-accent-dim)' : '1px solid var(--pw-border)',
         opacity: unlocked ? 1 : 0.5,
       }}
     >
@@ -196,7 +189,7 @@ function CosmeticRow({
       {unlocked ? (
         <button
           type="button"
-          class={`px-3 py-1 rounded font-game text-[10px] font-bold tracking-wider min-w-[60px] min-h-[32px] cursor-pointer ${
+          class={`px-3 py-1 rounded font-game text-[10px] font-bold tracking-wider min-w-[60px] min-h-[44px] cursor-pointer ${
             active ? 'toggle-track-active' : 'hud-btn'
           }`}
           style={{
@@ -208,10 +201,7 @@ function CosmeticRow({
           {active ? 'ACTIVE' : 'EQUIP'}
         </button>
       ) : (
-        <span
-          class="font-game text-[10px] px-2"
-          style={{ color: 'var(--pw-text-muted)' }}
-        >
+        <span class="font-game text-[10px] px-2" style={{ color: 'var(--pw-text-muted)' }}>
           LOCKED
         </span>
       )}

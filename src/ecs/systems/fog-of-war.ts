@@ -129,8 +129,7 @@ export function fogOfWarSystem(world: GameWorld): void {
           if (data[idx] > 10) explored++;
         }
       }
-      (world as GameWorld & { exploredPercent?: number }).exploredPercent =
-        total > 0 ? Math.round((explored / total) * 100) : 0;
+      world.exploredPercent = total > 0 ? Math.round((explored / total) * 100) : 0;
     }
   }
 }

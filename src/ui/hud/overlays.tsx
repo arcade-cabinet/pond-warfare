@@ -29,9 +29,7 @@ export function Overlays() {
           class={`absolute top-10 md:top-11 left-1/2 -translate-x-1/2 z-15 flex items-center gap-2 rounded px-3 py-1 text-[10px] md:text-xs whitespace-nowrap${justDestroyed ? ' animate-pulse' : ''}`}
           style={{
             background: 'rgba(12, 26, 31, 0.75)',
-            border: justDestroyed
-              ? '2px solid var(--pw-accent)'
-              : '1px solid var(--pw-border)',
+            border: justDestroyed ? '2px solid var(--pw-accent)' : '1px solid var(--pw-border)',
           }}
         >
           <span
@@ -88,8 +86,7 @@ export function Overlays() {
             color: 'var(--pw-warning)',
           }}
         >
-          ENEMIES APPROACHING{' '}
-          <span class="font-numbers ml-1">{peaceWarningCountdown.value}s</span>
+          ENEMIES APPROACHING <span class="font-numbers ml-1">{peaceWarningCountdown.value}s</span>
         </div>
       )}
 
@@ -128,7 +125,8 @@ export function Overlays() {
           class="absolute bottom-2 right-2 z-40 px-2 py-1 rounded font-numbers text-xs"
           style={{
             background: 'rgba(0, 0, 0, 0.6)',
-            color: fpsDisplay.value >= 50 ? '#4ade80' : fpsDisplay.value >= 30 ? '#eab308' : '#ef4444',
+            color:
+              fpsDisplay.value >= 50 ? '#4ade80' : fpsDisplay.value >= 30 ? '#eab308' : '#ef4444',
           }}
         >
           {fpsDisplay.value} FPS

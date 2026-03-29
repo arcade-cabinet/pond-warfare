@@ -77,8 +77,12 @@ export function TopBar(props: TopBarProps) {
 
   return (
     <div
-      class="absolute top-0 left-0 w-full h-11 md:h-12 wood-panel border-0 border-b-2 md:border-b-3 flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm"
-      style={{ borderBottomColor: 'var(--pw-border)' }}
+      class="absolute top-0 left-0 w-full wood-panel border-0 border-b-2 md:border-b-3 flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm"
+      style={{
+        borderBottomColor: 'var(--pw-border)',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        minHeight: 'calc(2.75rem + env(safe-area-inset-top, 0px))',
+      }}
     >
       {/* Resources */}
       <div class="flex space-x-3 md:space-x-6">
@@ -175,10 +179,7 @@ export function TopBar(props: TopBarProps) {
             <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
               Pearls:{' '}
             </span>
-            <span
-              class="font-numbers font-bold"
-              style={{ color: '#a5b4fc' }}
-            >
+            <span class="font-numbers font-bold" style={{ color: '#a5b4fc' }}>
               {pearls}
             </span>
           </div>

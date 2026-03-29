@@ -8,6 +8,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import { DAY_FRAMES, EXPLORED_SCALE, TRAIN_TIMER, WAVE_INTERVAL } from '@/constants';
 import {
@@ -24,7 +25,6 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { audio } from '@/audio/audio-system';
 import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 
@@ -32,6 +32,8 @@ import * as store from '@/ui/store';
 let _prevLowClams = false;
 let _prevLowTwigs = false;
 let _prevPeaceWarningPlayed = false;
+/** Guard to ensure permadeath save deletion only fires once. */
+let _permadeathDeleteFired = false;
 
 export interface PopulationResult {
   idleWorkers: number;
@@ -200,7 +202,7 @@ export function syncPopulationAndTimers(
   w.resources.maxFood = maxFoodCap;
   store.food.value = curFood + queuedFood;
   store.maxFood.value = maxFoodCap;
-  store.idleWorkerCount.value = idleWorkers + idleCombat + idleHealers + idleScouts;
+  store.idleWorkerCount.value = idleWorkers + idleCombat + idleHealers;
   store.armyCount.value = armyUnits;
 
   // Per-type idle counts for contextual auto-behavior menu
@@ -247,6 +249,11 @@ export function syncPopulationAndTimers(
   store.gameDay.value = day;
   store.gameTimeDisplay.value = `Day ${day} - ${String(displayHours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}`;
 
+  // Reset permadeath guard when not in game-over (new game started)
+  if (w.state !== 'win' && w.state !== 'lose') {
+    _permadeathDeleteFired = false;
+  }
+
   // Game over stats
   if (w.state === 'win' || w.state === 'lose') {
     store.goTitle.value = w.state === 'win' ? 'Victory' : 'Defeat';
@@ -287,16 +294,19 @@ export function syncPopulationAndTimers(
     }
     store.goRating.value = stars;
 
-    // Permadeath: delete save on loss
-    if (w.state === 'lose' && w.permadeath) {
+    // Permadeath: delete save on loss (guard to run only once)
+    if (w.state === 'lose' && w.permadeath && !_permadeathDeleteFired) {
+      _permadeathDeleteFired = true;
       store.hasSaveGame.value = false;
-      import('@/storage').then(({ getLatestSave, deleteSave }) =>
-        getLatestSave().then((save) => {
-          if (save) return deleteSave(save.id);
-        }),
-      ).catch(() => {
-        /* best-effort cleanup */
-      });
+      import('@/storage')
+        .then(({ getLatestSave, deleteSave }) =>
+          getLatestSave().then((save) => {
+            if (save) return deleteSave(save.id);
+          }),
+        )
+        .catch(() => {
+          /* best-effort cleanup */
+        });
     }
   }
 
@@ -356,7 +366,11 @@ export function syncPopulationAndTimers(
 
     if (kind === EntityKind.Lodge && faction === Faction.Player) {
       lodgePositions.push({ x: Position.x[eid], y: Position.y[eid] });
-    } else if (faction === Faction.Enemy && !hasComponent(w.ecs, eid, IsBuilding) && !hasComponent(w.ecs, eid, IsResource)) {
+    } else if (
+      faction === Faction.Enemy &&
+      !hasComponent(w.ecs, eid, IsBuilding) &&
+      !hasComponent(w.ecs, eid, IsResource)
+    ) {
       enemyPositions.push({ x: Position.x[eid], y: Position.y[eid] });
     }
   }
@@ -385,8 +399,8 @@ export function syncPopulationAndTimers(
     if (Health.current[eid] > 0) aliveNests++;
   }
 
-  // Latch the total on first observation (nests only decrease, never increase mid-game)
-  if (store.totalEnemyNests.value === 0 && aliveNests > 0) {
+  // Track peak nest count (new nests can spawn via evolution, so don't freeze at first count)
+  if (aliveNests > store.totalEnemyNests.value) {
     store.totalEnemyNests.value = aliveNests;
   }
 

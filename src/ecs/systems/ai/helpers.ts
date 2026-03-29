@@ -26,8 +26,7 @@ import { EntityKind, Faction, UnitState } from '@/types';
 export function getEnemyNests(world: GameWorld): number[] {
   const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
   // When player is predator, AI controls otters whose base building is Lodge
-  const nestKind =
-    world.playerFaction === 'predator' ? EntityKind.Lodge : EntityKind.PredatorNest;
+  const nestKind = world.playerFaction === 'predator' ? EntityKind.Lodge : EntityKind.PredatorNest;
   const result: number[] = [];
   for (let i = 0; i < nests.length; i++) {
     const eid = nests[i];
@@ -45,8 +44,7 @@ export function getEnemyNests(world: GameWorld): number[] {
 
 /** Find the player's main base building (Lodge for otters, PredatorNest for predators). */
 export function findPlayerLodge(world: GameWorld): number {
-  const lodgeKind =
-    world.playerFaction === 'predator' ? EntityKind.PredatorNest : EntityKind.Lodge;
+  const lodgeKind = world.playerFaction === 'predator' ? EntityKind.PredatorNest : EntityKind.Lodge;
   const buildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
   for (let i = 0; i < buildings.length; i++) {
     const eid = buildings[i];

@@ -120,7 +120,9 @@ export async function initDatabase(): Promise<void> {
       fastest_win_seconds INTEGER DEFAULT 0,
       total_buildings_built INTEGER DEFAULT 0,
       hero_units_earned INTEGER DEFAULT 0,
-      wins_commander_alive INTEGER DEFAULT 0
+      wins_commander_alive INTEGER DEFAULT 0,
+      total_pearls INTEGER DEFAULT 0,
+      wins_zero_losses INTEGER DEFAULT 0
     );
   `);
 
@@ -303,6 +305,8 @@ export interface PlayerProfile {
   total_buildings_built: number;
   hero_units_earned: number;
   wins_commander_alive: number;
+  total_pearls: number;
+  wins_zero_losses: number;
 }
 
 const DEFAULT_PROFILE: PlayerProfile = {
@@ -317,6 +321,8 @@ const DEFAULT_PROFILE: PlayerProfile = {
   total_buildings_built: 0,
   hero_units_earned: 0,
   wins_commander_alive: 0,
+  total_pearls: 0,
+  wins_zero_losses: 0,
 };
 
 export async function getPlayerProfile(): Promise<PlayerProfile> {
@@ -336,6 +342,8 @@ export async function getPlayerProfile(): Promise<PlayerProfile> {
       total_buildings_built: (row.total_buildings_built as number) ?? 0,
       hero_units_earned: (row.hero_units_earned as number) ?? 0,
       wins_commander_alive: (row.wins_commander_alive as number) ?? 0,
+      total_pearls: (row.total_pearls as number) ?? 0,
+      wins_zero_losses: (row.wins_zero_losses as number) ?? 0,
     };
   }
   return { ...DEFAULT_PROFILE };

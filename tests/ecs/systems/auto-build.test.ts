@@ -9,6 +9,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   Building,
+  Carrying,
+  Collider,
   Combat,
   EntityTypeTag,
   FactionTag,
@@ -18,20 +20,13 @@ import {
   Sprite,
   UnitStateMachine,
   Velocity,
-  Carrying,
-  Collider,
 } from '@/ecs/components';
 import { autoBuildSystem } from '@/ecs/systems/auto-build';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 /** Create a completed player building. */
-function createBuilding(
-  world: GameWorld,
-  kind: EntityKind,
-  x: number,
-  y: number,
-): number {
+function createBuilding(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
@@ -53,11 +48,7 @@ function createBuilding(
 }
 
 /** Create an idle player gatherer. */
-function createGatherer(
-  world: GameWorld,
-  x: number,
-  y: number,
-): number {
+function createGatherer(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

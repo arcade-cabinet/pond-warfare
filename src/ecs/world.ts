@@ -118,7 +118,14 @@ export interface GameWorld {
   /** Custom starting unit count (replaces default 4). */
   startingUnitCount: number;
   /** Custom scenario override (null = use seeded random). */
-  scenarioOverride: 'standard' | 'island' | 'contested' | 'labyrinth' | 'river' | 'peninsula' | null;
+  scenarioOverride:
+    | 'standard'
+    | 'island'
+    | 'contested'
+    | 'labyrinth'
+    | 'river'
+    | 'peninsula'
+    | null;
   /** Custom nest count override (-1 = use difficulty default). */
   nestCountOverride: number;
   /** Resource density override for map generation. */
@@ -220,6 +227,9 @@ export interface GameWorld {
   warDrumsBuff: Set<number>;
   /** Venom Coating: poison timers applied by tech (entity ID -> remaining ticks). */
   venomCoatingTimers: Map<number, number>;
+
+  /** Percentage of the map explored by the player (0-100), updated by fog-of-war system. */
+  exploredPercent: number;
 }
 
 export function createGameWorld(): GameWorld {
@@ -249,6 +259,7 @@ export function createGameWorld(): GameWorld {
       resourcesGathered: 0,
       buildingsBuilt: 0,
       peakArmy: 0,
+      pearlsEarned: 0,
     },
     state: 'playing',
     frameCount: 0,
@@ -355,5 +366,7 @@ export function createGameWorld(): GameWorld {
     tidalSurgeUsed: false,
     warDrumsBuff: new Set(),
     venomCoatingTimers: new Map(),
+
+    exploredPercent: 0,
   };
 }

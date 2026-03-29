@@ -24,7 +24,7 @@ import {
   Vehicle,
   WanderBehavior,
 } from 'yuka';
-import { Position } from '@/ecs/components';
+import { Position, UnitStateMachine } from '@/ecs/components';
 
 /** Separation radius in world units. Vehicles within this distance push apart. */
 const SEPARATION_NEIGHBORHOOD_RADIUS = 40;
@@ -176,6 +176,7 @@ export class YukaManager {
 
     // Clear existing directional behaviors, keep separation + obstacle avoidance
     this.clearDirectionalBehaviors(vehicle);
+    this.wanderBehaviors.delete(eid);
 
     const pursuit = new PursuitBehavior(targetVehicle);
     pursuit.weight = 1.0;
@@ -422,12 +423,12 @@ export class YukaManager {
       obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
       vehicle.steering.add(obstacleAvoidance);
 
-      // Calculate offset from leader's current position to this unit's
-      // target position. The ECS has already assigned per-unit formation
-      // offsets in UnitStateMachine.targetX/Y, so we derive the offset
-      // from the difference between the unit's target and the group center.
-      const unitTargetX = vehicle.position.x; // Will be corrected by movement system
-      const unitTargetZ = vehicle.position.z;
+      // Use the planned formation targets from the ECS, not current position.
+      // The ECS has already assigned per-unit formation offsets in
+      // UnitStateMachine.targetX/Y, so we derive the offset from the
+      // difference between the unit's target and the group center.
+      const unitTargetX = UnitStateMachine.targetX[eid];
+      const unitTargetZ = UnitStateMachine.targetY[eid]; // Y maps to Z in Yuka's 3D space
       const offsetX = unitTargetX - leaderVehicle.position.x;
       const offsetZ = unitTargetZ - leaderVehicle.position.z;
       const offset = new Vector3(offsetX, 0, offsetZ);

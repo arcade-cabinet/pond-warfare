@@ -6,13 +6,13 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
+  type CampaignState,
   campaignSystem,
   createCampaignState,
-  type CampaignState,
 } from '@/campaign/campaign-system';
 import type { MissionDef } from '@/campaign/missions';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   Building,
   EntityTypeTag,
@@ -37,12 +37,7 @@ vi.mock('@capacitor-community/sqlite', () => ({
 }));
 
 /** Create a player building. */
-function createPlayerBuilding(
-  world: GameWorld,
-  kind: EntityKind,
-  x: number,
-  y: number,
-): number {
+function createPlayerBuilding(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

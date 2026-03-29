@@ -20,6 +20,7 @@ import {
   setUnlock,
   updatePlayerProfile,
 } from '@/storage';
+import { getTotalPearlsThisMatch } from '@/systems/achievements';
 import { EntityKind, Faction } from '@/types';
 
 /** Difficulty ranking for highest_difficulty_won comparisons. */
@@ -35,8 +36,19 @@ const DIFFICULTY_RANK: Record<string, number> = {
 const unlockedIds = new Set<string>();
 let cacheLoaded = false;
 
+/** One-shot guard to prevent duplicate end-of-match profile updates. */
+let _matchUpdateFired = false;
+
 /** In-memory cache of the player profile. */
 let cachedProfile: PlayerProfile | null = null;
+
+/**
+ * Reset the one-shot guard so end-of-match updates can fire again.
+ * Call when starting a new game.
+ */
+export function resetMatchUpdateGuard(): void {
+  _matchUpdateFired = false;
+}
 
 /**
  * Load existing unlocks from SQLite into memory.
@@ -44,6 +56,7 @@ let cachedProfile: PlayerProfile | null = null;
  */
 export async function loadUnlocks(): Promise<void> {
   if (!isDatabaseReady()) return;
+  _matchUpdateFired = false;
   unlockedIds.clear();
   for (const def of UNLOCKS) {
     const isUnlocked = await getUnlock(def.id);
@@ -80,6 +93,8 @@ export function getCachedProfile(): PlayerProfile {
       total_buildings_built: 0,
       hero_units_earned: 0,
       wins_commander_alive: 0,
+      total_pearls: 0,
+      wins_zero_losses: 0,
     }
   );
 }
@@ -91,6 +106,9 @@ export function getCachedProfile(): PlayerProfile {
  * Returns the list of newly unlocked names (for UI notification).
  */
 export async function updateProfileAndCheckUnlocks(world: GameWorld): Promise<string[]> {
+  if (_matchUpdateFired) return [];
+  _matchUpdateFired = true;
+
   if (!isDatabaseReady() || !cacheLoaded) return [];
 
   const profile = await getPlayerProfile();
@@ -156,6 +174,17 @@ export async function updateProfileAndCheckUnlocks(world: GameWorld): Promise<st
   }
   if (heroCount > 0) {
     updates.hero_units_earned = profile.hero_units_earned + heroCount;
+  }
+
+  // Total pearls gathered this match
+  const pearlsThisMatch = getTotalPearlsThisMatch();
+  if (pearlsThisMatch > 0) {
+    updates.total_pearls = profile.total_pearls + pearlsThisMatch;
+  }
+
+  // Wins with zero unit losses
+  if (won && world.stats.unitsLost === 0) {
+    updates.wins_zero_losses = profile.wins_zero_losses + 1;
   }
 
   // Write profile updates

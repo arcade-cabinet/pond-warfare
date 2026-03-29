@@ -140,6 +140,7 @@ export interface GameStats {
   resourcesGathered: number;
   buildingsBuilt: number;
   peakArmy: number;
+  pearlsEarned: number;
 }
 
 export interface Vec2 {

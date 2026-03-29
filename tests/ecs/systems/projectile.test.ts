@@ -7,11 +7,7 @@
 import { addComponent, addEntity, hasComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { PROJECTILE_SPEED } from '@/constants';
-import {
-  Health,
-  IsProjectile,
-  Position,
-} from '@/ecs/components';
+import { Health, IsProjectile, Position } from '@/ecs/components';
 import { projectileSystem, spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 
@@ -54,16 +50,7 @@ describe('projectileSystem', () => {
   it('should deal damage on arrival', () => {
     const target = createTarget(world, 100, 100, 100);
     // Spawn projectile very close to the target (within PROJECTILE_SPEED)
-    spawnProjectile(
-      world,
-      100 + PROJECTILE_SPEED - 1,
-      100,
-      100,
-      100,
-      target,
-      25,
-      -1,
-    );
+    spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 25, -1);
 
     projectileSystem(world);
 
