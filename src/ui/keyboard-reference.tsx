@@ -6,8 +6,6 @@
  * Styled with parchment-panel and font-game classes.
  */
 
-import { keyboardRefOpen } from './store';
-
 interface ShortcutEntry {
   keys: string;
   label: string;
@@ -100,8 +98,6 @@ export interface KeyboardReferenceProps {
 }
 
 export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
-  if (!keyboardRefOpen.value) return null;
-
   return (
     <div
       class="absolute inset-0 z-[60] flex items-center justify-center"

@@ -59,13 +59,22 @@ export async function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'light'
 
 /** Save a preference via Capacitor Preferences (works on all platforms). */
 export async function savePreference(key: string, value: string): Promise<void> {
-  const { Preferences } = await import('@capacitor/preferences');
-  await Preferences.set({ key, value });
+  try {
+    const { Preferences } = await import('@capacitor/preferences');
+    await Preferences.set({ key, value });
+  } catch {
+    /* Preferences plugin not available - preference not persisted */
+  }
 }
 
 /** Load a preference via Capacitor Preferences (works on all platforms). */
 export async function loadPreference(key: string): Promise<string | null> {
-  const { Preferences } = await import('@capacitor/preferences');
-  const { value } = await Preferences.get({ key });
-  return value;
+  try {
+    const { Preferences } = await import('@capacitor/preferences');
+    const { value } = await Preferences.get({ key });
+    return value;
+  } catch {
+    /* Preferences plugin not available */
+    return null;
+  }
 }

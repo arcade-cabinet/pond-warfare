@@ -29,6 +29,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { spawnDustBurst } from '@/utils/particles';
 import { getEnemyNests } from './helpers';
 
 /** Get difficulty-adjusted gatherer spawn interval */
@@ -108,18 +109,7 @@ export function enemyEconomyTick(world: GameWorld): void {
 
     // Spawn pop animation + dust
     triggerSpawnPop(gEid);
-    for (let j = 0; j < 6; j++) {
-      const angle = (j / 6) * Math.PI * 2;
-      world.particles.push({
-        x: sx,
-        y: sy + 8,
-        vx: Math.cos(angle) * 1.5,
-        vy: Math.sin(angle) * 0.5 + 0.5,
-        life: 15,
-        color: '#a8a29e',
-        size: 2,
-      });
-    }
+    spawnDustBurst(world, sx, sy);
 
     world.enemyResources.clams -= ENEMY_GATHERER_COST;
 

@@ -50,7 +50,7 @@ export function Overlays() {
       {/* Enemy wave incoming warning banner */}
       {peaceWarningCountdown.value > 0 && (
         <div
-          class="absolute top-11 md:top-12 left-1/2 -translate-x-1/2 z-25 px-4 py-1 rounded font-heading font-bold text-xs md:text-sm whitespace-nowrap animate-pulse"
+          class="absolute top-16 md:top-18 left-1/2 -translate-x-1/2 z-25 px-4 py-1 rounded font-heading font-bold text-xs md:text-sm whitespace-nowrap animate-pulse"
           style={{
             background: 'rgba(180, 120, 20, 0.85)',
             border: '2px solid var(--pw-warning)',

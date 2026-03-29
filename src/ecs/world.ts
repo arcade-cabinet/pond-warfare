@@ -8,8 +8,8 @@ import {
   STARTING_TWIGS,
 } from '@/constants';
 import {
-  EntityKind,
   type Corpse,
+  EntityKind,
   type Firefly,
   type FloatingText,
   type GameResources,
@@ -122,6 +122,14 @@ export interface GameWorld {
     tier: number; // 0-5, increases over time
     unlockedUnits: EntityKind[]; // which enemy types are available
     lastEvolutionFrame: number;
+    /** Frame of the last mega-wave event. */
+    lastMegaWaveFrame: number;
+    /** Frame of the last random threat event. */
+    lastRandomEventFrame: number;
+    /** Temporary speed buff expiry frame for swarm mega-wave. */
+    swarmSpeedBuffExpiry: number;
+    /** Nest production multiplier (ramps over time). */
+    nestProductionMultiplier: number;
   };
 
   // Poison tracking: entity ID -> remaining poison ticks
@@ -129,6 +137,9 @@ export interface GameWorld {
 
   // Alpha Predator aura: entity ID -> expiry frame for +20% damage buff
   alphaDamageBuff: Map<number, number>;
+
+  // Champion enemies: set of entity IDs that are champion variants
+  championEnemies: Set<number>;
 }
 
 export function createGameWorld(): GameWorld {
@@ -212,8 +223,13 @@ export function createGameWorld(): GameWorld {
       tier: 0,
       unlockedUnits: [EntityKind.Gator, EntityKind.Snake],
       lastEvolutionFrame: 0,
+      lastMegaWaveFrame: 0,
+      lastRandomEventFrame: 0,
+      swarmSpeedBuffExpiry: 0,
+      nestProductionMultiplier: 1,
     },
     poisonTimers: new Map(),
     alphaDamageBuff: new Map(),
+    championEnemies: new Set(),
   };
 }

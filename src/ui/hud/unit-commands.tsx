@@ -87,7 +87,7 @@ export function UnitCommands(props: UnitCommandsProps) {
     <>
       {/* Idle units button + contextual auto-behavior row */}
       {totalIdle > 0 && (
-        <div class="absolute top-14 right-2 md:right-6 z-20 flex flex-wrap items-center gap-1.5">
+        <div class="absolute bottom-20 right-2 md:bottom-auto md:top-14 md:right-6 z-20 flex flex-wrap items-center gap-1.5">
           {/* Main idle button */}
           <button
             type="button"

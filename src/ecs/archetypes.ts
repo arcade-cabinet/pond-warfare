@@ -155,6 +155,7 @@ export function spawnEntity(
     let speed = def.speed;
     if (faction === Faction.Player && world.tech.swiftPaws) speed += 0.4;
     Velocity.speed[eid] = speed;
+    Velocity.speedDebuffTimer[eid] = 0;
 
     addComponent(world.ecs, eid, Combat);
     let damage = def.damage;

@@ -240,7 +240,7 @@ function buildLodgeButtons(
  * Build the action panel buttons and queue items based on the current selection.
  * Writes directly to the actionButtons and queueItems signals.
  */
-export function buildActionPanel(world: GameWorld): void {
+export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): void {
   const w = world;
   const btns: ActionButtonDef[] = [];
   const qItems: QueueItemDef[] = [];
@@ -902,6 +902,10 @@ export function buildActionPanel(world: GameWorld): void {
                 trapDef.twigCost ?? 0,
                 trapDef.foodCost ?? 1,
               );
+              recorder?.record(w.frameCount, 'train', {
+                buildingEid: selEid,
+                unitKind: EntityKind.Trapper,
+              });
             },
           });
         }

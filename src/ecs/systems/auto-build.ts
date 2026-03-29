@@ -61,7 +61,7 @@ function findPlayerLodge(world: GameWorld): number {
   return -1;
 }
 
-/** Count completed player buildings of a given kind. */
+/** Count player buildings of a given kind (including under-construction). */
 function countPlayerBuildings(world: GameWorld, kind: EntityKind): number {
   const buildings = query(world.ecs, [Position, Health, IsBuilding, FactionTag, EntityTypeTag]);
   let count = 0;
@@ -70,8 +70,7 @@ function countPlayerBuildings(world: GameWorld, kind: EntityKind): number {
     if (
       EntityTypeTag.kind[eid] === kind &&
       FactionTag.faction[eid] === Faction.Player &&
-      Health.current[eid] > 0 &&
-      Building.progress[eid] >= 100
+      Health.current[eid] > 0
     ) {
       count++;
     }

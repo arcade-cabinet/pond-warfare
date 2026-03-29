@@ -38,6 +38,7 @@ export {
 
 // PixiJS app manager
 export {
+  clearRecoloredTextureCache,
   destroyPixiApp,
   getTexture,
   initPixiApp,
@@ -49,6 +50,15 @@ export {
   setBackground,
   setColorBlindMode,
 } from './pixi-app';
+
+// Sprite recoloring system
+export {
+  clearRecolorCache,
+  getRecoloredSprite,
+  type RecolorPreset,
+  recolorSprite,
+  veterancyPreset,
+} from './recolor';
 
 // Sprites
 export { generateAllSprites, getSpriteSize } from './sprites';

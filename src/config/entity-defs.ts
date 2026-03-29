@@ -14,7 +14,6 @@ export interface UnitDef {
   foodCost?: number;
   clamCost?: number;
   twigCost?: number;
-  pearlCost?: number;
   foodProvided?: number;
 }
 
@@ -418,7 +417,6 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [EntityKind.Shieldbearer]: 0.75,
     },
     [EntityKind.SiegeTurtle]: {
-      // Building bonus handled in combat.ts (3x vs buildings)
       [EntityKind.Brawler]: 0.5,
     },
     [EntityKind.AlphaPredator]: {
@@ -426,6 +424,9 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [EntityKind.Sniper]: 1.25,
     },
   };
+
+/** SiegeTurtle's bonus multiplier when attacking any building. */
+export const SIEGE_BUILDING_MULTIPLIER = 3.0;
 
 /**
  * Get the damage multiplier for an attacker vs. a defender.

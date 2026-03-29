@@ -6,6 +6,7 @@
  */
 
 export {
+  clearRecoloredTextureCache,
   destroyPixiApp,
   getTexture,
   initPixiApp,

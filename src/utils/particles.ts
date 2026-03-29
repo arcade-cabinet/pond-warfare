@@ -8,6 +8,25 @@ import type { GameWorld } from '@/ecs/world';
 import type { Particle } from '@/types';
 
 /**
+ * Spawn a 6-particle circular dust burst at a position.
+ * Used when units finish training / spawn.
+ */
+export function spawnDustBurst(world: GameWorld, x: number, y: number): void {
+  for (let j = 0; j < 6; j++) {
+    const angle = (j / 6) * Math.PI * 2;
+    world.particles.push({
+      x,
+      y: y + 8,
+      vx: Math.cos(angle) * 1.5,
+      vy: Math.sin(angle) * 0.5 + 0.5,
+      life: 15,
+      color: '#a8a29e',
+      size: 2,
+    });
+  }
+}
+
+/**
  * Acquire a particle from the pool, initialize it, and add it to
  * the active particles array.
  */

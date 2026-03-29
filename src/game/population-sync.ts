@@ -21,6 +21,7 @@ import {
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { audio } from '@/audio/audio-system';
@@ -30,6 +31,7 @@ import * as store from '@/ui/store';
 /** Track previous low-resource state to fire alert only on threshold crossing. */
 let _prevLowClams = false;
 let _prevLowTwigs = false;
+let _prevPeaceWarningPlayed = false;
 
 export interface PopulationResult {
   idleWorkers: number;
@@ -164,13 +166,16 @@ export function syncPopulationAndTimers(
       } else if (kind === EntityKind.Healer) {
         armyUnits++;
         if (isIdle) idleHealers++;
-      } else if (kind === EntityKind.Scout) {
-        armyUnits++;
-        if (isIdle) idleScouts++;
       } else {
-        // Combat units: Brawler, Sniper, Shieldbearer, Catapult, etc.
+        // Combat units (including Scouts): Attack/Defend apply to all
         armyUnits++;
-        if (isIdle) idleCombat++;
+        if (isIdle) {
+          idleCombat++;
+          // Scout eligibility matches auto-behavior: any unit with speed >= 2.0
+          if (hasComponent(w.ecs, eid, Velocity) && Velocity.speed[eid] >= 2.0) {
+            idleScouts++;
+          }
+        }
       }
     }
   }
@@ -220,15 +225,18 @@ export function syncPopulationAndTimers(
     if (peaceSecondsLeft <= 30 && peaceSecondsLeft > 0) {
       store.peaceWarningCountdown.value = peaceSecondsLeft;
       // Tension audio cue: play once at the 30-second mark
-      if (peaceSecondsLeft === 30 && w.frameCount % 60 < 2) {
+      if (!_prevPeaceWarningPlayed) {
         audio.alert();
+        _prevPeaceWarningPlayed = true;
       }
     } else {
       store.peaceWarningCountdown.value = -1;
+      _prevPeaceWarningPlayed = false;
     }
   } else {
     store.peaceCountdown.value = -1;
     store.peaceWarningCountdown.value = -1;
+    _prevPeaceWarningPlayed = false;
   }
 
   // --- Time display ---

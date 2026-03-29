@@ -50,7 +50,7 @@ interface SaveData {
   version: 2;
   resources: { clams: number; twigs: number; pearls?: number; food: number; maxFood: number };
   enemyResources: { clams: number; twigs: number };
-  autoBehaviors: { gather: boolean; defend: boolean; attack: boolean };
+  autoBehaviors: { gather: boolean; defend: boolean; attack: boolean; build?: boolean; heal?: boolean };
   tech: Record<string, boolean>;
   stats: {
     unitsKilled: number;
@@ -170,6 +170,8 @@ export function loadGame(world: GameWorld, json: string): boolean {
     world.autoBehaviors.gather = data.autoBehaviors.gather;
     world.autoBehaviors.defend = data.autoBehaviors.defend;
     world.autoBehaviors.attack = data.autoBehaviors.attack;
+    world.autoBehaviors.build = data.autoBehaviors.build ?? false;
+    world.autoBehaviors.heal = data.autoBehaviors.heal ?? false;
   }
 
   // Restore peace timer (v2+)

@@ -282,9 +282,17 @@ export function destroyPixiApp(): void {
   floatingTextSprites.length = 0;
   for (const t of floatingTextPool) t.destroy();
   floatingTextPool.length = 0;
+  // Clean up recolored texture cache (imported lazily to avoid circular deps)
+  _destroyRecoloredTextures?.();
   bgSprite = null;
   app.destroy(false, { children: true, texture: false });
   initialised = false;
+}
+
+// Lazy callback to clear recolored textures (set by entity-renderer to avoid circular deps)
+let _destroyRecoloredTextures: (() => void) | null = null;
+export function setDestroyRecoloredTexturesCallback(cb: () => void): void {
+  _destroyRecoloredTextures = cb;
 }
 
 // ---------------------------------------------------------------------------

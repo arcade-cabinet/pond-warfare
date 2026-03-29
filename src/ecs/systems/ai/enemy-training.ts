@@ -38,6 +38,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { spawnDustBurst } from '@/utils/particles';
 import { countPlayerUnitsOfKind, findPlayerLodge, getEnemyNests } from './helpers';
 
 /** Resource costs for all enemy-trainable unit types. */
@@ -182,6 +183,12 @@ export function enemyTrainingQueueProcess(world: GameWorld): void {
     const slots = trainingQueueSlots.get(eid) ?? [];
     if (slots.length === 0) continue;
 
+    // Nest production multiplier: spawn multiple units per cycle in late game
+    const prodMult = world.enemyEvolution.nestProductionMultiplier;
+    // When multiplier >= 5 (continuous mode), use very short train timer
+    const effectiveTrainTime =
+      prodMult >= 5 ? Math.max(30, Math.floor(ENEMY_TRAIN_TIME / 4)) : ENEMY_TRAIN_TIME;
+
     TrainingQueue.timer[eid]--;
     if (TrainingQueue.timer[eid] <= 0) {
       const unitKind = slots[0] as EntityKind;
@@ -189,37 +196,31 @@ export function enemyTrainingQueueProcess(world: GameWorld): void {
       const bx = Position.x[eid];
       const by = Position.y[eid];
       const spriteH = Sprite.height[eid];
-      const sx = bx + (Math.random() > 0.5 ? 1 : -1) * 30;
-      const sy = by + spriteH / 2 + 20;
 
-      const newEid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
-      if (newEid < 0) {
-        TrainingQueue.timer[eid] = ENEMY_TRAIN_TIME;
-        continue;
+      // Spawn 1 unit per cycle normally, or up to prodMult units in late game
+      const spawnCount = Math.min(prodMult, slots.length);
+      for (let s = 0; s < spawnCount; s++) {
+        const kind = s === 0 ? unitKind : (slots[s] as EntityKind);
+        const sx = bx + (Math.random() > 0.5 ? 1 : -1) * (30 + s * 10);
+        const sy = by + spriteH / 2 + 20 + s * 5;
+
+        const newEid = spawnEntity(world, kind, sx, sy, Faction.Enemy);
+        if (newEid < 0) break;
+
+        // Spawn pop animation + dust particles
+        triggerSpawnPop(newEid);
+        spawnDustBurst(world, sx, sy);
       }
 
-      // Spawn pop animation + dust particles
-      triggerSpawnPop(newEid);
-      for (let j = 0; j < 6; j++) {
-        const angle = (j / 6) * Math.PI * 2;
-        world.particles.push({
-          x: sx,
-          y: sy + 8,
-          vx: Math.cos(angle) * 1.5,
-          vy: Math.sin(angle) * 0.5 + 0.5,
-          life: 15,
-          color: '#a8a29e',
-          size: 2,
-        });
+      // Shift queue by the number actually spawned
+      for (let s = 0; s < spawnCount; s++) {
+        slots.shift();
       }
-
-      // Shift queue
-      slots.shift();
       trainingQueueSlots.set(eid, slots);
       TrainingQueue.count[eid] = slots.length;
 
       if (slots.length > 0) {
-        TrainingQueue.timer[eid] = ENEMY_TRAIN_TIME;
+        TrainingQueue.timer[eid] = effectiveTrainTime;
       }
     }
   }
@@ -272,18 +273,7 @@ export function nestDefenseReinforcement(world: GameWorld): void {
 
     // Spawn pop animation + dust
     triggerSpawnPop(defEid);
-    for (let j = 0; j < 6; j++) {
-      const angle = (j / 6) * Math.PI * 2;
-      world.particles.push({
-        x: sx,
-        y: sy + 8,
-        vx: Math.cos(angle) * 1.5,
-        vy: Math.sin(angle) * 0.5 + 0.5,
-        life: 15,
-        color: '#a8a29e',
-        size: 2,
-      });
-    }
+    spawnDustBurst(world, sx, sy);
 
     world.enemyResources.clams -= costClams;
     world.enemyResources.twigs -= costTwigs;

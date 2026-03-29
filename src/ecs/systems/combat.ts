@@ -14,7 +14,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { getDamageMultiplier } from '@/config/entity-defs';
+import { getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
 import {
   AGGRO_RADIUS_ENEMY,
   AGGRO_RADIUS_PLAYER,
@@ -339,7 +339,7 @@ export function combatSystem(world: GameWorld): void {
             const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
             const mult = getDamageMultiplier(kind, targetKind);
             const isTargetBuilding = hasComponent(world.ecs, tEnt, IsBuilding);
-            const siegeMult = isTargetBuilding ? 3.0 : 1.0;
+            const siegeMult = isTargetBuilding ? SIEGE_BUILDING_MULTIPLIER : 1.0;
             const siegeDmg = Math.round(dmg * mult * siegeMult);
             takeDamage(world, tEnt, siegeDmg, eid, mult * siegeMult);
             if (isTargetBuilding) {

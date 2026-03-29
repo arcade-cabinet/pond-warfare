@@ -29,6 +29,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { type EntityKind, Faction, UnitState } from '@/types';
+import { spawnDustBurst } from '@/utils/particles';
 
 export function trainingSystem(world: GameWorld): void {
   const buildings = query(world.ecs, [
@@ -109,18 +110,7 @@ export function trainingSystem(world: GameWorld): void {
         });
       }
       // Dust particles at spawn position
-      for (let j = 0; j < 6; j++) {
-        const angle = (j / 6) * Math.PI * 2;
-        world.particles.push({
-          x: sx,
-          y: sy + 8,
-          vx: Math.cos(angle) * 1.5,
-          vy: Math.sin(angle) * 0.5 + 0.5,
-          life: 15,
-          color: '#a8a29e',
-          size: 2,
-        });
-      }
+      spawnDustBurst(world, sx, sy);
     }
   }
 }

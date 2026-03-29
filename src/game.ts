@@ -721,8 +721,8 @@ export class Game {
     trainingSystem(this.world);
     aiSystem(this.world);
     evolutionSystem(this.world);
-    autoBehaviorSystem(this.world);
     autoBuildSystem(this.world);
+    autoBehaviorSystem(this.world);
     healthSystem(this.world);
     veterancySystem(this.world);
     fogOfWarSystem(this.world);
@@ -933,7 +933,7 @@ export class Game {
     syncSelectionInfo(w, idleWorkers, armyUnits, maxFoodCap);
 
     // Action panel buttons and queue
-    buildActionPanel(w);
+    buildActionPanel(w, this.recorder);
   }
 
   /** Get sprite canvas by SpriteId */

@@ -360,6 +360,9 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
   // Clean up Yuka vehicle for enemy entities
   world.yukaManager.removeEnemy(eid);
 
+  // Clean up champion tracking
+  world.championEnemies.delete(eid);
+
   // Clean up training queue slots
   trainingQueueSlots.delete(eid);
 
@@ -502,7 +505,9 @@ export function healthSystem(world: GameWorld): void {
       // Heal nearby player units
       const hx = Position.x[hut];
       const hy = Position.y[hut];
-      const nearby = world.spatialHash.query(hx, hy, 150);
+      const nearby = world.spatialHash
+        ? world.spatialHash.query(hx, hy, 150)
+        : query(world.ecs, [Position, Health, FactionTag]);
       for (let j = 0; j < nearby.length; j++) {
         const uid = nearby[j];
         if (!hasComponent(world.ecs, uid, FactionTag)) continue;
