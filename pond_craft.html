@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Canvas RTS: Pond Warfare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; user-select: none; overscroll-behavior: none; }
+        
+        #game-container, #game-canvas, #minimap-container { touch-action: none; }
+
+        #game-canvas, #fog-canvas, #light-canvas, .render-pixelated {
+            image-rendering: pixelated;
+        }
+        #game-canvas, #fog-canvas, #light-canvas {
+            display: block;
+            position: absolute;
+            top: 0; left: 0;
+            pointer-events: none;
+        }
+        #fog-canvas { opacity: 0.9; mix-blend-mode: multiply; }
+        #day-night-overlay { mix-blend-mode: multiply; transition: background-color 0.1s; }
+        #light-canvas { mix-blend-mode: screen; }
+
+        .ui-panel {
+            background-color: #1e293b; 
+            color: #e2e8f0;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .action-btn {
+            background: linear-gradient(to bottom, #334155, #1e293b);
+            border: 2px solid #64748b;
+            border-bottom-color: #0f172a; border-right-color: #0f172a;
+            cursor: pointer; transition: filter 0.1s;
+        }
+        .action-btn:active {
+            border: 2px solid #0f172a;
+            border-bottom-color: #64748b; border-right-color: #64748b;
+            background: #1e293b;
+        }
+        .action-btn:hover:not(:disabled) { filter: brightness(1.2); }
+        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+        .action-btn .hotkey-badge {
+            position: absolute; top: 2px; right: 3px;
+            font-size: 9px; color: #94a3b8; background: rgba(0,0,0,0.5);
+            padding: 0 3px; border-radius: 2px; line-height: 1.3;
+        }
+        
+        #game-over-banner, #intro-overlay h1 { text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+        .tooltip {
+            position: absolute; background: #0f172a; border: 1px solid #475569;
+            color: #e2e8f0; padding: 4px 8px; font-size: 11px; pointer-events: none;
+            z-index: 100; white-space: nowrap; border-radius: 3px;
+            font-family: 'Courier New', monospace; text-shadow: 1px 1px 0 #000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0,0); }
+            25% { transform: translate(-4px, 3px); }
+            50% { transform: translate(3px, -4px); }
+            75% { transform: translate(-3px, -2px); }
+        }
+        .screen-shake { animation: screenShake 0.15s ease-in-out; }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm text-slate-200">
+
+    <div class="w-full md:w-64 h-48 md:h-full flex flex-row md:flex-col ui-panel z-20 shadow-2xl flex-shrink-0 border-t-4 md:border-t-0 md:border-r-4 border-slate-600">
+        
+        <div class="w-1/3 md:w-full md:h-64 p-1 md:p-2 bg-black flex justify-center items-center border-r-2 md:border-r-0 md:border-b-4 border-slate-700">
+            <div id="minimap-container" class="relative w-full h-full max-w-[200px] max-h-[200px] cursor-crosshair border-2 border-slate-600">
+                <canvas id="minimap" width="200" height="200" class="w-full h-full block render-pixelated"></canvas>
+                <div id="minimap-cam" class="absolute border border-white pointer-events-none hidden box-border" style="left:0; top:0;"></div>
+            </div>
+        </div>
+        
+        <div id="selection-info" class="w-1/3 md:w-full flex-1 p-2 md:p-4 border-r-2 md:border-r-0 md:border-b-4 border-slate-700 flex flex-col gap-1 md:gap-2 overflow-y-auto bg-slate-900">
+            <div class="flex flex-col sm:flex-row gap-2 md:gap-3 items-start">
+                <canvas id="portrait-canvas" width="64" height="64" class="hidden bg-slate-800 border-2 border-slate-600 rounded-sm shadow-inner w-12 h-12 md:w-16 md:h-16 render-pixelated flex-shrink-0 cursor-pointer hover:border-sky-400 transition-colors" title="Click to track unit"></canvas>
+                <div class="flex-1 w-full">
+                    <h2 id="sel-name" class="text-base md:text-xl font-bold text-sky-300 leading-tight">No Selection</h2>
+                    <div id="sel-hp-bar" class="w-full h-3 md:h-4 bg-red-900 hidden border border-slate-900 mt-1">
+                        <div id="sel-hp-fill" class="h-full bg-green-500 transition-all duration-200" style="width: 100%;"></div>
+                    </div>
+                    <div id="sel-stats" class="text-slate-300 text-xs md:text-sm mt-1"></div>
+                    <p id="sel-desc" class="text-[10px] md:text-xs text-slate-400 leading-tight"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="action-panel" class="w-1/3 md:w-full h-full md:h-64 p-1 md:p-3 grid grid-cols-2 sm:grid-cols-3 gap-1 md:gap-2 bg-slate-800 overflow-y-auto content-start"></div>
+    </div>
+
+    <div id="game-container" class="flex-1 relative cursor-crosshair overflow-hidden bg-black">
+        
+        <div class="absolute top-0 left-0 w-full h-10 md:h-12 ui-panel border-0 border-b-2 md:border-b-4 flex items-center justify-between px-2 md:px-6 z-20 bg-opacity-95 text-xs md:text-sm">
+            <div class="flex space-x-3 md:space-x-6">
+                <div class="flex items-center space-x-1 md:space-x-2">
+                    <div class="w-3 h-3 md:w-4 md:h-4 bg-slate-300 border border-slate-100 shadow-sm rounded-full"></div>
+                    <span class="hidden md:inline">Clams: </span><span id="res-clams" class="text-slate-200 font-bold">200</span>
+                    <span id="res-clams-rate" class="text-[10px] text-green-400 hidden md:inline"></span>
+                </div>
+                <div class="flex items-center space-x-1 md:space-x-2">
+                    <div class="w-3 h-3 md:w-4 md:h-4 bg-amber-700 border border-amber-500 shadow-sm"></div>
+                    <span class="hidden md:inline">Twigs: </span><span id="res-twigs" class="text-amber-600 font-bold">50</span>
+                    <span id="res-twigs-rate" class="text-[10px] text-green-400 hidden md:inline"></span>
+                </div>
+                <div class="flex items-center space-x-1 md:space-x-2">
+                    <div class="w-3 h-3 md:w-4 md:h-4 bg-red-600 border border-red-400 shadow-sm rounded-sm"></div>
+                    <span class="hidden md:inline">Food: </span><span id="res-food" class="text-red-400 font-bold">0/0</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <div id="status-display" class="text-green-400 font-bold uppercase tracking-widest hidden sm:block">Peaceful</div>
+                <div id="clock-display" class="text-sky-200 font-bold">Day 1 - 08:00</div>
+                <div class="flex items-center gap-1">
+                    <button id="speed-btn" class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-sky-300 font-bold" title="Game Speed (F)">1x</button>
+                    <button id="mute-btn" class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600" title="Toggle Sound (M)">🔊</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="idle-worker-btn" class="hidden absolute top-14 right-2 md:right-6 ui-panel border-2 border-amber-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-amber-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer" title="Select idle worker (.)">
+            <span class="w-3 h-3 bg-amber-400 rounded-full animate-pulse"></span>
+            <span id="idle-worker-count" class="text-xs md:text-sm">3 Idle</span>
+        </button>
+
+        <button id="select-army-btn" class="hidden absolute top-24 md:top-28 right-2 md:right-6 ui-panel border-2 border-red-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-red-400 font-bold z-20 flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer" title="Select all army (,)">
+            <span class="text-xs md:text-sm">⚔️ Army (<span id="army-count">0</span>)</span>
+        </button>
+
+        <!-- NEW: Ctrl Group indicators -->
+        <div id="ctrl-groups" class="absolute top-14 left-2 md:left-6 z-20 flex flex-col gap-1 hidden md:flex"></div>
+
+        <canvas id="game-canvas"></canvas>
+        <canvas id="fog-canvas"></canvas>
+        <div id="day-night-overlay" class="absolute inset-0 pointer-events-none z-10"></div>
+        <canvas id="light-canvas"></canvas>
+        
+        <div id="intro-overlay" class="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center transition-opacity duration-[2000ms] pointer-events-none">
+            <h1 class="text-4xl md:text-6xl font-black text-sky-400 mb-4 tracking-widest uppercase">Pond Warfare</h1>
+            <p class="text-sm md:text-xl text-slate-300 font-bold text-center px-4">Establish your economy before the predators arrive.</p>
+            <p class="text-xs text-slate-500 mt-4 text-center px-4">Right-click to command • WASD to scroll • Ctrl+# to set groups</p>
+        </div>
+
+        <div id="game-over-banner" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none hidden z-30 bg-black bg-opacity-50">
+            <h1 id="go-title" class="text-4xl md:text-6xl font-black text-yellow-400 mb-4 tracking-widest uppercase">Victory</h1>
+            <p id="go-desc" class="text-xl md:text-2xl text-white font-bold">The Pond is Safe!</p>
+            <p id="go-stats" class="text-sm text-slate-300 mt-2"></p>
+            <button id="restart-btn" class="mt-6 px-6 py-3 bg-sky-700 hover:bg-sky-600 text-white font-bold rounded-lg text-lg cursor-pointer pointer-events-auto border-2 border-sky-400 shadow-xl">Play Again</button>
+        </div>
+    </div>
+
+<script>
+const TILE_SIZE = 32;
+const MAP_WIDTH = 80; 
+const MAP_HEIGHT = 80;
+const WORLD_WIDTH = MAP_WIDTH * TILE_SIZE;
+const WORLD_HEIGHT = MAP_HEIGHT * TILE_SIZE;
+
+const PALETTE = {
+    otterBase: '#78350f', otterBelly: '#b45309', otterNose: '#000000',
+    gatorBase: '#166534', gatorLight: '#22c55e', gatorEye: '#fef08a',
+    snakeBase: '#65a30d', snakeStripe: '#facc15',
+    waterDeep: '#0f2b32', waterMid: '#11525c', waterShallow: '#1e3a5f',
+    mudDark: '#451a03', mudLight: '#713f12', wood: '#92400e',
+    clamShell: '#cbd5e1', clamMeat: '#f87171',
+    reedGreen: '#4ade80', reedBrown: '#92400e',
+    stone: '#4b5563', stoneL: '#9ca3af',
+    shadow: 'rgba(0,0,0,0.3)', black: '#000000'
+};
+
+const TIME_STOPS = [
+    { h: 0, c: [15, 20, 45] }, { h: 5, c: [15, 20, 45] }, { h: 6, c: [250, 140, 100] }, 
+    { h: 8, c: [255, 255, 255] }, { h: 18, c: [255, 255, 255] }, { h: 19, c: [160, 90, 140] }, 
+    { h: 20, c: [15, 20, 45] }, { h: 24, c: [15, 20, 45] }    
+];
+
+const AudioSys = {
+    ctx: null, muted: false,
+    init() { 
+        if (this.ctx) return;
+        window.AudioContext = window.AudioContext || window.webkitAudioContext; 
+        this.ctx = new AudioContext(); 
+    },
+    play(freq, type, duration, vol=0.1, slideFreq=null) {
+        if(!this.ctx || this.muted) return;
+        try {
+            let osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            if(slideFreq) osc.frequency.exponentialRampToValueAtTime(slideFreq, this.ctx.currentTime + duration);
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(); osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+    },
+    toggleMute() {
+        this.muted = !this.muted;
+        document.getElementById('mute-btn').textContent = this.muted ? '🔇' : '🔊';
+    },
+    sfx: {
+        chop: () => AudioSys.play(200, 'square', 0.1, 0.05, 100),
+        mine: () => AudioSys.play(400, 'sine', 0.1, 0.05, 300),
+        build: () => AudioSys.play(150, 'sawtooth', 0.15, 0.05, 50),
+        hit: () => AudioSys.play(90, 'sawtooth', 0.2, 0.1, 40),
+        shoot: () => AudioSys.play(700, 'triangle', 0.1, 0.05, 1200),
+        alert: () => AudioSys.play(400, 'square', 0.8, 0.2, 300),
+        ping: () => { AudioSys.play(600, 'square', 0.1, 0.1, 800); setTimeout(()=>AudioSys.play(800, 'square', 0.1, 0.1, 1000), 100); },
+        click: () => AudioSys.play(800, 'sine', 0.05, 0.05),
+        selectUnit: () => AudioSys.play(600, 'sine', 0.1, 0.05, 800),
+        selectBuild: () => AudioSys.play(200, 'triangle', 0.1, 0.05, 150),
+        upgrade: () => { AudioSys.play(300, 'square', 0.1, 0.1, 600); setTimeout(()=>AudioSys.play(400, 'square', 0.2, 0.1, 800), 100); },
+        win: () => { AudioSys.play(400, 'sine', 0.2, 0.1, 600); setTimeout(()=>AudioSys.play(600, 'sine', 0.4, 0.1, 800), 200); },
+        lose: () => { AudioSys.play(200, 'sawtooth', 0.4, 0.1, 100); setTimeout(()=>AudioSys.play(100, 'sawtooth', 0.6, 0.1, 50), 400); },
+        heal: () => AudioSys.play(500, 'sine', 0.15, 0.04, 700),
+        error: () => AudioSys.play(150, 'square', 0.15, 0.08, 80),
+    }
+};
+
+const SpriteGen = {
+    generate(type) {
+        let size = ['lodge', 'burrow', 'armory', 'tower', 'predator_nest', 'rubble'].includes(type) ? 32 : 16;
+        let c = document.createElement('canvas'); c.width = size; c.height = size; let ctx = c.getContext('2d');
+        const p = (x, y, color) => { ctx.fillStyle = color; ctx.fillRect(Math.floor(x), Math.floor(y), 1, 1); };
+        const rect = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x, y, w, h); };
+        const circle = (cx, cy, r, color) => { for(let y=-r; y<=r; y++) for(let x=-r; x<=r; x++) if(x*x+y*y <= r*r) p(cx+x, cy+y, color); };
+
+        if (['gatherer', 'brawler', 'sniper'].includes(type)) {
+            rect(5, 4, 6, 8, PALETTE.otterBase); rect(6, 5, 4, 6, PALETTE.otterBelly); rect(5, 2, 6, 4, PALETTE.otterBase); 
+            p(6, 3, PALETTE.black); p(9, 3, PALETTE.black); p(7, 4, PALETTE.otterNose); p(8, 4, PALETTE.otterNose); 
+            rect(4, 5, 1, 4, PALETTE.otterBase); rect(11, 5, 1, 4, PALETTE.otterBase); 
+            rect(5, 12, 2, 2, PALETTE.otterBase); rect(9, 12, 2, 2, PALETTE.otterBase); rect(11, 10, 3, 2, PALETTE.otterBase); 
+            if (type === 'gatherer') { rect(3, 5, 2, 2, PALETTE.clamShell); } 
+            if (type === 'brawler') { rect(12, 4, 2, 7, PALETTE.reedBrown); rect(6, 1, 4, 2, PALETTE.clamShell); } 
+            if (type === 'sniper') { rect(13, 4, 1, 8, PALETTE.reedBrown); rect(12, 4, 1, 1, PALETTE.stoneL); rect(12, 11, 1, 1, PALETTE.stoneL); } 
+        }
+        else if (type === 'gator') {
+            rect(3, 10, 10, 4, PALETTE.gatorBase); for(let i=3; i<12; i+=2) p(i, 9, PALETTE.gatorLight); 
+            rect(13, 11, 3, 2, PALETTE.gatorBase); rect(0, 11, 4, 3, PALETTE.gatorLight); 
+            p(3, 10, PALETTE.gatorEye); rect(3, 14, 2, 1, PALETTE.gatorLight); rect(9, 14, 2, 1, PALETTE.gatorLight); 
+        }
+        else if (type === 'snake') {
+            rect(4, 12, 8, 2, PALETTE.snakeBase); rect(2, 10, 4, 2, PALETTE.snakeBase); rect(10, 10, 4, 2, PALETTE.snakeBase); 
+            rect(12, 8, 2, 2, PALETTE.snakeBase); p(13, 8, PALETTE.black); p(14, 9, PALETTE.clamMeat); 
+            p(5,12, PALETTE.snakeStripe); p(7,12, PALETTE.snakeStripe); p(9,12, PALETTE.snakeStripe);
+        }
+        else if (type === 'cattail') {
+            rect(7, 4, 2, 10, PALETTE.reedGreen); rect(6, 2, 4, 6, PALETTE.reedBrown); 
+            p(7, 1, PALETTE.otterBase); p(8, 1, PALETTE.otterBase); p(8, 12, PALETTE.reedGreen); p(9, 11, PALETTE.reedGreen); 
+        }
+        else if (type === 'clambed') {
+            circle(8, 10, 6, PALETTE.waterShallow); 
+            rect(5, 9, 2, 2, PALETTE.clamShell); p(6,9, PALETTE.stone);
+            rect(9, 11, 3, 2, PALETTE.clamShell); p(10,11, PALETTE.stone); rect(7, 13, 2, 2, PALETTE.clamShell); 
+        }
+        else if (type === 'bones') {
+            rect(6, 6, 4, 4, '#cbd5e1'); p(7, 7, '#000'); p(8, 7, '#000');
+            rect(7, 10, 2, 4, '#cbd5e1');
+            rect(5, 11, 6, 1, '#cbd5e1'); rect(6, 13, 4, 1, '#cbd5e1');
+        }
+        else if (type === 'rubble') {
+            for(let i=0; i<40; i++) {
+                let rx = 4 + Math.random() * 24, ry = 16 + Math.random() * 12;
+                rect(rx, ry, Math.random()*4+1, Math.random()*2+1, Math.random()>0.5 ? PALETTE.mudDark : PALETTE.wood);
+            }
+        }
+        else if (['lodge', 'burrow', 'armory', 'tower', 'predator_nest'].includes(type)) {
+            if (type === 'tower') {
+                rect(8, 16, 16, 14, PALETTE.mudLight); for(let i=0;i<30;i++) p(8+Math.random()*16,16+Math.random()*14, PALETTE.mudDark);
+                rect(6, 8, 20, 8, PALETTE.mudDark); rect(10, 4, 12, 4, PALETTE.reedGreen); 
+                rect(14, 22, 4, 8, PALETTE.black); rect(14, 12, 4, 2, PALETTE.black); 
+            } else if (type === 'predator_nest') {
+                circle(16, 16, 12, PALETTE.mudDark); circle(16, 18, 8, PALETTE.black); 
+                rect(6, 10, 2, 16, PALETTE.gatorBase); rect(24, 12, 2, 14, PALETTE.gatorBase); rect(10, 6, 2, 12, PALETTE.gatorBase);
+                p(14,16, PALETTE.gatorEye); p(18,16, PALETTE.gatorEye); 
+            } else if (type === 'lodge') {
+                circle(16, 20, 14, PALETTE.mudDark); for(let i=0; i<80; i++) p(4+Math.random()*24, 8+Math.random()*24, PALETTE.mudLight);
+                for(let i=0; i<40; i++) rect(4+Math.random()*22, 10+Math.random()*18, 6, 2, PALETTE.otterBase); 
+                rect(12, 22, 8, 8, PALETTE.black); 
+            } else if (type === 'burrow') {
+                circle(16, 24, 8, PALETTE.mudDark); for(let i=0; i<20; i++) p(8+Math.random()*16, 16+Math.random()*8, PALETTE.mudLight);
+                rect(14, 24, 4, 6, PALETTE.black); 
+            } else if (type === 'armory') {
+                rect(4, 12, 24, 16, PALETTE.waterMid);
+                rect(2, 10, 28, 4, PALETTE.mudDark); rect(2, 10, 4, 20, PALETTE.mudDark); 
+                rect(26, 10, 4, 20, PALETTE.mudDark); rect(2, 26, 28, 4, PALETTE.mudDark); 
+                for(let i=0; i<30; i++) { p(2+Math.random()*28, 10+Math.random()*4, PALETTE.otterBase); p(2+Math.random()*28, 26+Math.random()*4, PALETTE.otterBase); }
+                rect(12, 24, 8, 8, PALETTE.waterShallow); 
+                rect(22, 4, 4, 8, PALETTE.stoneL); p(23,4,PALETTE.black); p(24,4,PALETTE.black);
+            }
+        }
+        let scale = ['lodge', 'burrow', 'armory', 'tower', 'predator_nest', 'rubble'].includes(type) ? 3 : 2.5; 
+        let sCanvas = document.createElement('canvas'); sCanvas.width = size * scale; sCanvas.height = size * scale;
+        let sCtx = sCanvas.getContext('2d'); sCtx.imageSmoothingEnabled = false;
+        sCtx.drawImage(c, 0, 0, size * scale, size * scale); return sCanvas;
+    }
+};
+
+class Projectile {
+    constructor(x, y, tx, ty, targetEnt, dmg, owner) {
+        this.x = x; this.y = y; this.tx = tx; this.ty = ty; 
+        this.target = targetEnt; this.dmg = dmg; this.owner = owner; this.speed = 8;
+        this.trail = [];
+    }
+    update() {
+        if (this.target && this.target.hp > 0) { this.tx = this.target.x; this.ty = this.target.y; }
+        let dx = this.tx - this.x, dy = this.ty - this.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < this.speed) {
+            if (this.target && this.target.hp > 0) this.target.takeDamage(this.dmg, this.owner);
+            return true; 
+        }
+        this.trail.push({x: this.x, y: this.y, life: 8});
+        this.x += (dx/dist)*this.speed; this.y += (dy/dist)*this.speed;
+        return false;
+    }
+    draw(c) {
+        // Draw trail
+        for (let i = this.trail.length - 1; i >= 0; i--) {
+            let t = this.trail[i];
+            t.life--;
+            if (t.life <= 0) { this.trail.splice(i, 1); continue; }
+            let alpha = t.life / 8;
+            c.fillStyle = `rgba(156, 163, 175, ${alpha * 0.6})`; 
+            c.fillRect(t.x-1, t.y-1, 2, 2);
+        }
+        c.fillStyle = PALETTE.stone; c.fillRect(this.x-2, this.y-2, 4, 4); 
+        c.fillStyle = '#fff'; c.fillRect(this.x-1, this.y-1, 2, 2);
+    }
+}
+
+const GAME = {
+    container: document.getElementById('game-container'), canvas: document.getElementById('game-canvas'),
+    fogCanvas: document.getElementById('fog-canvas'), lightCanvas: document.getElementById('light-canvas'),
+    ctx: null, fogCtx: null, lightCtx: null, minimap: document.getElementById('minimap'), minimapCtx: null,
+    sprites: {}, bgCanvas: null, fogBgCanvas: null, fogPattern: null,
+    entities: [], particles: [], projectiles: [], floatingTexts: [], fireflies: [],
+    minimapPings: [], groundPings: [], corpses: [],
+    
+    tech: { sharpSticks: false, sturdyMud: false, swiftPaws: false, eagleEye: false },
+    resources: { clams: 200, twigs: 50, food: 0, maxFood: 0 },
+    
+    // NEW: Resource income tracking
+    resTracker: { clams: 0, twigs: 0, lastClams: 200, lastTwigs: 50, rateClams: 0, rateTwigs: 0 },
+    
+    // NEW: Stats tracking
+    stats: { unitsKilled: 0, unitsLost: 0, resourcesGathered: 0, buildingsBuilt: 0, peakArmy: 0 },
+    
+    camX: 0, camY: 0, width: 0, height: 0,
+    mouse: { x: 0, y: 0, worldX: 0, worldY: 0, isDown: false, startX: 0, startY: 0, in: false },
+    activePointers: new Map(), lastPanCenter: null, keys: {}, selection: [], placingBuilding: null,
+    
+    lastTime: 0, frameCount: 0, timeOfDay: 8 * 60,
+    state: 'playing', peaceTimer: 10800, ambientDarkness: 0,
+    isTracking: false,
+    
+    // NEW: Control groups (1-9)
+    ctrlGroups: {},
+    
+    // NEW: Game speed
+    gameSpeed: 1, speedLevels: [1, 2, 3],
+    
+    // NEW: Attack-move mode
+    attackMoveMode: false,
+    
+    // NEW: Last click time for double-click detection
+    lastClickTime: 0, lastClickEntity: null,
+    
+    // NEW: Screen shake
+    shakeTimer: 0,
+    
+    // NEW: Explored fog (permanent reveal of explored areas)
+    exploredCanvas: null, exploredCtx: null,
+    
+    // NEW: idle worker cycling index
+    idleWorkerIdx: 0,
+    
+    init() {
+        this.ctx = this.canvas.getContext('2d', { alpha: false });
+        this.fogCtx = this.fogCanvas.getContext('2d');
+        this.lightCtx = this.lightCanvas.getContext('2d');
+        this.minimapCtx = this.minimap.getContext('2d', { alpha: false });
+        
+        const types = ['gatherer', 'brawler', 'gator', 'snake', 'sniper', 'cattail', 'clambed', 'lodge', 'burrow', 'armory', 'tower', 'predator_nest', 'bones', 'rubble'];
+        types.forEach(t => this.sprites[t] = SpriteGen.generate(t));
+        
+        // NEW: Explored fog canvas
+        this.exploredCanvas = document.createElement('canvas');
+        this.exploredCanvas.width = Math.ceil(WORLD_WIDTH / 16);
+        this.exploredCanvas.height = Math.ceil(WORLD_HEIGHT / 16);
+        this.exploredCtx = this.exploredCanvas.getContext('2d');
+        this.exploredCtx.fillStyle = '#000';
+        this.exploredCtx.fillRect(0, 0, this.exploredCanvas.width, this.exploredCanvas.height);
+        
+        this.buildMap(); this.buildFogTexture(); this.setupInput();
+        
+        document.getElementById('portrait-canvas').addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); if(this.selection.length > 0) this.isTracking = true;
+        });
+
+        document.getElementById('idle-worker-btn').addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); this.selectIdleWorker();
+        });
+
+        document.getElementById('select-army-btn').addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); this.selectArmy();
+        });
+        
+        // NEW: Sound & Speed buttons
+        document.getElementById('mute-btn').addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); AudioSys.toggleMute();
+        });
+        document.getElementById('speed-btn').addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); this.cycleSpeed();
+        });
+        document.getElementById('restart-btn').addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); location.reload();
+        });
+        
+        let sx = WORLD_WIDTH/2, sy = WORLD_HEIGHT/2;
+        let lodge = new Entity('lodge', sx, sy, 'player');
+        
+        new Entity('gatherer', sx - 40, sy + 40, 'player');
+        new Entity('gatherer', sx + 40, sy + 40, 'player');
+        new Entity('gatherer', sx, sy + 50, 'player');
+        
+        new Entity('clambed', sx - 120, sy - 40, 'neutral');
+        for(let i=0; i<6; i++) new Entity('cattail', sx + 100 + Math.random()*60, sy - 60 + Math.random()*80, 'neutral');
+        
+        for(let i=0; i<300; i++) new Entity('cattail', Math.random()*WORLD_WIDTH, Math.random()*WORLD_HEIGHT, 'neutral');
+        for(let i=0; i<15; i++) new Entity('clambed', Math.random()*WORLD_WIDTH, Math.random()*WORLD_HEIGHT, 'neutral');
+        
+        const campLocs = [{x: 800, y: 800}, {x: WORLD_WIDTH-800, y: 800}, {x: WORLD_WIDTH/2, y: WORLD_HEIGHT-800}];
+        campLocs.forEach(loc => {
+            new Entity('predator_nest', loc.x, loc.y, 'enemy');
+            for(let j=0; j<2; j++) new Entity('gator', loc.x + (Math.random()-.5)*150, loc.y + (Math.random()-.5)*150, 'enemy');
+            for(let j=0; j<2; j++) new Entity('snake', loc.x + (Math.random()-.5)*150, loc.y + (Math.random()-.5)*150, 'enemy');
+        });
+
+        this.camX = sx - this.width/2 - 200; 
+        this.camY = sy - this.height/2 + 100;
+        
+        this.selection = [lodge]; lodge.selected = true;
+        this.isTracking = true; this.updateUI();
+
+        setTimeout(() => {
+            let overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 2000);
+        }, 1500);
+
+        this.fireflies = Array.from({length: 150}, () => ({
+            x: Math.random() * WORLD_WIDTH, y: Math.random() * WORLD_HEIGHT,
+            vx: (Math.random() - 0.5), vy: (Math.random() - 0.5) * 0.5 - 0.2, phase: Math.random() * Math.PI * 2
+        }));
+
+        requestAnimationFrame((t) => this.loop(t));
+    },
+
+    // NEW: Cycle game speed
+    cycleSpeed() {
+        let idx = this.speedLevels.indexOf(this.gameSpeed);
+        this.gameSpeed = this.speedLevels[(idx + 1) % this.speedLevels.length];
+        document.getElementById('speed-btn').textContent = this.gameSpeed + 'x';
+        AudioSys.sfx.click();
+    },
+
+    // NEW: Select idle worker with cycling
+    selectIdleWorker() {
+        AudioSys.sfx.selectUnit();
+        let idles = this.entities.filter(ent => ent.faction === 'player' && ent.type === 'gatherer' && ent.state === 'idle');
+        if(idles.length > 0) {
+            this.idleWorkerIdx = (this.idleWorkerIdx) % idles.length;
+            this.selection.forEach(ent => ent.selected = false);
+            this.selection = [idles[this.idleWorkerIdx]]; idles[this.idleWorkerIdx].selected = true;
+            this.isTracking = true; this.updateUI();
+            this.idleWorkerIdx++;
+        }
+    },
+
+    // NEW: Select all army
+    selectArmy() {
+        AudioSys.sfx.selectUnit();
+        let army = this.entities.filter(ent => ent.faction === 'player' && !ent.isBuilding && ent.type !== 'gatherer');
+        if(army.length > 0) {
+            this.selection.forEach(ent => ent.selected = false);
+            this.selection = army; army.forEach(ent => ent.selected = true);
+            this.isTracking = true; this.updateUI();
+        }
+    },
+
+    addPing(x, y) {
+        let nearby = this.minimapPings.some(p => Math.abs(p.x - x) < 300 && Math.abs(p.y - y) < 300);
+        if (!nearby) {
+            this.minimapPings.push({x, y, life: 180, maxLife: 180});
+            AudioSys.sfx.ping();
+        }
+    },
+    
+    // NEW: Screen shake effect
+    triggerShake() {
+        this.shakeTimer = 10;
+        this.container.classList.add('screen-shake');
+        setTimeout(() => this.container.classList.remove('screen-shake'), 200);
+    },
+
+    buildMap() {
+        this.bgCanvas = document.createElement('canvas'); this.bgCanvas.width = WORLD_WIDTH; this.bgCanvas.height = WORLD_HEIGHT;
+        let ctx = this.bgCanvas.getContext('2d', { alpha: false });
+        ctx.fillStyle = PALETTE.waterDeep; ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        for(let i=0; i<50000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? PALETTE.waterMid : '#0a1d22'; ctx.fillRect(Math.random()*WORLD_WIDTH, Math.random()*WORLD_HEIGHT, 4, 4);
+        }
+        for(let p=0; p<100; p++) {
+            let px = Math.random()*WORLD_WIDTH, py = Math.random()*WORLD_HEIGHT, r = 50 + Math.random()*200;
+            for(let i=0; i<r*15; i++) {
+                let ang = Math.random()*Math.PI*2, dist = Math.random()*r;
+                ctx.fillStyle = Math.random() > 0.4 ? PALETTE.waterShallow : PALETTE.mudDark;
+                ctx.fillRect(px + Math.cos(ang)*dist, py + Math.sin(ang)*dist, 6, 6);
+            }
+        }
+    },
+
+    buildFogTexture() {
+        let size = 256; this.fogBgCanvas = document.createElement('canvas'); this.fogBgCanvas.width = size; this.fogBgCanvas.height = size;
+        let ctx = this.fogBgCanvas.getContext('2d'); ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,size,size);
+        for(let i=0; i<150; i++) {
+            let x = Math.random()*size, y = Math.random()*size, r = 15 + Math.random()*30, g = ctx.createRadialGradient(x,y,0, x,y,r);
+            g.addColorStop(0, 'rgba(51, 65, 85, 0.5)'); g.addColorStop(1, 'rgba(51, 65, 85, 0)'); ctx.fillStyle = g;
+            [[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]].forEach(offset => {
+                ctx.beginPath(); ctx.arc(x + offset[0]*size, y + offset[1]*size, r, 0, Math.PI*2); ctx.fill();
+            });
+        }
+        this.fogPattern = this.fogCtx.createPattern(this.fogBgCanvas, 'repeat');
+    },
+
+    setupInput() {
+        window.addEventListener('resize', () => this.resize()); this.resize();
+        this.container.addEventListener('mouseenter', () => this.mouse.in = true); this.container.addEventListener('mouseleave', () => this.mouse.in = false);
+        this.container.addEventListener('contextmenu', e => e.preventDefault());
+
+        this.container.addEventListener('pointerdown', e => {
+            if(e.button === 0 || e.pointerType === 'touch') { AudioSys.init(); } 
+            if(this.state !== 'playing') return;
+            this.activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+            if (this.activePointers.size === 1) {
+                let rect = this.canvas.getBoundingClientRect();
+                this.mouse.x = e.clientX - rect.left; this.mouse.y = e.clientY - rect.top;
+                this.mouse.worldX = this.mouse.x + this.camX; this.mouse.worldY = this.mouse.y + this.camY;
+                if (this.placingBuilding) { this.placeBuilding(); return; }
+                this.mouse.isDown = true; this.mouse.startX = this.mouse.worldX; this.mouse.startY = this.mouse.worldY; this.mouse.btn = e.button;
+            }
+        });
+        
+        this.container.addEventListener('pointermove', e => {
+            if(this.activePointers.has(e.pointerId)) this.activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+            if (this.activePointers.size === 2) {
+                this.isTracking = false; 
+                let pts = Array.from(this.activePointers.values());
+                let cx = (pts[0].x + pts[1].x) / 2, cy = (pts[0].y + pts[1].y) / 2;
+                if (this.lastPanCenter) { this.camX += (this.lastPanCenter.x - cx) * 1.5; this.camY += (this.lastPanCenter.y - cy) * 1.5; }
+                this.lastPanCenter = {x: cx, y: cy}; return;
+            } else { this.lastPanCenter = null; }
+            let rect = this.canvas.getBoundingClientRect();
+            this.mouse.x = e.clientX - rect.left; this.mouse.y = e.clientY - rect.top;
+            this.mouse.worldX = this.mouse.x + this.camX; this.mouse.worldY = this.mouse.y + this.camY;
+        });
+        
+        this.container.addEventListener('pointerup', e => {
+            this.activePointers.delete(e.pointerId); if (this.activePointers.size > 0) return; 
+            this.lastPanCenter = null;
+            if (this.mouse.isDown) { 
+                this.mouse.isDown = false; 
+                let dx = this.mouse.worldX - this.mouse.startX, dy = this.mouse.worldY - this.mouse.startY, dist = Math.sqrt(dx*dx + dy*dy);
+                if (e.pointerType === 'touch' || e.button === 0) {
+                    if (dist < 10) {
+                        // NEW: Attack-move mode
+                        if (this.attackMoveMode) {
+                            this.attackMoveMode = false;
+                            this.container.style.cursor = 'crosshair';
+                            let clickedEnt = this.getEntityAt(this.mouse.worldX, this.mouse.worldY);
+                            if (clickedEnt && clickedEnt.faction === 'enemy') {
+                                this.selection.forEach(u => { if (u.faction === 'player' && !u.isBuilding) u.cmdAtk(clickedEnt); });
+                            } else {
+                                // Attack-move to ground: move, but auto-attack on the way
+                                this.selection.forEach((u, idx) => {
+                                    if (u.faction === 'player' && !u.isBuilding) {
+                                        let row = Math.floor(idx / 4), col = idx % 4;
+                                        u.cmdAttackMove(this.mouse.worldX + (col-1.5)*30, this.mouse.worldY + (row-1.5)*30);
+                                    }
+                                });
+                            }
+                            this.groundPings.push({x: this.mouse.worldX, y: this.mouse.worldY, life: 20, maxLife: 20, c: '239, 68, 68'});
+                            return;
+                        }
+                        
+                        let clickedEnt = this.getEntityAt(this.mouse.worldX, this.mouse.worldY);
+                        let now = performance.now();
+                        
+                        if (clickedEnt) {
+                            if (clickedEnt.isBuilding) AudioSys.sfx.selectBuild(); else AudioSys.sfx.selectUnit();
+                            
+                            // NEW: Double-click to select all of same type on screen
+                            if (now - this.lastClickTime < 350 && this.lastClickEntity && 
+                                this.lastClickEntity.type === clickedEnt.type && clickedEnt.faction === 'player' && !clickedEnt.isBuilding) {
+                                this.selection.forEach(e => e.selected = false);
+                                this.selection = [];
+                                this.entities.forEach(ent => {
+                                    if (ent.type === clickedEnt.type && ent.faction === 'player' && 
+                                        ent.x > this.camX - 50 && ent.x < this.camX + this.width + 50 &&
+                                        ent.y > this.camY - 50 && ent.y < this.camY + this.height + 50) {
+                                        ent.selected = true; this.selection.push(ent);
+                                    }
+                                });
+                                this.isTracking = true;
+                            } else if (clickedEnt.faction === 'player' && !clickedEnt.isBuilding) {
+                                // NEW: Shift-click to add/remove from selection
+                                if (this.keys['shift']) {
+                                    let idx = this.selection.indexOf(clickedEnt);
+                                    if (idx > -1) { clickedEnt.selected = false; this.selection.splice(idx, 1); }
+                                    else { clickedEnt.selected = true; this.selection.push(clickedEnt); }
+                                } else {
+                                    this.selection.forEach(e => e.selected = false); 
+                                    this.selection = [clickedEnt]; clickedEnt.selected = true;
+                                    this.isTracking = true;
+                                }
+                            } else {
+                                if (this.hasPlayerUnitsSelected()) this.issueContextCommand(clickedEnt);
+                                else { 
+                                    this.selection.forEach(e => e.selected = false); this.selection = [clickedEnt]; clickedEnt.selected = true;
+                                    this.isTracking = true; 
+                                }
+                            }
+                        } else {
+                            if (this.hasPlayerUnitsSelected()) this.issueContextCommand(null);
+                            else { this.selection.forEach(e => e.selected = false); this.selection = []; this.isTracking = false; }
+                        }
+                        this.lastClickTime = now;
+                        this.lastClickEntity = clickedEnt;
+                        this.updateUI();
+                    } else {
+                        // Drag selection
+                        if (!this.keys['shift']) { this.selection.forEach(e => e.selected = false); this.selection = []; }
+                        let minX = Math.min(this.mouse.startX, this.mouse.worldX), maxX = Math.max(this.mouse.startX, this.mouse.worldX);
+                        let minY = Math.min(this.mouse.startY, this.mouse.worldY), maxY = Math.max(this.mouse.startY, this.mouse.worldY);
+                        this.entities.forEach(e => { 
+                            if (e.faction === 'player' && !e.isBuilding && e.x >= minX && e.x <= maxX && e.y >= minY && e.y <= maxY) { 
+                                if (!e.selected) { e.selected = true; this.selection.push(e); }
+                            } 
+                        });
+                        if(this.selection.length > 0) { AudioSys.sfx.selectUnit(); this.isTracking = true; }
+                        this.updateUI();
+                    }
+                } else if (e.button === 2) { this.issueContextCommand(this.getEntityAt(this.mouse.worldX, this.mouse.worldY)); }
+            }
+        });
+        
+        window.addEventListener('keydown', e => {
+            let k = e.key.toLowerCase();
+            this.keys[k] = true;
+            if (k === 'shift') this.keys['shift'] = true;
+            
+            // Escape: cancel placement / deselect / cancel attack-move
+            if (k === 'escape') {
+                if (this.attackMoveMode) { this.attackMoveMode = false; this.container.style.cursor = 'crosshair'; }
+                else if (this.placingBuilding) { this.placingBuilding = null; }
+                else { this.selection.forEach(ent => ent.selected = false); this.selection = []; this.isTracking = false; this.updateUI(); }
+            }
+            
+            // NEW: Hotkeys for actions
+            if (this.state === 'playing') {
+                // Attack-move (A key)
+                if (k === 'a' && !e.ctrlKey && this.hasPlayerUnitsSelected()) {
+                    this.attackMoveMode = true;
+                    this.container.style.cursor = 'url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'><text y=\'20\' font-size=\'20\'>⚔️</text></svg>") 12 12, crosshair';
+                }
+                
+                // Stop (S key when not moving camera)
+                if (k === 'h' && this.hasPlayerUnitsSelected()) {
+                    this.selection.forEach(u => { if (!u.isBuilding) { u.state = 'idle'; u.tPos = null; u.tEnt = null; }});
+                }
+                
+                // Control groups
+                if (e.ctrlKey && k >= '1' && k <= '9') {
+                    e.preventDefault();
+                    let group = parseInt(k);
+                    this.ctrlGroups[group] = this.selection.filter(u => u.hp > 0).slice();
+                    this.floatingTexts.push({x: this.camX + this.width/2, y: this.camY + 60, t: `Group ${group} set (${this.ctrlGroups[group].length})`, c: '#38bdf8', life: 60});
+                    this.updateCtrlGroupUI();
+                } else if (!e.ctrlKey && k >= '1' && k <= '9') {
+                    let group = parseInt(k);
+                    if (this.ctrlGroups[group] && this.ctrlGroups[group].length > 0) {
+                        // Clean dead units
+                        this.ctrlGroups[group] = this.ctrlGroups[group].filter(u => u.hp > 0 && this.entities.includes(u));
+                        if (this.ctrlGroups[group].length > 0) {
+                            this.selection.forEach(u => u.selected = false);
+                            this.selection = [...this.ctrlGroups[group]];
+                            this.selection.forEach(u => u.selected = true);
+                            this.isTracking = true;
+                            AudioSys.sfx.selectUnit();
+                            this.updateUI();
+                        }
+                    }
+                }
+                
+                // Mute toggle
+                if (k === 'm') AudioSys.toggleMute();
+                
+                // Speed toggle
+                if (k === 'f') this.cycleSpeed();
+                
+                // Period for idle worker
+                if (k === '.') this.selectIdleWorker();
+                // Comma for army select
+                if (k === ',') this.selectArmy();
+                
+                // Space to center on selection
+                if (k === ' ' && this.selection.length > 0) {
+                    e.preventDefault();
+                    this.isTracking = true;
+                }
+                
+                // Tab to cycle through buildings  
+                if (k === 'tab') {
+                    e.preventDefault();
+                    let buildings = this.entities.filter(e => e.faction === 'player' && e.isBuilding && e.progress >= 100);
+                    if (buildings.length > 0) {
+                        let curIdx = this.selection.length === 1 ? buildings.indexOf(this.selection[0]) : -1;
+                        let next = buildings[(curIdx + 1) % buildings.length];
+                        this.selection.forEach(u => u.selected = false);
+                        this.selection = [next]; next.selected = true;
+                        this.isTracking = true;
+                        AudioSys.sfx.selectBuild();
+                        this.updateUI();
+                    }
+                }
+
+                // Hotkey buttons: Q, W, E, R for action panel buttons
+                if (['q', 'w', 'e', 'r'].includes(k) && !e.ctrlKey) {
+                    let btns = document.querySelectorAll('#action-panel .action-btn');
+                    let idx = 'qwer'.indexOf(k);
+                    if (btns[idx] && !btns[idx].disabled) btns[idx].click();
+                }
+            }
+        }); 
+        window.addEventListener('keyup', e => { 
+            this.keys[e.key.toLowerCase()] = false; 
+            if (e.key === 'Shift') this.keys['shift'] = false;
+        });
+
+        const mmap = document.getElementById('minimap-container'); let mmapDrag = false, mmapPanOffset = { x: 0, y: 0 };
+        mmap.addEventListener('contextmenu', e => e.preventDefault());
+        
+        mmap.addEventListener('pointerdown', e => { 
+            e.stopPropagation();
+            let rect = this.minimap.getBoundingClientRect();
+            let clickX = (e.clientX - rect.left) / rect.width * WORLD_WIDTH, clickY = (e.clientY - rect.top) / rect.height * WORLD_HEIGHT;
+            
+            if (e.button === 2 && this.hasPlayerUnitsSelected()) {
+                let targetEnt = this.getEntityAt(clickX, clickY);
+                let oldX = this.mouse.worldX, oldY = this.mouse.worldY;
+                this.mouse.worldX = clickX; this.mouse.worldY = clickY;
+                this.issueContextCommand(targetEnt);
+                this.mouse.worldX = oldX; this.mouse.worldY = oldY;
+                return;
+            }
+
+            mmapDrag = true; this.isTracking = false; 
+            if (clickX >= this.camX && clickX <= this.camX + this.width && clickY >= this.camY && clickY <= this.camY + this.height) {
+                mmapPanOffset.x = clickX - this.camX; mmapPanOffset.y = clickY - this.camY;
+            } else { mmapPanOffset.x = this.width / 2; mmapPanOffset.y = this.height / 2; this.moveCamMinimap(e, mmapPanOffset); }
+        });
+        window.addEventListener('pointermove', e => { if(mmapDrag) this.moveCamMinimap(e, mmapPanOffset); }); window.addEventListener('pointerup', () => mmapDrag = false);
+    },
+
+    resize() {
+        this.width = this.container.clientWidth; this.height = this.container.clientHeight;
+        this.canvas.width = this.width; this.canvas.height = this.height; this.fogCanvas.width = this.width; this.fogCanvas.height = this.height;
+        this.lightCanvas.width = this.width; this.lightCanvas.height = this.height;
+        this.ctx.imageSmoothingEnabled = false; this.fogCtx.imageSmoothingEnabled = false;
+    },
+
+    moveCamMinimap(e, offset) {
+        let rect = this.minimap.getBoundingClientRect(), xPercent = (e.clientX - rect.left) / rect.width, yPercent = (e.clientY - rect.top) / rect.height;
+        this.camX = Math.max(0, Math.min(WORLD_WIDTH - this.width, xPercent * WORLD_WIDTH - offset.x));
+        this.camY = Math.max(0, Math.min(WORLD_HEIGHT - this.height, yPercent * WORLD_HEIGHT - offset.y));
+    },
+
+    getEntityAt(x, y) {
+        // FIX: Sort by y descending so top-most (closest to camera) units are picked first
+        let sorted = [...this.entities].sort((a,b) => {
+            // Prioritize non-resource clickable entities
+            if (a.isResource !== b.isResource) return a.isResource ? 1 : -1;
+            return b.y - a.y;
+        });
+        for(let e of sorted) if (Math.abs(e.x - x) < Math.max(25, e.radius+15) && Math.abs(e.y - y) < Math.max(25, e.height/2+15)) return e;
+        return null;
+    },
+    
+    hasPlayerUnitsSelected() { return this.selection.length > 0 && this.selection.some(e => e.faction === 'player' && !e.isBuilding); },
+
+    issueContextCommand(target) {
+        if (this.placingBuilding) { this.placingBuilding = null; return; }
+        if (this.selection.length === 1 && this.selection[0].isBuilding && this.selection[0].faction === 'player') { AudioSys.sfx.click(); this.selection[0].rallyPos = { x: this.mouse.worldX, y: this.mouse.worldY }; return; }
+        if (this.selection.length === 0) return;
+        
+        AudioSys.sfx.click();
+
+        if (!target) {
+            this.groundPings.push({x: this.mouse.worldX, y: this.mouse.worldY, life: 20, maxLife: 20, c: '34, 197, 94'}); 
+        } else if (target.faction === 'enemy') {
+            this.groundPings.push({x: target.x, y: target.y, life: 20, maxLife: 20, c: '239, 68, 68'}); 
+        } else if (target.isResource) {
+            this.groundPings.push({x: target.x, y: target.y, life: 20, maxLife: 20, c: '250, 204, 21'}); 
+        }
+
+        this.selection.forEach((unit, idx) => {
+            if (unit.faction !== 'player' || unit.isBuilding) return;
+            if (target) {
+                if (target.faction === 'enemy') unit.cmdAtk(target);
+                else if (target.isResource && unit.type === 'gatherer') unit.cmdGather(target);
+                else if (target.faction === 'player' && target.isBuilding && target.progress < 100 && unit.type === 'gatherer') unit.cmdBuild(target);
+                else if (target.type === 'lodge' && unit.type === 'gatherer' && unit.heldRes) unit.cmdReturn(target);
+                // NEW: Right-click own completed building to garrison/repair
+                else if (target.faction === 'player' && target.isBuilding && target.progress >= 100 && target.hp < target.maxHp && unit.type === 'gatherer') unit.cmdRepair(target);
+                else unit.cmdMove(this.mouse.worldX + (Math.random()-.5)*20, this.mouse.worldY + (Math.random()-.5)*20);
+            } else {
+                // NEW: Better formation - diamond pattern
+                let count = this.selection.filter(u => u.faction === 'player' && !u.isBuilding).length;
+                let cols = Math.ceil(Math.sqrt(count));
+                let row = Math.floor(idx / cols), col = idx % cols;
+                let offsetX = (col - (cols-1)/2) * 35;
+                let offsetY = (row - Math.floor(count/cols)/2) * 35;
+                unit.cmdMove(this.mouse.worldX + offsetX, this.mouse.worldY + offsetY);
+            }
+        });
+    },
+    
+    // NEW: Check building placement validity
+    canPlaceBuilding(bx, by, type) {
+        let spr = this.sprites[type];
+        let hw = spr.width / 2, hh = spr.height / 2;
+        
+        // Check against existing buildings
+        for (let e of this.entities) {
+            if (!e.isBuilding) continue;
+            let ehw = e.width / 2, ehh = e.height / 2;
+            if (Math.abs(bx - e.x) < hw + ehw - 10 && Math.abs(by - e.y) < hh + ehh - 10) return false;
+        }
+        
+        // Check world bounds
+        if (bx - hw < 0 || bx + hw > WORLD_WIDTH || by - hh < 0 || by + hh > WORLD_HEIGHT) return false;
+        
+        return true;
+    },
+
+    // NEW: Control group UI update
+    updateCtrlGroupUI() {
+        let container = document.getElementById('ctrl-groups');
+        container.innerHTML = '';
+        let hasAny = false;
+        for (let i = 1; i <= 9; i++) {
+            if (this.ctrlGroups[i] && this.ctrlGroups[i].length > 0) {
+                this.ctrlGroups[i] = this.ctrlGroups[i].filter(u => u.hp > 0 && this.entities.includes(u));
+                if (this.ctrlGroups[i].length > 0) {
+                    hasAny = true;
+                    let btn = document.createElement('button');
+                    btn.className = 'ui-panel text-[10px] px-2 py-0.5 border border-slate-600 rounded cursor-pointer hover:bg-slate-700 text-sky-300';
+                    btn.textContent = `${i}: ${this.ctrlGroups[i].length}`;
+                    btn.onclick = () => { this.keys[i.toString()] = true; setTimeout(() => this.keys[i.toString()] = false, 50); };
+                    container.appendChild(btn);
+                }
+            }
+        }
+    },
+
+    updateUI() {
+        const els = { name: document.getElementById('sel-name'), stats: document.getElementById('sel-stats'), desc: document.getElementById('sel-desc'), hpBar: document.getElementById('sel-hp-bar'), hpFill: document.getElementById('sel-hp-fill'), panel: document.getElementById('action-panel') };
+        const portraitCanvas = document.getElementById('portrait-canvas'); const pCtx = portraitCanvas.getContext('2d');
+        
+        els.panel.innerHTML = '';
+        if (this.selection.length === 0) {
+            portraitCanvas.classList.add('hidden');
+            els.name.textContent = "No Selection"; els.name.className = "text-base md:text-xl font-bold text-slate-500 leading-tight";
+            els.stats.innerHTML = ""; els.desc.textContent = ""; els.hpBar.classList.add('hidden'); return;
+        }
+        
+        let ent = this.selection[0];
+        
+        if (this.selection.length > 1) {
+            portraitCanvas.classList.add('hidden');
+            els.name.textContent = `Squad (${this.selection.length})`; els.name.className = "text-base md:text-xl font-bold text-white leading-tight";
+            
+            // NEW: Show total HP and composition
+            let totalHp = 0, totalMaxHp = 0;
+            let typeCounts = {};
+            this.selection.forEach(u => { 
+                totalHp += u.hp; totalMaxHp += u.maxHp; 
+                typeCounts[u.type] = (typeCounts[u.type] || 0) + 1;
+            });
+            let compStr = Object.entries(typeCounts).map(([t, c]) => `${c} ${t}`).join(', ');
+            els.desc.textContent = compStr;
+            els.hpBar.classList.remove('hidden');
+            els.hpFill.style.width = `${(totalHp/totalMaxHp)*100}%`;
+            
+            let gridHTML = '<div class="flex flex-wrap gap-1 mt-1">';
+            let maxShow = 12;
+            for(let i=0; i < Math.min(this.selection.length, maxShow); i++) {
+                let u = this.selection[i];
+                let hpPct = Math.floor(u.hp / u.maxHp * 100);
+                let borderColor = hpPct > 60 ? 'border-slate-600' : hpPct > 30 ? 'border-yellow-600' : 'border-red-600';
+                gridHTML += `<img src="${u.sprite.toDataURL()}" class="w-6 h-6 md:w-8 md:h-8 bg-slate-800 border ${borderColor} rounded-sm render-pixelated" title="${u.type} (${hpPct}% HP)">`;
+            }
+            if(this.selection.length > maxShow) {
+                gridHTML += `<div class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-[10px] font-bold bg-slate-800 border border-slate-600 text-slate-400 rounded-sm">+${this.selection.length - maxShow}</div>`;
+            }
+            gridHTML += '</div>';
+            els.stats.innerHTML = gridHTML;
+            
+        } else {
+            portraitCanvas.classList.remove('hidden');
+            pCtx.clearRect(0,0,64,64); pCtx.imageSmoothingEnabled = false; pCtx.fillStyle = '#0f172a'; pCtx.fillRect(0,0,64,64);
+            let sW = ent.sprite.width, sH = ent.sprite.height, scale = Math.min(48/sW, 48/sH), dW = sW * scale, dH = sH * scale;
+            pCtx.drawImage(ent.sprite, 32 - dW/2, 32 - dH/2, dW, dH);
+            
+            // NEW: Show kill count on portrait
+            if (ent.kills > 0) {
+                pCtx.fillStyle = '#ef4444'; pCtx.font = 'bold 10px Courier New'; pCtx.textAlign = 'right';
+                pCtx.fillText('☆' + ent.kills, 62, 12);
+            }
+
+            els.name.textContent = ent.type.replace('_', ' ').toUpperCase();
+            els.name.className = `text-base md:text-xl font-bold leading-tight ${ent.faction==='player'?'text-sky-300':(ent.faction==='enemy'?'text-red-400':'text-amber-300')}`;
+            els.hpBar.classList.remove('hidden'); els.hpFill.style.width = `${Math.max(0, (ent.hp/ent.maxHp)*100)}%`;
+            
+            // NEW: Color HP bar based on health
+            let hpPct = ent.hp / ent.maxHp;
+            els.hpFill.style.background = hpPct > 0.6 ? '#22c55e' : hpPct > 0.3 ? '#eab308' : '#ef4444';
+            
+            if (ent.isResource) {
+                els.stats.innerHTML = `Resources: ${ent.resAmount}`; els.desc.textContent = ent.type==='cattail' ? "Twigs. Right-click with gatherer to harvest." : "Clams. Right-click with gatherer to harvest."; els.hpBar.classList.add('hidden');
+            } else {
+                let statsStr = `HP: ${Math.floor(ent.hp)}/${ent.maxHp}`;
+                if (ent.dmg) statsStr += ` | Dmg: ${ent.dmg}`;
+                if (ent.kills > 0) statsStr += ` | Kills: ${ent.kills}`;
+                if (ent.atkRange > 60) statsStr += ` | Rng: ${ent.atkRange}`;
+                els.stats.innerHTML = statsStr;
+                
+                let statusText = ent.progress < 100 ? `Building ${Math.floor(ent.progress)}%` : ent.state;
+                if (ent.heldRes) statusText += ` (carrying ${ent.heldRes})`;
+                if (ent.isBuilding && ent.q && ent.q.length > 0) statusText = `Training (${ent.q.length} queued)`;
+                els.desc.textContent = `Status: ${statusText}`;
+            }
+        }
+
+        let isPlayer = this.selection.every(e => e.faction === 'player'); if (!isPlayer) return;
+
+        let hotkeyIdx = 0;
+        const addBtn = (title, cost, fn, afford, hotkey) => {
+            let b = document.createElement('button');
+            b.className = `action-btn relative flex flex-col items-center justify-center p-1 md:p-2 rounded text-[10px] md:text-xs font-bold shadow-md ${!afford?'opacity-50 grayscale cursor-not-allowed':''}`;
+            let hkLabel = hotkey || 'QWER'[hotkeyIdx];
+            b.innerHTML = `<span class="hotkey-badge">${hkLabel}</span><span>${title}</span><span class="text-sky-200 font-normal text-[8px] md:text-[10px] mt-1 whitespace-pre-line">${cost}</span>`;
+            if (afford) b.onclick = (e) => { e.stopPropagation(); AudioSys.sfx.click(); fn(); }; 
+            els.panel.appendChild(b);
+            hotkeyIdx++;
+        };
+
+        if (this.selection.some(e => e.type === 'gatherer')) {
+            addBtn("Burrow", "100 T", () => this.placingBuilding='burrow', this.resources.twigs >= 100);
+            addBtn("Armory", "250C 150T", () => this.placingBuilding='armory', this.resources.clams >= 250 && this.resources.twigs >= 150);
+            addBtn("Tower", "200C 250T", () => this.placingBuilding='tower', this.resources.clams >= 200 && this.resources.twigs >= 250);
+        }
+        if (this.selection.length === 1 && ent.type === 'lodge' && ent.progress >= 100) {
+            addBtn("Gatherer", "50C 1Food", () => this.train(ent, 'gatherer', 50, 0, 1), this.resources.clams >= 50 && this.resources.food < this.resources.maxFood);
+            
+            if (!this.tech.sturdyMud) {
+                addBtn("Sturdy Mud", "200C 300T\n(+Bldg HP)", () => {
+                    this.resources.clams -= 200; this.resources.twigs -= 300; this.tech.sturdyMud = true;
+                    this.entities.forEach(e => { if (e.faction === 'player' && e.isBuilding) { e.maxHp += 300; e.hp += 300; } });
+                    AudioSys.sfx.upgrade(); this.updateUI();
+                }, this.resources.clams >= 200 && this.resources.twigs >= 300);
+            }
+            // NEW: Swift Paws upgrade
+            if (!this.tech.swiftPaws && this.tech.sturdyMud) {
+                addBtn("Swift Paws", "250C 200T\n(+Speed)", () => {
+                    this.resources.clams -= 250; this.resources.twigs -= 200; this.tech.swiftPaws = true;
+                    this.entities.forEach(e => { if (e.faction === 'player' && !e.isBuilding && !e.isResource) e.speed += 0.4; });
+                    AudioSys.sfx.upgrade(); this.updateUI();
+                }, this.resources.clams >= 250 && this.resources.twigs >= 200);
+            }
+        }
+        if (this.selection.length === 1 && ent.type === 'armory' && ent.progress >= 100) {
+            addBtn("Brawler", "100C 50T\n1Food", () => this.train(ent, 'brawler', 100, 50, 1), this.resources.clams >= 100 && this.resources.twigs >= 50 && this.resources.food < this.resources.maxFood);
+            addBtn("Sniper", "80C 80T\n1Food", () => this.train(ent, 'sniper', 80, 80, 1), this.resources.clams >= 80 && this.resources.twigs >= 80 && this.resources.food < this.resources.maxFood);
+            
+            if (!this.tech.sharpSticks) {
+                addBtn("Sharp Sticks", "300C 200T\n(+2 Dmg)", () => {
+                    this.resources.clams -= 300; this.resources.twigs -= 200; this.tech.sharpSticks = true;
+                    this.entities.forEach(e => { if (e.faction === 'player' && !e.isBuilding && e.dmg) e.dmg += 2; });
+                    AudioSys.sfx.upgrade(); this.updateUI();
+                }, this.resources.clams >= 300 && this.resources.twigs >= 200);
+            }
+            // NEW: Eagle Eye upgrade
+            if (!this.tech.eagleEye && this.tech.sharpSticks) {
+                addBtn("Eagle Eye", "400C 300T\n(+Sniper Rng)", () => {
+                    this.resources.clams -= 400; this.resources.twigs -= 300; this.tech.eagleEye = true;
+                    this.entities.forEach(e => { if (e.faction === 'player' && e.type === 'sniper') e.atkRange += 50; });
+                    AudioSys.sfx.upgrade(); this.updateUI();
+                }, this.resources.clams >= 400 && this.resources.twigs >= 300);
+            }
+        }
+        
+        // NEW: Attack-move button for military units
+        if (this.selection.some(e => e.faction === 'player' && !e.isBuilding && e.dmg && e.type !== 'gatherer')) {
+            addBtn("Atk Move", "(A)", () => {
+                this.attackMoveMode = true;
+                this.container.style.cursor = 'url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'><text y=\'20\' font-size=\'20\'>⚔️</text></svg>") 12 12, crosshair';
+            }, true, 'A');
+        }
+        
+        // Halt button
+        if (this.hasPlayerUnitsSelected()) {
+            addBtn("Halt", "(H)", () => {
+                this.selection.forEach(u => { if (!u.isBuilding) { u.state = 'idle'; u.tPos = null; u.tEnt = null; }});
+            }, true, 'H');
+        }
+        
+        if (this.selection.length === 1 && ent.isBuilding && ent.q && ent.q.length > 0) {
+            let qContainer = document.createElement('div');
+            qContainer.className = 'col-span-2 sm:col-span-3 mt-2 flex flex-col gap-1 border-t border-slate-600 pt-2';
+            qContainer.innerHTML = `<span class="text-[10px] text-sky-200 uppercase tracking-wider">Queue (Click to Cancel)</span>`;
+            
+            let qRow = document.createElement('div'); qRow.className = 'flex gap-2 flex-wrap';
+            ent.q.forEach((t, i) => {
+                let btn = document.createElement('div');
+                btn.className = 'relative w-8 h-8 bg-slate-700 border border-slate-500 hover:border-red-500 rounded cursor-pointer overflow-hidden';
+                btn.onclick = (e) => { e.stopPropagation(); AudioSys.sfx.click(); this.cancelTrain(ent, i); };
+                
+                let fill = document.createElement('div'); fill.id = (i === 0) ? `q-fill-active` : '';
+                fill.className = 'absolute bottom-0 left-0 w-full bg-green-600 transition-all duration-75';
+                fill.style.height = (i === 0) ? `${(1 - ent.qTimer/180)*100}%` : '0%'; btn.appendChild(fill);
+                
+                let txt = document.createElement('span'); txt.className = 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white z-10 shadow-sm';
+                txt.innerText = t.charAt(0).toUpperCase(); btn.appendChild(txt);
+                
+                qRow.appendChild(btn);
+            });
+            qContainer.appendChild(qRow); els.panel.appendChild(qContainer);
+        }
+    },
+
+    placeBuilding() {
+        let type = this.placingBuilding, cg = 0, cw = 0;
+        if(type==='burrow') cw=100; if(type==='armory'){cg=250; cw=150;} if(type==='tower'){cg=200; cw=250;}
+        
+        let bx = Math.round(this.mouse.worldX/TILE_SIZE)*TILE_SIZE, by = Math.round(this.mouse.worldY/TILE_SIZE)*TILE_SIZE;
+        
+        // FIX: Check placement validity
+        if (!this.canPlaceBuilding(bx, by, type)) {
+            AudioSys.sfx.error();
+            this.floatingTexts.push({x: bx, y: by - 30, t: "Can't build here!", c: '#ef4444', life: 60});
+            return;
+        }
+        
+        if (this.resources.clams >= cg && this.resources.twigs >= cw) {
+            this.resources.clams -= cg; this.resources.twigs -= cw;
+            let b = new Entity(type, bx, by, 'player');
+            this.stats.buildingsBuilt++;
+            this.selection.forEach(u => { if(u.type === 'gatherer') u.cmdBuild(b); });
+            this.placingBuilding = null; this.updateUI();
+        }
+    },
+
+    train(b, type, cg, cw, cf) {
+        if (this.resources.clams >= cg && this.resources.twigs >= cw && this.resources.food < this.resources.maxFood) {
+            this.resources.clams -= cg; this.resources.twigs -= cw; this.resources.food += cf; 
+            b.q = b.q || []; b.q.push(type); if (!b.qTimer || b.q.length === 1) b.qTimer = 180;
+            this.updateUI();
+        }
+    },
+
+    cancelTrain(b, index) {
+        let type = b.q.splice(index, 1)[0];
+        let cg = 0, cw = 0, cf = 1;
+        if(type === 'gatherer') { cg=50; cw=0; }
+        if(type === 'brawler') { cg=100; cw=50; }
+        if(type === 'sniper') { cg=80; cw=80; }
+        this.resources.clams += cg; this.resources.twigs += cw; this.resources.food -= cf;
+        if (index === 0 && b.q.length > 0) b.qTimer = 180; 
+        if (b.q.length === 0) b.qTimer = 0;
+        this.updateUI();
+    },
+
+    setGameOver(result) {
+        if (this.state !== 'playing') return;
+        this.state = result;
+        const banner = document.getElementById('game-over-banner'), title = document.getElementById('go-title'), desc = document.getElementById('go-desc');
+        const statsEl = document.getElementById('go-stats');
+        banner.classList.remove('hidden');
+        
+        // NEW: Stats display
+        let day = Math.floor(this.frameCount/28800)+1;
+        statsEl.textContent = `Day ${day} | Kills: ${this.stats.unitsKilled} | Lost: ${this.stats.unitsLost} | Gathered: ${this.stats.resourcesGathered} | Buildings: ${this.stats.buildingsBuilt}`;
+        
+        if (result === 'win') {
+            AudioSys.sfx.win(); title.textContent = 'Victory'; title.className = 'text-4xl md:text-6xl font-black text-amber-400 mb-4 tracking-widest uppercase shadow-lg'; desc.textContent = 'The Pond is Safe!';
+        } else {
+            AudioSys.sfx.lose(); title.textContent = 'Defeat'; title.className = 'text-4xl md:text-6xl font-black text-red-600 mb-4 tracking-widest uppercase shadow-lg'; desc.textContent = 'Your Lodge was destroyed.';
+        }
+    },
+
+    getLerpedColor(timeInHours) {
+        let i = 0; while (i < TIME_STOPS.length - 1 && TIME_STOPS[i+1].h <= timeInHours) i++;
+        let start = TIME_STOPS[i], end = TIME_STOPS[i+1] || TIME_STOPS[i];
+        if (start === end) return `rgb(${start.c[0]}, ${start.c[1]}, ${start.c[2]})`;
+        let t = (timeInHours - start.h) / (end.h - start.h);
+        let r = Math.round(start.c[0] + (end.c[0] - start.c[0]) * t), g = Math.round(start.c[1] + (end.c[1] - start.c[1]) * t), b = Math.round(start.c[2] + (end.c[2] - start.c[2]) * t);
+        this.ambientDarkness = 1.0 - (r / 255); return `rgb(${r}, ${g}, ${b})`;
+    },
+
+    loop(timestamp) {
+        let dt = timestamp - this.lastTime;
+        if (dt > 1000/60) {
+            if (this.state === 'playing') {
+                for (let i = 0; i < this.gameSpeed; i++) this.updateLogic();
+            }
+            this.draw(); this.lastTime = timestamp;
+        }
+        requestAnimationFrame((t) => this.loop(t));
+    },
+
+    updateLogic() {
+        this.frameCount++;
+        
+        this.timeOfDay += 0.05; if (this.timeOfDay >= 24*60) this.timeOfDay = 0;
+        let hrs = Math.floor(this.timeOfDay/60), mins = Math.floor(this.timeOfDay%60);
+        document.getElementById('clock-display').textContent = `Day ${Math.floor(this.frameCount/28800)+1} - ${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}`;
+        document.getElementById('day-night-overlay').style.backgroundColor = this.getLerpedColor(this.timeOfDay / 60);
+
+        this.fireflies.forEach(f => {
+            f.x += f.vx; f.y += f.vy; f.phase += 0.05; f.vx += (Math.random() - 0.5) * 0.1;
+            if (f.vx > 1) f.vx = 1; if (f.vx < -1) f.vx = -1;
+            let margin = 200;
+            if (f.x < this.camX - margin) f.x = this.camX + this.width + margin; if (f.x > this.camX + this.width + margin) f.x = this.camX - margin;
+            if (f.y < this.camY - margin) f.y = this.camY + this.height + margin; if (f.y > this.camY + this.height + margin) f.y = this.camY - margin;
+        });
+
+        let s = 12, e = 20, manualPan = false;
+        if (this.keys['w'] || this.keys['arrowup'] || (this.mouse.in && this.mouse.y < e && !this.mouse.isDown)) { this.camY -= s; manualPan = true; }
+        if (this.keys['s'] || this.keys['arrowdown'] || (this.mouse.in && this.mouse.y > this.height-e && !this.mouse.isDown)) { this.camY += s; manualPan = true; }
+        // FIX: Don't pan left when pressing 'a' for attack-move (only pan with arrow keys and screen edge)
+        if (this.keys['arrowleft'] || (this.mouse.in && this.mouse.x < e && !this.mouse.isDown)) { this.camX -= s; manualPan = true; }
+        if (this.keys['d'] || this.keys['arrowright'] || (this.mouse.in && this.mouse.x > this.width-e && !this.mouse.isDown)) { this.camX += s; manualPan = true; }
+        if (manualPan) this.isTracking = false;
+
+        if (this.isTracking && this.selection.length > 0) {
+            let cx = 0, cy = 0, validCount = 0;
+            for (let u of this.selection) if (u.hp > 0) { cx += u.x; cy += u.y; validCount++; }
+            if (validCount > 0) {
+                cx /= validCount; cy /= validCount;
+                this.camX += ((cx - this.width / 2) - this.camX) * 0.1;
+                this.camY += ((cy - this.height / 2) - this.camY) * 0.1;
+            } else this.isTracking = false;
+        }
+
+        this.camX = Math.max(0, Math.min(WORLD_WIDTH - this.width, this.camX)); 
+        this.camY = Math.max(0, Math.min(WORLD_HEIGHT - this.height, this.camY));
+
+        // FIX: Iterate backwards to safely handle entity removal during update
+        for (let i = this.entities.length - 1; i >= 0; i--) {
+            if (this.entities[i]) this.entities[i].update();
+        }
+        for (let i = this.projectiles.length - 1; i >= 0; i--) if (this.projectiles[i].update()) this.projectiles.splice(i, 1);
+        for (let i = this.particles.length - 1; i >= 0; i--) { let p = this.particles[i]; p.life--; p.y -= p.vy; p.x += p.vx; if (p.life <= 0) this.particles.splice(i, 1); }
+        for (let i = this.floatingTexts.length - 1; i >= 0; i--) { let f = this.floatingTexts[i]; f.life--; f.y -= 0.5; if (f.life <= 0) this.floatingTexts.splice(i, 1); }
+        for (let i = this.minimapPings.length - 1; i >= 0; i--) { this.minimapPings[i].life--; if (this.minimapPings[i].life <= 0) this.minimapPings.splice(i, 1); }
+        for (let i = this.groundPings.length - 1; i >= 0; i--) { this.groundPings[i].life--; if (this.groundPings[i].life <= 0) this.groundPings.splice(i, 1); }
+        for (let i = this.corpses.length - 1; i >= 0; i--) { this.corpses[i].life--; if (this.corpses[i].life <= 0) this.corpses.splice(i, 1); }
+
+        // NEW: Update explored fog
+        if (this.frameCount % 10 === 0) {
+            for (let ent of this.entities) {
+                if (ent.faction === 'player') {
+                    let rad = ent.isBuilding ? 16 : 10;
+                    let ex = Math.floor(ent.x / 16), ey = Math.floor(ent.y / 16);
+                    this.exploredCtx.fillStyle = 'rgba(255,255,255,0.15)';
+                    this.exploredCtx.beginPath();
+                    this.exploredCtx.arc(ex, ey, rad, 0, Math.PI*2);
+                    this.exploredCtx.fill();
+                }
+            }
+        }
+
+        // Screen shake timer
+        if (this.shakeTimer > 0) this.shakeTimer--;
+
+        let statusEl = document.getElementById('status-display');
+        let isPeaceful = this.frameCount < this.peaceTimer;
+        
+        if (isPeaceful) {
+            statusEl.textContent = `Peaceful (${Math.ceil((this.peaceTimer - this.frameCount)/60)}s)`;
+            statusEl.className = 'text-green-400 font-bold uppercase tracking-widest hidden sm:block';
+        } else {
+            statusEl.textContent = 'Hunting!';
+            statusEl.className = 'text-red-500 font-bold uppercase tracking-widest animate-pulse hidden sm:block';
+            if (this.frameCount % 1800 === 0) { 
+                let nests = this.entities.filter(e => e.type === 'predator_nest');
+                let th = this.entities.find(e => e.type === 'lodge' && e.faction === 'player');
+                if (nests.length > 0 && th) {
+                    AudioSys.sfx.alert();
+                    let waveSize = Math.min(6, 1 + Math.floor((this.frameCount - this.peaceTimer) / 7200)); 
+                    nests.forEach(nest => {
+                        for(let i=0; i<waveSize; i++) {
+                            let type = Math.random() > 0.5 ? 'gator' : 'snake';
+                            let o = new Entity(type, nest.x + (Math.random()-.5)*60, nest.y + 30 + (Math.random()-.5)*30, 'enemy');
+                            o.cmdAtk(th);
+                        }
+                    });
+                }
+            }
+        }
+
+        // NEW: Player units heal slowly out of combat (every 5 seconds, +1 HP)
+        if (this.frameCount % 300 === 0) {
+            this.entities.forEach(ent => {
+                if (ent.faction === 'player' && !ent.isBuilding && !ent.isResource && ent.hp < ent.maxHp && ent.hp > 0) {
+                    if (ent.state === 'idle' || ent.state === 'move' || ent.state === 'gath' || ent.state === 'g_move' || ent.state === 'r_move') {
+                        ent.hp = Math.min(ent.maxHp, ent.hp + 1);
+                    }
+                }
+            });
+        }
+
+        if (this.frameCount % 60 === 0) {
+            let playerTH = this.entities.some(e => e.type === 'lodge' && e.faction === 'player');
+            let nestsLeft = this.entities.some(e => e.type === 'predator_nest');
+            if (!playerTH) this.setGameOver('lose'); else if (!nestsLeft) this.setGameOver('win');
+        }
+
+        // FIX: Only update queue fill bar, NOT full UI rebuild (was causing infinite loop)
+        if (this.frameCount % 3 === 0 && this.selection.length === 1 && this.selection[0].isBuilding && this.selection[0].q && this.selection[0].q.length > 0) {
+            let fillEl = document.getElementById('q-fill-active');
+            if (fillEl) fillEl.style.height = `${(1 - this.selection[0].qTimer/180)*100}%`;
+        }
+
+        if (this.frameCount % 30 === 0) {
+            let maxF = 0, curF = 0, idleCount = 0, armyCount = 0;
+            this.entities.forEach(e => {
+                if (e.faction === 'player') {
+                    if (e.type==='lodge' && e.progress>=100) maxF += 4;
+                    if (e.type==='burrow' && e.progress>=100) maxF += 4;
+                    if (!e.isBuilding && !e.isResource) { curF++; if (e.type !== 'gatherer') armyCount++; }
+                    if (e.type === 'gatherer' && e.state === 'idle') idleCount++;
+                }
+            });
+            this.resources.food = curF; this.resources.maxFood = maxF;
+            document.getElementById('res-clams').textContent = this.resources.clams;
+            document.getElementById('res-twigs').textContent = this.resources.twigs;
+            let fEl = document.getElementById('res-food'); fEl.textContent = `${curF}/${maxF}`;
+            fEl.className = curF >= maxF ? 'text-red-500 font-bold' : 'text-red-400 font-bold';
+            
+            // NEW: Track army peak
+            if (armyCount > this.stats.peakArmy) this.stats.peakArmy = armyCount;
+            
+            let idleBtn = document.getElementById('idle-worker-btn');
+            if (idleCount > 0) { idleBtn.classList.remove('hidden'); document.getElementById('idle-worker-count').textContent = `${idleCount} Idle`;
+            } else idleBtn.classList.add('hidden');
+
+            let armyBtn = document.getElementById('select-army-btn');
+            if (armyCount > 0) { armyBtn.classList.remove('hidden'); document.getElementById('army-count').textContent = `${armyCount}`;
+            } else armyBtn.classList.add('hidden');
+            
+            // FIX: Only update HP bar for single selection, NOT full UI rebuild
+            if (this.selection.length === 1) {
+                let sel = this.selection[0];
+                let hpFill = document.getElementById('sel-hp-fill');
+                if (hpFill) {
+                    hpFill.style.width = `${Math.max(0, (sel.hp/sel.maxHp)*100)}%`;
+                    let hpPct = sel.hp / sel.maxHp;
+                    hpFill.style.background = hpPct > 0.6 ? '#22c55e' : hpPct > 0.3 ? '#eab308' : '#ef4444';
+                }
+                let descEl = document.getElementById('sel-desc');
+                if (descEl && !sel.isResource) {
+                    let statusText = sel.progress < 100 ? `Building ${Math.floor(sel.progress)}%` : sel.state;
+                    if (sel.heldRes) statusText += ` (carrying ${sel.heldRes})`;
+                    if (sel.isBuilding && sel.q && sel.q.length > 0) statusText = `Training (${sel.q.length} queued)`;
+                    descEl.textContent = `Status: ${statusText}`;
+                }
+            }
+            
+            // NEW: Resource income rate tracking
+            if (this.frameCount % 120 === 0) {
+                this.resTracker.rateClams = this.resources.clams - this.resTracker.lastClams;
+                this.resTracker.rateTwigs = this.resources.twigs - this.resTracker.lastTwigs;
+                this.resTracker.lastClams = this.resources.clams;
+                this.resTracker.lastTwigs = this.resources.twigs;
+                let clamRate = document.getElementById('res-clams-rate');
+                let twigRate = document.getElementById('res-twigs-rate');
+                if (clamRate) {
+                    let r = this.resTracker.rateClams;
+                    clamRate.textContent = r >= 0 ? `+${r}` : `${r}`;
+                    clamRate.className = `text-[10px] hidden md:inline ${r >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                }
+                if (twigRate) {
+                    let r = this.resTracker.rateTwigs;
+                    twigRate.textContent = r >= 0 ? `+${r}` : `${r}`;
+                    twigRate.className = `text-[10px] hidden md:inline ${r >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                }
+            }
+            
+            this.updateCtrlGroupUI();
+        }
+    },
+
+    draw() {
+        let c = this.ctx; c.fillStyle = '#000'; c.fillRect(0, 0, this.width, this.height);
+        
+        c.save(); 
+        
+        // NEW: Screen shake offset
+        let shakeX = 0, shakeY = 0;
+        if (this.shakeTimer > 0) {
+            shakeX = (Math.random() - 0.5) * this.shakeTimer;
+            shakeY = (Math.random() - 0.5) * this.shakeTimer;
+        }
+        c.translate(-Math.floor(this.camX) + shakeX, -Math.floor(this.camY) + shakeY);
+        c.drawImage(this.bgCanvas, 0, 0);
+
+        // Draw Corpses & Ruins
+        for (let cp of this.corpses) {
+            if (cp.x + 100 > this.camX && cp.x - 100 < this.camX + this.width && cp.y + 100 > this.camY && cp.y - 100 < this.camY + this.height) {
+                c.globalAlpha = Math.min(1, cp.life / 60) * 0.7;
+                c.drawImage(cp.sprite, cp.x - cp.sprite.width/2, cp.y - cp.sprite.height/2 + (cp.sprite === this.sprites.bones ? 4 : 0));
+                c.globalAlpha = 1.0;
+            }
+        }
+        
+        let sorted = [...this.entities].sort((a,b) => a.y - b.y);
+        for (let e of sorted) {
+            if (e.x + 100 > this.camX && e.x - 100 < this.camX + this.width && e.y + 100 > this.camY && e.y - 100 < this.camY + this.height) e.draw(c);
+        }
+
+        for (let p of this.groundPings) {
+            let progress = 1 - (p.life / p.maxLife);
+            c.strokeStyle = `rgba(${p.c}, ${1 - progress})`; c.lineWidth = 2;
+            c.beginPath(); c.arc(p.x, p.y, progress * 15, 0, Math.PI * 2); c.stroke();
+            // NEW: Second ring for more visible ping
+            c.beginPath(); c.arc(p.x, p.y, progress * 8, 0, Math.PI * 2); c.stroke();
+        }
+
+        for (let p of this.particles) { 
+            c.globalAlpha = Math.min(1, p.life / 10);
+            c.fillStyle = p.c; c.fillRect(p.x, p.y, p.s, p.s); 
+        }
+        c.globalAlpha = 1.0;
+        for (let p of this.projectiles) p.draw(c);
+
+        // Rally point display
+        if (this.selection.length === 1 && this.selection[0].isBuilding && this.selection[0].rallyPos) {
+            let b = this.selection[0], rp = b.rallyPos; c.strokeStyle = '#38bdf8'; c.lineWidth = 2; c.setLineDash([5, 5]);
+            c.beginPath(); c.moveTo(b.x, b.y); c.lineTo(rp.x, rp.y); c.stroke();
+            c.setLineDash([]); c.fillStyle = '#38bdf8'; c.beginPath(); c.arc(rp.x, rp.y, 4, 0, Math.PI*2); c.fill();
+            // NEW: Animated rally flag
+            let flagBob = Math.sin(this.frameCount * 0.1) * 2;
+            c.fillStyle = '#38bdf8'; 
+            c.fillRect(rp.x, rp.y - 14 + flagBob, 8, 6);
+            c.fillRect(rp.x, rp.y - 14, 1, 14);
+        }
+        
+        // NEW: Tower/sniper range ring when selected
+        for (let sel of this.selection) {
+            if (sel.atkRange > 60 && sel.selected) {
+                c.strokeStyle = 'rgba(239, 68, 68, 0.25)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+                c.beginPath(); c.arc(sel.x, sel.y, sel.atkRange, 0, Math.PI * 2); c.stroke();
+                c.setLineDash([]);
+            }
+        }
+
+        c.font = "bold 14px 'Courier New'"; c.textAlign = "center";
+        for (let f of this.floatingTexts) {
+            c.fillStyle = f.c; c.globalAlpha = Math.min(1, f.life / 30); c.fillText(f.t, f.x, f.y);
+            c.lineWidth = 1; c.strokeStyle = '#000'; c.strokeText(f.t, f.x, f.y);
+        }
+        c.globalAlpha = 1.0;
+
+        if (this.mouse.isDown && !this.placingBuilding) {
+            c.strokeStyle = '#22c55e'; c.lineWidth = 1;
+            let x = Math.min(this.mouse.startX, this.mouse.worldX), y = Math.min(this.mouse.startY, this.mouse.worldY);
+            let w = Math.abs(this.mouse.worldX - this.mouse.startX), h = Math.abs(this.mouse.worldY - this.mouse.startY);
+            c.strokeRect(x, y, w, h); c.fillStyle = 'rgba(34, 197, 94, 0.15)'; c.fillRect(x, y, w, h);
+            // NEW: Corner dots on selection rectangle
+            c.fillStyle = '#22c55e';
+            [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([px,py]) => {
+                c.beginPath(); c.arc(px, py, 3, 0, Math.PI*2); c.fill();
+            });
+        }
+
+        if (this.placingBuilding) {
+            let bx = Math.round(this.mouse.worldX/TILE_SIZE)*TILE_SIZE, by = Math.round(this.mouse.worldY/TILE_SIZE)*TILE_SIZE;
+            let spr = this.sprites[this.placingBuilding];
+            let ok = this.canPlaceBuilding(bx, by, this.placingBuilding);
+            let canAfford = (this.placingBuilding==='burrow' && this.resources.twigs>=100) || 
+                     (this.placingBuilding==='armory' && this.resources.clams>=250 && this.resources.twigs>=150) ||
+                     (this.placingBuilding==='tower' && this.resources.clams>=200 && this.resources.twigs>=250);
+            ok = ok && canAfford;
+            c.globalAlpha = 0.5; c.drawImage(spr, bx - spr.width/2, by - spr.height/2);
+            c.fillStyle = ok ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,0,0.5)';
+            c.fillRect(bx - spr.width/2, by - spr.height/2, spr.width, spr.height); c.globalAlpha = 1.0;
+            
+            // NEW: Show placement text
+            c.font = "bold 11px 'Courier New'"; c.textAlign = "center";
+            c.fillStyle = ok ? '#22c55e' : '#ef4444';
+            c.fillText(ok ? 'Click to place (Esc cancel)' : (canAfford ? 'Blocked!' : 'Not enough resources'), bx, by - spr.height/2 - 8);
+        }
+        c.restore();
+
+        // Fog of War
+        let fc = this.fogCtx; fc.clearRect(0,0,this.width, this.height);
+        fc.globalCompositeOperation = 'source-over'; fc.save();
+        let driftX = -(this.camX * 0.2 + this.frameCount * 0.1) % 256, driftY = -(this.camY * 0.2 + this.frameCount * 0.05) % 256;
+        fc.translate(driftX, driftY); fc.fillStyle = this.fogPattern;
+        fc.fillRect(-256, -256, this.width + 512, this.height + 512); fc.restore();
+
+        fc.globalCompositeOperation = 'destination-out';
+        for (let e of this.entities) {
+            if (e.faction === 'player' && e.x + 400 > this.camX && e.x - 400 < this.camX + this.width && e.y + 400 > this.camY && e.y - 400 < this.camY + this.height) {
+                let sx = e.x - this.camX + shakeX, sy = e.y - this.camY + shakeY, rad = e.isBuilding ? 250 : 150;
+                let grad = fc.createRadialGradient(sx, sy, rad*0.2, sx, sy, rad);
+                grad.addColorStop(0, 'rgba(0,0,0,1)'); grad.addColorStop(0.6, 'rgba(0,0,0,0.8)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+                fc.fillStyle = grad; fc.beginPath(); fc.arc(sx, sy, rad, 0, Math.PI*2); fc.fill();
+            }
+        }
+        fc.globalCompositeOperation = 'source-over';
+
+        // Lighting
+        let lc = this.lightCtx; lc.clearRect(0,0,this.width, this.height);
+        if (this.ambientDarkness > 0.05) {
+            lc.save(); lc.translate(-Math.floor(this.camX) + shakeX, -Math.floor(this.camY) + shakeY);
+            for (let e of this.entities) {
+                if (e.x + 200 > this.camX && e.x - 200 < this.camX + this.width && e.y + 200 > this.camY && e.y - 200 < this.camY + this.height) {
+                    let rad = 0, rgb = '';
+                    if (e.type === 'lodge' && e.progress >= 100) { rad = 150; rgb = '251, 191, 36'; }
+                    else if (e.type === 'tower' && e.progress >= 100) { rad = 120; rgb = '251, 191, 36'; }
+                    else if (e.type === 'predator_nest') { rad = 100; rgb = '239, 68, 68'; }
+                    else if (e.faction === 'player' && !e.isBuilding) { rad = 60; rgb = '253, 230, 138'; }
+
+                    if (rad > 0) {
+                        let lGrad = lc.createRadialGradient(e.x, e.y, rad*0.1, e.x, e.y, rad);
+                        let pulse = 0.8 + Math.sin(this.frameCount * 0.05 + e.x) * 0.1;
+                        lGrad.addColorStop(0, `rgba(${rgb}, ${this.ambientDarkness * pulse})`); lGrad.addColorStop(1, `rgba(${rgb}, 0)`);
+                        lc.fillStyle = lGrad; lc.beginPath(); lc.arc(e.x, e.y, rad, 0, Math.PI*2); lc.fill();
+                    }
+                }
+            }
+            for (let f of this.fireflies) {
+                if (f.x > this.camX && f.x < this.camX + this.width && f.y > this.camY && f.y < this.camY + this.height) {
+                    let alpha = (Math.sin(f.phase) * 0.5 + 0.5) * this.ambientDarkness;
+                    lc.beginPath(); lc.arc(f.x, f.y, 2, 0, Math.PI*2); lc.fillStyle = `rgba(163, 230, 53, ${alpha})`; lc.fill();
+                    lc.beginPath(); lc.arc(f.x, f.y, 6, 0, Math.PI*2); lc.fillStyle = `rgba(163, 230, 53, ${alpha * 0.3})`; lc.fill();
+                }
+            }
+            lc.restore();
+        }
+
+        // Minimap
+        let mc = this.minimapCtx; mc.fillStyle = PALETTE.waterDeep; mc.fillRect(0, 0, 200, 200); let sx = 200/WORLD_WIDTH, sy = 200/WORLD_HEIGHT;
+        
+        // NEW: Draw explored areas on minimap with subtle tint
+        mc.globalAlpha = 0.15;
+        mc.drawImage(this.exploredCanvas, 0, 0, 200, 200);
+        mc.globalAlpha = 1;
+        
+        for (let e of this.entities) {
+            if(e.type==='cattail') mc.fillStyle = PALETTE.reedGreen; else if(e.type==='clambed') mc.fillStyle = PALETTE.clamShell;
+            else if(e.faction==='player') mc.fillStyle = '#38bdf8'; else if(e.type==='predator_nest') mc.fillStyle = '#7f1d1d';
+            else if(e.faction==='enemy') mc.fillStyle = '#ef4444'; else mc.fillStyle = '#fff';
+            let s = e.isBuilding ? 4 : 2; mc.fillRect(e.x*sx - s/2, e.y*sy - s/2, s, s);
+        }
+        
+        for (let p of this.minimapPings) {
+            let alpha = p.life / p.maxLife; let radius = 4 + (Math.sin(p.life * 0.2) * 2); 
+            mc.strokeStyle = `rgba(239, 68, 68, ${alpha})`; mc.lineWidth = 1.5;
+            mc.strokeRect((p.x * sx) - radius, (p.y * sy) - radius, radius * 2, radius * 2);
+        }
+
+        let mCam = document.getElementById('minimap-cam'); mCam.classList.remove('hidden');
+        mCam.style.left = `${this.camX * sx}px`; mCam.style.top = `${this.camY * sy}px`; mCam.style.width = `${this.width * sx}px`; mCam.style.height = `${this.height * sy}px`;
+    }
+};
+
+class Entity {
+    constructor(type, x, y, faction) {
+        this.type = type; this.x = x; this.y = y; this.faction = faction; this.sprite = GAME.sprites[type];
+        this.width = this.sprite.width; this.height = this.sprite.height; this.radius = this.width/2.5;
+        this.selected = false; this.state = 'idle'; this.facingLeft = false;
+        
+        this.isBuilding = ['lodge', 'burrow', 'armory', 'tower', 'predator_nest'].includes(type);
+        this.isResource = ['cattail', 'clambed'].includes(type);
+        this.rallyPos = null;
+        
+        this.hp = this.maxHp = type==='lodge'?1500 : type==='predator_nest'?1000 : type==='tower'?500 : type==='burrow'?300 : type==='armory'?600 : type==='gatherer'?30 : type==='sniper'?40 : 60;
+        
+        // NEW: Tower gets dmg property
+        this.dmg = 0;
+        if (!this.isBuilding && !this.isResource) {
+            this.speed = type==='gatherer'? 2.0 : type==='snake'? 2.0 : type==='sniper'? 1.6 : 1.8;
+            this.dmg = type==='gatherer'? 2 : type==='sniper'? 8 : type==='snake'? 4 : 6;
+            this.atkRange = type==='sniper' ? 180 : 40; 
+            this.atkCD = 0;
+        }
+        if (type === 'tower') { this.atkRange = 200; this.atkCD = 0; this.dmg = 10; }
+        if (this.isResource) this.resAmount = type==='cattail' ? 1000 : 25000;
+        
+        this.progress = 100;
+        if (this.isBuilding && faction === 'player' && type !== 'lodge') { this.progress = 1; this.hp = 1; }
+
+        // NEW: Kill tracking
+        this.kills = 0;
+        
+        // NEW: Flash timer for damage feedback
+        this.flashTimer = 0;
+        
+        // NEW: Attack-move state
+        this.attackMoveTarget = null;
+
+        if (faction === 'player') {
+            if (!this.isBuilding && GAME.tech.sharpSticks && this.dmg) this.dmg += 2;
+            if (this.isBuilding && GAME.tech.sturdyMud) { this.maxHp += 300; this.hp += 300; }
+            if (!this.isBuilding && !this.isResource && GAME.tech.swiftPaws) this.speed += 0.4;
+            if (type === 'sniper' && GAME.tech.eagleEye) this.atkRange += 50;
+        }
+        
+        GAME.entities.push(this);
+    }
+
+    takeDamage(amount, attacker) {
+        if (this.hp <= 0) return; this.hp -= amount; AudioSys.sfx.hit();
+        this.flashTimer = 8; // NEW: Damage flash
+        for(let i=0;i<5;i++) GAME.particles.push({x:this.x, y:this.y-10, vx:(Math.random()-.5)*2, vy:Math.random()*2, life:15, c: this.isBuilding?PALETTE.mudLight:PALETTE.clamMeat, s:3});
+        
+        GAME.floatingTexts.push({x: this.x + (Math.random()*10-5), y: this.y - this.height/2 - 5, t: `-${amount}`, c: '#ef4444', life: 40});
+
+        if (this.hp > 0 && attacker) {
+            if (this.faction === 'player' && attacker.faction === 'enemy') GAME.addPing(this.x, this.y);
+            // FIX: Don't interrupt building (b_move/build) to attack
+            if (!this.isBuilding && ['idle', 'gath', 'g_move', 'r_move', 'move'].includes(this.state) && this.dmg) this.cmdAtk(attacker);
+            GAME.entities.forEach(e => {
+                if (e !== this && e.faction === this.faction && !e.isBuilding && e.hp > 0 && e.dmg) {
+                    if (['idle', 'move'].includes(e.state)) { 
+                        let dist = Math.sqrt((e.x - this.x)**2 + (e.y - this.y)**2);
+                        if (dist < 300) e.cmdAtk(attacker); 
+                    }
+                }
+            });
+        }
+        if (this.hp <= 0) this.die();
+    }
+    
+    update() {
+        if (this.hp <= 0 && !this.isResource) { this.die(); return; }
+        if (this.atkCD > 0) this.atkCD--;
+        if (this.flashTimer > 0) this.flashTimer--;
+
+        if (this.isBuilding && this.progress >= 100) {
+            if (this.type === 'armory' && GAME.frameCount % 5 === 0) {
+                GAME.particles.push({x: this.x + 8, y: this.y - 12, vx: (Math.random()-0.5)*0.5, vy: -0.5 - Math.random()*0.5, life: 60, c: 'rgba(156, 163, 175, 0.4)', s: Math.random()*3+2});
+            }
+            if (this.type === 'lodge' && GAME.frameCount % 30 === 0) {
+                GAME.particles.push({x: this.x + (Math.random()-.5)*20, y: this.y + 10 + Math.random()*10, vx: 0, vy: -0.2, life: 30, c: 'rgba(56, 189, 248, 0.5)', s: 2});
+            }
+        }
+
+        if (this.type === 'tower' && this.progress >= 100 && this.atkCD <= 0) {
+            let targets = GAME.entities.filter(e => e.faction !== this.faction && e.hp > 0 && !e.isResource);
+            let closest = null, minDist = this.atkRange;
+            for(let t of targets) { let d = Math.sqrt((t.x-this.x)**2 + (t.y-this.y)**2); if (d < minDist) { minDist = d; closest = t; } }
+            if (closest) {
+                AudioSys.sfx.shoot();
+                GAME.projectiles.push(new Projectile(this.x, this.y-20, closest.x, closest.y, closest, this.dmg, this));
+                this.atkCD = 50;
+            }
+        }
+
+        if (this.state === 'idle' && this.dmg && !this.isBuilding && GAME.frameCount % 30 === 0) {
+            let aggroRad = this.faction === 'enemy' ? 250 : 200;
+            let targets = GAME.entities.filter(e => e.faction !== this.faction && e.hp > 0 && !e.isResource && e.faction !== 'neutral');
+            let closeTarget = targets.find(t => Math.sqrt((t.x - this.x)**2 + (t.y - this.y)**2) < aggroRad);
+            if (closeTarget) this.cmdAtk(closeTarget);
+        }
+        
+        // NEW: Attack-move scan - units moving to a location will attack enemies they pass by
+        if (this.state === 'atk_move' && this.tPos && GAME.frameCount % 15 === 0) {
+            let scanRad = this.atkRange > 60 ? this.atkRange : 150;
+            let targets = GAME.entities.filter(e => e.faction !== this.faction && e.hp > 0 && !e.isResource && e.faction !== 'neutral');
+            let closeTarget = null, minDist = scanRad;
+            for (let t of targets) {
+                let d = Math.sqrt((t.x - this.x)**2 + (t.y - this.y)**2);
+                if (d < minDist) { minDist = d; closeTarget = t; }
+            }
+            if (closeTarget) {
+                this.attackMoveTarget = this.tPos;
+                this.cmdAtk(closeTarget);
+            }
+        }
+        
+        // NEW: After killing target from attack-move, resume moving
+        if (this.state === 'idle' && this.attackMoveTarget) {
+            let tp = this.attackMoveTarget;
+            this.attackMoveTarget = null;
+            this.cmdAttackMove(tp.x, tp.y);
+        }
+
+        // NEW: Idle gatherers near resources auto-gather (soft assist)
+        if (this.state === 'idle' && this.type === 'gatherer' && this.faction === 'player' && GAME.frameCount % 90 === 0) {
+            // Only auto-gather if not holding resources
+            if (!this.heldRes) {
+                let nearRes = GAME.entities.filter(e => e.isResource && e.resAmount > 0);
+                let closest = null, minDist = 120; // Short range auto-gather
+                for (let r of nearRes) {
+                    let d = Math.sqrt((r.x - this.x)**2 + (r.y - this.y)**2);
+                    if (d < minDist) { minDist = d; closest = r; }
+                }
+                if (closest) this.cmdGather(closest);
+            }
+        }
+
+        if (!this.isBuilding && !this.isResource) {
+            if (['move', 'g_move', 'r_move', 'a_move', 'b_move', 'atk_move', 'rep_move'].includes(this.state) && this.tPos) {
+                let dx = this.tPos.x - this.x, dy = this.tPos.y - this.y, dist = Math.sqrt(dx*dx + dy*dy);
+                if (dx !== 0) this.facingLeft = dx < 0; 
+                
+                let targetRad = 0;
+                if (this.state === 'g_move' && this.tEnt) targetRad = this.tEnt.radius;
+                if (this.state === 'r_move' && this.rEnt) targetRad = this.rEnt.radius;
+                if (this.state === 'b_move' && this.tEnt) targetRad = this.tEnt.radius;
+                if (this.state === 'rep_move' && this.tEnt) targetRad = this.tEnt.radius;
+
+                let arriveDist = this.speed;
+                if (['g_move', 'r_move', 'b_move', 'rep_move'].includes(this.state)) arriveDist = this.radius + targetRad + 15;
+                if (this.state === 'a_move') arriveDist = this.atkRange;
+                if (this.state === 'atk_move') arriveDist = this.speed;
+                
+                if (dist <= arriveDist) this.arrive();
+                else { this.x += (dx/dist)*this.speed; this.y += (dy/dist)*this.speed; this.yOff = Math.sin(GAME.frameCount*(this.type==='snake'?0.6:0.3))*3; }
+            }
+            
+            if (this.state === 'gath') {
+                if (!this.tEnt || this.tEnt.resAmount <= 0) { 
+                    // FIX: Try to find another nearby resource of same type
+                    if (this.tEnt) {
+                        let resType = this.tEnt.type;
+                        let nearby = GAME.entities.filter(e => e.type === resType && e.resAmount > 0);
+                        let closest = null, minDist = 300;
+                        for (let r of nearby) {
+                            let d = Math.sqrt((r.x - this.x)**2 + (r.y - this.y)**2);
+                            if (d < minDist) { minDist = d; closest = r; }
+                        }
+                        if (closest) { this.cmdGather(closest); return; }
+                    }
+                    this.state = 'idle'; return; 
+                }
+                if (GAME.frameCount % 30 === 0) { AudioSys.sfx[this.tEnt.type==='cattail'?'chop':'mine'](); this.part(this.tEnt.type==='cattail'?PALETTE.reedBrown:PALETTE.clamMeat); }
+                if (--this.gTimer <= 0) {
+                    this.heldRes = this.tEnt.type==='cattail'?'twigs':'clams';
+                    this.tEnt.resAmount -= 10; if(this.tEnt.resAmount<=0) this.tEnt.die();
+                    GAME.stats.resourcesGathered += 10;
+                    let h = GAME.entities.find(e=>e.type==='lodge' && e.faction==='player');
+                    if (h) { this.rEnt = h; this.tPos={x:h.x,y:h.y}; this.state='r_move'; } else { this.state='idle'; }
+                }
+            }
+            if (this.state === 'build') {
+                if (!this.tEnt || this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; return; }
+                if (GAME.frameCount % 20 === 0) { AudioSys.sfx.build(); this.part(PALETTE.mudLight); }
+                if (--this.gTimer <= 0) {
+                    this.tEnt.hp += 10; this.tEnt.progress = (this.tEnt.hp/this.tEnt.maxHp)*100;
+                    if (this.tEnt.hp >= this.tEnt.maxHp) { this.tEnt.hp=this.tEnt.maxHp; this.tEnt.progress=100; this.state='idle'; }
+                    this.gTimer = 30; 
+                }
+            }
+            // NEW: Repair state
+            if (this.state === 'repair') {
+                if (!this.tEnt || this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; return; }
+                if (GAME.frameCount % 20 === 0) { AudioSys.sfx.build(); this.part('#22c55e'); }
+                if (--this.gTimer <= 0) {
+                    // Repair costs 1 twig per 5 HP
+                    if (GAME.resources.twigs >= 1) {
+                        GAME.resources.twigs -= 1;
+                        this.tEnt.hp = Math.min(this.tEnt.maxHp, this.tEnt.hp + 5);
+                        if (this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; }
+                    } else {
+                        GAME.floatingTexts.push({x: this.x, y: this.y - 20, t: "No twigs!", c: '#ef4444', life: 40});
+                        this.state = 'idle';
+                    }
+                    this.gTimer = 40;
+                }
+            }
+            if (this.state === 'atk') {
+                if (!this.tEnt || this.tEnt.hp <= 0) { this.state = 'idle'; return; }
+                let dx = this.tEnt.x - this.x, dy = this.tEnt.y - this.y; this.facingLeft = dx < 0;
+                if (Math.sqrt(dx*dx + dy*dy) <= this.atkRange) {
+                    if (this.atkCD <= 0) {
+                        if (this.type === 'sniper') {
+                            AudioSys.sfx.shoot();
+                            GAME.projectiles.push(new Projectile(this.x, this.y-10, this.tEnt.x, this.tEnt.y, this.tEnt, this.dmg, this));
+                        } else {
+                            this.tEnt.takeDamage(this.dmg, this);
+                        }
+                        this.atkCD = 60;
+                    }
+                } else { this.tPos={x:this.tEnt.x,y:this.tEnt.y}; this.state='a_move'; }
+            }
+
+            // Collision separation
+            for (let o of GAME.entities) {
+                if (o===this || o.isBuilding || o.isResource) continue;
+                let dx = this.x - o.x, dy = this.y - o.y, distSq = dx*dx + dy*dy, md = this.radius+o.radius;
+                if (distSq < md*md && distSq>0) {
+                    let actualDist = Math.sqrt(distSq);
+                    let f = (md - actualDist)*0.15; // Slightly stronger push
+                    this.x += (dx/actualDist)*f; this.y += (dy/actualDist)*f;
+                }
+            }
+            
+            // NEW: Keep units in world bounds
+            this.x = Math.max(20, Math.min(WORLD_WIDTH - 20, this.x));
+            this.y = Math.max(20, Math.min(WORLD_HEIGHT - 20, this.y));
+        }
+
+        if (this.isBuilding && this.faction === 'player' && this.q && this.q.length > 0) {
+            if (--this.qTimer <= 0) {
+                let t = this.q.shift(), sx = this.x + (Math.random()>.5?1:-1)*30, sy = this.y + this.height/2 + 20;
+                let newEnt = new Entity(t, sx, sy, 'player');
+                if (this.rallyPos) newEnt.cmdMove(this.rallyPos.x, this.rallyPos.y); 
+                if (this.q.length > 0) this.qTimer = 180;
+                if (this.selected) GAME.updateUI();
+                
+                // NEW: Training complete notification particle burst
+                for(let j=0; j<8; j++) GAME.particles.push({x: sx, y: sy, vx:(Math.random()-.5)*3, vy:Math.random()*2, life:20, c:'#38bdf8', s:3});
+            }
+        }
+        
+        // NEW: Enemy nests spawn reinforcements when attacked
+        if (this.type === 'predator_nest' && this.hp < this.maxHp * 0.5 && GAME.frameCount % 600 === 0) {
+            let nearbyDefenders = GAME.entities.filter(e => e.faction === 'enemy' && !e.isBuilding && Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2) < 300);
+            if (nearbyDefenders.length < 4) {
+                let type = Math.random() > 0.5 ? 'gator' : 'snake';
+                let defender = new Entity(type, this.x + (Math.random()-.5)*60, this.y + 30, 'enemy');
+                // Find nearest player unit to attack
+                let targets = GAME.entities.filter(e => e.faction === 'player' && e.hp > 0);
+                let closest = null, minDist = 400;
+                for (let t of targets) { 
+                    let d = Math.sqrt((t.x-this.x)**2+(t.y-this.y)**2); 
+                    if (d < minDist) { minDist = d; closest = t; }
+                }
+                if (closest) defender.cmdAtk(closest);
+            }
+        }
+    }
+    
+    arrive() {
+        this.yOff = 0;
+        if (this.state === 'move') { this.state = 'idle'; this.tPos = null; }
+        else if (this.state === 'atk_move') { this.state = 'idle'; this.tPos = null; this.attackMoveTarget = null; }
+        else if (this.state === 'g_move') { this.state = 'gath'; this.gTimer = 60; }
+        else if (this.state === 'b_move') { this.state = 'build'; this.gTimer = 30; }
+        else if (this.state === 'rep_move') { this.state = 'repair'; this.gTimer = 40; }
+        else if (this.state === 'r_move') {
+            if (this.heldRes) {
+                let color = this.heldRes === 'clams' ? '#fde047' : '#f97316';
+                let txt = `+10 ${this.heldRes.charAt(0).toUpperCase() + this.heldRes.slice(1)}`;
+                GAME.floatingTexts.push({x: this.x, y: this.y - 20, t: txt, c: color, life: 60});
+                
+                GAME.resources[this.heldRes] += 10; this.heldRes = null;
+                if (this.tEnt && this.tEnt.resAmount>0) { this.tPos={x:this.tEnt.x,y:this.tEnt.y}; this.state='g_move'; }
+                else { this.state='idle'; this.tPos = null; }
+            } else { this.state='idle'; this.tPos = null; }
+        }
+        else if (this.state === 'a_move') this.state = 'atk';
+    }
+
+    cmdMove(x, y) { this.tPos={x,y}; this.state='move'; this.tEnt=null; this.attackMoveTarget=null; }
+    cmdGather(ent) { this.tEnt=ent; this.tPos={x:ent.x, y:ent.y}; this.state='g_move'; }
+    cmdBuild(ent) { this.tEnt=ent; this.tPos={x:ent.x, y:ent.y}; this.state='b_move'; }
+    cmdAtk(ent) { this.tEnt=ent; this.tPos={x:ent.x, y:ent.y}; this.state='a_move'; }
+    cmdReturn(ent) { this.rEnt=ent; this.tPos={x:ent.x, y:ent.y}; this.state='r_move'; }
+    // NEW: Repair command
+    cmdRepair(ent) { this.tEnt=ent; this.tPos={x:ent.x, y:ent.y}; this.state='rep_move'; }
+    // NEW: Attack-move command
+    cmdAttackMove(x, y) { this.tPos={x,y}; this.state='atk_move'; this.tEnt=null; }
+    
+    part(color) { 
+        if (this.tEnt) GAME.particles.push({x:this.tEnt.x+(Math.random()-.5)*20, y:this.tEnt.y-10, vx:0, vy:1, life:10, c:color, s:2}); 
+    }
+
+    die() {
+        // FIX: Prevent double-die
+        if (this._dead) return;
+        this._dead = true;
+        
+        let i = GAME.entities.indexOf(this); if(i>-1) GAME.entities.splice(i,1);
+        i = GAME.selection.indexOf(this); 
+        if(i>-1) { GAME.selection.splice(i,1); this.selected = false; if(GAME.selection.length === 0 || this.selected) GAME.updateUI(); }
+        
+        // NEW: Stats tracking
+        if (this.faction === 'player' && !this.isBuilding && !this.isResource) GAME.stats.unitsLost++;
+        if (this.faction === 'enemy' && !this.isBuilding) GAME.stats.unitsKilled++;
+        
+        // NEW: Screen shake for building destruction
+        if (this.isBuilding) GAME.triggerShake();
+        
+        for(let j=0; j<20; j++) GAME.particles.push({x:this.x, y:this.y, vx:(Math.random()-.5)*4, vy:(Math.random()-.5)*4+2, life:30, c: this.isBuilding?PALETTE.mudLight:PALETTE.clamMeat, s:4});
+        
+        // Battlefield Corpses/Ruins
+        if (!this.isResource) {
+            GAME.corpses.push({
+                x: this.x, y: this.y,
+                sprite: this.isBuilding ? GAME.sprites.rubble : GAME.sprites.bones,
+                life: 1800, maxLife: 1800 
+            });
+        }
+        
+        // NEW: Credit kill to attacker (find who was targeting this)
+        // This is approximate - credits the first attacker found
+        for (let ent of GAME.entities) {
+            if (ent.tEnt === this && ent.state === 'atk') {
+                ent.kills++;
+                break;
+            }
+        }
+    }
+
+    draw(c) {
+        let dx = this.x - this.width/2, dy = this.y - this.height/2 + (this.yOff||0);
+        
+        // Shadow
+        c.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        c.beginPath(); c.ellipse(this.x, this.y + this.height/2 - 2, this.radius, this.radius/2, 0, 0, Math.PI*2); c.fill();
+
+        // Selection brackets
+        if (this.selected) {
+            let pad = 2; let bx = dx - pad, by = dy - pad; let bw = this.width + pad*2, bh = this.height + pad*2; let l = 6; 
+            c.strokeStyle = '#38bdf8'; c.lineWidth = 2; c.beginPath();
+            c.moveTo(bx, by+l); c.lineTo(bx, by); c.lineTo(bx+l, by); c.moveTo(bx+bw-l, by); c.lineTo(bx+bw, by); c.lineTo(bx+bw, by+l); 
+            c.moveTo(bx, by+bh-l); c.lineTo(bx, by+bh); c.lineTo(bx+l, by+bh); c.moveTo(bx+bw-l, by+bh); c.lineTo(bx+bw, by+bh); c.lineTo(bx+bw, by+bh-l); 
+            c.stroke();
+        }
+
+        c.save();
+        if (this.facingLeft && !this.isBuilding) {
+            c.translate(this.x, this.y); c.scale(-1, 1); c.translate(-this.x, -this.y);
+        }
+
+        // NEW: Damage flash tint
+        if (this.flashTimer > 0) {
+            c.globalAlpha = 0.7;
+        }
+
+        if (this.isBuilding && this.progress < 100) {
+            c.globalAlpha = 0.5 + (this.progress/200);
+            c.drawImage(this.sprite, 0, this.sprite.height*(1-this.progress/100), this.width, this.height*(this.progress/100), dx, dy + this.height*(1-this.progress/100), this.width, this.height*(this.progress/100));
+            c.globalAlpha = 1.0; c.strokeStyle = '#b45309'; c.strokeRect(dx, dy, this.width, this.height); 
+            
+            // NEW: Construction progress percentage text
+            c.font = "bold 10px 'Courier New'"; c.textAlign = 'center';
+            c.fillStyle = '#fbbf24'; c.fillText(Math.floor(this.progress) + '%', this.x, dy - 4);
+        } else {
+            c.drawImage(this.sprite, dx, dy);
+        }
+        
+        // NEW: Red tint overlay when taking damage
+        if (this.flashTimer > 0) {
+            c.globalCompositeOperation = 'source-atop';
+            c.fillStyle = `rgba(255, 60, 60, ${this.flashTimer / 12})`;
+            c.fillRect(dx, dy, this.width, this.height);
+            c.globalCompositeOperation = 'source-over';
+        }
+        
+        c.globalAlpha = 1.0;
+        c.restore();
+        
+        if (this.heldRes) { 
+            c.fillStyle = this.heldRes==='clams'?PALETTE.clamShell:PALETTE.reedBrown; 
+            c.fillRect(this.x+5, this.y-20, 6, 6); 
+            // NEW: Tiny sparkle on carried resource
+            if (GAME.frameCount % 20 < 5) {
+                c.fillStyle = '#fff'; c.fillRect(this.x+7, this.y-22, 2, 2);
+            }
+        }
+
+        // Health bar
+        if (this.selected || (this.hp < this.maxHp && !this.isResource)) {
+            let bw = this.width*0.8, bh = 4;
+            c.fillStyle = '#7f1d1d'; c.fillRect(this.x-bw/2, dy-8, bw, bh);
+            let hpPct = this.hp / this.maxHp;
+            c.fillStyle = hpPct > 0.6 ? '#22c55e' : hpPct > 0.3 ? '#eab308' : '#ef4444';
+            c.fillRect(this.x-bw/2, dy-8, bw*hpPct, bh);
+        }
+        
+        // NEW: Veterancy stars (kill indicators)
+        if (this.kills >= 3 && !this.isBuilding && !this.isResource) {
+            let stars = Math.min(3, Math.floor(this.kills / 3));
+            c.font = "8px 'Courier New'"; c.textAlign = 'center';
+            c.fillStyle = '#fbbf24';
+            c.fillText('★'.repeat(stars), this.x, dy - 12);
+        }
+    }
+}
+
+window.onload = () => GAME.init();
+</script>
+</body>
+</html>
