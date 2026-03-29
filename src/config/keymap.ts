@@ -83,7 +83,7 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
     // Note: short arrays are padded with defaults here, but the validator
     // (isValidPartialKeyMap) requires exactly 6 items. This asymmetry is
     // intentional — setKeymap is lenient to simplify programmatic callers,
-    // while the validator is strict for untrusted input (e.g. localStorage).
+    // while the validator is strict for untrusted input (e.g. stored preferences).
     while (slots.length < 6) slots.push(DEFAULT_KEYMAP.actionSlots[slots.length]);
     merged.actionSlots = slots.slice(0, 6);
   }

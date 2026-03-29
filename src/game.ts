@@ -82,6 +82,7 @@ import {
 import { generateAllSprites } from '@/rendering/sprites';
 import { ReplayRecorder } from '@/replay';
 import { saveGame } from '@/save-system';
+import { saveGameToDb } from '@/storage';
 import { type EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
@@ -776,7 +777,15 @@ export class Game {
       this.world.state === 'playing'
     ) {
       const json = saveGame(this.world);
-      localStorage.setItem('pond-warfare-save', json);
+      const difficulty = store.selectedDifficulty.value ?? 'normal';
+      const seed = store.goMapSeed.value ?? 0;
+      saveGameToDb('autosave', difficulty, seed, json, false)
+        .then(() => {
+          store.hasSaveGame.value = true;
+        })
+        .catch(() => {
+          /* best-effort auto-save */
+        });
       this.world.floatingTexts.push({
         x: this.world.camX + (this.world.viewWidth || 400) / 2,
         y: this.world.camY + 60,
