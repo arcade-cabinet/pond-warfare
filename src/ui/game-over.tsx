@@ -9,7 +9,15 @@
 
 import { useEffect, useRef } from 'preact/hooks';
 import { animateGameOverStats } from '@/rendering/animations';
-import { gameState, goDesc, goMapSeed, goRating, goStatLines, goTitle, goTitleColor } from './store';
+import {
+  gameState,
+  goDesc,
+  goMapSeed,
+  goRating,
+  goStatLines,
+  goTitle,
+  goTitleColor,
+} from './store';
 
 export interface GameOverProps {
   onRestart: () => void;

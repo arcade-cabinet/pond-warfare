@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { animateIntroSubtitle, animateIntroTitle } from '@/rendering/animations';
-import { customMapSeed, selectedDifficulty, type Difficulty } from '@/ui/store';
+import { customMapSeed, type Difficulty, selectedDifficulty } from '@/ui/store';
 
 const DIFFICULTY_OPTIONS: {
   key: Difficulty;
@@ -164,9 +164,7 @@ export function IntroOverlay() {
               <span
                 class="font-game text-[10px] md:text-xs mt-1"
                 style={{
-                  color: isSelected
-                    ? 'var(--pw-text-secondary)'
-                    : 'var(--pw-text-muted)',
+                  color: isSelected ? 'var(--pw-text-secondary)' : 'var(--pw-text-muted)',
                   opacity: isSelected ? 1 : 0.6,
                 }}
               >
@@ -179,13 +177,11 @@ export function IntroOverlay() {
 
       {/* Map seed input */}
       <div class="flex items-center gap-2 mt-4 relative z-10">
-        <label
-          class="font-numbers text-xs"
-          style={{ color: 'var(--pw-text-muted)' }}
-        >
+        <label htmlFor="map-seed-input" class="font-numbers text-xs" style={{ color: 'var(--pw-text-muted)' }}>
           Seed:
         </label>
         <input
+          id="map-seed-input"
           type="text"
           placeholder="Random"
           value={seedInput}
