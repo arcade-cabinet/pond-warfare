@@ -429,9 +429,9 @@ export class Game {
           this.initAudioHandler = null;
         }
       };
+      document.addEventListener('pointerdown', this.initAudioHandler);
+      document.addEventListener('keydown', this.initAudioHandler);
     }
-    document.addEventListener('pointerdown', this.initAudioHandler, { once: false });
-    document.addEventListener('keydown', this.initAudioHandler, { once: false });
 
     // Start game loop
     this.lastTime = performance.now();
