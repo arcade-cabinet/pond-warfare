@@ -198,6 +198,55 @@ function findBuildPosition(
   return null;
 }
 
+/**
+ * Set a newly spawned building to 1 HP / 1% progress (construction site)
+ * and assign nearby idle enemy gatherers to build it.
+ */
+function startEnemyConstruction(world: GameWorld, buildingEid: number): void {
+  // Set building to construction state (1 HP, 1% progress)
+  Building.progress[buildingEid] = 1;
+  Health.current[buildingEid] = 1;
+
+  const bx = Position.x[buildingEid];
+  const by = Position.y[buildingEid];
+
+  // Find nearby idle enemy gatherers and assign them to build
+  const allUnits = query(world.ecs, [
+    Position,
+    Health,
+    FactionTag,
+    EntityTypeTag,
+    UnitStateMachine,
+  ]);
+  let assigned = 0;
+  for (let i = 0; i < allUnits.length; i++) {
+    const eid = allUnits[i];
+    if (FactionTag.faction[eid] !== Faction.Enemy) continue;
+    if (EntityTypeTag.kind[eid] !== EntityKind.Gatherer) continue;
+    if (Health.current[eid] <= 0) continue;
+
+    const state = UnitStateMachine.state[eid] as UnitState;
+    // Only redirect idle gatherers or those returning resources
+    if (state !== UnitState.Idle && state !== UnitState.ReturnMove) continue;
+
+    const dx = Position.x[eid] - bx;
+    const dy = Position.y[eid] - by;
+    const dSq = dx * dx + dy * dy;
+    if (dSq > 600 * 600) continue; // Only nearby gatherers
+
+    UnitStateMachine.targetEntity[eid] = buildingEid;
+    UnitStateMachine.targetX[eid] = bx;
+    UnitStateMachine.targetY[eid] = by;
+    UnitStateMachine.state[eid] = UnitState.BuildMove;
+
+    const speed = Velocity.speed[eid] || ENTITY_DEFS[EntityKind.Gatherer]?.speed || 2.0;
+    world.yukaManager.addUnit(eid, Position.x[eid], Position.y[eid], speed, bx, by);
+
+    assigned++;
+    if (assigned >= 2) break; // Send at most 2 gatherers per construction
+  }
+}
+
 /** Find the weakest alive player building */
 function findWeakestPlayerBuilding(world: GameWorld): number {
   const buildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
@@ -374,7 +423,8 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
       if (pos) {
         res.clams -= ENEMY_TOWER_COST_CLAMS;
         res.twigs -= ENEMY_TOWER_COST_TWIGS;
-        spawnEntity(world, EntityKind.Tower, pos.x, pos.y, Faction.Enemy);
+        const bEid = spawnEntity(world, EntityKind.Tower, pos.x, pos.y, Faction.Enemy);
+        if (bEid >= 0) startEnemyConstruction(world, bEid);
         return; // One build action per check
       }
     }
@@ -389,7 +439,8 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
       if (pos) {
         res.clams -= ENEMY_BURROW_COST_CLAMS;
         res.twigs -= ENEMY_BURROW_COST_TWIGS;
-        spawnEntity(world, EntityKind.Burrow, pos.x, pos.y, Faction.Enemy);
+        const bEid = spawnEntity(world, EntityKind.Burrow, pos.x, pos.y, Faction.Enemy);
+        if (bEid >= 0) startEnemyConstruction(world, bEid);
         return;
       }
     }
@@ -407,7 +458,8 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
     if (pos) {
       res.clams -= ENEMY_NEST_COST_CLAMS;
       res.twigs -= ENEMY_NEST_COST_TWIGS;
-      spawnEntity(world, EntityKind.PredatorNest, pos.x, pos.y, Faction.Enemy);
+      const bEid = spawnEntity(world, EntityKind.PredatorNest, pos.x, pos.y, Faction.Enemy);
+      if (bEid >= 0) startEnemyConstruction(world, bEid);
     }
   }
 }

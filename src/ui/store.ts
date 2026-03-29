@@ -65,6 +65,7 @@ export const radialMenuY = signal(0);
 export const autoGatherEnabled = signal(false);
 export const autoDefendEnabled = signal(false);
 export const autoAttackEnabled = signal(false);
+export const autoScoutEnabled = signal(false);
 
 // ---- Game over stats ----
 export const goTitle = signal('Victory');

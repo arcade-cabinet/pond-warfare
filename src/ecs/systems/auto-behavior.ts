@@ -6,11 +6,13 @@
  * - Auto-Gather: idle gatherers seek the nearest resource with remaining amount.
  * - Auto-Defend: idle combat units patrol near the player Lodge.
  * - Auto-Attack: idle combat units seek the nearest enemy unit.
+ * - Auto-Scout: idle fast units (Snake speed+) move to random unexplored map areas.
  *
  * Runs every 60 frames (~1 second at 60fps) to avoid per-frame overhead.
  */
 
 import { query } from 'bitecs';
+import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import {
   EntityTypeTag,
   FactionTag,
@@ -20,6 +22,7 @@ import {
   Position,
   Resource,
   UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -28,8 +31,8 @@ export function autoBehaviorSystem(world: GameWorld): void {
   // Only check every 60 frames (~1 second)
   if (world.frameCount % 60 !== 0) return;
 
-  const { gather, defend, attack } = world.autoBehaviors;
-  if (!gather && !defend && !attack) return;
+  const { gather, defend, attack, scout } = world.autoBehaviors;
+  if (!gather && !defend && !attack && !scout) return;
 
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
 
@@ -93,6 +96,21 @@ export function autoBehaviorSystem(world: GameWorld): void {
         UnitStateMachine.state[eid] = UnitState.AttackMove;
         continue;
       }
+    }
+
+    // Auto-Scout: fast idle combat units move to random unexplored map areas
+    if (scout && Velocity.speed[eid] >= 2.0) {
+      // Pick a random point on the map edges or quadrants to explore
+      const margin = 200;
+      const targetX = margin + Math.random() * (WORLD_WIDTH - margin * 2);
+      const targetY = margin + Math.random() * (WORLD_HEIGHT - margin * 2);
+      UnitStateMachine.targetX[eid] = targetX;
+      UnitStateMachine.targetY[eid] = targetY;
+      UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
+      UnitStateMachine.hasAttackMoveTarget[eid] = 1;
+      UnitStateMachine.attackMoveTargetX[eid] = targetX;
+      UnitStateMachine.attackMoveTargetY[eid] = targetY;
+      continue;
     }
 
     // Auto-Defend: idle combat units patrol near Lodge (only if auto-attack didn't find a target)

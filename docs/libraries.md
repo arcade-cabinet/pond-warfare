@@ -9,7 +9,7 @@ How each dependency is utilized in Pond Warfare.
 The core data architecture. All game entities are ECS entities with SoA (Structure of Arrays) components.
 
 **Usage:**
-- 12 data components (`Position`, `Health`, `Combat`, `UnitStateMachine`, etc.)
+- 13 data components (`Position`, `Health`, `Combat`, `Veterancy`, `UnitStateMachine`, etc.)
 - 5 tag components (`IsBuilding`, `IsResource`, `TowerAI`, `Dead`, `IsProjectile`)
 - `query()` for efficient component-based entity iteration
 - `addEntity()` / `removeEntity()` for lifecycle
@@ -35,17 +35,20 @@ Primary renderer for all game entities, sprites, and effects.
 
 ### Yuka.js (0.7.8) - AI Steering Behaviors
 
-Smooth pathfinding and collision avoidance for ALL units (player and enemy).
+Smooth pathfinding, collision avoidance, and formation movement for ALL units (player and enemy).
 
 **Usage:**
 - `Vehicle` - one per moving entity, synced with ECS Position
 - `EntityManager` - manages all vehicles, computes neighborhoods
-- `SeekBehavior` - direct movement toward target
-- `ArriveBehavior` - decelerate near target
+- `SeekBehavior` - direct movement toward target (used when chasing)
+- `ArriveBehavior` - decelerate near target (used for static destinations)
 - `SeparationBehavior` (weight 0.6) - prevents unit stacking
+- `AlignmentBehavior` (weight 0.3) - formation movement heading alignment
+- `CohesionBehavior` (weight 0.4) - formation movement group cohesion
 - `WanderBehavior` - organic idle patrol for auto-defend
 - `FleeBehavior` - gatherer escape when attacked (1.5s duration)
 - Faction-agnostic: `addUnit()` / `removeUnit()` for any entity
+- `setFormation()` - enable flocking for group move commands
 
 **Files:** `src/ai/yuka-manager.ts`, `src/yuka.d.ts`
 

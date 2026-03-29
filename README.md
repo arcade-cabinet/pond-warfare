@@ -132,8 +132,8 @@ APK output: `android/app/build/outputs/apk/debug/app-debug.apk`
 ## Documentation
 
 - [AGENTS.md](AGENTS.md) - AI agent instructions, conventions, file map
-- [docs/architecture.md](docs/architecture.md) - System overview, game loop, data flow
-- [docs/gameplay.md](docs/gameplay.md) - Units, buildings, tech tree, combat, waves
+- [docs/architecture.md](docs/architecture.md) - System overview, game loop, enemy AI, veterancy, formations
+- [docs/gameplay.md](docs/gameplay.md) - Units, buildings, tech tree, combat, counters, enemy AI, veterancy
 - [docs/libraries.md](docs/libraries.md) - How each dependency is utilized
 
 ## License

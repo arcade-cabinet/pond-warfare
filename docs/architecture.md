@@ -67,26 +67,41 @@ GameWorld (ECS)  --sync every 30 frames-->  Store (Preact Signals)  --reactive--
 
 ## Enemy AI Architecture
 
-The enemy AI runs a parallel economy through the `aiSystem`:
+The enemy AI runs a full parallel economy and makes strategic decisions through the `aiSystem`. All sub-systems run on independent timers and share the `world.enemyResources` stockpile (starting: 500 clams, 200 twigs).
 
 ```
-Predator Nest
+aiSystem()
   |
-  +-- Spawns enemy gatherers (every 1200 frames, costs 50C)
-  |     |
-  |     +-- Gatherer seeks nearest resource node
-  |     +-- Gatherer returns resources to nest -> enemyResources stockpile
+  +-- enemyGathererSpawning (every 1200 frames)
+  |     +-- Each nest spawns gatherers (50C, max 3 per nest)
+  |     +-- Gatherers collect from nearest resource node -> enemyResources
   |
-  +-- Spawns combat waves (every 1800 frames after peace ends)
-  |     +-- Wave size scales with time: min(6, 1 + floor(elapsed / 7200))
-  |     +-- Units attack-move toward player Lodge
+  +-- enemyBuildingConstruction (every 1800 frames)
+  |     +-- Priority: Tower > Burrow > Expansion Nest
+  |     +-- Placed within 200px of existing nests on tile grid
   |
-  +-- Spawns Boss Croc (every 3 wave intervals after wave 10)
+  +-- enemyArmyTraining (every 300 frames)
+  |     +-- Queues Gators/Snakes at each nest (max 3 in queue)
+  |     +-- Composition adapts to counter player's army
+  |     +-- Uses TrainingQueue component (240 frames per unit)
   |
-  +-- Nest defense (when HP < 50%, spawns defenders every 600 frames)
+  +-- enemyAttackDecision (every 600 frames)
+  |     +-- Attacks when army >= 5 idle combat units
+  |     +-- Targets weakest player building
+  |     +-- Sends grouped attack-move
+  |
+  +-- enemyRetreatLogic (every 60 frames)
+  |     +-- Units below 20% HP flee to nearest nest
+  |
+  +-- enemyScoutLogic (every 3600 frames)
+  |     +-- Spawns Snake scouts, 70% biased toward player Lodge
+  |
+  +-- nestDefenseReinforcement (every 600 frames)
+  |     +-- Nests below 50% HP spawn defenders (costs resources)
+  |
+  +-- bossWaveLogic (every 3 wave intervals after wave 10)
+        +-- Boss Croc spawns from each nest
 ```
-
-The enemy tracks its own resource stockpile (`world.enemyResources`) with starting reserves of 500 clams and 200 twigs.
 
 ## Veterancy System
 

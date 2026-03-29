@@ -78,6 +78,7 @@ export interface GameWorld {
     gather: boolean;
     defend: boolean;
     attack: boolean;
+    scout: boolean;
   };
 
   // Resource tracking
@@ -134,7 +135,7 @@ export function createGameWorld(): GameWorld {
     selection: [],
     ctrlGroups: {},
     yukaManager: new YukaManager(),
-    autoBehaviors: { gather: false, defend: false, attack: false },
+    autoBehaviors: { gather: false, defend: false, attack: false, scout: false },
     placingBuilding: null,
     attackMoveMode: false,
     idleWorkerIdx: 0,

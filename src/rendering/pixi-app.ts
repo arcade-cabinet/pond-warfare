@@ -31,6 +31,7 @@ import {
   EntityTypeTag,
   Health,
   Position,
+  Resource,
   Selectable,
   Sprite as SpriteComp,
   Veterancy,
@@ -477,6 +478,15 @@ function renderEntity(eid: number, frameCount: number): void {
   // --- Construction reveal ---
   if (isBuilding && progress < 100) {
     spr.alpha = 0.5 + progress / 200;
+  }
+
+  // --- Resource depletion fade ---
+  if (isResource) {
+    const maxAmount = def.resourceAmount ?? 1;
+    const curAmount = Resource.amount[eid];
+    const ratio = Math.max(0, curAmount / maxAmount);
+    // Fade from full alpha to 0.3 as resource depletes
+    spr.alpha = 0.3 + 0.7 * ratio;
   }
 
   // --- Shadow (drawn into entityOverlayGfx) ---

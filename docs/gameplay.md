@@ -109,16 +109,50 @@ Combat units gain experience from kills and rank up with cumulative stat bonuses
 
 Bonuses are percentages of the unit's base stats. For example, a Brawler (base 60 HP, 6 damage) at Hero rank has 81 HP and 8 damage. The veterancy system checks every 60 frames and applies incremental bonuses when a new rank threshold is crossed.
 
-## Enemy AI Economy
+## Enemy AI
 
-The enemy faction runs a parallel economy:
+The enemy faction runs a full parallel economy and makes strategic decisions.
+
+### Economy
 
 - **Starting resources**: 500 clams, 200 twigs
-- **Gatherer spawning**: Every 1200 frames (~20s), each Predator Nest spawns an enemy gatherer if the nest has enough clams (cost: 50C) and fewer than 3 gatherers are nearby
+- **Gatherer spawning**: Every 1200 frames (~20s), each Predator Nest spawns an enemy gatherer if it can afford one (50C) and has fewer than 3 gatherers nearby
 - **Resource collection**: Enemy gatherers seek the nearest resource node, harvest, and return resources to their nest
-- **Army funding**: Wave units and army production are funded from the enemy resource stockpile
+- **Shared resource nodes**: Both factions compete for the same clam beds and cattails
 
-This creates economic pressure: the enemy competes for the same resource nodes, and raiding enemy gatherers disrupts their economy.
+### Building Construction
+
+The AI checks every 1800 frames (~30s) what to build, prioritizing:
+
+1. **Tower** (200C 250T) - if no tower near a nest, build one for defense
+2. **Burrow** (100T) - if no burrow near a nest, build one for food cap
+3. **Expansion Nest** (400C 300T) - if fewer than 3 nests exist, expand
+
+Buildings are placed within 200px of an existing nest on the tile grid.
+
+### Army Training
+
+Every 300 frames (~5s), each nest queues combat units (max 3 in queue, 240 frames per unit):
+
+| Unit | Cost | Counter-picks |
+|------|------|---------------|
+| **Gator** | 100C 50T | Trained more when player has many Brawlers |
+| **Snake** | 80C 30T | Trained more when player has many Snipers |
+
+The AI analyzes the player's army composition and adjusts its Gator/Snake ratio to exploit the damage multiplier table.
+
+### Attack Decision-Making
+
+Every 600 frames (~10s), the AI checks if its army exceeds the attack threshold (5 units). If so:
+
+1. Identifies the weakest player building as the target
+2. Groups idle army units near the rally point
+3. Sends them as a coordinated attack-move
+
+### Retreat and Scouting
+
+- **Retreat**: Every 60 frames, combat units below 20% HP disengage and move toward the nearest nest
+- **Scouting**: Every 3600 frames (~60s), a scout Snake is spawned and sent to explore, biased 70% toward the player Lodge area
 
 ## Tech Tree
 

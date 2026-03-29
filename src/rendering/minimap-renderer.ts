@@ -16,7 +16,7 @@
  */
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { MINIMAP_SIZE, PALETTE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { EXPLORED_SCALE, MINIMAP_SIZE, PALETTE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { MinimapPing } from '@/types';

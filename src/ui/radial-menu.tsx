@@ -11,6 +11,7 @@ import {
   autoAttackEnabled,
   autoDefendEnabled,
   autoGatherEnabled,
+  autoScoutEnabled,
   idleWorkerCount,
   radialMenuOpen,
   radialMenuX,
@@ -38,7 +39,7 @@ const RADIUS = 72;
 const OPTIONS: RadialOption[] = [
   {
     label: 'Gather',
-    angle: 270,
+    angle: 288,
     colorClass: 'text-amber-300',
     borderColor: 'border-amber-500',
     hoverColor: 'hover:bg-amber-900',
@@ -56,7 +57,7 @@ const OPTIONS: RadialOption[] = [
   },
   {
     label: 'Attack',
-    angle: 90,
+    angle: 72,
     colorClass: 'text-red-300',
     borderColor: 'border-red-500',
     hoverColor: 'hover:bg-red-900',
@@ -64,8 +65,17 @@ const OPTIONS: RadialOption[] = [
     toggleSignal: autoAttackEnabled,
   },
   {
+    label: 'Scout',
+    angle: 144,
+    colorClass: 'text-purple-300',
+    borderColor: 'border-purple-500',
+    hoverColor: 'hover:bg-purple-900',
+    activeColor: 'bg-purple-800',
+    toggleSignal: autoScoutEnabled,
+  },
+  {
     label: 'Select',
-    angle: 180,
+    angle: 216,
     colorClass: 'text-green-300',
     borderColor: 'border-green-500',
     hoverColor: 'hover:bg-green-900',
