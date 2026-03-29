@@ -20,6 +20,7 @@ import { getLatestSave, isDatabaseReady, persist, saveGameToDb } from '@/storage
 import { ErrorOverlay } from './error-overlay';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
+import { KeyboardReference } from './keyboard-reference';
 import { MainMenu } from './main-menu';
 import { NewGameModal } from './new-game-modal';
 import { SettingsPanel } from './settings-panel';
@@ -212,6 +213,10 @@ export function App({ onMount }: AppProps) {
             store.settingsOpen.value = !store.settingsOpen.value;
             audio.click();
           }}
+          onKeyboardRefClick={() => {
+            store.keyboardRefOpen.value = !store.keyboardRefOpen.value;
+            audio.click();
+          }}
           onSaveCtrlGroup={(group) => {
             const w = game.world;
             w.ctrlGroups[group] = [...w.selection];
@@ -331,6 +336,15 @@ export function App({ onMount }: AppProps) {
             }}
             onClose={() => {
               store.settingsOpen.value = false;
+            }}
+          />
+        )}
+
+        {/* Keyboard reference overlay */}
+        {store.keyboardRefOpen.value && (
+          <KeyboardReference
+            onClose={() => {
+              store.keyboardRefOpen.value = false;
             }}
           />
         )}

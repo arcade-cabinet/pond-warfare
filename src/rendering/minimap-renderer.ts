@@ -25,10 +25,11 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from '@/constants';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Health, IsResource, Position, Resource } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { MinimapPing } from '@/types';
 import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
+import { hasComponent } from 'bitecs';
 
 /**
  * Render the minimap.
@@ -38,6 +39,8 @@ import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
  * @param entityEids    - All live entity IDs.
  * @param exploredCanvas - The explored-area canvas (drawn at low opacity).
  * @param minimapPings  - Active alert pings to render.
+ * @param playerEids    - Player-owned entity IDs for visibility checks.
+ * @param bgCanvas      - The full-world background terrain canvas (drawn scaled as base layer).
  */
 export function drawMinimap(
   minimapCtx: CanvasRenderingContext2D,
@@ -46,14 +49,19 @@ export function drawMinimap(
   exploredCanvas: HTMLCanvasElement,
   minimapPings: MinimapPing[],
   playerEids?: number[],
+  bgCanvas?: HTMLCanvasElement,
 ): void {
   const mc = minimapCtx;
   const sx = MINIMAP_SIZE / WORLD_WIDTH;
   const sy = MINIMAP_SIZE / WORLD_HEIGHT;
 
-  // Base fill: deep water
-  mc.fillStyle = PALETTE.waterDeep;
-  mc.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+  // Base layer: draw scaled terrain background if available, otherwise solid fill
+  if (bgCanvas) {
+    mc.drawImage(bgCanvas, 0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+  } else {
+    mc.fillStyle = PALETTE.waterDeep;
+    mc.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+  }
 
   // Draw explored areas with subtle tint (previously seen but not currently visible)
   mc.globalAlpha = 0.12;
@@ -128,6 +136,14 @@ export function drawMinimap(
       }
     }
 
+    // Resource depletion: dim resources based on remaining amount
+    const isResource = hasComponent(_world.ecs, eid, IsResource);
+    if (isResource) {
+      const maxAmount = def.resourceAmount ?? 1;
+      const alpha = Math.max(0.2, Resource.amount[eid] / maxAmount);
+      mc.globalAlpha = alpha;
+    }
+
     // Choose color
     if (kind === EntityKind.Cattail) {
       mc.fillStyle = PALETTE.reedGreen;
@@ -145,6 +161,11 @@ export function drawMinimap(
 
     const dotSize = def.isBuilding ? 4 : 2;
     mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
+
+    // Reset alpha after drawing resource dots
+    if (isResource) {
+      mc.globalAlpha = 1;
+    }
   }
 
   // Draw animated radar-style pings

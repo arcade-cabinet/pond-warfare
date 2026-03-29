@@ -27,6 +27,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerSpawnPop } from '@/rendering/animations';
 import { type EntityKind, Faction, UnitState } from '@/types';
 
 export function trainingSystem(world: GameWorld): void {
@@ -92,7 +93,10 @@ export function trainingSystem(world: GameWorld): void {
       // Training complete sound
       audio.trainComplete();
 
-      // Training complete particle burst
+      // Spawn pop animation (scale 0 -> 1.2 -> 1.0)
+      triggerSpawnPop(newEid);
+
+      // Training complete particle burst + dust at feet
       for (let j = 0; j < 8; j++) {
         world.particles.push({
           x: sx,
@@ -102,6 +106,19 @@ export function trainingSystem(world: GameWorld): void {
           life: 20,
           color: '#38bdf8',
           size: 3,
+        });
+      }
+      // Dust particles at spawn position
+      for (let j = 0; j < 6; j++) {
+        const angle = (j / 6) * Math.PI * 2;
+        world.particles.push({
+          x: sx,
+          y: sy + 8,
+          vx: Math.cos(angle) * 1.5,
+          vy: Math.sin(angle) * 0.5 + 0.5,
+          life: 15,
+          color: '#a8a29e',
+          size: 2,
         });
       }
     }

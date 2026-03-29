@@ -160,9 +160,7 @@ export function ErrorOverlay() {
                 [{e.system}] {e.message}
               </div>
               {e.stack && (
-                <pre class="text-gray-500 whitespace-pre-wrap mt-1">
-                  {e.stack.split('\n').slice(0, 3).join('\n')}
-                </pre>
+                <pre class="text-gray-500 whitespace-pre-wrap mt-1">{e.stack.split('\n').slice(0, 3).join('\n')}</pre>
               )}
             </div>
           ))}

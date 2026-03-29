@@ -54,6 +54,9 @@ export const lowClams = signal(false);
 export const lowTwigs = signal(false);
 export const attackMoveActive = signal(false);
 
+/** True when enemies are within 400px of the player's Lodge. */
+export const baseUnderAttack = signal(false);
+
 // ---- Counts ----
 export const idleWorkerCount = signal(0);
 export const armyCount = signal(0);
@@ -159,6 +162,9 @@ export const permadeathEnabled = signal(false);
 
 // ---- Settings panel ----
 export const settingsOpen = signal(false);
+
+// ---- Keyboard reference overlay ----
+export const keyboardRefOpen = signal(false);
 export const masterVolume = signal(80);
 export const musicVolume = signal(50);
 export const sfxVolume = signal(80);

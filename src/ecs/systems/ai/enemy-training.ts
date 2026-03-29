@@ -36,6 +36,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { countPlayerUnitsOfKind, findPlayerLodge, getEnemyNests } from './helpers';
 
@@ -170,6 +171,21 @@ export function enemyTrainingQueueProcess(world: GameWorld): void {
         continue;
       }
 
+      // Spawn pop animation + dust particles
+      triggerSpawnPop(newEid);
+      for (let j = 0; j < 6; j++) {
+        const angle = (j / 6) * Math.PI * 2;
+        world.particles.push({
+          x: sx,
+          y: sy + 8,
+          vx: Math.cos(angle) * 1.5,
+          vy: Math.sin(angle) * 0.5 + 0.5,
+          life: 15,
+          color: '#a8a29e',
+          size: 2,
+        });
+      }
+
       // Shift queue
       slots.shift();
       trainingQueueSlots.set(eid, slots);
@@ -226,6 +242,21 @@ export function nestDefenseReinforcement(world: GameWorld): void {
 
     const defEid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
     if (defEid < 0) continue;
+
+    // Spawn pop animation + dust
+    triggerSpawnPop(defEid);
+    for (let j = 0; j < 6; j++) {
+      const angle = (j / 6) * Math.PI * 2;
+      world.particles.push({
+        x: sx,
+        y: sy + 8,
+        vx: Math.cos(angle) * 1.5,
+        vy: Math.sin(angle) * 0.5 + 0.5,
+        life: 15,
+        color: '#a8a29e',
+        size: 2,
+      });
+    }
 
     world.enemyResources.clams -= costClams;
     world.enemyResources.twigs -= costTwigs;
@@ -287,6 +318,9 @@ export function bossWaveLogic(world: GameWorld): void {
 
     const eid = spawnEntity(world, EntityKind.BossCroc, sx, sy, Faction.Enemy);
     if (eid < 0) continue;
+
+    // Spawn pop for boss croc
+    triggerSpawnPop(eid);
 
     audio.alert();
     world.floatingTexts.push({

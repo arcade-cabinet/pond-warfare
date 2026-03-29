@@ -29,6 +29,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { spawnParticle } from '@/utils/particles';
 
 /**
  * Set of states that involve movement toward a target position.

@@ -7,6 +7,7 @@
 
 import type { Ref } from 'preact';
 import { MINIMAP_SIZE } from '@/constants';
+import { baseUnderAttack } from '@/ui/store';
 
 export interface MinimapPanelProps {
   canvasRef: Ref<HTMLCanvasElement>;
@@ -21,8 +22,8 @@ export function MinimapPanel({ canvasRef, camRef }: MinimapPanelProps) {
     >
       <div
         id="minimap-container"
-        class="relative w-full h-full max-w-[100px] max-h-[100px] md:max-w-[150px] md:max-h-[150px] cursor-crosshair"
-        style={{ border: '2px solid var(--pw-border)' }}
+        class={`relative w-full h-full max-w-[100px] max-h-[100px] md:max-w-[150px] md:max-h-[150px] cursor-crosshair${baseUnderAttack.value ? ' border-red-500 animate-pulse' : ''}`}
+        style={{ border: baseUnderAttack.value ? '2px solid rgb(239, 68, 68)' : '2px solid var(--pw-border)' }}
       >
         <canvas
           ref={canvasRef}

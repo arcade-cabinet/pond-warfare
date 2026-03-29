@@ -8,6 +8,7 @@ export {
   entityScales,
   triggerBuildingComplete,
   triggerCommandPulse,
+  triggerSpawnPop,
 } from './animations';
 
 // Background & fog texture generation

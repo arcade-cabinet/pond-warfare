@@ -19,6 +19,9 @@ export { GameOverBanner, type GameOverProps } from './game-over';
 // HUD (barrel re-exports from hud/)
 export { formatRate, formatTime, frameToDay, HUD, type HUDProps } from './hud';
 
+// Keyboard reference
+export { KeyboardReference, type KeyboardReferenceProps } from './keyboard-reference';
+
 // Main menu
 export { MainMenu } from './main-menu';
 

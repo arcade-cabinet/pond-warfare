@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "copywasm": "mkdir -p public/assets && node -e \"const fs=require('fs');const p=require.resolve('sql.js/dist/sql-wasm.wasm');fs.copyFileSync(p,'public/assets/sql-wasm.wasm')\"",
+    "copywasm": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('public','assets');fs.mkdirSync(d,{recursive:true});fs.copyFileSync(require.resolve('sql.js/dist/sql-wasm.wasm'),p.join(d,'sql-wasm.wasm'))\"",
     "dev": "vite",
     "build": "pnpm copywasm && tsc --noEmit && vite build",
     "preview": "vite preview",

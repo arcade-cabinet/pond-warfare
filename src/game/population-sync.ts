@@ -294,5 +294,41 @@ export function syncPopulationAndTimers(
   }
   store.globalProductionQueue.value = prodQueue;
 
+  // Base under attack detection: enemies within 400px of any player Lodge
+  const BASE_THREAT_RADIUS = 400;
+  const BASE_THREAT_RADIUS_SQ = BASE_THREAT_RADIUS * BASE_THREAT_RADIUS;
+  let baseAttacked = false;
+
+  // Find player lodges and enemy positions from allEntsForFood (already queried above)
+  const lodgePositions: { x: number; y: number }[] = [];
+  const enemyPositions: { x: number; y: number }[] = [];
+
+  for (let i = 0; i < allEntsForFood.length; i++) {
+    const eid = allEntsForFood[i];
+    if (Health.current[eid] <= 0) continue;
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    const faction = FactionTag.faction[eid] as Faction;
+
+    if (kind === EntityKind.Lodge && faction === Faction.Player) {
+      lodgePositions.push({ x: Position.x[eid], y: Position.y[eid] });
+    } else if (faction === Faction.Enemy && !hasComponent(w.ecs, eid, IsBuilding) && !hasComponent(w.ecs, eid, IsResource)) {
+      enemyPositions.push({ x: Position.x[eid], y: Position.y[eid] });
+    }
+  }
+
+  for (const lodge of lodgePositions) {
+    for (const enemy of enemyPositions) {
+      const dx = lodge.x - enemy.x;
+      const dy = lodge.y - enemy.y;
+      if (dx * dx + dy * dy < BASE_THREAT_RADIUS_SQ) {
+        baseAttacked = true;
+        break;
+      }
+    }
+    if (baseAttacked) break;
+  }
+
+  store.baseUnderAttack.value = baseAttacked;
+
   return { idleWorkers, armyUnits, maxFoodCap };
 }

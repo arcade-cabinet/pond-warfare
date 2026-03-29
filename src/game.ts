@@ -857,6 +857,7 @@ export class Game {
       this.exploredCanvas,
       this.world.minimapPings ?? [],
       playerEids,
+      this.bgCanvas,
     );
     updateMinimapViewport(this.minimapCamElement, this.world);
   }

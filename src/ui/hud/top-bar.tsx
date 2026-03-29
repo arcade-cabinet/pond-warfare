@@ -35,6 +35,7 @@ export interface TopBarProps {
   onSaveClick?: () => void;
   onLoadClick?: () => void;
   onSettingsClick?: () => void;
+  onKeyboardRefClick?: () => void;
 }
 
 export function TopBar(props: TopBarProps) {
@@ -287,6 +288,16 @@ export function TopBar(props: TopBarProps) {
             onClick={props.onSettingsClick}
           >
             {'\u2699'}
+          </button>
+          <button
+            type="button"
+            id="keyboard-ref-btn"
+            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center"
+            style={{ color: 'var(--pw-text-muted)' }}
+            title="Keyboard Shortcuts"
+            onClick={props.onKeyboardRefClick}
+          >
+            ?
           </button>
         </div>
       </div>

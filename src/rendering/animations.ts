@@ -82,6 +82,34 @@ export function triggerBuildingComplete(eid: number): void {
   activeAnimations.set(eid, anim);
 }
 
+/**
+ * Trigger a pop effect when a unit spawns.
+ * Scales from 0 -> 1.2 -> 1.0 for a satisfying pop.
+ */
+export function triggerSpawnPop(eid: number): void {
+  const existing = activeAnimations.get(eid);
+  if (existing) existing.pause();
+
+  const scale: EntityScale = { scaleX: 0, scaleY: 0 };
+  entityScales.set(eid, scale);
+
+  const anim = animate(scale, {
+    scaleX: [0, 1.2, 1.0],
+    scaleY: [0, 1.2, 1.0],
+    duration: 300,
+    ease: 'outElastic(1, 0.5)',
+    onUpdate: () => {
+      entityScales.set(eid, { scaleX: scale.scaleX, scaleY: scale.scaleY });
+    },
+    onComplete: () => {
+      activeAnimations.delete(eid);
+      entityScales.delete(eid);
+    },
+  });
+
+  activeAnimations.set(eid, anim);
+}
+
 /** Remove animation state for a dead entity. */
 export function cleanupEntityAnimation(eid: number): void {
   const existing = activeAnimations.get(eid);
