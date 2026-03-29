@@ -1,9 +1,10 @@
 /**
  * Main Menu
  *
- * Landing screen with New Game / Continue / Settings buttons.
- * Displays the POND WARFARE logo with water ripple animation
- * over a dark pond gradient background.
+ * Fullscreen landing page with New Game / Campaign / Continue / secondary
+ * actions / Settings. Displays the POND WARFARE logo with water ripple
+ * animation over a dark pond gradient background. Takes over the entire
+ * viewport -- no game chrome (sidebar, HUD) is rendered alongside it.
  */
 
 import { useEffect, useState } from 'preact/hooks';
@@ -33,7 +34,7 @@ export function MainMenu() {
   return (
     <div
       id="intro-overlay"
-      class="absolute inset-0 z-50 flex flex-col items-center justify-center"
+      class="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: 'radial-gradient(ellipse at 50% 60%, #132830 0%, #0c1a1f 50%, #060e12 100%)',
       }}
@@ -61,7 +62,7 @@ export function MainMenu() {
 
       {/* Tagline */}
       <p
-        class="font-heading text-sm md:text-lg mt-4 tracking-wider relative z-10"
+        class="font-heading text-sm md:text-lg mt-4 tracking-wider relative z-10 text-center"
         style={{ color: 'var(--pw-text-muted)' }}
       >
         Defend the Pond. Conquer the Wild.
@@ -80,14 +81,13 @@ export function MainMenu() {
         </div>
       )}
 
-      {/* Menu buttons */}
-      <div class="flex flex-col gap-4 mt-10 relative z-10 items-center">
+      {/* Primary actions */}
+      <div class="flex flex-col gap-4 mt-10 relative z-10 items-center w-full px-4" style={{ maxWidth: '352px' }}>
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider w-full"
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
+            minHeight: '56px',
             padding: '14px 32px',
             color: 'var(--pw-accent)',
           }}
@@ -100,10 +100,9 @@ export function MainMenu() {
 
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider w-full"
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
+            minHeight: '56px',
             padding: '14px 32px',
             color: 'var(--pw-text-primary)',
           }}
@@ -116,11 +115,10 @@ export function MainMenu() {
 
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider w-full"
           disabled={!hasSaveGame.value}
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
+            minHeight: '56px',
             padding: '14px 32px',
             color: hasSaveGame.value ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
           }}
@@ -133,14 +131,16 @@ export function MainMenu() {
         >
           CONTINUE
         </button>
+      </div>
 
+      {/* Secondary actions - 2x2 grid */}
+      <div class="grid grid-cols-2 gap-3 mt-6 relative z-10 w-full px-4" style={{ maxWidth: '352px' }}>
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-xs md:text-sm tracking-wider"
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
+            minHeight: '44px',
+            padding: '10px 12px',
             color: 'var(--pw-text-secondary)',
           }}
           onClick={() => {
@@ -152,11 +152,10 @@ export function MainMenu() {
 
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-xs md:text-sm tracking-wider"
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
+            minHeight: '44px',
+            padding: '10px 12px',
             color: 'var(--pw-text-secondary)',
           }}
           onClick={() => {
@@ -168,11 +167,10 @@ export function MainMenu() {
 
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-xs md:text-sm tracking-wider"
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
+            minHeight: '44px',
+            padding: '10px 12px',
             color: 'var(--pw-text-secondary)',
           }}
           onClick={() => {
@@ -184,11 +182,10 @@ export function MainMenu() {
 
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-xs md:text-sm tracking-wider"
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
+            minHeight: '44px',
+            padding: '10px 12px',
             color: 'var(--pw-text-secondary)',
           }}
           onClick={() => {
@@ -197,14 +194,16 @@ export function MainMenu() {
         >
           COSMETICS
         </button>
+      </div>
 
+      {/* Settings - smallest, standalone */}
+      <div class="mt-4 relative z-10 w-full px-4 flex justify-center" style={{ maxWidth: '352px' }}>
         <button
           type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          class="action-btn font-heading font-bold text-xs md:text-sm tracking-wider"
           style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
+            minHeight: '44px',
+            padding: '10px 24px',
             color: 'var(--pw-text-secondary)',
           }}
           onClick={() => {
@@ -227,6 +226,14 @@ export function MainMenu() {
         style={{ color: 'var(--pw-text-muted)' }}
       >
         Long-press to command &bull; Two-finger pan &bull; Pinch to zoom
+      </p>
+
+      {/* Version footer */}
+      <p
+        class="font-game text-[10px] mt-4 mb-4 text-center relative z-10"
+        style={{ color: 'var(--pw-text-muted)', opacity: 0.6 }}
+      >
+        v1.0 &middot; Defend the Pond
       </p>
     </div>
   );

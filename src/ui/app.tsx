@@ -1,9 +1,10 @@
 /**
  * Root Preact component.
  *
- * Renders the full game layout matching the original HTML structure (lines 79-165):
- * body with flex layout, sidebar on left (minimap + selection-info + action-panel),
- * main game container on right (top bar + canvases + overlays).
+ * When the player is on the main menu or new-game screen, renders only the
+ * fullscreen MainMenu (no sidebar, HUD, or game canvases). Once the game
+ * starts (menuState === 'playing'), renders the full game layout: sidebar on
+ * left, main game container on right with canvases and overlays.
  */
 
 import { entityExists, hasComponent } from 'bitecs';
@@ -58,6 +59,9 @@ export function App({ onMount }: AppProps) {
   const dayNightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Only initialise game canvases when actually playing
+    if (store.menuState.value !== 'playing') return;
+
     if (
       containerRef.current &&
       gameCanvasRef.current &&
@@ -91,14 +95,100 @@ export function App({ onMount }: AppProps) {
         }
       })();
     }
-  }, [onMount]);
+  }, [onMount, store.menuState.value]);
 
+  // ---------- Fullscreen menu (no game chrome) ----------
+  if (store.menuState.value === 'main' || store.menuState.value === 'newGame') {
+    return (
+      <div class="relative h-screen w-screen overflow-hidden" style={{ color: 'var(--pw-text-primary)' }}>
+        {/* Error overlay -- always rendered */}
+        <ErrorOverlay />
+
+        {/* Fullscreen main menu */}
+        <MainMenu />
+
+        {/* Campaign panel (accessible from main menu) */}
+        {store.campaignOpen.value && <CampaignPanel />}
+
+        {/* New game modal */}
+        {store.menuState.value === 'newGame' && <NewGameModal />}
+
+        {/* Settings panel */}
+        {store.settingsOpen.value && (
+          <SettingsPanel
+            onMasterVolumeChange={(v) => {
+              store.masterVolume.value = v;
+              audio.setMasterVolume(v);
+            }}
+            onMusicVolumeChange={(v) => {
+              store.musicVolume.value = v;
+              audio.setMusicVolume(v);
+            }}
+            onSfxVolumeChange={(v) => {
+              store.sfxVolume.value = v;
+              audio.setSfxVolume(v);
+            }}
+            onSpeedSet={(speed) => {
+              const w = game.world;
+              if (SPEED_LEVELS.includes(speed as 1 | 2 | 3)) {
+                w.gameSpeed = speed;
+                store.gameSpeed.value = speed;
+              }
+            }}
+            onColorBlindToggle={() => {
+              store.colorBlindMode.value = !store.colorBlindMode.value;
+              setColorBlindMode(store.colorBlindMode.value);
+            }}
+            onAutoSaveToggle={() => {
+              store.autoSaveEnabled.value = !store.autoSaveEnabled.value;
+            }}
+            onUiScaleChange={(scale) => {
+              store.uiScale.value = scale;
+              document.documentElement.style.fontSize = `${16 * scale}px`;
+            }}
+            onScreenShakeToggle={() => {
+              store.screenShakeEnabled.value = !store.screenShakeEnabled.value;
+            }}
+            onReduceVisualNoiseToggle={() => {
+              store.reduceVisualNoise.value = !store.reduceVisualNoise.value;
+            }}
+            onClose={() => {
+              store.settingsOpen.value = false;
+            }}
+          />
+        )}
+
+        {/* Achievements panel */}
+        {store.achievementsOpen.value && <AchievementsPanel />}
+
+        {/* Leaderboard panel */}
+        {store.leaderboardOpen.value && <LeaderboardPanel />}
+
+        {/* Unlocks panel */}
+        {store.unlocksOpen.value && <UnlocksPanel />}
+
+        {/* Cosmetics panel */}
+        {store.cosmeticsOpen.value && <CosmeticsPanel />}
+
+        {/* Keyboard reference */}
+        {store.keyboardRefOpen.value && (
+          <KeyboardReference
+            onClose={() => {
+              store.keyboardRefOpen.value = false;
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // ---------- Playing: full game layout ----------
   return (
     <div
       class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm font-game"
       style={{ color: 'var(--pw-text-primary)' }}
     >
-      {/* Error overlay — always rendered, shows errors as they occur */}
+      {/* Error overlay -- always rendered, shows errors as they occur */}
       <ErrorOverlay />
 
       {/* Sidebar */}
@@ -286,15 +376,8 @@ export function App({ onMount }: AppProps) {
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
 
-        {/* Main menu / New game modal / Campaign */}
-        {store.menuState.value === 'main' && <MainMenu />}
-        {store.menuState.value === 'main' && store.campaignOpen.value && <CampaignPanel />}
-        {store.menuState.value === 'newGame' && <NewGameModal />}
-
         {/* Campaign objective tracker (shown during gameplay) */}
-        {store.menuState.value === 'playing' && store.campaignMissionId.value && (
-          <ObjectiveTracker />
-        )}
+        {store.campaignMissionId.value && <ObjectiveTracker />}
 
         {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />
