@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Both factions gather resources, build bases, train armies, and fight for map control. Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js.
+Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Both factions gather resources, build bases, train armies, and fight for map control. Features 30 entity types, 15 techs across 3 branches, an enemy evolution system with 5 tiers, pressure-based auto-building, permadeath mode, 5 difficulty levels, and kill streaks. Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
 
 ## Quick Start
 
@@ -33,6 +33,30 @@ export const Health = soa({ current: [] as number[], max: [] as number[], flashT
 Access: `Health.current[eid]`, `Position.x[eid]`, etc.
 
 Queries: `query(world.ecs, [Position, Health, FactionTag])` returns entity ID arrays.
+
+### Resources
+
+Three resource types plus food (population):
+- **Clams** (from Clambed nodes) -- primary currency for units, buildings, tech
+- **Twigs** (from Cattail nodes) -- building and tech costs
+- **Pearls** (from PearlBed nodes) -- rare resource for elite technologies (Hardened Shells, Siege Works)
+- **Food** -- population cap from Lodges (+8), Burrows (+6), Fishing Huts (+2)
+
+### Enemy Evolution
+
+The enemy faction progressively unlocks stronger unit types after peace ends:
+- Tier 0 (start): Gator + Snake
+- Tier 1 (5 min): Armored Gator -- tanky melee
+- Tier 2 (10 min): Venom Snake -- poison DoT
+- Tier 3 (15 min): Swamp Drake -- fast flanker
+- Tier 4 (25 min): Siege Turtle -- anti-building (3x vs buildings)
+- Tier 5 (40 min): Alpha Predator -- hero with +20% damage aura
+
+Evolution state is tracked in `world.enemyEvolution`. The `evolutionSystem` also handles poison ticks and alpha damage aura.
+
+### Auto-Build System
+
+When `world.autoBehaviors.build` is true, the `autoBuildSystem` evaluates build pressures every 300 frames and assigns an idle gatherer to construct the highest-priority affordable building. Pressure scores: under attack (120), pop cap (100), no armory (80), resources depleting (60).
 
 ### Adding a New Entity Type
 
@@ -106,15 +130,19 @@ All units use Yuka.js for movement (not just enemies). The `YukaManager`:
 |------|---------|-------|
 | `src/game.ts` | Game orchestrator, loop, UI sync | ~1200 |
 | `src/rendering/pixi-app.ts` | PixiJS 8 renderer | ~860 |
-| `src/ecs/systems/*.ts` | 14 ECS game systems | ~50-800 each |
+| `src/ecs/systems/*.ts` | 16 ECS game systems | ~50-800 each |
 | `src/ecs/systems/ai.ts` | Enemy AI economy, training, attack decisions | ~800 |
 | `src/ecs/systems/veterancy.ts` | Veterancy rank-up system | ~130 |
 | `src/ui/store.ts` | 30+ reactive signals | ~120 |
 | `src/audio/audio-system.ts` | SFX + music + ambient | ~350 |
 | `src/ai/yuka-manager.ts` | Steering + formation flocking manager | ~380 |
-| `src/config/entity-defs.ts` | Entity stats, damage multipliers | ~280 |
+| `src/config/entity-defs.ts` | 30 entity types, stats, damage multipliers | ~510 |
+| `src/config/tech-tree.ts` | 15 technologies with prerequisite chains | ~165 |
+| `src/ecs/systems/evolution.ts` | Enemy evolution (5 tiers), poison ticks, alpha aura | ~160 |
+| `src/ecs/systems/auto-build.ts` | Pressure-based auto-building | ~260 |
 | `src/input/selection.ts` | Selection, commands, formation positioning | ~550 |
-| `src/constants.ts` | Tuning constants (vet thresholds, enemy economy, AI timers) | ~130 |
+| `src/storage/database.ts` | SQLite persistence (capacitor-sqlite + jeep-sqlite) | ~100 |
+| `src/constants.ts` | Tuning constants (vet thresholds, enemy economy, AI timers) | ~140 |
 
 ## Testing
 
@@ -129,9 +157,12 @@ Tests mirror the `src/` structure under `tests/`. Use `createGameWorld()` and ma
 ## Important Notes
 
 - **Mouse/touch first**: Every game action must have a clickable UI element. Mobile (Capacitor/Android) is a first-class target.
-- **Auto-behaviors are optional**: Auto-gather/defend/attack are toggled via the idle radial menu, not hardcoded.
-- **Buildings unlock through gameplay**: Watchtower requires Eagle Eye tech. Don't show locked buildings.
+- **Auto-behaviors are optional**: Auto-gather/build/defend/attack/heal/scout are toggled via the idle radial menu, not hardcoded.
+- **Buildings unlock through gameplay**: Watchtower requires Eagle Eye tech, Shieldbearer requires Iron Shell, etc. Don't show locked buildings/units.
 - **Player units use Yuka too**: Not just enemies. All moving entities register with YukaManager for smooth steering.
 - **Both factions use the same systems**: Gathering, movement, and combat work identically for player and enemy units. The enemy just gets its orders from the AI system instead of user input.
 - **Damage multipliers are centralized**: All counter relationships live in `DAMAGE_MULTIPLIERS` in entity-defs.ts. Don't hardcode damage modifiers elsewhere.
 - **Veterancy bonuses are incremental**: The system applies the delta between old and new rank bonuses, not the full bonus, to prevent double-counting.
+- **SQLite is required**: Persistence uses capacitor-sqlite + jeep-sqlite. There is no localStorage fallback. If SQLite init fails, the app cannot start.
+- **Enemy evolution is time-based**: Evolution tiers unlock based on minutes since peace ended, not player actions. The system also manages poison ticks and alpha damage aura.
+- **Pearls are the rare resource**: Only found at PearlBed nodes (500 each), required for elite techs like Hardened Shells (30P) and Siege Works (50P).

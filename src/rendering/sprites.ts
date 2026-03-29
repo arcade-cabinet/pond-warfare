@@ -440,26 +440,28 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(18, 26, 4, 4, PALETTE.mudDark);
     rect(6, 28, 20, 2, PALETTE.mudLight);
   } else if (type === 'armored_gator') {
-    // Body (same base as gator)
-    rect(3, 10, 10, 4, PALETTE.gatorBase);
-    for (let i = 3; i < 12; i += 2) p(i, 9, PALETTE.gatorLight);
-    rect(13, 11, 3, 2, PALETTE.gatorBase);
-    rect(0, 11, 4, 3, PALETTE.gatorLight);
-    p(3, 10, PALETTE.gatorEye);
-    // Teeth detail
+    // Bulkier body - wider and darker than regular gator
+    rect(2, 9, 12, 5, '#0f4a28'); // Darker green base
+    rect(14, 10, 2, 3, '#0f4a28'); // Thick tail
+    rect(0, 10, 4, 4, PALETTE.gatorLight); // Head
+    p(1, 9, PALETTE.gatorEye);
+    // Teeth
     p(0, 13, '#ffffff');
     p(1, 13, '#ffffff');
-    rect(3, 14, 2, 1, PALETTE.gatorLight);
-    rect(9, 14, 2, 1, PALETTE.gatorLight);
-    // Stone-colored armor plates on back (3-4 gray rects)
-    rect(4, 9, 2, 2, PALETTE.stone);
-    rect(7, 9, 2, 2, PALETTE.stone);
-    rect(10, 9, 2, 2, PALETTE.stone);
-    rect(12, 10, 2, 1, PALETTE.stoneL);
-    // Stone highlight on plates
-    p(5, 9, PALETTE.stoneL);
-    p(8, 9, PALETTE.stoneL);
-    p(11, 9, PALETTE.stoneL);
+    rect(2, 14, 3, 1, PALETTE.gatorLight);
+    rect(10, 14, 3, 1, PALETTE.gatorLight);
+    // Heavy armor plates - larger and brighter to read at scale
+    rect(3, 7, 3, 3, PALETTE.stoneL); // Front plate
+    rect(7, 7, 3, 3, PALETTE.stoneL); // Mid plate
+    rect(11, 8, 3, 2, PALETTE.stoneL); // Back plate
+    // Plate detail (rivet dots)
+    p(4, 8, '#d4d4d8');
+    p(8, 8, '#d4d4d8');
+    p(12, 9, '#d4d4d8');
+    // Dark plate edges for depth
+    rect(3, 10, 3, 1, PALETTE.stone);
+    rect(7, 10, 3, 1, PALETTE.stone);
+    rect(11, 10, 3, 1, PALETTE.stone);
   } else if (type === 'venom_snake') {
     // Purple/magenta snake body
     const venomBase = '#a855f7';
@@ -483,50 +485,59 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(6, 11, '#c084fc');
     p(10, 11, '#c084fc');
   } else if (type === 'swamp_drake') {
-    // Lizard body
-    rect(4, 10, 8, 4, PALETTE.gatorBase);
-    rect(12, 11, 3, 2, PALETTE.gatorBase); // Tail
-    rect(1, 11, 3, 2, PALETTE.gatorLight); // Head
-    p(2, 10, '#ff0000'); // Red eye
+    // Lizard body - centered higher to make room for large wings
+    rect(4, 8, 8, 4, PALETTE.gatorBase);
+    rect(12, 9, 3, 2, PALETTE.gatorBase); // Tail
+    rect(1, 9, 3, 3, PALETTE.gatorLight); // Head
+    p(2, 8, '#ff0000'); // Red eye
+    p(2, 9, '#ff4444'); // Eye glow
     // Legs
-    rect(5, 14, 2, 1, PALETTE.gatorLight);
-    rect(10, 14, 2, 1, PALETTE.gatorLight);
-    // Wings (two triangle shapes on sides)
-    p(6, 7, PALETTE.gatorBase);
-    p(5, 8, PALETTE.gatorBase);
-    p(6, 8, PALETTE.gatorBase);
-    p(4, 9, PALETTE.gatorBase);
-    p(5, 9, PALETTE.gatorBase);
-    p(6, 9, PALETTE.gatorBase);
-    p(10, 7, PALETTE.gatorBase);
-    p(10, 8, PALETTE.gatorBase);
-    p(11, 8, PALETTE.gatorBase);
-    p(10, 9, PALETTE.gatorBase);
-    p(11, 9, PALETTE.gatorBase);
-    p(12, 9, PALETTE.gatorBase);
-    // Wing membrane highlights
-    p(5, 8, PALETTE.gatorLight);
-    p(11, 8, PALETTE.gatorLight);
+    rect(5, 12, 2, 2, PALETTE.gatorLight);
+    rect(10, 12, 2, 2, PALETTE.gatorLight);
+    // LARGE wings - clearly visible bat-like shape
+    // Left wing
+    rect(3, 3, 2, 5, '#2d6a4f'); // Wing bone
+    rect(1, 4, 4, 4, '#40916c'); // Wing membrane
+    p(0, 5, '#40916c');
+    p(0, 6, '#40916c');
+    p(1, 3, '#52b788'); // Wing tip highlight
+    // Right wing
+    rect(11, 3, 2, 5, '#2d6a4f'); // Wing bone
+    rect(11, 4, 4, 4, '#40916c'); // Wing membrane
+    p(15, 5, '#40916c');
+    p(15, 6, '#40916c');
+    p(14, 3, '#52b788'); // Wing tip highlight
+    // Wing connecting to body
+    rect(5, 7, 6, 1, '#2d6a4f');
   } else if (type === 'siege_turtle') {
-    // Large shell (oval in brown/stone)
-    circle(16, 16, 10, PALETTE.mudDark);
-    circle(16, 16, 8, PALETTE.stone);
-    circle(16, 16, 6, PALETTE.stoneL);
-    // Shell pattern
-    rect(12, 12, 2, 8, PALETTE.mudDark);
-    rect(18, 12, 2, 8, PALETTE.mudDark);
-    rect(12, 16, 8, 2, PALETTE.mudDark);
-    // Tiny legs
-    rect(8, 22, 3, 3, PALETTE.gatorLight);
-    rect(21, 22, 3, 3, PALETTE.gatorLight);
-    rect(8, 10, 3, 3, PALETTE.gatorLight);
-    rect(21, 10, 3, 3, PALETTE.gatorLight);
-    // Head with battering ram (brown rectangle extending from front)
-    rect(2, 14, 8, 4, PALETTE.gatorBase);
-    p(3, 14, PALETTE.gatorEye); // Eye
-    // Battering ram
-    rect(0, 15, 4, 2, PALETTE.reedBrown);
-    rect(0, 14, 2, 4, PALETTE.mudLight);
+    // Massive shell - clear circular shape with hexagonal pattern
+    circle(16, 16, 12, '#3d2b1f'); // Dark shell base
+    circle(16, 16, 10, PALETTE.stone); // Stone shell
+    // Hexagonal shell plates (clear pattern at 32x32)
+    rect(12, 10, 4, 4, '#64748b');
+    rect(17, 10, 4, 4, '#64748b');
+    rect(10, 15, 4, 4, '#64748b');
+    rect(15, 15, 4, 4, '#64748b');
+    rect(20, 15, 4, 4, '#64748b');
+    rect(12, 20, 4, 4, '#64748b');
+    rect(17, 20, 4, 4, '#64748b');
+    // Shell plate highlights
+    p(14, 12, PALETTE.stoneL);
+    p(19, 12, PALETTE.stoneL);
+    p(17, 17, PALETTE.stoneL);
+    // Stubby legs (clearly visible)
+    rect(7, 22, 4, 4, PALETTE.gatorLight);
+    rect(21, 22, 4, 4, PALETTE.gatorLight);
+    rect(7, 8, 4, 4, PALETTE.gatorLight);
+    rect(21, 8, 4, 4, PALETTE.gatorLight);
+    // Head extending forward with battering ram
+    rect(0, 13, 10, 6, PALETTE.gatorBase);
+    rect(1, 14, 2, 2, PALETTE.gatorLight); // Snout
+    p(3, 13, PALETTE.gatorEye); // Eye
+    // Battering ram (iron-tipped log)
+    rect(0, 15, 3, 2, '#78350f');
+    p(0, 15, PALETTE.stoneL); // Iron tip
+    p(0, 16, PALETTE.stoneL);
   } else if (type === 'alpha_predator') {
     // Massive gator body (larger than BossCroc)
     rect(2, 14, 28, 10, PALETTE.gatorBase);

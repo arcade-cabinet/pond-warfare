@@ -25,7 +25,7 @@ Pond Warfare uses an Entity Component System (ECS) architecture powered by bitEC
        +------+-------+ +-------+ +--------------+
               |
     +---------+---------+
-    |   14 ECS Systems   |
+    |   16 ECS Systems   |
     |  (run every frame) |
     +--------------------+
 ```
@@ -47,8 +47,10 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `projectileSystem` - Projectile movement and impact
    - `trainingSystem` - Unit production from buildings
    - `aiSystem` - Enemy economy (gatherer spawning, resource collection), wave spawning, nest defense, attack decisions
-   - `autoBehaviorSystem` - Player auto-gather/defend/attack
-   - `healthSystem` - Damage, healing, death, win/lose
+   - `evolutionSystem` - Enemy tier evolution, poison ticks (VenomSnake), Alpha Predator damage aura
+   - `autoBehaviorSystem` - Player auto-gather/defend/attack/heal/scout
+   - `autoBuildSystem` - Pressure-based auto-building when enabled
+   - `healthSystem` - Damage, healing, death, kill streaks, win/lose
    - `veterancySystem` - Kill tracking, rank-up bonuses (HP/damage/speed)
    - `fogOfWarSystem` - Visibility based on unit positions
    - `cleanupSystem` - Particle/corpse/ping decay
@@ -101,6 +103,31 @@ aiSystem()
   |
   +-- bossWaveLogic (every 3 wave intervals after wave 10)
         +-- Boss Croc spawns from each nest
+
+evolutionSystem()
+  |
+  +-- Tier check (every 600 frames)
+  |     +-- Compare game minutes since peace vs. THRESHOLDS [5, 10, 15, 25, 40]
+  |     +-- On tier-up: unlock new enemy unit kind, announce with red warning text
+  |
+  +-- Poison tick (every 60 frames)
+  |     +-- VenomSnake poison: 2 damage/sec to poisoned entities
+  |     +-- Green particle effects on poisoned units
+  |
+  +-- Alpha Predator damage aura (every 60 frames)
+        +-- +20% damage buff to all enemy units within 200px radius
+        +-- Buff expires after 60 frames if out of range
+
+autoBuildSystem()
+  |
+  +-- Pressure evaluation (every 300 frames, if autoBehaviors.build enabled)
+  |     +-- Score: Under attack no tower (120), Pop cap (100), No armory (80), Resources depleting (60)
+  |     +-- Filter by affordability, sort by score descending
+  |
+  +-- Build execution
+        +-- Find idle gatherer
+        +-- Find valid tile position in expanding rings around Lodge
+        +-- Deduct resources, spawn building, assign gatherer to build
 ```
 
 ## Veterancy System
@@ -135,14 +162,14 @@ src/
 +-- audio/              # Tone.js audio system
 |   +-- audio-system.ts # SFX, procedural music, ambient sounds
 +-- config/             # Game balance and definitions
-|   +-- entity-defs.ts  # All 15 entity types with stats + damage multiplier table
+|   +-- entity-defs.ts  # All 30 entity types with stats + damage multiplier table
 |   +-- keymap.ts       # Remappable keyboard bindings
-|   +-- tech-tree.ts    # 5 technology upgrades with prerequisites
+|   +-- tech-tree.ts    # 15 technology upgrades with prerequisites
 +-- constants.ts        # Game tuning constants (veterancy thresholds, enemy economy, etc.)
 +-- ecs/                # Entity Component System
 |   +-- archetypes.ts   # Entity spawn templates
-|   +-- components.ts   # 13 SoA components + 5 tag components (incl. Veterancy)
-|   +-- systems/        # 14 game systems (see Game Loop)
+|   +-- components.ts   # 14 SoA components + 5 tag components (incl. Veterancy)
+|   +-- systems/        # 16 game systems (see Game Loop)
 |   +-- world.ts        # GameWorld state container (incl. enemyResources)
 +-- game.ts             # Main orchestrator (loop, sync, init)
 +-- input/              # Input handling
@@ -162,6 +189,8 @@ src/
 |   +-- particles.ts    # Particle rendering
 |   +-- sprites.ts      # Procedural sprite generation
 +-- save-system.ts      # Game save/load serialization
++-- storage/            # Persistence layer
+|   +-- database.ts     # SQLite via capacitor-sqlite + jeep-sqlite (no localStorage)
 +-- types.ts            # TypeScript types and enums
 +-- ui/                 # Preact components
     +-- app.tsx          # Root component
@@ -173,6 +202,7 @@ src/
     +-- sidebar.tsx      # Left panel layout
     +-- game-over.tsx    # Win/lose overlay
     +-- intro-overlay.tsx # Start screen
+    +-- keyboard-reference.tsx # Keyboard shortcut reference overlay
     +-- error-boundary.tsx # Error handling
 ```
 
@@ -187,3 +217,6 @@ src/
 - **Parallel economies** - enemy AI uses the same resource/gathering systems as the player, creating genuine competition
 - **Damage multiplier table** - centralized in `DAMAGE_MULTIPLIERS` for easy balance tuning
 - **Veterancy as incremental deltas** - bonuses are applied as differences between ranks, preventing double-counting on rank-up
+- **SQLite persistence** - uses capacitor-sqlite + jeep-sqlite for ALL platforms (web: sql.js + IndexedDB, native: native SQLite). No localStorage fallback -- SQLite is required
+- **Enemy evolution system** - tier-based progressive difficulty that unlocks new enemy types over time, encouraging player adaptation
+- **Pressure-based auto-build** - scores building needs by urgency (attack defense, pop cap, military production, resource expansion) rather than simple timers

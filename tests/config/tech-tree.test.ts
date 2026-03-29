@@ -99,4 +99,53 @@ describe('TECH_UPGRADES', () => {
       }
     }
   });
+
+  it('should define exactly 15 technologies', () => {
+    const techIds = Object.keys(TECH_UPGRADES);
+    expect(techIds.length).toBe(15);
+  });
+
+  it('should include all new techs', () => {
+    const techIds = Object.keys(TECH_UPGRADES);
+    // Nature branch
+    expect(techIds).toContain('herbalMedicine');
+    expect(techIds).toContain('aquaticTraining');
+    expect(techIds).toContain('deepDiving');
+    // Armory branch additions
+    expect(techIds).toContain('ironShell');
+    expect(techIds).toContain('siegeWorks');
+    expect(techIds).toContain('battleRoar');
+    expect(techIds).toContain('cunningTraps');
+    expect(techIds).toContain('camouflage');
+    // Lodge branch additions
+    expect(techIds).toContain('cartography');
+    expect(techIds).toContain('tidalHarvest');
+  });
+
+  it('should have no circular prerequisite chains', () => {
+    const visited = new Set<string>();
+    const techIds = Object.keys(TECH_UPGRADES) as TechId[];
+
+    for (const id of techIds) {
+      visited.clear();
+      let current: TechId | undefined = id;
+      while (current) {
+        expect(visited.has(current)).toBe(false);
+        visited.add(current);
+        const upgrade = TECH_UPGRADES[current];
+        current = ('requires' in upgrade ? upgrade.requires : undefined) as TechId | undefined;
+      }
+    }
+  });
+
+  it('pearl costs should only appear on elite techs', () => {
+    const pearlTechs = Object.entries(TECH_UPGRADES).filter(
+      ([, u]) => 'pearlCost' in u && (u as any).pearlCost > 0,
+    );
+    // Currently hardenedShells and siegeWorks require pearls
+    expect(pearlTechs.length).toBeGreaterThanOrEqual(2);
+    for (const [id] of pearlTechs) {
+      expect(['hardenedShells', 'siegeWorks']).toContain(id);
+    }
+  });
 });

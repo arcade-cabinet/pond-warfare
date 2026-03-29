@@ -1,8 +1,8 @@
 # Pond Warfare
 
-Warcraft II-style real-time strategy game set in a pond ecosystem. Otters and predators compete for territory, resources, and dominance. Gather clams and twigs, expand your base with multiple Lodges, train an army of brawlers, snipers, and healers, research upgrades, and wage war against an AI opponent that builds its own economy and army.
+Warcraft II-style real-time strategy game set in a pond ecosystem. Otters and predators compete for territory, resources, and dominance. Gather clams, twigs, and rare pearls, expand your base with multiple Lodges, train an army of 10 unique player unit types, research 15 technologies across 3 branches, and wage war against an AI opponent that builds its own economy, evolves through 5 tiers of increasingly dangerous predators, and adapts to your strategy.
 
-Built with a modern ECS architecture using bitECS, rendered with PixiJS 8, with AI steering from Yuka.js, physics from Planck.js, procedural audio from Tone.js, and animations from anime.js.
+Built with a modern ECS architecture using bitECS (30 entity types, 16 ECS systems), rendered with PixiJS 8, with AI steering from Yuka.js, physics from Planck.js, procedural audio from Tone.js, animations from anime.js, and SQLite persistence via capacitor-sqlite.
 
 ## Tech Stack
 
@@ -44,15 +44,22 @@ Two-faction RTS: otters vs predators compete for the same finite resource nodes 
 
 ### Key Mechanics
 
-- **Competitive economy**: Both factions harvest from the same clam beds and cattails; resource scarcity forces expansion and map control
-- **Expansion**: Build multiple Lodges across the map, each providing +4 population cap and serving as a resource drop-off point
+- **Competitive economy**: Both factions harvest from the same clam beds, cattails, and pearl beds; resource scarcity forces expansion and map control
+- **Three resources**: Clams (primary), Twigs (buildings/tech), and Pearls (rare, for elite technologies)
+- **Expansion**: Build multiple Lodges across the map, each providing +8 population cap and serving as a resource drop-off point
 - **Enemy AI economy**: Predator Nests spawn gatherers that collect resources and fund army production
+- **Enemy evolution**: 5-tier system unlocks progressively stronger enemies over time (Armored Gator, Venom Snake, Swamp Drake, Siege Turtle, Alpha Predator)
+- **30 entity types**: 10 player units, 8 enemy units, 10 buildings, 3 resource nodes, Boss Croc
 - **Unit counters**: Damage multiplier table creates rock-paper-scissors dynamics (Brawler beats Sniper, Sniper beats Snake, etc.)
 - **Formation movement**: Multi-select move orders arrange units in role-based rows (melee front, ranged middle, support rear) with Yuka.js flocking
 - **Veterancy**: Units rank up from kills (Recruit -> Veteran -> Elite -> Hero) gaining HP, damage, and speed bonuses
-- **Tech tree**: 5 upgrades (Sturdy Mud, Swift Paws, Sharp Sticks, Eagle Eye, Hardened Shells)
+- **Tech tree**: 15 techs across Lodge, Armory, and Nature branches with prerequisite chains
 - **Fog of war**: Unexplored areas are hidden; scouting reveals enemy positions and resource locations
-- **Auto-behaviors**: Toggle auto-gather/defend/attack via the idle radial menu
+- **Auto-behaviors**: Toggle auto-gather/build/defend/attack/heal/scout via the idle radial menu
+- **Auto-build**: Pressure-based building decisions prioritize defense, pop cap, military, and expansion
+- **Difficulty modes**: Easy, Normal, Hard, Nightmare, Ultra Nightmare
+- **Permadeath mode**: +50% resources, +25% XP, save deleted on loss
+- **Kill streaks**: Triple Kill at 3, Rampage at 5 within a 5-second window
 - **Day/night cycle**: Affects visibility, ambient sounds, and firefly spawning
 
 See [docs/gameplay.md](docs/gameplay.md) for full unit stats, building costs, and mechanics.
@@ -89,7 +96,7 @@ See [docs/gameplay.md](docs/gameplay.md) for full unit stats, building costs, an
 
 ## Architecture
 
-14 ECS systems execute each frame in a fixed-timestep loop. All units (player and enemy) use Yuka.js steering behaviors for smooth pathfinding with separation, wander, flee, and formation flocking behaviors.
+16 ECS systems execute each frame in a fixed-timestep loop. All units (player and enemy) use Yuka.js steering behaviors for smooth pathfinding with separation, wander, flee, and formation flocking behaviors.
 
 See [docs/architecture.md](docs/architecture.md) for the full system diagram and data flow.
 
@@ -99,8 +106,8 @@ See [docs/architecture.md](docs/architecture.md) for the full system diagram and
 src/
 ├── ai/          # Yuka.js steering manager (flocking, formations)
 ├── audio/       # Tone.js SFX + procedural music + ambient
-├── config/      # Entity definitions, damage table, tech tree, keybindings
-├── ecs/         # bitECS components, archetypes, 14 systems
+├── config/      # 30 entity definitions, damage table, 15 techs, keybindings
+├── ecs/         # bitECS components, archetypes, 16 systems
 ├── game.ts      # Main orchestrator (~1200 lines)
 ├── input/       # Keyboard, pointer/touch, selection + formations
 ├── physics/     # Planck.js collision world

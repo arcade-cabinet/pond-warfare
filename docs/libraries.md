@@ -47,8 +47,10 @@ Smooth pathfinding, collision avoidance, and formation movement for ALL units (p
 - `CohesionBehavior` (weight 0.4) - formation movement group cohesion
 - `WanderBehavior` - organic idle patrol for auto-defend
 - `FleeBehavior` - gatherer escape when attacked (1.5s duration)
+- `EvadeBehavior` - Swimmer evasion when under fire
 - Faction-agnostic: `addUnit()` / `removeUnit()` for any entity
 - `setFormation()` - enable flocking for group move commands
+- Used for all 30 entity types including new Swimmer (amphibious), evolved enemies, etc.
 
 **Files:** `src/ai/yuka-manager.ts`, `src/yuka.d.ts`
 
@@ -106,16 +108,28 @@ Lightweight reactive UI framework.
 
 ### Capacitor (8.x) - Mobile
 
-Android app packaging and native API access.
+Android/iOS app packaging and native API access.
 
 **Usage:**
 - `StatusBar.hide()` for fullscreen
 - `ScreenOrientation.lock('landscape')`
 - `Haptics.impact()` for tactile feedback
-- `Preferences.set/get()` for save data persistence
 - `App.addListener()` for lifecycle events
 
 **Files:** `src/platform/native.ts`
+
+### capacitor-sqlite (8.x) + jeep-sqlite (2.x) - Persistence
+
+SQLite database for ALL platforms. **SQLite is required -- there is no localStorage fallback.**
+
+**Usage:**
+- **Web**: jeep-sqlite Stencil component backed by sql.js + IndexedDB (localforage)
+- **iOS/Android**: native SQLite via Capacitor plugin
+- `CapacitorSQLite` / `SQLiteConnection` / `SQLiteDBConnection` for all DB operations
+- Database name: `pond_warfare`, version 1
+- Game saves, settings, and permadeath state persisted via SQL
+
+**Files:** `src/storage/database.ts`
 
 ## Dev Dependencies
 
