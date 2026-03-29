@@ -22,6 +22,16 @@ import {
 import { ObjectPool } from '@/utils/pool';
 import { SpatialHash } from '@/utils/spatial-hash';
 
+/** Modifier values derived from the selected Commander at game start. */
+export interface CommanderModifiers {
+  auraDamageBonus: number;
+  auraSpeedBonus: number;
+  auraHpBonus: number;
+  passiveGatherBonus: number;
+  passiveResearchSpeed: number;
+  passiveTowerAttackSpeed: number;
+}
+
 export interface GameWorld {
   // bitECS world
   ecs: ReturnType<typeof createWorld>;
@@ -170,6 +180,21 @@ export interface GameWorld {
 
   // Commander aura: entity ID -> expiry frame for +10% damage buff
   commanderDamageBuff: Set<number>;
+
+  // Commander selection
+  commanderId: string;
+  commanderModifiers: CommanderModifiers;
+
+  // Airdrop safety net
+  airdropsRemaining: number;
+  airdropCooldownUntil: number; // frame at which airdrop can be used again
+
+  // Checkpoint system (serialized save state strings)
+  checkpoints: string[];
+  lastCheckpointFrame: number;
+
+  // Evacuation state
+  evacuationTriggered: boolean;
 }
 
 export function createGameWorld(): GameWorld {
@@ -275,5 +300,23 @@ export function createGameWorld(): GameWorld {
     tutorialShownSteps: new Set(),
     isFirstGame: true,
     commanderDamageBuff: new Set(),
+
+    commanderId: 'marshal',
+    commanderModifiers: {
+      auraDamageBonus: 0.1,
+      auraSpeedBonus: 0,
+      auraHpBonus: 0,
+      passiveGatherBonus: 0,
+      passiveResearchSpeed: 0,
+      passiveTowerAttackSpeed: 0,
+    },
+
+    airdropsRemaining: 2,
+    airdropCooldownUntil: 0,
+
+    checkpoints: [],
+    lastCheckpointFrame: 0,
+
+    evacuationTriggered: false,
   };
 }

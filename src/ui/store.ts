@@ -240,6 +240,17 @@ export const musicVolume = signal(50);
 export const sfxVolume = signal(80);
 export const autoSaveEnabled = signal(false);
 
+// ---- Commander selection ----
+export const selectedCommander = signal('marshal');
+
+// ---- Airdrop system ----
+export const airdropsRemaining = signal(0);
+export const airdropCooldown = signal(0);
+
+// ---- Checkpoint/Evacuation ----
+export const evacuationActive = signal(false);
+export const checkpointCount = signal(0);
+
 export const speedLabel = computed(() => `${gameSpeed.value}x`);
 export const muteLabel = computed(() => (muted.value ? '\u{1F507}' : '\u{1F50A}'));
 

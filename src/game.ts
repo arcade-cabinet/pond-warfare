@@ -10,6 +10,7 @@ import { query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
 import { resetBarkState } from '@/config/barks';
+import { getCommanderDef } from '@/config/commanders';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
 import {
   ENEMY_STARTING_CLAMS,
@@ -593,6 +594,39 @@ export class Game {
 
     // ---- Enemy aggression ----
     this.world.enemyAggressionLevel = cfg.enemyAggression;
+
+    // ---- Commander modifiers ----
+    const cmdId = store.selectedCommander.value;
+    const cmdDef = getCommanderDef(cmdId);
+    this.world.commanderId = cmdId;
+    this.world.commanderModifiers = {
+      auraDamageBonus: cmdDef.auraDamageBonus,
+      auraSpeedBonus: cmdDef.auraSpeedBonus,
+      auraHpBonus: cmdDef.auraHpBonus,
+      passiveGatherBonus: cmdDef.passiveGatherBonus,
+      passiveResearchSpeed: cmdDef.passiveResearchSpeed,
+      passiveTowerAttackSpeed: cmdDef.passiveTowerAttackSpeed,
+    };
+
+    // ---- Airdrops safety net ----
+    const airdropCounts: Record<string, number> = {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      nightmare: 0,
+      ultraNightmare: 0,
+    };
+    this.world.airdropsRemaining = airdropCounts[diff] ?? 2;
+    this.world.airdropCooldownUntil = 0;
+    store.airdropsRemaining.value = this.world.airdropsRemaining;
+    store.airdropCooldown.value = 0;
+
+    // ---- Checkpoint/evacuation reset ----
+    this.world.checkpoints = [];
+    this.world.lastCheckpointFrame = 0;
+    this.world.evacuationTriggered = false;
+    store.evacuationActive.value = false;
+    store.checkpointCount.value = 0;
   }
 
   resize(): void {
@@ -874,6 +908,30 @@ export class Game {
         color: '#4ade80',
         life: 60,
       });
+    }
+
+    // Checkpoint system: auto-checkpoint every 5 minutes (18000 frames)
+    if (
+      this.world.frameCount > 0 &&
+      this.world.frameCount % 18000 === 0 &&
+      this.world.state === 'playing'
+    ) {
+      this.createCheckpoint();
+    }
+
+    // Airdrop cooldown sync to store
+    if (this.world.airdropCooldownUntil > 0 && this.world.frameCount >= this.world.airdropCooldownUntil) {
+      this.world.airdropCooldownUntil = 0;
+      store.airdropCooldown.value = 0;
+    } else if (this.world.airdropCooldownUntil > this.world.frameCount) {
+      store.airdropCooldown.value = Math.ceil(
+        (this.world.airdropCooldownUntil - this.world.frameCount) / 60,
+      );
+    }
+
+    // Evacuation check: every 60 frames, check if commander should evacuate
+    if (this.world.frameCount % 60 === 0 && this.world.state === 'playing') {
+      this.checkEvacuation();
     }
 
     // Check achievements every 30 seconds (1800 frames)
