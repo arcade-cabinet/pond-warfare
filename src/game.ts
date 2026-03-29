@@ -263,6 +263,7 @@ export class Game {
             // Set to idle
             UnitStateMachine.state[eid] = UnitState.Idle;
             UnitStateMachine.targetEntity[eid] = -1;
+            UnitStateMachine.hasAttackMoveTarget[eid] = 0;
           }
         }
       },
