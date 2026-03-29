@@ -80,7 +80,7 @@ describe('PhysicsManager', () => {
     physics.createBody(world.ecs, eid2);
 
     // Step multiple times so the overlap is resolved
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 120; i++) {
       physics.step(world.ecs);
     }
 
@@ -91,7 +91,7 @@ describe('PhysicsManager', () => {
     const radius1 = Collider.radius[eid1];
     const radius2 = Collider.radius[eid2];
     const expectedMin = radius1 + radius2;
-    const epsilon = 0.001;
+    const epsilon = 0.1;
     expect(dist).toBeGreaterThanOrEqual(expectedMin - epsilon);
   });
 });

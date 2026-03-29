@@ -196,7 +196,7 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
   },
 };
 
-export function entityKindFromString(name: string): EntityKind | undefined {
+export function entityKindFromString(name: string): EntityKind {
   const map: Record<string, EntityKind> = {
     gatherer: EntityKind.Gatherer,
     brawler: EntityKind.Brawler,
@@ -214,7 +214,11 @@ export function entityKindFromString(name: string): EntityKind | undefined {
     watchtower: EntityKind.Watchtower,
     boss_croc: EntityKind.BossCroc,
   };
-  return map[name];
+  const kind = map[name];
+  if (kind === undefined) {
+    throw new Error(`Unknown entity kind: "${name}"`);
+  }
+  return kind;
 }
 
 export function entityKindName(kind: EntityKind): string {

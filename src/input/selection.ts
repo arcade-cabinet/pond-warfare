@@ -343,8 +343,12 @@ export function placeBuilding(world: GameWorld, worldX: number, worldY: number):
   const type = world.placingBuilding;
   if (!type) return;
 
-  const kind = entityKindFromString(type);
-  if (kind === undefined) return;
+  let kind: EntityKind;
+  try {
+    kind = entityKindFromString(type);
+  } catch {
+    return;
+  }
 
   const def = ENTITY_DEFS[kind];
   const clamCost = def.clamCost ?? 0;
@@ -372,7 +376,6 @@ export function placeBuilding(world: GameWorld, worldX: number, worldY: number):
     world.resources.clams -= clamCost;
     world.resources.twigs -= twigCost;
     const eid = spawnEntity(world, kind, bx, by, Faction.Player);
-    world.stats.buildingsBuilt++;
 
     // Send selected gatherers to build
     for (const selEid of world.selection) {

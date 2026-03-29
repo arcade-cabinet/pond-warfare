@@ -31,6 +31,7 @@ import {
   Sprite,
   TowerAI,
   UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';
@@ -109,6 +110,37 @@ export function combatSystem(world: GameWorld): void {
     const ex = Position.x[eid];
     const ey = Position.y[eid];
     const dmg = Combat.damage[eid];
+
+    // --- Healer auto-follow: idle healers seek nearest wounded ally within 150px ---
+    if (kind === EntityKind.Healer && state === UnitState.Idle && world.frameCount % 30 === 0) {
+      let bestAlly = -1;
+      let bestDistSq = 150 * 150;
+
+      for (let j = 0; j < allTargetable.length; j++) {
+        const t = allTargetable[j];
+        if (t === eid) continue;
+        if (FactionTag.faction[t] !== faction) continue;
+        if (hasComponent(world.ecs, t, IsResource)) continue;
+        if (Health.current[t] <= 0) continue;
+        if (Health.current[t] >= Health.max[t]) continue;
+
+        const dx = Position.x[t] - ex;
+        const dy = Position.y[t] - ey;
+        const dSq = dx * dx + dy * dy;
+        if (dSq < bestDistSq) {
+          bestDistSq = dSq;
+          bestAlly = t;
+        }
+      }
+
+      if (bestAlly !== -1) {
+        UnitStateMachine.targetEntity[eid] = bestAlly;
+        UnitStateMachine.targetX[eid] = Position.x[bestAlly];
+        UnitStateMachine.targetY[eid] = Position.y[bestAlly];
+        UnitStateMachine.state[eid] = UnitState.Move;
+      }
+      continue;
+    }
 
     // --- Idle auto-aggro (lines 1598-1603) ---
     // Original: if (this.state === 'idle' && this.dmg && !this.isBuilding && GAME.frameCount % 30 === 0)
@@ -225,6 +257,38 @@ export function combatSystem(world: GameWorld): void {
             // Original: AudioSys.sfx.shoot(); GAME.projectiles.push(new Projectile(...));
             audio.shoot();
             spawnProjectile(world, ex, ey - 10, Position.x[tEnt], Position.y[tEnt], tEnt, dmg, eid);
+          } else if (kind === EntityKind.BossCroc) {
+            // Boss Croc: enrage below 30% HP doubles damage, AoE stomp hits all nearby
+            const enraged = Health.current[eid] < Health.max[eid] * 0.3 && Health.max[eid] > 0;
+            const bossDmg = enraged ? dmg * 2 : dmg;
+
+            // AoE stomp: damage all enemies within attack range
+            for (let j = 0; j < allTargetable.length; j++) {
+              const t = allTargetable[j];
+              if (FactionTag.faction[t] === faction) continue;
+              if (Health.current[t] <= 0) continue;
+              if (hasComponent(world.ecs, t, IsResource)) continue;
+              const adx = Position.x[t] - ex;
+              const ady = Position.y[t] - ey;
+              if (Math.sqrt(adx * adx + ady * ady) <= atkRange + 20) {
+                takeDamage(world, t, bossDmg, eid);
+              }
+            }
+
+            // Screen shake on boss stomp
+            world.shakeTimer = Math.max(world.shakeTimer, enraged ? 8 : 4);
+
+            // Enrage speed boost (applied once when crossing threshold)
+            if (enraged && Velocity.speed[eid] < 2.0) {
+              Velocity.speed[eid] = 2.0;
+              world.floatingTexts.push({
+                x: ex,
+                y: ey - 30,
+                text: 'ENRAGED!',
+                color: '#ef4444',
+                life: 90,
+              });
+            }
           } else {
             // Melee: direct damage
             // Original: this.tEnt.takeDamage(this.dmg, this);

@@ -5,7 +5,9 @@
  * Uses bitECS query to extract entity data and JSON for persistence.
  */
 
-import { query } from 'bitecs';
+import { query, removeEntity } from 'bitecs';
+import { ENTITY_DEFS } from '@/config/entity-defs';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
   Carrying,
@@ -20,6 +22,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { type EntityKind, Faction } from '@/types';
 
 interface SavedEntity {
   kind: number;
@@ -108,4 +111,100 @@ export function isValidSave(json: string): boolean {
   } catch {
     return false;
   }
+}
+
+/** Load a saved game into an existing world, clearing all current entities first. */
+export function loadGame(world: GameWorld, json: string): boolean {
+  if (!isValidSave(json)) return false;
+
+  const data: SaveData = JSON.parse(json);
+
+  // Clear all existing entities
+  const existing = Array.from(query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]));
+  for (const eid of existing) {
+    removeEntity(world.ecs, eid);
+  }
+
+  // Clear non-ECS state
+  world.particles.length = 0;
+  world.floatingTexts.length = 0;
+  world.corpses.length = 0;
+  world.minimapPings.length = 0;
+  world.groundPings.length = 0;
+  world.selection.length = 0;
+  world.yukaManager.clear();
+
+  // Restore game state
+  world.resources.clams = data.resources.clams;
+  world.resources.twigs = data.resources.twigs;
+  world.resources.food = data.resources.food;
+  world.resources.maxFood = data.resources.maxFood;
+
+  // Restore tech
+  for (const key of Object.keys(data.tech)) {
+    (world.tech as Record<string, boolean>)[key] = data.tech[key];
+  }
+
+  // Restore stats
+  world.stats.unitsKilled = data.stats.unitsKilled;
+  world.stats.unitsLost = data.stats.unitsLost;
+  world.stats.resourcesGathered = data.stats.resourcesGathered;
+  world.stats.buildingsBuilt = data.stats.buildingsBuilt;
+  world.stats.peakArmy = data.stats.peakArmy;
+
+  // Restore timing
+  world.frameCount = data.frameCount;
+  world.timeOfDay = data.timeOfDay;
+  world.gameSpeed = data.gameSpeed;
+  world.state = 'playing';
+  world.paused = false;
+
+  // Reconstruct entities
+  for (const saved of data.entities) {
+    const kind = saved.kind as EntityKind;
+    const faction = saved.faction as Faction;
+
+    const eid = spawnEntity(world, kind, saved.x, saved.y, faction);
+    if (eid < 0) continue;
+
+    // Override HP from save (spawnEntity sets defaults)
+    Health.current[eid] = saved.hp;
+    Health.max[eid] = saved.maxHp;
+
+    // Override speed and combat stats (may differ from defaults due to tech)
+    if (saved.speed > 0) {
+      Velocity.speed[eid] = saved.speed;
+    }
+    if (saved.damage > 0 || saved.attackRange > 0) {
+      Combat.damage[eid] = saved.damage;
+      Combat.attackRange[eid] = saved.attackRange;
+      Combat.kills[eid] = saved.kills;
+    }
+
+    // Building progress
+    if (saved.isBuilding) {
+      Building.progress[eid] = saved.progress;
+    }
+
+    // Resource state
+    if (saved.isResource) {
+      Resource.amount[eid] = saved.resourceAmount;
+    }
+
+    // Unit state
+    if (!saved.isBuilding && !saved.isResource) {
+      UnitStateMachine.state[eid] = saved.state;
+      UnitStateMachine.targetX[eid] = saved.targetX;
+      UnitStateMachine.targetY[eid] = saved.targetY;
+      Carrying.resourceType[eid] = saved.carryingType;
+
+      // Register enemy units with Yuka
+      if (faction === Faction.Enemy) {
+        const speed = Velocity.speed[eid] || ENTITY_DEFS[kind]?.speed || 1.5;
+        world.yukaManager.addEnemy(eid, saved.x, saved.y, speed, saved.targetX, saved.targetY);
+      }
+    }
+  }
+
+  return true;
 }

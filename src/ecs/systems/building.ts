@@ -90,6 +90,7 @@ export function buildingSystem(world: GameWorld): void {
           }
           audio.buildComplete();
           triggerBuildingComplete(tEnt);
+          world.stats.buildingsBuilt++;
           UnitStateMachine.state[eid] = UnitState.Idle;
         } else {
           // Reset timer only when not yet complete (original: this.gTimer = 30)

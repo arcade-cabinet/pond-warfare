@@ -332,6 +332,19 @@ export function healthSystem(world: GameWorld): void {
       ) {
         const healAmount = world.tech.hardenedShells ? 5 : 1;
         Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + healAmount);
+
+        // Visual feedback for healing
+        if (world.tech.hardenedShells) {
+          world.particles.push({
+            x: Position.x[eid],
+            y: Position.y[eid] - 8,
+            vx: (Math.random() - 0.5) * 0.8,
+            vy: -Math.random() * 1,
+            life: 15,
+            color: '#86efac',
+            size: 2,
+          });
+        }
       }
     }
   }

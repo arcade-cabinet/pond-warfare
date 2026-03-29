@@ -147,13 +147,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
       const ry = Math.round(16 + Math.random() * 12);
       const width = Math.max(1, Math.round(Math.random() * 4 + 1));
       const height = Math.max(1, Math.round(Math.random() * 2 + 1));
-      rect(
-        rx,
-        ry,
-        width,
-        height,
-        Math.random() > 0.5 ? PALETTE.mudDark : PALETTE.wood,
-      );
+      rect(rx, ry, width, height, Math.random() > 0.5 ? PALETTE.mudDark : PALETTE.wood);
     }
   } else if (type === 'tower') {
     rect(8, 16, 16, 14, PALETTE.mudLight);

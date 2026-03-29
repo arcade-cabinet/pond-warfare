@@ -148,6 +148,18 @@ export function aiSystem(world: GameWorld): void {
       const eid = spawnEntity(world, EntityKind.BossCroc, sx, sy, Faction.Enemy);
       if (eid < 0) continue; // Skip if spawn failed
 
+      // Boss alert
+      audio.alert();
+      world.floatingTexts.push({
+        x: sx,
+        y: sy - 40,
+        text: 'BOSS CROC!',
+        color: '#ef4444',
+        life: 120,
+      });
+      world.minimapPings.push({ x: sx, y: sy, life: 180, maxLife: 180 });
+      world.shakeTimer = Math.max(world.shakeTimer, 15);
+
       if (lodgeEid !== -1) {
         UnitStateMachine.targetEntity[eid] = lodgeEid;
         UnitStateMachine.targetX[eid] = Position.x[lodgeEid];

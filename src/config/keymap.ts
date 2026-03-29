@@ -93,19 +93,36 @@ function isValidPartialKeyMap(obj: any): boolean {
   if (typeof obj !== 'object' || obj === null) return false;
 
   // Check array fields if present
-  if (obj.panUp !== undefined && (!Array.isArray(obj.panUp) || !obj.panUp.every((s: any) => typeof s === 'string'))) {
+  if (
+    obj.panUp !== undefined &&
+    (!Array.isArray(obj.panUp) || !obj.panUp.every((s: any) => typeof s === 'string'))
+  ) {
     return false;
   }
-  if (obj.panDown !== undefined && (!Array.isArray(obj.panDown) || !obj.panDown.every((s: any) => typeof s === 'string'))) {
+  if (
+    obj.panDown !== undefined &&
+    (!Array.isArray(obj.panDown) || !obj.panDown.every((s: any) => typeof s === 'string'))
+  ) {
     return false;
   }
-  if (obj.panLeft !== undefined && (!Array.isArray(obj.panLeft) || !obj.panLeft.every((s: any) => typeof s === 'string'))) {
+  if (
+    obj.panLeft !== undefined &&
+    (!Array.isArray(obj.panLeft) || !obj.panLeft.every((s: any) => typeof s === 'string'))
+  ) {
     return false;
   }
-  if (obj.panRight !== undefined && (!Array.isArray(obj.panRight) || !obj.panRight.every((s: any) => typeof s === 'string'))) {
+  if (
+    obj.panRight !== undefined &&
+    (!Array.isArray(obj.panRight) || !obj.panRight.every((s: any) => typeof s === 'string'))
+  ) {
     return false;
   }
-  if (obj.actionSlots !== undefined && (!Array.isArray(obj.actionSlots) || obj.actionSlots.length !== 4 || !obj.actionSlots.every((s: any) => typeof s === 'string'))) {
+  if (
+    obj.actionSlots !== undefined &&
+    (!Array.isArray(obj.actionSlots) ||
+      obj.actionSlots.length !== 4 ||
+      !obj.actionSlots.every((s: any) => typeof s === 'string'))
+  ) {
     return false;
   }
 

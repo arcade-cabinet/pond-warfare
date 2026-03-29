@@ -701,8 +701,12 @@ export class Game {
     const bx = Math.round(mx / TILE_SIZE) * TILE_SIZE;
     const by = Math.round(my / TILE_SIZE) * TILE_SIZE;
     const type = this.world.placingBuilding;
-    const kind = entityKindFromString(type);
-    const def = kind !== undefined ? ENTITY_DEFS[kind] : undefined;
+    let def: (typeof ENTITY_DEFS)[EntityKind] | undefined;
+    try {
+      def = ENTITY_DEFS[entityKindFromString(type)];
+    } catch {
+      def = undefined;
+    }
     const spriteW = def ? def.spriteSize * def.spriteScale : 64;
     const spriteH = def ? def.spriteSize * def.spriteScale : 64;
     return {
