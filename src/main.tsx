@@ -9,9 +9,13 @@
 
 import '@/styles/main.css';
 import { render } from 'preact';
+import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
 import { game } from '@/game';
 import { loadGame } from '@/save-system';
 import { initDatabase } from '@/storage';
+
+// Install global error handlers FIRST — before anything else can fail
+installGlobalErrorHandlers();
 import { App } from '@/ui/app';
 import { continueRequested, hasSaveGame, menuState } from '@/ui/store';
 
@@ -53,8 +57,13 @@ function startGame(isContinue: boolean) {
 
 // Initialize database then mount the Preact application
 (async () => {
-  // Initialize SQLite — REQUIRED, throws on failure
-  await initDatabase();
+  // Initialize SQLite — REQUIRED
+  try {
+    await initDatabase();
+  } catch (err) {
+    reportFatalError(err);
+    // Still render the app so the ErrorOverlay can show the fatal error
+  }
 
   // Check for existing saves in SQLite
   const { getLatestSave } = await import('@/storage');

@@ -17,6 +17,7 @@ import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/se
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
 import { persist, getLatestSave, isDatabaseReady, saveGameToDb } from '@/storage';
+import { ErrorOverlay } from './error-overlay';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
 import { MainMenu } from './main-menu';
@@ -88,6 +89,9 @@ export function App({ onMount }: AppProps) {
       class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm font-game"
       style={{ color: 'var(--pw-text-primary)' }}
     >
+      {/* Error overlay — always rendered, shows errors as they occur */}
+      <ErrorOverlay />
+
       {/* Sidebar */}
       <Sidebar
         minimapCanvasRef={minimapCanvasRef}
