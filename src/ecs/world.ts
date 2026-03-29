@@ -79,8 +79,10 @@ export interface GameWorld {
   // Auto-behavior toggles (synced from UI store signals)
   autoBehaviors: {
     gather: boolean;
+    build: boolean;
     defend: boolean;
     attack: boolean;
+    heal: boolean;
     scout: boolean;
   };
 
@@ -155,7 +157,14 @@ export function createGameWorld(): GameWorld {
     selection: [],
     ctrlGroups: {},
     yukaManager: new YukaManager(),
-    autoBehaviors: { gather: false, defend: false, attack: false, scout: false },
+    autoBehaviors: {
+      gather: false,
+      build: false,
+      defend: false,
+      attack: false,
+      heal: false,
+      scout: false,
+    },
     difficulty: 'normal',
     permadeath: false,
     rewardsModifier: 1.0,

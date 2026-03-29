@@ -58,6 +58,15 @@ export const attackMoveActive = signal(false);
 export const idleWorkerCount = signal(0);
 export const armyCount = signal(0);
 
+/** Per-type idle unit counts for contextual auto-behavior menu */
+export const idleGathererCount = signal(0);
+export const idleCombatCount = signal(0);
+export const idleHealerCount = signal(0);
+export const idleScoutCount = signal(0);
+
+/** Whether the auto-behavior menu is expanded from the idle button */
+export const autoMenuExpanded = signal(false);
+
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);
 
@@ -74,8 +83,10 @@ export const radialMenuY = signal(0);
 
 // Auto-behavior toggle states (persist across menu opens)
 export const autoGatherEnabled = signal(false);
+export const autoBuildEnabled = signal(false);
 export const autoDefendEnabled = signal(false);
 export const autoAttackEnabled = signal(false);
+export const autoHealEnabled = signal(false);
 export const autoScoutEnabled = signal(false);
 
 // ---- Game over stats ----

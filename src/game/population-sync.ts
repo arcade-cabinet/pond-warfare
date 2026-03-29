@@ -85,8 +85,10 @@ export function syncPopulationAndTimers(
 
   // Sync auto-behavior toggles from UI store into game world
   w.autoBehaviors.gather = store.autoGatherEnabled.value;
+  w.autoBehaviors.build = store.autoBuildEnabled.value;
   w.autoBehaviors.defend = store.autoDefendEnabled.value;
   w.autoBehaviors.attack = store.autoAttackEnabled.value;
+  w.autoBehaviors.heal = store.autoHealEnabled.value;
   w.autoBehaviors.scout = store.autoScoutEnabled.value;
 
   store.lowClams.value = w.resources.clams < 50;
@@ -111,6 +113,12 @@ export function syncPopulationAndTimers(
   let idleWorkers = 0;
   let armyUnits = 0;
 
+  // Per-type idle counts for contextual auto-behavior menu
+  let idleGatherers = 0;
+  let idleCombat = 0;
+  let idleHealers = 0;
+  let idleScouts = 0;
+
   for (let i = 0; i < allEntsForFood.length; i++) {
     const eid = allEntsForFood[i];
     if (FactionTag.faction[eid] !== Faction.Player) continue;
@@ -129,12 +137,22 @@ export function syncPopulationAndTimers(
     } else if (!hasComponent(w.ecs, eid, IsResource)) {
       // Non-building, non-resource player entities count as population
       curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
+      const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
       if (kind === EntityKind.Gatherer) {
-        if (UnitStateMachine.state[eid] === UnitState.Idle) {
+        if (isIdle) {
           idleWorkers++;
+          idleGatherers++;
         }
-      } else {
+      } else if (kind === EntityKind.Healer) {
         armyUnits++;
+        if (isIdle) idleHealers++;
+      } else if (kind === EntityKind.Scout) {
+        armyUnits++;
+        if (isIdle) idleScouts++;
+      } else {
+        // Combat units: Brawler, Sniper, Shieldbearer, Catapult, etc.
+        armyUnits++;
+        if (isIdle) idleCombat++;
       }
     }
   }
@@ -159,8 +177,14 @@ export function syncPopulationAndTimers(
   w.resources.maxFood = maxFoodCap;
   store.food.value = curFood + queuedFood;
   store.maxFood.value = maxFoodCap;
-  store.idleWorkerCount.value = idleWorkers;
+  store.idleWorkerCount.value = idleWorkers + idleCombat + idleHealers + idleScouts;
   store.armyCount.value = armyUnits;
+
+  // Per-type idle counts for contextual auto-behavior menu
+  store.idleGathererCount.value = idleGatherers;
+  store.idleCombatCount.value = idleCombat;
+  store.idleHealerCount.value = idleHealers;
+  store.idleScoutCount.value = idleScouts;
 
   // Track peak army
   if (armyUnits > w.stats.peakArmy) {

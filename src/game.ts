@@ -25,6 +25,7 @@ import {
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
 import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
+import { autoBuildSystem } from '@/ecs/systems/auto-build';
 import { buildingSystem } from '@/ecs/systems/building';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { collisionSystem } from '@/ecs/systems/collision';
@@ -718,6 +719,7 @@ export class Game {
     trainingSystem(this.world);
     aiSystem(this.world);
     autoBehaviorSystem(this.world);
+    autoBuildSystem(this.world);
     healthSystem(this.world);
     veterancySystem(this.world);
     fogOfWarSystem(this.world);

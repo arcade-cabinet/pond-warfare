@@ -31,8 +31,8 @@ export function autoBehaviorSystem(world: GameWorld): void {
   // Only check every 60 frames (~1 second)
   if (world.frameCount % 60 !== 0) return;
 
-  const { gather, defend, attack, scout } = world.autoBehaviors;
-  if (!gather && !defend && !attack && !scout) return;
+  const { gather, defend, attack, heal, scout } = world.autoBehaviors;
+  if (!gather && !defend && !attack && !heal && !scout) return;
 
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
 
@@ -65,6 +65,34 @@ export function autoBehaviorSystem(world: GameWorld): void {
         UnitStateMachine.targetX[eid] = Position.x[bestRes];
         UnitStateMachine.targetY[eid] = Position.y[bestRes];
         UnitStateMachine.state[eid] = UnitState.GatherMove;
+      }
+      continue;
+    }
+
+    // Auto-Heal: idle healers seek the nearest wounded player unit (map-wide)
+    if (heal && kind === EntityKind.Healer) {
+      const allUnits = query(world.ecs, [Position, Health, FactionTag]);
+      let bestAlly = -1;
+      let bestDist = Infinity;
+      for (let j = 0; j < allUnits.length; j++) {
+        const aid = allUnits[j];
+        if (aid === eid) continue;
+        if (FactionTag.faction[aid] !== Faction.Player) continue;
+        if (Health.current[aid] <= 0) continue;
+        if (Health.current[aid] >= Health.max[aid]) continue;
+        const dx = Position.x[aid] - Position.x[eid];
+        const dy = Position.y[aid] - Position.y[eid];
+        const d = dx * dx + dy * dy;
+        if (d < bestDist) {
+          bestDist = d;
+          bestAlly = aid;
+        }
+      }
+      if (bestAlly !== -1) {
+        UnitStateMachine.targetEntity[eid] = bestAlly;
+        UnitStateMachine.targetX[eid] = Position.x[bestAlly];
+        UnitStateMachine.targetY[eid] = Position.y[bestAlly];
+        UnitStateMachine.state[eid] = UnitState.Move;
       }
       continue;
     }
