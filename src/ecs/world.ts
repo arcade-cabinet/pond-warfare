@@ -82,6 +82,12 @@ export interface GameWorld {
     scout: boolean;
   };
 
+  // Difficulty setting (affects enemy eco speed, army size, aggression)
+  difficulty: 'easy' | 'normal' | 'hard';
+
+  // Map seed for reproducible random generation
+  mapSeed: number;
+
   // Resource tracking
   resTracker: {
     lastClams: number;
@@ -138,6 +144,8 @@ export function createGameWorld(): GameWorld {
     ctrlGroups: {},
     yukaManager: new YukaManager(),
     autoBehaviors: { gather: false, defend: false, attack: false, scout: false },
+    difficulty: 'normal',
+    mapSeed: Math.floor(Math.random() * 2147483647),
     placingBuilding: null,
     attackMoveMode: false,
     idleWorkerIdx: 0,

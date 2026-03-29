@@ -88,7 +88,7 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     spriteScale: 3,
     clamCost: 200,
     twigCost: 150,
-    foodProvided: 4,
+    foodProvided: 8, // Lodge supports 8 units (was 4) - allows early army
   },
   [EntityKind.Burrow]: {
     hp: 300,
@@ -100,11 +100,11 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     spriteSize: 32,
     spriteScale: 3,
     clamCost: 0,
-    twigCost: 100,
-    foodProvided: 4,
+    twigCost: 75, // Cheaper (was 100) - easier to expand
+    foodProvided: 6, // More food cap per burrow (was 4)
   },
   [EntityKind.Armory]: {
-    hp: 600,
+    hp: 500,
     speed: 0,
     damage: 0,
     attackRange: 0,
@@ -112,8 +112,8 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     isResource: false,
     spriteSize: 32,
     spriteScale: 3,
-    clamCost: 250,
-    twigCost: 150,
+    clamCost: 180, // Cheaper (was 250) - faster military transition
+    twigCost: 120, // Cheaper (was 150)
   },
   [EntityKind.Tower]: {
     hp: 500,

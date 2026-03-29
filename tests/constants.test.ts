@@ -82,8 +82,9 @@ describe('World Dimensions', () => {
 });
 
 describe('Game Timer Constants', () => {
-  it('PEACE_TIMER_FRAMES is 10800', () => {
-    expect(PEACE_TIMER_FRAMES).toBe(10800);
+  it('PEACE_TIMER_FRAMES is reasonable (1-5 minutes)', () => {
+    expect(PEACE_TIMER_FRAMES).toBeGreaterThanOrEqual(3600); // at least 1 min
+    expect(PEACE_TIMER_FRAMES).toBeLessThanOrEqual(18000); // at most 5 min
   });
 
   it('DAY_FRAMES is 28800', () => {
@@ -118,8 +119,9 @@ describe('Game Timer Constants', () => {
     expect(REPAIR_TIMER).toBeGreaterThan(0);
   });
 
-  it('TRAIN_TIMER is 180', () => {
-    expect(TRAIN_TIMER).toBe(180);
+  it('TRAIN_TIMER is reasonable (1-5 seconds)', () => {
+    expect(TRAIN_TIMER).toBeGreaterThanOrEqual(60);
+    expect(TRAIN_TIMER).toBeLessThanOrEqual(300);
   });
 
   it('ATTACK_COOLDOWN is positive', () => {
@@ -132,12 +134,12 @@ describe('Game Timer Constants', () => {
 });
 
 describe('Starting Resources', () => {
-  it('STARTING_CLAMS is 200', () => {
-    expect(STARTING_CLAMS).toBe(200);
+  it('STARTING_CLAMS is enough to train 3+ gatherers', () => {
+    expect(STARTING_CLAMS).toBeGreaterThanOrEqual(150);
   });
 
-  it('STARTING_TWIGS is 50', () => {
-    expect(STARTING_TWIGS).toBe(50);
+  it('STARTING_TWIGS is enough to build early', () => {
+    expect(STARTING_TWIGS).toBeGreaterThanOrEqual(50);
   });
 
   it('starting clams exceed starting twigs', () => {

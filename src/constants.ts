@@ -4,22 +4,22 @@ export const MAP_HEIGHT = 80;
 export const WORLD_WIDTH = MAP_WIDTH * TILE_SIZE;
 export const WORLD_HEIGHT = MAP_HEIGHT * TILE_SIZE;
 
-export const PEACE_TIMER_FRAMES = 10800;
+export const PEACE_TIMER_FRAMES = 7200; // 2 minutes - shorter peace, faster to the action
 export const DAY_FRAMES = 28800;
 export const WAVE_INTERVAL = 1800;
 export const MAX_WAVE_SIZE = 6;
 export const WAVE_SCALE_INTERVAL = 7200;
 
-export const GATHER_AMOUNT = 10;
-export const GATHER_TIMER = 60;
-export const BUILD_TIMER = 30;
-export const REPAIR_TIMER = 40;
-export const TRAIN_TIMER = 180;
-export const ATTACK_COOLDOWN = 60;
-export const TOWER_ATTACK_COOLDOWN = 50;
+export const GATHER_AMOUNT = 15; // More per trip for faster eco
+export const GATHER_TIMER = 50; // Slightly faster gathering
+export const BUILD_TIMER = 25; // Faster construction
+export const REPAIR_TIMER = 35; // Faster repairs
+export const TRAIN_TIMER = 120; // 2 seconds per unit (was 3) - army builds faster
+export const ATTACK_COOLDOWN = 50; // Slightly faster combat
+export const TOWER_ATTACK_COOLDOWN = 40; // Towers feel more impactful
 
-export const STARTING_CLAMS = 200;
-export const STARTING_TWIGS = 50;
+export const STARTING_CLAMS = 300; // More starting resources for faster early game
+export const STARTING_TWIGS = 100; // Enough to build a Burrow immediately
 
 export const ENEMY_STARTING_CLAMS = 500;
 export const ENEMY_STARTING_TWIGS = 200;

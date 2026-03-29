@@ -7,6 +7,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { GATHER_TIMER } from '@/constants';
 import {
   Carrying,
   Collider,
@@ -92,7 +93,7 @@ describe('movementSystem', () => {
 
     movementSystem(world);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.Gathering);
-    expect(UnitStateMachine.gatherTimer[eid]).toBe(60);
+    expect(UnitStateMachine.gatherTimer[eid]).toBe(GATHER_TIMER);
   });
 
   it('should not move idle entities', () => {
