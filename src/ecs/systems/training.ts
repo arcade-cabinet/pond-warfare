@@ -11,7 +11,7 @@
  * - Particle burst effect on training completion
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -28,10 +28,9 @@ import { Faction, EntityKind, UnitState } from '@/types';
 import { TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 
-const trainingQuery = defineQuery([Position, TrainingQueue, Building, FactionTag, IsBuilding, Health]);
 
 export function trainingSystem(world: GameWorld): void {
-  const buildings = trainingQuery(world.ecs);
+  const buildings = query(world.ecs, [Position, TrainingQueue, Building, FactionTag, IsBuilding, Health]);
 
   for (let i = 0; i < buildings.length; i++) {
     const eid = buildings[i];

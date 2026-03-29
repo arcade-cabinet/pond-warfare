@@ -14,7 +14,7 @@
  * "explored" state that reveals previously visited areas with a dimmer visibility.
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -25,7 +25,6 @@ import {
 import { Faction } from '@/types';
 import { EXPLORED_SCALE } from '@/constants';
 
-const playerEntityQuery = defineQuery([Position, Health, FactionTag]);
 
 /**
  * Reference to the explored canvas 2D context. Set once via initFogOfWar().
@@ -48,7 +47,7 @@ export function fogOfWarSystem(world: GameWorld): void {
   // If exploredCtx is not initialized, skip (non-fatal - rendering may not be ready)
   if (!exploredCtx) return;
 
-  const entities = playerEntityQuery(world.ecs);
+  const entities = query(world.ecs, [Position, Health, FactionTag]);
 
   for (let i = 0; i < entities.length; i++) {
     const eid = entities[i];
@@ -59,7 +58,7 @@ export function fogOfWarSystem(world: GameWorld): void {
 
     // Buildings get a larger reveal radius
     // Original: let rad = ent.isBuilding ? 16 : 10;
-    const isBuilding = hasComponent(world.ecs, IsBuilding, eid);
+    const isBuilding = hasComponent(world.ecs, eid, IsBuilding);
     const rad = isBuilding ? 16 : 10;
 
     // Scale position down to explored canvas coordinates

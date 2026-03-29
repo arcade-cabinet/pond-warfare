@@ -12,7 +12,7 @@
  * - Update facingLeft based on movement direction
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -30,7 +30,6 @@ import {
 import { UnitState, EntityKind, ResourceType, Faction } from '@/types';
 import { GATHER_TIMER, BUILD_TIMER, REPAIR_TIMER } from '@/constants';
 
-const movableQuery = defineQuery([Position, Velocity, UnitStateMachine, Sprite, Collider]);
 
 /**
  * Set of states that involve movement toward a target position.
@@ -47,7 +46,7 @@ const MOVE_STATES = new Set<number>([
 ]);
 
 export function movementSystem(world: GameWorld): void {
-  const ents = movableQuery(world.ecs);
+  const ents = query(world.ecs, [Position, Velocity, UnitStateMachine, Sprite, Collider]);
 
   for (let i = 0; i < ents.length; i++) {
     const eid = ents[i];
@@ -78,25 +77,25 @@ export function movementSystem(world: GameWorld): void {
     let targetRad = 0;
     if (state === UnitState.GatherMove) {
       const tEnt = UnitStateMachine.targetEntity[eid];
-      if (tEnt && hasComponent(world.ecs, Collider, tEnt)) {
+      if (tEnt && hasComponent(world.ecs, tEnt, Collider)) {
         targetRad = Collider.radius[tEnt];
       }
     }
     if (state === UnitState.ReturnMove) {
       const rEnt = UnitStateMachine.returnEntity[eid];
-      if (rEnt && hasComponent(world.ecs, Collider, rEnt)) {
+      if (rEnt && hasComponent(world.ecs, rEnt, Collider)) {
         targetRad = Collider.radius[rEnt];
       }
     }
     if (state === UnitState.BuildMove) {
       const tEnt = UnitStateMachine.targetEntity[eid];
-      if (tEnt && hasComponent(world.ecs, Collider, tEnt)) {
+      if (tEnt && hasComponent(world.ecs, tEnt, Collider)) {
         targetRad = Collider.radius[tEnt];
       }
     }
     if (state === UnitState.RepairMove) {
       const tEnt = UnitStateMachine.targetEntity[eid];
-      if (tEnt && hasComponent(world.ecs, Collider, tEnt)) {
+      if (tEnt && hasComponent(world.ecs, tEnt, Collider)) {
         targetRad = Collider.radius[tEnt];
       }
     }
@@ -203,7 +202,7 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
         const tEnt = UnitStateMachine.targetEntity[eid];
         if (
           tEnt &&
-          hasComponent(world.ecs, Resource, tEnt) &&
+          hasComponent(world.ecs, tEnt, Resource) &&
           Resource.amount[tEnt] > 0
         ) {
           UnitStateMachine.targetX[eid] = Position.x[tEnt];

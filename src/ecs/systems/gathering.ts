@@ -12,7 +12,7 @@
  * - Idle auto-gather: player gatherers near resources auto-start gathering every 90 frames
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -31,14 +31,11 @@ import { UnitState, EntityKind, Faction, ResourceType } from '@/types';
 import { GATHER_AMOUNT, PALETTE, AUTO_GATHER_RADIUS } from '@/constants';
 import { audio } from '@/audio/audio-system';
 
-const gathererQuery = defineQuery([Position, UnitStateMachine, Health, FactionTag, EntityTypeTag, Carrying]);
-const resourceQuery = defineQuery([Position, Resource, IsResource]);
-const buildingQuery = defineQuery([Position, IsBuilding, FactionTag, EntityTypeTag, Health, Building]);
 
 export function gatheringSystem(world: GameWorld): void {
-  const gatherers = gathererQuery(world.ecs);
-  const resources = resourceQuery(world.ecs);
-  const buildings = buildingQuery(world.ecs);
+  const gatherers = query(world.ecs, [Position, UnitStateMachine, Health, FactionTag, EntityTypeTag, Carrying]);
+  const resources = query(world.ecs, [Position, Resource, IsResource]);
+  const buildings = query(world.ecs, [Position, IsBuilding, FactionTag, EntityTypeTag, Health, Building]);
 
   for (let i = 0; i < gatherers.length; i++) {
     const eid = gatherers[i];
@@ -97,11 +94,11 @@ export function gatheringSystem(world: GameWorld): void {
     // Original: if (!this.tEnt || this.tEnt.resAmount <= 0)
     if (
       !tEnt ||
-      !hasComponent(world.ecs, Resource, tEnt) ||
+      !hasComponent(world.ecs, tEnt, Resource) ||
       Resource.amount[tEnt] <= 0
     ) {
       // Try to find another nearby resource of same type (lines 1664-1672)
-      if (tEnt && hasComponent(world.ecs, EntityTypeTag, tEnt)) {
+      if (tEnt && hasComponent(world.ecs, tEnt, EntityTypeTag)) {
         const resKind = EntityTypeTag.kind[tEnt] as EntityKind;
         const ex = Position.x[eid];
         const ey = Position.y[eid];

@@ -12,7 +12,7 @@
  *   frames if fewer than 4 nearby enemy units. Defenders attack nearest player unit.
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -33,9 +33,6 @@ import {
 import { audio } from '@/audio/audio-system';
 import { spawnEntity } from '@/ecs/archetypes';
 
-const nestQuery = defineQuery([Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
-const playerBuildingQuery = defineQuery([Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
-const unitQuery = defineQuery([Position, Health, FactionTag, EntityTypeTag]);
 
 export function aiSystem(world: GameWorld): void {
   // --- Peace timer / wave logic (lines 1211-1235) ---
@@ -46,7 +43,7 @@ export function aiSystem(world: GameWorld): void {
     // Original: if (this.frameCount % 1800 === 0)
     if (world.frameCount % WAVE_INTERVAL === 0) {
       // Find all predator nests
-      const nests = nestQuery(world.ecs);
+      const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
       const nestEids: number[] = [];
       for (let i = 0; i < nests.length; i++) {
         const eid = nests[i];
@@ -58,7 +55,7 @@ export function aiSystem(world: GameWorld): void {
       // Find player lodge
       // Original: let th = this.entities.find(e => e.type === 'lodge' && e.faction === 'player');
       let lodgeEid = 0;
-      const pBuildings = playerBuildingQuery(world.ecs);
+      const pBuildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
       for (let i = 0; i < pBuildings.length; i++) {
         const eid = pBuildings[i];
         if (
@@ -107,8 +104,8 @@ export function aiSystem(world: GameWorld): void {
   // --- Nest defense reinforcement (lines 1757-1771) ---
   // Original: if (this.type === 'predator_nest' && this.hp < this.maxHp * 0.5 && GAME.frameCount % 600 === 0)
   if (world.frameCount % 600 === 0) {
-    const nests = nestQuery(world.ecs);
-    const allUnits = unitQuery(world.ecs);
+    const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
+    const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
 
     for (let i = 0; i < nests.length; i++) {
       const nestEid = nests[i];
@@ -125,7 +122,7 @@ export function aiSystem(world: GameWorld): void {
       for (let j = 0; j < allUnits.length; j++) {
         const u = allUnits[j];
         if (FactionTag.faction[u] !== Faction.Enemy) continue;
-        if (hasComponent(world.ecs, IsBuilding, u)) continue;
+        if (hasComponent(world.ecs, u, IsBuilding)) continue;
         if (Health.current[u] <= 0) continue;
 
         const dx = Position.x[u] - nx;

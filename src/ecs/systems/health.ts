@@ -15,7 +15,7 @@
  * - Attack cooldown decay every frame
  */
 
-import { defineQuery, hasComponent, removeEntity } from 'bitecs';
+import { query, hasComponent, removeEntity } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -36,9 +36,6 @@ import { UnitState, EntityKind, Faction, SpriteId } from '@/types';
 import { PALETTE, ALLY_ASSIST_RADIUS } from '@/constants';
 import { audio } from '@/audio/audio-system';
 
-const combatUnitQuery = defineQuery([Health, Combat]);
-const livingQuery = defineQuery([Position, Health, FactionTag, EntityTypeTag]);
-const unitStateQuery = defineQuery([UnitStateMachine, Health, FactionTag, EntityTypeTag]);
 
 /**
  * Apply damage to an entity. Exported as a utility for use by combat and projectile systems.
@@ -50,7 +47,7 @@ export function takeDamage(
   amount: number,
   attackerEid: number,
 ): void {
-  if (!hasComponent(world.ecs, Health, targetEid)) return;
+  if (!hasComponent(world.ecs, targetEid, Health)) return;
   if (Health.current[targetEid] <= 0) return;
 
   // Apply damage
@@ -62,7 +59,7 @@ export function takeDamage(
 
   const tx = Position.x[targetEid];
   const ty = Position.y[targetEid];
-  const isBuilding = hasComponent(world.ecs, IsBuilding, targetEid);
+  const isBuilding = hasComponent(world.ecs, targetEid, IsBuilding);
 
   // Damage particles (original: for(let i=0;i<5;i++) GAME.particles.push({...}))
   for (let p = 0; p < 5; p++) {
@@ -79,7 +76,7 @@ export function takeDamage(
 
   // Floating damage text
   // Original: GAME.floatingTexts.push({x: this.x + (Math.random()*10-5), y: this.y - this.height/2 - 5, t: `-${amount}`, c: '#ef4444', life: 40});
-  const spriteH = hasComponent(world.ecs, Sprite, targetEid) ? Sprite.height[targetEid] : 32;
+  const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
   world.floatingTexts.push({
     x: tx + (Math.random() * 10 - 5),
     y: ty - spriteH / 2 - 5,
@@ -90,10 +87,10 @@ export function takeDamage(
 
   // Retaliation and ally assist (only if target is still alive and has an attacker)
   if (Health.current[targetEid] > 0 && attackerEid) {
-    const targetFaction = hasComponent(world.ecs, FactionTag, targetEid)
+    const targetFaction = hasComponent(world.ecs, targetEid, FactionTag)
       ? (FactionTag.faction[targetEid] as Faction)
       : Faction.Neutral;
-    const attackerFaction = hasComponent(world.ecs, FactionTag, attackerEid)
+    const attackerFaction = hasComponent(world.ecs, attackerEid, FactionTag)
       ? (FactionTag.faction[attackerEid] as Faction)
       : Faction.Neutral;
 
@@ -112,8 +109,8 @@ export function takeDamage(
     // Original: if (!this.isBuilding && ['idle', 'gath', 'g_move', 'r_move', 'move'].includes(this.state) && this.dmg)
     if (
       !isBuilding &&
-      hasComponent(world.ecs, UnitStateMachine, targetEid) &&
-      hasComponent(world.ecs, Combat, targetEid) &&
+      hasComponent(world.ecs, targetEid, UnitStateMachine) &&
+      hasComponent(world.ecs, targetEid, Combat) &&
       Combat.damage[targetEid] > 0
     ) {
       const targetState = UnitStateMachine.state[targetEid] as UnitState;
@@ -134,15 +131,15 @@ export function takeDamage(
 
     // Ally assist: nearby allies in idle/move state attack the attacker
     // Original lines 1561-1568
-    const allies = unitStateQuery(world.ecs);
+    const allies = query(world.ecs, [UnitStateMachine, Health, FactionTag, EntityTypeTag]);
     for (let j = 0; j < allies.length; j++) {
       const ally = allies[j];
       if (ally === targetEid) continue;
-      if (!hasComponent(world.ecs, FactionTag, ally)) continue;
+      if (!hasComponent(world.ecs, ally, FactionTag)) continue;
       if (FactionTag.faction[ally] !== targetFaction) continue;
-      if (hasComponent(world.ecs, IsBuilding, ally)) continue;
+      if (hasComponent(world.ecs, ally, IsBuilding)) continue;
       if (Health.current[ally] <= 0) continue;
-      if (!hasComponent(world.ecs, Combat, ally) || Combat.damage[ally] <= 0) continue;
+      if (!hasComponent(world.ecs, ally, Combat) || Combat.damage[ally] <= 0) continue;
 
       const allyState = UnitStateMachine.state[ally] as UnitState;
       if (allyState !== UnitState.Idle && allyState !== UnitState.Move) continue;
@@ -173,20 +170,20 @@ export function takeDamage(
  */
 function processDeath(world: GameWorld, eid: number): void {
   // Prevent double-die (original: if (this._dead) return; this._dead = true;)
-  if (hasComponent(world.ecs, Dead, eid)) return;
+  if (hasComponent(world.ecs, eid, Dead)) return;
 
   // Note: we don't addComponent Dead here because we removeEntity below.
   // But we need to guard against re-entry during the same frame.
   // Instead we just ensure HP is set to a sentinel.
   Health.current[eid] = -1;
 
-  const isBuilding = hasComponent(world.ecs, IsBuilding, eid);
-  const isResource = hasComponent(world.ecs, IsResource, eid);
+  const isBuilding = hasComponent(world.ecs, eid, IsBuilding);
+  const isResource = hasComponent(world.ecs, eid, IsResource);
   const ex = Position.x[eid];
   const ey = Position.y[eid];
 
   // Stats tracking (original lines 1818-1820)
-  if (hasComponent(world.ecs, FactionTag, eid)) {
+  if (hasComponent(world.ecs, eid, FactionTag)) {
     const faction = FactionTag.faction[eid] as Faction;
     if (faction === Faction.Player && !isBuilding && !isResource) {
       world.stats.unitsLost++;
@@ -227,10 +224,10 @@ function processDeath(world: GameWorld, eid: number): void {
 
   // Credit kill to attacker (original lines 1836-1843)
   // Find who was attacking this entity and increment their kill count
-  const allCombatants = combatUnitQuery(world.ecs);
+  const allCombatants = query(world.ecs, [Health, Combat]);
   for (let j = 0; j < allCombatants.length; j++) {
     const other = allCombatants[j];
-    if (!hasComponent(world.ecs, UnitStateMachine, other)) continue;
+    if (!hasComponent(world.ecs, other, UnitStateMachine)) continue;
     if (
       UnitStateMachine.targetEntity[other] === eid &&
       UnitStateMachine.state[other] === UnitState.Attacking
@@ -255,7 +252,7 @@ function processDeath(world: GameWorld, eid: number): void {
  */
 export function healthSystem(world: GameWorld): void {
   // --- Attack cooldown decay and flash timer decay (lines 1575-1576) ---
-  const combatants = combatUnitQuery(world.ecs);
+  const combatants = query(world.ecs, [Health, Combat]);
   for (let i = 0; i < combatants.length; i++) {
     const eid = combatants[i];
     // Original: if (this.atkCD > 0) this.atkCD--;
@@ -265,7 +262,7 @@ export function healthSystem(world: GameWorld): void {
   }
 
   // Flash timer decay for all entities with health
-  const allLiving = livingQuery(world.ecs);
+  const allLiving = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   for (let i = 0; i < allLiving.length; i++) {
     const eid = allLiving[i];
     // Original: if (this.flashTimer > 0) this.flashTimer--;
@@ -277,12 +274,12 @@ export function healthSystem(world: GameWorld): void {
   // --- Passive healing (lines 1238-1246) ---
   // Original: if (this.frameCount % 300 === 0) { player non-building units heal +1 HP when in non-combat states }
   if (world.frameCount % 300 === 0) {
-    const units = unitStateQuery(world.ecs);
+    const units = query(world.ecs, [UnitStateMachine, Health, FactionTag, EntityTypeTag]);
     for (let i = 0; i < units.length; i++) {
       const eid = units[i];
       if (FactionTag.faction[eid] !== Faction.Player) continue;
-      if (hasComponent(world.ecs, IsBuilding, eid)) continue;
-      if (hasComponent(world.ecs, IsResource, eid)) continue;
+      if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+      if (hasComponent(world.ecs, eid, IsResource)) continue;
       if (Health.current[eid] <= 0) continue;
       if (Health.current[eid] >= Health.max[eid]) continue;
 
@@ -306,7 +303,7 @@ export function healthSystem(world: GameWorld): void {
     const eid = allLiving[i];
     if (Health.current[eid] <= 0 && Health.current[eid] !== -1) {
       // Resources die silently (no particles/corpse beyond what isResource handles)
-      if (hasComponent(world.ecs, IsResource, eid)) {
+      if (hasComponent(world.ecs, eid, IsResource)) {
         // Remove from selection
         const selIdx = world.selection.indexOf(eid);
         if (selIdx > -1) world.selection.splice(selIdx, 1);

@@ -51,27 +51,27 @@ export function spawnEntity(
   const spriteH = def.spriteSize * def.spriteScale;
 
   // Core components
-  addComponent(world.ecs, Position, eid);
+  addComponent(world.ecs, eid, Position);
   Position.x[eid] = x;
   Position.y[eid] = y;
 
-  addComponent(world.ecs, Sprite, eid);
+  addComponent(world.ecs, eid, Sprite);
   Sprite.textureId[eid] = KIND_TO_SPRITE[kind];
   Sprite.width[eid] = spriteW;
   Sprite.height[eid] = spriteH;
   Sprite.facingLeft[eid] = 0;
   Sprite.yOffset[eid] = 0;
 
-  addComponent(world.ecs, FactionTag, eid);
+  addComponent(world.ecs, eid, FactionTag);
   FactionTag.faction[eid] = faction;
 
-  addComponent(world.ecs, EntityTypeTag, eid);
+  addComponent(world.ecs, eid, EntityTypeTag);
   EntityTypeTag.kind[eid] = kind;
 
-  addComponent(world.ecs, Collider, eid);
+  addComponent(world.ecs, eid, Collider);
   Collider.radius[eid] = spriteW / 2.5;
 
-  addComponent(world.ecs, Selectable, eid);
+  addComponent(world.ecs, eid, Selectable);
   Selectable.selected[eid] = 0;
 
   // Health
@@ -84,13 +84,13 @@ export function spawnEntity(
     maxHp += 300;
   }
 
-  addComponent(world.ecs, Health, eid);
+  addComponent(world.ecs, eid, Health);
   Health.max[eid] = maxHp;
   Health.flashTimer[eid] = 0;
 
   if (def.isBuilding) {
-    addComponent(world.ecs, IsBuilding, eid);
-    addComponent(world.ecs, Building, eid);
+    addComponent(world.ecs, eid, IsBuilding);
+    addComponent(world.ecs, eid, Building);
 
     if (faction === Faction.Player && kind !== EntityKind.Lodge) {
       Building.progress[eid] = 1;
@@ -107,23 +107,23 @@ export function spawnEntity(
       kind === EntityKind.Burrow ||
       kind === EntityKind.Armory
     ) {
-      addComponent(world.ecs, TrainingQueue, eid);
+      addComponent(world.ecs, eid, TrainingQueue);
       TrainingQueue.count[eid] = 0;
       TrainingQueue.timer[eid] = 0;
     }
 
     // Tower AI
     if (kind === EntityKind.Tower) {
-      addComponent(world.ecs, TowerAI, eid);
-      addComponent(world.ecs, Combat, eid);
+      addComponent(world.ecs, eid, TowerAI);
+      addComponent(world.ecs, eid, Combat);
       Combat.damage[eid] = def.damage;
       Combat.attackRange[eid] = def.attackRange;
       Combat.attackCooldown[eid] = 0;
       Combat.kills[eid] = 0;
     }
   } else if (def.isResource) {
-    addComponent(world.ecs, IsResource, eid);
-    addComponent(world.ecs, Resource, eid);
+    addComponent(world.ecs, eid, IsResource);
+    addComponent(world.ecs, eid, Resource);
     Resource.resourceType[eid] = def.resourceType as ResourceType;
     Resource.amount[eid] = def.resourceAmount!;
     Health.current[eid] = 1;
@@ -131,12 +131,12 @@ export function spawnEntity(
     // Unit
     Health.current[eid] = hp;
 
-    addComponent(world.ecs, Velocity, eid);
+    addComponent(world.ecs, eid, Velocity);
     let speed = def.speed;
     if (faction === Faction.Player && world.tech.swiftPaws) speed += 0.4;
     Velocity.speed[eid] = speed;
 
-    addComponent(world.ecs, Combat, eid);
+    addComponent(world.ecs, eid, Combat);
     let damage = def.damage;
     if (faction === Faction.Player && world.tech.sharpSticks && damage > 0)
       damage += 2;
@@ -153,14 +153,14 @@ export function spawnEntity(
     Combat.attackCooldown[eid] = 0;
     Combat.kills[eid] = 0;
 
-    addComponent(world.ecs, UnitStateMachine, eid);
+    addComponent(world.ecs, eid, UnitStateMachine);
     UnitStateMachine.state[eid] = 0; // Idle
     UnitStateMachine.targetEntity[eid] = 0;
     UnitStateMachine.returnEntity[eid] = 0;
     UnitStateMachine.gatherTimer[eid] = 0;
     UnitStateMachine.hasAttackMoveTarget[eid] = 0;
 
-    addComponent(world.ecs, Carrying, eid);
+    addComponent(world.ecs, eid, Carrying);
     Carrying.resourceType[eid] = 0; // None
   }
 

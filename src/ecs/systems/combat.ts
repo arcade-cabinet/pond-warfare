@@ -12,7 +12,7 @@
  * - Attack cooldown management
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -42,14 +42,11 @@ import { audio } from '@/audio/audio-system';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import { takeDamage } from '@/ecs/systems/health';
 
-const unitQuery = defineQuery([Position, Combat, UnitStateMachine, Health, FactionTag, EntityTypeTag]);
-const towerQuery = defineQuery([Position, Combat, TowerAI, Health, FactionTag, Building]);
-const targetableQuery = defineQuery([Position, Health, FactionTag]);
 
 export function combatSystem(world: GameWorld): void {
-  const units = unitQuery(world.ecs);
-  const towers = towerQuery(world.ecs);
-  const allTargetable = targetableQuery(world.ecs);
+  const units = query(world.ecs, [Position, Combat, UnitStateMachine, Health, FactionTag, EntityTypeTag]);
+  const towers = query(world.ecs, [Position, Combat, TowerAI, Health, FactionTag, Building]);
+  const allTargetable = query(world.ecs, [Position, Health, FactionTag]);
 
   // --- Tower auto-attack (lines 1587-1596) ---
   // Original: if (this.type === 'tower' && this.progress >= 100 && this.atkCD <= 0)
@@ -72,7 +69,7 @@ export function combatSystem(world: GameWorld): void {
       const t = allTargetable[j];
       if (FactionTag.faction[t] === faction) continue;
       if (Health.current[t] <= 0) continue;
-      if (hasComponent(world.ecs, IsResource, t)) continue;
+      if (hasComponent(world.ecs, t, IsResource)) continue;
 
       const dx = Position.x[t] - ex;
       const dy = Position.y[t] - ey;
@@ -113,7 +110,7 @@ export function combatSystem(world: GameWorld): void {
         if (FactionTag.faction[t] === faction) continue;
         if (FactionTag.faction[t] === Faction.Neutral) continue;
         if (Health.current[t] <= 0) continue;
-        if (hasComponent(world.ecs, IsResource, t)) continue;
+        if (hasComponent(world.ecs, t, IsResource)) continue;
 
         const dx = Position.x[t] - ex;
         const dy = Position.y[t] - ey;
@@ -144,7 +141,7 @@ export function combatSystem(world: GameWorld): void {
         if (FactionTag.faction[t] === faction) continue;
         if (FactionTag.faction[t] === Faction.Neutral) continue;
         if (Health.current[t] <= 0) continue;
-        if (hasComponent(world.ecs, IsResource, t)) continue;
+        if (hasComponent(world.ecs, t, IsResource)) continue;
 
         const dx = Position.x[t] - ex;
         const dy = Position.y[t] - ey;
@@ -190,7 +187,7 @@ export function combatSystem(world: GameWorld): void {
       const tEnt = UnitStateMachine.targetEntity[eid];
 
       // Original: if (!this.tEnt || this.tEnt.hp <= 0) { this.state = 'idle'; return; }
-      if (!tEnt || !hasComponent(world.ecs, Health, tEnt) || Health.current[tEnt] <= 0) {
+      if (!tEnt || !hasComponent(world.ecs, tEnt, Health) || Health.current[tEnt] <= 0) {
         UnitStateMachine.state[eid] = UnitState.Idle;
         continue;
       }

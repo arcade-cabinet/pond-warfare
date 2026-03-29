@@ -12,7 +12,7 @@
  * - Timer management for both build and repair cycles
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -27,10 +27,9 @@ import { UnitState } from '@/types';
 import { BUILD_TIMER, REPAIR_TIMER, PALETTE } from '@/constants';
 import { audio } from '@/audio/audio-system';
 
-const builderQuery = defineQuery([Position, UnitStateMachine, Health, EntityTypeTag, FactionTag]);
 
 export function buildingSystem(world: GameWorld): void {
-  const builders = builderQuery(world.ecs);
+  const builders = query(world.ecs, [Position, UnitStateMachine, Health, EntityTypeTag, FactionTag]);
 
   for (let i = 0; i < builders.length; i++) {
     const eid = builders[i];
@@ -46,7 +45,7 @@ export function buildingSystem(world: GameWorld): void {
       // Original: if (!this.tEnt || this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; return; }
       if (
         !tEnt ||
-        !hasComponent(world.ecs, Health, tEnt) ||
+        !hasComponent(world.ecs, tEnt, Health) ||
         Health.current[tEnt] >= Health.max[tEnt]
       ) {
         UnitStateMachine.state[eid] = UnitState.Idle;
@@ -74,14 +73,14 @@ export function buildingSystem(world: GameWorld): void {
       if (UnitStateMachine.gatherTimer[eid] <= 0) {
         // Original: this.tEnt.hp += 10; this.tEnt.progress = (this.tEnt.hp/this.tEnt.maxHp)*100;
         Health.current[tEnt] += 10;
-        if (hasComponent(world.ecs, Building, tEnt)) {
+        if (hasComponent(world.ecs, tEnt, Building)) {
           Building.progress[tEnt] = (Health.current[tEnt] / Health.max[tEnt]) * 100;
         }
 
         // Original: if (this.tEnt.hp >= this.tEnt.maxHp) { this.tEnt.hp=this.tEnt.maxHp; this.tEnt.progress=100; this.state='idle'; }
         if (Health.current[tEnt] >= Health.max[tEnt]) {
           Health.current[tEnt] = Health.max[tEnt];
-          if (hasComponent(world.ecs, Building, tEnt)) {
+          if (hasComponent(world.ecs, tEnt, Building)) {
             Building.progress[tEnt] = 100;
           }
           UnitStateMachine.state[eid] = UnitState.Idle;
@@ -102,7 +101,7 @@ export function buildingSystem(world: GameWorld): void {
       // Original: if (!this.tEnt || this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; return; }
       if (
         !tEnt ||
-        !hasComponent(world.ecs, Health, tEnt) ||
+        !hasComponent(world.ecs, tEnt, Health) ||
         Health.current[tEnt] >= Health.max[tEnt]
       ) {
         UnitStateMachine.state[eid] = UnitState.Idle;

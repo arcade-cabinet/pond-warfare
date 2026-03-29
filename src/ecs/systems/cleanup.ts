@@ -13,7 +13,7 @@
  * - Building ambient particles: armory smoke (every 5 frames), lodge water bubbles (every 30 frames)
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -25,12 +25,11 @@ import {
 } from '@/ecs/components';
 import { EntityKind } from '@/types';
 
-const buildingQuery = defineQuery([Position, Health, IsBuilding, EntityTypeTag, Building]);
 
 export function cleanupSystem(world: GameWorld): void {
   // --- Building ambient particles (lines 1579-1584) ---
   // Only for completed buildings
-  const buildings = buildingQuery(world.ecs);
+  const buildings = query(world.ecs, [Position, Health, IsBuilding, EntityTypeTag, Building]);
   for (let i = 0; i < buildings.length; i++) {
     const eid = buildings[i];
     if (Health.current[eid] <= 0) continue;

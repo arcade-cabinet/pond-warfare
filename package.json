@@ -18,7 +18,7 @@
     "@capacitor/android": "^7.2.0",
     "@capacitor/cli": "^7.2.0",
     "@capacitor/core": "^7.2.0",
-    "bitecs": "^0.3.43",
+    "bitecs": "^0.4.0",
     "pixi.js": "^8.6.6",
     "preact": "^10.26.5"
   },

@@ -11,7 +11,7 @@
  * - Remove projectile entity on hit
  */
 
-import { defineQuery, addEntity, addComponent, removeEntity, hasComponent } from 'bitecs';
+import { query, addEntity, addComponent, removeEntity, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -22,7 +22,6 @@ import {
 import { PROJECTILE_SPEED, PALETTE } from '@/constants';
 import { takeDamage } from '@/ecs/systems/health';
 
-const projectileQuery = defineQuery([Position, ProjectileData, IsProjectile]);
 
 /**
  * Helper to spawn a projectile entity. Used by combat system for snipers and towers.
@@ -39,11 +38,11 @@ export function spawnProjectile(
 ): number {
   const eid = addEntity(world.ecs);
 
-  addComponent(world.ecs, Position, eid);
+  addComponent(world.ecs, eid, Position);
   Position.x[eid] = x;
   Position.y[eid] = y;
 
-  addComponent(world.ecs, ProjectileData, eid);
+  addComponent(world.ecs, eid, ProjectileData);
   ProjectileData.targetEntity[eid] = targetEnt;
   ProjectileData.targetX[eid] = tx;
   ProjectileData.targetY[eid] = ty;
@@ -51,13 +50,13 @@ export function spawnProjectile(
   ProjectileData.ownerEntity[eid] = owner;
   ProjectileData.speed[eid] = PROJECTILE_SPEED;
 
-  addComponent(world.ecs, IsProjectile, eid);
+  addComponent(world.ecs, eid, IsProjectile);
 
   return eid;
 }
 
 export function projectileSystem(world: GameWorld): void {
-  const projectiles = projectileQuery(world.ecs);
+  const projectiles = query(world.ecs, [Position, ProjectileData, IsProjectile]);
 
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const eid = projectiles[i];
@@ -69,7 +68,7 @@ export function projectileSystem(world: GameWorld): void {
     // Original: if (this.target && this.target.hp > 0) { this.tx = this.target.x; this.ty = this.target.y; }
     if (
       targetEnt &&
-      hasComponent(world.ecs, Health, targetEnt) &&
+      hasComponent(world.ecs, targetEnt, Health) &&
       Health.current[targetEnt] > 0
     ) {
       ProjectileData.targetX[eid] = Position.x[targetEnt];
@@ -91,7 +90,7 @@ export function projectileSystem(world: GameWorld): void {
       // Original: if (this.target && this.target.hp > 0) this.target.takeDamage(this.dmg, this.owner);
       if (
         targetEnt &&
-        hasComponent(world.ecs, Health, targetEnt) &&
+        hasComponent(world.ecs, targetEnt, Health) &&
         Health.current[targetEnt] > 0
       ) {
         const owner = ProjectileData.ownerEntity[eid];

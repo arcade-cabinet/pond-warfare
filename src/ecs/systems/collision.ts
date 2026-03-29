@@ -8,7 +8,7 @@
  * - Clamp entity positions to world bounds (margin of 20px)
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -24,10 +24,9 @@ import {
   WORLD_BOUNDS_MARGIN,
 } from '@/constants';
 
-const collidableQuery = defineQuery([Position, Collider]);
 
 export function collisionSystem(world: GameWorld): void {
-  const ents = collidableQuery(world.ecs);
+  const ents = query(world.ecs, [Position, Collider]);
 
   // Original iterates each non-building/non-resource entity against all others.
   // For each mobile entity (not building, not resource), push apart overlapping circles.
@@ -36,8 +35,8 @@ export function collisionSystem(world: GameWorld): void {
 
     // Skip buildings and resources - they don't get pushed
     // Original: if (o===this || o.isBuilding || o.isResource) continue;
-    if (hasComponent(world.ecs, IsBuilding, eid)) continue;
-    if (hasComponent(world.ecs, IsResource, eid)) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+    if (hasComponent(world.ecs, eid, IsResource)) continue;
     // Skip dead entities
     if (Health.current[eid] <= 0) continue;
 
@@ -49,8 +48,8 @@ export function collisionSystem(world: GameWorld): void {
       const other = ents[j];
       if (other === eid) continue;
       // Original: if (o===this || o.isBuilding || o.isResource) continue;
-      if (hasComponent(world.ecs, IsBuilding, other)) continue;
-      if (hasComponent(world.ecs, IsResource, other)) continue;
+      if (hasComponent(world.ecs, other, IsBuilding)) continue;
+      if (hasComponent(world.ecs, other, IsResource)) continue;
 
       const dx = ax - Position.x[other];
       const dy = ay - Position.y[other];

@@ -13,7 +13,7 @@
  * - cancelTrain() (lines 1096-1106)
  */
 
-import { defineQuery, hasComponent } from 'bitecs';
+import { query, hasComponent } from 'bitecs';
 import type { GameWorld } from '@/ecs/world';
 import {
   Position,
@@ -37,28 +37,27 @@ import { TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { audio } from '@/audio/audio-system';
 
-const allEntitiesQuery = defineQuery([Position, Health, FactionTag, EntityTypeTag]);
 
 /**
  * Find the entity closest to (x, y) within click tolerance.
  * Prioritizes non-resource entities and sorts by y descending (top-most first).
  */
 export function getEntityAt(world: GameWorld, x: number, y: number): number | null {
-  const ents = allEntitiesQuery(world.ecs);
+  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
 
   // Build a sorted copy: non-resources first, then by y descending
   const sorted = [...ents]
-    .filter((eid) => Health.current[eid] > 0 || hasComponent(world.ecs, IsResource, eid))
+    .filter((eid) => Health.current[eid] > 0 || hasComponent(world.ecs, eid, IsResource))
     .sort((a, b) => {
-      const aRes = hasComponent(world.ecs, IsResource, a) ? 1 : 0;
-      const bRes = hasComponent(world.ecs, IsResource, b) ? 1 : 0;
+      const aRes = hasComponent(world.ecs, a, IsResource) ? 1 : 0;
+      const bRes = hasComponent(world.ecs, b, IsResource) ? 1 : 0;
       if (aRes !== bRes) return aRes - bRes;
       return Position.y[b] - Position.y[a];
     });
 
   for (const eid of sorted) {
-    const radius = hasComponent(world.ecs, Collider, eid) ? Collider.radius[eid] : 16;
-    const height = hasComponent(world.ecs, Sprite, eid) ? Sprite.height[eid] : 32;
+    const radius = hasComponent(world.ecs, eid, Collider) ? Collider.radius[eid] : 16;
+    const height = hasComponent(world.ecs, eid, Sprite) ? Sprite.height[eid] : 32;
     const hitW = Math.max(25, radius + 15);
     const hitH = Math.max(25, height / 2 + 15);
 
@@ -78,9 +77,9 @@ export function hasPlayerUnitsSelected(world: GameWorld): boolean {
     world.selection.length > 0 &&
     world.selection.some(
       (eid) =>
-        hasComponent(world.ecs, FactionTag, eid) &&
+        hasComponent(world.ecs, eid, FactionTag) &&
         FactionTag.faction[eid] === Faction.Player &&
-        !hasComponent(world.ecs, IsBuilding, eid),
+        !hasComponent(world.ecs, eid, IsBuilding),
     )
   );
 }
@@ -125,14 +124,14 @@ export function issueContextCommand(
       color: 'rgba(34, 197, 94, 0.8)',
     });
   } else if (
-    hasComponent(world.ecs, FactionTag, target) &&
+    hasComponent(world.ecs, target, FactionTag) &&
     FactionTag.faction[target] === Faction.Enemy
   ) {
     world.groundPings.push({
       x: Position.x[target], y: Position.y[target], life: 20, maxLife: 20,
       color: 'rgba(239, 68, 68, 0.8)',
     });
-  } else if (hasComponent(world.ecs, IsResource, target)) {
+  } else if (hasComponent(world.ecs, target, IsResource)) {
     world.groundPings.push({
       x: Position.x[target], y: Position.y[target], life: 20, maxLife: 20,
       color: 'rgba(250, 204, 21, 0.8)',
@@ -142,24 +141,24 @@ export function issueContextCommand(
   // Count movable player units for formation
   const movableUnits = world.selection.filter(
     (eid) =>
-      hasComponent(world.ecs, FactionTag, eid) &&
+      hasComponent(world.ecs, eid, FactionTag) &&
       FactionTag.faction[eid] === Faction.Player &&
-      !hasComponent(world.ecs, IsBuilding, eid),
+      !hasComponent(world.ecs, eid, IsBuilding),
   );
   const count = movableUnits.length;
 
   for (let idx = 0; idx < world.selection.length; idx++) {
     const eid = world.selection[idx];
-    if (!hasComponent(world.ecs, FactionTag, eid)) continue;
+    if (!hasComponent(world.ecs, eid, FactionTag)) continue;
     if (FactionTag.faction[eid] !== Faction.Player) continue;
-    if (hasComponent(world.ecs, IsBuilding, eid)) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
 
     const kind = EntityTypeTag.kind[eid] as EntityKind;
 
     if (target) {
       const tFaction = FactionTag.faction[target] as Faction;
-      const isTargetBuilding = hasComponent(world.ecs, IsBuilding, target);
-      const isTargetResource = hasComponent(world.ecs, IsResource, target);
+      const isTargetBuilding = hasComponent(world.ecs, target, IsBuilding);
+      const isTargetResource = hasComponent(world.ecs, target, IsResource);
 
       if (tFaction === Faction.Enemy) {
         // Attack
@@ -237,7 +236,7 @@ export function issueContextCommand(
  */
 export function selectIdleWorker(world: GameWorld): void {
   audio.selectUnit();
-  const ents = allEntitiesQuery(world.ecs);
+  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   const idles = ents.filter(
     (eid) =>
       FactionTag.faction[eid] === Faction.Player &&
@@ -249,7 +248,7 @@ export function selectIdleWorker(world: GameWorld): void {
     world.idleWorkerIdx = world.idleWorkerIdx % idles.length;
     // Deselect all
     for (const eid of world.selection) {
-      if (hasComponent(world.ecs, Selectable, eid)) {
+      if (hasComponent(world.ecs, eid, Selectable)) {
         Selectable.selected[eid] = 0;
       }
     }
@@ -267,19 +266,19 @@ export function selectIdleWorker(world: GameWorld): void {
  */
 export function selectArmy(world: GameWorld): void {
   audio.selectUnit();
-  const ents = allEntitiesQuery(world.ecs);
+  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   const army = ents.filter(
     (eid) =>
       FactionTag.faction[eid] === Faction.Player &&
-      !hasComponent(world.ecs, IsBuilding, eid) &&
-      !hasComponent(world.ecs, IsResource, eid) &&
+      !hasComponent(world.ecs, eid, IsBuilding) &&
+      !hasComponent(world.ecs, eid, IsResource) &&
       EntityTypeTag.kind[eid] !== EntityKind.Gatherer &&
       Health.current[eid] > 0,
   );
 
   if (army.length > 0) {
     for (const eid of world.selection) {
-      if (hasComponent(world.ecs, Selectable, eid)) {
+      if (hasComponent(world.ecs, eid, Selectable)) {
         Selectable.selected[eid] = 0;
       }
     }
@@ -305,11 +304,11 @@ export function canPlaceBuilding(
   const hw = spriteW / 2;
   const hh = spriteH / 2;
 
-  const ents = allEntitiesQuery(world.ecs);
+  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   for (const eid of ents) {
-    if (!hasComponent(world.ecs, IsBuilding, eid)) continue;
-    const ehw = hasComponent(world.ecs, Sprite, eid) ? Sprite.width[eid] / 2 : 48;
-    const ehh = hasComponent(world.ecs, Sprite, eid) ? Sprite.height[eid] / 2 : 48;
+    if (!hasComponent(world.ecs, eid, IsBuilding)) continue;
+    const ehw = hasComponent(world.ecs, eid, Sprite) ? Sprite.width[eid] / 2 : 48;
+    const ehh = hasComponent(world.ecs, eid, Sprite) ? Sprite.height[eid] / 2 : 48;
     if (
       Math.abs(bx - Position.x[eid]) < hw + ehw - 10 &&
       Math.abs(by - Position.y[eid]) < hh + ehh - 10
@@ -372,7 +371,7 @@ export function placeBuilding(
     // Send selected gatherers to build
     for (const selEid of world.selection) {
       if (
-        hasComponent(world.ecs, EntityTypeTag, selEid) &&
+        hasComponent(world.ecs, selEid, EntityTypeTag) &&
         EntityTypeTag.kind[selEid] === EntityKind.Gatherer &&
         FactionTag.faction[selEid] === Faction.Player
       ) {
