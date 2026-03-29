@@ -16,6 +16,11 @@ export const maxFood = signal(0);
 export const rateClams = signal(0);
 export const rateTwigs = signal(0);
 
+// ---- Enemy economy ----
+export const enemyClams = signal(0);
+export const enemyTwigs = signal(0);
+export const enemyEconomyVisible = signal(false);
+
 // ---- Selection info ----
 export const selectionCount = signal(0);
 export const selectionName = signal('No Selection');
@@ -116,6 +121,13 @@ export const hpBarColor = computed(() => {
 });
 
 export const colorBlindMode = signal(false);
+
+// ---- Settings panel ----
+export const settingsOpen = signal(false);
+export const masterVolume = signal(80);
+export const musicVolume = signal(50);
+export const sfxVolume = signal(80);
+export const autoSaveEnabled = signal(false);
 
 export const speedLabel = computed(() => `${gameSpeed.value}x`);
 export const muteLabel = computed(() => (muted.value ? '\u{1F507}' : '\u{1F50A}'));

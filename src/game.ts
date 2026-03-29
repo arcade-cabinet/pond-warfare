@@ -13,6 +13,7 @@ import { ENTITY_DEFS, entityKindFromString, entityKindName } from '@/config/enti
 import { canResearch, TECH_UPGRADES } from '@/config/tech-tree';
 import {
   DAY_FRAMES,
+  EXPLORED_SCALE,
   SPEED_LEVELS,
   TILE_SIZE,
   TRAIN_TIMER,
@@ -93,6 +94,7 @@ import {
 } from '@/rendering/pixi-app';
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
+import { saveGame } from '@/save-system';
 import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 import {
   type ActionButtonDef,
@@ -831,6 +833,24 @@ export class Game {
     if (this.world.frameCount % 30 === 0) {
       this.syncUIStore();
     }
+
+    // Auto-save every 60 seconds (3600 frames at 60fps) when enabled
+    if (
+      store.autoSaveEnabled.value &&
+      this.world.frameCount > 0 &&
+      this.world.frameCount % 3600 === 0 &&
+      this.world.state === 'playing'
+    ) {
+      const json = saveGame(this.world);
+      localStorage.setItem('pond-warfare-save', json);
+      this.world.floatingTexts.push({
+        x: this.world.camX + (this.world.viewWidth || 400) / 2,
+        y: this.world.camY + 60,
+        text: 'Auto-saved',
+        color: '#4ade80',
+        life: 60,
+      });
+    }
   }
 
   /** Render one frame */
@@ -1063,8 +1083,41 @@ export class Game {
     store.clams.value = w.resources.clams;
     store.twigs.value = w.resources.twigs;
     // food and maxFood are calculated below from entity counts
+
+    // Resource income rate tracking: compute per-second deltas every 60 frames
+    if (w.frameCount > 0 && w.frameCount % 60 === 0) {
+      w.resTracker.rateClams = w.resources.clams - w.resTracker.lastClams;
+      w.resTracker.rateTwigs = w.resources.twigs - w.resTracker.lastTwigs;
+      w.resTracker.lastClams = w.resources.clams;
+      w.resTracker.lastTwigs = w.resources.twigs;
+    }
     store.rateClams.value = w.resTracker.rateClams;
     store.rateTwigs.value = w.resTracker.rateTwigs;
+
+    // Enemy economy: sync resource counts
+    store.enemyClams.value = w.enemyResources.clams;
+    store.enemyTwigs.value = w.enemyResources.twigs;
+
+    // Enemy economy visibility: check if any PredatorNest is in an explored area
+    if (!store.enemyEconomyVisible.value && this.exploredCtx) {
+      const nestEnts = query(w.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+      for (let i = 0; i < nestEnts.length; i++) {
+        const eid = nestEnts[i];
+        if (EntityTypeTag.kind[eid] !== EntityKind.PredatorNest) continue;
+        if (Health.current[eid] <= 0) continue;
+        const epx = Math.floor(Position.x[eid] / EXPLORED_SCALE);
+        const epy = Math.floor(Position.y[eid] / EXPLORED_SCALE);
+        const ew = this.exploredCtx.canvas.width;
+        const eh = this.exploredCtx.canvas.height;
+        if (epx >= 0 && epx < ew && epy >= 0 && epy < eh) {
+          const pixel = this.exploredCtx.getImageData(epx, epy, 1, 1).data;
+          if (pixel[0] >= 10) {
+            store.enemyEconomyVisible.value = true;
+            break;
+          }
+        }
+      }
+    }
     store.gameSpeed.value = w.gameSpeed;
     store.gameState.value = w.state;
     store.muted.value = audio.muted;

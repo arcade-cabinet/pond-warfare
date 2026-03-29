@@ -14,6 +14,9 @@ import {
   clams,
   colorBlindMode,
   ctrlGroupCounts,
+  enemyClams,
+  enemyEconomyVisible,
+  enemyTwigs,
   foodAtCap,
   foodDisplay,
   gameTimeDisplay,
@@ -65,11 +68,18 @@ export interface HUDProps {
   onAttackMoveClick?: () => void;
   onHaltClick?: () => void;
   onCtrlGroupClick?: (group: number) => void;
+  onSaveCtrlGroup?: (group: number) => void;
+  onSaveClick?: () => void;
+  onLoadClick?: () => void;
+  onSettingsClick?: () => void;
 }
 
 export function HUD(props: HUDProps) {
   const clamsRate = rateClams.value;
   const twigsRate = rateTwigs.value;
+
+  // Save-group picker state
+  const [saveGroupOpen, setSaveGroupOpen] = useState(false);
 
   // Resource flash: track previous values and set flash class on significant change
   const prevClams = useRef(clams.value);
@@ -204,6 +214,38 @@ export function HUD(props: HUDProps) {
             >
               CB
             </button>
+            <button
+              type="button"
+              id="save-btn"
+              class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-green-400 font-bold"
+              title="Save Game"
+              onClick={props.onSaveClick}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              id="load-btn"
+              class={`text-[10px] md:text-xs px-1 md:px-2 py-0.5 border rounded font-bold ${
+                localStorage.getItem('pond-warfare-save')
+                  ? 'bg-slate-700 border-slate-500 cursor-pointer hover:bg-slate-600 text-amber-400'
+                  : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'
+              }`}
+              title="Load Game"
+              disabled={!localStorage.getItem('pond-warfare-save')}
+              onClick={props.onLoadClick}
+            >
+              Load
+            </button>
+            <button
+              type="button"
+              id="settings-btn"
+              class="text-[10px] md:text-xs px-1 md:px-2 py-0.5 bg-slate-700 border border-slate-500 rounded cursor-pointer hover:bg-slate-600 text-slate-300"
+              title="Settings"
+              onClick={props.onSettingsClick}
+            >
+              {'\u2699'}
+            </button>
           </div>
         </div>
       </div>
@@ -229,6 +271,21 @@ export function HUD(props: HUDProps) {
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Enemy economy indicator (visible after scouting a nest) */}
+      {enemyEconomyVisible.value && (
+        <div class="absolute top-10 md:top-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-slate-900 bg-opacity-80 border border-red-800 rounded px-2 py-0.5 text-[10px] md:text-xs">
+          <span class="text-red-400 font-bold">Enemy:</span>
+          <div class="flex items-center gap-1">
+            <div class="w-2 h-2 bg-slate-300 border border-slate-100 rounded-full" />
+            <span class="text-slate-400">{enemyClams}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="w-2 h-2 bg-amber-700 border border-amber-500" />
+            <span class="text-slate-400">{enemyTwigs}</span>
+          </div>
         </div>
       )}
 
@@ -320,6 +377,54 @@ export function HUD(props: HUDProps) {
         >
           <span class="text-xs md:text-sm">Stop</span>
         </button>
+      )}
+
+      {/* Save ctrl-group button (visible when units are selected) */}
+      {selectionCount.value > 0 && hasPlayerUnits.value && (
+        <div class="absolute top-[232px] md:top-64 right-2 md:right-6 z-20">
+          {!saveGroupOpen ? (
+            <button
+              type="button"
+              class="ui-panel border-2 border-purple-600 px-3 py-1 md:px-4 md:py-2 rounded-full text-purple-400 font-bold flex items-center gap-2 hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+              title="Save selection to a control group"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSaveGroupOpen(true);
+              }}
+            >
+              <span class="text-xs md:text-sm">Save Group</span>
+            </button>
+          ) : (
+            <div class="flex gap-1 items-center bg-slate-900 bg-opacity-90 border border-purple-600 rounded-full px-2 py-1 shadow-lg">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                <button
+                  type="button"
+                  key={`sg-${n}`}
+                  class="w-7 h-7 bg-slate-800 border border-purple-500 rounded text-purple-300 font-bold text-xs hover:bg-purple-900 hover:border-purple-400 cursor-pointer flex items-center justify-center transition-colors"
+                  title={`Save to group ${n}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (props.onSaveCtrlGroup) props.onSaveCtrlGroup(n);
+                    setSaveGroupOpen(false);
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                type="button"
+                class="w-7 h-7 bg-slate-800 border border-slate-600 rounded text-slate-400 font-bold text-xs hover:bg-slate-700 cursor-pointer flex items-center justify-center transition-colors"
+                title="Cancel"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSaveGroupOpen(false);
+                }}
+              >
+                X
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Attack-move mode banner */}

@@ -136,7 +136,7 @@ export class AudioSystem {
       synth.envelope.decay = duration * 0.8;
       synth.envelope.sustain = 0;
       synth.envelope.release = duration * 0.2;
-      synth.volume.value = Tone.gainToDb(vol);
+      synth.volume.value = Tone.gainToDb(vol * this.sfxGain);
 
       synth.triggerAttackRelease(freq, duration);
 
@@ -156,6 +156,50 @@ export class AudioSystem {
     }
   }
 
+  /** Volume levels (0-100) for master, music, and SFX channels. */
+  private _masterVol = 80;
+  private _musicVol = 50;
+  private _sfxVol = 80;
+
+  /** Effective SFX gain multiplier (master * sfx, both 0-1). */
+  private get sfxGain(): number {
+    return (this._masterVol / 100) * (this._sfxVol / 100);
+  }
+
+  /** Effective music gain multiplier (master * music, both 0-1). */
+  private get musicGainLevel(): number {
+    return (this._masterVol / 100) * (this._musicVol / 100);
+  }
+
+  /** Set master volume (0-100). Adjusts all output. */
+  setMasterVolume(v: number): void {
+    this._masterVol = clamp(v, 0, 100);
+    this.applyMusicVolume();
+  }
+
+  /** Set music volume (0-100). */
+  setMusicVolume(v: number): void {
+    this._musicVol = clamp(v, 0, 100);
+    this.applyMusicVolume();
+  }
+
+  /** Set SFX volume (0-100). */
+  setSfxVolume(v: number): void {
+    this._sfxVol = clamp(v, 0, 100);
+  }
+
+  /** Apply current music volume to gain nodes. */
+  private applyMusicVolume(): void {
+    if (this._muted) return;
+    const ml = this.musicGainLevel;
+    if (this.musicGain) {
+      this.musicGain.gain.rampTo(0.15 * ml, 0.1);
+    }
+    if (this.bassGain) {
+      this.bassGain.gain.rampTo(0.08 * ml, 0.1);
+    }
+  }
+
   toggleMute(): void {
     this._muted = !this._muted;
     if (this.ambientNoise) {
@@ -166,11 +210,12 @@ export class AudioSystem {
       }
     }
     // Mute/unmute background music gain nodes
+    const ml = this.musicGainLevel;
     if (this.musicGain) {
-      this.musicGain.gain.rampTo(this._muted ? 0 : 0.15, 0.1);
+      this.musicGain.gain.rampTo(this._muted ? 0 : 0.15 * ml, 0.1);
     }
     if (this.bassGain) {
-      this.bassGain.gain.rampTo(this._muted ? 0 : 0.08, 0.1);
+      this.bassGain.gain.rampTo(this._muted ? 0 : 0.08 * ml, 0.1);
     }
   }
 
@@ -296,14 +341,15 @@ export class AudioSystem {
       transport.bpm.value = peaceful ? 100 : 140;
 
       // Melody synth through a gain node for volume control
-      this.musicGain = new Tone.Gain(this._muted ? 0 : 0.15).toDestination();
+      const ml = this.musicGainLevel;
+      this.musicGain = new Tone.Gain(this._muted ? 0 : 0.15 * ml).toDestination();
       this.musicSynth = new Tone.Synth({
         oscillator: { type: 'square' },
         envelope: { attack: 0.005, decay: 0.15, sustain: 0.1, release: 0.2 },
       }).connect(this.musicGain);
 
       // Bass synth
-      this.bassGain = new Tone.Gain(this._muted ? 0 : 0.08).toDestination();
+      this.bassGain = new Tone.Gain(this._muted ? 0 : 0.08 * ml).toDestination();
       this.bassSynth = new Tone.Synth({
         oscillator: { type: 'triangle' },
         envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.3 },

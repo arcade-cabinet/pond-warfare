@@ -10,13 +10,16 @@ import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
+import { SPEED_LEVELS } from '@/constants';
 import { Health, Position, Selectable, UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
+import { loadGame, saveGame } from '@/save-system';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
 import { IntroOverlay } from './intro-overlay';
+import { SettingsPanel } from './settings-panel';
 import { Sidebar } from './sidebar';
 import * as store from './store';
 import { TechTreePanel } from './tech-tree-panel';
@@ -143,6 +146,43 @@ export function App({ onMount }: AppProps) {
             }
             game.syncUIStore();
           }}
+          onSaveClick={() => {
+            const json = saveGame(game.world);
+            localStorage.setItem('pond-warfare-save', json);
+            game.world.floatingTexts.push({
+              x: game.world.camX + (game.world.viewWidth || 400) / 2,
+              y: game.world.camY + 60,
+              text: 'Game Saved',
+              color: '#4ade80',
+              life: 60,
+            });
+            audio.click();
+          }}
+          onLoadClick={() => {
+            const json = localStorage.getItem('pond-warfare-save');
+            if (json) {
+              loadGame(game.world, json);
+              game.syncUIStore();
+              audio.click();
+            }
+          }}
+          onSettingsClick={() => {
+            store.settingsOpen.value = !store.settingsOpen.value;
+            audio.click();
+          }}
+          onSaveCtrlGroup={(group) => {
+            const w = game.world;
+            w.ctrlGroups[group] = [...w.selection];
+            w.floatingTexts.push({
+              x: w.camX + w.viewWidth / 2,
+              y: w.camY + 60,
+              text: `Group ${group} set (${w.ctrlGroups[group].length})`,
+              color: '#c084fc',
+              life: 60,
+            });
+            audio.click();
+            game.syncUIStore();
+          }}
           onCtrlGroupClick={(group) => {
             const w = game.world;
             const g = w.ctrlGroups[group];
@@ -213,6 +253,41 @@ export function App({ onMount }: AppProps) {
             }}
             onClose={() => {
               store.techTreeOpen.value = false;
+            }}
+          />
+        )}
+
+        {/* Settings panel overlay */}
+        {store.settingsOpen.value && (
+          <SettingsPanel
+            onMasterVolumeChange={(v) => {
+              store.masterVolume.value = v;
+              audio.setMasterVolume(v);
+            }}
+            onMusicVolumeChange={(v) => {
+              store.musicVolume.value = v;
+              audio.setMusicVolume(v);
+            }}
+            onSfxVolumeChange={(v) => {
+              store.sfxVolume.value = v;
+              audio.setSfxVolume(v);
+            }}
+            onSpeedSet={(speed) => {
+              const w = game.world;
+              if (SPEED_LEVELS.includes(speed as 1 | 2 | 3)) {
+                w.gameSpeed = speed;
+                store.gameSpeed.value = speed;
+              }
+            }}
+            onColorBlindToggle={() => {
+              store.colorBlindMode.value = !store.colorBlindMode.value;
+              setColorBlindMode(store.colorBlindMode.value);
+            }}
+            onAutoSaveToggle={() => {
+              store.autoSaveEnabled.value = !store.autoSaveEnabled.value;
+            }}
+            onClose={() => {
+              store.settingsOpen.value = false;
             }}
           />
         )}
