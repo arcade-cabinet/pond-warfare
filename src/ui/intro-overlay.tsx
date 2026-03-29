@@ -60,8 +60,11 @@ export function IntroOverlay() {
       >
         Establish your economy before the predators arrive.
       </p>
-      <p class="text-xs text-slate-500 mt-4 text-center px-4">
+      <p class="text-xs text-slate-500 mt-4 text-center px-4 hidden md:block">
         Right-click to command &bull; WASD to scroll &bull; Ctrl+# to set groups
+      </p>
+      <p class="text-xs text-slate-500 mt-4 text-center px-4 md:hidden">
+        Long-press to command &bull; Two-finger pan &bull; Pinch to zoom
       </p>
     </div>
   );
