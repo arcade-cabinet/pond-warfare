@@ -3,6 +3,7 @@
 ## Critical Issues (fix immediately)
 
 ### 1. No Tutorial / Onboarding
+
 - **Affected:** Sarah (casual), Pat (accessibility) - 60% of potential players
 - **Fix:** Add guided first-game experience with tooltip prompts:
   - "Click a Gatherer to select it" → "Right-click a resource to gather"
