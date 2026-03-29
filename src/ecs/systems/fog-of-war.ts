@@ -74,4 +74,63 @@ export function fogOfWarSystem(world: GameWorld): void {
     exploredCtx.arc(ex, ey, rad, 0, Math.PI * 2);
     exploredCtx.fill();
   }
+
+  // Root Network: all player buildings share the largest vision radius
+  if (world.tech.rootNetwork) {
+    // Find the max reveal radius among all player buildings
+    let maxBuildingRad = 16;
+    for (let i = 0; i < entities.length; i++) {
+      const eid = entities[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if (!hasComponent(world.ecs, eid, IsBuilding)) continue;
+      const kind = hasComponent(world.ecs, eid, EntityTypeTag)
+        ? (EntityTypeTag.kind[eid] as EntityKind)
+        : undefined;
+      let rad = 16;
+      if (kind === EntityKind.ScoutPost) rad = 24;
+      if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
+      if (rad > maxBuildingRad) maxBuildingRad = rad;
+    }
+
+    // Draw shared vision for ALL player buildings at max radius
+    for (let i = 0; i < entities.length; i++) {
+      const eid = entities[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if (!hasComponent(world.ecs, eid, IsBuilding)) continue;
+
+      const ex = Math.floor(Position.x[eid] / EXPLORED_SCALE);
+      const ey = Math.floor(Position.y[eid] / EXPLORED_SCALE);
+
+      exploredCtx.fillStyle = 'rgba(255,255,255,0.15)';
+      exploredCtx.beginPath();
+      exploredCtx.arc(ex, ey, maxBuildingRad, 0, Math.PI * 2);
+      exploredCtx.fill();
+    }
+  }
+
+  // Compute explored percentage every 60 frames (for campaign objectives)
+  if (world.frameCount % 60 === 0) {
+    const cw = exploredCtx.canvas.width;
+    const ch = exploredCtx.canvas.height;
+    if (cw > 0 && ch > 0) {
+      // Sample a grid of pixels rather than reading the entire canvas
+      const step = 4;
+      const imgData = exploredCtx.getImageData(0, 0, cw, ch);
+      const data = imgData.data;
+      let explored = 0;
+      let total = 0;
+      for (let sy = 0; sy < ch; sy += step) {
+        for (let sx = 0; sx < cw; sx += step) {
+          total++;
+          // Check alpha channel (index 3) - any non-zero alpha means explored
+          const idx = (sy * cw + sx) * 4 + 3;
+          if (data[idx] > 10) explored++;
+        }
+      }
+      (world as GameWorld & { exploredPercent?: number }).exploredPercent =
+        total > 0 ? Math.round((explored / total) * 100) : 0;
+    }
+  }
 }

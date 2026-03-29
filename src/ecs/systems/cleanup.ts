@@ -17,45 +17,49 @@ import { query } from 'bitecs';
 import { Building, EntityTypeTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind } from '@/types';
+import { reduceVisualNoise } from '@/ui/store';
 import { spawnParticle } from '@/utils/particles';
 
 export function cleanupSystem(world: GameWorld): void {
   // --- Building ambient particles (lines 1579-1584) ---
-  // Only for completed buildings
-  const buildings = query(world.ecs, [Position, Health, IsBuilding, EntityTypeTag, Building]);
-  for (let i = 0; i < buildings.length; i++) {
-    const eid = buildings[i];
-    if (Health.current[eid] <= 0) continue;
-    if (Building.progress[eid] < 100) continue;
+  // Skip ambient particle spawning when visual noise reduction is enabled
+  if (!reduceVisualNoise.value) {
+    // Only for completed buildings
+    const buildings = query(world.ecs, [Position, Health, IsBuilding, EntityTypeTag, Building]);
+    for (let i = 0; i < buildings.length; i++) {
+      const eid = buildings[i];
+      if (Health.current[eid] <= 0) continue;
+      if (Building.progress[eid] < 100) continue;
 
-    const kind = EntityTypeTag.kind[eid] as EntityKind;
+      const kind = EntityTypeTag.kind[eid] as EntityKind;
 
-    // Armory smoke (original: if (this.type === 'armory' && GAME.frameCount % 5 === 0))
-    if (kind === EntityKind.Armory && world.frameCount % 5 === 0) {
-      spawnParticle(
-        world,
-        Position.x[eid] + 8,
-        Position.y[eid] - 12,
-        (Math.random() - 0.5) * 0.5,
-        0.5 + Math.random() * 0.5, // Positive vy = moves up (y -= vy)
-        60,
-        'rgba(156, 163, 175, 0.4)',
-        Math.random() * 3 + 2,
-      );
-    }
+      // Armory smoke (original: if (this.type === 'armory' && GAME.frameCount % 5 === 0))
+      if (kind === EntityKind.Armory && world.frameCount % 5 === 0) {
+        spawnParticle(
+          world,
+          Position.x[eid] + 8,
+          Position.y[eid] - 12,
+          (Math.random() - 0.5) * 0.5,
+          0.5 + Math.random() * 0.5, // Positive vy = moves up (y -= vy)
+          60,
+          'rgba(156, 163, 175, 0.4)',
+          Math.random() * 3 + 2,
+        );
+      }
 
-    // Lodge water bubbles (original: if (this.type === 'lodge' && GAME.frameCount % 30 === 0))
-    if (kind === EntityKind.Lodge && world.frameCount % 30 === 0) {
-      spawnParticle(
-        world,
-        Position.x[eid] + (Math.random() - 0.5) * 20,
-        Position.y[eid] + 10 + Math.random() * 10,
-        0,
-        0.2, // Positive vy = bubbles float up (y -= vy)
-        30,
-        'rgba(56, 189, 248, 0.5)',
-        2,
-      );
+      // Lodge water bubbles (original: if (this.type === 'lodge' && GAME.frameCount % 30 === 0))
+      if (kind === EntityKind.Lodge && world.frameCount % 30 === 0) {
+        spawnParticle(
+          world,
+          Position.x[eid] + (Math.random() - 0.5) * 20,
+          Position.y[eid] + 10 + Math.random() * 10,
+          0,
+          0.2, // Positive vy = bubbles float up (y -= vy)
+          30,
+          'rgba(56, 189, 248, 0.5)',
+          2,
+        );
+      }
     }
   }
 

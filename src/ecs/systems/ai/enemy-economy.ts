@@ -14,6 +14,7 @@ import {
   ENEMY_MAX_GATHERERS_PER_NEST,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
+import { triggerSpawnPop } from '@/rendering/animations';
 import {
   Carrying,
   EntityTypeTag,
@@ -28,6 +29,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { spawnDustBurst } from '@/utils/particles';
 import { getEnemyNests } from './helpers';
 
 /** Get difficulty-adjusted gatherer spawn interval */
@@ -104,6 +106,10 @@ export function enemyEconomyTick(world: GameWorld): void {
 
     const gEid = spawnEntity(world, EntityKind.Gatherer, sx, sy, Faction.Enemy);
     if (gEid < 0) continue;
+
+    // Spawn pop animation + dust
+    triggerSpawnPop(gEid);
+    spawnDustBurst(world, sx, sy);
 
     world.enemyResources.clams -= ENEMY_GATHERER_COST;
 

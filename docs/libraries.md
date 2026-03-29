@@ -9,7 +9,7 @@ How each dependency is utilized in Pond Warfare.
 The core data architecture. All game entities are ECS entities with SoA (Structure of Arrays) components.
 
 **Usage:**
-- 13 data components (`Position`, `Health`, `Combat`, `Veterancy`, `UnitStateMachine`, etc.)
+- 14 data components (`Position`, `Health`, `Combat`, `Veterancy`, `UnitStateMachine`, `ProjectileData`, etc.)
 - 5 tag components (`IsBuilding`, `IsResource`, `TowerAI`, `Dead`, `IsProjectile`)
 - `query()` for efficient component-based entity iteration
 - `addEntity()` / `removeEntity()` for lifecycle
@@ -47,8 +47,10 @@ Smooth pathfinding, collision avoidance, and formation movement for ALL units (p
 - `CohesionBehavior` (weight 0.4) - formation movement group cohesion
 - `WanderBehavior` - organic idle patrol for auto-defend
 - `FleeBehavior` - gatherer escape when attacked (1.5s duration)
+- `EvadeBehavior` - Swimmer evasion when under fire
 - Faction-agnostic: `addUnit()` / `removeUnit()` for any entity
 - `setFormation()` - enable flocking for group move commands
+- Used for all 33 entity types including Swimmer (amphibious), evolved enemies, Commander, etc.
 
 **Files:** `src/ai/yuka-manager.ts`, `src/yuka.d.ts`
 
@@ -67,17 +69,20 @@ Collision detection and overlap resolution.
 
 ### Tone.js (15.x) - Audio
 
-Complete audio system with procedural synthesis.
+Complete audio system with procedural synthesis and unit-specific SFX.
 
 **Usage:**
-- **SFX** (14 effects): `Synth`, `NoiseSynth`, `MetalSynth` for hit, shoot, build, death, etc.
+- **SFX** (25+ effects): `Synth` with pooled synth+panner pairs (16 pre-allocated)
+- **Unit-specific select sounds**: Brawler (drum thud), Sniper (metallic ping), Healer (wind chime), Catapult (wooden creak), Scout (bird chirp), Commander (horn blast), Gatherer (tool clink), Shieldbearer (shield clang)
+- **Contextual effects**: building placement, research complete, airdrop incoming, train complete, build complete, unit death, building destruction, heal, error
+- **Spatial panning**: SFX panned left/right based on world position relative to camera
 - **Music**: Procedural chiptune via `Sequence` - peaceful (C major, 100 BPM) / hunting (C minor, 140 BPM)
 - **Ambient**: Pond bubbles (filtered noise), cricket chirps (night), wind gusts (day)
 - `Transport` for music timing
 - `Gain` nodes for independent volume control
 - Respects browser AudioContext policy (starts on first user gesture)
 
-**Files:** `src/audio/audio-system.ts`
+**Files:** `src/audio/audio-system.ts`, `src/audio/sfx.ts`
 
 ### anime.js (4.x) - Animations
 
@@ -97,7 +102,7 @@ Smooth transitions and visual polish.
 Lightweight reactive UI framework.
 
 **Usage:**
-- 30+ reactive `signal()` values synced from game state
+- 60+ reactive `signal()` values synced from game state
 - `computed()` for derived UI values (HP percentage, food display)
 - JSX components for HUD, selection panel, action buttons, radial menu
 - Error boundary for graceful crash handling
@@ -106,16 +111,29 @@ Lightweight reactive UI framework.
 
 ### Capacitor (8.x) - Mobile
 
-Android app packaging and native API access.
+Android/iOS app packaging and native API access.
 
 **Usage:**
 - `StatusBar.hide()` for fullscreen
 - `ScreenOrientation.lock('landscape')`
 - `Haptics.impact()` for tactile feedback
-- `Preferences.set/get()` for save data persistence
 - `App.addListener()` for lifecycle events
 
 **Files:** `src/platform/native.ts`
+
+### capacitor-sqlite (8.x) + jeep-sqlite (2.x) - Persistence
+
+SQLite database for ALL platforms. **SQLite is required -- there is no localStorage fallback.**
+
+**Usage:**
+- **Web**: jeep-sqlite Stencil component backed by sql.js + IndexedDB (localforage)
+- **iOS/Android**: native SQLite via Capacitor plugin
+- `CapacitorSQLite` / `SQLiteConnection` / `SQLiteDBConnection` for all DB operations
+- Database name: `pond_warfare`, version 1
+- 5 tables: `saves`, `settings`, `game_history`, `unlocks`, `player_profile`
+- Persists: game saves, settings, achievements, unlocks, player stats, campaign progress, cosmetics, win streaks
+
+**Files:** `src/storage/database.ts`
 
 ## Dev Dependencies
 
@@ -123,6 +141,6 @@ Android app packaging and native API access.
 |------|---------|---------|
 | TypeScript | 6.0 | Type safety |
 | Vite | 8.0 | Bundling + HMR |
-| Vitest | 4.1 | Testing (256 tests) |
+| Vitest | 4.1 | Testing (359 tests across 29 files) |
 | Biome | 2.4 | Linting + formatting |
 | Tailwind CSS | 4.2 | Utility-first styling |

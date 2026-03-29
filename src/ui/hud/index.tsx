@@ -49,6 +49,7 @@ export interface HUDProps {
   onSaveClick?: () => void;
   onLoadClick?: () => void;
   onSettingsClick?: () => void;
+  onKeyboardRefClick?: () => void;
 }
 
 export function HUD(props: HUDProps) {
@@ -62,6 +63,7 @@ export function HUD(props: HUDProps) {
         onSaveClick={props.onSaveClick}
         onLoadClick={props.onLoadClick}
         onSettingsClick={props.onSettingsClick}
+        onKeyboardRefClick={props.onKeyboardRefClick}
       />
       <ProductionQueue />
       <Overlays />

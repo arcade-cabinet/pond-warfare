@@ -17,8 +17,11 @@
 
 import { hasComponent, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { campaignNotifyKilled } from '@/campaign';
+import { shouldLowHpBark, showBark } from '@/config/barks';
 import { ALLY_ASSIST_RADIUS, PALETTE } from '@/constants';
 import {
+  Building,
   Combat,
   EntityTypeTag,
   FactionTag,
@@ -33,6 +36,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { createCorpseId, EntityKind, Faction, SpriteId, UnitState } from '@/types';
+import { reduceVisualNoise } from '@/ui/store';
 import { spawnParticle } from '@/utils/particles';
 
 /**
@@ -64,31 +68,33 @@ export function takeDamage(
   const ty = Position.y[targetEid];
   const isBuilding = hasComponent(world.ecs, targetEid, IsBuilding);
 
-  // Damage particles (original: for(let i=0;i<5;i++) GAME.particles.push({...}))
-  const dmgPColor = isBuilding ? PALETTE.mudLight : PALETTE.clamMeat;
-  for (let p = 0; p < 5; p++) {
-    spawnParticle(
-      world,
-      tx,
-      ty - 10,
-      (Math.random() - 0.5) * 2,
-      Math.random() * 2,
-      15,
-      dmgPColor,
-      3,
-    );
-  }
+  // Damage particles and floating text (skip when visual noise reduction is active)
+  if (!reduceVisualNoise.value) {
+    const dmgPColor = isBuilding ? PALETTE.mudLight : PALETTE.clamMeat;
+    for (let p = 0; p < 5; p++) {
+      spawnParticle(
+        world,
+        tx,
+        ty - 10,
+        (Math.random() - 0.5) * 2,
+        Math.random() * 2,
+        15,
+        dmgPColor,
+        3,
+      );
+    }
 
-  // Floating damage text — color varies by counter multiplier
-  const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
-  const dmgColor = multiplier > 1.0 ? '#f97316' : multiplier < 1.0 ? '#9ca3af' : '#ef4444';
-  world.floatingTexts.push({
-    x: tx + (Math.random() * 10 - 5),
-    y: ty - spriteH / 2 - 5,
-    text: `-${effectiveAmount}`,
-    color: dmgColor,
-    life: 40,
-  });
+    // Floating damage text -- color varies by counter multiplier
+    const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
+    const dmgColor = multiplier > 1.0 ? '#f97316' : multiplier < 1.0 ? '#9ca3af' : '#ef4444';
+    world.floatingTexts.push({
+      x: tx + (Math.random() * 10 - 5),
+      y: ty - spriteH / 2 - 5,
+      text: `-${effectiveAmount}`,
+      color: dmgColor,
+      life: 40,
+    });
+  }
 
   // Retaliation and ally assist (only if target is still alive and has an attacker)
   if (Health.current[targetEid] > 0 && attackerEid !== undefined) {
@@ -198,6 +204,20 @@ export function takeDamage(
     }
   }
 
+  // Low HP bark: when unit drops below 30% HP (once per entity)
+  if (
+    Health.current[targetEid] > 0 &&
+    Health.max[targetEid] > 0 &&
+    Health.current[targetEid] < Health.max[targetEid] * 0.3 &&
+    hasComponent(world.ecs, targetEid, EntityTypeTag) &&
+    hasComponent(world.ecs, targetEid, FactionTag) &&
+    FactionTag.faction[targetEid] === Faction.Player &&
+    shouldLowHpBark(targetEid)
+  ) {
+    const lhKind = EntityTypeTag.kind[targetEid] as EntityKind;
+    showBark(world, targetEid, tx, ty, lhKind, 'low_hp', { color: '#ef4444', force: true });
+  }
+
   // Check for death
   if (Health.current[targetEid] <= 0) {
     processDeath(world, targetEid, attackerEid);
@@ -224,8 +244,12 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     if (faction === Faction.Player && !isBuilding && !isResource) {
       world.stats.unitsLost++;
     }
-    if (faction === Faction.Enemy && !isBuilding) {
-      world.stats.unitsKilled++;
+    if (faction === Faction.Enemy) {
+      if (!isBuilding) {
+        world.stats.unitsKilled++;
+      }
+      // Notify campaign of enemy kill (units and buildings like nests)
+      campaignNotifyKilled(world, EntityTypeTag.kind[eid]);
     }
   }
 
@@ -237,49 +261,51 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     audio.deathUnit();
   }
 
-  // Death particle burst
-  if (isBuilding) {
-    // Ring pattern for buildings
-    for (let j = 0; j < 35; j++) {
-      const angle = (j / 35) * Math.PI * 2;
-      const spread = 2 + Math.random() * 3;
-      spawnParticle(
-        world,
-        ex,
-        ey,
-        Math.cos(angle) * spread,
-        Math.sin(angle) * spread + 2,
-        30,
-        PALETTE.mudLight,
-        4,
-      );
-    }
-  } else {
-    for (let j = 0; j < 20; j++) {
-      spawnParticle(
-        world,
-        ex,
-        ey,
-        (Math.random() - 0.5) * 4,
-        (Math.random() - 0.5) * 4 + 2,
-        30,
-        PALETTE.clamMeat,
-        4,
-      );
-    }
-    // Splat variant particles for units
-    if (!isResource) {
-      for (let j = 0; j < 5; j++) {
+  // Death particle burst (skip when visual noise reduction is active)
+  if (!reduceVisualNoise.value) {
+    if (isBuilding) {
+      // Ring pattern for buildings
+      for (let j = 0; j < 35; j++) {
+        const angle = (j / 35) * Math.PI * 2;
+        const spread = 2 + Math.random() * 3;
         spawnParticle(
           world,
-          ex + (Math.random() - 0.5) * 10,
-          ey + (Math.random() - 0.5) * 10,
-          (Math.random() - 0.5) * 2,
-          Math.random() * 2 + 1,
-          15,
-          PALETTE.clamMeat,
-          6,
+          ex,
+          ey,
+          Math.cos(angle) * spread,
+          Math.sin(angle) * spread + 2,
+          30,
+          PALETTE.mudLight,
+          4,
         );
+      }
+    } else {
+      for (let j = 0; j < 20; j++) {
+        spawnParticle(
+          world,
+          ex,
+          ey,
+          (Math.random() - 0.5) * 4,
+          (Math.random() - 0.5) * 4 + 2,
+          30,
+          PALETTE.clamMeat,
+          4,
+        );
+      }
+      // Splat variant particles for units
+      if (!isResource) {
+        for (let j = 0; j < 5; j++) {
+          spawnParticle(
+            world,
+            ex + (Math.random() - 0.5) * 10,
+            ey + (Math.random() - 0.5) * 10,
+            (Math.random() - 0.5) * 2,
+            Math.random() * 2 + 1,
+            15,
+            PALETTE.clamMeat,
+            6,
+          );
+        }
       }
     }
   }
@@ -294,6 +320,31 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
       life: 1800,
       maxLife: 1800,
     });
+  }
+
+  // Commander death: dramatic announcement, screen shake, no respawn
+  if (
+    hasComponent(world.ecs, eid, EntityTypeTag) &&
+    (EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Commander &&
+    hasComponent(world.ecs, eid, FactionTag) &&
+    FactionTag.faction[eid] === Faction.Player
+  ) {
+    world.floatingTexts.push({
+      x: ex,
+      y: ey - 40,
+      text: 'COMMANDER FALLEN!',
+      color: '#ef4444',
+      life: 180,
+    });
+    world.floatingTexts.push({
+      x: ex,
+      y: ey - 20,
+      text: "The Commander can't be replaced...",
+      color: '#fbbf24',
+      life: 150,
+    });
+    world.shakeTimer = Math.max(world.shakeTimer, 20);
+    audio.deathBuilding(); // Dramatic audio alert
   }
 
   // Boss croc loot
@@ -311,13 +362,87 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     });
   }
 
+  // Death bark (player units only, before entity removal)
+  if (
+    !isBuilding &&
+    !isResource &&
+    hasComponent(world.ecs, eid, FactionTag) &&
+    FactionTag.faction[eid] === Faction.Player &&
+    hasComponent(world.ecs, eid, EntityTypeTag)
+  ) {
+    const deathKind = EntityTypeTag.kind[eid] as EntityKind;
+    showBark(world, eid, ex, ey, deathKind, 'death', { color: '#ef4444', life: 120, force: true });
+  }
+
   // Credit kill to attacker (original lines 1836-1843)
   if (attackerEid !== undefined && hasComponent(world.ecs, attackerEid, Combat)) {
     Combat.kills[attackerEid]++;
+
+    // Kill bark: 30% chance for player attackers
+    if (
+      hasComponent(world.ecs, attackerEid, FactionTag) &&
+      FactionTag.faction[attackerEid] === Faction.Player &&
+      hasComponent(world.ecs, attackerEid, EntityTypeTag) &&
+      Math.random() < 0.3
+    ) {
+      const killKind = EntityTypeTag.kind[attackerEid] as EntityKind;
+      showBark(
+        world,
+        attackerEid,
+        Position.x[attackerEid],
+        Position.y[attackerEid],
+        killKind,
+        'kill',
+        { color: '#fbbf24' },
+      );
+    }
+  }
+
+  // Kill streak tracking: player kills of enemy units (non-building, non-resource)
+  if (
+    !isBuilding &&
+    !isResource &&
+    attackerEid !== undefined &&
+    hasComponent(world.ecs, attackerEid, FactionTag) &&
+    FactionTag.faction[attackerEid] === Faction.Player &&
+    hasComponent(world.ecs, eid, FactionTag) &&
+    FactionTag.faction[eid] === Faction.Enemy
+  ) {
+    const STREAK_WINDOW = 300; // 5 seconds at 60fps
+    if (world.frameCount - world.killStreak.lastKillFrame <= STREAK_WINDOW) {
+      world.killStreak.count++;
+    } else {
+      world.killStreak.count = 1;
+    }
+    world.killStreak.lastKillFrame = world.frameCount;
+
+    // Streak milestones
+    if (world.killStreak.count === 3) {
+      world.floatingTexts.push({
+        x: ex,
+        y: ey - 40,
+        text: 'TRIPLE KILL',
+        color: '#facc15',
+        life: 100,
+      });
+      world.shakeTimer = Math.max(world.shakeTimer, 8);
+    } else if (world.killStreak.count === 5) {
+      world.floatingTexts.push({
+        x: ex,
+        y: ey - 40,
+        text: 'RAMPAGE',
+        color: '#ef4444',
+        life: 120,
+      });
+      world.shakeTimer = Math.max(world.shakeTimer, 15);
+    }
   }
 
   // Clean up Yuka vehicle for enemy entities
   world.yukaManager.removeEnemy(eid);
+
+  // Clean up champion tracking
+  world.championEnemies.delete(eid);
 
   // Clean up training queue slots
   trainingQueueSlots.delete(eid);
@@ -444,6 +569,49 @@ export function healthSystem(world: GameWorld): void {
           20,
           '#22c55e',
           3,
+        );
+
+        // Healer bark: 20% chance when healing
+        if (Math.random() < 0.2) {
+          showBark(world, hEid, Position.x[hEid], Position.y[hEid], EntityKind.Healer, 'heal');
+        }
+      }
+    }
+  }
+
+  // --- Herbalist Hut area heal: every 120 frames, heals all player units within 150px by 2 HP ---
+  if (world.frameCount % 120 === 0) {
+    const huts = query(world.ecs, [Position, Health, IsBuilding, EntityTypeTag, FactionTag]);
+    for (let i = 0; i < huts.length; i++) {
+      const hut = huts[i];
+      if (EntityTypeTag.kind[hut] !== EntityKind.HerbalistHut) continue;
+      if (FactionTag.faction[hut] !== Faction.Player) continue;
+      if (Health.current[hut] <= 0) continue;
+      if (!hasComponent(world.ecs, hut, Building) || Building.progress[hut] < 100) continue;
+      // Heal nearby player units
+      const hx = Position.x[hut];
+      const hy = Position.y[hut];
+      const nearby = world.spatialHash
+        ? world.spatialHash.query(hx, hy, 150)
+        : query(world.ecs, [Position, Health, FactionTag]);
+      for (let j = 0; j < nearby.length; j++) {
+        const uid = nearby[j];
+        if (!hasComponent(world.ecs, uid, FactionTag)) continue;
+        if (FactionTag.faction[uid] !== Faction.Player) continue;
+        if (hasComponent(world.ecs, uid, IsBuilding)) continue;
+        if (!hasComponent(world.ecs, uid, Health)) continue;
+        if (Health.current[uid] <= 0 || Health.current[uid] >= Health.max[uid]) continue;
+        Health.current[uid] = Math.min(Health.max[uid], Health.current[uid] + 2);
+        // Green heal particle
+        spawnParticle(
+          world,
+          Position.x[uid],
+          Position.y[uid] - 8,
+          (Math.random() - 0.5) * 0.8,
+          -Math.random() * 1,
+          15,
+          '#86efac',
+          2,
         );
       }
     }

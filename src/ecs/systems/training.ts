@@ -13,6 +13,7 @@
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { campaignNotifyTrained } from '@/campaign';
 import { TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -27,7 +28,9 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerSpawnPop } from '@/rendering/animations';
 import { type EntityKind, Faction, UnitState } from '@/types';
+import { spawnDustBurst } from '@/utils/particles';
 
 export function trainingSystem(world: GameWorld): void {
   const buildings = query(world.ecs, [
@@ -72,6 +75,9 @@ export function trainingSystem(world: GameWorld): void {
         continue;
       }
 
+      // Notify campaign system of trained unit
+      campaignNotifyTrained(world, unitKind);
+
       // Apply rally point if set
       if (Building.hasRally[eid]) {
         UnitStateMachine.targetX[newEid] = Building.rallyX[eid];
@@ -92,7 +98,10 @@ export function trainingSystem(world: GameWorld): void {
       // Training complete sound
       audio.trainComplete();
 
-      // Training complete particle burst
+      // Spawn pop animation (scale 0 -> 1.2 -> 1.0)
+      triggerSpawnPop(newEid);
+
+      // Training complete particle burst + dust at feet
       for (let j = 0; j < 8; j++) {
         world.particles.push({
           x: sx,
@@ -104,6 +113,8 @@ export function trainingSystem(world: GameWorld): void {
           size: 3,
         });
       }
+      // Dust particles at spawn position
+      spawnDustBurst(world, sx, sy);
     }
   }
 }

@@ -1,8 +1,8 @@
 # Pond Warfare
 
-Warcraft II-style real-time strategy game set in a pond ecosystem. Otters and predators compete for territory, resources, and dominance. Gather clams and twigs, expand your base with multiple Lodges, train an army of brawlers, snipers, and healers, research upgrades, and wage war against an AI opponent that builds its own economy and army.
+Warcraft II-style real-time strategy game set in a pond ecosystem. Two playable factions -- otters and predators -- compete for territory, resources, and dominance. Gather clams, twigs, and rare pearls, expand your base with multiple Lodges, train an army from 10 unique unit types, research 25 technologies with active abilities, play through 5 campaign missions, choose from 7 commanders with unique bonuses, customize AI personality, and climb the ranked leaderboard from Bronze to Diamond.
 
-Built with a modern ECS architecture using bitECS, rendered with PixiJS 8, with AI steering from Yuka.js, physics from Planck.js, procedural audio from Tone.js, and animations from anime.js.
+Built with a modern ECS architecture using bitECS (33 entity types, 18 ECS systems), rendered with PixiJS 8, with AI steering from Yuka.js, physics from Planck.js, procedural audio from Tone.js (unit-specific SFX with spatial panning), animations from anime.js, and SQLite persistence via capacitor-sqlite.
 
 ## Tech Stack
 
@@ -44,15 +44,30 @@ Two-faction RTS: otters vs predators compete for the same finite resource nodes 
 
 ### Key Mechanics
 
-- **Competitive economy**: Both factions harvest from the same clam beds and cattails; resource scarcity forces expansion and map control
-- **Expansion**: Build multiple Lodges across the map, each providing +4 population cap and serving as a resource drop-off point
+- **Competitive economy**: Both factions harvest from the same clam beds, cattails, and pearl beds; resource scarcity forces expansion and map control
+- **Three resources**: Clams (primary), Twigs (buildings/tech), and Pearls (rare, for elite technologies)
+- **Expansion**: Build multiple Lodges across the map, each providing +8 population cap and serving as a resource drop-off point
 - **Enemy AI economy**: Predator Nests spawn gatherers that collect resources and fund army production
-- **Unit counters**: Damage multiplier table creates rock-paper-scissors dynamics (Brawler beats Sniper, Sniper beats Snake, etc.)
-- **Formation movement**: Multi-select move orders arrange units in role-based rows (melee front, ranged middle, support rear) with Yuka.js flocking
-- **Veterancy**: Units rank up from kills (Recruit -> Veteran -> Elite -> Hero) gaining HP, damage, and speed bonuses
-- **Tech tree**: 5 upgrades (Sturdy Mud, Swift Paws, Sharp Sticks, Eagle Eye, Hardened Shells)
-- **Fog of war**: Unexplored areas are hidden; scouting reveals enemy positions and resource locations
-- **Auto-behaviors**: Toggle auto-gather/defend/attack via the idle radial menu
+- **Enemy evolution**: 5-tier system unlocks progressively stronger enemies over time (Armored Gator, Venom Snake, Swamp Drake, Siege Turtle, Alpha Predator)
+- **33 entity types**: 10 player units, 8 enemy units, 10 buildings, 3 resource nodes, Commander, Frog, Fish
+- **2 playable factions**: Otter (original) and Predator (play as the enemy) with mirrored unit rosters
+- **5 campaign missions**: Tutorial through boss battle with scripted dialogue and objectives
+- **7 commanders**: Each with unique aura/passive bonuses and unlock requirements
+- **5 AI personalities**: Balanced, Turtle, Rush, Economic, Random (switches every 5 min)
+- **25 techs** across Lodge, Armory, and Nature branches with 3 active abilities (Rally Cry, Pond Blessing, Tidal Surge)
+- **6 map scenarios**: Standard, Island, Contested, Labyrinth, River, Peninsula
+- **Ranked leaderboards**: Bronze/Silver/Gold/Diamond based on wins, with personal bests and win streak tracking
+- **15 achievements** + 18 unlockables across scenarios, presets, units, modifiers, and cosmetics
+- **Cosmetic system**: Unit skins + building themes via sprite HSL recoloring
+- **Unit counters**: Damage multiplier table creates rock-paper-scissors dynamics
+- **Formation movement**: Role-based rows (melee front, ranged middle, support rear) with Yuka.js flocking
+- **Veterancy**: Units rank up from kills (Recruit -> Veteran -> Elite -> Hero) with stat bonuses
+- **Enemy evolution**: 5 tiers + threat escalation (mega-waves, champions, random events)
+- **Unit-specific SFX**: Each unit type has distinct selection sounds via Tone.js synthesis
+- **Fog of war**: Unexplored areas hidden; 3 modes (full, explored, revealed)
+- **Auto-behaviors**: Toggle auto-gather/build/defend/attack/heal/scout via idle radial menu
+- **Custom game settings**: 13 configurable options for freeplay
+- **Difficulty modes**: Easy, Normal, Hard, Nightmare, Ultra Nightmare + permadeath
 - **Day/night cycle**: Affects visibility, ambient sounds, and firefly spawning
 
 See [docs/gameplay.md](docs/gameplay.md) for full unit stats, building costs, and mechanics.
@@ -89,7 +104,7 @@ See [docs/gameplay.md](docs/gameplay.md) for full unit stats, building costs, an
 
 ## Architecture
 
-14 ECS systems execute each frame in a fixed-timestep loop. All units (player and enemy) use Yuka.js steering behaviors for smooth pathfinding with separation, wander, flee, and formation flocking behaviors.
+18 ECS systems execute each frame in a fixed-timestep loop. All units (player and enemy) use Yuka.js steering behaviors for smooth pathfinding with separation, wander, flee, and formation flocking behaviors. Performance optimized with SpatialHash grid for proximity queries and ObjectPool + particle throttling for visual effects.
 
 See [docs/architecture.md](docs/architecture.md) for the full system diagram and data flow.
 
@@ -98,19 +113,25 @@ See [docs/architecture.md](docs/architecture.md) for the full system diagram and
 ```text
 src/
 ├── ai/          # Yuka.js steering manager (flocking, formations)
-├── audio/       # Tone.js SFX + procedural music + ambient
-├── config/      # Entity definitions, damage table, tech tree, keybindings
-├── ecs/         # bitECS components, archetypes, 14 systems
+├── audio/       # Tone.js SFX (25+ effects, spatial panning) + music + ambient
+├── campaign/    # 5 campaign missions with objectives + dialogue
+├── config/      # 33 entity defs, 25 techs, 5 AI personalities, 7 commanders, factions, unlocks
+├── ecs/         # bitECS components, archetypes, 18 systems
 ├── game.ts      # Main orchestrator (~1200 lines)
 ├── input/       # Keyboard, pointer/touch, selection + formations
 ├── physics/     # Planck.js collision world
 ├── platform/    # Capacitor mobile integration
-├── rendering/   # PixiJS 8 renderer + Canvas2D overlays
-├── ui/          # Preact components (HUD, panels, radial menu)
-└── types.ts     # Shared types and enums
+├── rendering/   # PixiJS 8 renderer + Canvas2D overlays + sprite recoloring
+├── replay/      # Deterministic replay recording
+├── systems/     # Non-ECS systems: achievements, leaderboards, unlocks
+├── storage/     # SQLite persistence (5 tables)
+├── ui/          # Preact components (HUD, panels, menus, campaign, settings)
+├── utils/       # SpatialHash, ObjectPool, particle throttling
+└── types.ts     # 33 EntityKind values + shared types
 docs/
-├── architecture.md  # System overview and data flow
-├── gameplay.md      # Units, buildings, combat, waves
+├── architecture.md  # System overview, data flow, performance
+├── design-bible.md  # Vision, strategy, completed roadmap
+├── gameplay.md      # Units, buildings, techs, campaign, factions, AI, leaderboards
 └── libraries.md     # How each dependency is used
 ```
 
@@ -135,8 +156,9 @@ APK output: `android/app/build/outputs/apk/debug/app-debug.apk`
 ## Documentation
 
 - [AGENTS.md](AGENTS.md) - AI agent instructions, conventions, file map
-- [docs/architecture.md](docs/architecture.md) - System overview, game loop, enemy AI, veterancy, formations
-- [docs/gameplay.md](docs/gameplay.md) - Units, buildings, tech tree, combat, counters, enemy AI, veterancy
+- [docs/architecture.md](docs/architecture.md) - System overview, game loop, enemy AI, veterancy, formations, performance
+- [docs/design-bible.md](docs/design-bible.md) - Vision, macro/meso/micro design, completed roadmap
+- [docs/gameplay.md](docs/gameplay.md) - Units, buildings, 25 techs, campaign, factions, AI personalities, leaderboards, commanders, cosmetics
 - [docs/libraries.md](docs/libraries.md) - How each dependency is utilized
 
 ## License

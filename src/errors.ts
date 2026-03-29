@@ -93,7 +93,7 @@ export function logError(error: unknown): void {
     errorLog.shift();
   }
 
-  // Always log to console — errors are NEVER silent
+  // biome-ignore lint/suspicious/noConsole: errors MUST always reach the console
   console.error(`[GameError] ${entry.message}`, error);
 
   for (const listener of errorListeners) {

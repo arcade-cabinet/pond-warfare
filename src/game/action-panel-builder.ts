@@ -10,7 +10,7 @@
 
 import { query } from 'bitecs';
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
-import { canResearch, TECH_UPGRADES } from '@/config/tech-tree';
+import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { TRAIN_TIMER } from '@/constants';
 import {
   Building,
@@ -33,6 +33,16 @@ import {
   queueItems,
 } from '@/ui/action-panel';
 import * as store from '@/ui/store';
+
+/** Return a human-readable "Requires: <Tech Name>" string for a tech upgrade, or undefined. */
+function techRequiresLabel(techId: TechId): string | undefined {
+  const upgrade = TECH_UPGRADES[techId];
+  if ('requires' in upgrade && upgrade.requires) {
+    const req = TECH_UPGRADES[upgrade.requires];
+    return `Requires: ${req.name}`;
+  }
+  return undefined;
+}
 
 /** Build training queue display items for any building with an active queue. */
 function buildTrainingQueueItems(
@@ -86,8 +96,9 @@ function buildLodgeButtons(
     affordable:
       w.resources.clams >= (gDef.clamCost ?? 0) &&
       w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
-    description: 'Worker unit',
+    description: 'Worker unit. Gathers clams and twigs, builds structures.',
     category: 'train',
+    costBreakdown: { clams: gDef.clamCost, twigs: gDef.twigCost, food: gDef.foodCost },
     onClick: () => {
       train(
         w,
@@ -114,6 +125,8 @@ function buildLodgeButtons(
       w.resources.twigs >= smTech.twigCost,
     description: smTech.description,
     category: 'tech',
+    costBreakdown: { clams: smTech.clamCost, twigs: smTech.twigCost },
+    requires: techRequiresLabel('sturdyMud'),
     onClick: () => {
       if (
         canResearch('sturdyMud', w.tech) &&
@@ -138,6 +151,8 @@ function buildLodgeButtons(
       w.resources.twigs >= spTech.twigCost,
     description: spTech.description,
     category: 'tech',
+    costBreakdown: { clams: spTech.clamCost, twigs: spTech.twigCost },
+    requires: techRequiresLabel('swiftPaws'),
     onClick: () => {
       if (
         canResearch('swiftPaws', w.tech) &&
@@ -159,8 +174,9 @@ function buildLodgeButtons(
     affordable:
       w.resources.clams >= (scoutDef.clamCost ?? 0) &&
       w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
-    description: 'Fast recon, wide vision',
+    description: 'Fast recon unit with wide vision range.',
     category: 'train',
+    costBreakdown: { clams: scoutDef.clamCost, twigs: scoutDef.twigCost, food: scoutDef.foodCost },
     onClick: () => {
       train(
         w,
@@ -176,6 +192,36 @@ function buildLodgeButtons(
       });
     },
   });
+  if (w.tech.aquaticTraining) {
+    const swimDef = ENTITY_DEFS[EntityKind.Swimmer];
+    btns.push({
+      title: 'Swimmer',
+      cost: `${swimDef.clamCost}C ${swimDef.twigCost}T ${swimDef.foodCost}F`,
+      hotkey: 'F',
+      affordable:
+        w.resources.clams >= (swimDef.clamCost ?? 0) &&
+        w.resources.twigs >= (swimDef.twigCost ?? 0) &&
+        w.resources.food + (swimDef.foodCost ?? 1) <= w.resources.maxFood,
+      description: 'Amphibious fast unit. Great for scouting and harassing.',
+      category: 'train',
+      costBreakdown: { clams: swimDef.clamCost, twigs: swimDef.twigCost, food: swimDef.foodCost },
+      requires: 'Requires: Aquatic Training',
+      onClick: () => {
+        train(
+          w,
+          lodgeEid,
+          EntityKind.Swimmer,
+          swimDef.clamCost ?? 0,
+          swimDef.twigCost ?? 0,
+          swimDef.foodCost ?? 1,
+        );
+        recorder?.record(w.frameCount, 'train', {
+          buildingEid: lodgeEid,
+          unitKind: EntityKind.Swimmer,
+        });
+      },
+    });
+  }
   btns.push({
     title: 'Tech Tree',
     cost: '',
@@ -194,7 +240,7 @@ function buildLodgeButtons(
  * Build the action panel buttons and queue items based on the current selection.
  * Writes directly to the actionButtons and queueItems signals.
  */
-export function buildActionPanel(world: GameWorld): void {
+export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): void {
   const w = world;
   const btns: ActionButtonDef[] = [];
   const qItems: QueueItemDef[] = [];
@@ -237,8 +283,9 @@ export function buildActionPanel(world: GameWorld): void {
           affordable:
             w.resources.clams >= (lodgeDef.clamCost ?? 0) &&
             w.resources.twigs >= (lodgeDef.twigCost ?? 0),
-          description: 'Expansion (+4 food cap, drop-off)',
+          description: 'Expansion building. +4 food cap, resource drop-off point.',
           category: 'build',
+          costBreakdown: { clams: lodgeDef.clamCost, twigs: lodgeDef.twigCost },
           onClick: () => {
             w.placingBuilding = 'lodge';
           },
@@ -249,8 +296,9 @@ export function buildActionPanel(world: GameWorld): void {
           cost: `${burrowDef.twigCost}T`,
           hotkey: 'W',
           affordable: w.resources.twigs >= (burrowDef.twigCost ?? 0),
-          description: 'Housing (+4 food cap)',
+          description: 'Housing structure. +4 food cap.',
           category: 'build',
+          costBreakdown: { clams: burrowDef.clamCost, twigs: burrowDef.twigCost },
           onClick: () => {
             w.placingBuilding = 'burrow';
           },
@@ -263,8 +311,9 @@ export function buildActionPanel(world: GameWorld): void {
           affordable:
             w.resources.clams >= (armoryDef.clamCost ?? 0) &&
             w.resources.twigs >= (armoryDef.twigCost ?? 0),
-          description: 'Train combat units',
+          description: 'Military production. Trains combat units and researches upgrades.',
           category: 'build',
+          costBreakdown: { clams: armoryDef.clamCost, twigs: armoryDef.twigCost },
           onClick: () => {
             w.placingBuilding = 'armory';
           },
@@ -277,8 +326,9 @@ export function buildActionPanel(world: GameWorld): void {
           affordable:
             w.resources.clams >= (towerDef.clamCost ?? 0) &&
             w.resources.twigs >= (towerDef.twigCost ?? 0),
-          description: 'Defensive tower',
+          description: 'Defensive structure. Attacks nearby enemies automatically.',
           category: 'build',
+          costBreakdown: { clams: towerDef.clamCost, twigs: towerDef.twigCost },
           onClick: () => {
             w.placingBuilding = 'tower';
           },
@@ -292,8 +342,10 @@ export function buildActionPanel(world: GameWorld): void {
             affordable:
               w.resources.clams >= (wtDef.clamCost ?? 0) &&
               w.resources.twigs >= (wtDef.twigCost ?? 0),
-            description: 'Long-range tower',
+            description: 'Extended-range defensive tower.',
             category: 'build',
+            costBreakdown: { clams: wtDef.clamCost, twigs: wtDef.twigCost },
+            requires: 'Requires: Eagle Eye',
             onClick: () => {
               w.placingBuilding = 'watchtower';
             },
@@ -305,8 +357,9 @@ export function buildActionPanel(world: GameWorld): void {
           cost: `${wallDef.twigCost}T`,
           hotkey: 'Y',
           affordable: w.resources.twigs >= (wallDef.twigCost ?? 0),
-          description: 'Defensive barrier',
+          description: 'Defensive barrier. Blocks enemy movement.',
           category: 'build',
+          costBreakdown: { clams: wallDef.clamCost, twigs: wallDef.twigCost },
           onClick: () => {
             w.placingBuilding = 'wall';
           },
@@ -320,13 +373,45 @@ export function buildActionPanel(world: GameWorld): void {
             affordable:
               w.resources.clams >= (spDef.clamCost ?? 0) &&
               w.resources.twigs >= (spDef.twigCost ?? 0),
-            description: 'Reveals large area',
+            description: 'Reveals a large area of the map.',
             category: 'build',
+            costBreakdown: { clams: spDef.clamCost, twigs: spDef.twigCost },
+            requires: 'Requires: Cartography',
             onClick: () => {
               w.placingBuilding = 'scout_post';
             },
           });
         }
+        const fhDef = ENTITY_DEFS[EntityKind.FishingHut];
+        btns.push({
+          title: 'Fishing Hut',
+          cost: `${fhDef.clamCost}C ${fhDef.twigCost}T`,
+          hotkey: 'I',
+          affordable:
+            w.resources.clams >= (fhDef.clamCost ?? 0) &&
+            w.resources.twigs >= (fhDef.twigCost ?? 0),
+          description: 'Passive income building. Generates +5 clams every 5 seconds. +2 food cap.',
+          category: 'build',
+          costBreakdown: { clams: fhDef.clamCost, twigs: fhDef.twigCost },
+          onClick: () => {
+            w.placingBuilding = 'fishing_hut';
+          },
+        });
+        const hhDef = ENTITY_DEFS[EntityKind.HerbalistHut];
+        btns.push({
+          title: 'Herbalist Hut',
+          cost: `${hhDef.clamCost}C ${hhDef.twigCost}T`,
+          hotkey: 'O',
+          affordable:
+            w.resources.clams >= (hhDef.clamCost ?? 0) &&
+            w.resources.twigs >= (hhDef.twigCost ?? 0),
+          description: 'Heals all player units within range by 2 HP every 2 seconds.',
+          category: 'build',
+          costBreakdown: { clams: hhDef.clamCost, twigs: hhDef.twigCost },
+          onClick: () => {
+            w.placingBuilding = 'herbalist_hut';
+          },
+        });
       }
 
       // Lodge selected: train gatherer + techs (only when construction is complete)
@@ -343,6 +428,8 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= cartoTech.twigCost,
           description: cartoTech.description,
           category: 'tech',
+          costBreakdown: { clams: cartoTech.clamCost, twigs: cartoTech.twigCost },
+          requires: techRequiresLabel('cartography'),
           onClick: () => {
             if (
               canResearch('cartography', w.tech) &&
@@ -366,6 +453,8 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= thTech.twigCost,
           description: thTech.description,
           category: 'tech',
+          costBreakdown: { clams: thTech.clamCost, twigs: thTech.twigCost },
+          requires: techRequiresLabel('tidalHarvest'),
           onClick: () => {
             if (
               canResearch('tidalHarvest', w.tech) &&
@@ -375,6 +464,81 @@ export function buildActionPanel(world: GameWorld): void {
               w.resources.clams -= thTech.clamCost;
               w.resources.twigs -= thTech.twigCost;
               w.tech.tidalHarvest = true;
+            }
+          },
+        });
+        const hmTech = TECH_UPGRADES.herbalMedicine;
+        btns.push({
+          title: hmTech.name,
+          cost: `${hmTech.clamCost}C ${hmTech.twigCost}T`,
+          hotkey: 'I',
+          affordable:
+            canResearch('herbalMedicine', w.tech) &&
+            w.resources.clams >= hmTech.clamCost &&
+            w.resources.twigs >= hmTech.twigCost,
+          description: hmTech.description,
+          category: 'tech',
+          costBreakdown: { clams: hmTech.clamCost, twigs: hmTech.twigCost },
+          requires: techRequiresLabel('herbalMedicine'),
+          onClick: () => {
+            if (
+              canResearch('herbalMedicine', w.tech) &&
+              w.resources.clams >= hmTech.clamCost &&
+              w.resources.twigs >= hmTech.twigCost
+            ) {
+              w.resources.clams -= hmTech.clamCost;
+              w.resources.twigs -= hmTech.twigCost;
+              w.tech.herbalMedicine = true;
+            }
+          },
+        });
+        const atTech = TECH_UPGRADES.aquaticTraining;
+        btns.push({
+          title: atTech.name,
+          cost: `${atTech.clamCost}C ${atTech.twigCost}T`,
+          hotkey: 'O',
+          affordable:
+            canResearch('aquaticTraining', w.tech) &&
+            w.resources.clams >= atTech.clamCost &&
+            w.resources.twigs >= atTech.twigCost,
+          description: atTech.description,
+          category: 'tech',
+          costBreakdown: { clams: atTech.clamCost, twigs: atTech.twigCost },
+          requires: techRequiresLabel('aquaticTraining'),
+          onClick: () => {
+            if (
+              canResearch('aquaticTraining', w.tech) &&
+              w.resources.clams >= atTech.clamCost &&
+              w.resources.twigs >= atTech.twigCost
+            ) {
+              w.resources.clams -= atTech.clamCost;
+              w.resources.twigs -= atTech.twigCost;
+              w.tech.aquaticTraining = true;
+            }
+          },
+        });
+        const ddTech = TECH_UPGRADES.deepDiving;
+        btns.push({
+          title: ddTech.name,
+          cost: `${ddTech.clamCost}C ${ddTech.twigCost}T`,
+          hotkey: 'P',
+          affordable:
+            canResearch('deepDiving', w.tech) &&
+            w.resources.clams >= ddTech.clamCost &&
+            w.resources.twigs >= ddTech.twigCost,
+          description: ddTech.description,
+          category: 'tech',
+          costBreakdown: { clams: ddTech.clamCost, twigs: ddTech.twigCost },
+          requires: techRequiresLabel('deepDiving'),
+          onClick: () => {
+            if (
+              canResearch('deepDiving', w.tech) &&
+              w.resources.clams >= ddTech.clamCost &&
+              w.resources.twigs >= ddTech.twigCost
+            ) {
+              w.resources.clams -= ddTech.clamCost;
+              w.resources.twigs -= ddTech.twigCost;
+              w.tech.deepDiving = true;
             }
           },
         });
@@ -391,8 +555,9 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= (bDef.clamCost ?? 0) &&
             w.resources.twigs >= (bDef.twigCost ?? 0) &&
             w.resources.food + (bDef.foodCost ?? 1) <= w.resources.maxFood,
-          description: 'Melee fighter',
+          description: 'Tough melee fighter. Short range, high damage.',
           category: 'train',
+          costBreakdown: { clams: bDef.clamCost, twigs: bDef.twigCost, food: bDef.foodCost },
           onClick: () => {
             train(
               w,
@@ -413,8 +578,9 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= (sDef.clamCost ?? 0) &&
             w.resources.twigs >= (sDef.twigCost ?? 0) &&
             w.resources.food + (sDef.foodCost ?? 1) <= w.resources.maxFood,
-          description: 'Ranged attacker',
+          description: 'Ranged attacker. Long range, lower HP.',
           category: 'train',
+          costBreakdown: { clams: sDef.clamCost, twigs: sDef.twigCost, food: sDef.foodCost },
           onClick: () => {
             train(
               w,
@@ -435,8 +601,9 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.clams >= (hDef.clamCost ?? 0) &&
             w.resources.twigs >= (hDef.twigCost ?? 0) &&
             w.resources.food + (hDef.foodCost ?? 1) <= w.resources.maxFood,
-          description: 'Heals nearby friendlies',
+          description: 'Support unit. Heals nearby friendly units over time.',
           category: 'train',
+          costBreakdown: { clams: hDef.clamCost, twigs: hDef.twigCost, food: hDef.foodCost },
           onClick: () => {
             train(
               w,
@@ -459,6 +626,8 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= ssTech.twigCost,
           description: ssTech.description,
           category: 'tech',
+          costBreakdown: { clams: ssTech.clamCost, twigs: ssTech.twigCost },
+          requires: techRequiresLabel('sharpSticks'),
           onClick: () => {
             if (
               canResearch('sharpSticks', w.tech) &&
@@ -482,6 +651,8 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= eeTech.twigCost,
           description: eeTech.description,
           category: 'tech',
+          costBreakdown: { clams: eeTech.clamCost, twigs: eeTech.twigCost },
+          requires: techRequiresLabel('eagleEye'),
           onClick: () => {
             if (
               canResearch('eagleEye', w.tech) &&
@@ -495,24 +666,30 @@ export function buildActionPanel(world: GameWorld): void {
           },
         });
         const hsTech = TECH_UPGRADES.hardenedShells;
+        const hsPearlCost = hsTech.pearlCost ?? 0;
         btns.push({
           title: hsTech.name,
-          cost: `${hsTech.clamCost}C ${hsTech.twigCost}T`,
+          cost: `${hsTech.clamCost}C ${hsTech.twigCost}T${hsPearlCost > 0 ? ` ${hsPearlCost}P` : ''}`,
           hotkey: 'Y',
           affordable:
             canResearch('hardenedShells', w.tech) &&
             w.resources.clams >= hsTech.clamCost &&
-            w.resources.twigs >= hsTech.twigCost,
+            w.resources.twigs >= hsTech.twigCost &&
+            w.resources.pearls >= hsPearlCost,
           description: hsTech.description,
           category: 'tech',
+          costBreakdown: { clams: hsTech.clamCost, twigs: hsTech.twigCost, pearls: hsPearlCost },
+          requires: techRequiresLabel('hardenedShells'),
           onClick: () => {
             if (
               canResearch('hardenedShells', w.tech) &&
               w.resources.clams >= hsTech.clamCost &&
-              w.resources.twigs >= hsTech.twigCost
+              w.resources.twigs >= hsTech.twigCost &&
+              w.resources.pearls >= hsPearlCost
             ) {
               w.resources.clams -= hsTech.clamCost;
               w.resources.twigs -= hsTech.twigCost;
+              w.resources.pearls -= hsPearlCost;
               w.tech.hardenedShells = true;
             }
           },
@@ -527,8 +704,10 @@ export function buildActionPanel(world: GameWorld): void {
               w.resources.clams >= (sbDef.clamCost ?? 0) &&
               w.resources.twigs >= (sbDef.twigCost ?? 0) &&
               w.resources.food + (sbDef.foodCost ?? 1) <= w.resources.maxFood,
-            description: 'Tank unit with shield',
+            description: 'Heavy tank unit with shield. High HP, absorbs damage.',
             category: 'train',
+            costBreakdown: { clams: sbDef.clamCost, twigs: sbDef.twigCost, food: sbDef.foodCost },
+            requires: 'Requires: Iron Shell',
             onClick: () => {
               train(
                 w,
@@ -551,8 +730,10 @@ export function buildActionPanel(world: GameWorld): void {
               w.resources.clams >= (catDef.clamCost ?? 0) &&
               w.resources.twigs >= (catDef.twigCost ?? 0) &&
               w.resources.food + (catDef.foodCost ?? 1) <= w.resources.maxFood,
-            description: 'Siege AoE, long range',
+            description: 'Siege unit. Area-of-effect damage at long range.',
             category: 'train',
+            costBreakdown: { clams: catDef.clamCost, twigs: catDef.twigCost, food: catDef.foodCost },
+            requires: 'Requires: Siege Works',
             onClick: () => {
               train(
                 w,
@@ -576,6 +757,8 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= isTech.twigCost,
           description: isTech.description,
           category: 'tech',
+          costBreakdown: { clams: isTech.clamCost, twigs: isTech.twigCost },
+          requires: techRequiresLabel('ironShell'),
           onClick: () => {
             if (
               canResearch('ironShell', w.tech) &&
@@ -589,24 +772,30 @@ export function buildActionPanel(world: GameWorld): void {
           },
         });
         const swTech = TECH_UPGRADES.siegeWorks;
+        const swPearlCost = swTech.pearlCost ?? 0;
         btns.push({
           title: swTech.name,
-          cost: `${swTech.clamCost}C ${swTech.twigCost}T`,
+          cost: `${swTech.clamCost}C ${swTech.twigCost}T${swPearlCost > 0 ? ` ${swPearlCost}P` : ''}`,
           hotkey: 'X',
           affordable:
             canResearch('siegeWorks', w.tech) &&
             w.resources.clams >= swTech.clamCost &&
-            w.resources.twigs >= swTech.twigCost,
+            w.resources.twigs >= swTech.twigCost &&
+            w.resources.pearls >= swPearlCost,
           description: swTech.description,
           category: 'tech',
+          costBreakdown: { clams: swTech.clamCost, twigs: swTech.twigCost, pearls: swPearlCost },
+          requires: techRequiresLabel('siegeWorks'),
           onClick: () => {
             if (
               canResearch('siegeWorks', w.tech) &&
               w.resources.clams >= swTech.clamCost &&
-              w.resources.twigs >= swTech.twigCost
+              w.resources.twigs >= swTech.twigCost &&
+              w.resources.pearls >= swPearlCost
             ) {
               w.resources.clams -= swTech.clamCost;
               w.resources.twigs -= swTech.twigCost;
+              w.resources.pearls -= swPearlCost;
               w.tech.siegeWorks = true;
             }
           },
@@ -622,6 +811,8 @@ export function buildActionPanel(world: GameWorld): void {
             w.resources.twigs >= brTech.twigCost,
           description: brTech.description,
           category: 'tech',
+          costBreakdown: { clams: brTech.clamCost, twigs: brTech.twigCost },
+          requires: techRequiresLabel('battleRoar'),
           onClick: () => {
             if (
               canResearch('battleRoar', w.tech) &&
@@ -634,6 +825,90 @@ export function buildActionPanel(world: GameWorld): void {
             }
           },
         });
+        const ctTech = TECH_UPGRADES.cunningTraps;
+        btns.push({
+          title: ctTech.name,
+          cost: `${ctTech.clamCost}C ${ctTech.twigCost}T`,
+          hotkey: 'V',
+          affordable:
+            canResearch('cunningTraps', w.tech) &&
+            w.resources.clams >= ctTech.clamCost &&
+            w.resources.twigs >= ctTech.twigCost,
+          description: ctTech.description,
+          category: 'tech',
+          costBreakdown: { clams: ctTech.clamCost, twigs: ctTech.twigCost },
+          requires: techRequiresLabel('cunningTraps'),
+          onClick: () => {
+            if (
+              canResearch('cunningTraps', w.tech) &&
+              w.resources.clams >= ctTech.clamCost &&
+              w.resources.twigs >= ctTech.twigCost
+            ) {
+              w.resources.clams -= ctTech.clamCost;
+              w.resources.twigs -= ctTech.twigCost;
+              w.tech.cunningTraps = true;
+            }
+          },
+        });
+        const camoTech = TECH_UPGRADES.camouflage;
+        btns.push({
+          title: camoTech.name,
+          cost: `${camoTech.clamCost}C ${camoTech.twigCost}T`,
+          hotkey: 'B',
+          affordable:
+            canResearch('camouflage', w.tech) &&
+            w.resources.clams >= camoTech.clamCost &&
+            w.resources.twigs >= camoTech.twigCost,
+          description: camoTech.description,
+          category: 'tech',
+          costBreakdown: { clams: camoTech.clamCost, twigs: camoTech.twigCost },
+          requires: techRequiresLabel('camouflage'),
+          onClick: () => {
+            if (
+              canResearch('camouflage', w.tech) &&
+              w.resources.clams >= camoTech.clamCost &&
+              w.resources.twigs >= camoTech.twigCost
+            ) {
+              w.resources.clams -= camoTech.clamCost;
+              w.resources.twigs -= camoTech.twigCost;
+              w.tech.camouflage = true;
+            }
+          },
+        });
+        if (w.tech.cunningTraps) {
+          const trapDef = ENTITY_DEFS[EntityKind.Trapper];
+          btns.push({
+            title: 'Trapper',
+            cost: `${trapDef.clamCost}C ${trapDef.twigCost}T ${trapDef.foodCost}F`,
+            hotkey: 'N',
+            affordable:
+              w.resources.clams >= (trapDef.clamCost ?? 0) &&
+              w.resources.twigs >= (trapDef.twigCost ?? 0) &&
+              w.resources.food + (trapDef.foodCost ?? 1) <= w.resources.maxFood,
+            description: 'Utility unit. Places traps that slow enemies.',
+            category: 'train',
+            costBreakdown: {
+              clams: trapDef.clamCost,
+              twigs: trapDef.twigCost,
+              food: trapDef.foodCost,
+            },
+            requires: 'Requires: Cunning Traps',
+            onClick: () => {
+              train(
+                w,
+                selEid,
+                EntityKind.Trapper,
+                trapDef.clamCost ?? 0,
+                trapDef.twigCost ?? 0,
+                trapDef.foodCost ?? 1,
+              );
+              recorder?.record(w.frameCount, 'train', {
+                buildingEid: selEid,
+                unitKind: EntityKind.Trapper,
+              });
+            },
+          });
+        }
 
         buildTrainingQueueItems(w, selEid, qItems);
       }

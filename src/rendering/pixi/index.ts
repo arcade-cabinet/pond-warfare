@@ -24,7 +24,7 @@ import {
   renderParticles,
   renderProjectiles,
 } from './effects-renderer';
-import { renderEntity } from './entity-renderer';
+import { releaseSprite, renderEntity, setEntityRendererContext } from './entity-renderer';
 import {
   getApp,
   getBuildingProgressTexts,
@@ -39,6 +39,8 @@ import {
 } from './init';
 import { renderPlacementPreview, renderRallyAndRange, renderSelectionRect } from './ui-renderer';
 
+// Re-export entity renderer utilities
+export { clearRecoloredTextureCache } from './entity-renderer';
 // Re-export init functions and types that external modules import
 // Re-export setColorBlindMode using the init module's setCbMode
 export {
@@ -129,6 +131,9 @@ export function renderPixiFrame(
   // --- Track which entity sprites are still alive this frame ---
   const aliveEids = new Set<number>();
 
+  // --- Set world context for entity renderer (status effects, champion lookup) ---
+  setEntityRendererContext(world, spriteCanvases);
+
   // --- Corpses ---
   renderCorpses(data.corpses, camX, camY, world.viewWidth, world.viewHeight, spriteCanvases);
 
@@ -149,11 +154,11 @@ export function renderPixiFrame(
     renderEntity(eid, frameCount);
   }
 
-  // --- Remove sprites for dead/removed entities ---
+  // --- Remove sprites for dead/removed entities (return to pool) ---
   for (const [eid, spr] of entitySprites) {
     if (!aliveEids.has(eid)) {
       entityLayer.removeChild(spr);
-      spr.destroy();
+      releaseSprite(spr);
       entitySprites.delete(eid);
       // Also clean up any building progress text
       const progText = buildingProgressTexts.get(eid);

@@ -22,14 +22,17 @@ import type { GameWorld } from '@/ecs/world';
 import { canPlaceBuilding } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
 
-/** Get all alive enemy nests */
+/** Get all alive enemy production buildings (nests or lodges depending on faction setup). */
 export function getEnemyNests(world: GameWorld): number[] {
   const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
+  // When player is predator, AI controls otters whose base building is Lodge
+  const nestKind =
+    world.playerFaction === 'predator' ? EntityKind.Lodge : EntityKind.PredatorNest;
   const result: number[] = [];
   for (let i = 0; i < nests.length; i++) {
     const eid = nests[i];
     if (
-      EntityTypeTag.kind[eid] === EntityKind.PredatorNest &&
+      EntityTypeTag.kind[eid] === nestKind &&
       FactionTag.faction[eid] === Faction.Enemy &&
       Health.current[eid] > 0 &&
       Building.progress[eid] >= 100
@@ -40,13 +43,15 @@ export function getEnemyNests(world: GameWorld): number[] {
   return result;
 }
 
-/** Find the player lodge (first alive one) */
+/** Find the player's main base building (Lodge for otters, PredatorNest for predators). */
 export function findPlayerLodge(world: GameWorld): number {
+  const lodgeKind =
+    world.playerFaction === 'predator' ? EntityKind.PredatorNest : EntityKind.Lodge;
   const buildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
   for (let i = 0; i < buildings.length; i++) {
     const eid = buildings[i];
     if (
-      EntityTypeTag.kind[eid] === EntityKind.Lodge &&
+      EntityTypeTag.kind[eid] === lodgeKind &&
       FactionTag.faction[eid] === Faction.Player &&
       Health.current[eid] > 0
     ) {

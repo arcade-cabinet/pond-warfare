@@ -107,6 +107,25 @@ declare module 'yuka' {
     constructor(radius?: number, distance?: number, jitter?: number);
   }
 
+  export class PursuitBehavior extends SteeringBehavior {
+    evader: MovingEntity;
+    predictionFactor: number;
+    constructor(evader?: MovingEntity, predictionFactor?: number);
+  }
+
+  export class EvadeBehavior extends SteeringBehavior {
+    pursuer: MovingEntity;
+    predictionFactor: number;
+    panicDistance: number;
+    constructor(pursuer?: MovingEntity, panicDistance?: number, predictionFactor?: number);
+  }
+
+  export class OffsetPursuitBehavior extends SteeringBehavior {
+    leader: Vehicle;
+    offset: Vector3;
+    constructor(leader?: Vehicle, offset?: Vector3);
+  }
+
   export class ObstacleAvoidanceBehavior extends SteeringBehavior {
     obstacles: GameEntity[];
     brakingWeight: number;

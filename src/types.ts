@@ -40,6 +40,19 @@ export enum EntityKind {
   Catapult = 17,
   Wall = 18,
   ScoutPost = 19,
+  ArmoredGator = 20,
+  VenomSnake = 21,
+  SwampDrake = 22,
+  SiegeTurtle = 23,
+  AlphaPredator = 24,
+  PearlBed = 25,
+  FishingHut = 26,
+  HerbalistHut = 27,
+  Swimmer = 28,
+  Trapper = 29,
+  Commander = 30,
+  Frog = 31,
+  Fish = 32,
 }
 
 /** Entity kinds that represent buildings (get larger vision radius, etc.). */
@@ -52,12 +65,15 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
   EntityKind.Watchtower,
   EntityKind.Wall,
   EntityKind.ScoutPost,
+  EntityKind.FishingHut,
+  EntityKind.HerbalistHut,
 ]);
 
 export enum ResourceType {
   None = 0,
   Clams = 1,
   Twigs = 2,
+  Pearls = 3,
 }
 
 /**
@@ -92,14 +108,28 @@ export enum SpriteId {
   Catapult = EntityKind.Catapult,
   Wall = EntityKind.Wall,
   ScoutPost = EntityKind.ScoutPost,
+  ArmoredGator = EntityKind.ArmoredGator,
+  VenomSnake = EntityKind.VenomSnake,
+  SwampDrake = EntityKind.SwampDrake,
+  SiegeTurtle = EntityKind.SiegeTurtle,
+  AlphaPredator = EntityKind.AlphaPredator,
+  PearlBed = EntityKind.PearlBed,
+  FishingHut = EntityKind.FishingHut,
+  HerbalistHut = EntityKind.HerbalistHut,
+  Swimmer = EntityKind.Swimmer,
+  Trapper = EntityKind.Trapper,
+  Commander = EntityKind.Commander,
+  Frog = EntityKind.Frog,
+  Fish = EntityKind.Fish,
   // Non-entity visual sprites
-  Bones = 20,
-  Rubble = 21,
+  Bones = 40,
+  Rubble = 41,
 }
 
 export interface GameResources {
   clams: number;
   twigs: number;
+  pearls: number;
   food: number;
   maxFood: number;
 }
@@ -189,4 +219,8 @@ export interface TooltipData {
   cost: string;
   description: string;
   hotkey: string;
+  /** Individual resource costs for detailed breakdown */
+  costBreakdown?: { clams?: number; twigs?: number; pearls?: number; food?: number };
+  /** Tech requirement label, e.g. "Requires: Eagle Eye" */
+  requires?: string;
 }

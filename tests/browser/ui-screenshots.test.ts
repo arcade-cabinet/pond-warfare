@@ -15,8 +15,10 @@ import { ErrorBoundary } from '@/ui/error-boundary';
 import { GameOverBanner } from '@/ui/game-over';
 // Components under test
 import { HUD } from '@/ui/hud';
+import { KeyboardReference } from '@/ui/keyboard-reference';
 import { MainMenu } from '@/ui/main-menu';
 import { MinimapPanel } from '@/ui/minimap-panel';
+import { NewGameModal } from '@/ui/new-game-modal';
 import { SelectionPanel } from '@/ui/selection-panel';
 // Store signals — we set these directly to control component state
 import * as store from '@/ui/store';
@@ -37,10 +39,14 @@ import '@/styles/main.css';
 function resetStore() {
   store.clams.value = 200;
   store.twigs.value = 50;
+  store.pearls.value = 0;
   store.food.value = 0;
   store.maxFood.value = 0;
   store.rateClams.value = 0;
   store.rateTwigs.value = 0;
+  store.enemyClams.value = 0;
+  store.enemyTwigs.value = 0;
+  store.enemyEconomyVisible.value = false;
   store.selectionCount.value = 0;
   store.selectionName.value = 'No Selection';
   store.selectionNameColor.value = 'text-slate-500';
@@ -69,12 +75,19 @@ function resetStore() {
   store.idleWorkerCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
+  store.idleGathererCount.value = 0;
+  store.idleCombatCount.value = 0;
+  store.idleHealerCount.value = 0;
+  store.idleScoutCount.value = 0;
+  store.autoMenuExpanded.value = false;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
   store.autoGatherEnabled.value = false;
+  store.autoBuildEnabled.value = false;
   store.autoDefendEnabled.value = false;
   store.autoAttackEnabled.value = false;
+  store.autoHealEnabled.value = false;
   store.autoScoutEnabled.value = false;
   store.goTitle.value = 'Victory';
   store.goTitleColor.value = 'text-amber-400';
@@ -91,6 +104,14 @@ function resetStore() {
   store.ctrlGroupCounts.value = {};
   store.globalProductionQueue.value = [];
   store.colorBlindMode.value = false;
+  store.menuState.value = 'playing';
+  store.keyboardRefOpen.value = false;
+  store.settingsOpen.value = false;
+  store.selectedDifficulty.value = 'normal';
+  store.permadeathEnabled.value = false;
+  store.masterVolume.value = 80;
+  store.musicVolume.value = 50;
+  store.sfxVolume.value = 80;
   actionButtons.value = [];
   queueItems.value = [];
 }
@@ -871,5 +892,264 @@ describe('Error Boundary screenshots', () => {
     );
 
     await page.screenshot({ path: 'screenshots/error-boundary.png', element: document.body });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Main Menu Screenshots (New Game / Continue / Settings)
+// ---------------------------------------------------------------------------
+describe('Main Menu screenshots', () => {
+  it('MainMenu - main menu with buttons', async () => {
+    store.menuState.value = 'main';
+    store.hasSaveGame.value = true;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#000' },
+        h(MainMenu, null),
+      ),
+    );
+
+    await new Promise((r) => setTimeout(r, 200));
+
+    await page.screenshot({
+      path: 'screenshots/main-menu-buttons.png',
+      element: document.body,
+    });
+  });
+
+  it('MainMenu - no save game (Continue disabled)', async () => {
+    store.menuState.value = 'main';
+    store.hasSaveGame.value = false;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#000' },
+        h(MainMenu, null),
+      ),
+    );
+
+    await new Promise((r) => setTimeout(r, 200));
+
+    await page.screenshot({
+      path: 'screenshots/main-menu-no-save.png',
+      element: document.body,
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// New Game Modal Screenshots
+// ---------------------------------------------------------------------------
+describe('New Game Modal screenshots', () => {
+  it('NewGameModal - difficulty grid with Normal selected', async () => {
+    store.menuState.value = 'newGame';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
+        h(NewGameModal, null),
+      ),
+    );
+
+    await new Promise((r) => setTimeout(r, 200));
+
+    await page.screenshot({
+      path: 'screenshots/new-game-modal.png',
+      element: document.body,
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Keyboard Reference Overlay Screenshots
+// ---------------------------------------------------------------------------
+describe('Keyboard Reference screenshots', () => {
+  it('KeyboardReference - full overlay', async () => {
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(KeyboardReference, { onClose: noop }),
+      ),
+    );
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    await page.screenshot({
+      path: 'screenshots/keyboard-reference.png',
+      element: document.body,
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Contextual Idle Menu Screenshots
+// ---------------------------------------------------------------------------
+describe('Contextual Idle Menu screenshots', () => {
+  const hudProps = {
+    onSpeedClick: noop,
+    onMuteClick: noop,
+    onColorBlindToggle: noop,
+    onIdleWorkerClick: noop,
+    onArmyClick: noop,
+    onPauseClick: noop,
+    onAttackMoveClick: noop,
+    onCtrlGroupClick: noop,
+  };
+
+  it('Idle menu expanded - gatherers idle (Gather + Build)', async () => {
+    store.idleWorkerCount.value = 5;
+    store.idleGathererCount.value = 5;
+    store.idleCombatCount.value = 0;
+    store.autoMenuExpanded.value = true;
+    store.gameTimeDisplay.value = 'Day 3 - 10:00';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    await page.screenshot({
+      path: 'screenshots/idle-menu-gatherers.png',
+      element: document.body,
+    });
+  });
+
+  it('Idle menu expanded - combat idle (Attack + Defend)', async () => {
+    store.idleWorkerCount.value = 4;
+    store.idleGathererCount.value = 0;
+    store.idleCombatCount.value = 4;
+    store.autoMenuExpanded.value = true;
+    store.gameTimeDisplay.value = 'Day 5 - 16:00';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    await page.screenshot({
+      path: 'screenshots/idle-menu-combat.png',
+      element: document.body,
+    });
+  });
+
+  it('Idle menu expanded - mixed idle with all auto toggles on', async () => {
+    store.idleWorkerCount.value = 8;
+    store.idleGathererCount.value = 3;
+    store.idleCombatCount.value = 3;
+    store.idleHealerCount.value = 1;
+    store.idleScoutCount.value = 1;
+    store.autoMenuExpanded.value = true;
+    store.autoGatherEnabled.value = true;
+    store.autoBuildEnabled.value = true;
+    store.autoAttackEnabled.value = true;
+    store.autoDefendEnabled.value = true;
+    store.autoHealEnabled.value = true;
+    store.autoScoutEnabled.value = true;
+    store.gameTimeDisplay.value = 'Day 8 - 12:00';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    await page.screenshot({
+      path: 'screenshots/idle-menu-all-on.png',
+      element: document.body,
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Pearl Resource in HUD Screenshots
+// ---------------------------------------------------------------------------
+describe('Pearl Resource HUD screenshots', () => {
+  const hudProps = {
+    onSpeedClick: noop,
+    onMuteClick: noop,
+    onColorBlindToggle: noop,
+    onIdleWorkerClick: noop,
+    onArmyClick: noop,
+    onPauseClick: noop,
+    onAttackMoveClick: noop,
+    onCtrlGroupClick: noop,
+  };
+
+  it('HUD - pearls visible in resource bar', async () => {
+    store.clams.value = 800;
+    store.twigs.value = 600;
+    store.pearls.value = 25;
+    store.food.value = 10;
+    store.maxFood.value = 16;
+    store.gameTimeDisplay.value = 'Day 10 - 14:00';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
+
+    await page.screenshot({
+      path: 'screenshots/hud-with-pearls.png',
+      element: document.body,
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Enemy Economy Indicator Screenshots
+// ---------------------------------------------------------------------------
+describe('Enemy Economy HUD screenshots', () => {
+  const hudProps = {
+    onSpeedClick: noop,
+    onMuteClick: noop,
+    onColorBlindToggle: noop,
+    onIdleWorkerClick: noop,
+    onArmyClick: noop,
+    onPauseClick: noop,
+    onAttackMoveClick: noop,
+    onCtrlGroupClick: noop,
+  };
+
+  it('HUD - enemy economy indicator after scouting', async () => {
+    store.enemyEconomyVisible.value = true;
+    store.enemyClams.value = 450;
+    store.enemyTwigs.value = 300;
+    store.gameTimeDisplay.value = 'Day 7 - 11:00';
+    store.isPeaceful.value = false;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:120px;background:#0f172a' },
+        h(HUD, hudProps),
+      ),
+    );
+
+    await page.screenshot({
+      path: 'screenshots/hud-enemy-economy.png',
+      element: document.body,
+    });
   });
 });

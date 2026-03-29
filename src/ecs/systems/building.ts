@@ -14,6 +14,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { entityKindName } from '@/config/entity-defs';
 import { BUILD_TIMER, PALETTE, REPAIR_TIMER } from '@/constants';
 import {
   Building,
@@ -25,7 +26,8 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { triggerBuildingComplete } from '@/rendering/animations';
-import { UnitState } from '@/types';
+import { EntityKind, UnitState } from '@/types';
+import { spawnParticle } from '@/utils/particles';
 
 export function buildingSystem(world: GameWorld): void {
   const builders = query(world.ecs, [
@@ -80,8 +82,52 @@ export function buildingSystem(world: GameWorld): void {
           if (hasComponent(world.ecs, tEnt, Building)) {
             Building.progress[tEnt] = 100;
           }
+          // Fortified Walls: +100 HP to Wall buildings on completion
+          if (
+            world.tech.fortifiedWalls &&
+            hasComponent(world.ecs, tEnt, EntityTypeTag) &&
+            (EntityTypeTag.kind[tEnt] as EntityKind) === EntityKind.Wall
+          ) {
+            Health.max[tEnt] += 100;
+            Health.current[tEnt] = Health.max[tEnt];
+          }
+
           audio.buildComplete();
           triggerBuildingComplete(tEnt);
+
+          // Ring of particles expanding outward from building
+          const bx = Position.x[tEnt];
+          const by = Position.y[tEnt];
+          for (let p = 0; p < 16; p++) {
+            const angle = (p / 16) * Math.PI * 2;
+            const speed = 2 + Math.random() * 1.5;
+            spawnParticle(
+              world,
+              bx,
+              by,
+              Math.cos(angle) * speed,
+              Math.sin(angle) * speed,
+              25,
+              '#fde047',
+              3,
+            );
+          }
+
+          // Flash the building sprite white
+          Health.flashTimer[tEnt] = 12;
+
+          // Floating text celebration with building-specific name
+          const buildingName = hasComponent(world.ecs, tEnt, EntityTypeTag)
+            ? entityKindName(EntityTypeTag.kind[tEnt] as EntityKind)
+            : 'Building';
+          world.floatingTexts.push({
+            x: bx,
+            y: by - 30,
+            text: `${buildingName} Complete!`,
+            color: '#4ade80',
+            life: 90,
+          });
+
           world.stats.buildingsBuilt++;
           UnitStateMachine.state[eid] = UnitState.Idle;
         } else {

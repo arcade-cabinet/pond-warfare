@@ -19,7 +19,7 @@ export const ATTACK_COOLDOWN = 50; // Slightly faster combat
 export const TOWER_ATTACK_COOLDOWN = 40; // Towers feel more impactful
 
 export const STARTING_CLAMS = 300; // More starting resources for faster early game
-export const STARTING_TWIGS = 100; // Enough to build a Burrow immediately
+export const STARTING_TWIGS = 150; // Enough to build an Armory (120T) immediately
 
 export const ENEMY_STARTING_CLAMS = 500;
 export const ENEMY_STARTING_TWIGS = 200;

@@ -61,8 +61,7 @@ function ErrorToast({ entry, onDismiss }: { entry: ErrorLogEntry; onDismiss: () 
   return (
     <div class="bg-[var(--pw-enemy)]/90 text-white px-4 py-2 rounded shadow-lg max-w-sm font-game text-xs flex items-start gap-2">
       <span class="flex-1">
-        <span class="font-heading text-[10px] opacity-70">[{entry.system}]</span>{' '}
-        {entry.message}
+        <span class="font-heading text-[10px] opacity-70">[{entry.system}]</span> {entry.message}
       </span>
       <button type="button" class="opacity-60 hover:opacity-100" onClick={onDismiss}>
         x

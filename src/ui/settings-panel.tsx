@@ -12,7 +12,10 @@ import {
   gameSpeed,
   masterVolume,
   musicVolume,
+  reduceVisualNoise,
+  screenShakeEnabled,
   sfxVolume,
+  uiScale,
 } from './store';
 
 export interface SettingsPanelProps {
@@ -22,6 +25,9 @@ export interface SettingsPanelProps {
   onSpeedSet: (speed: number) => void;
   onColorBlindToggle: () => void;
   onAutoSaveToggle: () => void;
+  onUiScaleChange?: (scale: number) => void;
+  onScreenShakeToggle?: () => void;
+  onReduceVisualNoiseToggle?: () => void;
   onClose: () => void;
 }
 
@@ -176,6 +182,80 @@ export function SettingsPanel(props: SettingsPanelProps) {
               <span
                 class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
                   autoSaveEnabled.value ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Accessibility section */}
+        <div class="space-y-3 mt-5">
+          <div class="section-header mb-1">Accessibility</div>
+
+          {/* UI Scale */}
+          <div class="flex items-center justify-between min-h-[44px]">
+            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
+              UI Scale
+            </span>
+            <div class="flex gap-2">
+              {[1, 1.5, 2].map((s) => (
+                <button
+                  type="button"
+                  key={`scale-${s}`}
+                  class="px-2 py-1 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
+                  style={{
+                    background:
+                      uiScale.value === s
+                        ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
+                        : undefined,
+                    borderColor: uiScale.value === s ? 'var(--pw-accent)' : undefined,
+                    color: uiScale.value === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
+                  }}
+                  onClick={() => props.onUiScaleChange?.(s)}
+                >
+                  {s}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Screen Shake */}
+          <div class="flex items-center justify-between min-h-[44px]">
+            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
+              Screen Shake
+            </span>
+            <button
+              type="button"
+              class={`w-12 h-7 rounded-full relative cursor-pointer ${
+                screenShakeEnabled.value ? 'toggle-track-active' : 'toggle-track'
+              }`}
+              onClick={() => props.onScreenShakeToggle?.()}
+              title="Toggle Screen Shake"
+            >
+              <span
+                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
+                  screenShakeEnabled.value ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Reduce Visual Noise */}
+          <div class="flex items-center justify-between min-h-[44px]">
+            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
+              Reduce Visual Noise
+            </span>
+            <button
+              type="button"
+              class={`w-12 h-7 rounded-full relative cursor-pointer ${
+                reduceVisualNoise.value ? 'toggle-track-active' : 'toggle-track'
+              }`}
+              onClick={() => props.onReduceVisualNoiseToggle?.()}
+              title="Toggle Reduce Visual Noise"
+            >
+              <span
+                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
+                  reduceVisualNoise.value ? 'translate-x-5' : 'translate-x-0.5'
                 }`}
               />
             </button>

@@ -13,6 +13,7 @@ import { entityExists, hasComponent } from 'bitecs';
 import { getKeymap } from '@/config/keymap';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Selectable } from '@/ecs/components';
+import { fpsCounterVisible } from '@/ui/store';
 import type { GameWorld } from '@/ecs/world';
 
 export interface KeyboardCallbacks {
@@ -215,6 +216,13 @@ export class KeyboardHandler {
         this.cb.onPlaySound('selectBuild');
         this.cb.onUpdateUI();
       }
+    }
+
+    // F12: toggle FPS counter
+    if (e.key === 'F12') {
+      e.preventDefault();
+      fpsCounterVisible.value = !fpsCounterVisible.value;
+      return;
     }
 
     // Hotkey buttons: Q, W, E, R for action panel buttons

@@ -7,6 +7,8 @@
  */
 
 import { audio } from '@/audio/audio-system';
+import { campaignSuppressEnemyAttacks } from '@/campaign';
+import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   ENEMY_ARMY_ATTACK_THRESHOLD,
@@ -24,6 +26,7 @@ import {
 import { spawnEntity } from '@/ecs/archetypes';
 import { Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import {
   countEnemyArmy,
@@ -54,10 +57,12 @@ export function enemyCombatTick(world: GameWorld): void {
  */
 function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   if (isPeaceful) return;
+  // Campaign: suppress enemy attacks when mission config says so
+  if (campaignSuppressEnemyAttacks(world)) return;
   if (world.frameCount % ENEMY_ATTACK_CHECK_INTERVAL !== 0) return;
 
   const armySize = countEnemyArmy(world);
-  // Scale attack threshold: by difficulty and game phase
+  // Scale attack threshold: by difficulty, game phase, and AI personality
   let baseThreshold = ENEMY_ARMY_ATTACK_THRESHOLD;
   let lateThreshold = ENEMY_LATE_ATTACK_THRESHOLD;
   if (world.difficulty === 'easy') {
@@ -73,6 +78,10 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
     baseThreshold = 2;
     lateThreshold = 1;
   }
+  // AI personality modifier: adjusts how large the army must be before attacking
+  const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+  baseThreshold = Math.max(1, Math.round(baseThreshold * personality.attackThresholdMult));
+  lateThreshold = Math.max(1, Math.round(lateThreshold * personality.attackThresholdMult));
   const attackThreshold = world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
   if (armySize < attackThreshold) return;
 
@@ -98,6 +107,17 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   if (idleUnits.length < Math.min(ENEMY_ARMY_ATTACK_THRESHOLD, 3)) return;
 
   audio.alert();
+
+  // Wave announcement banner
+  world.floatingTexts.push({
+    x: world.camX + world.viewWidth / 2,
+    y: world.camY + 60,
+    text: `Wave Incoming! (${idleUnits.length} units)`,
+    color: '#f59e0b',
+    life: 150,
+  });
+  // Amber minimap ping at the target building
+  world.minimapPings.push({ x: targetX, y: targetY, life: 120, maxLife: 120 });
 
   // Send them as a group
   for (const eid of idleUnits) {
@@ -175,6 +195,21 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
 
   const scoutEid = spawnEntity(world, EntityKind.Snake, sx, sy, Faction.Enemy);
   if (scoutEid < 0) return;
+
+  // Spawn pop animation + dust
+  triggerSpawnPop(scoutEid);
+  for (let j = 0; j < 6; j++) {
+    const angle = (j / 6) * Math.PI * 2;
+    world.particles.push({
+      x: sx,
+      y: sy + 8,
+      vx: Math.cos(angle) * 1.5,
+      vy: Math.sin(angle) * 0.5 + 0.5,
+      life: 15,
+      color: '#a8a29e',
+      size: 2,
+    });
+  }
 
   res.clams -= ENEMY_SNAKE_COST_CLAMS;
   res.twigs -= ENEMY_SNAKE_COST_TWIGS;

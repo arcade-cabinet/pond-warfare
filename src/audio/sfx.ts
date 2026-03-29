@@ -161,6 +161,95 @@ export class SfxManager {
     this.playAt(600, 'sine', 0.1, 0.05, 800);
   }
 
+  // ---- Unit-specific select sounds ----
+
+  /** Brawler select: heavy drum thud (low freq, short decay) */
+  selectBrawler(): void {
+    this.playAt(80, 'sine', 0.15, 0.08, 50);
+  }
+
+  /** Sniper select: sharp metallic ping (high freq, quick) */
+  selectSniper(): void {
+    this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
+  }
+
+  /** Healer select: soft wind chime (sine + gentle slide) */
+  selectHealer(): void {
+    this.playAt(800, 'sine', 0.2, 0.04, 1000);
+    setTimeout(() => {
+      if (!this._getMuted() && this._getStarted()) {
+        this.playAt(1000, 'sine', 0.15, 0.03, 1200);
+      }
+    }, 80);
+  }
+
+  /** Catapult select: deep wooden creak (noise-like low freq, slow sweep) */
+  selectCatapult(): void {
+    this.playAt(60, 'sawtooth', 0.2, 0.06, 40);
+  }
+
+  /** Scout select: quick bird chirp (high sine, fast envelope) */
+  selectScout(): void {
+    this.playAt(1400, 'sine', 0.06, 0.05, 1800);
+    setTimeout(() => {
+      if (!this._getMuted() && this._getStarted()) {
+        this.playAt(1600, 'sine', 0.04, 0.04, 2000);
+      }
+    }, 60);
+  }
+
+  /** Commander select: horn blast (brass-like square wave) */
+  selectCommander(): void {
+    this.playAt(220, 'square', 0.25, 0.08, 180);
+    setTimeout(() => {
+      if (!this._getMuted() && this._getStarted()) {
+        this.playAt(260, 'square', 0.15, 0.06, 220);
+      }
+    }, 120);
+  }
+
+  /** Gatherer select: tool clink (noise burst, very short) */
+  selectGatherer(): void {
+    this.playAt(900, 'triangle', 0.04, 0.04, 600);
+  }
+
+  /** Shieldbearer select: heavy shield clang */
+  selectShieldbearer(): void {
+    this.playAt(150, 'square', 0.12, 0.07, 90);
+  }
+
+  // ---- Additional sound effects ----
+
+  /** Building placement sound: heavy stone placement */
+  placeBuilding(): void {
+    this.playAt(100, 'sawtooth', 0.2, 0.08, 60);
+    setTimeout(() => {
+      if (!this._getMuted() && this._getStarted()) {
+        this.playAt(80, 'square', 0.15, 0.06, 50);
+      }
+    }, 80);
+  }
+
+  /** Tech research complete: achievement sparkle sound */
+  researchComplete(): void {
+    this.playAt(600, 'sine', 0.1, 0.06, 900);
+    setTimeout(() => {
+      if (!this._getMuted() && this._getStarted()) {
+        this.playAt(800, 'sine', 0.1, 0.06, 1200);
+      }
+    }, 100);
+    setTimeout(() => {
+      if (!this._getMuted() && this._getStarted()) {
+        this.playAt(1000, 'sine', 0.15, 0.06, 1400);
+      }
+    }, 200);
+  }
+
+  /** Airdrop incoming: descending whistle */
+  airdropIncoming(): void {
+    this.playAt(1200, 'sine', 0.4, 0.08, 300);
+  }
+
   selectBuild(): void {
     this.playAt(200, 'triangle', 0.1, 0.05, 150);
   }

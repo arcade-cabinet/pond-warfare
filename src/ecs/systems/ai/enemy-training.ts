@@ -8,6 +8,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   ENEMY_GATOR_COST_CLAMS,
@@ -36,8 +37,66 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { spawnDustBurst } from '@/utils/particles';
 import { countPlayerUnitsOfKind, findPlayerLodge, getEnemyNests } from './helpers';
+
+/** Resource costs for all enemy-trainable unit types. */
+const ENEMY_UNIT_COSTS: Partial<
+  Record<EntityKind, { clams: number; twigs: number; weight: number }>
+> = {
+  [EntityKind.Gator]: { clams: ENEMY_GATOR_COST_CLAMS, twigs: ENEMY_GATOR_COST_TWIGS, weight: 10 },
+  [EntityKind.Snake]: {
+    clams: ENEMY_SNAKE_COST_CLAMS,
+    twigs: ENEMY_SNAKE_COST_TWIGS,
+    weight: 10,
+  },
+  [EntityKind.ArmoredGator]: { clams: 150, twigs: 80, weight: 6 },
+  [EntityKind.VenomSnake]: { clams: 100, twigs: 50, weight: 7 },
+  [EntityKind.SwampDrake]: { clams: 120, twigs: 60, weight: 5 },
+  [EntityKind.SiegeTurtle]: { clams: 300, twigs: 200, weight: 3 },
+  [EntityKind.AlphaPredator]: { clams: 500, twigs: 300, weight: 1 },
+};
+
+/** Melee-type enemy units (short range, high HP). */
+const MELEE_KINDS = new Set([EntityKind.Gator, EntityKind.ArmoredGator]);
+/** Ranged-type enemy units. */
+const RANGED_KINDS = new Set([EntityKind.Snake, EntityKind.VenomSnake, EntityKind.SwampDrake]);
+/** Siege-type enemy units. */
+const SIEGE_KINDS = new Set([EntityKind.SiegeTurtle]);
+
+/**
+ * Pick a unit kind from unlocked units using weighted random selection.
+ * Higher-tier units have lower weights, so they train less frequently.
+ * The trainingPreference param biases selection toward a unit category.
+ */
+function pickEnemyUnit(
+  unlockedUnits: EntityKind[],
+  trainingPreference: 'melee' | 'ranged' | 'balanced' | 'siege' = 'balanced',
+): EntityKind {
+  let totalWeight = 0;
+  for (const kind of unlockedUnits) {
+    let w = ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+    // Bias weight by personality preference
+    if (trainingPreference === 'melee' && MELEE_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'ranged' && RANGED_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'siege' && SIEGE_KINDS.has(kind)) w *= 3;
+    totalWeight += w;
+  }
+  if (totalWeight === 0) return EntityKind.Gator;
+
+  let roll = Math.random() * totalWeight;
+  for (const kind of unlockedUnits) {
+    let w = ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
+    if (trainingPreference === 'melee' && MELEE_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'ranged' && RANGED_KINDS.has(kind)) w *= 2;
+    else if (trainingPreference === 'siege' && SIEGE_KINDS.has(kind)) w *= 3;
+    roll -= w;
+    if (roll <= 0) return kind;
+  }
+  return unlockedUnits[0];
+}
 
 /**
  * Enemy army training via TrainingQueue (task #13).
@@ -97,21 +156,13 @@ export function enemyTrainingTick(world: GameWorld): void {
     const slots = trainingQueueSlots.get(nestEid) ?? [];
     if (slots.length >= maxQueueSize) continue;
 
-    // Decide what to train
-    const trainGator = Math.random() < gatorWeight;
-    let unitKind: EntityKind;
-    let costClams: number;
-    let costTwigs: number;
-
-    if (trainGator) {
-      unitKind = EntityKind.Gator;
-      costClams = ENEMY_GATOR_COST_CLAMS;
-      costTwigs = ENEMY_GATOR_COST_TWIGS;
-    } else {
-      unitKind = EntityKind.Snake;
-      costClams = ENEMY_SNAKE_COST_CLAMS;
-      costTwigs = ENEMY_SNAKE_COST_TWIGS;
-    }
+    // Decide what to train from unlocked units (evolution system + personality bias)
+    const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+    const unitKind = pickEnemyUnit(world.enemyEvolution.unlockedUnits, personality.trainingPreference);
+    const costs = ENEMY_UNIT_COSTS[unitKind];
+    if (!costs) continue;
+    const costClams = costs.clams;
+    const costTwigs = costs.twigs;
 
     if (res.clams < costClams || res.twigs < costTwigs) continue;
 
@@ -154,6 +205,12 @@ export function enemyTrainingQueueProcess(world: GameWorld): void {
     const slots = trainingQueueSlots.get(eid) ?? [];
     if (slots.length === 0) continue;
 
+    // Nest production multiplier: spawn multiple units per cycle in late game
+    const prodMult = world.enemyEvolution.nestProductionMultiplier;
+    // When multiplier >= 5 (continuous mode), use very short train timer
+    const effectiveTrainTime =
+      prodMult >= 5 ? Math.max(30, Math.floor(ENEMY_TRAIN_TIME / 4)) : ENEMY_TRAIN_TIME;
+
     TrainingQueue.timer[eid]--;
     if (TrainingQueue.timer[eid] <= 0) {
       const unitKind = slots[0] as EntityKind;
@@ -161,22 +218,31 @@ export function enemyTrainingQueueProcess(world: GameWorld): void {
       const bx = Position.x[eid];
       const by = Position.y[eid];
       const spriteH = Sprite.height[eid];
-      const sx = bx + (Math.random() > 0.5 ? 1 : -1) * 30;
-      const sy = by + spriteH / 2 + 20;
 
-      const newEid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
-      if (newEid < 0) {
-        TrainingQueue.timer[eid] = ENEMY_TRAIN_TIME;
-        continue;
+      // Spawn 1 unit per cycle normally, or up to prodMult units in late game
+      const spawnCount = Math.min(prodMult, slots.length);
+      for (let s = 0; s < spawnCount; s++) {
+        const kind = s === 0 ? unitKind : (slots[s] as EntityKind);
+        const sx = bx + (Math.random() > 0.5 ? 1 : -1) * (30 + s * 10);
+        const sy = by + spriteH / 2 + 20 + s * 5;
+
+        const newEid = spawnEntity(world, kind, sx, sy, Faction.Enemy);
+        if (newEid < 0) break;
+
+        // Spawn pop animation + dust particles
+        triggerSpawnPop(newEid);
+        spawnDustBurst(world, sx, sy);
       }
 
-      // Shift queue
-      slots.shift();
+      // Shift queue by the number actually spawned
+      for (let s = 0; s < spawnCount; s++) {
+        slots.shift();
+      }
       trainingQueueSlots.set(eid, slots);
       TrainingQueue.count[eid] = slots.length;
 
       if (slots.length > 0) {
-        TrainingQueue.timer[eid] = ENEMY_TRAIN_TIME;
+        TrainingQueue.timer[eid] = effectiveTrainTime;
       }
     }
   }
@@ -226,6 +292,10 @@ export function nestDefenseReinforcement(world: GameWorld): void {
 
     const defEid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
     if (defEid < 0) continue;
+
+    // Spawn pop animation + dust
+    triggerSpawnPop(defEid);
+    spawnDustBurst(world, sx, sy);
 
     world.enemyResources.clams -= costClams;
     world.enemyResources.twigs -= costTwigs;
@@ -287,6 +357,9 @@ export function bossWaveLogic(world: GameWorld): void {
 
     const eid = spawnEntity(world, EntityKind.BossCroc, sx, sy, Faction.Enemy);
     if (eid < 0) continue;
+
+    // Spawn pop for boss croc
+    triggerSpawnPop(eid);
 
     audio.alert();
     world.floatingTexts.push({
