@@ -63,7 +63,7 @@ export enum ResourceType {
 /**
  * Sprite identifiers for all procedurally-generated sprites.
  *
- * IMPORTANT: Values 0–14 correspond to EntityKind values for entity sprites,
+ * IMPORTANT: Values 0–19 correspond to EntityKind values for entity sprites,
  * ensuring that entity kinds can be directly used as sprite IDs. The enum
  * explicitly references EntityKind for these entries so that changes to
  * EntityKind will be caught at compile time.

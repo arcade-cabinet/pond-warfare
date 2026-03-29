@@ -33,7 +33,7 @@ pnpm dev       # Start dev server at localhost:5173
 
 ```bash
 pnpm build      # Production build
-pnpm test       # Run 256 tests
+pnpm test       # Run tests
 pnpm typecheck  # TypeScript strict mode check
 pnpm lint:fix   # Auto-fix linting and formatting
 ```
@@ -63,9 +63,11 @@ See [docs/gameplay.md](docs/gameplay.md) for full unit stats, building costs, an
 
 | Input | Action |
 |-------|--------|
-| Left click | Select unit/building |
-| Right click | Move / attack / gather |
-| Click + drag | Box select |
+| Left click / tap | Select unit/building |
+| Right click / long press | Move / attack / gather |
+| Click + drag / touch drag | Box select |
+| Pinch | Zoom camera |
+| Two-finger drag | Pan camera |
 | Idle button | Open radial menu (auto-behaviors) |
 | X button | Deselect |
 | HUD buttons | Train, build, research, pause, speed |
@@ -127,6 +129,7 @@ APK output: `android/app/build/outputs/apk/debug/app-debug.apk`
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | `ci.yml` | Every push | Lint, typecheck, test |
+| `cd.yml` | Push to main | Release Please, deploy to GitHub Pages |
 | `release.yml` | Published release | Build debug APK, attach to release |
 
 ## Documentation

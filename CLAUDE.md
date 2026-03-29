@@ -6,7 +6,7 @@ See [AGENTS.md](AGENTS.md) for full project context, conventions, and architectu
 
 ```bash
 pnpm dev        # Dev server
-pnpm test       # 256 tests (Vitest 4)
+pnpm test       # Vitest 4
 pnpm typecheck  # TypeScript 6 strict
 pnpm build      # Production build
 pnpm lint:fix   # Biome auto-fix

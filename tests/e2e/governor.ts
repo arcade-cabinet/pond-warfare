@@ -320,9 +320,10 @@ async function buildPhase(): Promise<void> {
     }
   }
 
-  // Build armory if we don't have one and can afford it
+  // Build armory if we don't have one (including in-progress) and can afford it
   if (
     !armory &&
+    !getPlayerArmory(false) &&
     burrows.length > 0 &&
     w.resources.clams >= 250 &&
     w.resources.twigs >= 150 &&

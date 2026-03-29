@@ -60,6 +60,7 @@ body {
   cursor: pointer;
   transition: filter 0.1s;
   position: relative;
+  animation: panel-fade-in 0.12s ease-out;
 }
 
 .action-btn:active {
@@ -211,7 +212,3 @@ body {
   animation: pulse-subtle 2s ease-in-out infinite;
 }
 
-/* Action panel button entrance */
-.action-btn {
-  animation: panel-fade-in 0.12s ease-out;
-}
