@@ -140,6 +140,7 @@ export class Game {
 
   // Audio/music state tracking
   private audioInitialized = false;
+  private initAudioHandler: ((e: Event) => void) | null = null;
   private wasPeaceful = true;
   private wasGameOver = false;
 
@@ -397,7 +398,7 @@ export class Game {
     });
 
     // Initialize audio on first user interaction (AudioContext policy)
-    const initAudioOnce = async () => {
+    this.initAudioHandler = async () => {
       if (this.audioInitialized) return;
       try {
         await audio.init();
@@ -407,11 +408,14 @@ export class Game {
       } catch (_err) {
         return;
       }
-      document.removeEventListener('pointerdown', initAudioOnce);
-      document.removeEventListener('keydown', initAudioOnce);
+      if (this.initAudioHandler) {
+        document.removeEventListener('pointerdown', this.initAudioHandler);
+        document.removeEventListener('keydown', this.initAudioHandler);
+        this.initAudioHandler = null;
+      }
     };
-    document.addEventListener('pointerdown', initAudioOnce, { once: false });
-    document.addEventListener('keydown', initAudioOnce, { once: false });
+    document.addEventListener('pointerdown', this.initAudioHandler, { once: false });
+    document.addEventListener('keydown', this.initAudioHandler, { once: false });
 
     // Start game loop
     this.lastTime = performance.now();
@@ -1060,7 +1064,7 @@ export class Game {
         }
       } else if (!hasComponent(w.ecs, eid, IsResource)) {
         // Non-building, non-resource player entities count as population
-        curFood++;
+        curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
         if (kind === EntityKind.Gatherer) {
           if (UnitStateMachine.state[eid] === UnitState.Idle) {
             idleWorkers++;
@@ -1805,6 +1809,11 @@ export class Game {
   destroy(): void {
     this.running = false;
     window.removeEventListener('resize', this.boundResize);
+    if (this.initAudioHandler) {
+      document.removeEventListener('pointerdown', this.initAudioHandler);
+      document.removeEventListener('keydown', this.initAudioHandler);
+      this.initAudioHandler = null;
+    }
     this.keyboard.destroy();
     this.pointer.destroy();
     this.physicsManager.destroy();

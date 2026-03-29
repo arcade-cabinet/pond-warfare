@@ -143,24 +143,33 @@ function isValidPartialKeyMap(obj: any): boolean {
   return true;
 }
 
+const KEYMAP_STORAGE_KEY = 'pond-warfare-keymap';
+
+function warnKeymapStorage(action: string, error: unknown): void {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+    // biome-ignore lint/suspicious/noConsole: dev-only diagnostics
+    console.warn(`[keymap] Failed to ${action} keymap`, error);
+  }
+}
+
 export function loadKeymapFromStorage(): void {
   try {
-    const stored = localStorage.getItem('pond-warfare-keymap');
+    const stored = localStorage.getItem(KEYMAP_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       if (isValidPartialKeyMap(parsed)) {
         setKeymap(parsed);
       }
     }
-  } catch {
-    /* ignore */
+  } catch (error) {
+    warnKeymapStorage('load', error);
   }
 }
 
 export function saveKeymapToStorage(): void {
   try {
-    localStorage.setItem('pond-warfare-keymap', JSON.stringify(activeKeymap));
-  } catch {
-    /* ignore */
+    localStorage.setItem(KEYMAP_STORAGE_KEY, JSON.stringify(activeKeymap));
+  } catch (error) {
+    warnKeymapStorage('save', error);
   }
 }

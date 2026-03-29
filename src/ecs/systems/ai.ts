@@ -424,10 +424,11 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
     ) {
       const pos = findBuildPosition(world, nestEid, EntityKind.Tower);
       if (pos) {
+        const bEid = spawnEntity(world, EntityKind.Tower, pos.x, pos.y, Faction.Enemy);
+        if (bEid < 0) return;
         res.clams -= ENEMY_TOWER_COST_CLAMS;
         res.twigs -= ENEMY_TOWER_COST_TWIGS;
-        const bEid = spawnEntity(world, EntityKind.Tower, pos.x, pos.y, Faction.Enemy);
-        if (bEid >= 0) startEnemyConstruction(world, bEid);
+        startEnemyConstruction(world, bEid);
         return; // One build action per check
       }
     }
@@ -454,10 +455,11 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
     ) {
       const pos = findBuildPosition(world, nestEid, EntityKind.Burrow);
       if (pos) {
+        const bEid = spawnEntity(world, EntityKind.Burrow, pos.x, pos.y, Faction.Enemy);
+        if (bEid < 0) return;
         res.clams -= ENEMY_BURROW_COST_CLAMS;
         res.twigs -= ENEMY_BURROW_COST_TWIGS;
-        const bEid = spawnEntity(world, EntityKind.Burrow, pos.x, pos.y, Faction.Enemy);
-        if (bEid >= 0) startEnemyConstruction(world, bEid);
+        startEnemyConstruction(world, bEid);
         return;
       }
     }
@@ -473,10 +475,12 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
     const sourceNest = nestEids[Math.floor(Math.random() * nestEids.length)];
     const pos = findBuildPosition(world, sourceNest, EntityKind.PredatorNest);
     if (pos) {
-      res.clams -= ENEMY_NEST_COST_CLAMS;
-      res.twigs -= ENEMY_NEST_COST_TWIGS;
       const bEid = spawnEntity(world, EntityKind.PredatorNest, pos.x, pos.y, Faction.Enemy);
-      if (bEid >= 0) startEnemyConstruction(world, bEid);
+      if (bEid >= 0) {
+        res.clams -= ENEMY_NEST_COST_CLAMS;
+        res.twigs -= ENEMY_NEST_COST_TWIGS;
+        startEnemyConstruction(world, bEid);
+      }
     }
   }
 }
@@ -761,6 +765,7 @@ function nestDefenseReinforcement(world: GameWorld): void {
       if (FactionTag.faction[u] !== Faction.Enemy) continue;
       if (hasComponent(world.ecs, u, IsBuilding)) continue;
       if (Health.current[u] <= 0) continue;
+      if (EntityTypeTag.kind[u] === EntityKind.Gatherer) continue;
 
       const dx = Position.x[u] - nx;
       const dy = Position.y[u] - ny;
@@ -778,15 +783,15 @@ function nestDefenseReinforcement(world: GameWorld): void {
     const costTwigs = trainGator ? ENEMY_GATOR_COST_TWIGS : ENEMY_SNAKE_COST_TWIGS;
     if (world.enemyResources.clams < costClams || world.enemyResources.twigs < costTwigs) continue;
 
-    world.enemyResources.clams -= costClams;
-    world.enemyResources.twigs -= costTwigs;
-
     const unitKind = trainGator ? EntityKind.Gator : EntityKind.Snake;
     const sx = nx + (Math.random() - 0.5) * 60;
     const sy = ny + 30;
 
     const defEid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
     if (defEid < 0) continue;
+
+    world.enemyResources.clams -= costClams;
+    world.enemyResources.twigs -= costTwigs;
 
     // Find nearest player unit to attack
     let closestTarget = -1;
