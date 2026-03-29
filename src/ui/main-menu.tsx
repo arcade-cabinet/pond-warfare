@@ -12,6 +12,7 @@ import { getPlayerProfile } from '@/storage';
 import {
   achievementsOpen,
   campaignOpen,
+  cosmeticsOpen,
   continueRequested,
   hasSaveGame,
   leaderboardOpen,
@@ -179,6 +180,22 @@ export function MainMenu() {
           }}
         >
           UNLOCKS
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-secondary)',
+          }}
+          onClick={() => {
+            cosmeticsOpen.value = true;
+          }}
+        >
+          COSMETICS
         </button>
 
         <button

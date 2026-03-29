@@ -260,6 +260,22 @@ export function App({ onMount }: AppProps) {
           }}
         />
 
+        {/* Active abilities */}
+        <AbilityBar
+          onRallyCry={() => {
+            game.useRallyCry();
+            game.syncUIStore();
+          }}
+          onPondBlessing={() => {
+            game.usePondBlessing();
+            game.syncUIStore();
+          }}
+          onTidalSurge={() => {
+            game.useTidalSurge();
+            game.syncUIStore();
+          }}
+        />
+
         {/* Canvases */}
         <canvas ref={gameCanvasRef} id="game-canvas" />
         <canvas ref={fogCanvasRef} id="fog-canvas" />

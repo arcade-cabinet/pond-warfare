@@ -143,6 +143,39 @@ export class AudioSystem {
   selectUnit(): void {
     this.sfxMgr.selectUnit();
   }
+  selectBrawler(): void {
+    this.sfxMgr.selectBrawler();
+  }
+  selectSniper(): void {
+    this.sfxMgr.selectSniper();
+  }
+  selectHealer(): void {
+    this.sfxMgr.selectHealer();
+  }
+  selectCatapult(): void {
+    this.sfxMgr.selectCatapult();
+  }
+  selectScout(): void {
+    this.sfxMgr.selectScout();
+  }
+  selectCommander(): void {
+    this.sfxMgr.selectCommander();
+  }
+  selectGatherer(): void {
+    this.sfxMgr.selectGatherer();
+  }
+  selectShieldbearer(): void {
+    this.sfxMgr.selectShieldbearer();
+  }
+  placeBuilding(): void {
+    this.sfxMgr.placeBuilding();
+  }
+  researchComplete(): void {
+    this.sfxMgr.researchComplete();
+  }
+  airdropIncoming(): void {
+    this.sfxMgr.airdropIncoming();
+  }
   selectBuild(): void {
     this.sfxMgr.selectBuild();
   }

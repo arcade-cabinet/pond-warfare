@@ -291,7 +291,7 @@ export class Game {
       },
       onUpdateUI: () => this.syncUIStore(),
       onPlaySound: (name) => {
-        if (name === 'selectUnit') audio.selectUnit();
+        if (name === 'selectUnit') this.playUnitSelectSound();
         else if (name === 'selectBuild') audio.selectBuild();
         else audio.click();
       },
@@ -368,7 +368,7 @@ export class Game {
         this.syncUIStore();
       },
       onPlaySound: (name) => {
-        if (name === 'selectUnit') audio.selectUnit();
+        if (name === 'selectUnit') this.playUnitSelectSound();
         else if (name === 'selectBuild') audio.selectBuild();
         else audio.click();
       },
@@ -1206,6 +1206,99 @@ export class Game {
       });
     }
 
+    return true;
+  }
+
+  // ---- Active abilities (tech tree) ----
+
+  /** Activate Rally Cry: +30% speed to all units for 10 seconds (600 frames). Cooldown 60s (3600 frames). */
+  useRallyCry(): boolean {
+    if (!this.world.tech.rallyCry) return false;
+    if (this.world.frameCount < this.world.rallyCryCooldownUntil) return false;
+    if (this.world.rallyCryExpiry > 0 && this.world.frameCount < this.world.rallyCryExpiry)
+      return false;
+
+    this.world.rallyCryExpiry = this.world.frameCount + 600; // 10 seconds
+    this.world.rallyCryCooldownUntil = this.world.frameCount + 3600; // 60 seconds
+
+    audio.upgrade();
+    this.world.floatingTexts.push({
+      x: this.world.camX + this.world.viewWidth / 2,
+      y: this.world.camY + 60,
+      text: 'RALLY CRY! +30% Speed',
+      color: '#facc15',
+      life: 120,
+    });
+    return true;
+  }
+
+  /** Activate Pond Blessing: heal all player units to full HP (one-time). */
+  usePondBlessing(): boolean {
+    if (!this.world.tech.pondBlessing || this.world.pondBlessingUsed) return false;
+
+    const allUnits = query(this.world.ecs, [Position, Health, FactionTag]);
+    for (let i = 0; i < allUnits.length; i++) {
+      const eid = allUnits[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      Health.current[eid] = Health.max[eid];
+      // Healing particle
+      this.world.particles.push({
+        x: Position.x[eid],
+        y: Position.y[eid] - 10,
+        vx: 0,
+        vy: -1,
+        life: 20,
+        color: '#4ade80',
+        size: 3,
+      });
+    }
+
+    this.world.pondBlessingUsed = true;
+    audio.heal();
+    this.world.floatingTexts.push({
+      x: this.world.camX + this.world.viewWidth / 2,
+      y: this.world.camY + 60,
+      text: 'POND BLESSING! All units healed!',
+      color: '#4ade80',
+      life: 120,
+    });
+    return true;
+  }
+
+  /** Activate Tidal Surge: deal 50 damage to all enemies on the map (one-time). */
+  useTidalSurge(): boolean {
+    if (!this.world.tech.tidalSurge || this.world.tidalSurgeUsed) return false;
+
+    const allEnts = query(this.world.ecs, [Position, Health, FactionTag]);
+    for (let i = 0; i < allEnts.length; i++) {
+      const eid = allEnts[i];
+      if (FactionTag.faction[eid] !== Faction.Enemy) continue;
+      if (Health.current[eid] <= 0) continue;
+      Health.current[eid] -= 50;
+      Health.flashTimer[eid] = 8;
+      // Blue surge particle
+      this.world.particles.push({
+        x: Position.x[eid],
+        y: Position.y[eid],
+        vx: (Math.random() - 0.5) * 2,
+        vy: -Math.random() * 2,
+        life: 25,
+        color: '#38bdf8',
+        size: 4,
+      });
+    }
+
+    this.world.tidalSurgeUsed = true;
+    this.world.shakeTimer = Math.max(this.world.shakeTimer, 10);
+    audio.alert();
+    this.world.floatingTexts.push({
+      x: this.world.camX + this.world.viewWidth / 2,
+      y: this.world.camY + 60,
+      text: 'TIDAL SURGE! 50 damage to all enemies!',
+      color: '#38bdf8',
+      life: 120,
+    });
     return true;
   }
 

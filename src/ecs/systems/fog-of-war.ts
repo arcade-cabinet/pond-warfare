@@ -110,4 +110,28 @@ export function fogOfWarSystem(world: GameWorld): void {
       exploredCtx.fill();
     }
   }
+
+  // Compute explored percentage every 60 frames (for campaign objectives)
+  if (world.frameCount % 60 === 0) {
+    const cw = exploredCtx.canvas.width;
+    const ch = exploredCtx.canvas.height;
+    if (cw > 0 && ch > 0) {
+      // Sample a grid of pixels rather than reading the entire canvas
+      const step = 4;
+      const imgData = exploredCtx.getImageData(0, 0, cw, ch);
+      const data = imgData.data;
+      let explored = 0;
+      let total = 0;
+      for (let sy = 0; sy < ch; sy += step) {
+        for (let sx = 0; sx < cw; sx += step) {
+          total++;
+          // Check alpha channel (index 3) - any non-zero alpha means explored
+          const idx = (sy * cw + sx) * 4 + 3;
+          if (data[idx] > 10) explored++;
+        }
+      }
+      (world as GameWorld & { exploredPercent?: number }).exploredPercent =
+        total > 0 ? Math.round((explored / total) * 100) : 0;
+    }
+  }
 }
