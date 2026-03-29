@@ -141,6 +141,7 @@ export class Game {
 
   // Audio/music state tracking
   private audioInitialized = false;
+  private audioInitPromise: Promise<void> | null = null;
   private initAudioHandler: ((e: Event) => void) | null = null;
   private wasPeaceful = true;
   private colorBlindUnsubscribe: (() => void) | null = null;
@@ -414,14 +415,19 @@ export class Game {
       audio.startMusic(true);
     } else {
       this.initAudioHandler = async () => {
-        if (this.audioInitialized) return;
+        if (this.audioInitialized || this.audioInitPromise) return;
+        const handler = this.initAudioHandler;
+        this.audioInitPromise = audio.init();
         try {
-          await audio.init();
+          await this.audioInitPromise;
+          if (this.initAudioHandler !== handler) return; // stale after destroy/re-init
           audio.startAmbient();
           audio.startMusic(true);
           this.audioInitialized = true;
         } catch (_err) {
           return;
+        } finally {
+          this.audioInitPromise = null;
         }
         if (this.initAudioHandler) {
           document.removeEventListener('pointerdown', this.initAudioHandler);
@@ -752,8 +758,6 @@ export class Game {
       }
     }
 
-    clampCamera(this.world);
-
     // Update Yuka AI steering (1/60s fixed step)
     this.world.yukaManager.update(1 / 60, this.world.ecs);
 
@@ -810,6 +814,7 @@ export class Game {
     this.world.camY += this.world.camVelY;
     this.world.camVelX *= 0.85;
     this.world.camVelY *= 0.85;
+    clampCamera(this.world);
 
     // Sync UI store periodically
     if (this.world.frameCount % 30 === 0) {
@@ -1145,6 +1150,8 @@ export class Game {
     store.isPeaceful.value = peaceful;
     if (peaceful) {
       store.peaceCountdown.value = Math.ceil((w.peaceTimer - w.frameCount) / 60);
+    } else {
+      store.peaceCountdown.value = -1;
     }
 
     // --- Music transitions on peace/hunting change ---
@@ -1781,6 +1788,7 @@ export class Game {
 
   destroy(): void {
     this.running = false;
+    this.audioInitPromise = null;
     // Cancel pending RAF to prevent stale callbacks
     if (this.rafId != null) {
       cancelAnimationFrame(this.rafId);
