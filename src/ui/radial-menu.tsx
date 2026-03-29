@@ -142,12 +142,10 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
       >
         {/* Center hub */}
         <div
-          class="absolute w-12 h-12 rounded-full flex items-center justify-center z-50 shadow-lg"
+          class="absolute w-12 h-12 rounded-full flex items-center justify-center z-50 shadow-lg stone-node"
           style={{
             left: '-24px',
             top: '-24px',
-            background: 'var(--pw-bg-surface)',
-            border: '2px solid var(--pw-border)',
           }}
         >
           <span class="font-numbers font-bold text-sm" style={{ color: 'var(--pw-warning)' }}>
@@ -167,14 +165,14 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
             <button
               key={opt.label}
               type="button"
-              class="absolute w-14 h-14 rounded-full border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-150 shadow-lg z-50"
+              class="absolute w-14 h-14 rounded-full stone-node flex flex-col items-center justify-center cursor-pointer transition-all duration-150 shadow-lg z-50"
               style={{
                 left: `${x - 28}px`,
                 top: `${y - 28}px`,
                 animation: 'radial-sprout 150ms ease-out both',
                 animationDelay: `${optIndex * 30}ms`,
                 borderColor: opt.borderColor,
-                background: isActive ? opt.activeBackground : 'var(--pw-bg-elevated)',
+                background: isActive ? opt.activeBackground : undefined,
                 color: opt.color,
               }}
               title={opt.label}

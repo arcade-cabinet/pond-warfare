@@ -70,10 +70,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       {/* Panel card */}
       <div
-        class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 font-game text-sm z-10"
+        class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 font-game text-sm z-10 parchment-panel"
         style={{
-          background: 'var(--pw-bg-surface)',
-          border: '2px solid var(--pw-border)',
           color: 'var(--pw-text-primary)',
         }}
       >
@@ -84,8 +82,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </h2>
           <button
             type="button"
-            class="text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors"
-            style={{ color: 'var(--pw-text-muted)' }}
+            class="hud-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded"
             onClick={props.onClose}
             title="Close Settings"
           >
@@ -95,10 +92,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Volume section */}
         <div class="space-y-3 mb-5">
-          <div
-            class="font-heading text-xs uppercase tracking-wider mb-1"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
+          <div class="section-header mb-1">
             Audio
           </div>
           <VolumeSlider
@@ -120,10 +114,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Game Speed section */}
         <div class="mb-5">
-          <div
-            class="font-heading text-xs uppercase tracking-wider mb-2"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
+          <div class="section-header mb-2">
             Game Speed
           </div>
           <div class="flex gap-2">
@@ -131,10 +122,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
               <button
                 type="button"
                 key={`speed-${s}`}
-                class="flex-1 py-1.5 min-h-[44px] rounded border font-numbers font-bold text-xs cursor-pointer transition-colors"
+                class={`flex-1 py-1.5 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn`}
                 style={{
-                  background: currentSpeed === s ? 'var(--pw-bg-elevated)' : 'var(--pw-bg-surface)',
-                  borderColor: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-border)',
+                  background: currentSpeed === s
+                    ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
+                    : undefined,
+                  borderColor: currentSpeed === s ? 'var(--pw-accent)' : undefined,
                   color: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
                 }}
                 onClick={() => props.onSpeedSet(s)}
@@ -147,10 +140,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
         {/* Toggles section */}
         <div class="space-y-3">
-          <div
-            class="font-heading text-xs uppercase tracking-wider mb-1"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
+          <div class="section-header mb-1">
             Options
           </div>
 
@@ -161,15 +151,14 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </span>
             <button
               type="button"
-              class="w-12 h-7 rounded-full relative cursor-pointer transition-colors"
-              style={{
-                background: colorBlindMode.value ? 'var(--pw-warning)' : 'var(--pw-border)',
-              }}
+              class={`w-12 h-7 rounded-full relative cursor-pointer ${
+                colorBlindMode.value ? 'toggle-track-active' : 'toggle-track'
+              }`}
               onClick={props.onColorBlindToggle}
               title="Toggle Color Blind Mode"
             >
               <span
-                class={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
+                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
                   colorBlindMode.value ? 'translate-x-5' : 'translate-x-0.5'
                 }`}
               />
@@ -183,15 +172,14 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </span>
             <button
               type="button"
-              class="w-12 h-7 rounded-full relative cursor-pointer transition-colors"
-              style={{
-                background: autoSaveEnabled.value ? 'var(--pw-success)' : 'var(--pw-border)',
-              }}
+              class={`w-12 h-7 rounded-full relative cursor-pointer ${
+                autoSaveEnabled.value ? 'toggle-track-active' : 'toggle-track'
+              }`}
               onClick={props.onAutoSaveToggle}
               title="Toggle Auto-save"
             >
               <span
-                class={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
+                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
                   autoSaveEnabled.value ? 'translate-x-5' : 'translate-x-0.5'
                 }`}
               />

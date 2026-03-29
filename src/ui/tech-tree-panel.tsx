@@ -143,7 +143,7 @@ function TechNode({
 
   return (
     <div
-      class={`absolute rounded-lg border-2 flex flex-col items-center justify-center text-center p-1 select-none transition-colors duration-200 ${styles.extra}`}
+      class={`absolute rounded-lg stone-node flex flex-col items-center justify-center text-center p-1 select-none transition-colors duration-200 ${styles.extra}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -321,7 +321,7 @@ export function TechTreePanel({
 }: TechTreePanelProps) {
   return (
     <div
-      class="absolute inset-0 z-50 flex flex-col items-center overflow-auto overscroll-contain touch-pan-y"
+      class="absolute inset-0 z-50 flex flex-col items-center overflow-auto overscroll-contain touch-pan-y parchment-panel"
       style={{ background: 'rgba(12, 26, 31, 0.9)' }}
       onClick={(e) => {
         // Close when clicking the backdrop
@@ -338,11 +338,7 @@ export function TechTreePanel({
         </h2>
         <button
           type="button"
-          class="w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded text-lg font-bold transition-colors"
-          style={{
-            background: 'var(--pw-bg-elevated)',
-            color: 'var(--pw-text-secondary)',
-          }}
+          class="hud-btn w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded text-lg font-bold transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             onClose();
