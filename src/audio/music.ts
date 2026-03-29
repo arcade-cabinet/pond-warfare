@@ -24,11 +24,7 @@ export class MusicManager {
   private _getMusicGainLevel: () => number;
   private _getMuted: () => boolean;
 
-  constructor(
-    getStarted: () => boolean,
-    getMusicGainLevel: () => number,
-    getMuted: () => boolean,
-  ) {
+  constructor(getStarted: () => boolean, getMusicGainLevel: () => number, getMuted: () => boolean) {
     this._getStarted = getStarted;
     this._getMusicGainLevel = getMusicGainLevel;
     this._getMuted = getMuted;

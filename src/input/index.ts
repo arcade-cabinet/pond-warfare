@@ -1,17 +1,17 @@
-export { KeyboardHandler, type KeyboardCallbacks } from './keyboard';
+export { type KeyboardCallbacks, KeyboardHandler } from './keyboard';
 export {
+  type PointerCallbacks,
   PointerHandler,
   type PointerState,
-  type PointerCallbacks,
 } from './pointer';
 export {
+  cancelTrain,
+  canPlaceBuilding,
   getEntityAt,
   hasPlayerUnitsSelected,
   issueContextCommand,
-  selectIdleWorker,
-  selectArmy,
-  canPlaceBuilding,
   placeBuilding,
+  selectArmy,
+  selectIdleWorker,
   train,
-  cancelTrain,
 } from './selection';

@@ -6,11 +6,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  ENEMY_GATHERER_COST,
-  ENEMY_GATHERER_SPAWN_INTERVAL,
-  ENEMY_MAX_GATHERERS_PER_NEST,
-} from '@/constants';
+import { ENEMY_GATHERER_COST, ENEMY_GATHERER_SPAWN_INTERVAL } from '@/constants';
 import {
   Building,
   EntityTypeTag,

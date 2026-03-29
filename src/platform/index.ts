@@ -1,7 +1,7 @@
 export {
-  isNative,
-  initNativePlatform,
   hapticImpact,
-  savePreference,
+  initNativePlatform,
+  isNative,
   loadPreference,
+  savePreference,
 } from './native';

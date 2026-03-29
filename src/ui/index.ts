@@ -1,14 +1,14 @@
 // Main app
-export { App, type AppProps } from './app';
 
 // Action panel
 export {
+  type ActionButtonDef,
   ActionPanel,
   actionButtons,
-  queueItems,
-  type ActionButtonDef,
   type QueueItemDef,
+  queueItems,
 } from './action-panel';
+export { App, type AppProps } from './app';
 
 // Error boundary
 export { ErrorBoundary } from './error-boundary';
@@ -17,7 +17,7 @@ export { ErrorBoundary } from './error-boundary';
 export { GameOverBanner, type GameOverProps } from './game-over';
 
 // HUD (barrel re-exports from hud/)
-export { HUD, formatTime, frameToDay, formatRate, type HUDProps } from './hud';
+export { formatRate, formatTime, frameToDay, HUD, type HUDProps } from './hud';
 
 // Intro overlay
 export { IntroOverlay } from './intro-overlay';

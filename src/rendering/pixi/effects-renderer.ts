@@ -11,8 +11,8 @@ import type { Corpse, FloatingText, GroundPing, Particle } from '@/types';
 import { SpriteId, type SpriteId as SpriteIdType } from '@/types';
 import type { ProjectileRenderData } from '../particles';
 import {
-  colorToHex,
   COURIER_STYLE,
+  colorToHex,
   getBgLayer,
   getCorpseSprites,
   getEffectGfx,

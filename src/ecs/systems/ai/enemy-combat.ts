@@ -6,8 +6,8 @@
  * groups units before attacking, retreats damaged units, and sends scouts.
  */
 
-import { ENTITY_DEFS } from '@/config/entity-defs';
 import { audio } from '@/audio/audio-system';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   ENEMY_ARMY_ATTACK_THRESHOLD,
   ENEMY_ATTACK_CHECK_INTERVAL,
@@ -22,12 +22,7 @@ import {
   WORLD_WIDTH,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
-import {
-  Health,
-  Position,
-  UnitStateMachine,
-  Velocity,
-} from '@/ecs/components';
+import { Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 import {

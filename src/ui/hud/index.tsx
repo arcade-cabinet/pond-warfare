@@ -11,12 +11,12 @@ import { ProductionQueue } from './production-queue';
 import { TopBar } from './top-bar';
 import { UnitCommands } from './unit-commands';
 
+export { CtrlGroups, type CtrlGroupsProps } from './ctrl-groups';
+export { Overlays } from './overlays';
+export { ProductionQueue } from './production-queue';
 // Re-export sub-components for barrel access
 export { TopBar, type TopBarProps } from './top-bar';
-export { CtrlGroups, type CtrlGroupsProps } from './ctrl-groups';
 export { UnitCommands, type UnitCommandsProps } from './unit-commands';
-export { ProductionQueue } from './production-queue';
-export { Overlays } from './overlays';
 
 /** Format time-of-day (in minutes) to HH:MM string. */
 export function formatTime(timeOfDay: number): string {

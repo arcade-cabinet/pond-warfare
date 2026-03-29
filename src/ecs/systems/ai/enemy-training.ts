@@ -79,7 +79,11 @@ export function enemyTrainingTick(world: GameWorld): void {
   // Mid game: normal training (max 2 in queue)
   // Late game: aggressive training (max 3 in queue)
   const maxQueueSize =
-    world.frameCount >= ENEMY_LATE_GAME_FRAME ? 3 : world.frameCount >= ENEMY_MID_GAME_FRAME ? 2 : 1;
+    world.frameCount >= ENEMY_LATE_GAME_FRAME
+      ? 3
+      : world.frameCount >= ENEMY_MID_GAME_FRAME
+        ? 2
+        : 1;
   for (const nestEid of nestEids) {
     const slots = trainingQueueSlots.get(nestEid) ?? [];
     if (slots.length >= maxQueueSize) continue;

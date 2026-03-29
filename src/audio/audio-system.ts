@@ -1,8 +1,8 @@
 /** Synthesized audio system using Tone.js. All sounds are procedurally generated. */
 import * as Tone from 'tone';
-import { SfxManager } from './sfx';
-import { MusicManager } from './music';
 import { AmbientManager } from './ambient';
+import { MusicManager } from './music';
+import { SfxManager } from './sfx';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;

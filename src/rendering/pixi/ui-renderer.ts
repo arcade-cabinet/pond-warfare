@@ -6,22 +6,10 @@
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { TILE_SIZE } from '@/constants';
-import {
-  Building,
-  Combat,
-  EntityTypeTag,
-  Position,
-  Selectable,
-} from '@/ecs/components';
+import { Building, Combat, EntityTypeTag, Position, Selectable } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { type EntityKind, SpriteId, type SpriteId as SpriteIdType } from '@/types';
-import {
-  drawDashedCircle,
-  drawDashedLine,
-  getScreenGfx,
-  getTexture,
-  getUiGfx,
-} from './init';
+import { drawDashedCircle, drawDashedLine, getScreenGfx, getTexture, getUiGfx } from './init';
 
 // ---------------------------------------------------------------------------
 // Rally points & range rings

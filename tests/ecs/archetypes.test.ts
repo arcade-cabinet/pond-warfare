@@ -7,6 +7,7 @@
 
 import { hasComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
   Carrying,
@@ -23,7 +24,6 @@ import {
   Velocity,
   Veterancy,
 } from '@/ecs/components';
-import { spawnEntity } from '@/ecs/archetypes';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 

@@ -25,11 +25,7 @@ export class SfxManager {
   private _getMuted: () => boolean;
   private _getSfxGain: () => number;
 
-  constructor(
-    getStarted: () => boolean,
-    getMuted: () => boolean,
-    getSfxGain: () => number,
-  ) {
+  constructor(getStarted: () => boolean, getMuted: () => boolean, getSfxGain: () => number) {
     this._getStarted = getStarted;
     this._getMuted = getMuted;
     this._getSfxGain = getSfxGain;

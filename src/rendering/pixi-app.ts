@@ -7,11 +7,11 @@
 
 export {
   destroyPixiApp,
+  getTexture,
   initPixiApp,
   type PixiRenderFrameData,
   type PlacementPreview,
   registerSpriteTexture,
-  getTexture,
   renderPixiFrame,
   resizePixiApp,
   setBackground,

@@ -44,18 +44,23 @@ export function aiSystem(world: GameWorld): void {
   bossWaveLogic(world);
 }
 
+export { enemyBuildingTick } from './enemy-building';
+export { enemyCombatTick } from './enemy-combat';
 // Re-export sub-module functions for direct access if needed
 export { enemyEconomyTick } from './enemy-economy';
-export { enemyBuildingTick } from './enemy-building';
-export { enemyTrainingTick, enemyTrainingQueueProcess, nestDefenseReinforcement, bossWaveLogic } from './enemy-training';
-export { enemyCombatTick } from './enemy-combat';
 export {
-  getEnemyNests,
-  findPlayerLodge,
+  bossWaveLogic,
+  enemyTrainingQueueProcess,
+  enemyTrainingTick,
+  nestDefenseReinforcement,
+} from './enemy-training';
+export {
   countEnemyArmy,
-  getEnemyArmyUnits,
   countPlayerUnitsOfKind,
   findBuildPosition,
-  startEnemyConstruction,
+  findPlayerLodge,
   findWeakestPlayerBuilding,
+  getEnemyArmyUnits,
+  getEnemyNests,
+  startEnemyConstruction,
 } from './helpers';

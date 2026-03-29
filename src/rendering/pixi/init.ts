@@ -11,7 +11,7 @@ import {
   Container,
   Graphics,
   Sprite,
-  Text,
+  type Text,
   type TextStyleOptions,
   Texture,
 } from 'pixi.js';

@@ -79,7 +79,7 @@ import {
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
 import { saveGame } from '@/save-system';
-import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
+import { type EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
 

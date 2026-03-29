@@ -14,8 +14,7 @@
 
 import { Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import type { Corpse, FloatingText, GroundPing, Particle } from '@/types';
-import type { SpriteId } from '@/types';
+import type { Corpse, FloatingText, GroundPing, Particle, SpriteId } from '@/types';
 import type { CameraShake } from '../camera';
 import type { ProjectileRenderData } from '../particles';
 import {
@@ -38,25 +37,20 @@ import {
   getUiGfx,
   isInitialised,
 } from './init';
-import {
-  renderPlacementPreview,
-  renderRallyAndRange,
-  renderSelectionRect,
-} from './ui-renderer';
+import { renderPlacementPreview, renderRallyAndRange, renderSelectionRect } from './ui-renderer';
 
 // Re-export init functions and types that external modules import
+// Re-export setColorBlindMode using the init module's setCbMode
 export {
   destroyPixiApp,
-  initPixiApp,
-  registerSpriteTexture,
   getTexture,
+  initPixiApp,
+  type PlacementPreview,
+  registerSpriteTexture,
   resizePixiApp,
   setBackground,
-  type PlacementPreview,
+  setCbMode as setColorBlindMode,
 } from './init';
-
-// Re-export setColorBlindMode using the init module's setCbMode
-export { setCbMode as setColorBlindMode } from './init';
 
 // ---------------------------------------------------------------------------
 // Per-frame render

@@ -1,24 +1,24 @@
 export {
-  ENTITY_DEFS,
   DAMAGE_MULTIPLIERS,
-  getDamageMultiplier,
+  ENTITY_DEFS,
   entityKindFromString,
   entityKindName,
+  getDamageMultiplier,
   type UnitDef,
 } from './entity-defs';
 export {
-  TECH_UPGRADES,
+  DEFAULT_KEYMAP,
+  getKeymap,
+  type KeyMap,
+  loadKeymapFromStorage,
+  saveKeymapToStorage,
+  setKeymap,
+} from './keymap';
+export {
   canResearch,
   createInitialTechState,
+  TECH_UPGRADES,
   type TechId,
   type TechState,
   type TechUpgrade,
 } from './tech-tree';
-export {
-  DEFAULT_KEYMAP,
-  getKeymap,
-  setKeymap,
-  loadKeymapFromStorage,
-  saveKeymapToStorage,
-  type KeyMap,
-} from './keymap';

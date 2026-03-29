@@ -1,20 +1,20 @@
 // Animations
 export {
-  entityScales,
-  triggerCommandPulse,
-  triggerBuildingComplete,
-  cleanupEntityAnimation,
   animateGameOverStats,
-  animateIntroTitle,
   animateIntroSubtitle,
+  animateIntroTitle,
+  cleanupEntityAnimation,
   type EntityScale,
+  entityScales,
+  triggerBuildingComplete,
+  triggerCommandPulse,
 } from './animations';
 
 // Background & fog texture generation
-export { buildBackground, buildFogTexture, buildExploredCanvas } from './background';
+export { buildBackground, buildExploredCanvas, buildFogTexture } from './background';
 
 // Camera
-export { clampCamera, computeShakeOffset, type CameraShake } from './camera';
+export { type CameraShake, clampCamera, computeShakeOffset } from './camera';
 
 // Fog of war renderer
 export { drawFog, type FogRendererState } from './fog-renderer';
@@ -27,26 +27,26 @@ export { drawMinimap, updateMinimapViewport } from './minimap-renderer';
 
 // Particles & projectiles
 export {
+  drawFloatingTexts,
   drawParticles,
-  updateProjectileTrails,
   drawProjectile,
   drawProjectiles,
-  drawFloatingTexts,
   type ProjectileRenderData,
+  updateProjectileTrails,
 } from './particles';
 
 // PixiJS app manager
 export {
-  setColorBlindMode,
-  type PlacementPreview,
-  registerSpriteTexture,
+  destroyPixiApp,
   getTexture,
   initPixiApp,
+  type PixiRenderFrameData,
+  type PlacementPreview,
+  registerSpriteTexture,
+  renderPixiFrame,
   resizePixiApp,
   setBackground,
-  destroyPixiApp,
-  type PixiRenderFrameData,
-  renderPixiFrame,
+  setColorBlindMode,
 } from './pixi-app';
 
 // Sprites

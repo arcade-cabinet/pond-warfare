@@ -13,11 +13,7 @@ export class AmbientManager {
   private _getMuted: () => boolean;
   private sfx: SfxManager;
 
-  constructor(
-    getStarted: () => boolean,
-    getMuted: () => boolean,
-    sfx: SfxManager,
-  ) {
+  constructor(getStarted: () => boolean, getMuted: () => boolean, sfx: SfxManager) {
     this._getStarted = getStarted;
     this._getMuted = getMuted;
     this.sfx = sfx;
