@@ -432,8 +432,22 @@ function enemyBuildingConstruction(world: GameWorld, isPeaceful: boolean): void 
       }
     }
 
-    // Priority 2: Build a burrow if none near this nest (food cap for more units)
+    // Priority 2: Build a burrow if none near this nest (food cap for more units).
+    // Skip if any enemy burrow is still under construction to avoid wasting resources.
+    let burrowUnderConstruction = false;
+    for (let i = 0; i < buildings.length; i++) {
+      const b = buildings[i];
+      if (
+        FactionTag.faction[b] === Faction.Enemy &&
+        (EntityTypeTag.kind[b] as EntityKind) === EntityKind.Burrow &&
+        Building.progress[b] < 100
+      ) {
+        burrowUnderConstruction = true;
+        break;
+      }
+    }
     if (
+      !burrowUnderConstruction &&
       nearbyBurrows < 1 &&
       res.clams >= ENEMY_BURROW_COST_CLAMS &&
       res.twigs >= ENEMY_BURROW_COST_TWIGS

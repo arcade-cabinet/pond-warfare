@@ -49,7 +49,7 @@ export function takeDamage(
   if (Health.current[targetEid] <= 0) return;
 
   // Guard against negative damage (would heal the target)
-  const effectiveAmount = Math.max(0, amount);
+  const effectiveAmount = Math.max(0, Math.round(amount * multiplier));
   if (effectiveAmount === 0) return;
 
   // Apply damage

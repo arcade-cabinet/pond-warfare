@@ -69,6 +69,8 @@ let bgLayer: Container;
 let entityLayer: Container;
 let effectLayer: Container;
 let uiLayer: Container;
+/** Screen-space layer: child of stage but positioned inversely to cancel camera transform. */
+let screenLayer: Container;
 
 // ---------------------------------------------------------------------------
 // PixiJS Application singleton
@@ -110,6 +112,8 @@ const entitySprites = new Map<number, Sprite>();
 let entityOverlayGfx: Graphics;
 let effectGfx: Graphics;
 let uiGfx: Graphics;
+/** Graphics drawn in screen space (selection rect, etc.) */
+let screenGfx: Graphics;
 
 // ---------------------------------------------------------------------------
 // Building progress text pool
@@ -179,7 +183,12 @@ export async function initPixiApp(
   uiLayer = new Container();
   uiLayer.label = 'uiLayer';
 
-  app.stage.addChild(bgLayer, entityLayer, effectLayer, uiLayer);
+  // Screen-space layer: positioned inversely each frame so its children
+  // are effectively in screen coordinates (not affected by camera pan).
+  screenLayer = new Container();
+  screenLayer.label = 'screenLayer';
+
+  app.stage.addChild(bgLayer, entityLayer, effectLayer, uiLayer, screenLayer);
 
   // Reusable Graphics objects
   entityOverlayGfx = new Graphics();
@@ -192,6 +201,9 @@ export async function initPixiApp(
 
   uiGfx = new Graphics();
   uiLayer.addChild(uiGfx);
+
+  screenGfx = new Graphics();
+  screenLayer.addChild(screenGfx);
 
   initialised = true;
   return app;
@@ -283,12 +295,18 @@ export function renderPixiFrame(
   const { shake, frameCount } = data;
 
   // --- Camera transform (applied to stage) ---
-  app.stage.position.set(-Math.floor(camX) + shake.offsetX, -Math.floor(camY) + shake.offsetY);
+  const stageX = -Math.floor(camX) + shake.offsetX;
+  const stageY = -Math.floor(camY) + shake.offsetY;
+  app.stage.position.set(stageX, stageY);
+
+  // Position the screen layer inversely so its children draw in screen space.
+  screenLayer.position.set(-stageX, -stageY);
 
   // --- Clear reusable graphics ---
   entityOverlayGfx.clear();
   effectGfx.clear();
   uiGfx.clear();
+  screenGfx.clear();
 
   // --- Track which entity sprites are still alive this frame ---
   const aliveEids = new Set<number>();
@@ -344,9 +362,9 @@ export function renderPixiFrame(
   // --- Floating text ---
   renderFloatingTexts(data.floatingTexts);
 
-  // --- Selection rectangle ---
+  // --- Selection rectangle (drawn in screen space) ---
   if (data.selectionRect && data.isDragging) {
-    renderSelectionRect(data.selectionRect);
+    renderSelectionRect(data.selectionRect, camX, camY);
   }
 
   // --- Building placement preview ---
@@ -750,23 +768,28 @@ function renderFloatingTexts(texts: FloatingText[]): void {
 // Selection rectangle
 // ---------------------------------------------------------------------------
 
-function renderSelectionRect(sr: {
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
-}): void {
-  const x = Math.min(sr.startX, sr.endX);
-  const y = Math.min(sr.startY, sr.endY);
+function renderSelectionRect(
+  sr: {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+  },
+  camX: number,
+  camY: number,
+): void {
+  // Convert world-space coordinates to screen space for the screenLayer.
+  const x = Math.min(sr.startX, sr.endX) - camX;
+  const y = Math.min(sr.startY, sr.endY) - camY;
   const rw = Math.abs(sr.endX - sr.startX);
   const rh = Math.abs(sr.endY - sr.startY);
 
   // Fill
-  uiGfx.rect(x, y, rw, rh);
-  uiGfx.fill({ color: 0x22c55e, alpha: 0.15 });
+  screenGfx.rect(x, y, rw, rh);
+  screenGfx.fill({ color: 0x22c55e, alpha: 0.15 });
   // Stroke
-  uiGfx.rect(x, y, rw, rh);
-  uiGfx.stroke({ width: 1, color: 0x22c55e });
+  screenGfx.rect(x, y, rw, rh);
+  screenGfx.stroke({ width: 1, color: 0x22c55e });
 
   // Corner dots
   const corners: [number, number][] = [
@@ -776,8 +799,8 @@ function renderSelectionRect(sr: {
     [x + rw, y + rh],
   ];
   for (const [px, py] of corners) {
-    uiGfx.circle(px, py, 3);
-    uiGfx.fill(0x22c55e);
+    screenGfx.circle(px, py, 3);
+    screenGfx.fill(0x22c55e);
   }
 }
 

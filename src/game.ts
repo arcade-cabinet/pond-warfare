@@ -168,6 +168,10 @@ export class Game {
     minimapCanvas: HTMLCanvasElement,
     minimapCamElement: HTMLElement,
   ): Promise<void> {
+    // Reset the world so re-initialisation (e.g. restarting the game) starts
+    // from a clean slate instead of accumulating stale ECS state.
+    this.world = createGameWorld();
+
     this.container = container;
     this.gameCanvas = gameCanvas;
     this.fogCanvas = fogCanvas;
@@ -892,6 +896,110 @@ export class Game {
     };
   }
 
+  /**
+   * Build the shared Lodge action buttons (Gatherer, Sturdy Mud, Swift Paws,
+   * Scout, Tech Tree) used by both the Global Command Center and the
+   * selected-Lodge panel. Returns buttons to push into the action panel.
+   */
+  private buildLodgeButtons(w: GameWorld, lodgeEid: number): ActionButtonDef[] {
+    const btns: ActionButtonDef[] = [];
+    const gDef = ENTITY_DEFS[EntityKind.Gatherer];
+    btns.push({
+      title: 'Gatherer',
+      cost: `${gDef.clamCost}C ${gDef.foodCost}F`,
+      hotkey: 'Q',
+      affordable:
+        w.resources.clams >= (gDef.clamCost ?? 0) &&
+        w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
+      description: 'Worker unit',
+      onClick: () => {
+        train(
+          w,
+          lodgeEid,
+          EntityKind.Gatherer,
+          gDef.clamCost ?? 0,
+          gDef.twigCost ?? 0,
+          gDef.foodCost ?? 1,
+        );
+      },
+    });
+    const smTech = TECH_UPGRADES.sturdyMud;
+    btns.push({
+      title: smTech.name,
+      cost: `${smTech.clamCost}C ${smTech.twigCost}T`,
+      hotkey: 'W',
+      affordable:
+        canResearch('sturdyMud', w.tech) &&
+        w.resources.clams >= smTech.clamCost &&
+        w.resources.twigs >= smTech.twigCost,
+      description: smTech.description,
+      onClick: () => {
+        if (
+          canResearch('sturdyMud', w.tech) &&
+          w.resources.clams >= smTech.clamCost &&
+          w.resources.twigs >= smTech.twigCost
+        ) {
+          w.resources.clams -= smTech.clamCost;
+          w.resources.twigs -= smTech.twigCost;
+          w.tech.sturdyMud = true;
+        }
+      },
+    });
+    const spTech = TECH_UPGRADES.swiftPaws;
+    btns.push({
+      title: spTech.name,
+      cost: `${spTech.clamCost}C ${spTech.twigCost}T`,
+      hotkey: 'E',
+      affordable:
+        canResearch('swiftPaws', w.tech) &&
+        w.resources.clams >= spTech.clamCost &&
+        w.resources.twigs >= spTech.twigCost,
+      description: spTech.description,
+      onClick: () => {
+        if (
+          canResearch('swiftPaws', w.tech) &&
+          w.resources.clams >= spTech.clamCost &&
+          w.resources.twigs >= spTech.twigCost
+        ) {
+          w.resources.clams -= spTech.clamCost;
+          w.resources.twigs -= spTech.twigCost;
+          w.tech.swiftPaws = true;
+        }
+      },
+    });
+    const scoutDef = ENTITY_DEFS[EntityKind.Scout];
+    btns.push({
+      title: 'Scout',
+      cost: `${scoutDef.clamCost}C ${scoutDef.foodCost}F`,
+      hotkey: 'R',
+      affordable:
+        w.resources.clams >= (scoutDef.clamCost ?? 0) &&
+        w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
+      description: 'Fast recon, wide vision',
+      onClick: () => {
+        train(
+          w,
+          lodgeEid,
+          EntityKind.Scout,
+          scoutDef.clamCost ?? 0,
+          scoutDef.twigCost ?? 0,
+          scoutDef.foodCost ?? 1,
+        );
+      },
+    });
+    btns.push({
+      title: 'Tech Tree',
+      cost: '',
+      hotkey: 'T',
+      affordable: true,
+      description: 'View full tech tree',
+      onClick: () => {
+        store.techTreeOpen.value = true;
+      },
+    });
+    return btns;
+  }
+
   /** Sync game world state to reactive UI store */
   syncUIStore(): void {
     const w = this.world;
@@ -1212,100 +1320,7 @@ export class Game {
         }
       }
       if (lodgeEid >= 0) {
-        const gDef = ENTITY_DEFS[EntityKind.Gatherer];
-        btns.push({
-          title: 'Gatherer',
-          cost: `${gDef.clamCost}C ${gDef.foodCost}F`,
-          hotkey: 'Q',
-          affordable:
-            w.resources.clams >= (gDef.clamCost ?? 0) &&
-            w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
-          description: 'Worker unit',
-          onClick: () => {
-            train(
-              w,
-              lodgeEid,
-              EntityKind.Gatherer,
-              gDef.clamCost ?? 0,
-              gDef.twigCost ?? 0,
-              gDef.foodCost ?? 1,
-            );
-          },
-        });
-        const smTech = TECH_UPGRADES.sturdyMud;
-        btns.push({
-          title: smTech.name,
-          cost: `${smTech.clamCost}C ${smTech.twigCost}T`,
-          hotkey: 'W',
-          affordable:
-            canResearch('sturdyMud', w.tech) &&
-            w.resources.clams >= smTech.clamCost &&
-            w.resources.twigs >= smTech.twigCost,
-          description: smTech.description,
-          onClick: () => {
-            if (
-              canResearch('sturdyMud', w.tech) &&
-              w.resources.clams >= smTech.clamCost &&
-              w.resources.twigs >= smTech.twigCost
-            ) {
-              w.resources.clams -= smTech.clamCost;
-              w.resources.twigs -= smTech.twigCost;
-              w.tech.sturdyMud = true;
-            }
-          },
-        });
-        const spTech = TECH_UPGRADES.swiftPaws;
-        btns.push({
-          title: spTech.name,
-          cost: `${spTech.clamCost}C ${spTech.twigCost}T`,
-          hotkey: 'E',
-          affordable:
-            canResearch('swiftPaws', w.tech) &&
-            w.resources.clams >= spTech.clamCost &&
-            w.resources.twigs >= spTech.twigCost,
-          description: spTech.description,
-          onClick: () => {
-            if (
-              canResearch('swiftPaws', w.tech) &&
-              w.resources.clams >= spTech.clamCost &&
-              w.resources.twigs >= spTech.twigCost
-            ) {
-              w.resources.clams -= spTech.clamCost;
-              w.resources.twigs -= spTech.twigCost;
-              w.tech.swiftPaws = true;
-            }
-          },
-        });
-        const scoutDef = ENTITY_DEFS[EntityKind.Scout];
-        btns.push({
-          title: 'Scout',
-          cost: `${scoutDef.clamCost}C ${scoutDef.foodCost}F`,
-          hotkey: 'R',
-          affordable:
-            w.resources.clams >= (scoutDef.clamCost ?? 0) &&
-            w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
-          description: 'Fast recon, wide vision',
-          onClick: () => {
-            train(
-              w,
-              lodgeEid,
-              EntityKind.Scout,
-              scoutDef.clamCost ?? 0,
-              scoutDef.twigCost ?? 0,
-              scoutDef.foodCost ?? 1,
-            );
-          },
-        });
-        btns.push({
-          title: 'Tech Tree',
-          cost: '',
-          hotkey: 'T',
-          affordable: true,
-          description: 'View full tech tree',
-          onClick: () => {
-            store.techTreeOpen.value = true;
-          },
-        });
+        btns.push(...this.buildLodgeButtons(w, lodgeEid));
 
         // Show Lodge training queue in global view
         const lodgeSlots = trainingQueueSlots.get(lodgeEid) ?? [];
@@ -1434,90 +1449,7 @@ export class Game {
 
         // Lodge selected: train gatherer + techs (only when construction is complete)
         if (selKind === EntityKind.Lodge && Building.progress[selEid] >= 100) {
-          const gDef = ENTITY_DEFS[EntityKind.Gatherer];
-          btns.push({
-            title: 'Gatherer',
-            cost: `${gDef.clamCost}C ${gDef.foodCost}F`,
-            hotkey: 'Q',
-            affordable:
-              w.resources.clams >= (gDef.clamCost ?? 0) &&
-              w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
-            description: 'Worker unit',
-            onClick: () => {
-              train(
-                w,
-                selEid,
-                EntityKind.Gatherer,
-                gDef.clamCost ?? 0,
-                gDef.twigCost ?? 0,
-                gDef.foodCost ?? 1,
-              );
-            },
-          });
-          const smTech = TECH_UPGRADES.sturdyMud;
-          btns.push({
-            title: smTech.name,
-            cost: `${smTech.clamCost}C ${smTech.twigCost}T`,
-            hotkey: 'W',
-            affordable:
-              canResearch('sturdyMud', w.tech) &&
-              w.resources.clams >= smTech.clamCost &&
-              w.resources.twigs >= smTech.twigCost,
-            description: smTech.description,
-            onClick: () => {
-              if (
-                canResearch('sturdyMud', w.tech) &&
-                w.resources.clams >= smTech.clamCost &&
-                w.resources.twigs >= smTech.twigCost
-              ) {
-                w.resources.clams -= smTech.clamCost;
-                w.resources.twigs -= smTech.twigCost;
-                w.tech.sturdyMud = true;
-              }
-            },
-          });
-          const spTech = TECH_UPGRADES.swiftPaws;
-          btns.push({
-            title: spTech.name,
-            cost: `${spTech.clamCost}C ${spTech.twigCost}T`,
-            hotkey: 'E',
-            affordable:
-              canResearch('swiftPaws', w.tech) &&
-              w.resources.clams >= spTech.clamCost &&
-              w.resources.twigs >= spTech.twigCost,
-            description: spTech.description,
-            onClick: () => {
-              if (
-                canResearch('swiftPaws', w.tech) &&
-                w.resources.clams >= spTech.clamCost &&
-                w.resources.twigs >= spTech.twigCost
-              ) {
-                w.resources.clams -= spTech.clamCost;
-                w.resources.twigs -= spTech.twigCost;
-                w.tech.swiftPaws = true;
-              }
-            },
-          });
-          const scoutDef = ENTITY_DEFS[EntityKind.Scout];
-          btns.push({
-            title: 'Scout',
-            cost: `${scoutDef.clamCost}C ${scoutDef.foodCost}F`,
-            hotkey: 'R',
-            affordable:
-              w.resources.clams >= (scoutDef.clamCost ?? 0) &&
-              w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
-            description: 'Fast recon, wide vision',
-            onClick: () => {
-              train(
-                w,
-                selEid,
-                EntityKind.Scout,
-                scoutDef.clamCost ?? 0,
-                scoutDef.twigCost ?? 0,
-                scoutDef.foodCost ?? 1,
-              );
-            },
-          });
+          btns.push(...this.buildLodgeButtons(w, selEid));
           const cartoTech = TECH_UPGRADES.cartography;
           btns.push({
             title: cartoTech.name,
@@ -1560,16 +1492,6 @@ export class Game {
                 w.resources.twigs -= thTech.twigCost;
                 w.tech.tidalHarvest = true;
               }
-            },
-          });
-          btns.push({
-            title: 'Tech Tree',
-            cost: '',
-            hotkey: 'T',
-            affordable: true,
-            description: 'View full tech tree',
-            onClick: () => {
-              store.techTreeOpen.value = true;
             },
           });
         }

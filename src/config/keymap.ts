@@ -34,14 +34,7 @@ export const DEFAULT_KEYMAP: KeyMap = {
   actionSlots: ['q', 'w', 'e', 'r', 't', 'y'],
 };
 
-let activeKeymap: KeyMap = {
-  ...DEFAULT_KEYMAP,
-  panUp: [...DEFAULT_KEYMAP.panUp],
-  panDown: [...DEFAULT_KEYMAP.panDown],
-  panLeft: [...DEFAULT_KEYMAP.panLeft],
-  panRight: [...DEFAULT_KEYMAP.panRight],
-  actionSlots: [...DEFAULT_KEYMAP.actionSlots],
-};
+let activeKeymap: KeyMap = deepCopyKeymap(DEFAULT_KEYMAP);
 
 /** Deep-copy a keymap to ensure callers receive isolated objects. */
 function deepCopyKeymap(keymap: KeyMap): KeyMap {

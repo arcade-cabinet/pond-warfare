@@ -535,10 +535,10 @@ describe('train()', () => {
     expect(world.resources.twigs).toBe(50);
   });
 
-  it('does not directly modify food (food is recalculated by syncUIStore)', () => {
+  it('eagerly reserves food so consecutive train calls respect the cap', () => {
     train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    // Food is no longer incremented by train(); syncUIStore counts queued units instead
-    expect(world.resources.food).toBe(0);
+    // Food is eagerly incremented so subsequent train() calls see the reservation
+    expect(world.resources.food).toBe(1);
   });
 
   it('adds unit to training queue', () => {
@@ -649,10 +649,9 @@ describe('cancelTrain()', () => {
     expect(world.resources.twigs).toBe(twigsBefore + 50);
   });
 
-  it('does not directly modify food on cancellation (food is recalculated by syncUIStore)', () => {
+  it('eagerly releases food reservation on cancellation', () => {
     train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    // Food is recalculated by syncUIStore counting queued units, not modified here
-    expect(world.resources.food).toBe(0);
+    expect(world.resources.food).toBe(1);
 
     cancelTrain(world, lodgeEid, 0);
     expect(world.resources.food).toBe(0);

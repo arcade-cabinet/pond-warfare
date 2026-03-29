@@ -70,7 +70,10 @@ export function App({ onMount }: AppProps) {
             minimapCam,
             dayNightOverlay: dayNight,
           });
-        } catch (_err) {}
+        } catch (err) {
+          // biome-ignore lint/suspicious/noConsole: surface init failures for debugging
+          console.error('Failed to initialize game', err);
+        }
       })();
     }
   }, [onMount]);

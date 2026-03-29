@@ -495,6 +495,26 @@ export function train(
   const count = TrainingQueue.count[buildingEid];
   if (count >= 8) return;
 
+  // Recompute queued food from trainingQueueSlots before checking the cap.
+  // world.resources.food is only synced every 30 frames, so consecutive train()
+  // calls in the same frame would otherwise bypass the food cap.
+  let queuedFood = 0;
+  const allTrainingBldgs = query(world.ecs, [TrainingQueue, FactionTag, IsBuilding]);
+  for (let i = 0; i < allTrainingBldgs.length; i++) {
+    const bEid = allTrainingBldgs[i];
+    if (FactionTag.faction[bEid] !== Faction.Player) continue;
+    const slots = trainingQueueSlots.get(bEid);
+    if (!slots) continue;
+    for (let qi = 0; qi < slots.length; qi++) {
+      const def = ENTITY_DEFS[slots[qi] as EntityKind];
+      queuedFood += def.foodCost ?? 1;
+    }
+  }
+  // Ensure world.resources.food reflects the up-to-date queued reservation.
+  // Between syncUIStore ticks, trainingQueueSlots may have grown but
+  // world.resources.food stayed stale. Bump it to at least cover the queue.
+  world.resources.food = Math.max(world.resources.food, queuedFood);
+
   if (
     world.resources.clams >= clamCost &&
     world.resources.twigs >= twigCost &&
@@ -502,8 +522,9 @@ export function train(
   ) {
     world.resources.clams -= clamCost;
     world.resources.twigs -= twigCost;
-    // Food reservation is handled by syncUIStore counting queued units;
-    // no need to increment food here.
+    // Eagerly reserve food so subsequent train() calls within the same
+    // frame see the updated value and cannot exceed the food cap.
+    world.resources.food += foodCost;
 
     {
       const slots = trainingQueueSlots.get(buildingEid) ?? [];
@@ -529,10 +550,11 @@ export function cancelTrain(world: GameWorld, buildingEid: number, index: number
   const kind = slots[index] as EntityKind | undefined;
   if (kind == null) return;
 
-  // Refund costs (food is auto-recalculated by syncUIStore from queued units)
+  // Refund costs and eagerly release food reservation
   const def = ENTITY_DEFS[kind];
   world.resources.clams += def.clamCost ?? 0;
   world.resources.twigs += def.twigCost ?? 0;
+  world.resources.food = Math.max(0, world.resources.food - (def.foodCost ?? 1));
 
   // Shift remaining queue items down
   slots.splice(index, 1);
