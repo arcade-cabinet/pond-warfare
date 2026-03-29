@@ -8,7 +8,7 @@
 import { gameState, goDesc, goStatsText, goTitle, goTitleColor } from './store';
 
 export interface GameOverProps {
-  onRestart?: () => void;
+  onRestart: () => void;
 }
 
 export function GameOverBanner(props: GameOverProps) {

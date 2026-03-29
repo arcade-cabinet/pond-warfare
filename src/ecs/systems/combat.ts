@@ -195,7 +195,7 @@ export function combatSystem(world: GameWorld): void {
       UnitStateMachine.targetY[eid] = UnitStateMachine.attackMoveTargetY[eid];
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
       UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
-      UnitStateMachine.targetEntity[eid] = 0;
+      UnitStateMachine.targetEntity[eid] = -1;
       continue;
     }
 

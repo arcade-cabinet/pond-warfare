@@ -114,7 +114,7 @@ export function issueContextCommand(
   audio.click();
 
   // Ground pings
-  if (!target) {
+  if (target == null) {
     world.groundPings.push({
       x: worldX,
       y: worldY,
@@ -160,7 +160,12 @@ export function issueContextCommand(
 
     const kind = EntityTypeTag.kind[eid] as EntityKind;
 
-    if (target) {
+    // Clear stale state before applying any new order
+    UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+    UnitStateMachine.targetEntity[eid] = -1;
+    UnitStateMachine.returnEntity[eid] = -1;
+
+    if (target != null) {
       const tFaction = FactionTag.faction[target] as Faction;
       const isTargetBuilding = hasComponent(world.ecs, target, IsBuilding);
       const isTargetResource = hasComponent(world.ecs, target, IsResource);
@@ -228,7 +233,7 @@ export function issueContextCommand(
       UnitStateMachine.targetX[eid] = worldX + offsetX;
       UnitStateMachine.targetY[eid] = worldY + offsetY;
       UnitStateMachine.state[eid] = UnitState.Move;
-      UnitStateMachine.targetEntity[eid] = 0;
+      UnitStateMachine.targetEntity[eid] = -1;
     }
   }
 }

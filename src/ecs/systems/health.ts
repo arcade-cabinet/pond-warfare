@@ -82,7 +82,7 @@ export function takeDamage(
   });
 
   // Retaliation and ally assist (only if target is still alive and has an attacker)
-  if (Health.current[targetEid] > 0 && attackerEid) {
+  if (Health.current[targetEid] > 0 && attackerEid !== undefined) {
     const targetFaction = hasComponent(world.ecs, targetEid, FactionTag)
       ? (FactionTag.faction[targetEid] as Faction)
       : Faction.Neutral;
@@ -157,14 +157,14 @@ export function takeDamage(
   // Check for death
   // Original: if (this.hp <= 0) this.die();
   if (Health.current[targetEid] <= 0) {
-    processDeath(world, targetEid);
+    processDeath(world, targetEid, attackerEid);
   }
 }
 
 /**
  * Process entity death. Direct port of Entity.die() (lines 1809-1844).
  */
-function processDeath(world: GameWorld, eid: number): void {
+function processDeath(world: GameWorld, eid: number, attackerEid?: number): void {
   // Prevent double-die: guard against re-entry during the same frame.
   // We use HP === -1 as a sentinel since the entity is about to be removed.
   if (Health.current[eid] === -1) return;
@@ -216,18 +216,8 @@ function processDeath(world: GameWorld, eid: number): void {
   }
 
   // Credit kill to attacker (original lines 1836-1843)
-  // Find who was attacking this entity and increment their kill count
-  const allCombatants = query(world.ecs, [Health, Combat]);
-  for (let j = 0; j < allCombatants.length; j++) {
-    const other = allCombatants[j];
-    if (!hasComponent(world.ecs, other, UnitStateMachine)) continue;
-    if (
-      UnitStateMachine.targetEntity[other] === eid &&
-      UnitStateMachine.state[other] === UnitState.Attacking
-    ) {
-      Combat.kills[other]++;
-      break;
-    }
+  if (attackerEid !== undefined && hasComponent(world.ecs, attackerEid, Combat)) {
+    Combat.kills[attackerEid]++;
   }
 
   // Clean up training queue slots

@@ -28,8 +28,6 @@ export function collisionSystem(world: GameWorld): void {
     // Skip dead entities
     if (hasComponent(world.ecs, eid, Health) && Health.current[eid] <= 0) continue;
 
-    const ax = Position.x[eid];
-    const ay = Position.y[eid];
     const ar = Collider.radius[eid];
 
     // TODO: Replace O(n^2) brute-force with spatial partitioning (grid / quadtree) for better perf at high entity counts.
@@ -40,8 +38,9 @@ export function collisionSystem(world: GameWorld): void {
       if (hasComponent(world.ecs, other, IsBuilding)) continue;
       if (hasComponent(world.ecs, other, IsResource)) continue;
 
-      const dx = ax - Position.x[other];
-      const dy = ay - Position.y[other];
+      // Read position fresh each iteration since pushes mutate it
+      const dx = Position.x[eid] - Position.x[other];
+      const dy = Position.y[eid] - Position.y[other];
       const distSq = dx * dx + dy * dy;
       const md = ar + Collider.radius[other];
 

@@ -104,9 +104,9 @@ export function gatheringSystem(world: GameWorld): void {
     const tEnt = UnitStateMachine.targetEntity[eid];
 
     // Original: if (!this.tEnt || this.tEnt.resAmount <= 0)
-    if (!tEnt || !hasComponent(world.ecs, tEnt, Resource) || Resource.amount[tEnt] <= 0) {
+    if (tEnt === -1 || !hasComponent(world.ecs, tEnt, Resource) || Resource.amount[tEnt] <= 0) {
       // Try to find another nearby resource of same type (lines 1664-1672)
-      if (tEnt && hasComponent(world.ecs, tEnt, EntityTypeTag)) {
+      if (tEnt !== -1 && hasComponent(world.ecs, tEnt, EntityTypeTag)) {
         const resKind = EntityTypeTag.kind[tEnt] as EntityKind;
         const ex = Position.x[eid];
         const ey = Position.y[eid];

@@ -58,11 +58,19 @@ HTMLCanvasElement.prototype.getContext = function (
   options?: any,
 ) {
   if (type === '2d') {
-    const result = originalGetContext.call(this, type, options);
-    if (result) return result;
+    try {
+      const result = originalGetContext.call(this, type, options);
+      if (result) return result;
+    } catch {
+      // jsdom throws "Not implemented" – fall through to mock
+    }
     return mockContext2D as any;
   }
-  return originalGetContext.call(this, type, options) as any;
+  try {
+    return originalGetContext.call(this, type, options) as any;
+  } catch {
+    return null;
+  }
 } as any;
 
 // Mock requestAnimationFrame if not available

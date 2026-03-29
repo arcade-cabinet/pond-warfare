@@ -101,7 +101,7 @@ export function App({ onMount }: AppProps) {
         <IntroOverlay />
 
         {/* Game over banner */}
-        <GameOverBanner />
+        <GameOverBanner onRestart={() => window.location.reload()} />
       </div>
     </div>
   );

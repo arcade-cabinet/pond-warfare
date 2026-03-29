@@ -200,7 +200,7 @@ export class Game {
           ) {
             // Set to idle
             UnitStateMachine.state[eid] = UnitState.Idle;
-            UnitStateMachine.targetEntity[eid] = 0;
+            UnitStateMachine.targetEntity[eid] = -1;
           }
         }
       },

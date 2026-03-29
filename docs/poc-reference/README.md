@@ -1,6 +1,6 @@
 # POC Reference Chunks
 
-The original `pond_craft.html` (1,926 lines) broken into 18 logical chunks for review. Each file has a header comment explaining what it contains and where it was ported in the modern TypeScript project.
+The original `pond_craft.html` (1,926 lines) is broken into 18 logical chunks for review. Each file has a header comment explaining what it contains and where it was ported in the modern TypeScript project.
 
 ## File Map
 

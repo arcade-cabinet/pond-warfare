@@ -146,8 +146,8 @@ export function spawnEntity(
 
     addComponent(world.ecs, eid, UnitStateMachine);
     UnitStateMachine.state[eid] = 0; // Idle
-    UnitStateMachine.targetEntity[eid] = 0;
-    UnitStateMachine.returnEntity[eid] = 0;
+    UnitStateMachine.targetEntity[eid] = -1;
+    UnitStateMachine.returnEntity[eid] = -1;
     UnitStateMachine.gatherTimer[eid] = 0;
     UnitStateMachine.hasAttackMoveTarget[eid] = 0;
     UnitStateMachine.targetX[eid] = 0;

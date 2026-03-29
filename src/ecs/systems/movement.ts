@@ -13,7 +13,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
-import { BUILD_TIMER, GATHER_TIMER, REPAIR_TIMER } from '@/constants';
+import { BUILD_TIMER, GATHER_AMOUNT, GATHER_TIMER, REPAIR_TIMER } from '@/constants';
 import {
   Carrying,
   Collider,
@@ -91,12 +91,12 @@ export function movementSystem(world: GameWorld): void {
       state === UnitState.RepairMove
     ) {
       const tEnt = UnitStateMachine.targetEntity[eid];
-      if (tEnt && hasComponent(world.ecs, tEnt, Collider)) {
+      if (tEnt !== -1 && hasComponent(world.ecs, tEnt, Collider)) {
         targetRad = Collider.radius[tEnt];
       }
     } else if (state === UnitState.ReturnMove) {
       const rEnt = UnitStateMachine.returnEntity[eid];
-      if (rEnt && hasComponent(world.ecs, rEnt, Collider)) {
+      if (rEnt !== -1 && hasComponent(world.ecs, rEnt, Collider)) {
         targetRad = Collider.radius[rEnt];
       }
     }
@@ -185,23 +185,23 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
         world.floatingTexts.push({
           x: Position.x[eid],
           y: Position.y[eid] - 20,
-          text: `+10 ${resName}`,
+          text: `+${GATHER_AMOUNT} ${resName}`,
           color,
           life: 60,
         });
 
         // Add resources (original: GAME.resources[this.heldRes] += 10)
         if (heldRes === ResourceType.Clams) {
-          world.resources.clams += 10;
+          world.resources.clams += GATHER_AMOUNT;
         } else {
-          world.resources.twigs += 10;
+          world.resources.twigs += GATHER_AMOUNT;
         }
         Carrying.resourceType[eid] = ResourceType.None;
 
         // If the gather target still has resources, go back to it
         // Original: if (this.tEnt && this.tEnt.resAmount>0) { this.tPos={x:this.tEnt.x,y:this.tEnt.y}; this.state='g_move'; }
         const tEnt = UnitStateMachine.targetEntity[eid];
-        if (tEnt && hasComponent(world.ecs, tEnt, Resource) && Resource.amount[tEnt] > 0) {
+        if (tEnt !== -1 && hasComponent(world.ecs, tEnt, Resource) && Resource.amount[tEnt] > 0) {
           UnitStateMachine.targetX[eid] = Position.x[tEnt];
           UnitStateMachine.targetY[eid] = Position.y[tEnt];
           UnitStateMachine.state[eid] = UnitState.GatherMove;

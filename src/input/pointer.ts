@@ -226,7 +226,6 @@ export class PointerHandler {
     if (!this.mouse.isDown) return;
     this.mouse.isDown = false;
 
-    const _w = this.world;
     const dx = this.mouse.worldX - this.mouse.startX;
     const dy = this.mouse.worldY - this.mouse.startY;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -251,12 +250,6 @@ export class PointerHandler {
       w.attackMoveMode = false;
       const clicked = this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY);
       if (clicked && this.cb.isEnemyFaction(clicked)) {
-        // Attack the enemy directly
-        for (const eid of w.selection) {
-          if (this.cb.isPlayerUnit(eid)) {
-            // Attack command is delegated to issueContextCommand
-          }
-        }
         this.cb.issueContextCommand(clicked);
       } else {
         // Attack-move to ground
@@ -407,9 +400,12 @@ export class PointerHandler {
       const oldWY = this.mouse.worldY;
       this.mouse.worldX = clickX;
       this.mouse.worldY = clickY;
-      this.cb.issueContextCommand(target);
-      this.mouse.worldX = oldWX;
-      this.mouse.worldY = oldWY;
+      try {
+        this.cb.issueContextCommand(target);
+      } finally {
+        this.mouse.worldX = oldWX;
+        this.mouse.worldY = oldWY;
+      }
       return;
     }
 

@@ -60,7 +60,11 @@ export function projectileSystem(world: GameWorld): void {
 
     // Homing: update target position if target is still alive
     // Original: if (this.target && this.target.hp > 0) { this.tx = this.target.x; this.ty = this.target.y; }
-    if (targetEnt && hasComponent(world.ecs, targetEnt, Health) && Health.current[targetEnt] > 0) {
+    if (
+      targetEnt !== -1 &&
+      hasComponent(world.ecs, targetEnt, Health) &&
+      Health.current[targetEnt] > 0
+    ) {
       ProjectileData.targetX[eid] = Position.x[targetEnt];
       ProjectileData.targetY[eid] = Position.y[targetEnt];
     }
@@ -79,7 +83,7 @@ export function projectileSystem(world: GameWorld): void {
       // Deal damage on hit
       // Original: if (this.target && this.target.hp > 0) this.target.takeDamage(this.dmg, this.owner);
       if (
-        targetEnt &&
+        targetEnt !== -1 &&
         hasComponent(world.ecs, targetEnt, Health) &&
         Health.current[targetEnt] > 0
       ) {
