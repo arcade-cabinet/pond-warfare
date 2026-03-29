@@ -66,7 +66,7 @@ describe('AudioSystem – toggleMute()', () => {
     // Set up a fake ambientNoise object to check stop() is called
     const fakeNoise = { stop: vi.fn(), start: vi.fn() };
     // Access private field via casting to test stop behavior
-    (sys as any).ambientNoise = fakeNoise;
+    (sys as any).ambientMgr.ambientNoise = fakeNoise;
 
     sys.toggleMute(); // now muted
     expect(fakeNoise.stop).toHaveBeenCalledOnce();
@@ -74,7 +74,7 @@ describe('AudioSystem – toggleMute()', () => {
 
   it('toggleMute() restarts ambient noise when unmuting', () => {
     const fakeNoise = { stop: vi.fn(), start: vi.fn() };
-    (sys as any).ambientNoise = fakeNoise;
+    (sys as any).ambientMgr.ambientNoise = fakeNoise;
 
     sys.toggleMute(); // mute
     sys.toggleMute(); // unmute
@@ -195,7 +195,7 @@ describe('AudioSystem – updateAmbient()', () => {
   it('calls rampTo on ambientFilter with appropriate frequency', () => {
     const sys = new AudioSystem();
     const fakeFilter = { frequency: { rampTo: vi.fn() } };
-    (sys as any).ambientFilter = fakeFilter;
+    (sys as any).ambientMgr.ambientFilter = fakeFilter;
 
     sys.updateAmbient(0); // full day (darkness=0): max freq = 200 + 400 = 600
     expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(600, 2);
@@ -204,7 +204,7 @@ describe('AudioSystem – updateAmbient()', () => {
   it('uses lower frequency at full darkness (night)', () => {
     const sys = new AudioSystem();
     const fakeFilter = { frequency: { rampTo: vi.fn() } };
-    (sys as any).ambientFilter = fakeFilter;
+    (sys as any).ambientMgr.ambientFilter = fakeFilter;
 
     sys.updateAmbient(1); // full night (darkness=1): freq = 200 + 0 = 200
     expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(200, 2);
@@ -213,7 +213,7 @@ describe('AudioSystem – updateAmbient()', () => {
   it('interpolates frequency linearly between day and night', () => {
     const sys = new AudioSystem();
     const fakeFilter = { frequency: { rampTo: vi.fn() } };
-    (sys as any).ambientFilter = fakeFilter;
+    (sys as any).ambientMgr.ambientFilter = fakeFilter;
 
     sys.updateAmbient(0.5); // mid: 200 + (0.5 * 400) = 400
     expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(400, 2);

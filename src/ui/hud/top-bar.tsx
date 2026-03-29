@@ -68,7 +68,7 @@ export function TopBar(props: TopBarProps) {
   }, [currentTwigs]);
 
   return (
-    <div class="absolute top-0 left-0 w-full h-10 md:h-12 ui-panel border-0 border-b-2 md:border-b-4 flex items-center justify-between px-2 md:px-6 z-20 bg-opacity-95 text-xs md:text-sm">
+    <div class="absolute top-0 left-0 w-full h-11 md:h-12 ui-panel border-0 border-b-2 md:border-b-4 flex items-center justify-between px-2 md:px-6 z-20 bg-opacity-95 text-xs md:text-sm">
       <div class="flex space-x-3 md:space-x-6">
         {/* Clams */}
         <div class="flex items-center space-x-1 md:space-x-2">

@@ -8,7 +8,7 @@ export function ProductionQueue() {
   if (globalProductionQueue.value.length === 0) return null;
 
   return (
-    <div class="absolute top-10 md:top-12 left-2 md:left-6 z-20 flex gap-1">
+    <div class="absolute top-11 md:top-12 left-2 md:left-6 z-20 flex gap-1">
       {globalProductionQueue.value.map((item, i) => (
         <div
           key={

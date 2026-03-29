@@ -12,7 +12,7 @@ export function CtrlGroups(props: CtrlGroupsProps) {
   if (Object.keys(ctrlGroupCounts.value).length === 0) return null;
 
   return (
-    <div class="absolute top-10 md:top-12 right-2 md:right-6 z-20 flex gap-1">
+    <div class="absolute top-11 md:top-12 right-2 md:right-6 z-20 flex gap-1">
       {Object.entries(ctrlGroupCounts.value)
         .sort(([a], [b]) => Number(a) - Number(b))
         .map(([gnum, count]) => (
