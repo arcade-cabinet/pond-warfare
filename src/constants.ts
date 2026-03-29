@@ -109,7 +109,7 @@ export const TIME_STOPS = [
   { h: 24, c: [15, 20, 45] as const },
 ] as const;
 
-export const SPEED_LEVELS = [1, 2, 3] as const;
+export const SPEED_LEVELS = [1, 2, 3, 5, 10] as const;
 
 export const MINIMAP_SIZE = 200;
 export const FOG_TEXTURE_SIZE = 256;

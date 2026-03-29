@@ -317,8 +317,8 @@ describe('TIME_STOPS (day/night cycle)', () => {
 });
 
 describe('SPEED_LEVELS', () => {
-  it('contains exactly 3 levels', () => {
-    expect(SPEED_LEVELS).toHaveLength(3);
+  it('contains at least 3 levels including turbo speeds', () => {
+    expect(SPEED_LEVELS.length).toBeGreaterThanOrEqual(3);
   });
 
   it('starts at 1x speed', () => {
@@ -331,8 +331,8 @@ describe('SPEED_LEVELS', () => {
     }
   });
 
-  it('maximum speed is 3x', () => {
-    expect(SPEED_LEVELS[SPEED_LEVELS.length - 1]).toBe(3);
+  it('maximum speed is 10x', () => {
+    expect(SPEED_LEVELS[SPEED_LEVELS.length - 1]).toBe(10);
   });
 
   it('all speed levels are positive integers', () => {

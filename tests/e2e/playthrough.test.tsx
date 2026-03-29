@@ -110,16 +110,16 @@ describe('E2E Playthrough', () => {
   it(
     'should play through economy, build, army, and attack phases',
     async () => {
-      // Run the governor for up to 5 minutes of game time at 3x speed
-      // At 3x speed, 5 min game time = ~100s real time
-      // We use a generous real-time timeout of 3 minutes
+      // Run the governor for up to 20 minutes of game time at 10x speed
+      // At 10x speed, 20 min game time = ~120s real time
+      game.world.gameSpeed = 10;
       await runGovernor({
-        timeoutMs: 180_000,
+        timeoutMs: 480_000,
         intervalMs: 500,
         stopWhen: () => {
-          // Stop if game ended or we've reached 5 min game time
+          // Stop if game ended (win or lose) or we've reached 20 min game time
           const gs = game.world.frameCount / 60;
-          return game.world.state !== 'playing' || gs >= 300;
+          return game.world.state !== 'playing' || gs >= 1200;
         },
         onTick: async (snapshot) => {
           snapshots.push(snapshot);
@@ -172,9 +172,12 @@ describe('E2E Playthrough', () => {
       const phases = new Set(snapshots.map((s) => s.phase));
       expect(phases.size, 'Expected to progress through multiple phases').toBeGreaterThanOrEqual(2);
 
+      // Should have reached army or attack phase in 20 minutes
+      expect(phases.has('army') || phases.has('attack'), 'Expected to reach army or attack phase in 20 min').toBe(true);
+
       // No console errors during playthrough
       expect(consoleErrors, 'Expected no console errors').toHaveLength(0);
     },
-    300_000,
+    600_000, // 10 minute real-time timeout
   );
 });
