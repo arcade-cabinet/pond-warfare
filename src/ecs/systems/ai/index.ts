@@ -49,3 +49,13 @@ export { enemyEconomyTick } from './enemy-economy';
 export { enemyBuildingTick } from './enemy-building';
 export { enemyTrainingTick, enemyTrainingQueueProcess, nestDefenseReinforcement, bossWaveLogic } from './enemy-training';
 export { enemyCombatTick } from './enemy-combat';
+export {
+  getEnemyNests,
+  findPlayerLodge,
+  countEnemyArmy,
+  getEnemyArmyUnits,
+  countPlayerUnitsOfKind,
+  findBuildPosition,
+  startEnemyConstruction,
+  findWeakestPlayerBuilding,
+} from './helpers';

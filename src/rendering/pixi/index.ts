@@ -1,0 +1,201 @@
+/**
+ * PixiJS Application Manager
+ *
+ * Creates and manages the PixiJS 8 Application for the main game canvas.
+ * Uses layer containers for rendering order:
+ *   bgLayer      -> Background terrain
+ *   entityLayer  -> Y-sorted entities (sprites, health bars, selection brackets)
+ *   effectLayer  -> Particles, projectiles, ground pings, floating text
+ *   uiLayer      -> Selection rectangle, building placement preview, rally lines
+ *
+ * Fog-of-war, dynamic lighting, and minimap remain Canvas2D overlays
+ * (they rely on CSS mix-blend-mode compositing that PixiJS cannot replicate).
+ */
+
+import { Position } from '@/ecs/components';
+import type { GameWorld } from '@/ecs/world';
+import type { Corpse, FloatingText, GroundPing, Particle } from '@/types';
+import type { SpriteId } from '@/types';
+import type { CameraShake } from '../camera';
+import type { ProjectileRenderData } from '../particles';
+import {
+  renderCorpses,
+  renderFloatingTexts,
+  renderGroundPings,
+  renderParticles,
+  renderProjectiles,
+} from './effects-renderer';
+import { renderEntity } from './entity-renderer';
+import {
+  getApp,
+  getBuildingProgressTexts,
+  getEffectGfx,
+  getEntityLayer,
+  getEntityOverlayGfx,
+  getEntitySprites,
+  getScreenGfx,
+  getScreenLayer,
+  getUiGfx,
+  isInitialised,
+} from './init';
+import {
+  renderPlacementPreview,
+  renderRallyAndRange,
+  renderSelectionRect,
+} from './ui-renderer';
+
+// Re-export init functions and types that external modules import
+export {
+  destroyPixiApp,
+  initPixiApp,
+  registerSpriteTexture,
+  getTexture,
+  resizePixiApp,
+  setBackground,
+  type PlacementPreview,
+} from './init';
+
+// Re-export setColorBlindMode using the init module's setCbMode
+export { setCbMode as setColorBlindMode } from './init';
+
+// ---------------------------------------------------------------------------
+// Per-frame render
+// ---------------------------------------------------------------------------
+
+/** Full per-frame render data consumed by renderPixiFrame. */
+export interface PixiRenderFrameData {
+  sortedEids: number[];
+  corpses: Corpse[];
+  groundPings: GroundPing[];
+  projectiles: ProjectileRenderData[];
+  particles: Particle[];
+  floatingTexts: FloatingText[];
+  frameCount: number;
+  shake: CameraShake;
+  selectionRect: {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+  } | null;
+  placement: {
+    worldX: number;
+    worldY: number;
+    buildingType: string;
+    canPlace: boolean;
+  } | null;
+  isDragging: boolean;
+}
+
+/**
+ * Render a single frame using PixiJS.
+ *
+ * This replaces the old Canvas2D `drawGame()` call. Camera transform, entity
+ * sprites, health bars, selection brackets, particles, projectiles, rally
+ * lines, range rings, floating text, selection rect, and placement preview
+ * are all rendered through PixiJS layer containers.
+ */
+export function renderPixiFrame(
+  world: GameWorld,
+  spriteCanvases: Map<SpriteId, HTMLCanvasElement>,
+  data: PixiRenderFrameData,
+): void {
+  if (!isInitialised()) return;
+
+  const app = getApp();
+  const screenLayer = getScreenLayer();
+  const entityOverlayGfx = getEntityOverlayGfx();
+  const effectGfx = getEffectGfx();
+  const uiGfx = getUiGfx();
+  const screenGfx = getScreenGfx();
+  const entitySprites = getEntitySprites();
+  const entityLayer = getEntityLayer();
+  const buildingProgressTexts = getBuildingProgressTexts();
+
+  const { camX, camY } = world;
+  const { shake, frameCount } = data;
+
+  // --- Camera transform (applied to stage) with zoom ---
+  const zoom = world.zoomLevel;
+  const stageX = -Math.floor(camX) * zoom + shake.offsetX;
+  const stageY = -Math.floor(camY) * zoom + shake.offsetY;
+  app.stage.scale.set(zoom, zoom);
+  app.stage.position.set(stageX, stageY);
+
+  // Position the screen layer inversely so its children draw in screen space.
+  screenLayer.position.set(-stageX / zoom, -stageY / zoom);
+  screenLayer.scale.set(1 / zoom, 1 / zoom);
+
+  // --- Clear reusable graphics ---
+  entityOverlayGfx.clear();
+  effectGfx.clear();
+  uiGfx.clear();
+  screenGfx.clear();
+
+  // --- Track which entity sprites are still alive this frame ---
+  const aliveEids = new Set<number>();
+
+  // --- Corpses ---
+  renderCorpses(data.corpses, camX, camY, world.viewWidth, world.viewHeight, spriteCanvases);
+
+  // --- Entities (Y-sorted) ---
+  for (const eid of data.sortedEids) {
+    const ex = Position.x[eid];
+    const ey = Position.y[eid];
+    // Frustum cull
+    if (
+      ex + 100 < camX ||
+      ex - 100 > camX + world.viewWidth ||
+      ey + 100 < camY ||
+      ey - 100 > camY + world.viewHeight
+    ) {
+      continue;
+    }
+    aliveEids.add(eid);
+    renderEntity(eid, frameCount);
+  }
+
+  // --- Remove sprites for dead/removed entities ---
+  for (const [eid, spr] of entitySprites) {
+    if (!aliveEids.has(eid)) {
+      entityLayer.removeChild(spr);
+      spr.destroy();
+      entitySprites.delete(eid);
+      // Also clean up any building progress text
+      const progText = buildingProgressTexts.get(eid);
+      if (progText) {
+        entityLayer.removeChild(progText);
+        progText.destroy();
+        buildingProgressTexts.delete(eid);
+      }
+    }
+  }
+
+  // --- Ground pings ---
+  renderGroundPings(data.groundPings);
+
+  // --- Particles ---
+  renderParticles(data.particles);
+
+  // --- Projectiles ---
+  renderProjectiles(data.projectiles);
+
+  // --- Rally points & range rings ---
+  renderRallyAndRange(world, frameCount);
+
+  // --- Floating text ---
+  renderFloatingTexts(data.floatingTexts);
+
+  // --- Selection rectangle (drawn in screen space) ---
+  if (data.selectionRect && data.isDragging) {
+    renderSelectionRect(data.selectionRect, camX, camY);
+  }
+
+  // --- Building placement preview ---
+  if (data.placement) {
+    renderPlacementPreview(data.placement, spriteCanvases);
+  }
+
+  // --- Tell PixiJS to render ---
+  app.render();
+}
