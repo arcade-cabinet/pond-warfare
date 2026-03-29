@@ -24,6 +24,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerBuildingComplete } from '@/rendering/animations';
 import { UnitState } from '@/types';
 
 export function buildingSystem(world: GameWorld): void {
@@ -88,6 +89,7 @@ export function buildingSystem(world: GameWorld): void {
             Building.progress[tEnt] = 100;
           }
           audio.buildComplete();
+          triggerBuildingComplete(tEnt);
           UnitStateMachine.state[eid] = UnitState.Idle;
         } else {
           // Reset timer only when not yet complete (original: this.gTimer = 30)

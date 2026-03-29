@@ -22,6 +22,7 @@ import {
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
+  Collider,
   EntityTypeTag,
   FactionTag,
   Health,
@@ -61,6 +62,8 @@ import {
   selectArmy,
   selectIdleWorker,
 } from '@/input/selection';
+import { PhysicsManager } from '@/physics/physics-world';
+import { cleanupEntityAnimation, triggerCommandPulse } from '@/rendering/animations';
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import { clampCamera, computeShakeOffset } from '@/rendering/camera';
 import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
@@ -103,6 +106,12 @@ export class Game {
   // Input
   private keyboard!: KeyboardHandler;
   private pointer!: PointerHandler;
+
+  // Physics
+  physicsManager!: PhysicsManager;
+
+  // Track entity count to detect newly spawned entities for physics body creation
+  private lastKnownEntities: Set<number> = new Set();
 
   // Game loop
   private lastTime = 0;
@@ -229,6 +238,10 @@ export class Game {
       getEntityAt: (wx, wy) => getEntityAt(this.world, wx, wy),
       hasPlayerUnitsSelected: () => hasPlayerUnitsSelected(this.world),
       issueContextCommand: (target) => {
+        // Trigger command pulse animation for selected units
+        for (const eid of this.world.selection) {
+          triggerCommandPulse(eid);
+        }
         issueContextCommand(
           this.world,
           target,
@@ -296,6 +309,9 @@ export class Game {
     );
     this.pointer.attachMinimap(this.minimapCanvas);
     this.pointer.setShiftGetter(() => !!this.keyboard.keys.shift);
+
+    // Initialize physics
+    this.physicsManager = new PhysicsManager();
 
     // Spawn initial entities
     this.spawnInitialEntities();
@@ -426,6 +442,44 @@ export class Game {
     audio.click();
   }
 
+  /**
+   * Sync physics bodies with ECS entities.
+   * Creates bodies for new entities, removes bodies for dead/removed ones.
+   */
+  private syncPhysicsBodies(): void {
+    const allEnts = query(this.world.ecs, [Position, Collider, Health]);
+    const currentEntities = new Set<number>();
+
+    for (let i = 0; i < allEnts.length; i++) {
+      const eid = allEnts[i];
+      currentEntities.add(eid);
+
+      if (Health.current[eid] <= 0) {
+        // Entity is dead - remove physics body and animation state
+        if (this.physicsManager.hasBody(eid)) {
+          this.physicsManager.removeBody(eid);
+          cleanupEntityAnimation(eid);
+        }
+        continue;
+      }
+
+      // Create body for new entities
+      if (!this.physicsManager.hasBody(eid)) {
+        this.physicsManager.createBody(this.world.ecs, eid);
+      }
+    }
+
+    // Remove bodies for entities that no longer exist in ECS
+    for (const eid of this.lastKnownEntities) {
+      if (!currentEntities.has(eid)) {
+        this.physicsManager.removeBody(eid);
+        cleanupEntityAnimation(eid);
+      }
+    }
+
+    this.lastKnownEntities = currentEntities;
+  }
+
   /** Main game loop using a fixed timestep accumulator. */
   private loop(timestamp: number): void {
     if (!this.running) return;
@@ -464,10 +518,16 @@ export class Game {
     );
     clampCamera(this.world);
 
+    // Update Yuka AI steering (1/60s fixed step)
+    this.world.yukaManager.update(1 / 60);
+
+    // Sync physics bodies: create for new entities, remove for dead ones
+    this.syncPhysicsBodies();
+
     // Run all ECS systems in order
     dayNightSystem(this.world);
     movementSystem(this.world);
-    collisionSystem(this.world);
+    collisionSystem(this.world, this.physicsManager);
     gatheringSystem(this.world);
     buildingSystem(this.world);
     combatSystem(this.world);
@@ -683,6 +743,7 @@ export class Game {
     this.running = false;
     this.keyboard.destroy();
     this.pointer.destroy();
+    this.physicsManager.destroy();
   }
 }
 

@@ -1,4 +1,5 @@
 import { createWorld } from 'bitecs';
+import { YukaManager } from '@/ai/yuka-manager';
 import { createInitialTechState, type TechState } from '@/config/tech-tree';
 import { STARTING_CLAMS, STARTING_TWIGS } from '@/constants';
 import type {
@@ -60,6 +61,9 @@ export interface GameWorld {
   attackMoveMode: boolean;
   idleWorkerIdx: number;
 
+  // Yuka AI manager for enemy steering behaviors
+  yukaManager: YukaManager;
+
   // Resource tracking
   resTracker: {
     lastClams: number;
@@ -109,6 +113,7 @@ export function createGameWorld(): GameWorld {
     shakeTimer: 0,
     selection: [],
     ctrlGroups: {},
+    yukaManager: new YukaManager(),
     placingBuilding: null,
     attackMoveMode: false,
     idleWorkerIdx: 0,

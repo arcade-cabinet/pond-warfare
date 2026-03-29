@@ -254,6 +254,9 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     Combat.kills[attackerEid]++;
   }
 
+  // Clean up Yuka vehicle for enemy entities
+  world.yukaManager.removeEnemy(eid);
+
   // Clean up training queue slots
   trainingQueueSlots.delete(eid);
 

@@ -39,6 +39,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import type { Corpse, GroundPing } from '@/types';
 import { type EntityKind, ResourceType, SpriteId } from '@/types';
+import { entityScales } from './animations';
 import type { CameraShake } from './camera';
 import {
   drawFloatingTexts,
@@ -155,8 +156,16 @@ function drawEntity(
     ctx.stroke();
   }
 
-  // --- Sprite (with flip, damage flash, construction reveal) ---
+  // --- Sprite (with flip, damage flash, construction reveal, squish) ---
   ctx.save();
+
+  // Apply anime.js squish-stretch scale if active
+  const animScale = entityScales.get(eid);
+  if (animScale) {
+    ctx.translate(ex, ey);
+    ctx.scale(animScale.scaleX, animScale.scaleY);
+    ctx.translate(-ex, -ey);
+  }
 
   if (facingLeft && !isBuilding) {
     ctx.translate(ex, ey);

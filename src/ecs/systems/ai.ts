@@ -14,6 +14,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import { MAX_WAVE_SIZE, WAVE_INTERVAL, WAVE_SCALE_INTERVAL } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -23,6 +24,7 @@ import {
   IsBuilding,
   Position,
   UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -94,6 +96,17 @@ export function aiSystem(world: GameWorld): void {
             UnitStateMachine.targetX[eid] = Position.x[lodgeEid];
             UnitStateMachine.targetY[eid] = Position.y[lodgeEid];
             UnitStateMachine.state[eid] = UnitState.AttackMove;
+
+            // Register with Yuka for steering behaviors
+            const speed = Velocity.speed[eid] || ENTITY_DEFS[unitKind]?.speed || 1.5;
+            world.yukaManager.addEnemy(
+              eid,
+              sx,
+              sy,
+              speed,
+              Position.x[lodgeEid],
+              Position.y[lodgeEid],
+            );
           }
         }
       }
@@ -158,12 +171,27 @@ export function aiSystem(world: GameWorld): void {
           }
         }
 
+        // Register defender with Yuka
+        const defSpeed = Velocity.speed[defEid] || ENTITY_DEFS[unitKind]?.speed || 1.5;
+
         if (closestTarget !== -1) {
           // cmdAtk(closest)
           UnitStateMachine.targetEntity[defEid] = closestTarget;
           UnitStateMachine.targetX[defEid] = Position.x[closestTarget];
           UnitStateMachine.targetY[defEid] = Position.y[closestTarget];
           UnitStateMachine.state[defEid] = UnitState.AttackMove;
+
+          world.yukaManager.addEnemy(
+            defEid,
+            sx,
+            sy,
+            defSpeed,
+            Position.x[closestTarget],
+            Position.y[closestTarget],
+          );
+        } else {
+          // No target; register near nest for potential future use
+          world.yukaManager.addEnemy(defEid, sx, sy, defSpeed, nx, ny);
         }
       }
     }

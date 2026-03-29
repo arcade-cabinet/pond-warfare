@@ -1,11 +1,12 @@
 /**
  * Game Over Overlay
  *
- * Victory/Defeat overlay with animated stat reveal, performance rating,
- * confetti for victory, and Play Again button.
+ * Victory/Defeat overlay with animated stat reveal (anime.js stagger),
+ * performance rating, confetti for victory, and Play Again button.
  */
 
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
+import { animateGameOverStats } from '@/rendering/animations';
 import { gameState, goDesc, goRating, goStatLines, goTitle, goTitleColor } from './store';
 
 export interface GameOverProps {
@@ -52,26 +53,13 @@ function StarRating({ stars }: { stars: number }) {
 }
 
 export function GameOverBanner(props: GameOverProps) {
-  const [visibleLines, setVisibleLines] = useState(0);
   const state = gameState.value;
+  const statsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (state === 'playing') {
-      setVisibleLines(0);
-      return;
+    if (state !== 'playing' && statsContainerRef.current) {
+      animateGameOverStats(statsContainerRef.current);
     }
-    const lines = goStatLines.value;
-    if (lines.length === 0) return;
-
-    let current = 0;
-    const timer = setInterval(() => {
-      current++;
-      setVisibleLines(current);
-      if (current >= lines.length) {
-        clearInterval(timer);
-      }
-    }, 200);
-    return () => clearInterval(timer);
   }, [state]);
 
   if (state === 'playing') return null;
@@ -93,13 +81,9 @@ export function GameOverBanner(props: GameOverProps) {
       </h1>
       <p class="text-xl md:text-2xl text-white font-bold">{goDesc}</p>
       <StarRating stars={stars} />
-      <div class="mt-4 flex flex-col items-center gap-1">
+      <div ref={statsContainerRef} class="mt-4 flex flex-col items-center gap-1">
         {lines.map((line, i) => (
-          <p
-            key={`stat-${i}`}
-            class="text-sm text-slate-300 transition-opacity duration-300"
-            style={{ opacity: i < visibleLines ? 1 : 0 }}
-          >
+          <p key={`stat-${i}`} data-stat-line class="text-sm text-slate-300" style={{ opacity: 0 }}>
             {line}
           </p>
         ))}

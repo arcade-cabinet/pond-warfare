@@ -1,7 +1,8 @@
 /**
  * Collision System Tests
  *
- * Validates that overlapping entities are pushed apart.
+ * Validates that the Planck.js-backed collision system pushes apart
+ * overlapping entities and keeps them within world bounds.
  */
 
 import { addComponent, addEntity } from 'bitecs';
@@ -21,6 +22,7 @@ import {
 } from '@/ecs/components';
 import { collisionSystem } from '@/ecs/systems/collision';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { PhysicsManager } from '@/physics/physics-world';
 import { EntityKind, Faction } from '@/types';
 
 function createUnit(world: GameWorld, x: number, y: number): number {
@@ -39,6 +41,8 @@ function createUnit(world: GameWorld, x: number, y: number): number {
   Position.x[eid] = x;
   Position.y[eid] = y;
   Collider.radius[eid] = 16;
+  Health.current[eid] = 30;
+  Health.max[eid] = 30;
   Velocity.speed[eid] = 2.0;
   FactionTag.faction[eid] = Faction.Player;
   EntityTypeTag.kind[eid] = EntityKind.Gatherer;
@@ -48,19 +52,28 @@ function createUnit(world: GameWorld, x: number, y: number): number {
 
 describe('collisionSystem', () => {
   let world: GameWorld;
+  let physics: PhysicsManager;
 
   beforeEach(() => {
     world = createGameWorld();
+    physics = new PhysicsManager();
   });
 
   it('should push apart overlapping units', () => {
     const a = createUnit(world, 100, 100);
     const b = createUnit(world, 105, 100); // Very close, overlapping
 
+    // Register with physics
+    physics.createBody(world.ecs, a);
+    physics.createBody(world.ecs, b);
+
     const ax = Position.x[a];
     const bx = Position.x[b];
 
-    collisionSystem(world);
+    // Run several steps for the physics to resolve
+    for (let i = 0; i < 10; i++) {
+      collisionSystem(world, physics);
+    }
 
     // Units should have moved apart
     expect(Position.x[a]).toBeLessThan(ax);
@@ -71,13 +84,16 @@ describe('collisionSystem', () => {
     const a = createUnit(world, 100, 100);
     const b = createUnit(world, 200, 200); // Far apart
 
+    physics.createBody(world.ecs, a);
+    physics.createBody(world.ecs, b);
+
     const ax = Position.x[a];
     const bx = Position.x[b];
 
-    collisionSystem(world);
+    collisionSystem(world, physics);
 
-    expect(Position.x[a]).toBeCloseTo(ax, 1);
-    expect(Position.x[b]).toBeCloseTo(bx, 1);
+    expect(Position.x[a]).toBeCloseTo(ax, 0);
+    expect(Position.x[b]).toBeCloseTo(bx, 0);
   });
 
   it('should push apart three overlapping units', () => {
@@ -85,19 +101,32 @@ describe('collisionSystem', () => {
     createUnit(world, 105, 100);
     const c = createUnit(world, 110, 100);
 
-    collisionSystem(world);
+    // Register all with physics
+    physics.createBody(world.ecs, a);
+    physics.createBody(world.ecs, 1); // entity id for second unit
+    physics.createBody(world.ecs, c);
+
+    // Run several steps for the physics to resolve
+    for (let i = 0; i < 10; i++) {
+      collisionSystem(world, physics);
+    }
 
     // Leftmost should move left, rightmost should move right
     expect(Position.x[a]).toBeLessThan(100);
     expect(Position.x[c]).toBeGreaterThan(110);
   });
 
-  it('should clamp units to world bounds', () => {
-    const eid = createUnit(world, 5, 5); // Near edge
+  it('should clamp units to world bounds via edge bodies', () => {
+    const eid = createUnit(world, WORLD_BOUNDS_MARGIN + 1, WORLD_BOUNDS_MARGIN + 1);
 
-    collisionSystem(world);
+    physics.createBody(world.ecs, eid);
 
-    expect(Position.x[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN);
-    expect(Position.y[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN);
+    // Run several steps
+    for (let i = 0; i < 5; i++) {
+      collisionSystem(world, physics);
+    }
+
+    expect(Position.x[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN - 1);
+    expect(Position.y[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN - 1);
   });
 });

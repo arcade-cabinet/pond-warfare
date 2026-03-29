@@ -6,6 +6,34 @@
  * don't need full DOM—but rendering tests and UI tests do.
  */
 
+import { vi } from 'vitest';
+
+// Mock Tone.js – it relies on standardized-audio-context which cannot run in jsdom
+vi.mock('tone', () => ({
+  start: vi.fn(),
+  getContext: vi.fn(),
+  gainToDb: (v: number) => 20 * Math.log10(Math.max(v, 1e-6)),
+  Synth: vi.fn().mockImplementation(() => ({
+    connect: vi.fn().mockReturnThis(),
+    triggerAttackRelease: vi.fn(),
+    oscillator: { frequency: { exponentialRampTo: vi.fn() } },
+    dispose: vi.fn(),
+  })),
+  Panner: vi.fn().mockImplementation(() => ({
+    toDestination: vi.fn().mockReturnThis(),
+    dispose: vi.fn(),
+  })),
+  Noise: vi.fn().mockImplementation(() => ({
+    connect: vi.fn().mockReturnThis(),
+    start: vi.fn(),
+    stop: vi.fn(),
+  })),
+  Filter: vi.fn().mockImplementation(() => ({
+    toDestination: vi.fn().mockReturnThis(),
+    frequency: { rampTo: vi.fn() },
+  })),
+}));
+
 // Mock HTMLCanvasElement.getContext for environments that don't support it
 const mockContext2D = {
   fillStyle: '',

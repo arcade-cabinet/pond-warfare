@@ -28,7 +28,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, ResourceType, UnitState } from '@/types';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 /**
  * Set of states that involve movement toward a target position.
@@ -123,11 +123,30 @@ export function movementSystem(world: GameWorld): void {
 
     if (dist <= arriveDist) {
       // --- Arrive logic ---
+      // Remove from Yuka on arrival
+      if (FactionTag.faction[eid] === Faction.Enemy) {
+        world.yukaManager.removeEnemy(eid);
+      }
       arrive(world, eid, state);
     } else {
-      // Move toward target (original line 1658)
-      Position.x[eid] += (dx / dist) * speed;
-      Position.y[eid] += (dy / dist) * speed;
+      const isEnemy = FactionTag.faction[eid] === Faction.Enemy;
+
+      if (isEnemy && world.yukaManager.has(eid)) {
+        // Enemy movement handled by Yuka steering (positions synced in yukaManager.update)
+        // Update Yuka target in case ECS target changed
+        const isChasing = state === UnitState.AttackMove || state === UnitState.AttackMovePatrol;
+        world.yukaManager.setTarget(eid, tx, ty, isChasing);
+
+        // Update facing based on Yuka velocity
+        const vel = world.yukaManager.getVelocity(eid);
+        if (vel && vel[0] !== 0) {
+          Sprite.facingLeft[eid] = vel[0] < 0 ? 1 : 0;
+        }
+      } else {
+        // Player units and unregistered entities: direct-line movement (original line 1658)
+        Position.x[eid] += (dx / dist) * speed;
+        Position.y[eid] += (dy / dist) * speed;
+      }
 
       // Bob animation (original: this.yOff = Math.sin(GAME.frameCount*(this.type==='snake'?0.6:0.3))*3)
       const kind = EntityTypeTag.kind[eid] as EntityKind;
