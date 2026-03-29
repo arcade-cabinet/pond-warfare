@@ -214,9 +214,20 @@ export function generateAllSprites(): {
 }
 
 /** Convenience: get the sprite canvas dimensions for a given SpriteId. */
+const LARGE_SPRITE_IDS = new Set<SpriteId>([
+  SpriteId.Lodge,
+  SpriteId.Burrow,
+  SpriteId.Armory,
+  SpriteId.Tower,
+  SpriteId.PredatorNest,
+  SpriteId.Rubble,
+]);
+
 export function getSpriteSize(id: SpriteId): { width: number; height: number } {
-  const isLarge = (id >= SpriteId.Lodge && id <= SpriteId.PredatorNest) || id === SpriteId.Rubble;
+  const isLarge = LARGE_SPRITE_IDS.has(id);
   const baseSize = isLarge ? 32 : 16;
   const scale = isLarge ? 3 : 2.5;
+  return { width: baseSize * scale, height: baseSize * scale };
+}
   return { width: baseSize * scale, height: baseSize * scale };
 }
