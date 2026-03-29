@@ -84,7 +84,12 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
   if (keymap.centerSelection !== undefined) merged.centerSelection = keymap.centerSelection;
   if (keymap.cycleBuildings !== undefined) merged.cycleBuildings = keymap.cycleBuildings;
   if (keymap.escape !== undefined) merged.escape = keymap.escape;
-  if (keymap.actionSlots !== undefined) merged.actionSlots = [...keymap.actionSlots];
+  if (keymap.actionSlots !== undefined) {
+    const slots = [...keymap.actionSlots];
+    // Normalize to exactly 6 items: pad with defaults or truncate
+    while (slots.length < 6) slots.push(DEFAULT_KEYMAP.actionSlots[slots.length]);
+    merged.actionSlots = slots.slice(0, 6);
+  }
   activeKeymap = merged;
 }
 

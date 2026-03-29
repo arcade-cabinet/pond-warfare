@@ -48,8 +48,11 @@ export function takeDamage(
   if (!hasComponent(world.ecs, targetEid, Health)) return;
   if (Health.current[targetEid] <= 0) return;
 
+  // Guard against negative damage (would heal the target)
+  const effectiveAmount = Math.max(0, amount);
+
   // Apply damage
-  Health.current[targetEid] -= amount;
+  Health.current[targetEid] -= effectiveAmount;
   audio.hit();
 
   // Damage flash timer (original: this.flashTimer = 8)
@@ -381,27 +384,34 @@ export function healthSystem(world: GameWorld): void {
   // --- Healer aura: healers heal nearest friendly within 80px every 60 frames ---
   if (world.frameCount % 60 === 0) {
     const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
-    for (let i = 0; i < allUnits.length; i++) {
-      const hEid = allUnits[i];
-      if ((EntityTypeTag.kind[hEid] as EntityKind) !== EntityKind.Healer) continue;
-      if ((FactionTag.faction[hEid] as Faction) !== Faction.Player) continue;
-      if (Health.current[hEid] <= 0) continue;
 
+    // Build candidate and healer lists once to avoid O(n^2) inner filtering
+    const healers: number[] = [];
+    const candidates: number[] = [];
+    for (let i = 0; i < allUnits.length; i++) {
+      const eid = allUnits[i];
+      if ((FactionTag.faction[eid] as Faction) !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if ((EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Healer) {
+        healers.push(eid);
+      } else if (
+        !hasComponent(world.ecs, eid, IsBuilding) &&
+        !hasComponent(world.ecs, eid, IsResource) &&
+        Health.current[eid] < Health.max[eid]
+      ) {
+        candidates.push(eid);
+      }
+    }
+
+    for (let i = 0; i < healers.length; i++) {
+      const hEid = healers[i];
       const hx = Position.x[hEid];
       const hy = Position.y[hEid];
       let bestEid = -1;
       let bestDistSq = 80 * 80;
 
-      for (let j = 0; j < allUnits.length; j++) {
-        const tEid = allUnits[j];
-        if (tEid === hEid) continue;
-        if ((FactionTag.faction[tEid] as Faction) !== Faction.Player) continue;
-        if (hasComponent(world.ecs, tEid, IsBuilding)) continue;
-        if (hasComponent(world.ecs, tEid, IsResource)) continue;
-        if ((EntityTypeTag.kind[tEid] as EntityKind) === EntityKind.Healer) continue;
-        if (Health.current[tEid] <= 0) continue;
-        if (Health.current[tEid] >= Health.max[tEid]) continue;
-
+      for (let j = 0; j < candidates.length; j++) {
+        const tEid = candidates[j];
         const dx = Position.x[tEid] - hx;
         const dy = Position.y[tEid] - hy;
         const dSq = dx * dx + dy * dy;

@@ -193,11 +193,10 @@ function getPlayerLodge(): number | null {
   return lodges.length > 0 ? lodges[0] : null;
 }
 
-function getPlayerArmory(): number | null {
+function getPlayerArmory(completedOnly = true): number | null {
   const armories = getPlayerEntities(EntityKind.Armory);
-  // Only return completed armories
   for (const eid of armories) {
-    if (Building.progress[eid] >= 100) return eid;
+    if (!completedOnly || Building.progress[eid] >= 100) return eid;
   }
   return null;
 }

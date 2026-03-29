@@ -90,8 +90,8 @@ describe('setKeymap / getKeymap', () => {
   });
 
   it('should allow overriding action slots', () => {
-    setKeymap({ actionSlots: ['1', '2', '3', '4'] });
-    expect(getKeymap().actionSlots).toEqual(['1', '2', '3', '4']);
+    setKeymap({ actionSlots: ['1', '2', '3', '4', '5', '6'] });
+    expect(getKeymap().actionSlots).toEqual(['1', '2', '3', '4', '5', '6']);
   });
 });
 

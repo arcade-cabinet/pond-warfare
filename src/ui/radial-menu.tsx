@@ -154,7 +154,7 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
         </div>
 
         {/* Radial options */}
-        {OPTIONS.map((opt) => {
+        {OPTIONS.map((opt, optIndex) => {
           const rad = ((opt.angle - 90) * Math.PI) / 180;
           const x = Math.cos(rad) * RADIUS;
           const y = Math.sin(rad) * RADIUS;
@@ -176,7 +176,7 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
                 left: `${x - 28}px`,
                 top: `${y - 28}px`,
                 animation: 'radial-sprout 150ms ease-out both',
-                animationDelay: `${OPTIONS.indexOf(opt) * 30}ms`,
+                animationDelay: `${optIndex * 30}ms`,
               }}
               title={opt.label}
               onClick={(e) => {

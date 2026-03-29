@@ -151,8 +151,6 @@ export function issueContextCommand(
       FactionTag.faction[eid] === Faction.Player &&
       !hasComponent(world.ecs, eid, IsBuilding),
   );
-  const _count = movableUnits.length;
-
   for (let idx = 0; idx < world.selection.length; idx++) {
     const eid = world.selection[idx];
     if (!hasComponent(world.ecs, eid, FactionTag)) continue;

@@ -168,6 +168,7 @@ export function gatheringSystem(world: GameWorld): void {
 
       // Deplete resource (Tidal Harvest: +50%)
       const gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;
+      Carrying.resourceAmount[eid] = gatherAmt;
       Resource.amount[tEnt] -= gatherAmt;
       // Track stats
       world.stats.resourcesGathered += gatherAmt;

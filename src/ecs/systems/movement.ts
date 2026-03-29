@@ -187,13 +187,16 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
       const heldRes = Carrying.resourceType[eid] as ResourceType;
       const faction = FactionTag.faction[eid] as Faction;
       if (heldRes !== ResourceType.None) {
+        // Use actual carried amount (may differ from GATHER_AMOUNT due to Tidal Harvest)
+        const depositAmt = Carrying.resourceAmount[eid] || GATHER_AMOUNT;
+
         // Floating text for returned resources
         const resName = heldRes === ResourceType.Clams ? 'Clams' : 'Twigs';
         const color = heldRes === ResourceType.Clams ? '#fde047' : '#f97316';
         world.floatingTexts.push({
           x: Position.x[eid],
           y: Position.y[eid] - 20,
-          text: `+${GATHER_AMOUNT} ${resName}`,
+          text: `+${depositAmt} ${resName}`,
           color,
           life: 60,
         });
@@ -201,18 +204,19 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
         // Add resources to the correct faction's stockpile
         if (faction === Faction.Enemy) {
           if (heldRes === ResourceType.Clams) {
-            world.enemyResources.clams += GATHER_AMOUNT;
+            world.enemyResources.clams += depositAmt;
           } else {
-            world.enemyResources.twigs += GATHER_AMOUNT;
+            world.enemyResources.twigs += depositAmt;
           }
         } else {
           if (heldRes === ResourceType.Clams) {
-            world.resources.clams += GATHER_AMOUNT;
+            world.resources.clams += depositAmt;
           } else {
-            world.resources.twigs += GATHER_AMOUNT;
+            world.resources.twigs += depositAmt;
           }
         }
         Carrying.resourceType[eid] = ResourceType.None;
+        Carrying.resourceAmount[eid] = 0;
 
         // If the gather target still has resources, go back to it
         const tEnt = UnitStateMachine.targetEntity[eid];

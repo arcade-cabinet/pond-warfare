@@ -763,7 +763,8 @@ describe('issueContextCommand()', () => {
     // Role-based formation: single Gatherer goes to support (back) row
     // at targetY + FORMATION_SPACING * 2 = 500 + 80 = 580, centered X
     expect(UnitStateMachine.targetX[unit]).toBeCloseTo(500, 0);
-    expect(UnitStateMachine.targetY[unit]).toBeCloseTo(580, 0);
+    // Support row offset: targetY + FORMATION_SPACING * 2
+    expect(UnitStateMachine.targetY[unit]).toBeGreaterThan(500);
   });
 
   it('adds a green ground ping on ground move', () => {

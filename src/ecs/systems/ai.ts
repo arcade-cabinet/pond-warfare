@@ -88,6 +88,7 @@ function getEnemyNests(world: GameWorld): number[] {
     const eid = nests[i];
     if (
       EntityTypeTag.kind[eid] === EntityKind.PredatorNest &&
+      FactionTag.faction[eid] === Faction.Enemy &&
       Health.current[eid] > 0 &&
       Building.progress[eid] >= 100
     ) {

@@ -835,7 +835,9 @@ function colorToHex(color: string): number {
 function parseRgbString(rgb: string): number {
   // Strip rgba(...) or rgb(...) wrapper if present
   const inner = rgb.replace(/^rgba?\(/, '').replace(/\)$/, '');
-  const parts = inner.split(',').map((s) => Number.parseInt(s.trim(), 10));
+  const parts = inner
+    .split(',')
+    .map((s) => Math.max(0, Math.min(255, Math.round(parseFloat(s.trim())))));
   if (parts.length >= 3) {
     return (parts[0] << 16) | (parts[1] << 8) | parts[2];
   }

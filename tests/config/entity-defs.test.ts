@@ -146,13 +146,13 @@ describe('getDamageMultiplier', () => {
   });
 
   it('should only contain multipliers for combat unit types', () => {
-    const combatKinds = [
-      EntityKind.Brawler,
-      EntityKind.Sniper,
-      EntityKind.Gator,
-      EntityKind.Snake,
-      EntityKind.Shieldbearer,
-    ];
+    // Derive combat kinds from ENTITY_DEFS: non-building, non-resource, non-gatherer entities
+    const combatKinds = Object.keys(ENTITY_DEFS)
+      .map(Number)
+      .filter((k) => {
+        const def = ENTITY_DEFS[k as EntityKind];
+        return def && !def.isBuilding && !def.isResource && k !== EntityKind.Gatherer;
+      });
     for (const kind of Object.keys(DAMAGE_MULTIPLIERS)) {
       expect(combatKinds).toContain(Number(kind));
     }

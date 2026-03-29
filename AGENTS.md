@@ -9,7 +9,7 @@ Pond Warfare is a Warcraft II-style real-time strategy game where otters and pre
 ```bash
 pnpm install    # Install dependencies
 pnpm dev        # Start dev server (Vite 8)
-pnpm test       # Run tests (Vitest 4, 256 tests)
+pnpm test       # Run tests (Vitest 4)
 pnpm typecheck  # TypeScript 6 strict mode
 pnpm build      # Production build
 pnpm lint:fix   # Biome auto-fix

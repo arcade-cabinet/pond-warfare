@@ -88,7 +88,7 @@ export function projectileSystem(world: GameWorld): void {
         Health.current[targetEnt] > 0
       ) {
         const owner = ProjectileData.ownerEntity[eid];
-        const mult = ProjectileData.damageMultiplier[eid] || 1.0;
+        const mult = ProjectileData.damageMultiplier[eid] ?? 1.0;
         takeDamage(world, targetEnt, ProjectileData.damage[eid], owner, mult);
       }
 

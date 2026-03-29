@@ -36,6 +36,7 @@ export function initFogOfWar(ctx: CanvasRenderingContext2D): void {
 
 /** Reset fog-of-war state. Useful in tests to clear module-level state between runs. */
 export function resetFogOfWar(): void {
+  if (exploredCtx) exploredCtx.clearRect(0, 0, exploredCtx.canvas.width, exploredCtx.canvas.height);
   exploredCtx = null;
 }
 
