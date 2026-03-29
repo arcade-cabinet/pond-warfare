@@ -76,7 +76,6 @@ pnpm format      # format
 
 ## Project Structure
 
-```
 src/
   ecs/          # Entity Component System (components, archetypes, systems)
   rendering/    # Canvas 2D renderer, camera, sprites, fog, minimap, particles
