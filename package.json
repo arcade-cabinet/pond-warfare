@@ -21,6 +21,7 @@
     "@preact/signals": "^2.9.0",
     "animejs": "3.2.2",
     "bitecs": "^0.4.0",
+    "pixi.js": "^8.17.1",
     "planck": "^1.4.3",
     "preact": "^10.26.5",
     "tone": "^15.1.22",
