@@ -17,7 +17,7 @@
 
 import { hasComponent, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { showBark, shouldLowHpBark } from '@/config/barks';
+import { shouldLowHpBark, showBark } from '@/config/barks';
 import { ALLY_ASSIST_RADIUS, PALETTE } from '@/constants';
 import {
   Building,

@@ -185,7 +185,7 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
       break;
     case UnitState.GatherMove:
       UnitStateMachine.state[eid] = UnitState.Gathering;
-      UnitStateMachine.gatherTimer[eid] = GATHER_TIMER;
+      UnitStateMachine.gatherTimer[eid] = Math.round(GATHER_TIMER * world.gatherSpeedMod);
       break;
     case UnitState.BuildMove:
       UnitStateMachine.state[eid] = UnitState.Building;

@@ -7,7 +7,7 @@
  * resets when the module reloads (new game session).
  */
 
-import { pickDialogue, selectTriggerForClickCount, type DialogueTrigger } from '@/config/dialogue';
+import { type DialogueTrigger, pickDialogue, selectTriggerForClickCount } from '@/config/dialogue';
 import type { GameWorld } from '@/ecs/world';
 import type { EntityKind } from '@/types';
 

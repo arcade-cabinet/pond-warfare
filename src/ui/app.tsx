@@ -17,6 +17,7 @@ import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/se
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
+import { AchievementsPanel } from './achievements-panel';
 import { ErrorOverlay } from './error-overlay';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
@@ -341,6 +342,9 @@ export function App({ onMount }: AppProps) {
             }}
           />
         )}
+
+        {/* Achievements panel overlay */}
+        {store.achievementsOpen.value && <AchievementsPanel />}
       </div>
 
       {/* Tooltip overlay */}
@@ -387,10 +391,7 @@ export function App({ onMount }: AppProps) {
             </div>
           )}
           {store.tooltipData.value.requires && (
-            <div
-              class="text-[10px] font-game italic"
-              style={{ color: 'var(--pw-warning)' }}
-            >
+            <div class="text-[10px] font-game italic" style={{ color: 'var(--pw-warning)' }}>
               {store.tooltipData.value.requires}
             </div>
           )}

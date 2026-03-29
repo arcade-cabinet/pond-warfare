@@ -44,7 +44,27 @@ export function autoBehaviorSystem(world: GameWorld): void {
     const eid = units[i];
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
-    if (UnitStateMachine.state[eid] !== UnitState.Idle) continue;
+
+    const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
+
+    // Track idle duration for idle barks
+    if (isIdle) {
+      const prev = idleFrameCount.get(eid) ?? 0;
+      idleFrameCount.set(eid, prev + 60); // runs every 60 frames
+    } else {
+      idleFrameCount.delete(eid);
+    }
+
+    // Idle bark: >1800 frames idle (30 seconds), 5% chance per check
+    if (isIdle) {
+      const idleFrames = idleFrameCount.get(eid) ?? 0;
+      if (idleFrames > 1800 && Math.random() < 0.05) {
+        const idleKind = EntityTypeTag.kind[eid] as EntityKind;
+        showBark(world, eid, Position.x[eid], Position.y[eid], idleKind, 'idle');
+      }
+    }
+
+    if (!isIdle) continue;
 
     const kind = EntityTypeTag.kind[eid] as EntityKind;
 

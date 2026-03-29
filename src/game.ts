@@ -9,8 +9,18 @@ import { animate } from 'animejs';
 import { query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
+import { resetBarkState } from '@/config/barks';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
-import { SPEED_LEVELS, TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import {
+  ENEMY_STARTING_CLAMS,
+  ENEMY_STARTING_TWIGS,
+  SPEED_LEVELS,
+  STARTING_CLAMS,
+  STARTING_TWIGS,
+  TILE_SIZE,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from '@/constants';
 import {
   Collider,
   EntityTypeTag,
@@ -36,11 +46,11 @@ import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
-import { tutorialSystem } from '@/ecs/systems/tutorial';
 // Systems
 import { movementSystem } from '@/ecs/systems/movement';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import { trainingSystem } from '@/ecs/systems/training';
+import { tutorialSystem } from '@/ecs/systems/tutorial';
 import { veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 // Extracted sub-modules
@@ -85,6 +95,11 @@ import { generateAllSprites } from '@/rendering/sprites';
 import { ReplayRecorder } from '@/replay';
 import { saveGame } from '@/save-system';
 import { saveGameToDb } from '@/storage';
+import {
+  checkAchievements,
+  loadAchievements,
+  resetAchievementMatchState,
+} from '@/systems/achievements';
 import { type EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
@@ -172,6 +187,13 @@ export class Game {
     // Reset the world so re-initialisation (e.g. restarting the game) starts
     // from a clean slate instead of accumulating stale ECS state.
     this.world = createGameWorld();
+    // Reset bark and achievement tracking state for the new session
+    resetBarkState();
+    resetAchievementMatchState();
+    // Load earned achievements from DB (async, fire-and-forget)
+    loadAchievements().catch(() => {
+      /* best-effort */
+    });
     // Reset match-scoped audio/game flags for clean session
     this.wasPeaceful = true;
     this.wasGameOver = false;
@@ -411,6 +433,12 @@ export class Game {
     // Spawn initial entities
     spawnInitialEntities(this.world);
 
+    // If fog of war is 'revealed', fill the entire explored canvas white
+    if (this.world.fogOfWarMode === 'revealed') {
+      this.exploredCtx.fillStyle = '#ffffff';
+      this.exploredCtx.fillRect(0, 0, this.exploredCanvas.width, this.exploredCanvas.height);
+    }
+
     // Camera to center on lodge (position varies per seed)
     const lodge = this.world.selection[0];
     if (lodge != null) {
@@ -487,53 +515,80 @@ export class Game {
   /** Apply difficulty modifiers to world state before entities are spawned */
   private applyDifficultyModifiers(): void {
     const diff = store.selectedDifficulty.value;
+    const cfg = store.customGameSettings.value;
     this.world.difficulty = diff;
 
-    // Permadeath
-    const permadeath = diff === 'ultraNightmare' || store.permadeathEnabled.value;
+    // Permadeath (from custom settings or ultra nightmare)
+    const permadeath = cfg.permadeath || diff === 'ultraNightmare';
     this.world.permadeath = permadeath;
     this.world.rewardsModifier = permadeath ? 1.5 : 1.0;
 
-    switch (diff) {
-      case 'easy':
-        // Peace timer: 4 minutes — gives casual players time to train gatherers,
-        // build an Armory, train Brawlers, and set up auto-behaviors
-        this.world.peaceTimer = 14400;
-        // Enemy starting resources: 0.5x
-        this.world.enemyResources.clams = 250;
-        this.world.enemyResources.twigs = 100;
-        // Player starting resources: 1.5x
-        this.world.resources.clams = 450;
-        this.world.resources.twigs = 150;
-        // Update resource tracker to match
-        this.world.resTracker.lastClams = 450;
-        this.world.resTracker.lastTwigs = 150;
-        break;
-      case 'hard':
-        // Peace timer: 0.5x shorter
-        this.world.peaceTimer = 3600;
-        // Enemy starting resources: 2x
-        this.world.enemyResources.clams = 1000;
-        this.world.enemyResources.twigs = 400;
-        break;
-      case 'nightmare':
-        // Peace timer: 45 seconds
-        this.world.peaceTimer = 2700;
-        // Enemy starting resources: 2x
-        this.world.enemyResources.clams = 1000;
-        this.world.enemyResources.twigs = 400;
-        break;
-      case 'ultraNightmare':
-        // Peace timer: 30 seconds
-        this.world.peaceTimer = 1800;
-        // Enemy starting resources: 3x
-        this.world.enemyResources.clams = 1500;
-        this.world.enemyResources.twigs = 600;
-        break;
-      default:
-        // Normal: keep defaults from createGameWorld
-        break;
-    }
+    // ---- Peace timer: peaceMinutes * 3600 frames ----
+    this.world.peaceTimer = cfg.peaceMinutes * 3600;
+
+    // ---- Starting resources: multiply by startingResourcesMult ----
+    const baseClams = STARTING_CLAMS;
+    const baseTwigs = STARTING_TWIGS;
+    this.world.resources.clams = Math.round(baseClams * cfg.startingResourcesMult);
+    this.world.resources.twigs = Math.round(baseTwigs * cfg.startingResourcesMult);
+    this.world.resTracker.lastClams = this.world.resources.clams;
+    this.world.resTracker.lastTwigs = this.world.resources.twigs;
+
+    // ---- Enemy resources: scale by enemyEconomy ----
+    const enemyEcoMult: Record<string, number> = {
+      weak: 0.5,
+      normal: 1.0,
+      strong: 2.0,
+      overwhelming: 3.0,
+    };
+    const ecoMod = enemyEcoMult[cfg.enemyEconomy] ?? 1.0;
+    this.world.enemyResources.clams = Math.round(ENEMY_STARTING_CLAMS * ecoMod);
+    this.world.enemyResources.twigs = Math.round(ENEMY_STARTING_TWIGS * ecoMod);
+    this.world.enemyEconomyMod = ecoMod;
+
+    // ---- Nest count ----
+    this.world.nestCountOverride = cfg.enemyNests;
+
+    // ---- Scenario ----
+    this.world.scenarioOverride = cfg.scenario;
+
+    // ---- Gather speed modifier ----
+    const gatherSpeedMap: Record<string, number> = {
+      slow: 1.5,
+      normal: 1.0,
+      fast: 0.6,
+    };
+    this.world.gatherSpeedMod = gatherSpeedMap[cfg.gatherSpeed] ?? 1.0;
+
+    // ---- Evolution speed modifier ----
+    const evoSpeedMap: Record<string, number> = {
+      slow: 1.5,
+      normal: 1.0,
+      fast: 0.5,
+      instant: 0.1,
+    };
+    this.world.evolutionSpeedMod = evoSpeedMap[cfg.evolutionSpeed] ?? 1.0;
+
+    // ---- Fog of war mode ----
+    this.world.fogOfWarMode = cfg.fogOfWar;
+
+    // ---- Hero mode ----
+    this.world.heroMode = cfg.heroMode;
+
+    // ---- Starting units count ----
+    this.world.startingUnitCount = cfg.startingUnits;
+
+    // ---- Resource density modifier ----
+    const densityMap: Record<string, number> = {
+      sparse: 0.5,
+      normal: 1.0,
+      rich: 1.5,
+      abundant: 2.0,
+    };
+    this.world.resourceDensityMod = densityMap[cfg.resourceDensity] ?? 1.0;
+
+    // ---- Enemy aggression ----
+    this.world.enemyAggressionLevel = cfg.enemyAggression;
   }
 
   resize(): void {
@@ -816,6 +871,13 @@ export class Game {
         life: 60,
       });
     }
+
+    // Check achievements every 30 seconds (1800 frames)
+    if (this.world.frameCount % 1800 === 0) {
+      checkAchievements(this.world).catch(() => {
+        /* best-effort */
+      });
+    }
   }
 
   /** Render one frame */
@@ -945,10 +1007,13 @@ export class Game {
       audio.updateAmbient(w.ambientDarkness);
     }
 
-    // Game over: stop music (once)
+    // Game over: stop music (once) and check achievements
     if ((w.state === 'win' || w.state === 'lose') && this.audioInitialized && !this.wasGameOver) {
       audio.stopMusic();
       this.wasGameOver = true;
+      checkAchievements(w).catch(() => {
+        /* best-effort */
+      });
     }
 
     // Selection info

@@ -94,6 +94,28 @@ export interface GameWorld {
   permadeath: boolean;
   rewardsModifier: number; // 1.0 normal, 1.5 with permadeath
 
+  // Custom game settings modifiers
+  /** Gather speed modifier: multiplied against GATHER_TIMER. <1 = faster, >1 = slower. */
+  gatherSpeedMod: number;
+  /** Evolution speed modifier for THRESHOLDS. <1 = faster, >1 = slower. */
+  evolutionSpeedMod: number;
+  /** Fog of war mode: 'full' = normal, 'explored' = show explored, 'revealed' = all visible. */
+  fogOfWarMode: 'full' | 'explored' | 'revealed';
+  /** Hero mode: Commander has boosted stats and abilities. */
+  heroMode: boolean;
+  /** Custom starting unit count (replaces default 4). */
+  startingUnitCount: number;
+  /** Custom scenario override (null = use seeded random). */
+  scenarioOverride: 'standard' | 'island' | 'contested' | null;
+  /** Custom nest count override (-1 = use difficulty default). */
+  nestCountOverride: number;
+  /** Resource density override for map generation. */
+  resourceDensityMod: number;
+  /** Enemy economy multiplier (affects enemy starting resources). */
+  enemyEconomyMod: number;
+  /** Enemy aggression level (affects AI behavior). */
+  enemyAggressionLevel: 'passive' | 'normal' | 'aggressive' | 'relentless';
+
   // Map seed for reproducible random generation
   mapSeed: number;
 
@@ -208,6 +230,16 @@ export function createGameWorld(): GameWorld {
     difficulty: 'normal',
     permadeath: false,
     rewardsModifier: 1.0,
+    gatherSpeedMod: 1.0,
+    evolutionSpeedMod: 1.0,
+    fogOfWarMode: 'full',
+    heroMode: false,
+    startingUnitCount: 4,
+    scenarioOverride: null,
+    nestCountOverride: -1,
+    resourceDensityMod: 1.0,
+    enemyEconomyMod: 1.0,
+    enemyAggressionLevel: 'normal',
     mapSeed: Math.floor(Math.random() * 2147483647),
     placingBuilding: null,
     attackMoveMode: false,

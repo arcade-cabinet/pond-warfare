@@ -6,7 +6,7 @@
  * over a dark pond gradient background.
  */
 
-import { continueRequested, hasSaveGame, menuState, settingsOpen } from './store';
+import { achievementsOpen, continueRequested, hasSaveGame, menuState, settingsOpen } from './store';
 
 export function MainMenu() {
   return (
@@ -82,6 +82,22 @@ export function MainMenu() {
           }}
         >
           CONTINUE
+        </button>
+
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
+          style={{
+            minWidth: '220px',
+            minHeight: '60px',
+            padding: '14px 32px',
+            color: 'var(--pw-text-secondary)',
+          }}
+          onClick={() => {
+            achievementsOpen.value = true;
+          }}
+        >
+          ACHIEVEMENTS
         </button>
 
         <button

@@ -173,6 +173,48 @@ export type DifficultyLevel = 'easy' | 'normal' | 'hard' | 'nightmare' | 'ultraN
 export type Difficulty = DifficultyLevel;
 export const selectedDifficulty = signal<DifficultyLevel>('normal');
 
+// ---- Custom game settings ----
+export interface CustomGameSettings {
+  // Map
+  scenario: 'standard' | 'island' | 'contested';
+  resourceDensity: 'sparse' | 'normal' | 'rich' | 'abundant';
+
+  // Economy
+  startingResourcesMult: number; // 0.5 to 2.0
+  gatherSpeed: 'slow' | 'normal' | 'fast';
+  startingUnits: 3 | 4 | 6 | 8;
+
+  // Enemies
+  enemyNests: number; // 0-5
+  enemyEconomy: 'weak' | 'normal' | 'strong' | 'overwhelming';
+  enemyAggression: 'passive' | 'normal' | 'aggressive' | 'relentless';
+  evolutionSpeed: 'slow' | 'normal' | 'fast' | 'instant';
+
+  // Rules
+  peaceMinutes: number; // 0, 1, 2, 4, 8
+  permadeath: boolean;
+  fogOfWar: 'full' | 'explored' | 'revealed';
+  heroMode: boolean;
+}
+
+export const DEFAULT_CUSTOM_SETTINGS: CustomGameSettings = {
+  scenario: 'standard',
+  resourceDensity: 'normal',
+  startingResourcesMult: 1.0,
+  gatherSpeed: 'normal',
+  startingUnits: 4,
+  enemyNests: 2,
+  enemyEconomy: 'normal',
+  enemyAggression: 'normal',
+  evolutionSpeed: 'normal',
+  peaceMinutes: 2,
+  permadeath: false,
+  fogOfWar: 'full',
+  heroMode: false,
+};
+
+export const customGameSettings = signal<CustomGameSettings>({ ...DEFAULT_CUSTOM_SETTINGS });
+
 // ---- Menu state ----
 export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
 /** True when the player chose "Continue" from the main menu (load save on init). */
@@ -184,6 +226,12 @@ export const permadeathEnabled = signal(false);
 
 // ---- Settings panel ----
 export const settingsOpen = signal(false);
+
+// ---- Achievements panel ----
+export const achievementsOpen = signal(false);
+
+// ---- Unlocks panel ----
+export const unlocksOpen = signal(false);
 
 // ---- Keyboard reference overlay ----
 export const keyboardRefOpen = signal(false);

@@ -9,6 +9,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
+import { showBark } from '@/config/barks';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   VET_DMG_BONUS,
@@ -114,6 +115,9 @@ export function veterancySystem(world: GameWorld): void {
         color: '#fbbf24', // gold
         life: 60,
       });
+
+      // Rank-up bark
+      showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'rank_up', { force: true });
 
       // Particle burst effect (gold sparkles)
       const ex = Position.x[eid];

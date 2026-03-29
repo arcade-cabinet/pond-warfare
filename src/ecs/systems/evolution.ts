@@ -63,7 +63,8 @@ export function evolutionSystem(world: GameWorld): void {
     const currentTier = evo.tier;
     const gameMinutes = (world.frameCount - world.peaceTimer) / 3600; // minutes since peace ended
 
-    if (currentTier < THRESHOLDS.length && gameMinutes >= THRESHOLDS[currentTier]) {
+    const scaledThreshold = THRESHOLDS[currentTier] * world.evolutionSpeedMod;
+    if (currentTier < THRESHOLDS.length && gameMinutes >= scaledThreshold) {
       // Evolve!
       evo.tier++;
       evo.lastEvolutionFrame = world.frameCount;

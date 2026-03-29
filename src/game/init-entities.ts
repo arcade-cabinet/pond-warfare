@@ -597,28 +597,26 @@ function spawnContested(ctx: SpawnContext, targetNestCount: number): void {
 export function spawnInitialEntities(world: GameWorld): void {
   const rng = new SeededRandom(world.mapSeed);
 
-  // Difficulty-based nest count
-  const nestCountByDifficulty: Record<string, number> = {
-    easy: 1,
-    normal: 2,
-    hard: 3,
-    nightmare: 4,
-    ultraNightmare: 5,
-  };
-  const targetNestCount = nestCountByDifficulty[world.difficulty] ?? 2;
+  // Nest count: use custom override if set, otherwise fall back to difficulty defaults
+  let targetNestCount: number;
+  if (world.nestCountOverride >= 0) {
+    targetNestCount = world.nestCountOverride;
+  } else {
+    const nestCountByDifficulty: Record<string, number> = {
+      easy: 1,
+      normal: 2,
+      hard: 3,
+      nightmare: 4,
+      ultraNightmare: 5,
+    };
+    targetNestCount = nestCountByDifficulty[world.difficulty] ?? 2;
+  }
 
-  // Map resource multiplier by difficulty
-  const resourceMultiplierByDifficulty: Record<string, number> = {
-    easy: 1.0,
-    normal: 1.0,
-    hard: 0.75,
-    nightmare: 0.5,
-    ultraNightmare: 0.4,
-  };
-  const resourceMultiplier = resourceMultiplierByDifficulty[world.difficulty] ?? 1.0;
+  // Map resource multiplier: use custom resourceDensityMod from world
+  const resourceMultiplier = world.resourceDensityMod;
 
-  // ---- Pick scenario ----
-  const scenario = pickScenario(rng);
+  // ---- Pick scenario: use override if set, otherwise random ----
+  const scenario: MapScenario = world.scenarioOverride ?? pickScenario(rng);
   mapScenarioSignal.value = scenario;
 
   // ---- Player start position depends on scenario ----
@@ -648,6 +646,19 @@ export function spawnInitialEntities(world: GameWorld): void {
   // ---- Spawn player base & starting resources ----
   spawnPlayerBase(ctx);
   spawnPlayerResources(ctx);
+
+  // ---- Spawn extra starting units if configured ----
+  const extraUnits = world.startingUnitCount - 4; // base is 4 (commander + 2 gatherers + scout)
+  for (let i = 0; i < extraUnits; i++) {
+    const angle = (i / Math.max(extraUnits, 1)) * Math.PI * 2;
+    spawnEntity(
+      world,
+      EntityKind.Gatherer,
+      sx + Math.cos(angle) * 50,
+      sy + Math.sin(angle) * 50 + 40,
+      Faction.Player,
+    );
+  }
 
   // ---- Spawn scenario-specific layout ----
   switch (scenario) {
