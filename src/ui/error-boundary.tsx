@@ -23,7 +23,12 @@ export class ErrorBoundary extends Component<{ children: any }, ErrorBoundarySta
       return (
         <div class="p-4 bg-red-900 text-white font-mono text-sm">
           <h2 class="text-lg font-bold mb-2">Game Error</h2>
-          <p>{this.state.error.message}</p>
+          <p>Something went wrong. Please reload the game.</p>
+          {import.meta.env.DEV && (
+            <pre class="mt-2 whitespace-pre-wrap text-xs opacity-80">
+              {this.state.error.message}
+            </pre>
+          )}
           <button
             type="button"
             class="mt-4 px-4 py-2 bg-red-700 hover:bg-red-600 rounded"
