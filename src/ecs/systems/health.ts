@@ -31,7 +31,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { Faction, SpriteId, UnitState } from '@/types';
+import { EntityKind, Faction, SpriteId, UnitState } from '@/types';
 
 /**
  * Apply damage to an entity. Exported as a utility for use by combat and projectile systems.
@@ -303,5 +303,34 @@ export function healthSystem(world: GameWorld): void {
   // --- Screen shake decay (original: if (this.shakeTimer > 0) this.shakeTimer--) ---
   if (world.shakeTimer > 0) {
     world.shakeTimer--;
+  }
+
+  // --- Win/lose condition check (lines 1248-1252) ---
+  // Original: if (this.frameCount % 60 === 0) { check lodge alive, nests remaining }
+  if (world.frameCount % 60 === 0 && world.state === 'playing') {
+    let playerLodgeAlive = false;
+    let nestsRemaining = false;
+
+    for (let i = 0; i < allLiving.length; i++) {
+      const eid = allLiving[i];
+      if (Health.current[eid] <= 0) continue;
+      const kind = EntityTypeTag.kind[eid] as EntityKind;
+      const faction = FactionTag.faction[eid] as Faction;
+
+      if (kind === EntityKind.Lodge && faction === Faction.Player) {
+        playerLodgeAlive = true;
+      }
+      if (kind === EntityKind.PredatorNest) {
+        nestsRemaining = true;
+      }
+    }
+
+    if (!playerLodgeAlive) {
+      world.state = 'lose';
+      audio.lose();
+    } else if (!nestsRemaining) {
+      world.state = 'win';
+      audio.win();
+    }
   }
 }
