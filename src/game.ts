@@ -1354,28 +1354,7 @@ export class Game {
         btns.push(...this.buildLodgeButtons(w, lodgeEid));
 
         // Show Lodge training queue in global view
-        const lodgeSlots = trainingQueueSlots.get(lodgeEid) ?? [];
-        for (let qi = 0; qi < lodgeSlots.length; qi++) {
-          const unitKind = lodgeSlots[qi] as EntityKind;
-          const progress =
-            qi === 0
-              ? Math.max(
-                  0,
-                  Math.min(
-                    100,
-                    ((TRAIN_TIMER - TrainingQueue.timer[lodgeEid]) / TRAIN_TIMER) * 100,
-                  ),
-                )
-              : 0;
-          const idx = qi;
-          qItems.push({
-            label: entityKindName(unitKind).charAt(0),
-            progressPct: progress,
-            onCancel: () => {
-              cancelTrain(w, lodgeEid, idx);
-            },
-          });
-        }
+        this.buildTrainingQueueItems(w, lodgeEid, qItems);
       }
     } else if (w.selection.length === 1) {
       const selEid = w.selection[0];
