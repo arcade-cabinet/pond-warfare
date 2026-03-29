@@ -147,6 +147,22 @@ export const hpBarColor = computed(() => {
 
 export const colorBlindMode = signal(false);
 
+// ---- Objective tracking ----
+/** Total number of enemy nests on the map at game start. */
+export const totalEnemyNests = signal(0);
+/** Number of enemy nests that have been destroyed so far. */
+export const destroyedEnemyNests = signal(0);
+/** Momentary flag: true for ~3 seconds after a nest is destroyed (pulse feedback). */
+export const nestJustDestroyed = signal(false);
+
+// ---- Accessibility ----
+/** UI scale multiplier (1 = default, 1.5 = large, 2 = extra large). */
+export const uiScale = signal(1);
+/** When false, computeShakeOffset returns zero offset. */
+export const screenShakeEnabled = signal(true);
+/** When true, particle spawning and floating damage text are suppressed. */
+export const reduceVisualNoise = signal(false);
+
 // ---- Difficulty ----
 export type DifficultyLevel = 'easy' | 'normal' | 'hard' | 'nightmare' | 'ultraNightmare';
 /** @deprecated Use DifficultyLevel instead */

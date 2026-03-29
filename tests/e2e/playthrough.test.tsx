@@ -141,12 +141,16 @@ describe('E2E Playthrough', () => {
             console.log(`[${snapshot.gameSeconds}s] ${snapshot.phase}`, {
               clams: snapshot.clams,
               twigs: snapshot.twigs,
+              pearls: snapshot.pearls,
               food: `${snapshot.food}/${snapshot.maxFood}`,
               gatherers: snapshot.gatherers,
               army: snapshot.army,
               buildings: snapshot.buildings,
               enemyNests: snapshot.enemyNests,
+              evolutionTier: snapshot.evolutionTier,
+              champions: snapshot.champions,
               tech: snapshot.techResearched,
+              autoBehaviors: snapshot.autoBehaviors,
             });
           }
         },

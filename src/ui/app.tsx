@@ -317,6 +317,16 @@ export function App({ onMount }: AppProps) {
             onAutoSaveToggle={() => {
               store.autoSaveEnabled.value = !store.autoSaveEnabled.value;
             }}
+            onUiScaleChange={(scale) => {
+              store.uiScale.value = scale;
+              document.documentElement.style.fontSize = `${16 * scale}px`;
+            }}
+            onScreenShakeToggle={() => {
+              store.screenShakeEnabled.value = !store.screenShakeEnabled.value;
+            }}
+            onReduceVisualNoiseToggle={() => {
+              store.reduceVisualNoise.value = !store.reduceVisualNoise.value;
+            }}
             onClose={() => {
               store.settingsOpen.value = false;
             }}

@@ -34,6 +34,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { createCorpseId, EntityKind, Faction, SpriteId, UnitState } from '@/types';
+import { reduceVisualNoise } from '@/ui/store';
 import { spawnParticle } from '@/utils/particles';
 
 /**
@@ -65,31 +66,33 @@ export function takeDamage(
   const ty = Position.y[targetEid];
   const isBuilding = hasComponent(world.ecs, targetEid, IsBuilding);
 
-  // Damage particles (original: for(let i=0;i<5;i++) GAME.particles.push({...}))
-  const dmgPColor = isBuilding ? PALETTE.mudLight : PALETTE.clamMeat;
-  for (let p = 0; p < 5; p++) {
-    spawnParticle(
-      world,
-      tx,
-      ty - 10,
-      (Math.random() - 0.5) * 2,
-      Math.random() * 2,
-      15,
-      dmgPColor,
-      3,
-    );
-  }
+  // Damage particles and floating text (skip when visual noise reduction is active)
+  if (!reduceVisualNoise.value) {
+    const dmgPColor = isBuilding ? PALETTE.mudLight : PALETTE.clamMeat;
+    for (let p = 0; p < 5; p++) {
+      spawnParticle(
+        world,
+        tx,
+        ty - 10,
+        (Math.random() - 0.5) * 2,
+        Math.random() * 2,
+        15,
+        dmgPColor,
+        3,
+      );
+    }
 
-  // Floating damage text — color varies by counter multiplier
-  const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
-  const dmgColor = multiplier > 1.0 ? '#f97316' : multiplier < 1.0 ? '#9ca3af' : '#ef4444';
-  world.floatingTexts.push({
-    x: tx + (Math.random() * 10 - 5),
-    y: ty - spriteH / 2 - 5,
-    text: `-${effectiveAmount}`,
-    color: dmgColor,
-    life: 40,
-  });
+    // Floating damage text -- color varies by counter multiplier
+    const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
+    const dmgColor = multiplier > 1.0 ? '#f97316' : multiplier < 1.0 ? '#9ca3af' : '#ef4444';
+    world.floatingTexts.push({
+      x: tx + (Math.random() * 10 - 5),
+      y: ty - spriteH / 2 - 5,
+      text: `-${effectiveAmount}`,
+      color: dmgColor,
+      life: 40,
+    });
+  }
 
   // Retaliation and ally assist (only if target is still alive and has an attacker)
   if (Health.current[targetEid] > 0 && attackerEid !== undefined) {
@@ -238,49 +241,51 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     audio.deathUnit();
   }
 
-  // Death particle burst
-  if (isBuilding) {
-    // Ring pattern for buildings
-    for (let j = 0; j < 35; j++) {
-      const angle = (j / 35) * Math.PI * 2;
-      const spread = 2 + Math.random() * 3;
-      spawnParticle(
-        world,
-        ex,
-        ey,
-        Math.cos(angle) * spread,
-        Math.sin(angle) * spread + 2,
-        30,
-        PALETTE.mudLight,
-        4,
-      );
-    }
-  } else {
-    for (let j = 0; j < 20; j++) {
-      spawnParticle(
-        world,
-        ex,
-        ey,
-        (Math.random() - 0.5) * 4,
-        (Math.random() - 0.5) * 4 + 2,
-        30,
-        PALETTE.clamMeat,
-        4,
-      );
-    }
-    // Splat variant particles for units
-    if (!isResource) {
-      for (let j = 0; j < 5; j++) {
+  // Death particle burst (skip when visual noise reduction is active)
+  if (!reduceVisualNoise.value) {
+    if (isBuilding) {
+      // Ring pattern for buildings
+      for (let j = 0; j < 35; j++) {
+        const angle = (j / 35) * Math.PI * 2;
+        const spread = 2 + Math.random() * 3;
         spawnParticle(
           world,
-          ex + (Math.random() - 0.5) * 10,
-          ey + (Math.random() - 0.5) * 10,
-          (Math.random() - 0.5) * 2,
-          Math.random() * 2 + 1,
-          15,
-          PALETTE.clamMeat,
-          6,
+          ex,
+          ey,
+          Math.cos(angle) * spread,
+          Math.sin(angle) * spread + 2,
+          30,
+          PALETTE.mudLight,
+          4,
         );
+      }
+    } else {
+      for (let j = 0; j < 20; j++) {
+        spawnParticle(
+          world,
+          ex,
+          ey,
+          (Math.random() - 0.5) * 4,
+          (Math.random() - 0.5) * 4 + 2,
+          30,
+          PALETTE.clamMeat,
+          4,
+        );
+      }
+      // Splat variant particles for units
+      if (!isResource) {
+        for (let j = 0; j < 5; j++) {
+          spawnParticle(
+            world,
+            ex + (Math.random() - 0.5) * 10,
+            ey + (Math.random() - 0.5) * 10,
+            (Math.random() - 0.5) * 2,
+            Math.random() * 2 + 1,
+            15,
+            PALETTE.clamMeat,
+            6,
+          );
+        }
       }
     }
   }

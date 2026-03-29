@@ -12,7 +12,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ActionPanel, actionButtons, queueItems } from '@/ui/action-panel';
 import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
+import { KeyboardReference } from '@/ui/keyboard-reference';
+import { NewGameModal } from '@/ui/new-game-modal';
 import { SelectionPanel } from '@/ui/selection-panel';
+import { SettingsPanel } from '@/ui/settings-panel';
 import * as store from '@/ui/store';
 
 // Mock animation module
@@ -30,10 +33,14 @@ import '@/styles/main.css';
 function resetStore() {
   store.clams.value = 200;
   store.twigs.value = 50;
+  store.pearls.value = 0;
   store.food.value = 0;
   store.maxFood.value = 0;
   store.rateClams.value = 0;
   store.rateTwigs.value = 0;
+  store.enemyClams.value = 0;
+  store.enemyTwigs.value = 0;
+  store.enemyEconomyVisible.value = false;
   store.selectionCount.value = 0;
   store.selectionName.value = 'No Selection';
   store.selectionNameColor.value = 'text-slate-500';
@@ -62,12 +69,19 @@ function resetStore() {
   store.idleWorkerCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
+  store.idleGathererCount.value = 0;
+  store.idleCombatCount.value = 0;
+  store.idleHealerCount.value = 0;
+  store.idleScoutCount.value = 0;
+  store.autoMenuExpanded.value = false;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
   store.autoGatherEnabled.value = false;
+  store.autoBuildEnabled.value = false;
   store.autoDefendEnabled.value = false;
   store.autoAttackEnabled.value = false;
+  store.autoHealEnabled.value = false;
   store.autoScoutEnabled.value = false;
   store.goTitle.value = 'Victory';
   store.goTitleColor.value = 'text-amber-400';
@@ -84,6 +98,14 @@ function resetStore() {
   store.ctrlGroupCounts.value = {};
   store.globalProductionQueue.value = [];
   store.colorBlindMode.value = false;
+  store.menuState.value = 'playing';
+  store.keyboardRefOpen.value = false;
+  store.settingsOpen.value = false;
+  store.selectedDifficulty.value = 'normal';
+  store.permadeathEnabled.value = false;
+  store.masterVolume.value = 80;
+  store.musicVolume.value = 50;
+  store.sfxVolume.value = 80;
   actionButtons.value = [];
   queueItems.value = [];
 }
@@ -958,5 +980,661 @@ describe('HUD conditional element visibility', () => {
     const pauseOverlay = document.querySelector('.pointer-events-none');
     expect(pauseOverlay).toBeTruthy();
     expect(pauseOverlay?.textContent).toContain('PAUSED');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Keyboard Reference Overlay Interactions
+// ---------------------------------------------------------------------------
+describe('Keyboard Reference overlay interactions', () => {
+  it('keyboard ref "?" button click calls onKeyboardRefClick', async () => {
+    const onKeyboardRefClick = vi.fn();
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+          onKeyboardRefClick,
+        }),
+      ),
+    );
+
+    const kbBtn = document.getElementById('keyboard-ref-btn')!;
+    expect(kbBtn).toBeTruthy();
+    expect(kbBtn.textContent).toContain('?');
+    kbBtn.click();
+    expect(onKeyboardRefClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('keyboard ref overlay close button calls onClose', async () => {
+    const onClose = vi.fn();
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(KeyboardReference, { onClose }),
+      ),
+    );
+
+    // Find the close button (title="Close")
+    const closeBtn = document.querySelector('button[title="Close"]') as HTMLButtonElement;
+    expect(closeBtn).toBeTruthy();
+    closeBtn.click();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('keyboard ref overlay backdrop click calls onClose', async () => {
+    const onClose = vi.fn();
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:600px;background:#0f172a' },
+        h(KeyboardReference, { onClose }),
+      ),
+    );
+
+    // Click the outermost overlay (the absolute inset-0 div that is the event target)
+    const overlay = document.querySelector('.absolute.inset-0.z-\\[60\\]') as HTMLDivElement;
+    expect(overlay).toBeTruthy();
+    // Simulate click where target === currentTarget (click on backdrop, not panel)
+    fireEvent.click(overlay);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// New Game Modal Interactions
+// ---------------------------------------------------------------------------
+describe('New Game Modal interactions', () => {
+  it('difficulty selection updates when Easy/Normal/Hard/Nightmare/Ultra Nightmare clicked', async () => {
+    store.menuState.value = 'newGame';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
+        h(NewGameModal, null),
+      ),
+    );
+
+    // Find difficulty cards by their title attributes
+    const easyBtn = document.querySelector(
+      'button[title*="gentle introduction"]',
+    ) as HTMLButtonElement;
+    const normalBtn = document.querySelector(
+      'button[title*="otters intended"]',
+    ) as HTMLButtonElement;
+    const hardBtn = document.querySelector('button[title*="breathing room"]') as HTMLButtonElement;
+    const nightmareBtn = document.querySelector(
+      'button[title*="mistake is punished"]',
+    ) as HTMLButtonElement;
+    const ultraBtn = document.querySelector('button[title*="ultimate test"]') as HTMLButtonElement;
+
+    expect(easyBtn).toBeTruthy();
+    expect(normalBtn).toBeTruthy();
+    expect(hardBtn).toBeTruthy();
+    expect(nightmareBtn).toBeTruthy();
+    expect(ultraBtn).toBeTruthy();
+
+    // Default selection is Normal — verify Normal card has the selected style
+    // Click Easy
+    easyBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+    // The easy card should now have its tint background (green)
+    expect(easyBtn.style.background).toContain('rgba(34, 197, 94');
+
+    // Click Hard
+    hardBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(hardBtn.style.background).toContain('rgba(239, 68, 68');
+
+    // Click Nightmare
+    nightmareBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(nightmareBtn.style.background).toContain('rgba(168, 85, 247');
+
+    // Click Ultra Nightmare
+    ultraBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(ultraBtn.style.background).toContain('rgba(220, 38, 38');
+  });
+
+  it('permadeath toggle switches on and off', async () => {
+    store.menuState.value = 'newGame';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
+        h(NewGameModal, null),
+      ),
+    );
+
+    // Find the permadeath card (contains "PERMADEATH" text and toggle)
+    const permadeathBtn = document.querySelector(
+      'button[title*="Enable for bonus rewards"]',
+    ) as HTMLButtonElement;
+    expect(permadeathBtn).toBeTruthy();
+
+    // Initially off — background should be dark
+    expect(permadeathBtn.style.background).toContain('rgba(20, 30, 35');
+
+    // Click to toggle on
+    permadeathBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(permadeathBtn.style.background).toContain('rgba(220, 38, 38');
+
+    // Click to toggle off
+    permadeathBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(permadeathBtn.style.background).toContain('rgba(20, 30, 35');
+  });
+
+  it('permadeath forced on when Ultra Nightmare selected', async () => {
+    store.menuState.value = 'newGame';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
+        h(NewGameModal, null),
+      ),
+    );
+
+    // Select Ultra Nightmare
+    const ultraBtn = document.querySelector('button[title*="ultimate test"]') as HTMLButtonElement;
+    ultraBtn.click();
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Permadeath card should now be forced on (disabled + red background)
+    const permadeathBtn = document.querySelector(
+      'button[title*="Permadeath is always on"]',
+    ) as HTMLButtonElement;
+    expect(permadeathBtn).toBeTruthy();
+    expect(permadeathBtn.disabled).toBe(true);
+    expect(permadeathBtn.style.background).toContain('rgba(220, 38, 38');
+  });
+
+  it('shuffle button randomizes game name', async () => {
+    store.menuState.value = 'newGame';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
+        h(NewGameModal, null),
+      ),
+    );
+
+    const nameInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+    expect(nameInput).toBeTruthy();
+    const originalName = nameInput.value;
+
+    // Find shuffle button (title="Randomize name and seed")
+    const shuffleBtn = document.querySelector(
+      'button[title="Randomize name and seed"]',
+    ) as HTMLButtonElement;
+    expect(shuffleBtn).toBeTruthy();
+
+    // Click shuffle several times — at least one should produce a different name
+    let nameChanged = false;
+    for (let i = 0; i < 10; i++) {
+      shuffleBtn.click();
+      await new Promise((r) => setTimeout(r, 50));
+      if (nameInput.value !== originalName) {
+        nameChanged = true;
+        break;
+      }
+    }
+    expect(nameChanged, 'Expected shuffle to produce a different name').toBe(true);
+  });
+
+  it('seed display is clickable and enters edit mode', async () => {
+    store.menuState.value = 'newGame';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
+        h(NewGameModal, null),
+      ),
+    );
+
+    // Seed is displayed as a clickable button (title="Click to edit seed")
+    const seedBtn = document.querySelector(
+      'button[title="Click to edit seed"]',
+    ) as HTMLButtonElement;
+    expect(seedBtn).toBeTruthy();
+    const seedValue = seedBtn.textContent?.trim() ?? '';
+    expect(Number(seedValue)).toBeGreaterThan(0);
+
+    // Click to enter edit mode
+    seedBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+
+    // After clicking, an input should appear
+    const seedInput = document.querySelector('input.font-numbers[type="text"]') as HTMLInputElement;
+    expect(seedInput).toBeTruthy();
+    expect(seedInput.value).toBe(seedValue);
+  });
+
+  it('start game button transitions menu state to playing', async () => {
+    store.menuState.value = 'newGame';
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
+        h(NewGameModal, null),
+      ),
+    );
+
+    // Find the START GAME button
+    const startBtn = document.querySelector('button.animate-begin-glow') as HTMLButtonElement;
+    expect(startBtn).toBeTruthy();
+    expect(startBtn.textContent).toContain('START GAME');
+
+    startBtn.click();
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Store should transition to playing
+    expect(store.menuState.value).toBe('playing');
+    expect(store.selectedDifficulty.value).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Pearl Resource Display
+// ---------------------------------------------------------------------------
+describe('Pearl resource display', () => {
+  it('pearl display hidden when pearls = 0', async () => {
+    store.pearls.value = 0;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    // No element should contain "Pearls" text
+    const pearlLabels = document.querySelectorAll('span');
+    const hasPearlLabel = Array.from(pearlLabels).some((el) => el.textContent?.includes('Pearls'));
+    expect(hasPearlLabel).toBe(false);
+  });
+
+  it('pearl display visible when pearls > 0', async () => {
+    store.pearls.value = 15;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:60px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    const pearlLabels = document.querySelectorAll('span');
+    const hasPearlLabel = Array.from(pearlLabels).some((el) => el.textContent?.includes('Pearls'));
+    expect(hasPearlLabel).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Contextual Idle Menu Interactions
+// ---------------------------------------------------------------------------
+describe('Contextual idle menu interactions', () => {
+  it('idle button expands auto-behavior menu with Gather/Build when gatherers idle', async () => {
+    store.idleWorkerCount.value = 3;
+    store.idleGathererCount.value = 3;
+    store.idleCombatCount.value = 0;
+    store.autoMenuExpanded.value = false;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    // Click idle button to expand
+    const idleBtn = document.getElementById('idle-worker-btn')!;
+    expect(idleBtn).toBeTruthy();
+    idleBtn.click();
+    await new Promise((r) => setTimeout(r, 100));
+
+    expect(store.autoMenuExpanded.value).toBe(true);
+
+    // Gather and Build buttons should be visible
+    const gatherBtn = document.querySelector('button[title*="Auto-Gather"]') as HTMLButtonElement;
+    const buildBtn = document.querySelector('button[title*="Auto-Build"]') as HTMLButtonElement;
+    expect(gatherBtn).toBeTruthy();
+    expect(buildBtn).toBeTruthy();
+
+    // Attack/Defend should NOT be visible (no idle combat)
+    const attackBtn = document.querySelector('button[title*="Auto-Attack"]');
+    const defendBtn = document.querySelector('button[title*="Auto-Defend"]');
+    expect(attackBtn).toBeNull();
+    expect(defendBtn).toBeNull();
+  });
+
+  it('idle menu shows Attack/Defend when combat units are idle', async () => {
+    store.idleWorkerCount.value = 4;
+    store.idleGathererCount.value = 0;
+    store.idleCombatCount.value = 4;
+    store.autoMenuExpanded.value = true;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    // Attack and Defend buttons should be visible
+    const attackBtn = document.querySelector('button[title*="Auto-Attack"]') as HTMLButtonElement;
+    const defendBtn = document.querySelector('button[title*="Auto-Defend"]') as HTMLButtonElement;
+    expect(attackBtn).toBeTruthy();
+    expect(defendBtn).toBeTruthy();
+
+    // Gather/Build should NOT be visible (no idle gatherers)
+    const gatherBtn = document.querySelector('button[title*="Auto-Gather"]');
+    const buildBtn = document.querySelector('button[title*="Auto-Build"]');
+    expect(gatherBtn).toBeNull();
+    expect(buildBtn).toBeNull();
+  });
+
+  it('auto-build toggle click toggles signal', async () => {
+    store.idleWorkerCount.value = 2;
+    store.idleGathererCount.value = 2;
+    store.autoMenuExpanded.value = true;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    expect(store.autoBuildEnabled.value).toBe(false);
+
+    const buildBtn = document.querySelector('button[title*="Auto-Build"]') as HTMLButtonElement;
+    expect(buildBtn).toBeTruthy();
+    buildBtn.click();
+
+    expect(store.autoBuildEnabled.value).toBe(true);
+
+    // Toggle off
+    buildBtn.click();
+    expect(store.autoBuildEnabled.value).toBe(false);
+  });
+
+  it('clicking idle button again collapses the menu', async () => {
+    store.idleWorkerCount.value = 3;
+    store.idleGathererCount.value = 3;
+    store.autoMenuExpanded.value = true;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    expect(store.autoMenuExpanded.value).toBe(true);
+
+    // Click idle button to collapse
+    const idleBtn = document.getElementById('idle-worker-btn')!;
+    idleBtn.click();
+
+    expect(store.autoMenuExpanded.value).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Enemy Economy Display
+// ---------------------------------------------------------------------------
+describe('Enemy economy display', () => {
+  it('enemy economy indicator hidden when not visible', async () => {
+    store.enemyEconomyVisible.value = false;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    const enemyLabels = document.querySelectorAll('span');
+    const hasEnemyLabel = Array.from(enemyLabels).some((el) => el.textContent?.includes('Enemy:'));
+    expect(hasEnemyLabel).toBe(false);
+  });
+
+  it('enemy economy indicator visible after scouting with resource values', async () => {
+    store.enemyEconomyVisible.value = true;
+    store.enemyClams.value = 350;
+    store.enemyTwigs.value = 200;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
+        h(HUD, {
+          onSpeedClick: vi.fn(),
+          onMuteClick: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onIdleWorkerClick: vi.fn(),
+          onArmyClick: vi.fn(),
+          onPauseClick: vi.fn(),
+          onAttackMoveClick: vi.fn(),
+          onCtrlGroupClick: vi.fn(),
+        }),
+      ),
+    );
+
+    const allText = document.body.textContent || '';
+    expect(allText).toContain('Enemy:');
+    expect(allText).toContain('350');
+    expect(allText).toContain('200');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Settings Panel Interactions
+// ---------------------------------------------------------------------------
+describe('Settings panel interactions', () => {
+  it('volume sliders call onChange handlers', async () => {
+    const onMasterVolumeChange = vi.fn();
+    const onMusicVolumeChange = vi.fn();
+    const onSfxVolumeChange = vi.fn();
+
+    store.masterVolume.value = 80;
+    store.musicVolume.value = 50;
+    store.sfxVolume.value = 80;
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:400px;height:600px;background:#0f172a' },
+        h(SettingsPanel, {
+          onMasterVolumeChange,
+          onMusicVolumeChange,
+          onSfxVolumeChange,
+          onSpeedSet: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onAutoSaveToggle: vi.fn(),
+          onUiScaleChange: vi.fn(),
+          onScreenShakeToggle: vi.fn(),
+          onReduceVisualNoiseToggle: vi.fn(),
+          onClose: vi.fn(),
+        }),
+      ),
+    );
+
+    // Find all range inputs
+    const sliders = document.querySelectorAll(
+      'input[type="range"]',
+    ) as NodeListOf<HTMLInputElement>;
+    expect(sliders.length).toBe(3);
+
+    // Simulate input on master volume slider (first one)
+    fireEvent.input(sliders[0], { target: { value: '60' } });
+    expect(onMasterVolumeChange).toHaveBeenCalled();
+
+    // Simulate input on music volume slider (second one)
+    fireEvent.input(sliders[1], { target: { value: '30' } });
+    expect(onMusicVolumeChange).toHaveBeenCalled();
+
+    // Simulate input on SFX volume slider (third one)
+    fireEvent.input(sliders[2], { target: { value: '90' } });
+    expect(onSfxVolumeChange).toHaveBeenCalled();
+  });
+
+  it('settings close button calls onClose', async () => {
+    const onClose = vi.fn();
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:400px;height:600px;background:#0f172a' },
+        h(SettingsPanel, {
+          onMasterVolumeChange: vi.fn(),
+          onMusicVolumeChange: vi.fn(),
+          onSfxVolumeChange: vi.fn(),
+          onSpeedSet: vi.fn(),
+          onColorBlindToggle: vi.fn(),
+          onAutoSaveToggle: vi.fn(),
+          onClose,
+        }),
+      ),
+    );
+
+    // Find close button (title="Close Settings")
+    const closeBtn = document.querySelector('button[title="Close Settings"]') as HTMLButtonElement;
+    expect(closeBtn).toBeTruthy();
+    closeBtn.click();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('settings speed buttons call onSpeedSet with correct value', async () => {
+    const onSpeedSet = vi.fn();
+
+    render(
+      h(
+        'div',
+        { style: 'position:relative;width:400px;height:600px;background:#0f172a' },
+        h(SettingsPanel, {
+          onMasterVolumeChange: vi.fn(),
+          onMusicVolumeChange: vi.fn(),
+          onSfxVolumeChange: vi.fn(),
+          onSpeedSet,
+          onColorBlindToggle: vi.fn(),
+          onAutoSaveToggle: vi.fn(),
+          onUiScaleChange: vi.fn(),
+          onScreenShakeToggle: vi.fn(),
+          onReduceVisualNoiseToggle: vi.fn(),
+          onClose: vi.fn(),
+        }),
+      ),
+    );
+
+    // Find speed buttons (1x, 2x, 3x)
+    const speedBtns = document.querySelectorAll(
+      '.font-numbers.font-bold',
+    ) as NodeListOf<HTMLButtonElement>;
+    // Filter for only the ones that look like speed buttons (contain "x")
+    const speedButtons = Array.from(speedBtns).filter(
+      (btn) => btn.tagName === 'BUTTON' && btn.textContent?.match(/^\dx$/),
+    );
+    expect(speedButtons.length).toBe(3);
+
+    speedButtons[0].click();
+    expect(onSpeedSet).toHaveBeenCalledWith(1);
+
+    speedButtons[1].click();
+    expect(onSpeedSet).toHaveBeenCalledWith(2);
+
+    speedButtons[2].click();
+    expect(onSpeedSet).toHaveBeenCalledWith(3);
   });
 });

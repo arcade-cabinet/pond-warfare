@@ -160,7 +160,17 @@ export function drawMinimap(
     }
 
     const dotSize = def.isBuilding ? 4 : 2;
-    mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
+
+    // PredatorNest: pulsing/blinking red dots to draw player attention
+    if (kind === EntityKind.PredatorNest) {
+      const pulse = 0.5 + 0.5 * Math.sin(_world.frameCount * 0.1);
+      mc.globalAlpha = 0.4 + pulse * 0.6;
+      const pSize = dotSize + pulse * 2;
+      mc.fillRect(ex * sx - pSize / 2, ey * sy - pSize / 2, pSize, pSize);
+      mc.globalAlpha = 1;
+    } else {
+      mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
+    }
 
     // Reset alpha after drawing resource dots
     if (isResource) {

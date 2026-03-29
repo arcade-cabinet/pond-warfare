@@ -1,23 +1,52 @@
 /**
- * Overlays - Pause overlay, attack-move banner, enemy economy display.
+ * Overlays - Pause overlay, attack-move banner, enemy economy display, objective bar.
  */
 
 import {
   attackMoveActive,
+  destroyedEnemyNests,
   enemyClams,
   enemyEconomyVisible,
   enemyTwigs,
+  nestJustDestroyed,
   paused,
   peaceWarningCountdown,
+  totalEnemyNests,
 } from '../store';
 
 export function Overlays() {
+  const total = totalEnemyNests.value;
+  const destroyed = destroyedEnemyNests.value;
+  const justDestroyed = nestJustDestroyed.value;
+
   return (
     <>
+      {/* Objective bar - persistent display at top-center */}
+      {total > 0 && (
+        <div
+          class={`absolute top-10 md:top-11 left-1/2 -translate-x-1/2 z-15 flex items-center gap-2 rounded px-3 py-1 text-[10px] md:text-xs whitespace-nowrap${justDestroyed ? ' animate-pulse' : ''}`}
+          style={{
+            background: 'rgba(12, 26, 31, 0.75)',
+            border: justDestroyed
+              ? '2px solid var(--pw-accent)'
+              : '1px solid var(--pw-border)',
+          }}
+        >
+          <span
+            class="font-heading font-bold tracking-wide"
+            style={{ color: justDestroyed ? 'var(--pw-accent)' : 'var(--pw-text-secondary)' }}
+          >
+            {justDestroyed
+              ? `${destroyed}/${total} Nests Destroyed!`
+              : `Destroy Enemy Nests: ${destroyed}/${total}`}
+          </span>
+        </div>
+      )}
+
       {/* Enemy economy indicator (visible after scouting a nest) */}
       {enemyEconomyVisible.value && (
         <div
-          class="absolute top-11 md:top-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded px-2 py-0.5 text-[10px] md:text-xs"
+          class="absolute top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded px-2 py-0.5 text-[10px] md:text-xs"
           style={{
             background: 'rgba(12, 26, 31, 0.85)',
             border: '1px solid var(--pw-enemy)',
@@ -50,7 +79,7 @@ export function Overlays() {
       {/* Enemy wave incoming warning banner */}
       {peaceWarningCountdown.value > 0 && (
         <div
-          class="absolute top-16 md:top-18 left-1/2 -translate-x-1/2 z-25 px-4 py-1 rounded font-heading font-bold text-xs md:text-sm whitespace-nowrap animate-pulse"
+          class="absolute top-20 md:top-22 left-1/2 -translate-x-1/2 z-25 px-4 py-1 rounded font-heading font-bold text-xs md:text-sm whitespace-nowrap animate-pulse"
           style={{
             background: 'rgba(180, 120, 20, 0.85)',
             border: '2px solid var(--pw-warning)',

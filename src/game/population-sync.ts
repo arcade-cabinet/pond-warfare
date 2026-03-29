@@ -375,5 +375,33 @@ export function syncPopulationAndTimers(
 
   store.baseUnderAttack.value = baseAttacked;
 
+  // --- Objective tracking: enemy nest counts ---
+  // Count alive PredatorNests each frame. totalEnemyNests is set once
+  // (on first non-zero observation) so that the HUD shows "0/N" from the start.
+  let aliveNests = 0;
+  for (let i = 0; i < allEntsForFood.length; i++) {
+    const eid = allEntsForFood[i];
+    if (EntityTypeTag.kind[eid] !== EntityKind.PredatorNest) continue;
+    if (Health.current[eid] > 0) aliveNests++;
+  }
+
+  // Latch the total on first observation (nests only decrease, never increase mid-game)
+  if (store.totalEnemyNests.value === 0 && aliveNests > 0) {
+    store.totalEnemyNests.value = aliveNests;
+  }
+
+  const total = store.totalEnemyNests.value;
+  const newDestroyed = total > 0 ? total - aliveNests : 0;
+
+  // Detect moment of destruction for pulse feedback
+  if (newDestroyed > store.destroyedEnemyNests.value) {
+    store.nestJustDestroyed.value = true;
+    // Clear the pulse after ~3 seconds (180 frames at 60fps)
+    setTimeout(() => {
+      store.nestJustDestroyed.value = false;
+    }, 3000);
+  }
+  store.destroyedEnemyNests.value = newDestroyed;
+
   return { idleWorkers, armyUnits, maxFoodCap };
 }

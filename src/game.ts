@@ -493,8 +493,9 @@ export class Game {
 
     switch (diff) {
       case 'easy':
-        // Peace timer: 1.5x longer
-        this.world.peaceTimer = 10800;
+        // Peace timer: 4 minutes — gives casual players time to train gatherers,
+        // build an Armory, train Brawlers, and set up auto-behaviors
+        this.world.peaceTimer = 14400;
         // Enemy starting resources: 0.5x
         this.world.enemyResources.clams = 250;
         this.world.enemyResources.twigs = 100;

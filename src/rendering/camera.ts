@@ -8,6 +8,7 @@
 
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
+import { screenShakeEnabled } from '@/ui/store';
 
 export interface CameraShake {
   offsetX: number;
@@ -24,10 +25,14 @@ export function clampCamera(world: GameWorld): void {
  * Compute the current screen-shake offset.
  *
  * When shakeTimer > 0, returns random offsets proportional to the remaining
- * shake strength. When shakeTimer <= 0, returns zero offset.
+ * shake strength. When shakeTimer <= 0 or screen shake is disabled, returns
+ * zero offset.
  */
 const MAX_SHAKE_OFFSET = 10;
 export function computeShakeOffset(world: GameWorld): CameraShake {
+  if (!screenShakeEnabled.value) {
+    return { offsetX: 0, offsetY: 0 };
+  }
   if (world.shakeTimer > 0) {
     return {
       offsetX: (Math.random() - 0.5) * Math.min(world.shakeTimer, MAX_SHAKE_OFFSET),
