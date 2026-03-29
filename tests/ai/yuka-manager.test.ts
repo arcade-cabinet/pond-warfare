@@ -39,6 +39,8 @@ describe('YukaManager', () => {
     yuka.addEnemy(eid, 100, 100, 2, 500, 500);
     yuka.addEnemy(eid, 200, 200, 3, 600, 600);
     expect(yuka.has(eid)).toBe(true);
+    // Verify there is exactly one vehicle for this entity
+    expect(yuka.getVehicleCount()).toBe(1);
   });
 
   it('should update without error', () => {

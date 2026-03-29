@@ -135,6 +135,10 @@ export class PhysicsManager {
 
   /** Clean up the entire physics world. */
   destroy(): void {
+    // Destroy all Planck bodies from the world
+    for (const body of this.bodies.values()) {
+      this.world.destroyBody(body);
+    }
     this.bodies.clear();
   }
 }

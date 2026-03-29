@@ -143,13 +143,15 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(6, 13, 4, 1, '#cbd5e1');
   } else if (type === 'rubble') {
     for (let i = 0; i < 40; i++) {
-      const rx = 4 + Math.random() * 24;
-      const ry = 16 + Math.random() * 12;
+      const rx = Math.round(4 + Math.random() * 24);
+      const ry = Math.round(16 + Math.random() * 12);
+      const width = Math.max(1, Math.round(Math.random() * 4 + 1));
+      const height = Math.max(1, Math.round(Math.random() * 2 + 1));
       rect(
         rx,
         ry,
-        Math.random() * 4 + 1,
-        Math.random() * 2 + 1,
+        width,
+        height,
         Math.random() > 0.5 ? PALETTE.mudDark : PALETTE.wood,
       );
     }

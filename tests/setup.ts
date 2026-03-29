@@ -35,47 +35,50 @@ vi.mock('tone', () => ({
 }));
 
 // Mock HTMLCanvasElement.getContext for environments that don't support it
-const mockContext2D = {
-  fillStyle: '',
-  strokeStyle: '',
-  lineWidth: 1,
-  globalAlpha: 1,
-  globalCompositeOperation: 'source-over',
-  font: '',
-  textAlign: 'start',
-  imageSmoothingEnabled: true,
-  fillRect: () => {},
-  strokeRect: () => {},
-  clearRect: () => {},
-  beginPath: () => {},
-  closePath: () => {},
-  moveTo: () => {},
-  lineTo: () => {},
-  arc: () => {},
-  ellipse: () => {},
-  fill: () => {},
-  stroke: () => {},
-  fillText: () => {},
-  strokeText: () => {},
-  drawImage: () => {},
-  save: () => {},
-  restore: () => {},
-  translate: () => {},
-  scale: () => {},
-  setLineDash: () => {},
-  createRadialGradient: () => ({
-    addColorStop: () => {},
-  }),
-  createPattern: () => ({}),
-  getImageData: () => ({ data: new Uint8ClampedArray(4) }),
-  putImageData: () => {},
-  measureText: () => ({ width: 0 }),
-  setTransform: () => {},
-  resetTransform: () => {},
-  createLinearGradient: () => ({
-    addColorStop: () => {},
-  }),
-};
+// Use a factory to create fresh context instances for each call to avoid state leakage
+function makeMockContext2D() {
+  return {
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    globalAlpha: 1,
+    globalCompositeOperation: 'source-over',
+    font: '',
+    textAlign: 'start',
+    imageSmoothingEnabled: true,
+    fillRect: () => {},
+    strokeRect: () => {},
+    clearRect: () => {},
+    beginPath: () => {},
+    closePath: () => {},
+    moveTo: () => {},
+    lineTo: () => {},
+    arc: () => {},
+    ellipse: () => {},
+    fill: () => {},
+    stroke: () => {},
+    fillText: () => {},
+    strokeText: () => {},
+    drawImage: () => {},
+    save: () => {},
+    restore: () => {},
+    translate: () => {},
+    scale: () => {},
+    setLineDash: () => {},
+    createRadialGradient: () => ({
+      addColorStop: () => {},
+    }),
+    createPattern: () => ({}),
+    getImageData: () => ({ data: new Uint8ClampedArray(4) }),
+    putImageData: () => {},
+    measureText: () => ({ width: 0 }),
+    setTransform: () => {},
+    resetTransform: () => {},
+    createLinearGradient: () => ({
+      addColorStop: () => {},
+    }),
+  };
+}
 
 // Patch HTMLCanvasElement if getContext doesn't work in jsdom
 // biome-ignore lint/complexity/noBannedTypes: need generic function type for canvas mock
@@ -92,7 +95,8 @@ HTMLCanvasElement.prototype.getContext = function (
     } catch {
       // jsdom throws "Not implemented" – fall through to mock
     }
-    return mockContext2D as any;
+    // Return a fresh mock context for each call to avoid state leakage between tests
+    return makeMockContext2D() as any;
   }
   try {
     return originalGetContext.call(this, type, options) as any;

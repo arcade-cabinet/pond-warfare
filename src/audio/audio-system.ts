@@ -5,11 +5,21 @@ function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
 }
 
+interface SynthPannerPair {
+  synth: Tone.Synth;
+  panner: Tone.Panner;
+  available: boolean;
+}
+
 export class AudioSystem {
   private _muted = false;
   private _started = false;
   private ambientNoise: Tone.Noise | null = null;
   private ambientFilter: Tone.Filter | null = null;
+
+  /** Reusable pool of synth+panner pairs to avoid per-call allocation/disposal. */
+  private synthPool: SynthPannerPair[] = [];
+  private readonly POOL_SIZE = 16;
 
   /** Camera state for spatial panning – updated externally each frame. */
   camX = 0;
@@ -23,6 +33,50 @@ export class AudioSystem {
     if (this._started) return;
     await Tone.start();
     this._started = true;
+    this.initSynthPool();
+  }
+
+  /** Pre-allocate synth+panner pairs for reuse. */
+  private initSynthPool(): void {
+    for (let i = 0; i < this.POOL_SIZE; i++) {
+      const panner = new Tone.Panner(0).toDestination();
+      const synth = new Tone.Synth().connect(panner);
+      this.synthPool.push({ synth, panner, available: true });
+    }
+  }
+
+  /** Get an available synth+panner pair from the pool, or reuse oldest if pool is exhausted. */
+  private borrowSynthPair(): SynthPannerPair {
+    // Find first available pair
+    let pair = this.synthPool.find((p) => p.available);
+    if (!pair) {
+      // Pool exhausted; reuse first pair (evict oldest)
+      pair = this.synthPool[0];
+    }
+    pair.available = false;
+    return pair;
+  }
+
+  /** Mark a synth+panner pair as available for reuse. */
+  private returnSynthPair(pair: SynthPannerPair): void {
+    pair.available = true;
+  }
+
+  /** Dispose all pooled synths and panners on shutdown. */
+  shutdown(): void {
+    for (const pair of this.synthPool) {
+      pair.synth.dispose();
+      pair.panner.dispose();
+    }
+    this.synthPool = [];
+    if (this.ambientNoise) {
+      this.ambientNoise.dispose();
+      this.ambientNoise = null;
+    }
+    if (this.ambientFilter) {
+      this.ambientFilter.dispose();
+      this.ambientFilter = null;
+    }
   }
 
   /** Convert world X to stereo pan -1..1 relative to camera. */
@@ -35,6 +89,7 @@ export class AudioSystem {
 
   /**
    * Play a synthesized tone through Tone.Synth with optional panning and frequency slide.
+   * Uses pooled synth+panner pairs to avoid per-call allocation/disposal.
    */
   private playAt(
     freq: number,
@@ -46,12 +101,19 @@ export class AudioSystem {
   ): void {
     if (!this._started || this._muted) return;
     try {
-      const panner = new Tone.Panner(this.worldToPan(worldX)).toDestination();
-      const synth = new Tone.Synth({
-        oscillator: { type: type as any },
-        envelope: { attack: 0.001, decay: duration * 0.8, sustain: 0, release: duration * 0.2 },
-        volume: Tone.gainToDb(vol),
-      }).connect(panner);
+      const pair = this.borrowSynthPair();
+      const { synth, panner } = pair;
+
+      // Configure panner position
+      panner.pan.value = this.worldToPan(worldX);
+
+      // Configure synth properties
+      synth.oscillator.type = type as any;
+      synth.envelope.attack = 0.001;
+      synth.envelope.decay = duration * 0.8;
+      synth.envelope.sustain = 0;
+      synth.envelope.release = duration * 0.2;
+      synth.volume.value = Tone.gainToDb(vol);
 
       synth.triggerAttackRelease(freq, duration);
 
@@ -59,11 +121,10 @@ export class AudioSystem {
         synth.oscillator.frequency.exponentialRampTo(slideFreq, duration);
       }
 
-      // Dispose after sound completes
+      // Return pair to pool after sound completes
       setTimeout(
         () => {
-          synth.dispose();
-          panner.dispose();
+          this.returnSynthPair(pair);
         },
         (duration + 0.1) * 1000,
       );

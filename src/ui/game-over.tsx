@@ -55,10 +55,15 @@ function StarRating({ stars }: { stars: number }) {
 export function GameOverBanner(props: GameOverProps) {
   const state = gameState.value;
   const statsContainerRef = useRef<HTMLDivElement>(null);
+  const restartButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (state !== 'playing' && statsContainerRef.current) {
       animateGameOverStats(statsContainerRef.current);
+      // Focus the restart button when dialog opens
+      if (restartButtonRef.current) {
+        restartButtonRef.current.focus();
+      }
     }
   }, [state]);
 
@@ -71,10 +76,14 @@ export function GameOverBanner(props: GameOverProps) {
   return (
     <div
       id="game-over-banner"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="game-over-title"
       class="absolute inset-0 flex flex-col items-center justify-center z-30 bg-black bg-opacity-50 overflow-hidden"
     >
       {isVictory && <ConfettiDots />}
       <h1
+        id="game-over-title"
         class={`text-4xl md:text-6xl font-black mb-4 tracking-widest uppercase shadow-lg ${goTitleColor.value}`}
       >
         {goTitle}
@@ -89,6 +98,7 @@ export function GameOverBanner(props: GameOverProps) {
         ))}
       </div>
       <button
+        ref={restartButtonRef}
         type="button"
         id="restart-btn"
         class="mt-6 px-6 py-3 bg-sky-700 hover:bg-sky-600 text-white font-bold rounded-lg text-lg cursor-pointer border-2 border-sky-400 shadow-xl"

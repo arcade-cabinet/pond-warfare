@@ -90,6 +90,7 @@ export function aiSystem(world: GameWorld): void {
             const sy = ny + 30 + (Math.random() - 0.5) * 30;
 
             const eid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
+            if (eid < 0) continue; // Skip if spawn failed
 
             // cmdAtk(th) -> set a_move to lodge
             UnitStateMachine.targetEntity[eid] = lodgeEid;
@@ -145,6 +146,7 @@ export function aiSystem(world: GameWorld): void {
       const sy = ny + 30;
 
       const eid = spawnEntity(world, EntityKind.BossCroc, sx, sy, Faction.Enemy);
+      if (eid < 0) continue; // Skip if spawn failed
 
       if (lodgeEid !== -1) {
         UnitStateMachine.targetEntity[eid] = lodgeEid;
@@ -197,6 +199,7 @@ export function aiSystem(world: GameWorld): void {
         const sy = ny + 30;
 
         const defEid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
+        if (defEid < 0) continue; // Skip if spawn failed
 
         // Find nearest player unit to attack
         // Original: let targets = GAME.entities.filter(e => e.faction === 'player' && e.hp > 0);

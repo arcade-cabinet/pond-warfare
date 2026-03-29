@@ -34,20 +34,105 @@ export const DEFAULT_KEYMAP: KeyMap = {
   actionSlots: ['q', 'w', 'e', 'r'],
 };
 
-let activeKeymap: KeyMap = { ...DEFAULT_KEYMAP };
+let activeKeymap: KeyMap = {
+  ...DEFAULT_KEYMAP,
+  panUp: [...DEFAULT_KEYMAP.panUp],
+  panDown: [...DEFAULT_KEYMAP.panDown],
+  panLeft: [...DEFAULT_KEYMAP.panLeft],
+  panRight: [...DEFAULT_KEYMAP.panRight],
+  actionSlots: [...DEFAULT_KEYMAP.actionSlots],
+};
+
+/** Deep-copy a keymap to ensure callers receive isolated objects. */
+function deepCopyKeymap(keymap: KeyMap): KeyMap {
+  return {
+    panUp: [...keymap.panUp],
+    panDown: [...keymap.panDown],
+    panLeft: [...keymap.panLeft],
+    panRight: [...keymap.panRight],
+    attackMove: keymap.attackMove,
+    halt: keymap.halt,
+    pause: keymap.pause,
+    mute: keymap.mute,
+    speed: keymap.speed,
+    idleWorker: keymap.idleWorker,
+    selectArmy: keymap.selectArmy,
+    centerSelection: keymap.centerSelection,
+    cycleBuildings: keymap.cycleBuildings,
+    escape: keymap.escape,
+    actionSlots: [...keymap.actionSlots],
+  };
+}
 
 export function getKeymap(): KeyMap {
-  return activeKeymap;
+  return deepCopyKeymap(activeKeymap);
 }
 
 export function setKeymap(keymap: Partial<KeyMap>): void {
-  activeKeymap = { ...activeKeymap, ...keymap };
+  const merged: KeyMap = { ...activeKeymap };
+  if (keymap.panUp !== undefined) merged.panUp = [...keymap.panUp];
+  if (keymap.panDown !== undefined) merged.panDown = [...keymap.panDown];
+  if (keymap.panLeft !== undefined) merged.panLeft = [...keymap.panLeft];
+  if (keymap.panRight !== undefined) merged.panRight = [...keymap.panRight];
+  if (keymap.attackMove !== undefined) merged.attackMove = keymap.attackMove;
+  if (keymap.halt !== undefined) merged.halt = keymap.halt;
+  if (keymap.pause !== undefined) merged.pause = keymap.pause;
+  if (keymap.mute !== undefined) merged.mute = keymap.mute;
+  if (keymap.speed !== undefined) merged.speed = keymap.speed;
+  if (keymap.idleWorker !== undefined) merged.idleWorker = keymap.idleWorker;
+  if (keymap.selectArmy !== undefined) merged.selectArmy = keymap.selectArmy;
+  if (keymap.centerSelection !== undefined) merged.centerSelection = keymap.centerSelection;
+  if (keymap.cycleBuildings !== undefined) merged.cycleBuildings = keymap.cycleBuildings;
+  if (keymap.escape !== undefined) merged.escape = keymap.escape;
+  if (keymap.actionSlots !== undefined) merged.actionSlots = [...keymap.actionSlots];
+  activeKeymap = merged;
+}
+
+/** Validate that a parsed object represents a valid partial keymap. */
+function isValidPartialKeyMap(obj: any): boolean {
+  if (typeof obj !== 'object' || obj === null) return false;
+
+  // Check array fields if present
+  if (obj.panUp !== undefined && (!Array.isArray(obj.panUp) || !obj.panUp.every((s: any) => typeof s === 'string'))) {
+    return false;
+  }
+  if (obj.panDown !== undefined && (!Array.isArray(obj.panDown) || !obj.panDown.every((s: any) => typeof s === 'string'))) {
+    return false;
+  }
+  if (obj.panLeft !== undefined && (!Array.isArray(obj.panLeft) || !obj.panLeft.every((s: any) => typeof s === 'string'))) {
+    return false;
+  }
+  if (obj.panRight !== undefined && (!Array.isArray(obj.panRight) || !obj.panRight.every((s: any) => typeof s === 'string'))) {
+    return false;
+  }
+  if (obj.actionSlots !== undefined && (!Array.isArray(obj.actionSlots) || obj.actionSlots.length !== 4 || !obj.actionSlots.every((s: any) => typeof s === 'string'))) {
+    return false;
+  }
+
+  // Check string fields if present
+  if (obj.attackMove !== undefined && typeof obj.attackMove !== 'string') return false;
+  if (obj.halt !== undefined && typeof obj.halt !== 'string') return false;
+  if (obj.pause !== undefined && typeof obj.pause !== 'string') return false;
+  if (obj.mute !== undefined && typeof obj.mute !== 'string') return false;
+  if (obj.speed !== undefined && typeof obj.speed !== 'string') return false;
+  if (obj.idleWorker !== undefined && typeof obj.idleWorker !== 'string') return false;
+  if (obj.selectArmy !== undefined && typeof obj.selectArmy !== 'string') return false;
+  if (obj.centerSelection !== undefined && typeof obj.centerSelection !== 'string') return false;
+  if (obj.cycleBuildings !== undefined && typeof obj.cycleBuildings !== 'string') return false;
+  if (obj.escape !== undefined && typeof obj.escape !== 'string') return false;
+
+  return true;
 }
 
 export function loadKeymapFromStorage(): void {
   try {
     const stored = localStorage.getItem('pond-warfare-keymap');
-    if (stored) setKeymap(JSON.parse(stored));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (isValidPartialKeyMap(parsed)) {
+        setKeymap(parsed);
+      }
+    }
   } catch {
     /* ignore */
   }

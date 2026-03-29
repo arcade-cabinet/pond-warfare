@@ -44,8 +44,16 @@ function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
       description: def.description ?? '',
       hotkey: def.hotkey,
     };
-    store.tooltipX.value = e.clientX + 12;
-    store.tooltipY.value = e.clientY - 10;
+    // Clamp tooltip position to viewport with margins (estimate tooltip size ~200x100)
+    const tooltipWidth = 200;
+    const tooltipHeight = 100;
+    const margin = 10;
+    const rawX = e.clientX + 12;
+    const rawY = e.clientY - 10;
+    const maxX = window.innerWidth - tooltipWidth - margin;
+    const maxY = window.innerHeight - tooltipHeight - margin;
+    store.tooltipX.value = Math.min(Math.max(rawX, 0), maxX);
+    store.tooltipY.value = Math.min(Math.max(rawY, 0), maxY);
     store.tooltipVisible.value = true;
   };
 

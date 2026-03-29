@@ -428,6 +428,13 @@ export class PointerHandler {
     }
   }
 
+  /** Shared cleanup for pointer release (main or window). */
+  private clearPointerState(): void {
+    this.activePointers.clear();
+    this.mouse.isDown = false;
+    this.lastPanCenter = null;
+  }
+
   private onWindowPointerMove(e: PointerEvent): void {
     if (this.minimapDrag) {
       this.moveCamMinimap(e);
@@ -436,6 +443,7 @@ export class PointerHandler {
 
   private onWindowPointerUp(): void {
     this.minimapDrag = false;
+    this.clearPointerState();
   }
 
   private moveCamMinimap(e: PointerEvent): void {

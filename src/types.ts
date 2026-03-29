@@ -53,24 +53,36 @@ export enum ResourceType {
   Twigs = 2,
 }
 
+/**
+ * Sprite identifiers for all procedurally-generated sprites.
+ *
+ * IMPORTANT: Values 0–14 correspond to EntityKind values for entity sprites,
+ * ensuring that entity kinds can be directly used as sprite IDs. The enum
+ * explicitly references EntityKind for these entries so that changes to
+ * EntityKind will be caught at compile time.
+ *
+ * Bones and Rubble are non-entity visual sprites (corpse/ruin overlays) and
+ * remain independent values.
+ */
 export enum SpriteId {
-  Gatherer = 0,
-  Brawler = 1,
-  Sniper = 2,
-  Gator = 3,
-  Snake = 4,
-  Lodge = 5,
-  Burrow = 6,
-  Armory = 7,
-  Tower = 8,
-  PredatorNest = 9,
-  Cattail = 10,
-  Clambed = 11,
-  Bones = 12,
-  Rubble = 13,
-  Healer = 14,
-  Watchtower = 15,
-  BossCroc = 16,
+  Gatherer = EntityKind.Gatherer,
+  Brawler = EntityKind.Brawler,
+  Sniper = EntityKind.Sniper,
+  Gator = EntityKind.Gator,
+  Snake = EntityKind.Snake,
+  Lodge = EntityKind.Lodge,
+  Burrow = EntityKind.Burrow,
+  Armory = EntityKind.Armory,
+  Tower = EntityKind.Tower,
+  PredatorNest = EntityKind.PredatorNest,
+  Cattail = EntityKind.Cattail,
+  Clambed = EntityKind.Clambed,
+  Healer = EntityKind.Healer,
+  Watchtower = EntityKind.Watchtower,
+  BossCroc = EntityKind.BossCroc,
+  // Non-entity visual sprites
+  Bones = 15,
+  Rubble = 16,
 }
 
 export interface GameResources {

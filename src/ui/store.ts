@@ -74,6 +74,7 @@ export interface QueueItem {
   buildingKind: number;
   unitLabel: string;
   progress: number;
+  entityId?: number; // Optional stable identifier for the building producing this item
 }
 export const globalProductionQueue = signal<QueueItem[]>([]);
 

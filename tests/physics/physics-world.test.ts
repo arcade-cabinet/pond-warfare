@@ -84,10 +84,14 @@ describe('PhysicsManager', () => {
       physics.step(world.ecs);
     }
 
-    // The two entities should have been pushed apart beyond their initial 1px gap
+    // The two entities should be separated by at least the sum of their radii
     const dx = Position.x[eid1] - Position.x[eid2];
     const dy = Position.y[eid1] - Position.y[eid2];
     const dist = Math.sqrt(dx * dx + dy * dy);
-    expect(dist).toBeGreaterThan(1);
+    const radius1 = Collider.radius[eid1];
+    const radius2 = Collider.radius[eid2];
+    const expectedMin = radius1 + radius2;
+    const epsilon = 0.001;
+    expect(dist).toBeGreaterThanOrEqual(expectedMin - epsilon);
   });
 });

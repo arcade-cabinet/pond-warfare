@@ -219,7 +219,7 @@ function drawEntity(
 
   // --- Carried resource indicator ---
   const carriedRes = Carrying.resourceType[eid] as ResourceType;
-  if (carriedRes !== ResourceType.None) {
+  if (carriedRes !== undefined && carriedRes !== ResourceType.None) {
     ctx.fillStyle = carriedRes === ResourceType.Clams ? PALETTE.clamShell : PALETTE.reedBrown;
     ctx.fillRect(ex + 5, ey - 20, 6, 6);
     // Tiny sparkle on carried resource
@@ -253,7 +253,7 @@ function drawEntity(
   // --- Veterancy stars ---
   if (!isBuilding && !isResource) {
     const kills = Combat.kills[eid];
-    if (kills >= 3) {
+    if (kills !== undefined && kills >= 3) {
       const stars = Math.min(3, Math.floor(kills / 3));
       ctx.font = "8px 'Courier New'";
       ctx.textAlign = 'center';

@@ -9,6 +9,7 @@
  * synced back to ECS Position components in the movement system.
  */
 
+import { entityExists } from 'bitecs';
 import { ArriveBehavior, EntityManager, SeekBehavior, Vector3, Vehicle } from 'yuka';
 import { Position } from '@/ecs/components';
 
@@ -84,12 +85,15 @@ export class YukaManager {
   /**
    * Run one Yuka update step and sync positions back to ECS.
    * deltaTime is in seconds.
+   * @param ecsWorld - ECS world reference for entity existence checks
    */
-  update(deltaTime: number): void {
+  update(deltaTime: number, ecsWorld?: any): void {
     this.entityManager.update(deltaTime);
 
     // Sync Yuka vehicle positions back to ECS Position components
     for (const [eid, vehicle] of this.vehicles) {
+      // Skip syncing if entity no longer exists in ECS
+      if (ecsWorld && !entityExists(ecsWorld, eid)) continue;
       Position.x[eid] = vehicle.position.x;
       Position.y[eid] = vehicle.position.z; // z -> y in our 2D world
     }
@@ -107,6 +111,11 @@ export class YukaManager {
     const vehicle = this.vehicles.get(eid);
     if (!vehicle) return null;
     return [vehicle.velocity.x, vehicle.velocity.z];
+  }
+
+  /** Get the total number of registered vehicles (for testing). */
+  getVehicleCount(): number {
+    return this.vehicles.size;
   }
 
   /** Clear all vehicles (e.g. on game reset). */

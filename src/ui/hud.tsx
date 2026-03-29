@@ -159,7 +159,7 @@ export function HUD(props: HUDProps) {
         <div class="absolute top-10 md:top-12 left-2 md:left-6 z-20 flex gap-1">
           {globalProductionQueue.value.map((item, i) => (
             <div
-              key={`prod-${i}`}
+              key={item.entityId !== undefined ? `prod-${item.entityId}` : `prod-${item.unitLabel}-${i}`}
               class="relative w-10 h-6 bg-slate-800 border border-slate-600 rounded overflow-hidden flex items-center justify-center"
             >
               <div

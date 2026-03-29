@@ -588,7 +588,7 @@ export class Game {
     clampCamera(this.world);
 
     // Update Yuka AI steering (1/60s fixed step)
-    this.world.yukaManager.update(1 / 60);
+    this.world.yukaManager.update(1 / 60, this.world.ecs);
 
     // Sync physics bodies: create for new entities, remove for dead ones
     this.syncPhysicsBodies();
@@ -803,6 +803,7 @@ export class Game {
         buildingKind: EntityTypeTag.kind[eid],
         unitLabel: entityKindName(unitKind),
         progress,
+        entityId: eid,
       });
     }
     store.globalProductionQueue.value = prodQueue;
