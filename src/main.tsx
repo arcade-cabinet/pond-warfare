@@ -9,9 +9,24 @@
 import '@/styles/main.css';
 import { render } from 'preact';
 import { App } from '@/ui/app';
+import { game } from '@/game';
 
 // Mount the Preact application
 const root = document.getElementById('app');
 if (root) {
-  render(<App />, root);
+  render(
+    <App
+      onMount={(refs) => {
+        game.init(
+          refs.container,
+          refs.gameCanvas,
+          refs.fogCanvas,
+          refs.lightCanvas,
+          refs.minimapCanvas,
+          refs.minimapCam,
+        );
+      }}
+    />,
+    root,
+  );
 }

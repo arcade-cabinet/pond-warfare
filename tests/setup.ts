@@ -50,15 +50,15 @@ const mockContext2D = {
 };
 
 // Patch HTMLCanvasElement if getContext doesn't work in jsdom
-const originalGetContext = HTMLCanvasElement.prototype.getContext;
-HTMLCanvasElement.prototype.getContext = function (type: string, ...args: any[]) {
+const originalGetContext = HTMLCanvasElement.prototype.getContext as Function;
+HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type: string, options?: any) {
   if (type === '2d') {
-    const result = originalGetContext.call(this, type, ...args);
+    const result = originalGetContext.call(this, type, options);
     if (result) return result;
     return mockContext2D as any;
   }
-  return originalGetContext.call(this, type, ...args);
-};
+  return originalGetContext.call(this, type, options) as any;
+} as any;
 
 // Mock requestAnimationFrame if not available
 if (typeof globalThis.requestAnimationFrame === 'undefined') {

@@ -6,11 +6,12 @@
  * Faithful port of GAME.init() and GAME.loop() from pond_craft.html.
  */
 
-import { WORLD_WIDTH, WORLD_HEIGHT, SPEED_LEVELS } from '@/constants';
+import { query } from 'bitecs';
+import { WORLD_WIDTH, WORLD_HEIGHT, SPEED_LEVELS, TILE_SIZE } from '@/constants';
 import { EntityKind, Faction, SpriteId } from '@/types';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { spawnEntity } from '@/ecs/archetypes';
-import { Selectable } from '@/ecs/components';
+import { Selectable, Position, Health, FactionTag, EntityTypeTag, IsBuilding, IsResource } from '@/ecs/components';
 
 // Systems
 import { movementSystem } from '@/ecs/systems/movement';
@@ -23,7 +24,7 @@ import { trainingSystem } from '@/ecs/systems/training';
 import { aiSystem } from '@/ecs/systems/ai';
 import { healthSystem } from '@/ecs/systems/health';
 import { dayNightSystem } from '@/ecs/systems/day-night';
-import { fogOfWarSystem } from '@/ecs/systems/fog-of-war';
+import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 
 // Rendering
@@ -33,27 +34,40 @@ import { drawGame, type RenderFrameData, type SelectionRect, type PlacementPrevi
 import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
 import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
-import { updateCamera, clampCamera, computeShakeOffset } from '@/rendering/camera';
+import { clampCamera, computeShakeOffset } from '@/rendering/camera';
 
 // Input
-import { KeyboardHandler } from '@/input/keyboard';
-import { PointerHandler } from '@/input/pointer';
+import { KeyboardHandler, type KeyboardCallbacks } from '@/input/keyboard';
+import { PointerHandler, type PointerCallbacks } from '@/input/pointer';
 
 // Audio
 import { audio } from '@/audio/audio-system';
 
 // UI store
-import { gameStore } from '@/ui/store';
+import * as store from '@/ui/store';
+
+// Selection utilities
+import {
+  getEntityAt,
+  hasPlayerUnitsSelected,
+  issueContextCommand,
+  selectIdleWorker,
+  selectArmy,
+  placeBuilding,
+} from '@/input/selection';
+
+import { ENTITY_DEFS } from '@/config/entity-defs';
 
 export class Game {
   world: GameWorld;
-  sprites: Record<number, HTMLCanvasElement> = {};
+  spriteCanvases: Map<SpriteId, HTMLCanvasElement> = new Map();
 
   // Canvases
   private gameCanvas!: HTMLCanvasElement;
   private fogCanvas!: HTMLCanvasElement;
   private lightCanvas!: HTMLCanvasElement;
   private minimapCanvas!: HTMLCanvasElement;
+  private minimapCamElement!: HTMLElement;
   private gameCtx!: CanvasRenderingContext2D;
   private fogCtx!: CanvasRenderingContext2D;
   private lightCtx!: CanvasRenderingContext2D;
@@ -90,12 +104,14 @@ export class Game {
     fogCanvas: HTMLCanvasElement,
     lightCanvas: HTMLCanvasElement,
     minimapCanvas: HTMLCanvasElement,
+    minimapCamElement: HTMLElement,
   ): void {
     this.container = container;
     this.gameCanvas = gameCanvas;
     this.fogCanvas = fogCanvas;
     this.lightCanvas = lightCanvas;
     this.minimapCanvas = minimapCanvas;
+    this.minimapCamElement = minimapCamElement;
 
     this.gameCtx = gameCanvas.getContext('2d', { alpha: false })!;
     this.fogCtx = fogCanvas.getContext('2d')!;
@@ -103,35 +119,144 @@ export class Game {
     this.minimapCtx = minimapCanvas.getContext('2d', { alpha: false })!;
 
     // Generate sprites
-    const { sprites } = generateAllSprites();
-    this.sprites = sprites;
+    const { canvases } = generateAllSprites();
+    this.spriteCanvases = canvases;
 
     // Generate background
     this.bgCanvas = buildBackground();
 
     // Fog texture
-    const { fogBgCanvas, fogPattern } = buildFogTexture(this.fogCtx);
+    const { fogPattern } = buildFogTexture(this.fogCtx);
     this.fogState = {
-      fogBgCanvas,
+      fogCtx: this.fogCtx,
       fogPattern: fogPattern!,
-      exploredCanvas: null as any,
-      exploredCtx: null as any,
     };
 
     // Explored fog canvas
     const explored = buildExploredCanvas();
-    this.exploredCanvas = explored.canvas;
-    this.exploredCtx = explored.ctx;
-    this.fogState.exploredCanvas = this.exploredCanvas;
-    this.fogState.exploredCtx = this.exploredCtx;
+    this.exploredCanvas = explored.exploredCanvas;
+    this.exploredCtx = explored.exploredCtx;
+
+    // Initialize fog-of-war system with explored context
+    initFogOfWar(this.exploredCtx);
 
     // Resize
     this.resize();
     window.addEventListener('resize', () => this.resize());
 
     // Input
-    this.keyboard = new KeyboardHandler(this.world, this);
-    this.pointer = new PointerHandler(this.world, this, container, this.minimapCanvas);
+    const keyboardCallbacks: KeyboardCallbacks = {
+      onToggleMute: () => {
+        audio.toggleMute();
+        store.muted.value = audio.muted;
+      },
+      onCycleSpeed: () => this.cycleSpeed(),
+      onSelectIdleWorker: () => {
+        selectIdleWorker(this.world);
+        this.syncUIStore();
+      },
+      onSelectArmy: () => {
+        selectArmy(this.world);
+        this.syncUIStore();
+      },
+      onUpdateUI: () => this.syncUIStore(),
+      onPlaySound: (name) => {
+        if (name === 'selectUnit') audio.selectUnit();
+        else if (name === 'selectBuild') audio.selectBuild();
+        else audio.click();
+      },
+      hasPlayerUnitsSelected: () => hasPlayerUnitsSelected(this.world),
+      getPlayerBuildings: () => {
+        const ents = Array.from(query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]));
+        return ents.filter(
+          (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
+        );
+      },
+      onHalt: () => {
+        // Halt all selected units
+        for (const eid of this.world.selection) {
+          if (
+            FactionTag.faction[eid] === Faction.Player &&
+            !ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding
+          ) {
+            // Set to idle
+            const { UnitStateMachine } = require('@/ecs/components');
+            const { UnitState } = require('@/types');
+            UnitStateMachine.state[eid] = UnitState.Idle;
+            UnitStateMachine.targetEntity[eid] = 0;
+          }
+        }
+      },
+      onAttackMoveMode: () => {
+        this.world.attackMoveMode = true;
+      },
+      onActionHotkey: (_index: number) => {
+        // Action hotkeys handled by UI layer
+      },
+    };
+    this.keyboard = new KeyboardHandler(this.world, keyboardCallbacks);
+
+    const pointerCallbacks: PointerCallbacks = {
+      getEntityAt: (wx, wy) => getEntityAt(this.world, wx, wy),
+      hasPlayerUnitsSelected: () => hasPlayerUnitsSelected(this.world),
+      issueContextCommand: (target) => {
+        issueContextCommand(
+          this.world,
+          target,
+          this.pointer.mouse.worldX,
+          this.pointer.mouse.worldY,
+        );
+      },
+      onUpdateUI: () => this.syncUIStore(),
+      onPlaceBuilding: () => {
+        placeBuilding(this.world, this.pointer.mouse.worldX, this.pointer.mouse.worldY);
+        this.syncUIStore();
+      },
+      onPlaySound: (name) => {
+        if (name === 'selectUnit') audio.selectUnit();
+        else if (name === 'selectBuild') audio.selectBuild();
+        else audio.click();
+      },
+      isPlayerUnit: (eid) =>
+        FactionTag.faction[eid] === Faction.Player &&
+        !ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding,
+      isPlayerBuilding: (eid) =>
+        FactionTag.faction[eid] === Faction.Player &&
+        !!ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding,
+      isEnemyFaction: (eid) => FactionTag.faction[eid] === Faction.Enemy,
+      isBuildingEntity: (eid) =>
+        !!ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding,
+      getEntityKind: (eid) => EntityTypeTag.kind[eid],
+      isEntityOnScreen: (eid) => {
+        const ex = Position.x[eid];
+        const ey = Position.y[eid];
+        return (
+          ex >= this.world.camX &&
+          ex <= this.world.camX + this.world.viewWidth &&
+          ey >= this.world.camY &&
+          ey <= this.world.camY + this.world.viewHeight
+        );
+      },
+      getAllPlayerUnitsOfKind: (kind) => {
+        const ents = Array.from(query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]));
+        return ents.filter(
+          (eid) =>
+            FactionTag.faction[eid] === Faction.Player &&
+            EntityTypeTag.kind[eid] === kind &&
+            Health.current[eid] > 0,
+        );
+      },
+      selectEntity: (eid) => { Selectable.selected[eid] = 1; },
+      deselectEntity: (eid) => { Selectable.selected[eid] = 0; },
+      deselectAll: () => {
+        for (const eid of this.world.selection) {
+          Selectable.selected[eid] = 0;
+        }
+      },
+    };
+    this.pointer = new PointerHandler(this.world, this.container, this.gameCanvas, pointerCallbacks);
+    this.pointer.attachMinimap(this.minimapCanvas);
+    this.pointer.setShiftGetter(() => !!this.keyboard.keys.shift);
 
     // Spawn initial entities
     this.spawnInitialEntities();
@@ -157,12 +282,6 @@ export class Game {
       vy: (Math.random() - 0.5) * 0.5 - 0.2,
       phase: Math.random() * Math.PI * 2,
     }));
-
-    // Intro overlay fade
-    gameStore.showIntro.value = true;
-    setTimeout(() => {
-      gameStore.showIntro.value = false;
-    }, 1500);
 
     // Update UI store
     this.syncUIStore();
@@ -259,11 +378,11 @@ export class Game {
     this.fogCtx.imageSmoothingEnabled = false;
   }
 
-  /** Cycle game speed (1x → 2x → 3x → 1x) */
+  /** Cycle game speed (1x -> 2x -> 3x -> 1x) */
   cycleSpeed(): void {
     const idx = SPEED_LEVELS.indexOf(this.world.gameSpeed as 1 | 2 | 3);
     this.world.gameSpeed = SPEED_LEVELS[(idx + 1) % SPEED_LEVELS.length];
-    gameStore.gameSpeed.value = this.world.gameSpeed;
+    store.gameSpeed.value = this.world.gameSpeed;
     audio.click();
   }
 
@@ -289,10 +408,17 @@ export class Game {
   private updateLogic(): void {
     this.world.frameCount++;
 
+    // Camera panning from keyboard/edge
+    this.keyboard.updatePan(
+      this.pointer.mouse.in,
+      this.pointer.mouse.x,
+      this.pointer.mouse.y,
+      this.pointer.mouse.isDown,
+    );
+    clampCamera(this.world);
+
     // Run all ECS systems in order
     dayNightSystem(this.world);
-    updateCamera(this.world);
-    clampCamera(this.world);
     movementSystem(this.world);
     collisionSystem(this.world);
     gatheringSystem(this.world);
@@ -302,7 +428,7 @@ export class Game {
     trainingSystem(this.world);
     aiSystem(this.world);
     healthSystem(this.world);
-    fogOfWarSystem(this.world, this.exploredCtx);
+    fogOfWarSystem(this.world);
     cleanupSystem(this.world);
 
     // Sync UI store periodically
@@ -315,69 +441,78 @@ export class Game {
   private draw(): void {
     const shake = computeShakeOffset(this.world);
 
+    // Build sorted entity list for rendering
+    const allEnts = Array.from(query(this.world.ecs, [Position, Health, FactionTag, EntityTypeTag]));
+    const liveEnts = allEnts.filter((eid) => Health.current[eid] > 0);
+    const sortedEids = liveEnts.sort((a, b) => Position.y[a] - Position.y[b]);
+
+    // Player entities for fog
+    const playerEids = allEnts.filter((eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0);
+
     // Build render data
-    const selectionRect: SelectionRect | null = this.pointer.getSelectionRect();
+    const dragRect = this.pointer.getDragRect();
+    const selectionRect: SelectionRect | null = dragRect
+      ? { startX: dragRect.minX, startY: dragRect.minY, endX: dragRect.maxX, endY: dragRect.maxY }
+      : null;
     const placement: PlacementPreview | null = this.getPlacementPreview();
 
     const renderData: RenderFrameData = {
-      world: this.world,
-      sprites: this.sprites,
-      bgCanvas: this.bgCanvas,
+      sortedEids,
+      corpses: this.world.corpses,
+      groundPings: this.world.groundPings,
+      projectiles: [],
+      frameCount: this.world.frameCount,
+      shake,
       selectionRect,
       placement,
-      shakeX: shake.x,
-      shakeY: shake.y,
+      isDragging: this.pointer.mouse.isDown,
     };
 
     // Main game layer
-    drawGame(this.gameCtx, renderData);
+    drawGame(this.gameCtx, this.world, this.bgCanvas, this.spriteCanvases, renderData);
 
     // Fog of war
-    drawFog(this.fogCtx, this.world, this.fogState, shake.x, shake.y);
+    drawFog(this.fogState, this.world, playerEids, shake.offsetX, shake.offsetY);
 
     // Dynamic lighting
-    drawLighting(this.lightCtx, this.world, shake.x, shake.y);
+    drawLighting(this.lightCtx, this.world, liveEnts, this.world.fireflies, shake.offsetX, shake.offsetY);
 
     // Minimap
-    drawMinimap(this.minimapCtx, this.world, this.sprites, this.exploredCanvas);
-    updateMinimapViewport(this.world);
+    drawMinimap(this.minimapCtx, this.world, liveEnts, this.exploredCanvas, this.world.minimapPings ?? []);
+    updateMinimapViewport(this.minimapCamElement, this.world);
   }
 
   private getPlacementPreview(): PlacementPreview | null {
     if (!this.world.placingBuilding) return null;
-    const { TILE_SIZE } = require('@/constants');
-    const mx = this.pointer.state.worldX;
-    const my = this.pointer.state.worldY;
+    const mx = this.pointer.mouse.worldX;
+    const my = this.pointer.mouse.worldY;
     const bx = Math.round(mx / TILE_SIZE) * TILE_SIZE;
     const by = Math.round(my / TILE_SIZE) * TILE_SIZE;
     return {
-      type: this.world.placingBuilding,
-      x: bx,
-      y: by,
-      valid: true, // Validation checked in selection.ts
+      buildingType: this.world.placingBuilding,
+      worldX: bx,
+      worldY: by,
+      canPlace: true, // Validation checked in selection.ts
     };
   }
 
   /** Sync game world state to reactive UI store */
   syncUIStore(): void {
     const w = this.world;
-    gameStore.clams.value = w.resources.clams;
-    gameStore.twigs.value = w.resources.twigs;
-    gameStore.food.value = w.resources.food;
-    gameStore.maxFood.value = w.resources.maxFood;
-    gameStore.rateClams.value = w.resTracker.rateClams;
-    gameStore.rateTwigs.value = w.resTracker.rateTwigs;
-    gameStore.gameSpeed.value = w.gameSpeed;
-    gameStore.frameCount.value = w.frameCount;
-    gameStore.timeOfDay.value = w.timeOfDay;
-    gameStore.gameState.value = w.state;
-    gameStore.selection.value = [...w.selection];
-    gameStore.muted.value = audio.muted;
+    store.clams.value = w.resources.clams;
+    store.twigs.value = w.resources.twigs;
+    store.food.value = w.resources.food;
+    store.maxFood.value = w.resources.maxFood;
+    store.rateClams.value = w.resTracker.rateClams;
+    store.rateTwigs.value = w.resTracker.rateTwigs;
+    store.gameSpeed.value = w.gameSpeed;
+    store.gameState.value = w.state;
+    store.muted.value = audio.muted;
   }
 
   /** Get sprite canvas by SpriteId */
-  getSprite(id: SpriteId): HTMLCanvasElement {
-    return this.sprites[id];
+  getSprite(id: SpriteId): HTMLCanvasElement | undefined {
+    return this.spriteCanvases.get(id);
   }
 
   destroy(): void {

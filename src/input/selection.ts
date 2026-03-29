@@ -27,6 +27,7 @@ import {
   Building,
   UnitStateMachine,
   TrainingQueue,
+  trainingQueueSlots,
   Selectable,
   Resource,
   Carrying,
@@ -103,7 +104,7 @@ export function issueContextCommand(
   // Rally point for single selected building
   if (
     world.selection.length === 1 &&
-    hasComponent(world.ecs, IsBuilding, world.selection[0]) &&
+    hasComponent(world.ecs, world.selection[0], IsBuilding) &&
     FactionTag.faction[world.selection[0]] === Faction.Player
   ) {
     audio.click();
@@ -282,7 +283,7 @@ export function selectArmy(world: GameWorld): void {
         Selectable.selected[eid] = 0;
       }
     }
-    world.selection = army;
+    world.selection = Array.from(army);
     for (const eid of army) {
       Selectable.selected[eid] = 1;
     }
@@ -409,7 +410,9 @@ export function train(
 
     const count = TrainingQueue.count[buildingEid];
     if (count < 8) {
-      TrainingQueue.slots[buildingEid][count] = kind;
+      const slots = trainingQueueSlots.get(buildingEid) ?? [];
+      slots[count] = kind;
+      trainingQueueSlots.set(buildingEid, slots);
       TrainingQueue.count[buildingEid] = count + 1;
       if (count === 0) {
         TrainingQueue.timer[buildingEid] = TRAIN_TIMER;
@@ -430,7 +433,8 @@ export function cancelTrain(
   const count = TrainingQueue.count[buildingEid];
   if (index >= count) return;
 
-  const kind = TrainingQueue.slots[buildingEid][index] as EntityKind;
+  const slots = trainingQueueSlots.get(buildingEid) ?? [];
+  const kind = slots[index] as EntityKind;
 
   // Refund costs
   const def = ENTITY_DEFS[kind];
@@ -439,9 +443,8 @@ export function cancelTrain(
   world.resources.food -= def.foodCost ?? 1;
 
   // Shift remaining queue items down
-  for (let i = index; i < count - 1; i++) {
-    TrainingQueue.slots[buildingEid][i] = TrainingQueue.slots[buildingEid][i + 1];
-  }
+  slots.splice(index, 1);
+  trainingQueueSlots.set(buildingEid, slots);
   TrainingQueue.count[buildingEid] = count - 1;
 
   // Reset timer if we removed the active item

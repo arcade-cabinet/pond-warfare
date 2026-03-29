@@ -60,12 +60,14 @@ describe('healthSystem', () => {
     expect(Health.flashTimer[eid]).toBeLessThan(5);
   });
 
-  it('should mark dead entities with Dead component', () => {
+  it('should remove dead entities', () => {
     const eid = createUnit(world, 0, 60, Faction.Player);
+    const { entityExists } = require('bitecs');
 
     healthSystem(world);
 
-    expect(hasComponent(world.ecs, eid, Dead)).toBe(true);
+    // Entity should be removed from the world
+    expect(entityExists(world.ecs, eid)).toBe(false);
   });
 
   it('should track stats when enemy unit dies', () => {

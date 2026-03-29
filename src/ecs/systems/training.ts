@@ -17,6 +17,7 @@ import {
   Position,
   Health,
   TrainingQueue,
+  trainingQueueSlots,
   Building,
   FactionTag,
   EntityTypeTag,
@@ -47,9 +48,10 @@ export function trainingSystem(world: GameWorld): void {
     // Original: if (--this.qTimer <= 0)
     TrainingQueue.timer[eid]--;
     if (TrainingQueue.timer[eid] <= 0) {
-      // Get the first queued unit type from the slots array
+      // Get the first queued unit type from the slots map
       // Original: let t = this.q.shift()
-      const unitKind = TrainingQueue.slots[eid * 8] as EntityKind;
+      const slots = trainingQueueSlots.get(eid) ?? [];
+      const unitKind = slots[0] as EntityKind;
 
       // Spawn position: offset from building
       // Original: let sx = this.x + (Math.random()>.5?1:-1)*30, sy = this.y + this.height/2 + 20
@@ -71,12 +73,10 @@ export function trainingSystem(world: GameWorld): void {
         UnitStateMachine.state[newEid] = UnitState.Move;
       }
 
-      // Shift queue: move all remaining slots forward by 1
+      // Shift queue: remove front item
       // Original: this.q.shift() already removed index 0
-      for (let s = 0; s < 7; s++) {
-        TrainingQueue.slots[eid * 8 + s] = TrainingQueue.slots[eid * 8 + s + 1];
-      }
-      TrainingQueue.slots[eid * 8 + 7] = 0;
+      slots.shift();
+      trainingQueueSlots.set(eid, slots);
       TrainingQueue.count[eid] = count - 1;
 
       // Set timer for next unit if queue still has entries

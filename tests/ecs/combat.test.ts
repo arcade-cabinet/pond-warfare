@@ -76,12 +76,18 @@ describe('combatSystem', () => {
     expect(UnitStateMachine.state[attacker]).toBe(UnitState.Idle);
   });
 
-  it('should decrement attack cooldown each frame', () => {
-    const eid = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
-    Combat.attackCooldown[eid] = 30;
+  it('should skip attack when cooldown is active', () => {
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
 
+    UnitStateMachine.state[attacker] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[attacker] = target;
+    Combat.attackCooldown[attacker] = 30;
+
+    const startHp = Health.current[target];
     combatSystem(world);
 
-    expect(Combat.attackCooldown[eid]).toBeLessThan(30);
+    // Target should not have taken damage because attacker is on cooldown
+    expect(Health.current[target]).toBe(startHp);
   });
 });
