@@ -46,11 +46,16 @@ import { countPlayerUnitsOfKind, findPlayerLodge, getEnemyNests } from './helper
 export function enemyTrainingTick(world: GameWorld): void {
   const isPeaceful = world.frameCount < world.peaceTimer;
   if (isPeaceful) return;
-  // Scale training frequency: faster checks in late game
-  const trainInterval =
+  // Scale training frequency: faster checks in late game and on hard difficulty
+  let trainInterval =
     world.frameCount >= ENEMY_LATE_GAME_FRAME
       ? ENEMY_LATE_TRAIN_INTERVAL
       : ENEMY_TRAIN_CHECK_INTERVAL;
+  if (world.difficulty === 'hard') {
+    trainInterval = Math.floor(trainInterval * 0.75);
+  } else if (world.difficulty === 'easy') {
+    trainInterval = Math.floor(trainInterval * 1.25);
+  }
   if (world.frameCount % trainInterval !== 0) return;
 
   const nestEids = getEnemyNests(world);

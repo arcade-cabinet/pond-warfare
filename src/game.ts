@@ -383,20 +383,25 @@ export class Game {
     // Initialize physics
     this.physicsManager = new PhysicsManager();
 
+    // Apply difficulty settings from UI selection
+    this.applyDifficultyModifiers();
+
     // Spawn initial entities
     spawnInitialEntities(this.world);
 
-    // Camera to center on lodge
-    const sx = WORLD_WIDTH / 2;
-    const sy = WORLD_HEIGHT / 2;
-    this.world.camX = sx - this.world.viewWidth / 2 - 200;
-    this.world.camY = sy - this.world.viewHeight / 2 + 100;
-
-    // Select lodge
+    // Camera to center on lodge (position varies per seed)
     const lodge = this.world.selection[0];
     if (lodge != null) {
+      const lx = Position.x[lodge];
+      const ly = Position.y[lodge];
+      this.world.camX = lx - this.world.viewWidth / 2;
+      this.world.camY = ly - this.world.viewHeight / 2;
       Selectable.selected[lodge] = 1;
       this.world.isTracking = true;
+    } else {
+      // Fallback: center of map
+      this.world.camX = WORLD_WIDTH / 2 - this.world.viewWidth / 2;
+      this.world.camY = WORLD_HEIGHT / 2 - this.world.viewHeight / 2;
     }
 
     // Fireflies
@@ -455,6 +460,39 @@ export class Game {
     this.running = true;
     this.initializing = false;
     this.rafId = requestAnimationFrame((t) => this.loop(t));
+  }
+
+  /** Apply difficulty modifiers to world state before entities are spawned */
+  private applyDifficultyModifiers(): void {
+    const diff = store.selectedDifficulty.value;
+    this.world.difficulty = diff;
+
+    switch (diff) {
+      case 'easy':
+        // Peace timer: 1.5x longer
+        this.world.peaceTimer = 10800;
+        // Enemy starting resources: 0.5x
+        this.world.enemyResources.clams = 250;
+        this.world.enemyResources.twigs = 100;
+        // Player starting resources: 1.5x
+        this.world.resources.clams = 450;
+        this.world.resources.twigs = 150;
+        // Update resource tracker to match
+        this.world.resTracker.lastClams = 450;
+        this.world.resTracker.lastTwigs = 150;
+        break;
+      case 'hard':
+        // Peace timer: 0.5x shorter
+        this.world.peaceTimer = 3600;
+        // Enemy starting resources: 2x
+        this.world.enemyResources.clams = 1000;
+        this.world.enemyResources.twigs = 400;
+        break;
+      case 'normal':
+      default:
+        // Normal: keep defaults from createGameWorld
+        break;
+    }
   }
 
   resize(): void {
@@ -624,6 +662,16 @@ export class Game {
 
     // Sync physics bodies: create for new entities, remove for dead ones
     this.syncPhysicsBodies();
+
+    // Rebuild spatial hash for this frame's proximity queries
+    this.world.spatialHash.clear();
+    const spatialEnts = query(this.world.ecs, [Position, Health]);
+    for (let i = 0; i < spatialEnts.length; i++) {
+      const eid = spatialEnts[i];
+      if (Health.current[eid] > 0) {
+        this.world.spatialHash.insert(eid, Position.x[eid], Position.y[eid]);
+      }
+    }
 
     // Run all ECS systems in order
     dayNightSystem(this.world);

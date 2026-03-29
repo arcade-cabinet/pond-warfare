@@ -18,6 +18,8 @@ import type {
   MinimapPing,
   Particle,
 } from '@/types';
+import { ObjectPool } from '@/utils/pool';
+import { SpatialHash } from '@/utils/spatial-hash';
 
 export interface GameWorld {
   // bitECS world
@@ -95,6 +97,12 @@ export interface GameWorld {
     rateClams: number;
     rateTwigs: number;
   };
+
+  // Performance: spatial hash for proximity queries (rebuilt each frame)
+  spatialHash: SpatialHash;
+
+  // Performance: object pool for particles
+  particlePool: ObjectPool<Particle>;
 }
 
 export function createGameWorld(): GameWorld {
@@ -155,5 +163,10 @@ export function createGameWorld(): GameWorld {
       rateClams: 0,
       rateTwigs: 0,
     },
+    spatialHash: new SpatialHash(200),
+    particlePool: new ObjectPool<Particle>(
+      () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0, color: '', size: 0 }),
+      100,
+    ),
   };
 }

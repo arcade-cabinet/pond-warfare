@@ -87,6 +87,10 @@ export const goStatLines = signal<string[]>([]);
 export const goRating = signal(0);
 export const goTimeSurvived = signal('');
 export const goFrameCount = signal(0);
+export const goMapSeed = signal(0);
+
+// ---- Map seed input (for intro screen) ----
+export const customMapSeed = signal('');
 
 // ---- Tooltip ----
 export const tooltipVisible = signal(false);
@@ -124,6 +128,10 @@ export const hpBarColor = computed(() => {
 });
 
 export const colorBlindMode = signal(false);
+
+// ---- Difficulty ----
+export type Difficulty = 'easy' | 'normal' | 'hard';
+export const selectedDifficulty = signal<Difficulty>('normal');
 
 // ---- Settings panel ----
 export const settingsOpen = signal(false);

@@ -166,14 +166,18 @@ export function takeDamage(
 
     // Ally assist: nearby allies in idle/move state attack the attacker
     // Original lines 1561-1568
-    const allies = query(world.ecs, [UnitStateMachine, Health, FactionTag, EntityTypeTag]);
-    for (let j = 0; j < allies.length; j++) {
-      const ally = allies[j];
+    const hasSpatial = world.spatialHash !== undefined;
+    const allyCandidates = hasSpatial
+      ? world.spatialHash.query(tx, ty, ALLY_ASSIST_RADIUS)
+      : query(world.ecs, [UnitStateMachine, Health, FactionTag, EntityTypeTag]);
+    for (let j = 0; j < allyCandidates.length; j++) {
+      const ally = allyCandidates[j];
       if (ally === targetEid) continue;
       if (!hasComponent(world.ecs, ally, FactionTag)) continue;
       if (FactionTag.faction[ally] !== targetFaction) continue;
+      if (!hasComponent(world.ecs, ally, UnitStateMachine)) continue;
       if (hasComponent(world.ecs, ally, IsBuilding)) continue;
-      if (Health.current[ally] <= 0) continue;
+      if (!hasComponent(world.ecs, ally, Health) || Health.current[ally] <= 0) continue;
       if (!hasComponent(world.ecs, ally, Combat) || Combat.damage[ally] <= 0) continue;
 
       const allyState = UnitStateMachine.state[ally] as UnitState;

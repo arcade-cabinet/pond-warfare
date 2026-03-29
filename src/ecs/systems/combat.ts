@@ -50,7 +50,9 @@ export function combatSystem(world: GameWorld): void {
     EntityTypeTag,
   ]);
   const towers = query(world.ecs, [Position, Combat, TowerAI, Health, FactionTag, Building]);
-  const allTargetable = query(world.ecs, [Position, Health, FactionTag]);
+  const hasSpatial = world.spatialHash !== undefined;
+  // Fallback: only build full list when spatial hash is unavailable
+  const allTargetable = hasSpatial ? [] : query(world.ecs, [Position, Health, FactionTag]);
 
   // --- Tower auto-attack (lines 1587-1596) ---
   for (let i = 0; i < towers.length; i++) {
@@ -66,8 +68,9 @@ export function combatSystem(world: GameWorld): void {
 
     let closest = -1;
     let minDist = range;
-    for (let j = 0; j < allTargetable.length; j++) {
-      const t = allTargetable[j];
+    const candidates = hasSpatial ? world.spatialHash.query(ex, ey, range) : allTargetable;
+    for (let j = 0; j < candidates.length; j++) {
+      const t = candidates[j];
       if (FactionTag.faction[t] === faction) continue;
       if (Health.current[t] <= 0) continue;
       if (hasComponent(world.ecs, t, IsResource)) continue;
@@ -114,13 +117,14 @@ export function combatSystem(world: GameWorld): void {
       let bestAlly = -1;
       let bestDistSq = 150 * 150;
 
-      for (let j = 0; j < allTargetable.length; j++) {
-        const t = allTargetable[j];
+      const healCandidates = hasSpatial ? world.spatialHash.query(ex, ey, 150) : allTargetable;
+      for (let j = 0; j < healCandidates.length; j++) {
+        const t = healCandidates[j];
         if (t === eid) continue;
-        if (FactionTag.faction[t] !== faction) continue;
+        if (!hasComponent(world.ecs, t, FactionTag) || FactionTag.faction[t] !== faction) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
         if (hasComponent(world.ecs, t, IsBuilding)) continue;
-        if (Health.current[t] <= 0) continue;
+        if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (Health.current[t] >= Health.max[t]) continue;
 
         const dx = Position.x[t] - ex;
@@ -148,11 +152,15 @@ export function combatSystem(world: GameWorld): void {
       let closestAggro = -1;
       let closestAggroDist = aggroRad;
 
-      for (let j = 0; j < allTargetable.length; j++) {
-        const t = allTargetable[j];
+      const aggroCandidates = hasSpatial
+        ? world.spatialHash.query(ex, ey, aggroRad)
+        : allTargetable;
+      for (let j = 0; j < aggroCandidates.length; j++) {
+        const t = aggroCandidates[j];
+        if (!hasComponent(world.ecs, t, FactionTag)) continue;
         if (FactionTag.faction[t] === faction) continue;
         if (FactionTag.faction[t] === Faction.Neutral) continue;
-        if (Health.current[t] <= 0) continue;
+        if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
 
         const dx = Position.x[t] - ex;
@@ -182,11 +190,13 @@ export function combatSystem(world: GameWorld): void {
       let closeTarget = -1;
       let minDist = scanRad;
 
-      for (let j = 0; j < allTargetable.length; j++) {
-        const t = allTargetable[j];
+      const scanCandidates = hasSpatial ? world.spatialHash.query(ex, ey, scanRad) : allTargetable;
+      for (let j = 0; j < scanCandidates.length; j++) {
+        const t = scanCandidates[j];
+        if (!hasComponent(world.ecs, t, FactionTag)) continue;
         if (FactionTag.faction[t] === faction) continue;
         if (FactionTag.faction[t] === Faction.Neutral) continue;
-        if (Health.current[t] <= 0) continue;
+        if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
 
         const dx = Position.x[t] - ex;
@@ -266,11 +276,15 @@ export function combatSystem(world: GameWorld): void {
             const tx = Position.x[tEnt];
             const ty = Position.y[tEnt];
             const aoeRadius = 60;
-            for (let j = 0; j < allTargetable.length; j++) {
-              const t = allTargetable[j];
+            const aoeCandidates = hasSpatial
+              ? world.spatialHash.query(tx, ty, aoeRadius)
+              : allTargetable;
+            for (let j = 0; j < aoeCandidates.length; j++) {
+              const t = aoeCandidates[j];
               if (t === tEnt) continue;
-              if (FactionTag.faction[t] === faction) continue;
-              if (Health.current[t] <= 0) continue;
+              if (!hasComponent(world.ecs, t, FactionTag) || FactionTag.faction[t] === faction)
+                continue;
+              if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
               if (hasComponent(world.ecs, t, IsResource)) continue;
               const adx = Position.x[t] - tx;
               const ady = Position.y[t] - ty;
@@ -285,14 +299,19 @@ export function combatSystem(world: GameWorld): void {
             const bossDmg = enraged ? dmg * 2 : dmg;
 
             // AoE stomp: damage all enemies within attack range
-            for (let j = 0; j < allTargetable.length; j++) {
-              const t = allTargetable[j];
-              if (FactionTag.faction[t] === faction) continue;
-              if (Health.current[t] <= 0) continue;
+            const stompRadius = atkRange + 20;
+            const stompCandidates = hasSpatial
+              ? world.spatialHash.query(ex, ey, stompRadius)
+              : allTargetable;
+            for (let j = 0; j < stompCandidates.length; j++) {
+              const t = stompCandidates[j];
+              if (!hasComponent(world.ecs, t, FactionTag) || FactionTag.faction[t] === faction)
+                continue;
+              if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
               if (hasComponent(world.ecs, t, IsResource)) continue;
               const adx = Position.x[t] - ex;
               const ady = Position.y[t] - ey;
-              if (Math.sqrt(adx * adx + ady * ady) <= atkRange + 20) {
+              if (Math.sqrt(adx * adx + ady * ady) <= stompRadius) {
                 takeDamage(world, t, bossDmg, eid);
               }
             }

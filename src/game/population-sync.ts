@@ -197,6 +197,8 @@ export function syncPopulationAndTimers(
     store.goTimeSurvived.value = `${days} day${days !== 1 ? 's' : ''}, ${hours} hour${hours !== 1 ? 's' : ''}`;
     store.goFrameCount.value = w.frameCount;
 
+    store.goMapSeed.value = w.mapSeed;
+
     const statLines = [
       `Time: ${store.goTimeSurvived.value}`,
       `Kills: ${w.stats.unitsKilled}`,

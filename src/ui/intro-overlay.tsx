@@ -3,15 +3,48 @@
  *
  * Splash screen: "POND WARFARE" logo with branded typography,
  * tagline, controls hint, water ripple animation, atmospheric dark pond
- * background. Title slides in via anime.js, then fades out after 1.5s.
+ * background. Title slides in via anime.js, then fades out after click.
+ * Includes a difficulty selector (Easy / Normal / Hard).
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { animateIntroSubtitle, animateIntroTitle } from '@/rendering/animations';
+import { selectedDifficulty, type Difficulty } from '@/ui/store';
+
+const DIFFICULTY_OPTIONS: {
+  key: Difficulty;
+  label: string;
+  desc: string;
+  tint: string;
+  borderColor: string;
+}[] = [
+  {
+    key: 'easy',
+    label: 'EASY',
+    desc: 'Relaxed pace, weaker enemies',
+    tint: 'rgba(34, 197, 94, 0.15)',
+    borderColor: '#22c55e',
+  },
+  {
+    key: 'normal',
+    label: 'NORMAL',
+    desc: 'Balanced challenge',
+    tint: 'rgba(64, 200, 208, 0.15)',
+    borderColor: 'var(--pw-accent)',
+  },
+  {
+    key: 'hard',
+    label: 'HARD',
+    desc: 'Aggressive AI, scarce resources',
+    tint: 'rgba(239, 68, 68, 0.15)',
+    borderColor: '#ef4444',
+  },
+];
 
 export function IntroOverlay() {
   const [visible, setVisible] = useState(true);
   const [fading, setFading] = useState(false);
+  const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
@@ -23,28 +56,24 @@ export function IntroOverlay() {
     if (subtitleRef.current) {
       animateIntroSubtitle(subtitleRef.current);
     }
-
-    const timer = setTimeout(() => {
-      setFading(true);
-    }, 1500);
-
-    const removeTimer = setTimeout(() => {
-      setVisible(false);
-    }, 3500); // 1.5s wait + 2s fade
-
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(removeTimer);
-    };
   }, []);
 
   if (!visible) return null;
 
+  const handleBegin = () => {
+    if (fading) return;
+    selectedDifficulty.value = difficulty;
+    setFading(true);
+    setTimeout(() => {
+      setVisible(false);
+    }, 2000);
+  };
+
   return (
     <div
       id="intro-overlay"
-      class={`absolute inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-[2000ms] pointer-events-none ${
-        fading ? 'opacity-0' : 'opacity-100'
+      class={`absolute inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-[2000ms] ${
+        fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
         background: 'radial-gradient(ellipse at 50% 60%, #132830 0%, #0c1a1f 50%, #060e12 100%)',
@@ -89,15 +118,89 @@ export function IntroOverlay() {
         Establish your economy before the predators arrive.
       </p>
 
+      {/* Difficulty selector */}
+      <div class="flex gap-3 mt-6 relative z-10 px-4">
+        {DIFFICULTY_OPTIONS.map((opt) => {
+          const isSelected = difficulty === opt.key;
+          return (
+            <button
+              key={opt.key}
+              type="button"
+              class="action-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDifficulty(opt.key);
+              }}
+              style={{
+                minHeight: '44px',
+                minWidth: '90px',
+                padding: '8px 12px',
+                background: isSelected ? opt.tint : 'rgba(20, 30, 35, 0.8)',
+                border: isSelected
+                  ? `2px solid ${opt.borderColor}`
+                  : '2px solid var(--pw-stone-dark, #3a3a3a)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isSelected
+                  ? `0 0 12px ${opt.borderColor}40, inset 0 1px 0 rgba(255,255,255,0.05)`
+                  : 'inset 0 1px 0 rgba(255,255,255,0.03)',
+              }}
+            >
+              <span
+                class="font-heading font-bold text-xs md:text-sm tracking-wider"
+                style={{
+                  color: isSelected ? opt.borderColor : 'var(--pw-text-muted)',
+                }}
+              >
+                {opt.label}
+              </span>
+              <span
+                class="font-game text-[10px] md:text-xs mt-1"
+                style={{
+                  color: isSelected
+                    ? 'var(--pw-text-secondary)'
+                    : 'var(--pw-text-muted)',
+                  opacity: isSelected ? 1 : 0.6,
+                }}
+              >
+                {opt.desc}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Click to begin */}
+      <button
+        type="button"
+        class="font-game text-sm md:text-lg mt-6 font-bold text-center px-6 py-3 relative z-10 animate-begin-glow"
+        style={{
+          color: 'var(--pw-accent)',
+          background: 'transparent',
+          border: '1px solid var(--pw-accent-dim)',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          minHeight: '44px',
+        }}
+        onClick={handleBegin}
+      >
+        Click to Begin
+      </button>
+
       <p
-        class="font-game text-xs mt-6 text-center px-4 hidden md:block relative z-10 animate-begin-glow"
-        style={{ color: 'var(--pw-accent)' }}
+        class="font-game text-xs mt-4 text-center px-4 hidden md:block relative z-10"
+        style={{ color: 'var(--pw-text-muted)' }}
       >
         Right-click to command &bull; WASD to scroll &bull; Ctrl+# to set groups
       </p>
       <p
-        class="font-game text-xs mt-6 text-center px-4 md:hidden relative z-10 animate-begin-glow"
-        style={{ color: 'var(--pw-accent)' }}
+        class="font-game text-xs mt-4 text-center px-4 md:hidden relative z-10"
+        style={{ color: 'var(--pw-text-muted)' }}
       >
         Long-press to command &bull; Two-finger pan &bull; Pinch to zoom
       </p>

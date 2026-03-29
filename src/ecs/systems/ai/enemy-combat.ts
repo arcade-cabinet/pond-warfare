@@ -57,11 +57,18 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   if (world.frameCount % ENEMY_ATTACK_CHECK_INTERVAL !== 0) return;
 
   const armySize = countEnemyArmy(world);
-  // Scale attack threshold: attack with smaller armies as game progresses
+  // Scale attack threshold: by difficulty and game phase
+  let baseThreshold = ENEMY_ARMY_ATTACK_THRESHOLD;
+  let lateThreshold = ENEMY_LATE_ATTACK_THRESHOLD;
+  if (world.difficulty === 'easy') {
+    baseThreshold = 8;
+    lateThreshold = 5;
+  } else if (world.difficulty === 'hard') {
+    baseThreshold = 3;
+    lateThreshold = 2;
+  }
   const attackThreshold =
-    world.frameCount >= ENEMY_LATE_GAME_FRAME
-      ? ENEMY_LATE_ATTACK_THRESHOLD
-      : ENEMY_ARMY_ATTACK_THRESHOLD;
+    world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
   if (armySize < attackThreshold) return;
 
   // Find target: weakest player building

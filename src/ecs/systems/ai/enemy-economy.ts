@@ -30,11 +30,24 @@ import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getEnemyNests } from './helpers';
 
+/** Get difficulty-adjusted gatherer spawn interval */
+function getGathererSpawnInterval(world: GameWorld): number {
+  switch (world.difficulty) {
+    case 'easy':
+      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 1.5);
+    case 'hard':
+      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.75);
+    default:
+      return ENEMY_GATHERER_SPAWN_INTERVAL;
+  }
+}
+
 /** Spawn enemy gatherers at nests to collect resources (task #11) */
 export function enemyEconomyTick(world: GameWorld): void {
   const isPeaceful = world.frameCount < world.peaceTimer;
   if (isPeaceful) return;
-  if (world.frameCount % ENEMY_GATHERER_SPAWN_INTERVAL !== 0) return;
+  const spawnInterval = getGathererSpawnInterval(world);
+  if (world.frameCount % spawnInterval !== 0) return;
 
   const nestEids = getEnemyNests(world);
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Carrying]);
