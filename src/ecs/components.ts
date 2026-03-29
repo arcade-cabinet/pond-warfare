@@ -103,6 +103,12 @@ export const Selectable = soa({
   selected: [] as number[],
 });
 
+// Veterancy progression
+export const Veterancy = soa({
+  rank: [] as number[], // 0=recruit, 1=veteran, 2=elite, 3=hero
+  appliedRank: [] as number[], // last rank whose bonuses were applied
+});
+
 // Tag components - empty objects used purely as markers
 export const TowerAI = {};
 export const IsBuilding = {};
@@ -118,4 +124,5 @@ export const ProjectileData = soa({
   damage: [] as number[],
   ownerEntity: [] as number[],
   speed: [] as number[],
+  damageMultiplier: [] as number[],
 });

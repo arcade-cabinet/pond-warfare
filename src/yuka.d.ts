@@ -89,6 +89,14 @@ declare module 'yuka' {
     constructor();
   }
 
+  export class AlignmentBehavior extends SteeringBehavior {
+    constructor();
+  }
+
+  export class CohesionBehavior extends SteeringBehavior {
+    constructor();
+  }
+
   export class WanderBehavior extends SteeringBehavior {
     /** Radius of the constraining circle. Default 1. */
     radius: number;

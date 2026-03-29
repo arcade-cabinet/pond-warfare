@@ -33,6 +33,7 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
+import { getDamageMultiplier } from '@/config/entity-defs';
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
@@ -240,8 +241,21 @@ export function combatSystem(world: GameWorld): void {
         // In range - attack if cooldown ready
         if (Combat.attackCooldown[eid] <= 0) {
           if (kind === EntityKind.Sniper) {
+            const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
+            const mult = getDamageMultiplier(kind, targetKind);
+            const sniperDmg = Math.round(dmg * mult);
             audio.shoot();
-            spawnProjectile(world, ex, ey - 10, Position.x[tEnt], Position.y[tEnt], tEnt, dmg, eid);
+            spawnProjectile(
+              world,
+              ex,
+              ey - 10,
+              Position.x[tEnt],
+              Position.y[tEnt],
+              tEnt,
+              sniperDmg,
+              eid,
+              mult,
+            );
           } else if (kind === EntityKind.BossCroc) {
             // Boss Croc: enrage below 30% HP doubles damage, AoE stomp hits all nearby
             const enraged = Health.current[eid] < Health.max[eid] * 0.3 && Health.max[eid] > 0;
@@ -275,8 +289,11 @@ export function combatSystem(world: GameWorld): void {
               });
             }
           } else {
-            // Melee: direct damage
-            takeDamage(world, tEnt, dmg, eid);
+            // Melee: direct damage with counter multiplier
+            const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
+            const mult = getDamageMultiplier(kind, targetKind);
+            const meleeDmg = Math.round(dmg * mult);
+            takeDamage(world, tEnt, meleeDmg, eid, mult);
           }
           Combat.attackCooldown[eid] = ATTACK_COOLDOWN;
         }

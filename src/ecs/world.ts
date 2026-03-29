@@ -1,7 +1,12 @@
 import { createWorld } from 'bitecs';
 import { YukaManager } from '@/ai/yuka-manager';
 import { createInitialTechState, type TechState } from '@/config/tech-tree';
-import { STARTING_CLAMS, STARTING_TWIGS } from '@/constants';
+import {
+  ENEMY_STARTING_CLAMS,
+  ENEMY_STARTING_TWIGS,
+  STARTING_CLAMS,
+  STARTING_TWIGS,
+} from '@/constants';
 import type {
   Corpse,
   Firefly,
@@ -28,6 +33,10 @@ export interface GameWorld {
 
   // Game state
   resources: GameResources;
+  enemyResources: {
+    clams: number;
+    twigs: number;
+  };
   tech: TechState;
   stats: GameStats;
   state: GameState;
@@ -94,6 +103,10 @@ export function createGameWorld(): GameWorld {
       twigs: STARTING_TWIGS,
       food: 0,
       maxFood: 0,
+    },
+    enemyResources: {
+      clams: ENEMY_STARTING_CLAMS,
+      twigs: ENEMY_STARTING_TWIGS,
     },
     tech: createInitialTechState(),
     stats: {

@@ -21,6 +21,38 @@ export const TOWER_ATTACK_COOLDOWN = 50;
 export const STARTING_CLAMS = 200;
 export const STARTING_TWIGS = 50;
 
+export const ENEMY_STARTING_CLAMS = 500;
+export const ENEMY_STARTING_TWIGS = 200;
+export const ENEMY_GATHERER_SPAWN_INTERVAL = 1200;
+export const ENEMY_GATHERER_COST = 50;
+export const ENEMY_MAX_GATHERERS_PER_NEST = 3;
+export const ENEMY_GATHERER_RADIUS = 500;
+
+// Enemy AI building construction
+export const ENEMY_BUILD_CHECK_INTERVAL = 1800; // Check every 30 seconds
+export const ENEMY_TOWER_COST_CLAMS = 200;
+export const ENEMY_TOWER_COST_TWIGS = 250;
+export const ENEMY_BURROW_COST_CLAMS = 0;
+export const ENEMY_BURROW_COST_TWIGS = 100;
+export const ENEMY_NEST_COST_CLAMS = 400;
+export const ENEMY_NEST_COST_TWIGS = 300;
+export const ENEMY_BUILD_RADIUS = 200; // Max distance from nest to place building
+
+// Enemy AI army training
+export const ENEMY_TRAIN_CHECK_INTERVAL = 300; // Check every 5 seconds
+export const ENEMY_GATOR_COST_CLAMS = 100;
+export const ENEMY_GATOR_COST_TWIGS = 50;
+export const ENEMY_SNAKE_COST_CLAMS = 80;
+export const ENEMY_SNAKE_COST_TWIGS = 30;
+export const ENEMY_TRAIN_TIME = 240; // Frames to train one unit
+
+// Enemy AI attack decision-making
+export const ENEMY_ATTACK_CHECK_INTERVAL = 600; // Check every 10 seconds
+export const ENEMY_ARMY_ATTACK_THRESHOLD = 5; // Min army size to attack
+export const ENEMY_RETREAT_HP_PERCENT = 0.2; // Retreat below 20% HP
+export const ENEMY_SCOUT_INTERVAL = 3600; // Send scout every 60 seconds
+export const ENEMY_RALLY_RADIUS = 150; // Rally point radius for grouping
+
 export const PALETTE = {
   otterBase: '#78350f',
   otterBelly: '#b45309',
@@ -87,3 +119,10 @@ export const COLLISION_PUSH_FORCE = 0.15;
 export const WORLD_BOUNDS_MARGIN = 20;
 
 export const PROJECTILE_SPEED = 8;
+
+// Veterancy system
+export const VET_THRESHOLDS = [0, 3, 7, 15]; // kills needed for each rank
+export const VET_HP_BONUS = [0, 0.10, 0.20, 0.35];
+export const VET_DMG_BONUS = [0, 0.15, 0.25, 0.40];
+export const VET_SPD_BONUS = [0, 0, 0.10, 0.15];
+export const VET_RANK_NAMES = ['Recruit', 'Veteran', 'Elite', 'Hero'];

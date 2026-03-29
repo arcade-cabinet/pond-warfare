@@ -16,6 +16,7 @@ import {
   SPEED_LEVELS,
   TILE_SIZE,
   TRAIN_TIMER,
+  VET_RANK_NAMES,
   WAVE_INTERVAL,
   WORLD_HEIGHT,
   WORLD_WIDTH,
@@ -37,6 +38,8 @@ import {
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
+  Velocity,
+  Veterancy,
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
 import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
@@ -52,6 +55,7 @@ import { healthSystem } from '@/ecs/systems/health';
 import { movementSystem } from '@/ecs/systems/movement';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import { trainingSystem } from '@/ecs/systems/training';
+import { veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 // Input
 import { type KeyboardCallbacks, KeyboardHandler } from '@/input/keyboard';
@@ -683,6 +687,7 @@ export class Game {
     aiSystem(this.world);
     autoBehaviorSystem(this.world);
     healthSystem(this.world);
+    veterancySystem(this.world);
     fogOfWarSystem(this.world);
     cleanupSystem(this.world);
 
@@ -1046,13 +1051,23 @@ export class Game {
       store.selectionMaxHp.value = Health.max[selEid];
       store.selectionShowHpBar.value = !hasComponent(w.ecs, selEid, IsResource);
       store.selectionKills.value = hasComponent(w.ecs, selEid, Combat) ? Combat.kills[selEid] : 0;
-      // Build stats string
+      // Build stats string (show actual values which may include vet bonuses)
       const def = ENTITY_DEFS[kind];
       const statParts: string[] = [];
       statParts.push(`HP: ${Health.current[selEid]}/${Health.max[selEid]}`);
-      if (def.damage > 0) statParts.push(`Dmg: ${def.damage}`);
-      if (def.attackRange > 0) statParts.push(`Range: ${def.attackRange}`);
-      if (def.speed > 0 && !def.isBuilding) statParts.push(`Spd: ${def.speed}`);
+      if (hasComponent(w.ecs, selEid, Combat) && Combat.damage[selEid] > 0)
+        statParts.push(`Dmg: ${Combat.damage[selEid]}`);
+      if (hasComponent(w.ecs, selEid, Combat) && Combat.attackRange[selEid] > 0)
+        statParts.push(`Range: ${Combat.attackRange[selEid]}`);
+      if (def.speed > 0 && !def.isBuilding && hasComponent(w.ecs, selEid, Velocity))
+        statParts.push(`Spd: ${Velocity.speed[selEid].toFixed(1)}`);
+      // Show veterancy rank if unit has it
+      if (hasComponent(w.ecs, selEid, Veterancy)) {
+        const vetRank = Veterancy.rank[selEid];
+        if (vetRank > 0) {
+          statParts.push(`Rank: ${VET_RANK_NAMES[vetRank]}`);
+        }
+      }
       store.selectionStatsHtml.value = statParts.join(' | ');
       // Describe current state
       const state = UnitStateMachine.state[selEid] as UnitState;
@@ -1214,11 +1229,24 @@ export class Game {
       if (selFaction === Faction.Player) {
         // Gatherer selected: build buttons
         if (selKind === EntityKind.Gatherer) {
+          const lodgeDef = ENTITY_DEFS[EntityKind.Lodge];
+          btns.push({
+            title: 'Lodge',
+            cost: `${lodgeDef.clamCost}C ${lodgeDef.twigCost}T`,
+            hotkey: 'Q',
+            affordable:
+              w.resources.clams >= (lodgeDef.clamCost ?? 0) &&
+              w.resources.twigs >= (lodgeDef.twigCost ?? 0),
+            description: 'Expansion (+4 food cap, drop-off)',
+            onClick: () => {
+              w.placingBuilding = 'lodge';
+            },
+          });
           const burrowDef = ENTITY_DEFS[EntityKind.Burrow];
           btns.push({
             title: 'Burrow',
             cost: `${burrowDef.twigCost}T`,
-            hotkey: 'Q',
+            hotkey: 'W',
             affordable: w.resources.twigs >= (burrowDef.twigCost ?? 0),
             description: 'Housing (+4 food cap)',
             onClick: () => {
@@ -1229,7 +1257,7 @@ export class Game {
           btns.push({
             title: 'Armory',
             cost: `${armoryDef.clamCost}C ${armoryDef.twigCost}T`,
-            hotkey: 'W',
+            hotkey: 'E',
             affordable:
               w.resources.clams >= (armoryDef.clamCost ?? 0) &&
               w.resources.twigs >= (armoryDef.twigCost ?? 0),
@@ -1242,7 +1270,7 @@ export class Game {
           btns.push({
             title: 'Tower',
             cost: `${towerDef.clamCost}C ${towerDef.twigCost}T`,
-            hotkey: 'E',
+            hotkey: 'R',
             affordable:
               w.resources.clams >= (towerDef.clamCost ?? 0) &&
               w.resources.twigs >= (towerDef.twigCost ?? 0),
@@ -1256,7 +1284,7 @@ export class Game {
             btns.push({
               title: 'Watchtower',
               cost: `${wtDef.clamCost}C ${wtDef.twigCost}T`,
-              hotkey: 'R',
+              hotkey: 'T',
               affordable:
                 w.resources.clams >= (wtDef.clamCost ?? 0) &&
                 w.resources.twigs >= (wtDef.twigCost ?? 0),

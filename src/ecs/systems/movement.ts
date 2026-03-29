@@ -28,7 +28,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, ResourceType, UnitState } from '@/types';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 /**
  * Set of states that involve movement toward a target position.
@@ -123,6 +123,8 @@ export function movementSystem(world: GameWorld): void {
 
     if (dist <= arriveDist) {
       // --- Arrive logic ---
+      // Clear formation flocking before removing from Yuka
+      world.yukaManager.clearFormationBehaviors(eid);
       // Remove from Yuka on arrival (all factions)
       world.yukaManager.removeUnit(eid);
       arrive(world, eid, state);
@@ -183,6 +185,7 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
     // Original lines 1781-1790: return move - deposit resources, then resume gathering or idle
     case UnitState.ReturnMove: {
       const heldRes = Carrying.resourceType[eid] as ResourceType;
+      const faction = FactionTag.faction[eid] as Faction;
       if (heldRes !== ResourceType.None) {
         // Floating text for returned resources
         const resName = heldRes === ResourceType.Clams ? 'Clams' : 'Twigs';
@@ -195,11 +198,19 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
           life: 60,
         });
 
-        // Add resources (original: GAME.resources[this.heldRes] += 10)
-        if (heldRes === ResourceType.Clams) {
-          world.resources.clams += GATHER_AMOUNT;
+        // Add resources to the correct faction's stockpile
+        if (faction === Faction.Enemy) {
+          if (heldRes === ResourceType.Clams) {
+            world.enemyResources.clams += GATHER_AMOUNT;
+          } else {
+            world.enemyResources.twigs += GATHER_AMOUNT;
+          }
         } else {
-          world.resources.twigs += GATHER_AMOUNT;
+          if (heldRes === ResourceType.Clams) {
+            world.resources.clams += GATHER_AMOUNT;
+          } else {
+            world.resources.twigs += GATHER_AMOUNT;
+          }
         }
         Carrying.resourceType[eid] = ResourceType.None;
 

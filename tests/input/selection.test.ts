@@ -760,10 +760,10 @@ describe('issueContextCommand()', () => {
 
     issueContextCommand(world, null, 500, 500);
     expect(UnitStateMachine.state[unit]).toBe(UnitState.Move);
-    // Diamond formation: for 1 unit, cols=1, offsetX=0, offsetY=(0-0.5)*35=-17.5
-    // so target is (500, 482.5)
+    // Role-based formation: single Gatherer goes to support (back) row
+    // at targetY + FORMATION_SPACING * 2 = 500 + 80 = 580, centered X
     expect(UnitStateMachine.targetX[unit]).toBeCloseTo(500, 0);
-    expect(UnitStateMachine.targetY[unit]).toBeCloseTo(482.5, 0);
+    expect(UnitStateMachine.targetY[unit]).toBeCloseTo(580, 0);
   });
 
   it('adds a green ground ping on ground move', () => {

@@ -13,7 +13,7 @@ export interface KeyMap {
   centerSelection: string;
   cycleBuildings: string;
   escape: string;
-  actionSlots: string[]; // Q, W, E, R
+  actionSlots: string[]; // Q, W, E, R, T, Y
 }
 
 export const DEFAULT_KEYMAP: KeyMap = {
@@ -31,7 +31,7 @@ export const DEFAULT_KEYMAP: KeyMap = {
   centerSelection: ' ',
   cycleBuildings: 'tab',
   escape: 'escape',
-  actionSlots: ['q', 'w', 'e', 'r'],
+  actionSlots: ['q', 'w', 'e', 'r', 't', 'y'],
 };
 
 let activeKeymap: KeyMap = {

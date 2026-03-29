@@ -6,7 +6,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { ENTITY_DEFS, entityKindFromString, entityKindName } from '@/config/entity-defs';
+import {
+  DAMAGE_MULTIPLIERS,
+  ENTITY_DEFS,
+  entityKindFromString,
+  entityKindName,
+  getDamageMultiplier,
+} from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 
 describe('ENTITY_DEFS', () => {
@@ -94,5 +100,53 @@ describe('entityKindFromString', () => {
 
   it('should throw for unknown entity kind string', () => {
     expect(() => entityKindFromString('unknown_entity')).toThrow('Unknown entity kind');
+  });
+});
+
+describe('getDamageMultiplier', () => {
+  it('should return 1.5 for strong matchups', () => {
+    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Sniper)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Healer)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Healer)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Snake)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Brawler)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Snake, EntityKind.Sniper)).toBe(1.5);
+  });
+
+  it('should return 0.75 for weak matchups', () => {
+    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Gator)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Brawler)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Sniper)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.Snake, EntityKind.Brawler)).toBe(0.75);
+  });
+
+  it('should return 1.0 for neutral/unknown matchups', () => {
+    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Brawler)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.BossCroc, EntityKind.Brawler)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.BossCroc, EntityKind.Sniper)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.Gatherer, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.Healer, EntityKind.Brawler)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.Lodge, EntityKind.Brawler)).toBe(1.0);
+  });
+
+  it('should have expected counter triangle symmetry (A strong vs B implies B weak vs A)', () => {
+    // Brawler strong vs Sniper, Sniper weak vs Brawler
+    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Sniper)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Brawler)).toBe(0.75);
+
+    // Gator strong vs Brawler, Brawler weak vs Gator
+    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Brawler)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Gator)).toBe(0.75);
+
+    // Snake strong vs Sniper, Gator weak vs Sniper (enemy triangle)
+    expect(getDamageMultiplier(EntityKind.Snake, EntityKind.Sniper)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Sniper)).toBe(0.75);
+  });
+
+  it('should only contain multipliers for combat unit types', () => {
+    const combatKinds = [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Gator, EntityKind.Snake];
+    for (const kind of Object.keys(DAMAGE_MULTIPLIERS)) {
+      expect(combatKinds).toContain(Number(kind));
+    }
   });
 });

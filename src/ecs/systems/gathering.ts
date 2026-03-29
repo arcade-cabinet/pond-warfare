@@ -58,10 +58,10 @@ export function gatheringSystem(world: GameWorld): void {
     const faction = FactionTag.faction[eid] as Faction;
 
     // --- Idle auto-gather (lines 1627-1639) ---
+    // Both player and enemy gatherers auto-gather when idle near resources
     if (
       state === UnitState.Idle &&
       kind === EntityKind.Gatherer &&
-      faction === Faction.Player &&
       world.frameCount % 90 === 0
     ) {
       // Only auto-gather if not holding resources
@@ -181,24 +181,56 @@ export function gatheringSystem(world: GameWorld): void {
         Health.current[tEnt] = 0;
       }
 
-      // Find lodge to return to
-      let lodge = -1;
-      for (let j = 0; j < buildings.length; j++) {
-        const b = buildings[j];
-        if (
-          EntityTypeTag.kind[b] === EntityKind.Lodge &&
-          FactionTag.faction[b] === Faction.Player &&
-          Health.current[b] > 0
-        ) {
-          lodge = b;
-          break;
+      // Find return building: Lodge for player, nearest PredatorNest for enemy
+      let returnBuilding = -1;
+      if (faction === Faction.Enemy) {
+        // Enemy gatherers return to nearest PredatorNest
+        let minDist = Infinity;
+        const ex = Position.x[eid];
+        const ey = Position.y[eid];
+        for (let j = 0; j < buildings.length; j++) {
+          const b = buildings[j];
+          if (
+            EntityTypeTag.kind[b] === EntityKind.PredatorNest &&
+            Health.current[b] > 0
+          ) {
+            const bdx = Position.x[b] - ex;
+            const bdy = Position.y[b] - ey;
+            const bDistSq = bdx * bdx + bdy * bdy;
+            if (bDistSq < minDist) {
+              minDist = bDistSq;
+              returnBuilding = b;
+            }
+          }
+        }
+      } else {
+        // Player gatherers return to nearest completed Lodge
+        let minDist = Infinity;
+        const ex = Position.x[eid];
+        const ey = Position.y[eid];
+        for (let j = 0; j < buildings.length; j++) {
+          const b = buildings[j];
+          if (
+            EntityTypeTag.kind[b] === EntityKind.Lodge &&
+            FactionTag.faction[b] === Faction.Player &&
+            Health.current[b] > 0 &&
+            Building.progress[b] >= 100
+          ) {
+            const bdx = Position.x[b] - ex;
+            const bdy = Position.y[b] - ey;
+            const bDistSq = bdx * bdx + bdy * bdy;
+            if (bDistSq < minDist) {
+              minDist = bDistSq;
+              returnBuilding = b;
+            }
+          }
         }
       }
 
-      if (lodge !== -1) {
-        UnitStateMachine.returnEntity[eid] = lodge;
-        UnitStateMachine.targetX[eid] = Position.x[lodge];
-        UnitStateMachine.targetY[eid] = Position.y[lodge];
+      if (returnBuilding !== -1) {
+        UnitStateMachine.returnEntity[eid] = returnBuilding;
+        UnitStateMachine.targetX[eid] = Position.x[returnBuilding];
+        UnitStateMachine.targetY[eid] = Position.y[returnBuilding];
         UnitStateMachine.state[eid] = UnitState.ReturnMove;
       } else {
         UnitStateMachine.state[eid] = UnitState.Idle;

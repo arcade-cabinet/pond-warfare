@@ -43,6 +43,7 @@ export function takeDamage(
   targetEid: number,
   amount: number,
   attackerEid: number,
+  multiplier: number = 1.0,
 ): void {
   if (!hasComponent(world.ecs, targetEid, Health)) return;
   if (Health.current[targetEid] <= 0) return;
@@ -71,13 +72,14 @@ export function takeDamage(
     });
   }
 
-  // Floating damage text
+  // Floating damage text — color varies by counter multiplier
   const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
+  const dmgColor = multiplier > 1.0 ? '#f97316' : multiplier < 1.0 ? '#9ca3af' : '#ef4444';
   world.floatingTexts.push({
     x: tx + (Math.random() * 10 - 5),
     y: ty - spriteH / 2 - 5,
     text: `-${amount}`,
-    color: '#ef4444',
+    color: dmgColor,
     life: 40,
   });
 

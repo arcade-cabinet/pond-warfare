@@ -86,6 +86,8 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     isResource: false,
     spriteSize: 32,
     spriteScale: 3,
+    clamCost: 200,
+    twigCost: 150,
     foodProvided: 4,
   },
   [EntityKind.Burrow]: {
@@ -195,6 +197,42 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     spriteScale: 3,
   },
 };
+
+/**
+ * Damage multiplier table for unit counter system.
+ * Entries > 1.0 mean the attacker is strong against that defender.
+ * Entries < 1.0 mean the attacker is weak against that defender.
+ * Missing entries default to 1.0 (neutral).
+ */
+export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<EntityKind, number>>>> =
+  {
+    [EntityKind.Brawler]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Healer]: 1.5,
+      [EntityKind.Gator]: 0.75,
+    },
+    [EntityKind.Sniper]: {
+      [EntityKind.Healer]: 1.5,
+      [EntityKind.Snake]: 1.5,
+      [EntityKind.Brawler]: 0.75,
+    },
+    [EntityKind.Gator]: {
+      [EntityKind.Brawler]: 1.5,
+      [EntityKind.Sniper]: 0.75,
+    },
+    [EntityKind.Snake]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Brawler]: 0.75,
+    },
+  };
+
+/**
+ * Get the damage multiplier for an attacker vs. a defender.
+ * Returns 1.0 for matchups not in the table (including BossCroc).
+ */
+export function getDamageMultiplier(attackerKind: EntityKind, defenderKind: EntityKind): number {
+  return DAMAGE_MULTIPLIERS[attackerKind]?.[defenderKind] ?? 1.0;
+}
 
 export function entityKindFromString(name: string): EntityKind {
   const map: Record<string, EntityKind> = {

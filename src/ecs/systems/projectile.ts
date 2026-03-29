@@ -29,6 +29,7 @@ export function spawnProjectile(
   targetEnt: number,
   damage: number,
   owner: number,
+  multiplier: number = 1.0,
 ): number {
   const eid = addEntity(world.ecs);
 
@@ -43,6 +44,7 @@ export function spawnProjectile(
   ProjectileData.damage[eid] = damage;
   ProjectileData.ownerEntity[eid] = owner;
   ProjectileData.speed[eid] = PROJECTILE_SPEED;
+  ProjectileData.damageMultiplier[eid] = multiplier;
 
   addComponent(world.ecs, eid, IsProjectile);
 
@@ -86,7 +88,8 @@ export function projectileSystem(world: GameWorld): void {
         Health.current[targetEnt] > 0
       ) {
         const owner = ProjectileData.ownerEntity[eid];
-        takeDamage(world, targetEnt, ProjectileData.damage[eid], owner);
+        const mult = ProjectileData.damageMultiplier[eid] || 1.0;
+        takeDamage(world, targetEnt, ProjectileData.damage[eid], owner, mult);
       }
 
       // Remove projectile entity

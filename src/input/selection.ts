@@ -33,6 +33,7 @@ import {
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -224,19 +225,105 @@ export function issueContextCommand(
         UnitStateMachine.state[eid] = UnitState.Move;
       }
     } else {
-      // Diamond formation move
-      const cols = Math.ceil(Math.sqrt(count));
-      const movableIdx = movableUnits.indexOf(eid);
-      const row = Math.floor(movableIdx / cols);
-      const col = movableIdx % cols;
-      const offsetX = (col - (cols - 1) / 2) * 35;
-      const offsetY = (row - Math.floor(count / cols) / 2) * 35;
-
-      UnitStateMachine.targetX[eid] = worldX + offsetX;
-      UnitStateMachine.targetY[eid] = worldY + offsetY;
+      // Role-based formation move: positions are assigned below after the loop
       UnitStateMachine.state[eid] = UnitState.Move;
       UnitStateMachine.targetEntity[eid] = -1;
     }
+  }
+
+  // --- Role-based formation positioning for ground-move commands ---
+  if (target == null && movableUnits.length > 0) {
+    const positions = calculateFormationPositions(movableUnits, worldX, worldY, world);
+    for (const pos of positions) {
+      UnitStateMachine.targetX[pos.eid] = pos.x;
+      UnitStateMachine.targetY[pos.eid] = pos.y;
+    }
+
+    // Register group with Yuka for coordinated flocking movement
+    if (movableUnits.length > 1) {
+      for (const eid of movableUnits) {
+        const speed = Velocity.speed[eid];
+        if (!world.yukaManager.has(eid)) {
+          world.yukaManager.addUnit(
+            eid,
+            Position.x[eid],
+            Position.y[eid],
+            speed,
+            UnitStateMachine.targetX[eid],
+            UnitStateMachine.targetY[eid],
+          );
+        }
+      }
+      world.yukaManager.setFormation(movableUnits, worldX, worldY);
+    }
+  }
+}
+
+// ---- Formation Helpers ----
+
+/** Spacing between units in a formation row, in world pixels. */
+const FORMATION_SPACING = 40;
+
+/**
+ * Calculate role-based formation positions for a group move command.
+ *
+ * Layout:
+ * - Front row: melee units (Brawler, Gator)
+ * - Middle row: ranged units (Sniper)
+ * - Back row: support units (Healer, Gatherer)
+ *
+ * Each row is centered on the target position with uniform spacing.
+ */
+function calculateFormationPositions(
+  units: number[],
+  targetX: number,
+  targetY: number,
+  world: GameWorld,
+): { eid: number; x: number; y: number }[] {
+  // Separate into roles
+  const melee: number[] = [];
+  const ranged: number[] = [];
+  const support: number[] = [];
+
+  for (const eid of units) {
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    if (kind === EntityKind.Brawler || kind === EntityKind.Gator) {
+      melee.push(eid);
+    } else if (kind === EntityKind.Sniper) {
+      ranged.push(eid);
+    } else {
+      // Healer, Gatherer, or any other type goes to support row
+      support.push(eid);
+    }
+  }
+
+  const positions: { eid: number; x: number; y: number }[] = [];
+
+  // Front row: melee (closest to enemy)
+  layoutRow(melee, targetX, targetY, FORMATION_SPACING, positions);
+  // Middle row: ranged (one row back)
+  layoutRow(ranged, targetX, targetY + FORMATION_SPACING, FORMATION_SPACING, positions);
+  // Back row: support (furthest from enemy)
+  layoutRow(support, targetX, targetY + FORMATION_SPACING * 2, FORMATION_SPACING, positions);
+
+  return positions;
+}
+
+/**
+ * Lay out a row of entities centered horizontally on (cx, cy) with the
+ * given spacing between each unit.
+ */
+function layoutRow(
+  eids: number[],
+  cx: number,
+  cy: number,
+  spacing: number,
+  out: { eid: number; x: number; y: number }[],
+): void {
+  const count = eids.length;
+  for (let i = 0; i < count; i++) {
+    const offsetX = (i - (count - 1) / 2) * spacing;
+    out.push({ eid: eids[i], x: cx + offsetX, y: cy });
   }
 }
 

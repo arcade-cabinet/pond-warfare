@@ -19,6 +19,7 @@ import {
   TrainingQueue,
   UnitStateMachine,
   Velocity,
+  Veterancy,
 } from './components';
 import type { GameWorld } from './world';
 
@@ -104,8 +105,13 @@ export function spawnEntity(
     }
     Building.hasRally[eid] = 0;
 
-    // Training queue for lodge, burrow, armory
-    if (kind === EntityKind.Lodge || kind === EntityKind.Burrow || kind === EntityKind.Armory) {
+    // Training queue for lodge, burrow, armory, and predator nests (enemy training)
+    if (
+      kind === EntityKind.Lodge ||
+      kind === EntityKind.Burrow ||
+      kind === EntityKind.Armory ||
+      kind === EntityKind.PredatorNest
+    ) {
       addComponent(world.ecs, eid, TrainingQueue);
       TrainingQueue.count[eid] = 0;
       TrainingQueue.timer[eid] = 0;
@@ -158,6 +164,10 @@ export function spawnEntity(
 
     addComponent(world.ecs, eid, Carrying);
     Carrying.resourceType[eid] = 0; // None
+
+    addComponent(world.ecs, eid, Veterancy);
+    Veterancy.rank[eid] = 0;
+    Veterancy.appliedRank[eid] = 0;
   }
 
   return eid;

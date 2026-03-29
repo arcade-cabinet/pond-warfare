@@ -10,7 +10,9 @@
 
 import { type World as EcsWorld, entityExists } from 'bitecs';
 import {
+  AlignmentBehavior,
   ArriveBehavior,
+  CohesionBehavior,
   EntityManager,
   FleeBehavior,
   SeekBehavior,
@@ -29,6 +31,11 @@ const SEPARATION_WEIGHT = 0.6;
 /** Duration in frames that a flee behavior stays active before being removed. */
 const FLEE_DURATION_FRAMES = 90; // ~1.5 seconds at 60 fps
 
+/** Weight for alignment force during formation movement. */
+const ALIGNMENT_WEIGHT = 0.3;
+/** Weight for cohesion force during formation movement. */
+const COHESION_WEIGHT = 0.4;
+
 export class YukaManager {
   readonly entityManager = new EntityManager();
 
@@ -40,6 +47,9 @@ export class YukaManager {
 
   /** Tracks active wander behaviors per vehicle for cleanup */
   private wanderBehaviors = new Map<number, WanderBehavior>();
+
+  /** Tracks entity IDs that currently have flocking (alignment/cohesion) behaviors */
+  private formationEids = new Set<number>();
 
   /**
    * Register a unit (any faction) with a Yuka Vehicle using ArriveBehavior
@@ -82,6 +92,8 @@ export class YukaManager {
    * Update the steering target for an existing vehicle.
    * Switches to SeekBehavior when chasing a moving entity, ArriveBehavior for
    * static targets. Preserves SeparationBehavior across target changes.
+   * If the unit is in a formation, AlignmentBehavior and CohesionBehavior are
+   * also preserved for coordinated group movement.
    */
   setTarget(eid: number, targetX: number, targetY: number, isChasing: boolean): void {
     const vehicle = this.vehicles.get(eid);
@@ -94,6 +106,17 @@ export class YukaManager {
     const separation = new SeparationBehavior();
     separation.weight = SEPARATION_WEIGHT;
     vehicle.steering.add(separation);
+
+    // Preserve flocking behaviors for units in a formation
+    if (this.formationEids.has(eid)) {
+      const alignment = new AlignmentBehavior();
+      alignment.weight = ALIGNMENT_WEIGHT;
+      vehicle.steering.add(alignment);
+
+      const cohesion = new CohesionBehavior();
+      cohesion.weight = COHESION_WEIGHT;
+      vehicle.steering.add(cohesion);
+    }
 
     const target = new Vector3(targetX, 0, targetY);
 
@@ -210,6 +233,7 @@ export class YukaManager {
     this.vehicles.delete(eid);
     this.fleeTimers.delete(eid);
     this.wanderBehaviors.delete(eid);
+    this.formationEids.delete(eid);
   }
 
   /**
@@ -271,6 +295,66 @@ export class YukaManager {
     return this.vehicles.size;
   }
 
+  /**
+   * Set up formation movement for a group of entities. Each vehicle gets
+   * AlignmentBehavior and CohesionBehavior in addition to existing
+   * SeparationBehavior, producing coordinated flocking during the move.
+   * Each entity seeks its own individual formation offset target.
+   *
+   * Call this after registering units with addUnit() / setTarget().
+   *
+   * @param eids  ECS entity IDs of all units in the formation
+   * @param targetX  Group center target X
+   * @param targetY  Group center target Y
+   */
+  setFormation(eids: number[], targetX: number, targetY: number): void {
+    for (const eid of eids) {
+      const vehicle = this.vehicles.get(eid);
+      if (!vehicle) continue;
+
+      // Rebuild steering: separation + alignment + cohesion + arrive to offset target
+      vehicle.steering.clear();
+      this.wanderBehaviors.delete(eid);
+
+      const separation = new SeparationBehavior();
+      separation.weight = SEPARATION_WEIGHT;
+      vehicle.steering.add(separation);
+
+      const alignment = new AlignmentBehavior();
+      alignment.weight = ALIGNMENT_WEIGHT;
+      vehicle.steering.add(alignment);
+
+      const cohesion = new CohesionBehavior();
+      cohesion.weight = COHESION_WEIGHT;
+      vehicle.steering.add(cohesion);
+
+      // Arrive toward the per-unit offset target (set via ECS UnitStateMachine.targetX/Y)
+      // The movement system will call setTarget() with the per-unit position,
+      // but we use targetX/targetY as a fallback center point here.
+      const arrive = new ArriveBehavior(new Vector3(targetX, 0, targetY));
+      arrive.deceleration = 1.5;
+      vehicle.steering.add(arrive);
+
+      this.formationEids.add(eid);
+    }
+  }
+
+  /**
+   * Remove flocking behaviors (alignment, cohesion) from a unit, reverting
+   * to normal separation-only steering. Called automatically when a unit
+   * arrives at its destination, or can be called manually.
+   */
+  clearFormationBehaviors(eid: number): void {
+    this.formationEids.delete(eid);
+    // No need to rebuild steering here; the movement system's setTarget()
+    // or removeUnit() will replace behaviors on the next frame.
+  }
+
+  /** Returns true if the entity currently has formation flocking behaviors. */
+  isInFormation(eid: number): boolean {
+    return this.formationEids.has(eid);
+  }
+
   /** Clear all vehicles (e.g. on game reset). */
   clear(): void {
     for (const vehicle of this.vehicles.values()) {
@@ -279,6 +363,7 @@ export class YukaManager {
     this.vehicles.clear();
     this.fleeTimers.clear();
     this.wanderBehaviors.clear();
+    this.formationEids.clear();
   }
 
   // ---- Internal helpers ----

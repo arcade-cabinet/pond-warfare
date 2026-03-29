@@ -33,6 +33,7 @@ import {
   Position,
   Selectable,
   Sprite as SpriteComp,
+  Veterancy,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { Corpse, FloatingText, GroundPing, Particle } from '@/types';
@@ -554,14 +555,12 @@ function renderEntity(eid: number, frameCount: number): void {
     entityOverlayGfx.fill(barColor);
   }
 
-  // --- Veterancy stars ---
+  // --- Veterancy stars (read from Veterancy component) ---
   if (!isBuilding && !isResource) {
-    const kills = Combat.kills[eid];
-    if (kills >= 3) {
-      const stars = Math.min(3, Math.floor(kills / 3));
+    const rank = Veterancy.rank[eid] ?? 0;
+    if (rank > 0) {
+      const stars = rank; // 1=Veteran, 2=Elite, 3=Hero
       const dy = ey - sh / 2 + yOff;
-      // Use a small star glyph rendered as Text would be expensive;
-      // draw star shapes with Graphics instead
       for (let s = 0; s < stars; s++) {
         const sx = ex - (stars * 6) / 2 + s * 6 + 3;
         const sy = dy - 14;
