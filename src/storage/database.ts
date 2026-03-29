@@ -46,8 +46,11 @@ export async function initDatabase(): Promise<void> {
     const { defineCustomElements } = await import('jeep-sqlite/loader');
     await defineCustomElements(window);
 
-    // Create and mount the jeep-sqlite element
+    // Create and mount the jeep-sqlite element with correct wasm path
     const jeepEl = document.createElement('jeep-sqlite');
+    // Set wasmPath to include Vite's base URL (e.g., /pond-warfare/assets)
+    const base = import.meta.env.BASE_URL ?? '/';
+    jeepEl.setAttribute('wasmpath', `${base}assets`);
     document.body.appendChild(jeepEl);
     await customElements.whenDefined('jeep-sqlite');
   }
