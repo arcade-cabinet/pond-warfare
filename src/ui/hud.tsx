@@ -22,6 +22,23 @@ import {
   twigs,
 } from './store';
 
+/** Format time-of-day (in minutes) to HH:MM string. */
+export function formatTime(timeOfDay: number): string {
+  const hrs = Math.floor(timeOfDay / 60);
+  const mins = Math.floor(timeOfDay % 60);
+  return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+/** Calculate day number from frame count. */
+export function frameToDay(frameCount: number, dayFrames: number): number {
+  return Math.floor(frameCount / dayFrames) + 1;
+}
+
+/** Format resource rate as +N or -N. */
+export function formatRate(r: number): string {
+  return r >= 0 ? `+${r}` : `${r}`;
+}
+
 export interface HUDProps {
   onSpeedClick?: () => void;
   onMuteClick?: () => void;
