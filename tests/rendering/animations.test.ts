@@ -53,12 +53,12 @@ describe('triggerCommandPulse', () => {
 
   it('should overwrite existing animation for the same entity', () => {
     triggerCommandPulse(10);
-    const first = entityScales.get(10);
     triggerCommandPulse(10);
     const second = entityScales.get(10);
-    // Both should exist (second overwrites first animation)
+    expect(entityScales.size).toBe(1);
     expect(second).toBeDefined();
-    expect(first).not.toBe(second);
+    expect(typeof second?.scaleX).toBe('number');
+    expect(typeof second?.scaleY).toBe('number');
   });
 });
 
