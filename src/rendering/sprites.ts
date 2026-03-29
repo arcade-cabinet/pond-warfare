@@ -192,8 +192,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     for (let i = 0; i < 30; i++)
       p(8 + Math.random() * 16, 16 + Math.random() * 14, PALETTE.mudDark);
     // Wood grain texture
-    for (let i = 0; i < 15; i++)
-      p(9 + Math.random() * 14, 17 + Math.random() * 12, '#5c2d0a');
+    for (let i = 0; i < 15; i++) p(9 + Math.random() * 14, 17 + Math.random() * 12, '#5c2d0a');
     rect(6, 8, 20, 8, PALETTE.mudDark);
     rect(10, 4, 12, 4, PALETTE.reedGreen);
     rect(14, 22, 4, 8, PALETTE.black);
@@ -220,8 +219,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     for (let i = 0; i < 40; i++)
       rect(4 + Math.random() * 22, 10 + Math.random() * 18, 6, 2, PALETTE.otterBase);
     // Wood grain texture (random darker pixels within brown areas)
-    for (let i = 0; i < 25; i++)
-      p(6 + Math.random() * 20, 10 + Math.random() * 18, '#5c2d0a');
+    for (let i = 0; i < 25; i++) p(6 + Math.random() * 20, 10 + Math.random() * 18, '#5c2d0a');
     rect(12, 22, 8, 8, PALETTE.black);
     // Doorway glow effect
     p(15, 23, DOORWAY_GLOW);
@@ -233,8 +231,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     for (let i = 0; i < 20; i++)
       p(8 + Math.random() * 16, 16 + Math.random() * 8, PALETTE.mudLight);
     // Wood grain texture
-    for (let i = 0; i < 10; i++)
-      p(10 + Math.random() * 12, 18 + Math.random() * 6, '#5c2d0a');
+    for (let i = 0; i < 10; i++) p(10 + Math.random() * 12, 18 + Math.random() * 6, '#5c2d0a');
     rect(14, 24, 4, 6, PALETTE.black);
     // Doorway glow effect
     p(15, 25, DOORWAY_GLOW);
@@ -269,8 +266,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     rect(6, 12, 20, 18, PALETTE.stone);
     for (let i = 0; i < 40; i++) p(6 + Math.random() * 20, 12 + Math.random() * 18, PALETTE.stoneL);
     // Wood grain texture in stone areas
-    for (let i = 0; i < 15; i++)
-      p(8 + Math.random() * 16, 14 + Math.random() * 14, '#374151');
+    for (let i = 0; i < 15; i++) p(8 + Math.random() * 16, 14 + Math.random() * 14, '#374151');
     rect(4, 6, 24, 6, PALETTE.stone);
     rect(8, 2, 16, 4, '#64748b');
     rect(12, 22, 8, 10, PALETTE.black);
@@ -323,8 +319,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
       p(2 + Math.random() * 28, 26 + Math.random() * 4, PALETTE.otterBase);
     }
     // Wood grain texture on frame
-    for (let i = 0; i < 20; i++)
-      p(3 + Math.random() * 26, 10 + Math.random() * 20, '#5c2d0a');
+    for (let i = 0; i < 20; i++) p(3 + Math.random() * 26, 10 + Math.random() * 20, '#5c2d0a');
     rect(12, 24, 8, 8, PALETTE.waterShallow);
     // Doorway glow
     p(15, 25, DOORWAY_GLOW);

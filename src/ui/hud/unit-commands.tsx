@@ -46,7 +46,10 @@ export function UnitCommands(props: UnitCommandsProps) {
             radialMenuOpen.value = !radialMenuOpen.value;
           }}
         >
-          <span class="w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--pw-warning)' }} />
+          <span
+            class="w-3 h-3 rounded-full animate-pulse"
+            style={{ background: 'var(--pw-warning)' }}
+          />
           <span class="font-heading text-xs md:text-sm">{idleWorkerCount} Idle</span>
         </button>
       )}

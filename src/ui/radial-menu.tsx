@@ -150,7 +150,9 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
             border: '2px solid var(--pw-border)',
           }}
         >
-          <span class="font-numbers font-bold text-sm" style={{ color: 'var(--pw-warning)' }}>{idleWorkerCount.value}</span>
+          <span class="font-numbers font-bold text-sm" style={{ color: 'var(--pw-warning)' }}>
+            {idleWorkerCount.value}
+          </span>
         </div>
 
         {/* Radial options */}

@@ -131,9 +131,7 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
           )}
 
           <div class="flex-1 w-full">
-            <h2
-              class={`font-heading text-sm md:text-lg leading-tight ${selectionNameColor.value}`}
-            >
+            <h2 class={`font-heading text-sm md:text-lg leading-tight ${selectionNameColor.value}`}>
               {selectionName}
             </h2>
 

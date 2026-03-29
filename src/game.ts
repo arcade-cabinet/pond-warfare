@@ -299,9 +299,10 @@ export class Game {
         issueContextCommand(this.world, target, wx, wy);
 
         // Record for replay: determine command type from target
-        const cmdType = target != null && FactionTag.faction[target] === Faction.Enemy
-          ? 'attack' as const
-          : 'move' as const;
+        const cmdType =
+          target != null && FactionTag.faction[target] === Faction.Enemy
+            ? ('attack' as const)
+            : ('move' as const);
         this.recorder.record(this.world.frameCount, cmdType, {
           target,
           worldX: wx,
