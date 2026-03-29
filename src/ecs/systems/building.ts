@@ -14,6 +14,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { entityKindName } from '@/config/entity-defs';
 import { BUILD_TIMER, PALETTE, REPAIR_TIMER } from '@/constants';
 import {
   Building,
@@ -25,7 +26,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { triggerBuildingComplete } from '@/rendering/animations';
-import { UnitState } from '@/types';
+import { type EntityKind, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
 export function buildingSystem(world: GameWorld): void {
@@ -105,11 +106,14 @@ export function buildingSystem(world: GameWorld): void {
           // Flash the building sprite white
           Health.flashTimer[tEnt] = 12;
 
-          // Floating text celebration
+          // Floating text celebration with building-specific name
+          const buildingName = hasComponent(world.ecs, tEnt, EntityTypeTag)
+            ? entityKindName(EntityTypeTag.kind[tEnt] as EntityKind)
+            : 'Building';
           world.floatingTexts.push({
             x: bx,
             y: by - 30,
-            text: 'Construction Complete!',
+            text: `${buildingName} Complete!`,
             color: '#4ade80',
             life: 90,
           });

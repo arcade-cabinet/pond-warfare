@@ -100,6 +100,17 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
 
   audio.alert();
 
+  // Wave announcement banner
+  world.floatingTexts.push({
+    x: world.camX + world.viewWidth / 2,
+    y: world.camY + 60,
+    text: `Wave Incoming! (${idleUnits.length} units)`,
+    color: '#f59e0b',
+    life: 150,
+  });
+  // Amber minimap ping at the target building
+  world.minimapPings.push({ x: targetX, y: targetY, life: 120, maxLife: 120 });
+
   // Send them as a group
   for (const eid of idleUnits) {
     UnitStateMachine.targetEntity[eid] = target;
