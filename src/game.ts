@@ -1255,6 +1255,26 @@ export class Game {
             }
           },
         });
+        const scoutDef = ENTITY_DEFS[EntityKind.Scout];
+        btns.push({
+          title: 'Scout',
+          cost: `${scoutDef.clamCost}C ${scoutDef.foodCost}F`,
+          hotkey: 'R',
+          affordable:
+            w.resources.clams >= (scoutDef.clamCost ?? 0) &&
+            w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
+          description: 'Fast recon, wide vision',
+          onClick: () => {
+            train(
+              w,
+              lodgeEid,
+              EntityKind.Scout,
+              scoutDef.clamCost ?? 0,
+              scoutDef.twigCost ?? 0,
+              scoutDef.foodCost ?? 1,
+            );
+          },
+        });
         btns.push({
           title: 'Tech Tree',
           cost: '',
@@ -1661,6 +1681,118 @@ export class Game {
                 w.resources.clams -= hsTech.clamCost;
                 w.resources.twigs -= hsTech.twigCost;
                 w.tech.hardenedShells = true;
+              }
+            },
+          });
+          if (w.tech.ironShell) {
+            const sbDef = ENTITY_DEFS[EntityKind.Shieldbearer];
+            btns.push({
+              title: 'Shieldbearer',
+              cost: `${sbDef.clamCost}C ${sbDef.twigCost}T ${sbDef.foodCost}F`,
+              hotkey: 'U',
+              affordable:
+                w.resources.clams >= (sbDef.clamCost ?? 0) &&
+                w.resources.twigs >= (sbDef.twigCost ?? 0) &&
+                w.resources.food + (sbDef.foodCost ?? 1) <= w.resources.maxFood,
+              description: 'Tank unit with shield',
+              onClick: () => {
+                train(
+                  w,
+                  selEid,
+                  EntityKind.Shieldbearer,
+                  sbDef.clamCost ?? 0,
+                  sbDef.twigCost ?? 0,
+                  sbDef.foodCost ?? 1,
+                );
+              },
+            });
+          }
+          if (w.tech.siegeWorks) {
+            const catDef = ENTITY_DEFS[EntityKind.Catapult];
+            btns.push({
+              title: 'Catapult',
+              cost: `${catDef.clamCost}C ${catDef.twigCost}T ${catDef.foodCost}F`,
+              hotkey: 'I',
+              affordable:
+                w.resources.clams >= (catDef.clamCost ?? 0) &&
+                w.resources.twigs >= (catDef.twigCost ?? 0) &&
+                w.resources.food + (catDef.foodCost ?? 1) <= w.resources.maxFood,
+              description: 'Siege AoE, long range',
+              onClick: () => {
+                train(
+                  w,
+                  selEid,
+                  EntityKind.Catapult,
+                  catDef.clamCost ?? 0,
+                  catDef.twigCost ?? 0,
+                  catDef.foodCost ?? 1,
+                );
+              },
+            });
+          }
+          const isTech = TECH_UPGRADES.ironShell;
+          btns.push({
+            title: isTech.name,
+            cost: `${isTech.clamCost}C ${isTech.twigCost}T`,
+            hotkey: 'Z',
+            affordable:
+              canResearch('ironShell', w.tech) &&
+              w.resources.clams >= isTech.clamCost &&
+              w.resources.twigs >= isTech.twigCost,
+            description: isTech.description,
+            onClick: () => {
+              if (
+                canResearch('ironShell', w.tech) &&
+                w.resources.clams >= isTech.clamCost &&
+                w.resources.twigs >= isTech.twigCost
+              ) {
+                w.resources.clams -= isTech.clamCost;
+                w.resources.twigs -= isTech.twigCost;
+                w.tech.ironShell = true;
+              }
+            },
+          });
+          const swTech = TECH_UPGRADES.siegeWorks;
+          btns.push({
+            title: swTech.name,
+            cost: `${swTech.clamCost}C ${swTech.twigCost}T`,
+            hotkey: 'X',
+            affordable:
+              canResearch('siegeWorks', w.tech) &&
+              w.resources.clams >= swTech.clamCost &&
+              w.resources.twigs >= swTech.twigCost,
+            description: swTech.description,
+            onClick: () => {
+              if (
+                canResearch('siegeWorks', w.tech) &&
+                w.resources.clams >= swTech.clamCost &&
+                w.resources.twigs >= swTech.twigCost
+              ) {
+                w.resources.clams -= swTech.clamCost;
+                w.resources.twigs -= swTech.twigCost;
+                w.tech.siegeWorks = true;
+              }
+            },
+          });
+          const brTech = TECH_UPGRADES.battleRoar;
+          btns.push({
+            title: brTech.name,
+            cost: `${brTech.clamCost}C ${brTech.twigCost}T`,
+            hotkey: 'C',
+            affordable:
+              canResearch('battleRoar', w.tech) &&
+              w.resources.clams >= brTech.clamCost &&
+              w.resources.twigs >= brTech.twigCost,
+            description: brTech.description,
+            onClick: () => {
+              if (
+                canResearch('battleRoar', w.tech) &&
+                w.resources.clams >= brTech.clamCost &&
+                w.resources.twigs >= brTech.twigCost
+              ) {
+                w.resources.clams -= brTech.clamCost;
+                w.resources.twigs -= brTech.twigCost;
+                w.tech.battleRoar = true;
               }
             },
           });
