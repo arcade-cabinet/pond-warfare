@@ -62,7 +62,7 @@ export function movementSystem(world: GameWorld): void {
     const eid = ents[i];
 
     // Skip dead entities
-    if (Health.current[eid] <= 0) continue;
+    if (hasComponent(world.ecs, eid, Health) && Health.current[eid] <= 0) continue;
 
     const state = UnitStateMachine.state[eid] as UnitState;
 
