@@ -716,7 +716,7 @@ function spawnLabyrinth(ctx: SpawnContext, targetNestCount: number): void {
 // ---------------------------------------------------------------------------
 
 function spawnRiver(ctx: SpawnContext, targetNestCount: number): void {
-  const { world, rng, sx, sy, resourceMultiplier } = ctx;
+  const { world, rng, resourceMultiplier } = ctx;
 
   // Create a vertical "river" of walls down the center of the map
   // with 2-3 bridge gaps (choke points)
@@ -834,7 +834,7 @@ function spawnRiver(ctx: SpawnContext, targetNestCount: number): void {
 // ---------------------------------------------------------------------------
 
 function spawnPeninsula(ctx: SpawnContext, targetNestCount: number): void {
-  const { world, rng, sx, sy, resourceMultiplier } = ctx;
+  const { world, rng, resourceMultiplier } = ctx;
 
   // Create peninsula walls: a narrow corridor from bottom center,
   // opening up to the main land area at the top.

@@ -8,7 +8,7 @@
  * Run with: npx vitest --config vitest.e2e.config.ts
  */
 
-import { page } from '@vitest/browser/context';
+import { page } from 'vitest/browser';
 import { render } from 'preact';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { game } from '@/game';

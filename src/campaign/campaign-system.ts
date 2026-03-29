@@ -6,7 +6,6 @@
  */
 
 import { query } from 'bitecs';
-import { createInitialTechState } from '@/config/tech-tree';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { persist } from '@/storage';
@@ -140,22 +139,6 @@ export function createCampaignState(mission: MissionDef | null): CampaignState {
 // Objective evaluation helpers
 // ---------------------------------------------------------------------------
 
-function countPlayerEntitiesOfKind(world: GameWorld, kind: number): number {
-  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
-  let count = 0;
-  for (let i = 0; i < ents.length; i++) {
-    const eid = ents[i];
-    if (
-      FactionTag.faction[eid] === Faction.Player &&
-      EntityTypeTag.kind[eid] === kind &&
-      Health.current[eid] > 0
-    ) {
-      count++;
-    }
-  }
-  return count;
-}
-
 function countPlayerBuildings(world: GameWorld, kind: number): number {
   const ents = query(world.ecs, [
     Position,
@@ -216,22 +199,9 @@ function checkObjective(
     case 'explore':
       return getExploredPercent(world) >= (obj.percent ?? 50);
 
-    case 'destroyNest': {
-      // Count destroyed nests via the world's nest tracking
-      const totalNests = query(world.ecs, [
-        Position,
-        Health,
-        FactionTag,
-        EntityTypeTag,
-      ]).filter(
-        (eid) =>
-          EntityTypeTag.kind[eid] === EntityKind.PredatorNest &&
-          FactionTag.faction[eid] === Faction.Enemy,
-      );
-      // "destroyed" means the difference between initial nests and living nests
+    case 'destroyNest':
       // For campaigns, we track kills via killedCounts
       return (campaign.killedCounts.get(EntityKind.PredatorNest) ?? 0) >= (obj.count ?? 1);
-    }
 
     case 'survive':
       return world.enemyEvolution.tier >= (obj.tier ?? 3);

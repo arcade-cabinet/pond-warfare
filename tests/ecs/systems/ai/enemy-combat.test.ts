@@ -139,7 +139,7 @@ describe('enemyCombatTick', () => {
     // Retreat logic runs every 60 frames
     world.frameCount = 60;
 
-    const nestEid = createEnemyNest(world, 1000, 1000);
+    createEnemyNest(world, 1000, 1000);
 
     // Create a low-HP enemy unit in attacking state
     const damagedUnit = createEnemyCombatUnit(

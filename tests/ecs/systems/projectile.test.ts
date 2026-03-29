@@ -11,7 +11,6 @@ import {
   Health,
   IsProjectile,
   Position,
-  ProjectileData,
 } from '@/ecs/components';
 import { projectileSystem, spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
@@ -55,7 +54,7 @@ describe('projectileSystem', () => {
   it('should deal damage on arrival', () => {
     const target = createTarget(world, 100, 100, 100);
     // Spawn projectile very close to the target (within PROJECTILE_SPEED)
-    const projEid = spawnProjectile(
+    spawnProjectile(
       world,
       100 + PROJECTILE_SPEED - 1,
       100,
