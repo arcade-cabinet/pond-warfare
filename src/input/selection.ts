@@ -162,6 +162,8 @@ export function issueContextCommand(
 
     // Clear stale state before applying any new order
     UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+    UnitStateMachine.attackMoveTargetX[eid] = 0;
+    UnitStateMachine.attackMoveTargetY[eid] = 0;
     UnitStateMachine.targetEntity[eid] = -1;
     UnitStateMachine.returnEntity[eid] = -1;
 
