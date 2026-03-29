@@ -37,7 +37,7 @@ export function cleanupSystem(world: GameWorld): void {
         Position.x[eid] + 8,
         Position.y[eid] - 12,
         (Math.random() - 0.5) * 0.5,
-        -0.5 - Math.random() * 0.5,
+        0.5 + Math.random() * 0.5, // Positive vy = moves up (y -= vy)
         60,
         'rgba(156, 163, 175, 0.4)',
         Math.random() * 3 + 2,
@@ -51,7 +51,7 @@ export function cleanupSystem(world: GameWorld): void {
         Position.x[eid] + (Math.random() - 0.5) * 20,
         Position.y[eid] + 10 + Math.random() * 10,
         0,
-        -0.2,
+        0.2, // Positive vy = bubbles float up (y -= vy)
         30,
         'rgba(56, 189, 248, 0.5)',
         2,

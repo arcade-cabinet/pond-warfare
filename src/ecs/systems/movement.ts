@@ -220,7 +220,7 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
 
         // If the gather target still has resources, go back to it
         const tEnt = UnitStateMachine.targetEntity[eid];
-        if (tEnt !== -1 && hasComponent(world.ecs, tEnt, Resource) && Resource.amount[tEnt] > 0) {
+        if (tEnt !== -1 && hasComponent(world.ecs, tEnt, Position) && hasComponent(world.ecs, tEnt, Resource) && Resource.amount[tEnt] > 0) {
           UnitStateMachine.targetX[eid] = Position.x[tEnt];
           UnitStateMachine.targetY[eid] = Position.y[tEnt];
           UnitStateMachine.state[eid] = UnitState.GatherMove;
