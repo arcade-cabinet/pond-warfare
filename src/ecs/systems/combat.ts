@@ -35,7 +35,6 @@ import {
   TowerAI,
   UnitStateMachine,
   Velocity,
-  Carrying,
 } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';

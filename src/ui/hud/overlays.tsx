@@ -121,6 +121,19 @@ export function Overlays() {
           </span>
         </div>
       )}
+
+      {/* FPS counter (toggle with F12) */}
+      {fpsCounterVisible.value && (
+        <div
+          class="absolute bottom-2 right-2 z-40 px-2 py-1 rounded font-numbers text-xs"
+          style={{
+            background: 'rgba(0, 0, 0, 0.6)',
+            color: fpsDisplay.value >= 50 ? '#4ade80' : fpsDisplay.value >= 30 ? '#eab308' : '#ef4444',
+          }}
+        >
+          {fpsDisplay.value} FPS
+        </div>
+      )}
     </>
   );
 }

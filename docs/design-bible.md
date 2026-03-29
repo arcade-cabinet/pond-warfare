@@ -2,16 +2,25 @@
 
 ## Vision
 
-Warcraft II-style RTS in a pond ecosystem. Two factions compete for finite resources, territory, and survival. Long games with escalating threats, meaningful progression, and deep replayability.
+Warcraft II-style RTS in a pond ecosystem. Two playable factions compete for finite resources, territory, and survival. Long games with escalating threats, meaningful progression, and deep replayability. Campaign mode teaches the ropes; ranked play and cosmetic unlocks keep players coming back.
 
-## Current State: v0.1.0
+## Current State: v1.0.0
 
-- **30 entity types** (9 player units, 8 enemies, 10 buildings, 3 resources)
-- **15 techs** across 3 branches (Lodge, Armory, Nature)
-- **16 ECS systems** with spatial hash optimization
-- **5 difficulty modes** + permadeath
-- **Enemy evolution** (5 tiers over 45 minutes)
-- **311 tests** across 24 files
+- **33 entity types** (10 player units, 8 enemies, 10 buildings, 3 resources, Commander, Frog, Fish)
+- **25 techs** across 3 branches (Lodge, Armory, Nature) with active abilities
+- **18 ECS systems** with spatial hash optimization + particle throttling
+- **5 difficulty modes** + permadeath + custom game settings
+- **Enemy evolution** (5 tiers over 45 minutes) + threat escalation (mega-waves, champions, random events)
+- **5 campaign missions** with scripted dialogue, objectives, and settings overrides
+- **2 playable factions** (Otter, Predator)
+- **5 AI personalities** (Balanced, Turtle, Rush, Economic, Random)
+- **7 commanders** with aura/passive bonuses and unlock progression
+- **4 ranked tiers** (Bronze, Silver, Gold, Diamond) + leaderboard tracking
+- **6 map scenarios** (Standard, Island, Contested, Labyrinth, River, Peninsula)
+- **15 achievements** + 18 unlockables across 5 categories
+- **Unit-specific SFX** (8 unique select sounds, building/death/tech/airdrop effects)
+- **Cosmetic system** with unit skins + building themes via sprite recoloring
+- **359 tests** across 29 files
 
 ## Macro Design (Strategic Layer)
 

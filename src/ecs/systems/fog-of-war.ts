@@ -15,7 +15,6 @@
  */
 
 import { hasComponent, query } from 'bitecs';
-import { Building } from '@/ecs/components';
 import { EXPLORED_SCALE } from '@/constants';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';

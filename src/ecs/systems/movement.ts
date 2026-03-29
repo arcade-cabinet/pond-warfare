@@ -15,14 +15,12 @@
 import { hasComponent, query } from 'bitecs';
 import { BUILD_TIMER, GATHER_AMOUNT, GATHER_TIMER, REPAIR_TIMER } from '@/constants';
 import {
-  Building,
   Carrying,
   Collider,
   Combat,
   EntityTypeTag,
   FactionTag,
   Health,
-  IsBuilding,
   Position,
   Resource,
   Sprite,

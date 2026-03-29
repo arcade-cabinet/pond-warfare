@@ -94,11 +94,27 @@ export function drawMinimap(
     exploredData = exploredCtx.getImageData(0, 0, ew, eh);
   }
 
+  // LOD: skip drawing some entities when count is high
+  const entityTotal = entityEids.length;
+  const lodStride = entityTotal > 400 ? 4 : entityTotal > 200 ? 2 : 1;
+
   // Draw entity dots
-  for (const eid of entityEids) {
+  for (let lodIdx = 0; lodIdx < entityEids.length; lodIdx++) {
+    // Skip entities for LOD (always draw player units and buildings)
+    const eid = entityEids[lodIdx];
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const faction = FactionTag.faction[eid] as Faction;
     const def = ENTITY_DEFS[kind];
+
+    // LOD: skip non-essential entities at high counts (always draw player, buildings, nests)
+    if (
+      lodStride > 1 &&
+      lodIdx % lodStride !== 0 &&
+      faction !== Faction.Player &&
+      !def.isBuilding
+    ) {
+      continue;
+    }
 
     const ex = Position.x[eid];
     const ey = Position.y[eid];
