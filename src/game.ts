@@ -914,9 +914,7 @@ export class Game {
       store.selectionHp.value = Health.current[selEid];
       store.selectionMaxHp.value = Health.max[selEid];
       store.selectionShowHpBar.value = !hasComponent(w.ecs, selEid, IsResource);
-      store.selectionKills.value = hasComponent(w.ecs, selEid, Combat)
-        ? Combat.kills[selEid]
-        : 0;
+      store.selectionKills.value = hasComponent(w.ecs, selEid, Combat) ? Combat.kills[selEid] : 0;
       // Build stats string
       const def = ENTITY_DEFS[kind];
       const statParts: string[] = [];

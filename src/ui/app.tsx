@@ -6,8 +6,8 @@
  * main game container on right (top bar + canvases + overlays).
  */
 
-import { useEffect, useRef } from 'preact/hooks';
 import { hasComponent } from 'bitecs';
+import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { Selectable } from '@/ecs/components';
 import { game } from '@/game';

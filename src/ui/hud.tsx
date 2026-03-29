@@ -6,6 +6,7 @@
  * Reads from store signals.
  */
 
+import { RadialMenu } from './radial-menu';
 import {
   armyCount,
   attackMoveActive,
@@ -34,7 +35,6 @@ import {
   twigs,
   waveCountdown,
 } from './store';
-import { RadialMenu } from './radial-menu';
 
 /** Format time-of-day (in minutes) to HH:MM string. */
 export function formatTime(timeOfDay: number): string {

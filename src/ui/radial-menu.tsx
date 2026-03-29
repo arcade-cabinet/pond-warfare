@@ -134,7 +134,10 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
         }}
       >
         {/* Center hub */}
-        <div class="absolute w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-500 flex items-center justify-center z-50 shadow-lg" style={{ left: '-24px', top: '-24px' }}>
+        <div
+          class="absolute w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-500 flex items-center justify-center z-50 shadow-lg"
+          style={{ left: '-24px', top: '-24px' }}
+        >
           <span class="text-amber-400 font-bold text-sm">{idleWorkerCount.value}</span>
         </div>
 
@@ -144,7 +147,7 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
           const x = Math.cos(rad) * RADIUS;
           const y = Math.sin(rad) * RADIUS;
           const isToggle = !!opt.toggleSignal;
-          const isActive = isToggle && opt.toggleSignal!.value;
+          const isActive = isToggle && opt.toggleSignal?.value;
 
           return (
             <button

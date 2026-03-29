@@ -22,7 +22,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { type EntityKind, Faction, UnitState } from '@/types';
+import { type EntityKind, type Faction, UnitState } from '@/types';
 
 interface SavedEntity {
   kind: number;
@@ -200,8 +200,12 @@ export function loadGame(world: GameWorld, json: string): boolean {
 
       // Register units in movement states with Yuka (all factions)
       const moveStates: number[] = [
-        UnitState.Move, UnitState.GatherMove, UnitState.ReturnMove,
-        UnitState.AttackMove, UnitState.BuildMove, UnitState.AttackMovePatrol,
+        UnitState.Move,
+        UnitState.GatherMove,
+        UnitState.ReturnMove,
+        UnitState.AttackMove,
+        UnitState.BuildMove,
+        UnitState.AttackMovePatrol,
         UnitState.RepairMove,
       ];
       if (moveStates.includes(saved.state)) {
