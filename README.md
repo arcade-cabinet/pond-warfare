@@ -2,7 +2,6 @@
 
 RTS game where otters defend their pond from predators. Gather resources, train units, research upgrades, and survive waves of gators and snakes across a dynamic day/night cycle.
 
-<!-- Screenshot placeholder: add a gameplay screenshot here -->
 
 ## Features
 

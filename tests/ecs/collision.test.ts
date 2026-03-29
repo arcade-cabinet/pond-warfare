@@ -98,12 +98,12 @@ describe('collisionSystem', () => {
 
   it('should push apart three overlapping units', () => {
     const a = createUnit(world, 100, 100);
-    createUnit(world, 105, 100);
+    const b = createUnit(world, 105, 100);
     const c = createUnit(world, 110, 100);
 
     // Register all with physics
     physics.createBody(world.ecs, a);
-    physics.createBody(world.ecs, 1); // entity id for second unit
+    physics.createBody(world.ecs, b); // entity id for second unit
     physics.createBody(world.ecs, c);
 
     // Run several steps for the physics to resolve

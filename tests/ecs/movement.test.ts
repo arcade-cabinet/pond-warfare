@@ -85,7 +85,7 @@ describe('movementSystem', () => {
     UnitStateMachine.state[eid] = UnitState.GatherMove;
     UnitStateMachine.targetX[eid] = 101;
     UnitStateMachine.targetY[eid] = 100;
-    UnitStateMachine.targetEntity[eid] = 0;
+    UnitStateMachine.targetEntity[eid] = -1; // -1 sentinel = no target
 
     movementSystem(world);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.Gathering);

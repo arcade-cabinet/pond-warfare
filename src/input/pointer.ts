@@ -385,6 +385,7 @@ export class PointerHandler {
   // ---- Minimap ----
 
   private onMinimapDown(e: PointerEvent): void {
+    if (this.world.state !== 'playing' || this.world.paused) return;
     e.stopPropagation();
     if (!this.minimapCanvas) return;
 
