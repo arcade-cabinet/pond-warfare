@@ -857,6 +857,18 @@ export class Game {
     const dt = timestamp - this.lastTime;
     this.lastTime = timestamp;
 
+    // FPS tracking: rolling average over 60 frames
+    if (store.fpsCounterVisible.value) {
+      this.fpsFrameTimes.push(dt);
+      if (this.fpsFrameTimes.length > 60) this.fpsFrameTimes.shift();
+      if (timestamp - this.fpsLastUpdate > 500) {
+        const avg =
+          this.fpsFrameTimes.reduce((a, b) => a + b, 0) / this.fpsFrameTimes.length;
+        store.fpsDisplay.value = avg > 0 ? Math.round(1000 / avg) : 0;
+        this.fpsLastUpdate = timestamp;
+      }
+    }
+
     // Cap accumulated time to prevent spiral of death
     this.accumulator += Math.min(dt, 200);
 

@@ -8,6 +8,8 @@ import {
   enemyClams,
   enemyEconomyVisible,
   enemyTwigs,
+  fpsCounterVisible,
+  fpsDisplay,
   nestJustDestroyed,
   paused,
   peaceWarningCountdown,
