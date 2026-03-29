@@ -9,11 +9,10 @@
  * the game (attack ranges, aggro radii, ally assist).
  */
 export class SpatialHash {
-  private invCellSize: number;
+  private readonly invCellSize: number;
   private cells = new Map<number, number[]>();
 
   constructor(cellSize: number) {
-    this.cellSize = cellSize;
     this.invCellSize = 1 / cellSize;
   }
 
