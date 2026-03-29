@@ -1,11 +1,11 @@
 /**
  * Game Orchestrator
  *
- * Creates and manages the complete game lifecycle: canvas setup, world creation,
+ * Manages the complete game lifecycle: canvas setup, world creation,
  * sprite generation, entity spawning, system execution, and rendering pipeline.
- * Faithful port of GAME.init() and GAME.loop() from pond_craft.html.
  */
 
+import { animate } from 'animejs';
 import { hasComponent, query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
@@ -73,7 +73,6 @@ import { cleanupEntityAnimation, triggerCommandPulse } from '@/rendering/animati
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import { clampCamera, computeShakeOffset } from '@/rendering/camera';
 import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
-import { type PlacementPreview, setColorBlindMode } from '@/rendering/game-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
 import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
 import type { ProjectileRenderData } from '@/rendering/particles';
@@ -82,10 +81,11 @@ import {
   destroyPixiApp,
   initPixiApp,
   type PixiRenderFrameData,
+  type PlacementPreview,
   renderPixiFrame,
   resizePixiApp,
   setBackground,
-  setPixiColorBlindMode,
+  setColorBlindMode,
 } from '@/rendering/pixi-app';
 // Rendering
 import { generateAllSprites } from '@/rendering/sprites';
@@ -133,6 +133,14 @@ export class Game {
   private lastTime = 0;
   private accumulator = 0;
   private running = false;
+
+  // Audio/music state tracking
+  private audioInitialized = false;
+  private wasPeaceful = true;
+  private wasGameOver = false;
+
+  // Smooth camera pan animation (anime.js)
+  private _panAnim: { pause: () => void } | null = null;
 
   // Container element
   private container!: HTMLElement;
@@ -373,8 +381,20 @@ export class Game {
     // Sync color blind mode signal to renderer module-level flag
     store.colorBlindMode.subscribe((enabled) => {
       setColorBlindMode(enabled);
-      setPixiColorBlindMode(enabled);
     });
+
+    // Initialize audio on first user interaction (AudioContext policy)
+    const initAudioOnce = async () => {
+      if (this.audioInitialized) return;
+      this.audioInitialized = true;
+      await audio.init();
+      audio.startAmbient();
+      audio.startMusic(true);
+      document.removeEventListener('pointerdown', initAudioOnce);
+      document.removeEventListener('keydown', initAudioOnce);
+    };
+    document.addEventListener('pointerdown', initAudioOnce, { once: false });
+    document.addEventListener('keydown', initAudioOnce, { once: false });
 
     // Start game loop
     this.lastTime = performance.now();
@@ -515,6 +535,33 @@ export class Game {
   }
 
   /**
+   * Smooth camera pan to a world position using anime.js.
+   * Used for minimap clicks and control group recall.
+   */
+  smoothPanTo(x: number, y: number): void {
+    if (this._panAnim) this._panAnim.pause();
+    this.world.isTracking = false;
+
+    const target = {
+      camX: this.world.camX,
+      camY: this.world.camY,
+    };
+    this._panAnim = animate(target, {
+      camX: x - this.world.viewWidth / 2,
+      camY: y - this.world.viewHeight / 2,
+      duration: 400,
+      ease: 'outQuad',
+      onUpdate: () => {
+        this.world.camX = target.camX;
+        this.world.camY = target.camY;
+      },
+      onComplete: () => {
+        this._panAnim = null;
+      },
+    });
+  }
+
+  /**
    * Sync physics bodies with ECS entities.
    * Creates bodies for new entities, removes bodies for dead/removed ones.
    */
@@ -582,12 +629,35 @@ export class Game {
     this.world.frameCount++;
 
     // Camera panning from keyboard/edge
-    this.keyboard.updatePan(
+    const manualPan = this.keyboard.updatePan(
       this.pointer.mouse.in,
       this.pointer.mouse.x,
       this.pointer.mouse.y,
       this.pointer.mouse.isDown,
     );
+
+    // Camera tracking: smoothly lerp toward selection center (POC lines 1170-1177)
+    if (this.world.isTracking && this.world.selection.length > 0 && !manualPan) {
+      let cx = 0;
+      let cy = 0;
+      let validCount = 0;
+      for (const eid of this.world.selection) {
+        if (Health.current[eid] > 0) {
+          cx += Position.x[eid];
+          cy += Position.y[eid];
+          validCount++;
+        }
+      }
+      if (validCount > 0) {
+        cx /= validCount;
+        cy /= validCount;
+        this.world.camX += (cx - this.world.viewWidth / 2 - this.world.camX) * 0.1;
+        this.world.camY += (cy - this.world.viewHeight / 2 - this.world.camY) * 0.1;
+      } else {
+        this.world.isTracking = false;
+      }
+    }
+
     clampCamera(this.world);
 
     // Update Yuka AI steering (1/60s fixed step)
@@ -744,6 +814,16 @@ export class Game {
     store.lowClams.value = w.resources.clams < 50;
     store.lowTwigs.value = w.resources.twigs < 50;
 
+    // --- Control group counts ---
+    const groupCounts: Record<number, number> = {};
+    for (const [gnum, eids] of Object.entries(w.ctrlGroups)) {
+      const alive = eids.filter((eid) => Health.current[eid] > 0);
+      if (alive.length > 0) {
+        groupCounts[Number(gnum)] = alive.length;
+      }
+    }
+    store.ctrlGroupCounts.value = groupCounts;
+
     // --- Food population system (POC lines 1261-1270) ---
     // Count current population (all player non-building non-resource entities)
     // and max food capacity (sum of foodProvided from completed lodges/burrows)
@@ -800,6 +880,18 @@ export class Game {
       store.peaceCountdown.value = Math.ceil((w.peaceTimer - w.frameCount) / 60);
     }
 
+    // --- Music transitions on peace/hunting change ---
+    if (this.audioInitialized) {
+      if (this.wasPeaceful && !peaceful) {
+        // Peace just ended: switch to hunting music
+        audio.startMusic(false);
+      }
+      this.wasPeaceful = peaceful;
+
+      // Update ambient sounds with current darkness
+      audio.updateAmbient(w.ambientDarkness);
+    }
+
     // --- Time display ---
     const totalMinutes = w.timeOfDay;
     const displayHours = Math.floor(totalMinutes / 60) % 24;
@@ -810,6 +902,11 @@ export class Game {
 
     // Game over stats
     if (w.state === 'win' || w.state === 'lose') {
+      // Stop music on game over (once)
+      if (this.audioInitialized && !this.wasGameOver) {
+        audio.stopMusic();
+        this.wasGameOver = true;
+      }
       store.goTitle.value = w.state === 'win' ? 'Victory' : 'Defeat';
       store.goTitleColor.value = w.state === 'win' ? 'text-amber-400' : 'text-red-500';
       store.goDesc.value =

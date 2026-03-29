@@ -57,7 +57,6 @@ export function cleanupSystem(world: GameWorld): void {
   }
 
   // --- Particle decay (line 1188) ---
-  // Original: for (let i = this.particles.length - 1; i >= 0; i--) { let p = this.particles[i]; p.life--; p.y -= p.vy; p.x += p.vx; if (p.life <= 0) this.particles.splice(i, 1); }
   for (let i = world.particles.length - 1; i >= 0; i--) {
     const p = world.particles[i];
     p.life--;
@@ -70,7 +69,6 @@ export function cleanupSystem(world: GameWorld): void {
   }
 
   // --- Floating text decay (line 1189) ---
-  // Original: for (let i = this.floatingTexts.length - 1; i >= 0; i--) { let f = this.floatingTexts[i]; f.life--; f.y -= 0.5; if (f.life <= 0) this.floatingTexts.splice(i, 1); }
   for (let i = world.floatingTexts.length - 1; i >= 0; i--) {
     const f = world.floatingTexts[i];
     f.life--;
@@ -81,7 +79,6 @@ export function cleanupSystem(world: GameWorld): void {
   }
 
   // --- Minimap ping decay (line 1190) ---
-  // Original: for (let i = this.minimapPings.length - 1; i >= 0; i--) { this.minimapPings[i].life--; if (this.minimapPings[i].life <= 0) this.minimapPings.splice(i, 1); }
   for (let i = world.minimapPings.length - 1; i >= 0; i--) {
     world.minimapPings[i].life--;
     if (world.minimapPings[i].life <= 0) {
@@ -90,7 +87,6 @@ export function cleanupSystem(world: GameWorld): void {
   }
 
   // --- Ground ping decay (line 1191) ---
-  // Original: for (let i = this.groundPings.length - 1; i >= 0; i--) { this.groundPings[i].life--; if (this.groundPings[i].life <= 0) this.groundPings.splice(i, 1); }
   for (let i = world.groundPings.length - 1; i >= 0; i--) {
     world.groundPings[i].life--;
     if (world.groundPings[i].life <= 0) {
@@ -99,7 +95,6 @@ export function cleanupSystem(world: GameWorld): void {
   }
 
   // --- Corpse decay (line 1192) ---
-  // Original: for (let i = this.corpses.length - 1; i >= 0; i--) { this.corpses[i].life--; if (this.corpses[i].life <= 0) this.corpses.splice(i, 1); }
   for (let i = world.corpses.length - 1; i >= 0; i--) {
     world.corpses[i].life--;
     if (world.corpses[i].life <= 0) {

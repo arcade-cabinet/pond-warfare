@@ -35,7 +35,6 @@ export function aiSystem(world: GameWorld): void {
 
   if (!isPeaceful) {
     // Enemy wave spawning every WAVE_INTERVAL (1800) frames
-    // Original: if (this.frameCount % 1800 === 0)
     if (world.frameCount % WAVE_INTERVAL === 0) {
       // Find all predator nests
       const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
@@ -48,7 +47,6 @@ export function aiSystem(world: GameWorld): void {
       }
 
       // Find player lodge
-      // Original: let th = this.entities.find(e => e.type === 'lodge' && e.faction === 'player');
       let lodgeEid = -1;
       const pBuildings = query(world.ecs, [
         Position,
@@ -73,7 +71,6 @@ export function aiSystem(world: GameWorld): void {
         audio.alert();
 
         // Wave size scales with time
-        // Original: let waveSize = Math.min(6, 1 + Math.floor((this.frameCount - this.peaceTimer) / 7200));
         const waveSize = Math.min(
           MAX_WAVE_SIZE,
           1 + Math.floor((world.frameCount - world.peaceTimer) / WAVE_SCALE_INTERVAL),
@@ -84,7 +81,6 @@ export function aiSystem(world: GameWorld): void {
           const ny = Position.y[nestEid];
 
           for (let j = 0; j < waveSize; j++) {
-            // Original: let type = Math.random() > 0.5 ? 'gator' : 'snake';
             const unitKind = Math.random() > 0.5 ? EntityKind.Gator : EntityKind.Snake;
             const sx = nx + (Math.random() - 0.5) * 60;
             const sy = ny + 30 + (Math.random() - 0.5) * 30;
@@ -173,7 +169,6 @@ export function aiSystem(world: GameWorld): void {
   }
 
   // --- Nest defense reinforcement (lines 1757-1771) ---
-  // Original: if (this.type === 'predator_nest' && this.hp < this.maxHp * 0.5 && GAME.frameCount % 600 === 0)
   if (world.frameCount % 600 === 0) {
     const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
     const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
@@ -188,7 +183,6 @@ export function aiSystem(world: GameWorld): void {
       const ny = Position.y[nestEid];
 
       // Count nearby enemy defenders
-      // Original: let nearbyDefenders = GAME.entities.filter(e => e.faction === 'enemy' && !e.isBuilding && Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2) < 300);
       let defenderCount = 0;
       for (let j = 0; j < allUnits.length; j++) {
         const u = allUnits[j];
@@ -203,8 +197,6 @@ export function aiSystem(world: GameWorld): void {
           defenderCount++;
         }
       }
-
-      // Original: if (nearbyDefenders.length < 4)
       if (defenderCount < 4) {
         const unitKind = Math.random() > 0.5 ? EntityKind.Gator : EntityKind.Snake;
         const sx = nx + (Math.random() - 0.5) * 60;
@@ -214,7 +206,6 @@ export function aiSystem(world: GameWorld): void {
         if (defEid < 0) continue; // Skip if spawn failed
 
         // Find nearest player unit to attack
-        // Original: let targets = GAME.entities.filter(e => e.faction === 'player' && e.hp > 0);
         let closestTarget = -1;
         let minDistSq = 400 * 400;
         for (let j = 0; j < allUnits.length; j++) {

@@ -158,3 +158,44 @@ body {
     opacity: 0;
   }
 }
+
+/* Resource flash animation for HUD resource numbers */
+@keyframes resource-flash {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  30% {
+    transform: scale(1.3);
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-resource-flash {
+  animation: resource-flash 0.4s ease-out;
+}
+
+/* Selection panel content transition */
+#selection-info > * {
+  animation: panel-fade-in 0.15s ease-out;
+}
+
+@keyframes panel-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Action panel button entrance */
+.action-btn {
+  animation: panel-fade-in 0.12s ease-out;
+}

@@ -1,7 +1,6 @@
 /**
  * Camera System
  *
- * Port of camera logic from the original pond_craft.html.
  * Handles camera state (camX, camY), WASD/arrow key panning, edge-of-screen
  * panning, minimap click panning, smooth tracking (lerp at 10%), bounds
  * clamping, and screen shake offset calculation.

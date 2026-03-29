@@ -59,7 +59,6 @@ export function projectileSystem(world: GameWorld): void {
     const speed = ProjectileData.speed[eid];
 
     // Homing: update target position if target is still alive
-    // Original: if (this.target && this.target.hp > 0) { this.tx = this.target.x; this.ty = this.target.y; }
     if (
       targetEnt !== -1 &&
       hasComponent(world.ecs, targetEnt, Health) &&
@@ -81,7 +80,6 @@ export function projectileSystem(world: GameWorld): void {
     // Check if arrived (original: if (dist < this.speed))
     if (dist < speed) {
       // Deal damage on hit
-      // Original: if (this.target && this.target.hp > 0) this.target.takeDamage(this.dmg, this.owner);
       if (
         targetEnt !== -1 &&
         hasComponent(world.ecs, targetEnt, Health) &&
@@ -97,7 +95,6 @@ export function projectileSystem(world: GameWorld): void {
     }
 
     // Add trail particle before moving
-    // Original: this.trail.push({x: this.x, y: this.y, life: 8});
     world.particles.push({
       x: px,
       y: py,
@@ -109,7 +106,6 @@ export function projectileSystem(world: GameWorld): void {
     });
 
     // Move toward target
-    // Original: this.x += (dx/dist)*this.speed; this.y += (dy/dist)*this.speed;
     Position.x[eid] += (dx / dist) * speed;
     Position.y[eid] += (dy / dist) * speed;
   }

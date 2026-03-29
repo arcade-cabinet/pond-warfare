@@ -6,12 +6,14 @@
  * Reads from store signals.
  */
 
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { RadialMenu } from './radial-menu';
 import {
   armyCount,
   attackMoveActive,
   clams,
   colorBlindMode,
+  ctrlGroupCounts,
   foodAtCap,
   foodDisplay,
   gameTimeDisplay,
@@ -61,11 +63,41 @@ export interface HUDProps {
   onArmyClick?: () => void;
   onPauseClick?: () => void;
   onAttackMoveClick?: () => void;
+  onCtrlGroupClick?: (group: number) => void;
 }
 
 export function HUD(props: HUDProps) {
   const clamsRate = rateClams.value;
   const twigsRate = rateTwigs.value;
+
+  // Resource flash: track previous values and set flash class on significant change
+  const prevClams = useRef(clams.value);
+  const prevTwigs = useRef(twigs.value);
+  const [clamsFlash, setClamsFlash] = useState(false);
+  const [twigsFlash, setTwigsFlash] = useState(false);
+
+  const currentClams = clams.value;
+  const currentTwigs = twigs.value;
+
+  useEffect(() => {
+    if (Math.abs(currentClams - prevClams.current) >= 20) {
+      setClamsFlash(true);
+      const timer = setTimeout(() => setClamsFlash(false), 400);
+      prevClams.current = currentClams;
+      return () => clearTimeout(timer);
+    }
+    prevClams.current = currentClams;
+  }, [currentClams]);
+
+  useEffect(() => {
+    if (Math.abs(currentTwigs - prevTwigs.current) >= 20) {
+      setTwigsFlash(true);
+      const timer = setTimeout(() => setTwigsFlash(false), 400);
+      prevTwigs.current = currentTwigs;
+      return () => clearTimeout(timer);
+    }
+    prevTwigs.current = currentTwigs;
+  }, [currentTwigs]);
 
   return (
     <>
@@ -76,7 +108,9 @@ export function HUD(props: HUDProps) {
           <div class="flex items-center space-x-1 md:space-x-2">
             <div class="w-3 h-3 md:w-4 md:h-4 bg-slate-300 border border-slate-100 shadow-sm rounded-full" />
             <span class="hidden md:inline">Clams: </span>
-            <span class="text-slate-200 font-bold">{clams}</span>
+            <span class={`text-slate-200 font-bold ${clamsFlash ? 'animate-resource-flash' : ''}`}>
+              {clams}
+            </span>
             {lowClams.value && (
               <span class="text-amber-400 font-bold animate-pulse" title="Low clams!">
                 !
@@ -95,7 +129,9 @@ export function HUD(props: HUDProps) {
           <div class="flex items-center space-x-1 md:space-x-2">
             <div class="w-3 h-3 md:w-4 md:h-4 bg-amber-700 border border-amber-500 shadow-sm" />
             <span class="hidden md:inline">Twigs: </span>
-            <span class="text-amber-600 font-bold">{twigs}</span>
+            <span class={`text-amber-600 font-bold ${twigsFlash ? 'animate-resource-flash' : ''}`}>
+              {twigs}
+            </span>
             {lowTwigs.value && (
               <span class="text-amber-400 font-bold animate-pulse" title="Low twigs!">
                 !
@@ -192,6 +228,28 @@ export function HUD(props: HUDProps) {
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Control group badges */}
+      {Object.keys(ctrlGroupCounts.value).length > 0 && (
+        <div class="absolute top-10 md:top-12 right-2 md:right-6 z-20 flex gap-1">
+          {Object.entries(ctrlGroupCounts.value)
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([gnum, count]) => (
+              <button
+                type="button"
+                key={`cg-${gnum}`}
+                class="w-7 h-7 bg-slate-800 border border-sky-600 rounded text-sky-300 font-bold text-xs hover:bg-slate-700 hover:border-sky-400 cursor-pointer flex items-center justify-center transition-colors"
+                title={`Group ${gnum} (${count} units) - press ${gnum} to recall`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (props.onCtrlGroupClick) props.onCtrlGroupClick(Number(gnum));
+                }}
+              >
+                {gnum}
+              </button>
+            ))}
         </div>
       )}
 

@@ -105,9 +105,22 @@ export function autoBehaviorSystem(world: GameWorld): void {
           FactionTag.faction[bid] === Faction.Player &&
           Health.current[bid] > 0
         ) {
-          // Move to a random point near the lodge
-          UnitStateMachine.targetX[eid] = Position.x[bid] + (Math.random() - 0.5) * 200;
-          UnitStateMachine.targetY[eid] = Position.y[bid] + (Math.random() - 0.5) * 200;
+          // Position the unit near the lodge then use wander for organic patrol movement
+          const lodgeX = Position.x[bid];
+          const lodgeY = Position.y[bid];
+
+          // If not yet registered with Yuka, register near the lodge
+          if (!world.yukaManager.has(eid)) {
+            const speed = 1.5; // default patrol speed
+            world.yukaManager.addUnit(eid, Position.x[eid], Position.y[eid], speed, lodgeX, lodgeY);
+          }
+
+          // Set wander behavior for a natural patrol pattern
+          world.yukaManager.setWander(eid);
+
+          // Move to a random point near the lodge as the initial direction
+          UnitStateMachine.targetX[eid] = lodgeX + (Math.random() - 0.5) * 200;
+          UnitStateMachine.targetY[eid] = lodgeY + (Math.random() - 0.5) * 200;
           UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
           break;
         }

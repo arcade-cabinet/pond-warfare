@@ -160,30 +160,21 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
   Sprite.yOffset[eid] = 0;
 
   switch (state) {
-    // Original: if (this.state === 'move') { this.state = 'idle'; this.tPos = null; }
     case UnitState.Move:
       UnitStateMachine.state[eid] = UnitState.Idle;
       break;
-
-    // Original: else if (this.state === 'atk_move') { this.state = 'idle'; this.tPos = null; this.attackMoveTarget = null; }
     case UnitState.AttackMovePatrol:
       UnitStateMachine.state[eid] = UnitState.Idle;
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
       break;
-
-    // Original: else if (this.state === 'g_move') { this.state = 'gath'; this.gTimer = 60; }
     case UnitState.GatherMove:
       UnitStateMachine.state[eid] = UnitState.Gathering;
       UnitStateMachine.gatherTimer[eid] = GATHER_TIMER;
       break;
-
-    // Original: else if (this.state === 'b_move') { this.state = 'build'; this.gTimer = 30; }
     case UnitState.BuildMove:
       UnitStateMachine.state[eid] = UnitState.Building;
       UnitStateMachine.gatherTimer[eid] = BUILD_TIMER;
       break;
-
-    // Original: else if (this.state === 'rep_move') { this.state = 'repair'; this.gTimer = 40; }
     case UnitState.RepairMove:
       UnitStateMachine.state[eid] = UnitState.Repairing;
       UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
@@ -213,7 +204,6 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
         Carrying.resourceType[eid] = ResourceType.None;
 
         // If the gather target still has resources, go back to it
-        // Original: if (this.tEnt && this.tEnt.resAmount>0) { this.tPos={x:this.tEnt.x,y:this.tEnt.y}; this.state='g_move'; }
         const tEnt = UnitStateMachine.targetEntity[eid];
         if (tEnt !== -1 && hasComponent(world.ecs, tEnt, Resource) && Resource.amount[tEnt] > 0) {
           UnitStateMachine.targetX[eid] = Position.x[tEnt];
@@ -227,8 +217,6 @@ function arrive(world: GameWorld, eid: number, state: UnitState): void {
       }
       break;
     }
-
-    // Original: else if (this.state === 'a_move') this.state = 'atk';
     case UnitState.AttackMove:
       UnitStateMachine.state[eid] = UnitState.Attacking;
       break;

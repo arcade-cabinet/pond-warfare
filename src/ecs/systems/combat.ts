@@ -51,7 +51,6 @@ export function combatSystem(world: GameWorld): void {
   const allTargetable = query(world.ecs, [Position, Health, FactionTag]);
 
   // --- Tower auto-attack (lines 1587-1596) ---
-  // Original: if (this.type === 'tower' && this.progress >= 100 && this.atkCD <= 0)
   for (let i = 0; i < towers.length; i++) {
     const eid = towers[i];
     if (Health.current[eid] <= 0) continue;
@@ -65,8 +64,6 @@ export function combatSystem(world: GameWorld): void {
 
     let closest = -1;
     let minDist = range;
-
-    // Original: let targets = GAME.entities.filter(e => e.faction !== this.faction && e.hp > 0 && !e.isResource);
     for (let j = 0; j < allTargetable.length; j++) {
       const t = allTargetable[j];
       if (FactionTag.faction[t] === faction) continue;
@@ -84,7 +81,6 @@ export function combatSystem(world: GameWorld): void {
 
     if (closest !== -1) {
       audio.shoot();
-      // Original: GAME.projectiles.push(new Projectile(this.x, this.y-20, closest.x, closest.y, closest, this.dmg, this));
       spawnProjectile(
         world,
         ex,
@@ -143,7 +139,6 @@ export function combatSystem(world: GameWorld): void {
     }
 
     // --- Idle auto-aggro (lines 1598-1603) ---
-    // Original: if (this.state === 'idle' && this.dmg && !this.isBuilding && GAME.frameCount % 30 === 0)
     if (state === UnitState.Idle && dmg > 0 && world.frameCount % 30 === 0) {
       const aggroRad = faction === Faction.Enemy ? AGGRO_RADIUS_ENEMY : AGGRO_RADIUS_PLAYER;
 
@@ -177,9 +172,7 @@ export function combatSystem(world: GameWorld): void {
     }
 
     // --- Attack-move scanning (lines 1606-1618) ---
-    // Original: if (this.state === 'atk_move' && this.tPos && GAME.frameCount % 15 === 0)
     if (state === UnitState.AttackMovePatrol && world.frameCount % 15 === 0) {
-      // Original: let scanRad = this.atkRange > 60 ? this.atkRange : 150;
       const atkRange = Combat.attackRange[eid];
       const scanRad = atkRange > 60 ? atkRange : 150;
 
@@ -204,7 +197,6 @@ export function combatSystem(world: GameWorld): void {
 
       if (closeTarget !== -1) {
         // Save current attack-move destination so we can resume later
-        // Original: this.attackMoveTarget = this.tPos; this.cmdAtk(closeTarget);
         UnitStateMachine.attackMoveTargetX[eid] = UnitStateMachine.targetX[eid];
         UnitStateMachine.attackMoveTargetY[eid] = UnitStateMachine.targetY[eid];
         UnitStateMachine.hasAttackMoveTarget[eid] = 1;
@@ -219,10 +211,8 @@ export function combatSystem(world: GameWorld): void {
     }
 
     // --- Attack-move resume (lines 1621-1625) ---
-    // Original: if (this.state === 'idle' && this.attackMoveTarget)
     if (state === UnitState.Idle && UnitStateMachine.hasAttackMoveTarget[eid]) {
       // Resume attack-move patrol to saved destination
-      // Original: this.cmdAttackMove(tp.x, tp.y)
       UnitStateMachine.targetX[eid] = UnitStateMachine.attackMoveTargetX[eid];
       UnitStateMachine.targetY[eid] = UnitStateMachine.attackMoveTargetY[eid];
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
@@ -232,11 +222,8 @@ export function combatSystem(world: GameWorld): void {
     }
 
     // --- Attack state (lines 1711-1725) ---
-    // Original: if (this.state === 'atk')
     if (state === UnitState.Attacking) {
       const tEnt = UnitStateMachine.targetEntity[eid];
-
-      // Original: if (!this.tEnt || this.tEnt.hp <= 0) { this.state = 'idle'; return; }
       if (tEnt === -1 || !hasComponent(world.ecs, tEnt, Health) || Health.current[tEnt] <= 0) {
         UnitStateMachine.state[eid] = UnitState.Idle;
         continue;
@@ -244,7 +231,6 @@ export function combatSystem(world: GameWorld): void {
 
       const dx = Position.x[tEnt] - ex;
       const dy = Position.y[tEnt] - ey;
-      // Original: this.facingLeft = dx < 0;
       Sprite.facingLeft[eid] = dx < 0 ? 1 : 0;
 
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -254,7 +240,6 @@ export function combatSystem(world: GameWorld): void {
         // In range - attack if cooldown ready
         if (Combat.attackCooldown[eid] <= 0) {
           if (kind === EntityKind.Sniper) {
-            // Original: AudioSys.sfx.shoot(); GAME.projectiles.push(new Projectile(...));
             audio.shoot();
             spawnProjectile(world, ex, ey - 10, Position.x[tEnt], Position.y[tEnt], tEnt, dmg, eid);
           } else if (kind === EntityKind.BossCroc) {
@@ -291,14 +276,12 @@ export function combatSystem(world: GameWorld): void {
             }
           } else {
             // Melee: direct damage
-            // Original: this.tEnt.takeDamage(this.dmg, this);
             takeDamage(world, tEnt, dmg, eid);
           }
           Combat.attackCooldown[eid] = ATTACK_COOLDOWN;
         }
       } else {
         // Out of range - chase target
-        // Original: this.tPos={x:this.tEnt.x,y:this.tEnt.y}; this.state='a_move';
         UnitStateMachine.targetX[eid] = Position.x[tEnt];
         UnitStateMachine.targetY[eid] = Position.y[tEnt];
         UnitStateMachine.state[eid] = UnitState.AttackMove;

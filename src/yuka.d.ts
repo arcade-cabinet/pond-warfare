@@ -6,11 +6,39 @@ declare module 'yuka' {
     z: number;
     constructor(x?: number, y?: number, z?: number);
     set(x: number, y: number, z: number): this;
+    copy(v: Vector3): this;
+    subVectors(a: Vector3, b: Vector3): this;
+    normalize(): this;
+    divideScalar(s: number): this;
+    multiplyScalar(s: number): this;
+    add(v: Vector3): this;
+    length(): number;
+    squaredDistanceTo(v: Vector3): number;
+    squaredLength(): number;
+    applyMatrix4(m: Matrix4): this;
+    applyRotation(q: Quaternion): this;
   }
+
+  export class Matrix4 {
+    getInverse(target: Matrix4): Matrix4;
+  }
+
+  export class Quaternion {}
 
   export class GameEntity {
     position: Vector3;
     uuid: string;
+    active: boolean;
+    /** A list of neighbors populated by EntityManager.updateNeighborhood(). */
+    neighbors: GameEntity[];
+    /** Entities within this radius are considered neighbors. Default 1. */
+    neighborhoodRadius: number;
+    /** Whether the EntityManager should compute neighbors each frame. Default false. */
+    updateNeighborhood: boolean;
+    /** Bounding radius used for obstacle avoidance and spatial queries. Default 0. */
+    boundingRadius: number;
+    /** Reference to the EntityManager that owns this entity. */
+    manager: EntityManager | null;
   }
 
   export class MovingEntity extends GameEntity {
@@ -25,12 +53,18 @@ declare module 'yuka' {
   }
 
   export class SteeringManager {
+    /** Ordered list of steering behaviors. */
+    behaviors: SteeringBehavior[];
     add(behavior: SteeringBehavior): this;
+    remove(behavior: SteeringBehavior): this;
     clear(): this;
   }
 
   export class Vehicle extends MovingEntity {
+    mass: number;
     steering: SteeringManager;
+    worldMatrix: Matrix4;
+    rotation: Quaternion;
   }
 
   export class ArriveBehavior extends SteeringBehavior {
@@ -46,11 +80,34 @@ declare module 'yuka' {
 
   export class FleeBehavior extends SteeringBehavior {
     target: Vector3;
+    /** The agent only flees if within this distance of the target. Default 10. */
     panicDistance: number;
     constructor(target?: Vector3, panicDistance?: number);
   }
 
+  export class SeparationBehavior extends SteeringBehavior {
+    constructor();
+  }
+
+  export class WanderBehavior extends SteeringBehavior {
+    /** Radius of the constraining circle. Default 1. */
+    radius: number;
+    /** Distance the wander circle is projected in front of the agent. Default 5. */
+    distance: number;
+    /** Maximum displacement along the circle each frame. Default 5. */
+    jitter: number;
+    constructor(radius?: number, distance?: number, jitter?: number);
+  }
+
+  export class ObstacleAvoidanceBehavior extends SteeringBehavior {
+    obstacles: GameEntity[];
+    brakingWeight: number;
+    dBoxMinLength: number;
+    constructor(obstacles?: GameEntity[]);
+  }
+
   export class EntityManager {
+    entities: GameEntity[];
     add(entity: GameEntity): this;
     remove(entity: GameEntity): this;
     update(delta: number): this;

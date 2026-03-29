@@ -1,7 +1,6 @@
 /**
  * Procedural Sprite Generator
  *
- * Faithful port of SpriteGen (lines 234-311 of pond_craft.html).
  * Generates all 14 sprite types on offscreen canvases, then converts
  * to PixiJS Textures. Every pixel placement matches the original exactly.
  */

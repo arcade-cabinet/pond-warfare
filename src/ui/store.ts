@@ -82,6 +82,10 @@ export const tooltipData = signal<TooltipData | null>(null);
 export const tooltipX = signal(0);
 export const tooltipY = signal(0);
 
+// ---- Control groups ----
+/** Mapping of group number (1-9) to entity count. Empty groups are omitted. */
+export const ctrlGroupCounts = signal<Record<number, number>>({});
+
 // ---- Production queue ----
 export interface QueueItem {
   buildingKind: number;

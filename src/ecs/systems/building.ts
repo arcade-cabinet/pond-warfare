@@ -43,11 +43,8 @@ export function buildingSystem(world: GameWorld): void {
     const state = UnitStateMachine.state[eid] as UnitState;
 
     // --- Build state (lines 1685-1693) ---
-    // Original: if (this.state === 'build')
     if (state === UnitState.Building) {
       const tEnt = UnitStateMachine.targetEntity[eid];
-
-      // Original: if (!this.tEnt || this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; return; }
       if (
         tEnt === -1 ||
         !hasComponent(world.ecs, tEnt, Health) ||
@@ -58,7 +55,6 @@ export function buildingSystem(world: GameWorld): void {
       }
 
       // SFX and particles every 20 frames
-      // Original: if (GAME.frameCount % 20 === 0) { AudioSys.sfx.build(); this.part(PALETTE.mudLight); }
       if (world.frameCount % 20 === 0) {
         audio.build();
         world.particles.push({
@@ -73,16 +69,12 @@ export function buildingSystem(world: GameWorld): void {
       }
 
       // Timer countdown
-      // Original: if (--this.gTimer <= 0)
       UnitStateMachine.gatherTimer[eid]--;
       if (UnitStateMachine.gatherTimer[eid] <= 0) {
-        // Original: this.tEnt.hp += 10; this.tEnt.progress = (this.tEnt.hp/this.tEnt.maxHp)*100;
         Health.current[tEnt] += 10;
         if (hasComponent(world.ecs, tEnt, Building)) {
           Building.progress[tEnt] = (Health.current[tEnt] / Health.max[tEnt]) * 100;
         }
-
-        // Original: if (this.tEnt.hp >= this.tEnt.maxHp) { this.tEnt.hp=this.tEnt.maxHp; this.tEnt.progress=100; this.state='idle'; }
         if (Health.current[tEnt] >= Health.max[tEnt]) {
           Health.current[tEnt] = Health.max[tEnt];
           if (hasComponent(world.ecs, tEnt, Building)) {
@@ -101,11 +93,8 @@ export function buildingSystem(world: GameWorld): void {
     }
 
     // --- Repair state (lines 1695-1710) ---
-    // Original: if (this.state === 'repair')
     if (state === UnitState.Repairing) {
       const tEnt = UnitStateMachine.targetEntity[eid];
-
-      // Original: if (!this.tEnt || this.tEnt.hp >= this.tEnt.maxHp) { this.state = 'idle'; return; }
       if (
         tEnt === -1 ||
         !hasComponent(world.ecs, tEnt, Health) ||
@@ -116,7 +105,6 @@ export function buildingSystem(world: GameWorld): void {
       }
 
       // SFX and particles every 20 frames
-      // Original: if (GAME.frameCount % 20 === 0) { AudioSys.sfx.build(); this.part('#22c55e'); }
       if (world.frameCount % 20 === 0) {
         audio.build();
         world.particles.push({
@@ -131,11 +119,9 @@ export function buildingSystem(world: GameWorld): void {
       }
 
       // Timer countdown
-      // Original: if (--this.gTimer <= 0)
       UnitStateMachine.gatherTimer[eid]--;
       if (UnitStateMachine.gatherTimer[eid] <= 0) {
         // Repair costs 1 twig per 5 HP
-        // Original: if (GAME.resources.twigs >= 1) { GAME.resources.twigs -= 1; this.tEnt.hp = Math.min(this.tEnt.maxHp, this.tEnt.hp + 5); }
         if (world.resources.twigs >= 1) {
           world.resources.twigs -= 1;
           Health.current[tEnt] = Math.min(Health.max[tEnt], Health.current[tEnt] + 5);
@@ -146,7 +132,6 @@ export function buildingSystem(world: GameWorld): void {
             UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
           }
         } else {
-          // Original: GAME.floatingTexts.push({...}); this.state = 'idle';
           world.floatingTexts.push({
             x: Position.x[eid],
             y: Position.y[eid] - 20,

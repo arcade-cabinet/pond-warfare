@@ -1,7 +1,7 @@
 /**
  * Minimap Renderer
  *
- * Faithful port of minimap rendering (lines 1479-1501 of pond_craft.html).
+ * Minimap rendering for the HUD sidebar.
  *
  * Draws colored dots for all entities on a 200x200 canvas:
  * - Cyan (#38bdf8) for player entities

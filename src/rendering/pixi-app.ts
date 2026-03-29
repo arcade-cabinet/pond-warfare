@@ -42,12 +42,22 @@ import type { CameraShake } from './camera';
 import type { ProjectileRenderData } from './particles';
 
 // ---------------------------------------------------------------------------
-// Module-level color blind mode flag (mirrors game-renderer.ts approach)
+// Color blind mode flag
 // ---------------------------------------------------------------------------
 let cbMode = false;
 
-export function setPixiColorBlindMode(enabled: boolean): void {
+export function setColorBlindMode(enabled: boolean): void {
   cbMode = enabled;
+}
+
+// ---------------------------------------------------------------------------
+// PlacementPreview type (used by Game orchestrator)
+// ---------------------------------------------------------------------------
+export interface PlacementPreview {
+  buildingType: string;
+  worldX: number;
+  worldY: number;
+  canPlace: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,6 +110,11 @@ let effectGfx: Graphics;
 let uiGfx: Graphics;
 
 // ---------------------------------------------------------------------------
+// Building progress text pool
+// ---------------------------------------------------------------------------
+const buildingProgressTexts = new Map<number, Text>();
+
+// ---------------------------------------------------------------------------
 // Floating text pool
 // ---------------------------------------------------------------------------
 const floatingTextSprites: Text[] = [];
@@ -111,6 +126,14 @@ const COURIER_STYLE: TextStyleOptions = {
   fontWeight: 'bold',
   fill: 0xffffff,
   stroke: { color: 0x000000, width: 1 },
+};
+
+const PROGRESS_STYLE: TextStyleOptions = {
+  fontFamily: 'Courier New',
+  fontSize: 12,
+  fontWeight: 'bold',
+  fill: 0xfbbf24,
+  stroke: { color: 0x000000, width: 2 },
 };
 
 // ---------------------------------------------------------------------------
@@ -194,6 +217,9 @@ export function destroyPixiApp(): void {
     spr.destroy();
   }
   entitySprites.clear();
+  // Clean up building progress texts
+  for (const t of buildingProgressTexts.values()) t.destroy();
+  buildingProgressTexts.clear();
   // Clean up floating text pool
   for (const t of floatingTextSprites) t.destroy();
   floatingTextSprites.length = 0;
@@ -288,6 +314,13 @@ export function renderPixiFrame(
       entityLayer.removeChild(spr);
       spr.destroy();
       entitySprites.delete(eid);
+      // Also clean up any building progress text
+      const progText = buildingProgressTexts.get(eid);
+      if (progText) {
+        entityLayer.removeChild(progText);
+        progText.destroy();
+        buildingProgressTexts.delete(eid);
+      }
     }
   }
 
@@ -543,6 +576,27 @@ function renderEntity(eid: number, frameCount: number): void {
     const dy = ey - sh / 2 + yOff;
     entityOverlayGfx.rect(dx, dy, sw, sh);
     entityOverlayGfx.stroke({ width: 1, color: 0xb45309 });
+
+    // Progress percentage text centered on building
+    let progText = buildingProgressTexts.get(eid);
+    if (!progText) {
+      progText = new Text({ text: '', style: PROGRESS_STYLE });
+      progText.anchor.set(0.5, 0.5);
+      entityLayer.addChild(progText);
+      buildingProgressTexts.set(eid, progText);
+    }
+    progText.text = `${Math.floor(progress)}%`;
+    progText.position.set(ex, ey);
+    progText.zIndex = ey + 1;
+    progText.visible = true;
+  } else {
+    // Remove progress text if building is complete or not a building
+    const progText = buildingProgressTexts.get(eid);
+    if (progText) {
+      entityLayer.removeChild(progText);
+      progText.destroy();
+      buildingProgressTexts.delete(eid);
+    }
   }
 }
 

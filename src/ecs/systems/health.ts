@@ -29,6 +29,7 @@ import {
   Sprite,
   trainingQueueSlots,
   UnitStateMachine,
+  Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, SpriteId, UnitState } from '@/types';
@@ -71,7 +72,6 @@ export function takeDamage(
   }
 
   // Floating damage text
-  // Original: GAME.floatingTexts.push({x: this.x + (Math.random()*10-5), y: this.y - this.height/2 - 5, t: `-${amount}`, c: '#ef4444', life: 40});
   const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
   world.floatingTexts.push({
     x: tx + (Math.random() * 10 - 5),
@@ -91,7 +91,6 @@ export function takeDamage(
       : Faction.Neutral;
 
     // Minimap ping for player units attacked by enemies
-    // Original: if (this.faction === 'player' && attacker.faction === 'enemy') GAME.addPing(this.x, this.y);
     if (targetFaction === Faction.Player && attackerFaction === Faction.Enemy) {
       world.minimapPings.push({
         x: tx,
@@ -102,7 +101,6 @@ export function takeDamage(
     }
 
     // Target retaliates if in non-combat idle-ish state
-    // Original: if (!this.isBuilding && ['idle', 'gath', 'g_move', 'r_move', 'move'].includes(this.state) && this.dmg)
     if (
       !isBuilding &&
       hasComponent(world.ecs, targetEid, UnitStateMachine) &&
@@ -110,6 +108,10 @@ export function takeDamage(
       Combat.damage[targetEid] > 0
     ) {
       const targetState = UnitStateMachine.state[targetEid] as UnitState;
+      const targetKind = hasComponent(world.ecs, targetEid, EntityTypeTag)
+        ? (EntityTypeTag.kind[targetEid] as EntityKind)
+        : -1;
+
       if (
         targetState === UnitState.Idle ||
         targetState === UnitState.Gathering ||
@@ -117,11 +119,42 @@ export function takeDamage(
         targetState === UnitState.ReturnMove ||
         targetState === UnitState.Move
       ) {
-        // cmdAtk(attacker)
-        UnitStateMachine.targetEntity[targetEid] = attackerEid;
-        UnitStateMachine.targetX[targetEid] = Position.x[attackerEid];
-        UnitStateMachine.targetY[targetEid] = Position.y[attackerEid];
-        UnitStateMachine.state[targetEid] = UnitState.AttackMove;
+        // Gatherers in gathering-related states flee briefly before retaliating
+        const isGathering =
+          targetKind === EntityKind.Gatherer &&
+          (targetState === UnitState.Gathering ||
+            targetState === UnitState.GatherMove ||
+            targetState === UnitState.ReturnMove);
+
+        if (isGathering && !world.yukaManager.isFleeing(targetEid)) {
+          // Flee away from the attacker position
+          const attackerX = Position.x[attackerEid];
+          const attackerY = Position.y[attackerEid];
+
+          // Register with Yuka if not already
+          if (!world.yukaManager.has(targetEid)) {
+            const speed = hasComponent(world.ecs, targetEid, Velocity)
+              ? Velocity.speed[targetEid]
+              : 2.0;
+            world.yukaManager.addUnit(targetEid, tx, ty, speed, tx, ty);
+          }
+
+          world.yukaManager.setFlee(targetEid, attackerX, attackerY);
+
+          // Set state to Move so the movement system processes the Yuka
+          // steering; the flee timer in YukaManager will auto-expire and
+          // the unit will idle, at which point auto-gather can re-engage.
+          UnitStateMachine.state[targetEid] = UnitState.Move;
+          UnitStateMachine.targetX[targetEid] = tx + (tx - attackerX) * 0.5;
+          UnitStateMachine.targetY[targetEid] = ty + (ty - attackerY) * 0.5;
+        } else if (!isGathering) {
+          // Non-gatherers (or gatherers already done fleeing) retaliate
+          // cmdAtk(attacker)
+          UnitStateMachine.targetEntity[targetEid] = attackerEid;
+          UnitStateMachine.targetX[targetEid] = Position.x[attackerEid];
+          UnitStateMachine.targetY[targetEid] = Position.y[attackerEid];
+          UnitStateMachine.state[targetEid] = UnitState.AttackMove;
+        }
       }
     }
 
@@ -143,8 +176,6 @@ export function takeDamage(
       const dx = Position.x[ally] - tx;
       const dy = Position.y[ally] - ty;
       const dist = Math.sqrt(dx * dx + dy * dy);
-
-      // Original: if (dist < 300) e.cmdAtk(attacker);
       if (dist < ALLY_ASSIST_RADIUS) {
         UnitStateMachine.targetEntity[ally] = attackerEid;
         UnitStateMachine.targetX[ally] = Position.x[attackerEid];
@@ -155,7 +186,6 @@ export function takeDamage(
   }
 
   // Check for death
-  // Original: if (this.hp <= 0) this.die();
   if (Health.current[targetEid] <= 0) {
     processDeath(world, targetEid, attackerEid);
   }
@@ -293,7 +323,6 @@ export function healthSystem(world: GameWorld): void {
   const combatants = query(world.ecs, [Health, Combat]);
   for (let i = 0; i < combatants.length; i++) {
     const eid = combatants[i];
-    // Original: if (this.atkCD > 0) this.atkCD--;
     if (Combat.attackCooldown[eid] > 0) {
       Combat.attackCooldown[eid]--;
     }
@@ -303,14 +332,12 @@ export function healthSystem(world: GameWorld): void {
   const allLiving = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   for (let i = 0; i < allLiving.length; i++) {
     const eid = allLiving[i];
-    // Original: if (this.flashTimer > 0) this.flashTimer--;
     if (Health.flashTimer[eid] > 0) {
       Health.flashTimer[eid]--;
     }
   }
 
   // --- Passive healing (lines 1238-1246) ---
-  // Original: if (this.frameCount % 300 === 0) { player non-building units heal +1 HP when in non-combat states }
   if (world.frameCount % 300 === 0) {
     const units = query(world.ecs, [UnitStateMachine, Health, FactionTag, EntityTypeTag]);
     for (let i = 0; i < units.length; i++) {
@@ -322,7 +349,6 @@ export function healthSystem(world: GameWorld): void {
       if (Health.current[eid] >= Health.max[eid]) continue;
 
       const state = UnitStateMachine.state[eid] as UnitState;
-      // Original: if (ent.state === 'idle' || ent.state === 'move' || ent.state === 'gath' || ent.state === 'g_move' || ent.state === 'r_move')
       if (
         state === UnitState.Idle ||
         state === UnitState.Move ||
@@ -420,7 +446,6 @@ export function healthSystem(world: GameWorld): void {
   }
 
   // --- Win/lose condition check (lines 1248-1252) ---
-  // Original: if (this.frameCount % 60 === 0) { check lodge alive, nests remaining }
   if (world.frameCount % 60 === 0 && world.state === 'playing') {
     let playerLodgeAlive = false;
     let nestsRemaining = false;

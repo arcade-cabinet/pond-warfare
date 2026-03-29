@@ -1,7 +1,7 @@
 /**
  * Fog of War Renderer
  *
- * Faithful port of fog rendering (lines 1431-1447 of pond_craft.html).
+ * Fog of war rendering using Canvas2D overlay.
  *
  * Draws an animated drifting fog pattern (using a tiling noise texture),
  * then punches out vision circles around player entities using

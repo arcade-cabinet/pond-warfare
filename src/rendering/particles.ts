@@ -1,10 +1,9 @@
 /**
  * Particle & Projectile Trail Rendering Utilities
  *
- * Port of the particle drawing (lines 1365-1370) and projectile drawing
- * (Projectile.draw, lines 331-343) from the original pond_craft.html.
+ * Projectile trail data management.
  *
- * These are simple Canvas2D helper functions called by the main game renderer.
+ * Tracks trail positions for in-flight projectiles, consumed by the PixiJS renderer.
  */
 
 import { PALETTE } from '@/constants';

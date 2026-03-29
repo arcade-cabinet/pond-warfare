@@ -23,7 +23,6 @@ import type { GameWorld } from '@/ecs/world';
  */
 function getAmbientDarkness(timeInHours: number): number {
   // Find the two TIME_STOPS bracketing the current hour
-  // Original: let i = 0; while (i < TIME_STOPS.length - 1 && TIME_STOPS[i+1].h <= timeInHours) i++;
   let idx = 0;
   while (idx < TIME_STOPS.length - 1 && TIME_STOPS[idx + 1].h <= timeInHours) {
     idx++;
@@ -39,14 +38,11 @@ function getAmbientDarkness(timeInHours: number): number {
   // Linear interpolation between stops
   const t = (timeInHours - start.h) / (end.h - start.h);
   const r = start.c[0] + (end.c[0] - start.c[0]) * t;
-
-  // Original: this.ambientDarkness = 1.0 - (r / 255);
   return 1.0 - r / 255;
 }
 
 export function dayNightSystem(world: GameWorld): void {
   // --- Time of day advancement (line 1149) ---
-  // Original: this.timeOfDay += 0.05; if (this.timeOfDay >= 24*60) this.timeOfDay = 0;
   world.timeOfDay += 0.05;
   if (world.timeOfDay >= 24 * 60) {
     world.timeOfDay = 0;
@@ -60,18 +56,14 @@ export function dayNightSystem(world: GameWorld): void {
   const margin = 200;
   for (let i = 0; i < world.fireflies.length; i++) {
     const f = world.fireflies[i];
-
-    // Original: f.x += f.vx; f.y += f.vy; f.phase += 0.05;
     f.x += f.vx;
     f.y += f.vy;
     f.phase += 0.05;
 
     // Random drift on x velocity
-    // Original: f.vx += (Math.random() - 0.5) * 0.1;
     f.vx += (Math.random() - 0.5) * 0.1;
 
     // Clamp velocity
-    // Original: if (f.vx > 1) f.vx = 1; if (f.vx < -1) f.vx = -1;
     if (f.vx > 1) f.vx = 1;
     if (f.vx < -1) f.vx = -1;
 

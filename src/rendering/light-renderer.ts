@@ -1,7 +1,7 @@
 /**
  * Dynamic Lighting Renderer
  *
- * Faithful port of the lighting pass (lines 1449-1477 of pond_craft.html).
+ * Dynamic lighting overlay using Canvas2D.
  *
  * Only active when ambientDarkness > 0.05. Draws radial gradient lights:
  * - Lodges / towers: warm yellow (251, 191, 36), radii 150 / 120

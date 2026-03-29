@@ -6,13 +6,13 @@
  * main game container on right (top bar + canvases + overlays).
  */
 
-import { hasComponent } from 'bitecs';
+import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
-import { Selectable } from '@/ecs/components';
+import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
-import { setColorBlindMode } from '@/rendering/game-renderer';
+import { setColorBlindMode } from '@/rendering/pixi-app';
 import { GameOverBanner } from './game-over';
 import { HUD } from './hud';
 import { IntroOverlay } from './intro-overlay';
@@ -114,6 +114,35 @@ export function App({ onMount }: AppProps) {
             if (hasPlayerUnitsSelected(game.world)) {
               game.world.attackMoveMode = true;
               game.syncUIStore();
+            }
+          }}
+          onCtrlGroupClick={(group) => {
+            const w = game.world;
+            const g = w.ctrlGroups[group];
+            if (g && g.length > 0) {
+              const alive = g.filter((eid) => entityExists(w.ecs, eid) && Health.current[eid] > 0);
+              w.ctrlGroups[group] = alive;
+              if (alive.length > 0) {
+                for (const s of w.selection) {
+                  if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 0;
+                }
+                w.selection = [...alive];
+                for (const s of w.selection) {
+                  if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 1;
+                }
+                // Smooth pan to center of group
+                let cx = 0;
+                let cy = 0;
+                for (const eid of alive) {
+                  cx += Position.x[eid];
+                  cy += Position.y[eid];
+                }
+                cx /= alive.length;
+                cy /= alive.length;
+                game.smoothPanTo(cx, cy);
+                audio.selectUnit();
+                game.syncUIStore();
+              }
             }
           }}
         />

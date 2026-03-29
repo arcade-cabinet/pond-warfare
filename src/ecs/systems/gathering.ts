@@ -58,7 +58,6 @@ export function gatheringSystem(world: GameWorld): void {
     const faction = FactionTag.faction[eid] as Faction;
 
     // --- Idle auto-gather (lines 1627-1639) ---
-    // Original: if (this.state === 'idle' && this.type === 'gatherer' && this.faction === 'player' && GAME.frameCount % 90 === 0)
     if (
       state === UnitState.Idle &&
       kind === EntityKind.Gatherer &&
@@ -66,14 +65,11 @@ export function gatheringSystem(world: GameWorld): void {
       world.frameCount % 90 === 0
     ) {
       // Only auto-gather if not holding resources
-      // Original: if (!this.heldRes)
       if (Carrying.resourceType[eid] === ResourceType.None) {
         const ex = Position.x[eid];
         const ey = Position.y[eid];
         let closest = -1;
         let minDist = AUTO_GATHER_RADIUS;
-
-        // Original: let nearRes = GAME.entities.filter(e => e.isResource && e.resAmount > 0);
         for (let j = 0; j < resources.length; j++) {
           const r = resources[j];
           if (Resource.amount[r] <= 0) continue;
@@ -98,12 +94,9 @@ export function gatheringSystem(world: GameWorld): void {
     }
 
     // --- Gathering state (lines 1661-1683) ---
-    // Original: if (this.state === 'gath')
     if (state !== UnitState.Gathering) continue;
 
     const tEnt = UnitStateMachine.targetEntity[eid];
-
-    // Original: if (!this.tEnt || this.tEnt.resAmount <= 0)
     if (tEnt === -1 || !hasComponent(world.ecs, tEnt, Resource) || Resource.amount[tEnt] <= 0) {
       // Try to find another nearby resource of same type (lines 1664-1672)
       if (tEnt !== -1 && hasComponent(world.ecs, tEnt, EntityTypeTag)) {
@@ -135,13 +128,11 @@ export function gatheringSystem(world: GameWorld): void {
           continue;
         }
       }
-      // Original: this.state = 'idle'; return;
       UnitStateMachine.state[eid] = UnitState.Idle;
       continue;
     }
 
     // SFX and particles every 30 frames
-    // Original: if (GAME.frameCount % 30 === 0) { AudioSys.sfx[this.tEnt.type==='cattail'?'chop':'mine'](); this.part(...) }
     if (world.frameCount % 30 === 0) {
       const resKind = EntityTypeTag.kind[tEnt] as EntityKind;
       if (resKind === EntityKind.Cattail) {
@@ -171,18 +162,15 @@ export function gatheringSystem(world: GameWorld): void {
     }
 
     // Timer countdown
-    // Original: if (--this.gTimer <= 0)
     UnitStateMachine.gatherTimer[eid]--;
     if (UnitStateMachine.gatherTimer[eid] <= 0) {
       const resKind = EntityTypeTag.kind[tEnt] as EntityKind;
 
       // Set carried resource type
-      // Original: this.heldRes = this.tEnt.type==='cattail'?'twigs':'clams';
       Carrying.resourceType[eid] =
         resKind === EntityKind.Cattail ? ResourceType.Twigs : ResourceType.Clams;
 
       // Deplete resource
-      // Original: this.tEnt.resAmount -= 10; if(this.tEnt.resAmount<=0) this.tEnt.die();
       Resource.amount[tEnt] -= GATHER_AMOUNT;
       // Track stats
       world.stats.resourcesGathered += GATHER_AMOUNT;
@@ -194,7 +182,6 @@ export function gatheringSystem(world: GameWorld): void {
       }
 
       // Find lodge to return to
-      // Original: let h = GAME.entities.find(e=>e.type==='lodge' && e.faction==='player');
       let lodge = -1;
       for (let j = 0; j < buildings.length; j++) {
         const b = buildings[j];
@@ -209,7 +196,6 @@ export function gatheringSystem(world: GameWorld): void {
       }
 
       if (lodge !== -1) {
-        // Original: this.rEnt = h; this.tPos={x:h.x,y:h.y}; this.state='r_move';
         UnitStateMachine.returnEntity[eid] = lodge;
         UnitStateMachine.targetX[eid] = Position.x[lodge];
         UnitStateMachine.targetY[eid] = Position.y[lodge];

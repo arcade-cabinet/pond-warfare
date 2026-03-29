@@ -40,7 +40,6 @@ export function resetFogOfWar(): void {
 }
 
 export function fogOfWarSystem(world: GameWorld): void {
-  // Original: if (this.frameCount % 10 === 0)
   if (world.frameCount % 10 !== 0) return;
 
   // If exploredCtx is not initialized, skip (non-fatal - rendering may not be ready)
@@ -50,23 +49,18 @@ export function fogOfWarSystem(world: GameWorld): void {
 
   for (let i = 0; i < entities.length; i++) {
     const eid = entities[i];
-
-    // Original: if (ent.faction === 'player')
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
 
     // Buildings get a larger reveal radius
-    // Original: let rad = ent.isBuilding ? 16 : 10;
     const isBuilding = hasComponent(world.ecs, eid, IsBuilding);
     const rad = isBuilding ? 16 : 10;
 
     // Scale position down to explored canvas coordinates
-    // Original: let ex = Math.floor(ent.x / 16), ey = Math.floor(ent.y / 16);
     const ex = Math.floor(Position.x[eid] / EXPLORED_SCALE);
     const ey = Math.floor(Position.y[eid] / EXPLORED_SCALE);
 
     // Draw reveal circle with low opacity for gradual reveal
-    // Original: this.exploredCtx.fillStyle = 'rgba(255,255,255,0.15)';
     exploredCtx.fillStyle = 'rgba(255,255,255,0.15)';
     exploredCtx.beginPath();
     exploredCtx.arc(ex, ey, rad, 0, Math.PI * 2);
