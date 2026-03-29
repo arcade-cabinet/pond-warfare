@@ -137,6 +137,7 @@ export class Game {
   private lastTime = 0;
   private accumulator = 0;
   private running = false;
+  private initializing = false;
   private rafId: number | null = null;
 
   // Audio/music state tracking
@@ -172,6 +173,10 @@ export class Game {
     minimapCanvas: HTMLCanvasElement,
     minimapCamElement: HTMLElement,
   ): Promise<void> {
+    // Prevent overlapping async init calls
+    if (this.initializing) return;
+    this.initializing = true;
+
     // Tear down any previous session to prevent duplicate loops/listeners
     if (this.running) {
       this.destroy();
@@ -442,6 +447,7 @@ export class Game {
     // Start game loop
     this.lastTime = performance.now();
     this.running = true;
+    this.initializing = false;
     this.rafId = requestAnimationFrame((t) => this.loop(t));
   }
 
@@ -654,6 +660,7 @@ export class Game {
       onUpdate: () => {
         this.world.camX = target.camX;
         this.world.camY = target.camY;
+        clampCamera(this.world);
       },
       onComplete: () => {
         this._panAnim = null;
@@ -712,7 +719,11 @@ export class Game {
 
     while (this.accumulator >= FIXED_DT) {
       if (this.world.state === 'playing' && !this.world.paused) {
-        for (let i = 0; i < this.world.gameSpeed; i++) {
+        for (
+          let i = 0;
+          i < this.world.gameSpeed && this.world.state === 'playing' && !this.world.paused;
+          i++
+        ) {
           this.updateLogic();
         }
       }
@@ -1806,10 +1817,11 @@ export class Game {
       document.removeEventListener('keydown', this.initAudioHandler);
       this.initAudioHandler = null;
     }
-    this.keyboard.destroy();
-    this.pointer.destroy();
-    this.physicsManager.destroy();
+    this.keyboard?.destroy();
+    this.pointer?.destroy();
+    this.physicsManager?.destroy();
     destroyPixiApp();
+    this.initializing = false;
   }
 }
 
