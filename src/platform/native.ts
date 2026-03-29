@@ -10,7 +10,7 @@ import { Capacitor } from '@capacitor/core';
 /** Whether the app is running as a native mobile app. */
 export const isNative = Capacitor.isNativePlatform();
 
-/** Initialize native platform features (StatusBar, KeepAwake, back button). */
+/** Initialize native platform features (StatusBar, ScreenOrientation, back button, app state). */
 export async function initNativePlatform(): Promise<void> {
   if (!isNative) return;
 
