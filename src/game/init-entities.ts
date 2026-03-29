@@ -131,13 +131,33 @@ export function spawnInitialEntities(world: GameWorld): void {
   const { x: sx, y: sy } = quadrantCenter(playerQuad);
 
   // Player lodge
-  const lodgeEid = spawnEntity(world, EntityKind.Lodge, sx, sy, Faction.Player);
-  world.selection = [lodgeEid];
+  spawnEntity(world, EntityKind.Lodge, sx, sy, Faction.Player);
 
-  // 3 starting gatherers clustered near lodge
+  // Commander Otter at lodge entrance
+  const commanderEid = spawnEntity(world, EntityKind.Commander, sx, sy + 40, Faction.Player);
+  world.selection = [commanderEid];
+
+  // 2 Gatherers flanking the Lodge
   spawnEntity(world, EntityKind.Gatherer, sx - 40, sy + 40, Faction.Player);
   spawnEntity(world, EntityKind.Gatherer, sx + 40, sy + 40, Faction.Player);
-  spawnEntity(world, EntityKind.Gatherer, sx, sy + 50, Faction.Player);
+
+  // 1 Scout positioned slightly forward toward map center
+  const mapCenterX = WORLD_WIDTH / 2;
+  const mapCenterY = WORLD_HEIGHT / 2;
+  const dirX = mapCenterX - sx;
+  const dirY = mapCenterY - sy;
+  const dirLen = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
+  spawnEntity(
+    world,
+    EntityKind.Scout,
+    sx + (dirX / dirLen) * 60,
+    sy + (dirY / dirLen) * 60,
+    Faction.Player,
+  );
+
+  // Center camera on Commander
+  world.camX = sx - world.viewWidth / 2;
+  world.camY = (sy + 40) - world.viewHeight / 2;
 
   // ---- Guaranteed starting resources near player ----
   spawnClambed(world, rng, sx - 120, sy - 40);

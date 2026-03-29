@@ -50,6 +50,9 @@ export enum EntityKind {
   HerbalistHut = 27,
   Swimmer = 28,
   Trapper = 29,
+  Commander = 30,
+  Frog = 31,
+  Fish = 32,
 }
 
 /** Entity kinds that represent buildings (get larger vision radius, etc.). */
@@ -115,9 +118,12 @@ export enum SpriteId {
   HerbalistHut = EntityKind.HerbalistHut,
   Swimmer = EntityKind.Swimmer,
   Trapper = EntityKind.Trapper,
+  Commander = EntityKind.Commander,
+  Frog = EntityKind.Frog,
+  Fish = EntityKind.Fish,
   // Non-entity visual sprites
-  Bones = 30,
-  Rubble = 31,
+  Bones = 40,
+  Rubble = 41,
 }
 
 export interface GameResources {

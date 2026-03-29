@@ -696,6 +696,22 @@ export class Game {
       }
     }
 
+    // Periodically refresh obstacle list for Yuka steering (buildings)
+    if (this.world.yukaManager.shouldRefreshObstacles()) {
+      const buildings = query(this.world.ecs, [Position, Health, IsBuilding, Collider]);
+      const obstacleList: Array<{ x: number; y: number; radius: number }> = [];
+      for (let i = 0; i < buildings.length; i++) {
+        const b = buildings[i];
+        if (Health.current[b] <= 0) continue;
+        obstacleList.push({
+          x: Position.x[b],
+          y: Position.y[b],
+          radius: Collider.radius[b],
+        });
+      }
+      this.world.yukaManager.setObstacles(obstacleList);
+    }
+
     // Update Yuka AI steering (1/60s fixed step)
     this.world.yukaManager.update(1 / 60, this.world.ecs);
 

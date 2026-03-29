@@ -140,6 +140,14 @@ export interface GameWorld {
 
   // Champion enemies: set of entity IDs that are champion variants
   championEnemies: Set<number>;
+
+  // Tutorial state
+  tutorialStep: number;
+  tutorialShownSteps: Set<number>;
+  isFirstGame: boolean;
+
+  // Commander aura: entity ID -> expiry frame for +10% damage buff
+  commanderDamageBuff: Set<number>;
 }
 
 export function createGameWorld(): GameWorld {
@@ -231,5 +239,9 @@ export function createGameWorld(): GameWorld {
     poisonTimers: new Map(),
     alphaDamageBuff: new Map(),
     championEnemies: new Set(),
+    tutorialStep: 0,
+    tutorialShownSteps: new Set(),
+    isFirstGame: true,
+    commanderDamageBuff: new Set(),
   };
 }

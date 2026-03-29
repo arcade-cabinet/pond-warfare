@@ -43,6 +43,9 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'herbalist_hut', id: SpriteId.HerbalistHut },
   { name: 'swimmer', id: SpriteId.Swimmer },
   { name: 'trapper', id: SpriteId.Trapper },
+  { name: 'commander', id: SpriteId.Commander },
+  { name: 'frog', id: SpriteId.Frog },
+  { name: 'fish', id: SpriteId.Fish },
 ];
 
 const LARGE_TYPES = new Set([
@@ -685,6 +688,73 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
     p(2, 6, '#d97706');
     p(3, 7, '#d97706');
     p(2, 8, '#d97706');
+  } else if (type === 'commander') {
+    // Commander Otter: gatherer body + gold crown + blue cape
+    // Shadow under feet
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(5, 14, 6, 1);
+    // Dark outline around body
+    rect(4, 3, 1, 10, OTTER_OUTLINE);
+    rect(12, 3, 1, 10, OTTER_OUTLINE);
+    rect(5, 1, 6, 1, OTTER_OUTLINE);
+    rect(5, 12, 1, 2, OTTER_OUTLINE);
+    rect(11, 12, 1, 2, OTTER_OUTLINE);
+    // Otter base body (same as gatherer)
+    rect(5, 4, 6, 8, PALETTE.otterBase);
+    rect(6, 5, 4, 6, PALETTE.otterBelly);
+    rect(5, 2, 6, 4, PALETTE.otterBase);
+    // Face
+    p(6, 3, PALETTE.black);
+    p(9, 3, PALETTE.black);
+    p(7, 4, PALETTE.otterNose);
+    p(8, 4, PALETTE.otterNose);
+    p(8, 4, OTTER_NOSE_HIGHLIGHT);
+    // Arms
+    rect(4, 5, 1, 4, PALETTE.otterBase);
+    rect(11, 5, 1, 4, PALETTE.otterBase);
+    // Legs & tail
+    rect(5, 12, 2, 2, PALETTE.otterBase);
+    rect(9, 12, 2, 2, PALETTE.otterBase);
+    rect(11, 10, 3, 2, PALETTE.otterBase);
+    // Gold crown/helmet (3 bright gold pixels on head)
+    p(6, 1, '#fbbf24');
+    p(8, 0, '#fbbf24');
+    p(10, 1, '#fbbf24');
+    // Crown band
+    rect(6, 2, 5, 1, '#fbbf24');
+    // Blue cape flowing behind (2px wide, 4px tall)
+    rect(12, 6, 2, 4, '#3b82f6');
+    rect(13, 10, 1, 2, '#3b82f6');
+    // Cape highlight
+    p(12, 7, '#60a5fa');
+  } else if (type === 'frog') {
+    // Tiny green blob (4x4 green with 2 dark eyes)
+    rect(6, 8, 4, 4, '#22c55e');
+    rect(5, 9, 6, 2, '#22c55e');
+    // Lighter belly
+    rect(7, 10, 2, 1, '#86efac');
+    // Eyes
+    p(7, 8, PALETTE.black);
+    p(9, 8, PALETTE.black);
+    // Front legs
+    p(5, 11, '#22c55e');
+    p(10, 11, '#22c55e');
+    // Back legs (splayed)
+    p(5, 12, '#166534');
+    p(10, 12, '#166534');
+  } else if (type === 'fish') {
+    // Small blue/silver horizontal shape (6x3) with tail fin
+    rect(5, 7, 6, 3, '#94a3b8');
+    // Blue top stripe
+    rect(5, 7, 6, 1, '#38bdf8');
+    // Tail fin
+    rect(3, 6, 2, 2, '#60a5fa');
+    rect(3, 9, 2, 2, '#60a5fa');
+    // Eye
+    p(10, 8, PALETTE.black);
+    // Belly highlight
+    p(7, 9, '#e2e8f0');
+    p(8, 9, '#e2e8f0');
   } else {
     throw new Error(`Unhandled sprite type: ${type}`);
   }

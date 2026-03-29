@@ -140,7 +140,14 @@ export function movementSystem(world: GameWorld): void {
         // Yuka steering for any registered unit (positions synced in yukaManager.update)
         // Update Yuka target in case ECS target changed
         const isChasing = state === UnitState.AttackMove || state === UnitState.AttackMovePatrol;
-        world.yukaManager.setTarget(eid, tx, ty, isChasing);
+
+        // Use PursuitBehavior for intercept prediction when chasing a Yuka-registered target
+        const targetEnt = UnitStateMachine.targetEntity[eid];
+        if (isChasing && targetEnt !== -1 && world.yukaManager.has(targetEnt)) {
+          world.yukaManager.setPursuit(eid, targetEnt);
+        } else {
+          world.yukaManager.setTarget(eid, tx, ty, isChasing);
+        }
 
         // Update facing based on Yuka velocity
         const vel = world.yukaManager.getVelocity(eid);

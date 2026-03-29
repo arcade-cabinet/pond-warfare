@@ -372,6 +372,36 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     twigCost: 60,
     foodCost: 1,
   },
+  [EntityKind.Commander]: {
+    hp: 80,
+    speed: 2.0,
+    damage: 5,
+    attackRange: 60,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
+  [EntityKind.Frog]: {
+    hp: 5,
+    speed: 0.5,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
+  [EntityKind.Fish]: {
+    hp: 5,
+    speed: 1.0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
 };
 
 /**
@@ -468,6 +498,9 @@ export function entityKindFromString(name: string): EntityKind {
     herbalist_hut: EntityKind.HerbalistHut,
     swimmer: EntityKind.Swimmer,
     trapper: EntityKind.Trapper,
+    commander: EntityKind.Commander,
+    frog: EntityKind.Frog,
+    fish: EntityKind.Fish,
   };
   const kind = map[name];
   if (kind === undefined) {
@@ -508,6 +541,9 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.HerbalistHut]: 'Herbalist Hut',
     [EntityKind.Swimmer]: 'Swimmer',
     [EntityKind.Trapper]: 'Trapper',
+    [EntityKind.Commander]: 'Commander',
+    [EntityKind.Frog]: 'Frog',
+    [EntityKind.Fish]: 'Fish',
   };
   return names[kind];
 }

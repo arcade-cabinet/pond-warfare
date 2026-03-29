@@ -54,6 +54,9 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.HerbalistHut]: SpriteId.HerbalistHut,
   [EntityKind.Swimmer]: SpriteId.Swimmer,
   [EntityKind.Trapper]: SpriteId.Trapper,
+  [EntityKind.Commander]: SpriteId.Commander,
+  [EntityKind.Frog]: SpriteId.Frog,
+  [EntityKind.Fish]: SpriteId.Fish,
 };
 
 export function spawnEntity(

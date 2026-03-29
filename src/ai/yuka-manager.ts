@@ -302,6 +302,7 @@ export class YukaManager {
     this.fleeTimers.delete(eid);
     this.wanderBehaviors.delete(eid);
     this.formationEids.delete(eid);
+    this.pursuitTargets.delete(eid);
   }
 
   /**
@@ -376,32 +377,64 @@ export class YukaManager {
    * @param targetY  Group center target Y
    */
   setFormation(eids: number[], targetX: number, targetY: number): void {
-    for (const eid of eids) {
-      const vehicle = this.vehicles.get(eid);
-      if (!vehicle) continue;
+    // Need at least one entity; first entity becomes leader
+    if (eids.length === 0) return;
 
-      // Rebuild steering: separation + alignment + cohesion + arrive to offset target
+    const leaderEid = eids[0];
+    const leaderVehicle = this.vehicles.get(leaderEid);
+
+    // Set up the leader with standard arrive behavior toward the group center
+    if (leaderVehicle) {
+      leaderVehicle.steering.clear();
+      this.wanderBehaviors.delete(leaderEid);
+      this.pursuitTargets.delete(leaderEid);
+
+      const separation = new SeparationBehavior();
+      separation.weight = SEPARATION_WEIGHT;
+      leaderVehicle.steering.add(separation);
+
+      const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+      obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+      leaderVehicle.steering.add(obstacleAvoidance);
+
+      const arrive = new ArriveBehavior(new Vector3(targetX, 0, targetY));
+      arrive.deceleration = 1.5;
+      leaderVehicle.steering.add(arrive);
+
+      this.formationEids.add(leaderEid);
+    }
+
+    // Followers use OffsetPursuitBehavior to maintain exact offset from leader
+    for (let i = 1; i < eids.length; i++) {
+      const eid = eids[i];
+      const vehicle = this.vehicles.get(eid);
+      if (!vehicle || !leaderVehicle) continue;
+
       vehicle.steering.clear();
       this.wanderBehaviors.delete(eid);
+      this.pursuitTargets.delete(eid);
 
       const separation = new SeparationBehavior();
       separation.weight = SEPARATION_WEIGHT;
       vehicle.steering.add(separation);
 
-      const alignment = new AlignmentBehavior();
-      alignment.weight = ALIGNMENT_WEIGHT;
-      vehicle.steering.add(alignment);
+      const obstacleAvoidance = new ObstacleAvoidanceBehavior(this.obstacles);
+      obstacleAvoidance.weight = OBSTACLE_AVOIDANCE_WEIGHT;
+      vehicle.steering.add(obstacleAvoidance);
 
-      const cohesion = new CohesionBehavior();
-      cohesion.weight = COHESION_WEIGHT;
-      vehicle.steering.add(cohesion);
+      // Calculate offset from leader's current position to this unit's
+      // target position. The ECS has already assigned per-unit formation
+      // offsets in UnitStateMachine.targetX/Y, so we derive the offset
+      // from the difference between the unit's target and the group center.
+      const unitTargetX = vehicle.position.x; // Will be corrected by movement system
+      const unitTargetZ = vehicle.position.z;
+      const offsetX = unitTargetX - leaderVehicle.position.x;
+      const offsetZ = unitTargetZ - leaderVehicle.position.z;
+      const offset = new Vector3(offsetX, 0, offsetZ);
 
-      // Arrive toward the per-unit offset target (set via ECS UnitStateMachine.targetX/Y)
-      // The movement system will call setTarget() with the per-unit position,
-      // but we use targetX/targetY as a fallback center point here.
-      const arrive = new ArriveBehavior(new Vector3(targetX, 0, targetY));
-      arrive.deceleration = 1.5;
-      vehicle.steering.add(arrive);
+      const offsetPursuit = new OffsetPursuitBehavior(leaderVehicle, offset);
+      offsetPursuit.weight = 1.0;
+      vehicle.steering.add(offsetPursuit);
 
       this.formationEids.add(eid);
     }
@@ -432,6 +465,9 @@ export class YukaManager {
     this.fleeTimers.clear();
     this.wanderBehaviors.clear();
     this.formationEids.clear();
+    this.pursuitTargets.clear();
+    this.obstacles = [];
+    this.obstacleRefreshCounter = 0;
   }
 
   /**

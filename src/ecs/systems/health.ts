@@ -302,6 +302,31 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
     });
   }
 
+  // Commander death: dramatic announcement, screen shake, no respawn
+  if (
+    hasComponent(world.ecs, eid, EntityTypeTag) &&
+    (EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Commander &&
+    hasComponent(world.ecs, eid, FactionTag) &&
+    FactionTag.faction[eid] === Faction.Player
+  ) {
+    world.floatingTexts.push({
+      x: ex,
+      y: ey - 40,
+      text: 'COMMANDER FALLEN!',
+      color: '#ef4444',
+      life: 180,
+    });
+    world.floatingTexts.push({
+      x: ex,
+      y: ey - 20,
+      text: "The Commander can't be replaced...",
+      color: '#fbbf24',
+      life: 150,
+    });
+    world.shakeTimer = Math.max(world.shakeTimer, 20);
+    audio.deathBuilding(); // Dramatic audio alert
+  }
+
   // Boss croc loot
   if (
     hasComponent(world.ecs, eid, EntityTypeTag) &&

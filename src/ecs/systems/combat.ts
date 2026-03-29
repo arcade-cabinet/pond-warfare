@@ -40,7 +40,52 @@ import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 
+/**
+ * Commander aura: every 60 frames, find player Commander entities and
+ * buff all player combat units within 150px with +10% damage.
+ */
+function commanderAura(world: GameWorld): void {
+  if (world.frameCount % 60 !== 0) return;
+
+  // Clear previous buff set; we rebuild each tick
+  world.commanderDamageBuff.clear();
+
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
+
+  // Find living player Commanders
+  for (let i = 0; i < allUnits.length; i++) {
+    const eid = allUnits[i];
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    if ((EntityTypeTag.kind[eid] as EntityKind) !== EntityKind.Commander) continue;
+
+    const cx = Position.x[eid];
+    const cy = Position.y[eid];
+    const auraRadius = 150;
+
+    const candidates = world.spatialHash ? world.spatialHash.query(cx, cy, auraRadius) : allUnits;
+    for (let j = 0; j < candidates.length; j++) {
+      const t = candidates[j];
+      if (t === eid) continue;
+      if (!hasComponent(world.ecs, t, FactionTag) || FactionTag.faction[t] !== Faction.Player)
+        continue;
+      if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
+      if (!hasComponent(world.ecs, t, Combat)) continue;
+      if (hasComponent(world.ecs, t, IsBuilding)) continue;
+      if (hasComponent(world.ecs, t, IsResource)) continue;
+
+      const dx = Position.x[t] - cx;
+      const dy = Position.y[t] - cy;
+      if (Math.sqrt(dx * dx + dy * dy) <= auraRadius) {
+        world.commanderDamageBuff.add(t);
+      }
+    }
+  }
+}
+
 export function combatSystem(world: GameWorld): void {
+  // Process Commander aura
+  commanderAura(world);
   const units = query(world.ecs, [
     Position,
     Combat,
@@ -367,6 +412,11 @@ export function combatSystem(world: GameWorld): void {
             // Alpha Predator aura: +20% damage if buffed
             if (world.alphaDamageBuff.has(eid)) {
               meleeDmg = Math.round(meleeDmg * 1.2);
+            }
+
+            // Commander aura: +10% damage for player units near Commander
+            if (world.commanderDamageBuff.has(eid)) {
+              meleeDmg = Math.round(meleeDmg * 1.1);
             }
 
             takeDamage(world, tEnt, meleeDmg, eid, mult);
