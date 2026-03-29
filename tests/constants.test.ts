@@ -309,8 +309,8 @@ describe('TIME_STOPS (day/night cycle)', () => {
     const dayStop = TIME_STOPS.find((s) => s.h === 8);
     expect(nightStop).toBeDefined();
     expect(dayStop).toBeDefined();
-    const nightBrightness = nightStop?.c[0] + nightStop?.c[1] + nightStop?.c[2];
-    const dayBrightness = dayStop?.c[0] + dayStop?.c[1] + dayStop?.c[2];
+    const nightBrightness = (nightStop?.c[0] ?? 0) + (nightStop?.c[1] ?? 0) + (nightStop?.c[2] ?? 0);
+    const dayBrightness = (dayStop?.c[0] ?? 0) + (dayStop?.c[1] ?? 0) + (dayStop?.c[2] ?? 0);
     expect(dayBrightness).toBeGreaterThan(nightBrightness);
   });
 });
