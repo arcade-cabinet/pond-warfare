@@ -18,7 +18,9 @@ export class ErrorBoundary extends Component<{ children: any }, ErrorBoundarySta
     return { error };
   }
 
-  componentDidCatch(_error: Error, _errorInfo: unknown) {}
+  componentDidCatch(error: Error, errorInfo: unknown) {
+    console.error('ErrorBoundary caught:', error, errorInfo);
+  }
 
   render() {
     if (this.state.error) {

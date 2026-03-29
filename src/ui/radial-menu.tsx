@@ -94,8 +94,10 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
 
   if (!radialMenuOpen.value) return null;
 
-  const cx = radialMenuX.value;
-  const cy = radialMenuY.value;
+  // Clamp menu center to viewport bounds so options don't overflow off-screen
+  const margin = RADIUS + 28; // RADIUS + half button size
+  const cx = Math.max(margin, Math.min(window.innerWidth - margin, radialMenuX.value));
+  const cy = Math.max(margin, Math.min(window.innerHeight - margin, radialMenuY.value));
 
   function handleOverlayClick(e: MouseEvent | TouchEvent) {
     // Close if the click target is the overlay itself (not a menu button)

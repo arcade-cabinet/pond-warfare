@@ -32,7 +32,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction, SpriteId, UnitState } from '@/types';
+import { createCorpseId, EntityKind, Faction, SpriteId, UnitState } from '@/types';
 
 /**
  * Apply damage to an entity. Exported as a utility for use by combat and projectile systems.
@@ -271,6 +271,7 @@ function processDeath(world: GameWorld, eid: number, attackerEid?: number): void
   // Battlefield corpses/ruins (original lines 1828-1834)
   if (!isResource) {
     world.corpses.push({
+      id: createCorpseId(),
       x: ex,
       y: ey,
       spriteId: isBuilding ? SpriteId.Rubble : SpriteId.Bones,

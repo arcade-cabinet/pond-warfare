@@ -89,7 +89,7 @@ See [docs/architecture.md](docs/architecture.md) for the full system diagram and
 
 ## Project Structure
 
-```
+```text
 src/
 ├── ai/          # Yuka.js steering manager
 ├── audio/       # Tone.js SFX + procedural music + ambient

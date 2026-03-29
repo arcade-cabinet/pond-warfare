@@ -8,7 +8,7 @@
  * Position components in the movement system.
  */
 
-import { entityExists } from 'bitecs';
+import { type World as EcsWorld, entityExists } from 'bitecs';
 import {
   ArriveBehavior,
   EntityManager,
@@ -229,18 +229,26 @@ export class YukaManager {
    * deltaTime is in seconds.
    * @param ecsWorld - ECS world reference for entity existence checks
    */
-  update(deltaTime: number, ecsWorld?: any): void {
+  update(deltaTime: number, ecsWorld?: EcsWorld): void {
     // Tick down flee timers and auto-clear expired ones
     this.tickFleeTimers();
 
     this.entityManager.update(deltaTime);
 
     // Sync Yuka vehicle positions back to ECS Position components
+    // Collect stale eids to remove after iteration
+    const stale: number[] = [];
     for (const [eid, vehicle] of this.vehicles) {
-      // Skip syncing if entity no longer exists in ECS
-      if (ecsWorld && !entityExists(ecsWorld, eid)) continue;
+      // Remove stale vehicles whose ECS entity no longer exists
+      if (ecsWorld && !entityExists(ecsWorld, eid)) {
+        stale.push(eid);
+        continue;
+      }
       Position.x[eid] = vehicle.position.x;
       Position.y[eid] = vehicle.position.z; // z -> y in our 2D world
+    }
+    for (const eid of stale) {
+      this.removeUnit(eid);
     }
   }
 

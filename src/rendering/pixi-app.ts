@@ -381,8 +381,8 @@ function renderCorpses(
       continue;
     }
 
-    // Use a stable key based on index (corpses array is stable per frame)
-    const key = i;
+    // Use corpse's stable unique ID as key
+    const key = cp.id;
     usedKeys.add(key);
 
     let spr = corpseSprites.get(key);
@@ -790,6 +790,7 @@ function renderPlacementPreview(
   if (buildingType === 'burrow') placeSpriteId = SpriteId.Burrow;
   else if (buildingType === 'armory') placeSpriteId = SpriteId.Armory;
   else if (buildingType === 'tower') placeSpriteId = SpriteId.Tower;
+  else if (buildingType === 'watchtower') placeSpriteId = SpriteId.Watchtower;
 
   if (placeSpriteId !== null) {
     const sprCanvas = spriteCanvases.get(placeSpriteId);
@@ -821,9 +822,11 @@ function colorToHex(color: string): number {
   return 0xffffff;
 }
 
-/** Parse "r, g, b" string (used by GroundPing.color) to a hex number. */
+/** Parse "r, g, b" or "rgba(r, g, b, a)" string (used by GroundPing.color) to a hex number. */
 function parseRgbString(rgb: string): number {
-  const parts = rgb.split(',').map((s) => Number.parseInt(s.trim(), 10));
+  // Strip rgba(...) or rgb(...) wrapper if present
+  const inner = rgb.replace(/^rgba?\(/, '').replace(/\)$/, '');
+  const parts = inner.split(',').map((s) => Number.parseInt(s.trim(), 10));
   if (parts.length >= 3) {
     return (parts[0] << 16) | (parts[1] << 8) | parts[2];
   }

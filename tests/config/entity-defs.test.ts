@@ -11,25 +11,9 @@ import { EntityKind } from '@/types';
 
 describe('ENTITY_DEFS', () => {
   it('should have a definition for every EntityKind', () => {
-    // Hardcoded list required because const enums are erased at compile time
-    // and cannot be iterated with Object.values()
-    const kinds = [
-      EntityKind.Gatherer,
-      EntityKind.Brawler,
-      EntityKind.Sniper,
-      EntityKind.Gator,
-      EntityKind.Snake,
-      EntityKind.Lodge,
-      EntityKind.Burrow,
-      EntityKind.Armory,
-      EntityKind.Tower,
-      EntityKind.PredatorNest,
-      EntityKind.Cattail,
-      EntityKind.Clambed,
-      EntityKind.Healer,
-      EntityKind.Watchtower,
-      EntityKind.BossCroc,
-    ];
+    const kinds = Object.values(EntityKind).filter(
+      (v): v is EntityKind => typeof v === 'number',
+    );
     for (const kind of kinds) {
       expect(ENTITY_DEFS[kind]).toBeDefined();
     }
@@ -108,5 +92,9 @@ describe('entityKindFromString', () => {
   it('should convert string names to EntityKind', () => {
     expect(entityKindFromString('gatherer')).toBe(EntityKind.Gatherer);
     expect(entityKindFromString('predator_nest')).toBe(EntityKind.PredatorNest);
+  });
+
+  it('should throw for unknown entity kind string', () => {
+    expect(() => entityKindFromString('unknown_entity')).toThrow('Unknown entity kind');
   });
 });

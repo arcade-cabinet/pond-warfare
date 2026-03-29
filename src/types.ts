@@ -124,11 +124,17 @@ export interface FloatingText {
 }
 
 export interface Corpse {
+  id: number;
   x: number;
   y: number;
   spriteId: SpriteId;
   life: number;
   maxLife: number;
+}
+
+let nextCorpseId = 1;
+export function createCorpseId(): number {
+  return nextCorpseId++;
 }
 
 export interface MinimapPing {

@@ -29,6 +29,22 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 
+/** Find the first alive player lodge, or -1 if none. */
+function findPlayerLodge(world: GameWorld): number {
+  const buildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
+  for (let i = 0; i < buildings.length; i++) {
+    const eid = buildings[i];
+    if (
+      EntityTypeTag.kind[eid] === EntityKind.Lodge &&
+      FactionTag.faction[eid] === Faction.Player &&
+      Health.current[eid] > 0
+    ) {
+      return eid;
+    }
+  }
+  return -1;
+}
+
 export function aiSystem(world: GameWorld): void {
   // --- Peace timer / wave logic (lines 1211-1235) ---
   const isPeaceful = world.frameCount < world.peaceTimer;
@@ -47,25 +63,7 @@ export function aiSystem(world: GameWorld): void {
       }
 
       // Find player lodge
-      let lodgeEid = -1;
-      const pBuildings = query(world.ecs, [
-        Position,
-        Health,
-        FactionTag,
-        EntityTypeTag,
-        IsBuilding,
-      ]);
-      for (let i = 0; i < pBuildings.length; i++) {
-        const eid = pBuildings[i];
-        if (
-          EntityTypeTag.kind[eid] === EntityKind.Lodge &&
-          FactionTag.faction[eid] === Faction.Player &&
-          Health.current[eid] > 0
-        ) {
-          lodgeEid = eid;
-          break;
-        }
-      }
+      const lodgeEid = findPlayerLodge(world);
 
       if (nestEids.length > 0 && lodgeEid !== -1) {
         audio.alert();
@@ -117,19 +115,7 @@ export function aiSystem(world: GameWorld): void {
     world.frameCount % (WAVE_INTERVAL * 3) === 0
   ) {
     const nests = query(world.ecs, [Position, Health, EntityTypeTag, FactionTag, IsBuilding]);
-    let lodgeEid = -1;
-    const pBuildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
-    for (let i = 0; i < pBuildings.length; i++) {
-      const eid = pBuildings[i];
-      if (
-        EntityTypeTag.kind[eid] === EntityKind.Lodge &&
-        FactionTag.faction[eid] === Faction.Player &&
-        Health.current[eid] > 0
-      ) {
-        lodgeEid = eid;
-        break;
-      }
-    }
+    const lodgeEid = findPlayerLodge(world);
 
     for (let i = 0; i < nests.length; i++) {
       const nestEid = nests[i];
