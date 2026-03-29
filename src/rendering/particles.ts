@@ -95,4 +95,5 @@ export function drawFloatingTexts(
     ctx.strokeText(f.text, f.x, f.y);
   }
   ctx.globalAlpha = 1.0;
+  ctx.globalAlpha = 1.0;
 }
