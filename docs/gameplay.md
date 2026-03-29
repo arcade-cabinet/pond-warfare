@@ -193,7 +193,7 @@ Every 600 frames (~10s), the AI checks if its army exceeds the attack threshold 
 
 ## Tech Tree
 
-Researched at the Lodge or Armory. 15 technologies across three branches: Lodge (economy/defense), Armory (military), and Nature (new units/support). Some techs require Pearls.
+Researched at the Lodge or Armory. 25 technologies across three branches: Lodge (economy/defense), Armory (military), and Nature (new units/support). Some techs require Pearls. Three active abilities (Rally Cry, Pond Blessing, Tidal Surge) provide powerful one-time or cooldown-based effects.
 
 ### Lodge Branch
 
@@ -201,7 +201,10 @@ Researched at the Lodge or Armory. 15 technologies across three branches: Lodge 
 |------|------|--------|----------|
 | **Sturdy Mud** | 200C 300T | +300 HP to all player buildings | -- |
 | **Swift Paws** | 300C 250T | +0.4 speed to all player units | Sturdy Mud |
+| **Fortified Walls** | 150C 100T | Wall HP +100, walls slow nearby enemies | Sturdy Mud |
+| **Rally Cry** | 250C 200T | Active: all units +30% speed for 10s (cooldown) | Swift Paws |
 | **Cartography** | 150C 100T | Unlocks Scout Post, +25% fog reveal | -- |
+| **Trade Routes** | 200C 150T | +3 clams/5sec passive income per Lodge | Cartography |
 | **Tidal Harvest** | 200C 150T | Gatherers collect +50% resources | -- |
 
 ### Armory Branch
@@ -211,10 +214,14 @@ Researched at the Lodge or Armory. 15 technologies across three branches: Lodge 
 | **Sharp Sticks** | 300C 200T | +2 damage to all combat units | -- |
 | **Eagle Eye** | 400C 300T | +50 range for snipers | Sharp Sticks |
 | **Hardened Shells** | 500C 400T 30P | +5 HP regen for all units | Eagle Eye |
+| **Piercing Shot** | 200C 150T | Snipers ignore 50% of damage reduction | Eagle Eye |
 | **Iron Shell** | 300C 200T | Unlocks Shieldbearer unit | Sharp Sticks |
 | **Siege Works** | 400C 350T 50P | Unlocks Catapult unit | Eagle Eye |
+| **Siege Engineering** | 300C 250T | Catapults fire 25% faster | Siege Works |
 | **Battle Roar** | 350C 250T | +10% attack speed for all units | Sharp Sticks |
+| **War Drums** | 250C 200T | +15% damage within 200px of Armory | Battle Roar |
 | **Cunning Traps** | 200C 150T | Unlocks Trapper (speed debuff traps) | Sharp Sticks |
+| **Venom Coating** | 200C 150T | Melee attacks apply 1 dmg/sec poison for 3s | Cunning Traps |
 | **Camouflage** | 300C 200T | Blend into reeds, strike unseen | Cunning Traps |
 
 ### Nature Branch
@@ -222,8 +229,21 @@ Researched at the Lodge or Armory. 15 technologies across three branches: Lodge 
 | Tech | Cost | Effect | Requires |
 |------|------|--------|----------|
 | **Herbal Medicine** | 100C 80T | Ancient pond remedies heal nearby wounded | -- |
+| **Pond Blessing** | 300C 200T 20P | One-time active: heal all units to full HP | Herbal Medicine |
 | **Aquatic Training** | 150C 100T | Unlocks Swimmer (amphibious warfare) | Herbal Medicine |
 | **Deep Diving** | 200C 150T | +30% pearl gathering rate | Aquatic Training |
+| **Root Network** | 200C 150T 15P | Buildings share vision radius | Deep Diving |
+| **Tidal Surge** | 400C 300T 40P | One-time active: deal 50 damage to all enemies | Deep Diving |
+
+### Active Abilities
+
+Three techs unlock active abilities controlled from the HUD:
+
+| Ability | Type | Effect | Tracked In |
+|---------|------|--------|------------|
+| **Rally Cry** | Cooldown | All units +30% speed for 10s | `world.rallyCryExpiry`, `world.rallyCryCooldownUntil` |
+| **Pond Blessing** | One-time | Heal all units to full HP | `world.pondBlessingUsed` |
+| **Tidal Surge** | One-time | Deal 50 damage to all enemies on map | `world.tidalSurgeUsed` |
 
 ## Difficulty Modes
 
@@ -324,3 +344,123 @@ Toggled via the radial menu on the idle worker button:
 - Ambient darkness calculated from TIME_STOPS color palette
 - Fireflies appear during dark periods
 - Night reduces visibility range
+
+## Campaign Mode
+
+5 guided missions with scripted Commander dialogue, per-frame objective tracking, and mission-specific settings overrides. Missions unlock sequentially; progress persists in SQLite.
+
+| # | Mission | Type | Objectives |
+|---|---------|------|-----------|
+| 1 | First Dawn | Tutorial | Build Armory + Train 3 Brawlers |
+| 2 | Into the Fog | Scouting | Explore 50% map + Build second Lodge |
+| 3 | The Nest Must Fall | Offense | Destroy 1 Enemy Nest |
+| 4 | Evolution | Adaptation | Survive to Evolution Tier 3 |
+| 5 | Alpha Strike | Boss Battle | Defeat the Alpha Predator |
+
+Objective types: `build`, `train`, `explore`, `destroyNest`, `survive`, `kill`, `buildCount`.
+
+## Playable Factions
+
+Two playable factions with mirrored unit rosters. Selecting a faction makes the other AI-controlled.
+
+| Role | Otter | Predator |
+|------|-------|----------|
+| Base | Lodge | PredatorNest |
+| Gatherer | Gatherer | Gatherer |
+| Melee | Brawler | Gator |
+| Ranged | Sniper | VenomSnake |
+| Tank | Shieldbearer | ArmoredGator |
+| Support | Healer | SwampDrake |
+| Siege | Catapult | SiegeTurtle |
+| Hero | Commander | BossCroc |
+
+Each faction has its own tech tree subset (Otters: 15 techs, Predators: 8 techs).
+
+## AI Personalities
+
+The enemy AI behavior is modified by personality selection:
+
+| Personality | Description | Attack Threshold | Tower Build | Expansion |
+|-------------|------------|-----------------|-------------|-----------|
+| **Balanced** | Standard behavior | 1.0x | 1.0x | 1.0x |
+| **Turtle** | Heavy defense, large army before strike | 2.0x | 2.5x | 0.5x |
+| **Rush** | Attacks early with cheap melee | 0.3x | 0.5x | 0.2x |
+| **Economic** | Expands aggressively, massive late-game | 1.5x | 0.5x | 2.0x |
+| **Random** | Switches between above every 5 minutes | varies | varies | varies |
+
+## Commander System
+
+7 unlockable commanders provide strategic variety through aura and passive bonuses:
+
+| Commander | Aura | Passive | Unlock |
+|-----------|------|---------|--------|
+| Marshal | +10% damage | -- | Default |
+| Sage | +25% research speed | +15% gather rate | Win 3 games |
+| Warden | +200 HP to buildings | Towers +20% attack speed | Win on Hard |
+| Tidekeeper | +0.3 speed | Swimmers cost 50% less | 200 pearls |
+| Shadowfang | Enemies -15% damage | Trapper traps 2x | Win with 0 losses |
+| Ironpaw | +20% HP | Shieldbearers 2x faster | 5 Hero units |
+| Stormcaller | Catapults +50% range | Random lightning | Win on Nightmare |
+
+## Leaderboards & Ranked Progression
+
+Personal bests and ranked progression tracked in SQLite:
+
+| Rank | Wins Required |
+|------|--------------|
+| Bronze | 0-4 |
+| Silver | 5-14 |
+| Gold | 15-29 |
+| Diamond | 30+ |
+
+Tracked stats: total wins/losses/games, total kills, fastest win, longest survival, total playtime, highest difficulty won, current/best win streak.
+
+## Map Scenarios
+
+6 map types providing strategic variety:
+
+| Scenario | Description |
+|----------|-------------|
+| Standard | Open map, balanced resources |
+| Island | Surrounded on all sides |
+| Contested | Start close to enemy |
+| Labyrinth | Maze walls, dead-end resources, favors Trappers |
+| River | Vertical divide with bridge choke points, favors Swimmers |
+| Peninsula | Narrow walled land, single entry, ultimate turtle map |
+
+## Cosmetic System
+
+Sprite recoloring via HSL transforms provides visual customization without new art assets. 14 recolor presets for veterancy, champions, commander variants, and status effects. 6 unit skins + 4 building themes unlockable through progression. Per-kind exclusivity persisted in SQLite.
+
+## Threat Escalation
+
+Beyond the base evolution system, late-game threat escalation adds:
+- **Mega-waves**: Every 5 minutes after tier 3, large coordinated attacks
+- **Champion enemies**: +50% HP, +25% damage, visually distinct via sprite recoloring
+- **Random events**: Predator migration, nest fury (production spike), alpha appearance
+- **Nest production ramp**: Production multiplier increases over time
+
+## Sound Design
+
+Unit-specific SFX via Tone.js synthesis with spatial stereo panning:
+
+| Unit | Select Sound | Character |
+|------|-------------|-----------|
+| Brawler | Low drum thud | Heavy, grounded |
+| Sniper | Sharp metallic ping | Precise, high-pitched |
+| Healer | Double wind chime | Gentle, layered |
+| Catapult | Deep wooden creak | Slow, mechanical |
+| Scout | Quick double chirp | Fast, bird-like |
+| Commander | Brass horn blast | Authoritative |
+| Gatherer | Tool clink | Quick, utilitarian |
+| Shieldbearer | Heavy shield clang | Heavy, metallic |
+
+Additional effects: building placement, research complete, airdrop incoming, train complete, build complete, unit death, building destruction, heal, error.
+
+## Custom Game Settings
+
+13 configurable options for freeplay:
+- **Map**: Scenario, resource density (sparse/normal/rich/abundant)
+- **Economy**: Starting resources multiplier, gather speed, starting unit count
+- **Enemies**: Nest count, enemy economy strength, aggression level, evolution speed
+- **Rules**: Peace timer, permadeath, fog of war mode, hero mode

@@ -25,7 +25,7 @@ Pond Warfare uses an Entity Component System (ECS) architecture powered by bitEC
        +------+-------+ +-------+ +--------------+
               |
     +---------+---------+
-    |   16 ECS Systems   |
+    |   18 ECS Systems   |
     |  (run every frame) |
     +--------------------+
 ```
@@ -160,17 +160,25 @@ src/
 +-- ai/                 # Yuka.js steering manager
 |   +-- yuka-manager.ts # Faction-agnostic vehicle management, formation flocking
 +-- audio/              # Tone.js audio system
-|   +-- audio-system.ts # SFX, procedural music, ambient sounds
+|   +-- audio-system.ts # SFX orchestrator, music, ambient sounds
+|   +-- sfx.ts          # SfxManager: 25+ synth-based SFX with spatial panning
++-- campaign/           # Campaign mode
+|   +-- missions.ts     # 5 mission definitions with objectives, dialogue, overrides
 +-- config/             # Game balance and definitions
-|   +-- entity-defs.ts  # All 30 entity types with stats + damage multiplier table
+|   +-- ai-personalities.ts # 5 AI personalities (balanced, turtle, rush, economic, random)
+|   +-- commanders.ts   # 7 commander definitions with aura/passive bonuses
+|   +-- dialogue.ts     # 15 dialogue trigger types, per-unit bark pools
+|   +-- entity-defs.ts  # All 33 entity types with stats + damage multiplier table
+|   +-- factions.ts     # 2 playable factions (otter, predator) with unit mappings
 |   +-- keymap.ts       # Remappable keyboard bindings
-|   +-- tech-tree.ts    # 15 technology upgrades with prerequisites
+|   +-- tech-tree.ts    # 25 technology upgrades with prerequisites + active abilities
+|   +-- unlocks.ts      # 18 unlockable items across 5 categories
 +-- constants.ts        # Game tuning constants (veterancy thresholds, enemy economy, etc.)
 +-- ecs/                # Entity Component System
 |   +-- archetypes.ts   # Entity spawn templates
 |   +-- components.ts   # 14 SoA components + 5 tag components (incl. Veterancy)
-|   +-- systems/        # 16 game systems (see Game Loop)
-|   +-- world.ts        # GameWorld state container (incl. enemyResources)
+|   +-- systems/        # 18 game systems (see Game Loop)
+|   +-- world.ts        # GameWorld state container (incl. factions, personalities, abilities)
 +-- game.ts             # Main orchestrator (loop, sync, init)
 +-- input/              # Input handling
 |   +-- keyboard.ts     # Key bindings + camera pan
@@ -179,31 +187,45 @@ src/
 +-- physics/            # Planck.js collision world
 +-- platform/           # Capacitor mobile integration
 +-- rendering/          # Visual output
-|   +-- pixi-app.ts     # Primary PixiJS 8 renderer (860+ lines)
+|   +-- pixi/           # PixiJS 8 rendering modules
+|   |   +-- entity-renderer.ts # Sprite rendering, recoloring, health bars (371 lines)
+|   |   +-- init.ts     # PixiJS application setup
+|   |   +-- index.ts    # Render orchestrator
 |   +-- animations.ts   # anime.js entity/camera animations
 |   +-- background.ts   # Procedural terrain generation
 |   +-- camera.ts       # Camera clamping + screen shake
 |   +-- fog-renderer.ts # Fog-of-war Canvas2D overlay
 |   +-- light-renderer.ts # Dynamic lighting + fireflies
 |   +-- minimap-renderer.ts # Minimap with pings
-|   +-- particles.ts    # Particle rendering
-|   +-- sprites.ts      # Procedural sprite generation
+|   +-- recolor.ts      # Sprite recoloring: 14 presets (veterancy, champion, commander, cosmetic)
+|   +-- water-shimmer.ts # Water visual effect
++-- replay/             # Replay recording
+|   +-- recorder.ts     # Deterministic command recording for replay playback
 +-- save-system.ts      # Game save/load serialization
 +-- storage/            # Persistence layer
-|   +-- database.ts     # SQLite via capacitor-sqlite + jeep-sqlite (no localStorage)
-+-- types.ts            # TypeScript types and enums
+|   +-- database.ts     # SQLite: saves, settings, game_history, unlocks, player_profile
++-- systems/            # Non-ECS game systems
+|   +-- achievements.ts # 15 achievements with SQLite persistence
+|   +-- leaderboard.ts  # Ranked progression (Bronze/Silver/Gold/Diamond) + win streaks
+|   +-- unlock-tracker.ts # Profile updates and unlock checking on game end
++-- types.ts            # TypeScript types and enums (33 EntityKind values)
 +-- ui/                 # Preact components
-    +-- app.tsx          # Root component
-    +-- store.ts         # Reactive signals (30+ signals)
-    +-- hud.tsx          # Top bar (resources, timer, buttons)
-    +-- selection-panel.tsx # Selected entity info
-    +-- action-panel.tsx # Context-sensitive action buttons
-    +-- radial-menu.tsx  # Idle unit auto-behavior menu
-    +-- sidebar.tsx      # Left panel layout
-    +-- game-over.tsx    # Win/lose overlay
-    +-- intro-overlay.tsx # Start screen
-    +-- keyboard-reference.tsx # Keyboard shortcut reference overlay
-    +-- error-boundary.tsx # Error handling
+|   +-- app.tsx          # Root component
+|   +-- store.ts         # Reactive signals (60+ signals)
+|   +-- main-menu.tsx    # Main menu with campaign, settings, leaderboard
+|   +-- hud/             # HUD components
+|   +-- selection-panel.tsx # Selected entity info
+|   +-- action-panel.tsx # Context-sensitive action buttons
+|   +-- radial-menu.tsx  # Idle unit auto-behavior menu
+|   +-- sidebar.tsx      # Left panel layout
+|   +-- game-over.tsx    # Win/lose overlay
+|   +-- intro-overlay.tsx # Start screen
+|   +-- keyboard-reference.tsx # Keyboard shortcut reference overlay
+|   +-- error-boundary.tsx # Error handling
++-- utils/              # Utility modules
+    +-- particles.ts    # Particle spawning with pool + throttling
+    +-- pool.ts         # ObjectPool<T> for reusable allocations
+    +-- spatial-hash.ts # SpatialHash grid for O(n) proximity queries
 ```
 
 ## Key Design Decisions
