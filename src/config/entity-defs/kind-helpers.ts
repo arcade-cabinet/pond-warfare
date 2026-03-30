@@ -1,0 +1,83 @@
+import { EntityKind } from '@/types';
+
+export function entityKindFromString(name: string): EntityKind {
+  const map: Record<string, EntityKind> = {
+    gatherer: EntityKind.Gatherer,
+    brawler: EntityKind.Brawler,
+    sniper: EntityKind.Sniper,
+    gator: EntityKind.Gator,
+    snake: EntityKind.Snake,
+    lodge: EntityKind.Lodge,
+    burrow: EntityKind.Burrow,
+    armory: EntityKind.Armory,
+    tower: EntityKind.Tower,
+    predator_nest: EntityKind.PredatorNest,
+    cattail: EntityKind.Cattail,
+    clambed: EntityKind.Clambed,
+    healer: EntityKind.Healer,
+    watchtower: EntityKind.Watchtower,
+    boss_croc: EntityKind.BossCroc,
+    shieldbearer: EntityKind.Shieldbearer,
+    scout: EntityKind.Scout,
+    catapult: EntityKind.Catapult,
+    wall: EntityKind.Wall,
+    scout_post: EntityKind.ScoutPost,
+    armored_gator: EntityKind.ArmoredGator,
+    venom_snake: EntityKind.VenomSnake,
+    swamp_drake: EntityKind.SwampDrake,
+    siege_turtle: EntityKind.SiegeTurtle,
+    alpha_predator: EntityKind.AlphaPredator,
+    pearl_bed: EntityKind.PearlBed,
+    fishing_hut: EntityKind.FishingHut,
+    herbalist_hut: EntityKind.HerbalistHut,
+    swimmer: EntityKind.Swimmer,
+    trapper: EntityKind.Trapper,
+    commander: EntityKind.Commander,
+    frog: EntityKind.Frog,
+    fish: EntityKind.Fish,
+  };
+  const kind = map[name];
+  if (kind === undefined) {
+    throw new Error(`Unknown entity kind: "${name}"`);
+  }
+  return kind;
+}
+
+export function entityKindName(kind: EntityKind): string {
+  const names: Record<EntityKind, string> = {
+    [EntityKind.Gatherer]: 'Gatherer',
+    [EntityKind.Brawler]: 'Brawler',
+    [EntityKind.Sniper]: 'Sniper',
+    [EntityKind.Gator]: 'Gator',
+    [EntityKind.Snake]: 'Snake',
+    [EntityKind.Lodge]: 'Lodge',
+    [EntityKind.Burrow]: 'Burrow',
+    [EntityKind.Armory]: 'Armory',
+    [EntityKind.Tower]: 'Tower',
+    [EntityKind.PredatorNest]: 'Predator Nest',
+    [EntityKind.Cattail]: 'Cattail',
+    [EntityKind.Clambed]: 'Clambed',
+    [EntityKind.Healer]: 'Healer',
+    [EntityKind.Watchtower]: 'Watchtower',
+    [EntityKind.BossCroc]: 'Boss Croc',
+    [EntityKind.Shieldbearer]: 'Shieldbearer',
+    [EntityKind.Scout]: 'Scout',
+    [EntityKind.Catapult]: 'Catapult',
+    [EntityKind.Wall]: 'Wall',
+    [EntityKind.ScoutPost]: 'Scout Post',
+    [EntityKind.ArmoredGator]: 'Armored Gator',
+    [EntityKind.VenomSnake]: 'Venom Snake',
+    [EntityKind.SwampDrake]: 'Swamp Drake',
+    [EntityKind.SiegeTurtle]: 'Siege Turtle',
+    [EntityKind.AlphaPredator]: 'Alpha Predator',
+    [EntityKind.PearlBed]: 'Pearl Bed',
+    [EntityKind.FishingHut]: 'Fishing Hut',
+    [EntityKind.HerbalistHut]: 'Herbalist Hut',
+    [EntityKind.Swimmer]: 'Swimmer',
+    [EntityKind.Trapper]: 'Trapper',
+    [EntityKind.Commander]: 'Commander',
+    [EntityKind.Frog]: 'Frog',
+    [EntityKind.Fish]: 'Fish',
+  };
+  return names[kind];
+}

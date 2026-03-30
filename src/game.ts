@@ -6,7 +6,7 @@
  */
 
 import { animate } from 'animejs';
-import { query } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
 // Campaign
@@ -364,6 +364,9 @@ export class Game {
         }
         const wx = this.pointer.mouse.worldX;
         const wy = this.pointer.mouse.worldY;
+        // Capture snapshot before any potential auto-deselect so replay records
+        // which units received the command.
+        const selectionSnapshot = [...this.world.selection];
         const dispatched = issueContextCommand(this.world, target, wx, wy);
 
         // Auto-deselect after any move/attack/gather/build dispatch so the
@@ -387,7 +390,7 @@ export class Game {
           target,
           worldX: wx,
           worldY: wy,
-          selection: [...this.world.selection],
+          selection: selectionSnapshot,
         });
       },
       onUpdateUI: () => this.syncUIStore(),

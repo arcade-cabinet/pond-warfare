@@ -1,0 +1,63 @@
+import { EntityKind } from '@/types';
+
+/**
+ * Damage multiplier table for unit counter system.
+ * Entries > 1.0 mean the attacker is strong against that defender.
+ * Entries < 1.0 mean the attacker is weak against that defender.
+ * Missing entries default to 1.0 (neutral).
+ */
+export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<EntityKind, number>>>> =
+  {
+    [EntityKind.Brawler]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Healer]: 1.5,
+      [EntityKind.Gator]: 0.75,
+    },
+    [EntityKind.Sniper]: {
+      [EntityKind.Healer]: 1.5,
+      [EntityKind.Snake]: 1.5,
+      [EntityKind.Brawler]: 0.75,
+    },
+    [EntityKind.Gator]: {
+      [EntityKind.Brawler]: 1.5,
+      [EntityKind.Sniper]: 0.75,
+    },
+    [EntityKind.Snake]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Brawler]: 0.75,
+    },
+    [EntityKind.Shieldbearer]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Gator]: 0.75,
+    },
+    [EntityKind.ArmoredGator]: {
+      [EntityKind.Brawler]: 1.5,
+      [EntityKind.Sniper]: 0.75,
+    },
+    [EntityKind.VenomSnake]: {
+      [EntityKind.Sniper]: 1.5,
+      [EntityKind.Brawler]: 0.75,
+    },
+    [EntityKind.SwampDrake]: {
+      [EntityKind.Gatherer]: 1.5,
+      [EntityKind.Shieldbearer]: 0.75,
+    },
+    [EntityKind.SiegeTurtle]: {
+      [EntityKind.Brawler]: 0.5,
+    },
+    [EntityKind.AlphaPredator]: {
+      [EntityKind.Brawler]: 1.25,
+      [EntityKind.Sniper]: 1.25,
+    },
+  };
+
+/** SiegeTurtle's bonus multiplier when attacking any building. */
+export const SIEGE_BUILDING_MULTIPLIER = 3.0;
+
+/**
+ * Get the damage multiplier for an attacker vs. a defender.
+ * Returns 1.0 for matchups not in the table (including BossCroc).
+ */
+export function getDamageMultiplier(attackerKind: EntityKind, defenderKind: EntityKind): number {
+  return DAMAGE_MULTIPLIERS[attackerKind]?.[defenderKind] ?? 1.0;
+}

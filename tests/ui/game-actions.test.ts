@@ -123,6 +123,10 @@ describe('game-actions', () => {
     game.world.selection = [1, 2];
     haltSelection();
     expect(game.syncUIStore).toHaveBeenCalled();
+    // Yuka steering must be cleared so units physically stop
+    expect(game.world.yukaManager.clearFormationBehaviors).toHaveBeenCalledTimes(2);
+    expect(game.world.yukaManager.removeUnit).toHaveBeenCalledWith(1);
+    expect(game.world.yukaManager.removeUnit).toHaveBeenCalledWith(2);
   });
 
   it('selectAllUnits calls selectArmy and syncs', () => {
