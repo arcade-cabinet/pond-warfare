@@ -173,6 +173,23 @@ export const PROGRESS_STYLE: TextStyleOptions = {
   stroke: { color: 0x000000, width: 2 },
 };
 
+export const LABEL_STYLE: TextStyleOptions = {
+  fontFamily: 'Courier New',
+  fontSize: 10,
+  fontWeight: 'bold',
+  fill: 0xffffff,
+  stroke: { color: 0x000000, width: 2 },
+};
+
+// ---------------------------------------------------------------------------
+// Selected-unit name label pool
+// ---------------------------------------------------------------------------
+const unitLabelTexts = new Map<number, Text>();
+
+export function getUnitLabelTexts(): Map<number, Text> {
+  return unitLabelTexts;
+}
+
 // ---------------------------------------------------------------------------
 // Corpse sprite pool
 // ---------------------------------------------------------------------------

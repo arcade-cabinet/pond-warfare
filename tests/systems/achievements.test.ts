@@ -4,7 +4,7 @@
  * Validates achievement check logic and persistence.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS, type AchievementSnapshot } from '@/systems/achievements';
 
 // Mock the @/storage module to avoid SQLite dependency in tests

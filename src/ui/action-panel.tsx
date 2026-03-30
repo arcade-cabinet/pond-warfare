@@ -169,7 +169,7 @@ function TabButton({
   return (
     <button
       type="button"
-      class={`flex-1 py-1.5 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[44px] md:min-h-0 font-heading`}
+      class={`flex-1 py-1 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[44px] md:min-h-0 font-heading`}
       style={{
         background: active
           ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
@@ -227,7 +227,7 @@ export function ActionPanel() {
   return (
     <div
       id="action-panel"
-      class="w-1/3 md:w-full flex-1 flex flex-col overflow-hidden"
+      class="w-full flex-1 flex flex-col overflow-hidden"
       style={{
         background: 'linear-gradient(180deg, var(--pw-wood-mid) 0%, var(--pw-wood-dark) 100%)',
       }}

@@ -40,9 +40,6 @@ export { SelectionPanel, type SelectionPanelProps } from './selection-panel';
 // Settings panel
 export { SettingsPanel, type SettingsPanelProps } from './settings-panel';
 
-// Sidebar
-export { Sidebar, type SidebarProps } from './sidebar';
-
 // Store (namespace re-export not possible; re-export key items)
 export * as store from './store';
 

@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'preact/hooks';
+import { isMobile } from '@/platform';
 import {
   armyCount,
   attackMoveActive,
@@ -48,7 +49,7 @@ function AutoToggleButton({
   return (
     <button
       type="button"
-      class="cmd-btn border px-2 py-1 min-h-[44px] min-w-[44px] rounded-full font-bold text-xs md:text-sm flex items-center gap-1.5 transition-colors shadow cursor-pointer"
+      class="cmd-btn border px-2 py-0.5 min-h-[32px] min-w-[32px] md:min-h-[36px] md:min-w-[36px] rounded-full font-bold text-[10px] md:text-sm flex items-center gap-1 md:gap-1.5 transition-colors shadow cursor-pointer"
       style={{
         borderColor: color,
         color,
@@ -83,16 +84,18 @@ export function UnitCommands(props: UnitCommandsProps) {
   const hasIdleHealers = idleHealerCount.value > 0;
   const hasIdleScouts = idleScoutCount.value > 0;
 
+  const mobile = isMobile.value;
+
   return (
     <>
-      {/* Idle units button + contextual auto-behavior row */}
-      {totalIdle > 0 && (
-        <div class="absolute bottom-20 right-2 md:bottom-auto md:top-14 md:right-6 z-20 flex flex-wrap items-center gap-1.5">
+      {/* Idle units button + contextual auto-behavior row (desktop only — mobile uses slide-out panel) */}
+      {!mobile && totalIdle > 0 && (
+        <div class="absolute top-14 right-2 md:right-6 z-20 flex flex-wrap items-center gap-1">
           {/* Main idle button */}
           <button
             type="button"
             id="idle-worker-btn"
-            class="cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+            class="cmd-btn border-2 px-2 py-0.5 md:px-4 md:py-2 min-h-[32px] md:min-h-[36px] rounded-full font-bold flex items-center gap-1.5 md:gap-2 transition-colors shadow-lg cursor-pointer"
             style={{ borderColor: 'var(--pw-warning)', color: 'var(--pw-warning)' }}
             title={expanded ? 'Collapse auto menu (.)' : 'Expand auto menu (.)'}
             onClick={() => {
@@ -188,7 +191,7 @@ export function UnitCommands(props: UnitCommandsProps) {
               {/* Select All idle units */}
               <button
                 type="button"
-                class="cmd-btn border px-2 py-1 min-h-[44px] min-w-[44px] rounded-full font-bold text-xs md:text-sm flex items-center gap-1.5 transition-colors shadow cursor-pointer"
+                class="cmd-btn border px-2 py-0.5 min-h-[32px] min-w-[32px] md:min-h-[36px] md:min-w-[36px] rounded-full font-bold text-[10px] md:text-sm flex items-center gap-1 md:gap-1.5 transition-colors shadow cursor-pointer"
                 style={{
                   borderColor: 'var(--pw-success)',
                   color: 'var(--pw-success)',
@@ -207,12 +210,12 @@ export function UnitCommands(props: UnitCommandsProps) {
         </div>
       )}
 
-      {/* Army select button */}
-      {armyCount.value > 0 && (
+      {/* Army select button (desktop only — mobile has it in sidebar) */}
+      {!mobile && armyCount.value > 0 && (
         <button
           type="button"
           id="select-army-btn"
-          class="absolute top-24 md:top-28 right-2 md:right-6 cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-24 md:top-28 right-2 md:right-6 cmd-btn border-2 px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
           style={{ borderColor: 'var(--pw-enemy)', color: 'var(--pw-enemy-light)' }}
           title="Select all army (,)"
           onClick={props.onArmyClick}
@@ -221,41 +224,41 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Attack-move button (visible when player units are selected) */}
-      {hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
+      {/* Attack-move button — desktop only (mobile uses slide-out panel buttons) */}
+      {!mobile && hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
         <button
           type="button"
           id="attack-move-btn"
-          class="absolute top-36 md:top-40 right-2 md:right-6 cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-36 md:top-40 right-2 md:right-6 cmd-btn border-2 px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
           style={{ borderColor: 'var(--pw-twig)', color: 'var(--pw-otter)' }}
           title="Attack-Move (A)"
           onClick={props.onAttackMoveClick}
         >
-          <span class="font-heading text-xs md:text-sm">A-Move</span>
+          <span class="font-heading text-sm">A-Move</span>
         </button>
       )}
 
-      {/* Halt/Stop button (visible when player units are selected) */}
-      {hasPlayerUnits.value && selectionCount.value > 0 && (
+      {/* Halt/Stop button — desktop only (keyboard H on mobile) */}
+      {!mobile && hasPlayerUnits.value && selectionCount.value > 0 && (
         <button
           type="button"
           id="halt-btn"
-          class="absolute top-48 md:top-52 right-2 md:right-6 cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-48 md:top-52 right-2 md:right-6 cmd-btn border-2 px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
           style={{ borderColor: 'var(--pw-border)', color: 'var(--pw-text-secondary)' }}
           title="Stop/Halt (H)"
           onClick={props.onHaltClick}
         >
-          <span class="font-heading text-xs md:text-sm">Stop</span>
+          <span class="font-heading text-sm">Stop</span>
         </button>
       )}
 
-      {/* Save ctrl-group button (visible when units are selected) */}
-      {selectionCount.value > 0 && hasPlayerUnits.value && (
+      {/* Save ctrl-group button — desktop only */}
+      {!mobile && selectionCount.value > 0 && hasPlayerUnits.value && (
         <div class="absolute top-[232px] md:top-64 right-2 md:right-6 z-20">
           {!saveGroupOpen ? (
             <button
               type="button"
-              class="cmd-btn border-2 px-3 py-1 md:px-4 md:py-2 min-h-[44px] rounded-full font-bold flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+              class="cmd-btn border-2 px-4 py-2 rounded-full font-bold flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
               style={{ borderColor: '#8a6ab8', color: '#b090d8' }}
               title="Save selection to a control group"
               onClick={(e) => {
@@ -263,7 +266,7 @@ export function UnitCommands(props: UnitCommandsProps) {
                 setSaveGroupOpen(true);
               }}
             >
-              <span class="font-heading text-xs md:text-sm">Save Group</span>
+              <span class="font-heading text-sm">Save Group</span>
             </button>
           ) : (
             <div
@@ -277,7 +280,7 @@ export function UnitCommands(props: UnitCommandsProps) {
                 <button
                   type="button"
                   key={`sg-${n}`}
-                  class="w-7 h-7 min-w-[44px] min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
+                  class="w-7 h-7 rounded font-numbers font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
                   style={{
                     background: 'var(--pw-bg-surface)',
                     border: '1px solid #8a6ab8',
@@ -295,7 +298,7 @@ export function UnitCommands(props: UnitCommandsProps) {
               ))}
               <button
                 type="button"
-                class="w-7 h-7 min-w-[44px] min-h-[44px] rounded font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
+                class="w-7 h-7 rounded font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
                 style={{
                   background: 'var(--pw-bg-surface)',
                   border: '1px solid var(--pw-border)',

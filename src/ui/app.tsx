@@ -1,38 +1,34 @@
 /**
- * Root Preact component.
+ * Root Preact component — thin routing shell.
  *
- * When the player is on the main menu or new-game screen, renders only the
- * fullscreen MainMenu (no sidebar, HUD, or game canvases). Once the game
- * starts (menuState === 'playing'), renders the full game layout: sidebar on
- * left, main game container on right with canvases and overlays.
+ * Routes between menu screen and game screen based on menuState signal.
+ * All game logic handlers live in game-actions.ts, all panel UI in panel/,
+ * and all overlays in overlays/.
  */
 
 import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
-import { SPEED_LEVELS } from '@/constants';
-import { Health, Position, Selectable, UnitStateMachine } from '@/ecs/components';
+import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
-import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
-import { setColorBlindMode } from '@/rendering/pixi-app';
-import { loadGame, saveGame } from '@/save-system';
-import { getLatestSave, saveGameToDb } from '@/storage';
 import { AchievementsPanel } from './achievements-panel';
 import { CampaignPanel, ObjectiveTracker } from './campaign-panel';
+import { HamburgerButton } from './components/HamburgerButton';
 import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
-import { HUD } from './hud';
 import { AbilityBar } from './hud/ability-bar';
 import { AirdropButton } from './hud/airdrop-button';
+import { CtrlGroups } from './hud/ctrl-groups';
+import { Overlays } from './hud/overlays';
 import { KeyboardReference } from './keyboard-reference';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { MainMenu } from './main-menu';
 import { NewGameModal } from './new-game-modal';
-import { SettingsPanel } from './settings-panel';
-import { Sidebar } from './sidebar';
+import { SettingsOverlay } from './overlays/SettingsOverlay';
+import { CommandPanel } from './panel/CommandPanel';
 import * as store from './store';
 import { TechTreePanel } from './tech-tree-panel';
 import { UnlocksPanel } from './unlocks-panel';
@@ -59,9 +55,7 @@ export function App({ onMount }: AppProps) {
   const dayNightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only initialise game canvases when actually playing
     if (store.menuState.value !== 'playing') return;
-
     if (
       containerRef.current &&
       gameCanvasRef.current &&
@@ -71,117 +65,48 @@ export function App({ onMount }: AppProps) {
       minimapCamRef.current &&
       dayNightRef.current
     ) {
-      const container = containerRef.current;
-      const gameCanvas = gameCanvasRef.current;
-      const fogCanvas = fogCanvasRef.current;
-      const lightCanvas = lightCanvasRef.current;
-      const minimapCanvas = minimapCanvasRef.current;
-      const minimapCam = minimapCamRef.current;
-      const dayNight = dayNightRef.current;
+      const refs = {
+        container: containerRef.current,
+        gameCanvas: gameCanvasRef.current,
+        fogCanvas: fogCanvasRef.current,
+        lightCanvas: lightCanvasRef.current,
+        minimapCanvas: minimapCanvasRef.current,
+        minimapCam: minimapCamRef.current,
+        dayNightOverlay: dayNightRef.current,
+      };
       (async () => {
         try {
-          await onMount({
-            container,
-            gameCanvas,
-            fogCanvas,
-            lightCanvas,
-            minimapCanvas,
-            minimapCam,
-            dayNightOverlay: dayNight,
-          });
+          await onMount(refs);
         } catch (err) {
-          // biome-ignore lint/suspicious/noConsole: surface init failures for debugging
+          // biome-ignore lint/suspicious/noConsole: surface init failures
           console.error('Failed to initialize game', err);
         }
       })();
     }
   }, [onMount, store.menuState.value]);
 
-  // ---------- Fullscreen menu (no game chrome) ----------
+  // ---------- Menu screens ----------
   if (store.menuState.value === 'main' || store.menuState.value === 'newGame') {
     return (
       <div
         class="relative h-screen w-screen overflow-hidden"
         style={{ color: 'var(--pw-text-primary)' }}
       >
-        {/* Rotate-your-device overlay for portrait mobile web users */}
         <div class="rotate-prompt">
           <div class="text-center">
             <span style={{ fontSize: '48px' }}>&#x1F4F1;&#x2194;&#xFE0F;</span>
             <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
           </div>
         </div>
-
-        {/* Error overlay -- always rendered */}
         <ErrorOverlay />
-
-        {/* Fullscreen main menu */}
         <MainMenu />
-
-        {/* Campaign panel (accessible from main menu) */}
         {store.campaignOpen.value && <CampaignPanel />}
-
-        {/* New game modal */}
         {store.menuState.value === 'newGame' && <NewGameModal />}
-
-        {/* Settings panel */}
-        {store.settingsOpen.value && (
-          <SettingsPanel
-            onMasterVolumeChange={(v) => {
-              store.masterVolume.value = v;
-              audio.setMasterVolume(v);
-            }}
-            onMusicVolumeChange={(v) => {
-              store.musicVolume.value = v;
-              audio.setMusicVolume(v);
-            }}
-            onSfxVolumeChange={(v) => {
-              store.sfxVolume.value = v;
-              audio.setSfxVolume(v);
-            }}
-            onSpeedSet={(speed) => {
-              const w = game.world;
-              if (SPEED_LEVELS.includes(speed as 1 | 2 | 3)) {
-                w.gameSpeed = speed;
-                store.gameSpeed.value = speed;
-              }
-            }}
-            onColorBlindToggle={() => {
-              store.colorBlindMode.value = !store.colorBlindMode.value;
-              setColorBlindMode(store.colorBlindMode.value);
-            }}
-            onAutoSaveToggle={() => {
-              store.autoSaveEnabled.value = !store.autoSaveEnabled.value;
-            }}
-            onUiScaleChange={(scale) => {
-              store.uiScale.value = scale;
-              document.documentElement.style.fontSize = `${16 * scale}px`;
-            }}
-            onScreenShakeToggle={() => {
-              store.screenShakeEnabled.value = !store.screenShakeEnabled.value;
-            }}
-            onReduceVisualNoiseToggle={() => {
-              store.reduceVisualNoise.value = !store.reduceVisualNoise.value;
-            }}
-            onClose={() => {
-              store.settingsOpen.value = false;
-            }}
-          />
-        )}
-
-        {/* Achievements panel */}
+        <SettingsOverlay />
         {store.achievementsOpen.value && <AchievementsPanel />}
-
-        {/* Leaderboard panel */}
         {store.leaderboardOpen.value && <LeaderboardPanel />}
-
-        {/* Unlocks panel */}
         {store.unlocksOpen.value && <UnlocksPanel />}
-
-        {/* Cosmetics panel */}
         {store.cosmeticsOpen.value && <CosmeticsPanel />}
-
-        {/* Keyboard reference */}
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {
@@ -193,13 +118,12 @@ export function App({ onMount }: AppProps) {
     );
   }
 
-  // ---------- Playing: full game layout ----------
+  // ---------- Game screen: pure canvas + hamburger + panel ----------
   return (
     <div
-      class="flex flex-col-reverse md:flex-row h-screen w-screen text-sm font-game safe-area-pad"
+      class="relative h-screen w-screen text-sm font-game safe-area-pad overflow-hidden"
       style={{ color: 'var(--pw-text-primary)' }}
     >
-      {/* Rotate-your-device overlay for portrait mobile web users */}
       <div class="rotate-prompt">
         <div class="text-center">
           <span style={{ fontSize: '48px' }}>&#x1F4F1;&#x2194;&#xFE0F;</span>
@@ -207,129 +131,36 @@ export function App({ onMount }: AppProps) {
         </div>
       </div>
 
-      {/* Error overlay -- always rendered, shows errors as they occur */}
       <ErrorOverlay />
 
-      {/* Sidebar */}
-      <Sidebar
-        minimapCanvasRef={minimapCanvasRef}
-        minimapCamRef={minimapCamRef}
-        onDeselect={() => {
-          const w = game.world;
-          for (const eid of w.selection) {
-            if (hasComponent(w.ecs, eid, Selectable)) {
-              Selectable.selected[eid] = 0;
-            }
-          }
-          w.selection = [];
-          w.isTracking = false;
-          game.syncUIStore();
-        }}
-      />
-
-      {/* Main game container */}
+      {/* Fullscreen game container */}
       <div
         ref={containerRef}
         id="game-container"
-        class="flex-1 relative cursor-crosshair overflow-hidden bg-black"
+        class="absolute inset-0 cursor-crosshair overflow-hidden bg-black"
       >
-        {/* Top bar HUD */}
-        <HUD
-          onSpeedClick={() => game.cycleSpeed()}
-          onMuteClick={() => {
-            audio.toggleMute();
-            store.muted.value = audio.muted;
-          }}
-          onColorBlindToggle={() => {
-            store.colorBlindMode.value = !store.colorBlindMode.value;
-            setColorBlindMode(store.colorBlindMode.value);
-          }}
-          onIdleWorkerClick={() => {
-            selectIdleWorker(game.world);
+        <Overlays />
+        <AirdropButton
+          onAirdrop={() => {
+            game.useAirdrop();
             game.syncUIStore();
           }}
-          onArmyClick={() => {
-            selectArmy(game.world);
+        />
+        <AbilityBar
+          onRallyCry={() => {
+            game.useRallyCry();
             game.syncUIStore();
           }}
-          onPauseClick={() => {
-            game.world.paused = !game.world.paused;
+          onPondBlessing={() => {
+            game.usePondBlessing();
             game.syncUIStore();
           }}
-          onAttackMoveClick={() => {
-            if (hasPlayerUnitsSelected(game.world)) {
-              game.world.attackMoveMode = true;
-              game.syncUIStore();
-            }
-          }}
-          onHaltClick={() => {
-            const w = game.world;
-            for (const eid of w.selection) {
-              if (hasComponent(w.ecs, eid, UnitStateMachine)) {
-                UnitStateMachine.state[eid] = 0; // UnitState.Idle
-                UnitStateMachine.targetEntity[eid] = -1;
-                w.yukaManager.removeUnit(eid);
-              }
-            }
+          onTidalSurge={() => {
+            game.useTidalSurge();
             game.syncUIStore();
           }}
-          onSaveClick={() => {
-            const json = saveGame(game.world);
-            const difficulty = store.selectedDifficulty.value ?? 'normal';
-            const seed = store.goMapSeed.value ?? 0;
-            saveGameToDb('quicksave', difficulty, seed, json, false)
-              .then(() => {
-                store.hasSaveGame.value = true;
-              })
-              .catch((err) => {
-                // biome-ignore lint/suspicious/noConsole: surface save failures
-                console.error('Failed to save game to DB', err);
-              });
-
-            game.world.floatingTexts.push({
-              x: game.world.camX + (game.world.viewWidth || 400) / 2,
-              y: game.world.camY + 60,
-              text: 'Game Saved',
-              color: '#4ade80',
-              life: 60,
-            });
-            audio.click();
-          }}
-          onLoadClick={() => {
-            getLatestSave()
-              .then((row) => {
-                if (row?.data) {
-                  loadGame(game.world, row.data);
-                  game.syncUIStore();
-                  audio.click();
-                }
-              })
-              .catch((err) => {
-                // biome-ignore lint/suspicious/noConsole: surface load failures
-                console.error('Failed to load game from DB', err);
-              });
-          }}
-          onSettingsClick={() => {
-            store.settingsOpen.value = !store.settingsOpen.value;
-            audio.click();
-          }}
-          onKeyboardRefClick={() => {
-            store.keyboardRefOpen.value = !store.keyboardRefOpen.value;
-            audio.click();
-          }}
-          onSaveCtrlGroup={(group) => {
-            const w = game.world;
-            w.ctrlGroups[group] = [...w.selection];
-            w.floatingTexts.push({
-              x: w.camX + w.viewWidth / 2,
-              y: w.camY + 60,
-              text: `Group ${group} set (${w.ctrlGroups[group].length})`,
-              color: '#c084fc',
-              life: 60,
-            });
-            audio.click();
-            game.syncUIStore();
-          }}
+        />
+        <CtrlGroups
           onCtrlGroupClick={(group) => {
             const w = game.world;
             const g = w.ctrlGroups[group];
@@ -344,7 +175,6 @@ export function App({ onMount }: AppProps) {
                 for (const s of w.selection) {
                   if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 1;
                 }
-                // Smooth pan to center of group
                 let cx = 0;
                 let cy = 0;
                 for (const eid of alive) {
@@ -361,31 +191,6 @@ export function App({ onMount }: AppProps) {
           }}
         />
 
-        {/* Airdrop button */}
-        <AirdropButton
-          onAirdrop={() => {
-            game.useAirdrop();
-            game.syncUIStore();
-          }}
-        />
-
-        {/* Active abilities */}
-        <AbilityBar
-          onRallyCry={() => {
-            game.useRallyCry();
-            game.syncUIStore();
-          }}
-          onPondBlessing={() => {
-            game.usePondBlessing();
-            game.syncUIStore();
-          }}
-          onTidalSurge={() => {
-            game.useTidalSurge();
-            game.syncUIStore();
-          }}
-        />
-
-        {/* Canvases */}
         <canvas ref={gameCanvasRef} id="game-canvas" />
         <canvas ref={fogCanvasRef} id="fog-canvas" />
         <div
@@ -395,25 +200,14 @@ export function App({ onMount }: AppProps) {
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
 
-        {/* Campaign objective tracker (shown during gameplay) */}
         {store.campaignMissionId.value && <ObjectiveTracker />}
-
-        {/* Campaign objective tracker (shown during gameplay) */}
-        {store.menuState.value === 'playing' && store.campaignMissionId.value && (
-          <ObjectiveTracker />
-        )}
-
-        {/* Game over banner */}
         <GameOverBanner onRestart={() => window.location.reload()} />
-
-        {/* Evacuation overlay */}
         <EvacuationOverlay
           onChoice={(choice) => {
             game.handleEvacuationChoice(choice);
           }}
         />
 
-        {/* Tech tree overlay */}
         {store.techTreeOpen.value && (
           <TechTreePanel
             techState={{ ...game.world.tech }}
@@ -440,52 +234,7 @@ export function App({ onMount }: AppProps) {
           />
         )}
 
-        {/* Settings panel overlay */}
-        {store.settingsOpen.value && (
-          <SettingsPanel
-            onMasterVolumeChange={(v) => {
-              store.masterVolume.value = v;
-              audio.setMasterVolume(v);
-            }}
-            onMusicVolumeChange={(v) => {
-              store.musicVolume.value = v;
-              audio.setMusicVolume(v);
-            }}
-            onSfxVolumeChange={(v) => {
-              store.sfxVolume.value = v;
-              audio.setSfxVolume(v);
-            }}
-            onSpeedSet={(speed) => {
-              const w = game.world;
-              if (SPEED_LEVELS.includes(speed as 1 | 2 | 3)) {
-                w.gameSpeed = speed;
-                store.gameSpeed.value = speed;
-              }
-            }}
-            onColorBlindToggle={() => {
-              store.colorBlindMode.value = !store.colorBlindMode.value;
-              setColorBlindMode(store.colorBlindMode.value);
-            }}
-            onAutoSaveToggle={() => {
-              store.autoSaveEnabled.value = !store.autoSaveEnabled.value;
-            }}
-            onUiScaleChange={(scale) => {
-              store.uiScale.value = scale;
-              document.documentElement.style.fontSize = `${16 * scale}px`;
-            }}
-            onScreenShakeToggle={() => {
-              store.screenShakeEnabled.value = !store.screenShakeEnabled.value;
-            }}
-            onReduceVisualNoiseToggle={() => {
-              store.reduceVisualNoise.value = !store.reduceVisualNoise.value;
-            }}
-            onClose={() => {
-              store.settingsOpen.value = false;
-            }}
-          />
-        )}
-
-        {/* Keyboard reference overlay */}
+        <SettingsOverlay />
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {
@@ -493,28 +242,23 @@ export function App({ onMount }: AppProps) {
             }}
           />
         )}
-
-        {/* Achievements panel overlay */}
         {store.achievementsOpen.value && <AchievementsPanel />}
-
-        {/* Leaderboard panel overlay */}
         {store.leaderboardOpen.value && <LeaderboardPanel />}
-
-        {/* Unlocks panel overlay */}
         {store.unlocksOpen.value && <UnlocksPanel />}
-
-        {/* Cosmetics panel overlay */}
         {store.cosmeticsOpen.value && <CosmeticsPanel />}
       </div>
 
-      {/* Tooltip overlay */}
+      {/* Hamburger button — sole floating DOM element */}
+      <HamburgerButton />
+
+      {/* Tabbed command panel */}
+      <CommandPanel minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
+
+      {/* Tooltip */}
       {store.tooltipVisible.value && store.tooltipData.value && (
         <div
           class="tooltip"
-          style={{
-            left: `${store.tooltipX.value}px`,
-            top: `${store.tooltipY.value}px`,
-          }}
+          style={{ left: `${store.tooltipX.value}px`, top: `${store.tooltipY.value}px` }}
         >
           <div class="font-heading font-bold">{store.tooltipData.value.title}</div>
           {store.tooltipData.value.costBreakdown ? (

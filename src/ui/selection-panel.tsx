@@ -8,11 +8,24 @@
  * No selection: compact overview with idle workers, army count, population.
  */
 
+import { isMobile } from '@/platform';
 import {
   armyCount,
+  attackMoveActive,
+  autoAttackEnabled,
+  autoBuildEnabled,
+  autoDefendEnabled,
+  autoGatherEnabled,
+  autoHealEnabled,
+  autoScoutEnabled,
   food,
+  hasPlayerUnits,
   hpBarColor,
   hpPercent,
+  idleCombatCount,
+  idleGathererCount,
+  idleHealerCount,
+  idleScoutCount,
   idleWorkerCount,
   maxFood,
   selectionComposition,
@@ -29,53 +42,191 @@ import {
 
 export interface SelectionPanelProps {
   onDeselect?: () => void;
+  onIdleWorkerClick?: () => void;
+  onArmyClick?: () => void;
+  onAttackMoveClick?: () => void;
+  onHaltClick?: () => void;
 }
 
-/** Compact overview when nothing is selected. */
-function CommandCenterOverview() {
+/** Compact auto-behavior toggle. */
+function AutoToggle({
+  label,
+  enabled,
+  color,
+  onToggle,
+}: {
+  label: string;
+  enabled: boolean;
+  color: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      class="px-1.5 py-1 rounded text-[9px] font-bold cursor-pointer transition-colors min-h-[36px]"
+      style={{
+        border: `1px solid ${color}`,
+        color,
+        background: enabled ? `color-mix(in srgb, ${color} 12%, transparent)` : 'transparent',
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+    >
+      {enabled ? '\u2713 ' : ''}
+      {label}
+    </button>
+  );
+}
+
+/** Compact overview when nothing is selected — includes idle/army buttons + auto-behaviors. */
+function CommandCenterOverview({
+  onIdleClick,
+  onArmyClick,
+}: {
+  onIdleClick?: () => void;
+  onArmyClick?: () => void;
+}) {
+  const hasGatherers = idleGathererCount.value > 0;
+  const hasCombat = idleCombatCount.value > 0;
+  const hasHealers = idleHealerCount.value > 0;
+  const hasScouts = idleScoutCount.value > 0;
+  const totalIdle = idleWorkerCount.value;
+
   return (
     <div class="flex flex-col gap-1">
-      <h2
-        class="font-heading text-sm md:text-base leading-tight"
-        style={{ color: 'var(--pw-accent-dim)' }}
-      >
-        Command Center
-      </h2>
-      <div
-        class="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] md:text-xs font-numbers"
-        style={{ color: 'var(--pw-text-secondary)' }}
-      >
-        <span>
-          <span class="font-bold" style={{ color: 'var(--pw-clam)' }}>
-            {idleWorkerCount.value}
-          </span>{' '}
-          Idle
-        </span>
-        <span>
-          Army:{' '}
-          <span class="font-bold" style={{ color: 'var(--pw-enemy)' }}>
-            {armyCount.value}
-          </span>
-        </span>
-        <span>
-          Pop:{' '}
-          <span class="font-bold" style={{ color: 'var(--pw-food)' }}>
+      <div class="flex items-center gap-2">
+        <h2
+          class="font-heading text-sm md:text-base leading-tight"
+          style={{ color: 'var(--pw-accent-dim)' }}
+        >
+          Command Center
+        </h2>
+        <div
+          class="flex gap-1 text-[10px] md:text-xs font-numbers"
+          style={{ color: 'var(--pw-text-secondary)' }}
+        >
+          <span style={{ color: 'var(--pw-food)' }}>
             {food.value}/{maxFood.value}
           </span>
-        </span>
+        </div>
       </div>
+
+      {/* Idle + Army quick-select buttons */}
+      <div class="flex gap-1 flex-wrap">
+        {totalIdle > 0 && (
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer"
+            style={{ border: '1px solid var(--pw-warning)', color: 'var(--pw-warning)' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onIdleClick?.();
+            }}
+          >
+            {totalIdle} Idle
+          </button>
+        )}
+        {armyCount.value > 0 && (
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer"
+            style={{ border: '1px solid var(--pw-enemy)', color: 'var(--pw-enemy-light)' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onArmyClick?.();
+            }}
+          >
+            Army ({armyCount.value})
+          </button>
+        )}
+      </div>
+
+      {/* Auto-behavior toggles (contextual per idle unit type) */}
+      {totalIdle > 0 && (
+        <div class="flex gap-1 flex-wrap">
+          {hasGatherers && (
+            <>
+              <AutoToggle
+                label="Gather"
+                enabled={autoGatherEnabled.value}
+                color="var(--pw-warning)"
+                onToggle={() => {
+                  autoGatherEnabled.value = !autoGatherEnabled.value;
+                }}
+              />
+              <AutoToggle
+                label="Build"
+                enabled={autoBuildEnabled.value}
+                color="var(--pw-twig)"
+                onToggle={() => {
+                  autoBuildEnabled.value = !autoBuildEnabled.value;
+                }}
+              />
+            </>
+          )}
+          {hasCombat && (
+            <>
+              <AutoToggle
+                label="Attack"
+                enabled={autoAttackEnabled.value}
+                color="var(--pw-enemy-light)"
+                onToggle={() => {
+                  autoAttackEnabled.value = !autoAttackEnabled.value;
+                }}
+              />
+              <AutoToggle
+                label="Defend"
+                enabled={autoDefendEnabled.value}
+                color="var(--pw-accent)"
+                onToggle={() => {
+                  autoDefendEnabled.value = !autoDefendEnabled.value;
+                }}
+              />
+            </>
+          )}
+          {hasHealers && (
+            <AutoToggle
+              label="Heal"
+              enabled={autoHealEnabled.value}
+              color="var(--pw-success)"
+              onToggle={() => {
+                autoHealEnabled.value = !autoHealEnabled.value;
+              }}
+            />
+          )}
+          {hasScouts && (
+            <AutoToggle
+              label="Scout"
+              enabled={autoScoutEnabled.value}
+              color="#b090d8"
+              onToggle={() => {
+                autoScoutEnabled.value = !autoScoutEnabled.value;
+              }}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
+export function SelectionPanel({
+  onDeselect,
+  onIdleWorkerClick,
+  onArmyClick,
+  onAttackMoveClick,
+  onHaltClick,
+}: SelectionPanelProps) {
   const count = selectionCount.value;
   const showHp = selectionShowHpBar.value;
+  const mobile = isMobile.value;
 
   return (
     <div
       id="selection-info"
-      class="w-1/3 md:w-full flex-shrink-0 p-2 md:p-3 border-r-2 md:border-r-0 md:border-b-2 flex flex-col gap-1 md:gap-1.5 overflow-y-auto relative"
+      class="w-full flex-shrink-0 p-2 border-b-2 flex flex-col gap-1 overflow-y-auto relative"
       style={{
         background: 'linear-gradient(180deg, var(--pw-bg-surface) 0%, var(--pw-bg-deep) 100%)',
         borderColor: 'var(--pw-border)',
@@ -85,7 +236,7 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
       {count > 0 && onDeselect && (
         <button
           type="button"
-          class="absolute top-1 right-1 rounded-full w-6 h-6 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors hud-btn"
+          class="absolute top-1 right-1 rounded-full w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors hud-btn"
           title="Clear selection (Esc)"
           onClick={(e) => {
             e.stopPropagation();
@@ -96,8 +247,40 @@ export function SelectionPanel({ onDeselect }: SelectionPanelProps) {
         </button>
       )}
 
-      {/* No selection: compact overview */}
-      {count === 0 && <CommandCenterOverview />}
+      {/* No selection: compact overview with idle/army/auto-behaviors */}
+      {count === 0 && (
+        <CommandCenterOverview onIdleClick={onIdleWorkerClick} onArmyClick={onArmyClick} />
+      )}
+
+      {/* Mobile command buttons (A-Move / Stop) inline when units selected */}
+      {mobile && count > 0 && hasPlayerUnits.value && (
+        <div class="flex gap-1">
+          {!attackMoveActive.value && (
+            <button
+              type="button"
+              class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
+              style={{ border: '1px solid var(--pw-twig)', color: 'var(--pw-otter)' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAttackMoveClick?.();
+              }}
+            >
+              A-Move
+            </button>
+          )}
+          <button
+            type="button"
+            class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
+            style={{ border: '1px solid var(--pw-border)', color: 'var(--pw-text-secondary)' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onHaltClick?.();
+            }}
+          >
+            Stop
+          </button>
+        </div>
+      )}
 
       {/* Has selection */}
       {count > 0 && (

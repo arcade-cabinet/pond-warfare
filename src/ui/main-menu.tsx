@@ -1,19 +1,18 @@
 /**
- * Main Menu - Immersive Pond Scene
+ * Main Menu — Diegetic Pond Interface
  *
- * Fullscreen landing page that looks like you are gazing down at a moonlit
- * pond. Lily pads drift on the water, fireflies blink, cattails sway at the
- * edges, and ripples radiate outward. The title floats above the water with a
- * blurred reflection beneath it. Menu buttons are styled as wooden signs and
- * stone tablets rather than flat rectangles, and the rank badge hangs from a
- * reed like a medal. Version text sits on a piece of driftwood.
- *
- * Everything is pure CSS -- no image assets required.
+ * Hand-painted watercolor pond with floating lily pads as scenery, a swimming
+ * otter (Yuka.js steered), and teal bar buttons for all menu actions. The lily
+ * pads drift organically — all 3 variants plus tiny pads — while the otter
+ * navigates between them, aware of pads, buttons, and the logo.
  */
 
-import { useEffect, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { isMobile, isTablet } from '@/platform';
 import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
+import { MenuOtter } from './menu-otter';
+import { MenuPads } from './menu-pads';
 import {
   achievementsOpen,
   campaignOpen,
@@ -26,8 +25,59 @@ import {
   unlocksOpen,
 } from './store';
 
+const UI = '/pond-warfare/assets/ui';
+
+/** Teal bar button using the painted Button.png asset. */
+function MenuButton({
+  label,
+  onClick,
+  disabled,
+  wide,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  wide?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      class={`menu-pond-btn relative flex items-center justify-center cursor-pointer min-h-[44px] transition-transform ${disabled ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
+      style={{ width: wide ? '170px' : '140px', height: wide ? '48px' : '42px' }}
+      disabled={disabled}
+      onClick={disabled ? undefined : onClick}
+    >
+      <img
+        src={`${UI}/Button.png`}
+        alt=""
+        class="absolute inset-0 w-full h-full object-fill pointer-events-none"
+        draggable={false}
+        style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))' }}
+      />
+      <span
+        class="relative z-10 font-heading font-bold tracking-wider uppercase"
+        style={{
+          color: '#1a3a3a',
+          fontSize: wide ? '14px' : '11px',
+          textShadow: '0 1px 1px rgba(180,220,220,0.4)',
+        }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
+
+/* FloatingPad removed — lily pads are now dynamically positioned by MenuPads */
+
 export function MainMenu() {
   const [rank, setRank] = useState<RankInfo | null>(null);
+  const compact = isMobile.value || isTablet.value;
+  const otterRef = useRef<HTMLImageElement>(null);
+  const otterAI = useRef<MenuOtter | null>(null);
+  const padsSystem = useRef<MenuPads | null>(null);
+  const padRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getPlayerProfile()
@@ -35,100 +85,206 @@ export function MainMenu() {
       .catch(() => {});
   }, []);
 
+  // Initialize Yuka otter on mount
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    const otter = new MenuOtter(
+      { width: w, height: h },
+      w * 0.75, // start right of center
+      h * 0.7, // start in lower area
+    );
+    otterAI.current = otter;
+
+    // Create lily pad system
+    const pads = new MenuPads({ width: w, height: h }, 10);
+    padsSystem.current = pads;
+
+    // Sync otter + pads position to DOM each frame
+    let rafId = 0;
+    const syncDOM = () => {
+      // Otter
+      const img = otterRef.current;
+      if (img && otter) {
+        img.style.left = `${otter.x - 50}px`;
+        img.style.top = `${otter.y - 25}px`;
+        const deg = (otter.rotation * 180) / Math.PI - 90;
+        img.style.transform = `rotate(${deg}deg)`;
+      }
+      // Pads
+      for (let i = 0; i < pads.pads.length; i++) {
+        const padEl = padRefs.current[i];
+        const p = pads.pads[i];
+        if (padEl && p) {
+          padEl.style.left = `${p.x - p.size}px`;
+          padEl.style.top = `${p.y - p.size}px`;
+          padEl.style.transform = `rotate(${p.rotation}deg)`;
+        }
+      }
+      rafId = requestAnimationFrame(syncDOM);
+    };
+
+    otter.start();
+    pads.start();
+    rafId = requestAnimationFrame(syncDOM);
+
+    const onResize = () => {
+      if (el) {
+        otter.resize(el.clientWidth, el.clientHeight);
+        pads.resize(el.clientWidth, el.clientHeight);
+      }
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      otter.destroy();
+      pads.destroy();
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', onResize);
+      otterAI.current = null;
+      padsSystem.current = null;
+    };
+  }, []);
+
+  const handlePointerMove = useCallback((e: PointerEvent) => {
+    const el = containerRef.current;
+    if (!el || !otterAI.current) return;
+    const rect = el.getBoundingClientRect();
+    otterAI.current.setPointer(e.clientX - rect.left, e.clientY - rect.top);
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    otterAI.current?.clearPointer();
+  }, []);
+
+  const handleOtterClick = useCallback((e: MouseEvent) => {
+    e.stopPropagation();
+    const el = containerRef.current;
+    if (!el || !otterAI.current) return;
+    const rect = el.getBoundingClientRect();
+    otterAI.current.poke(e.clientX - rect.left, e.clientY - rect.top);
+  }, []);
   return (
     <div
+      ref={containerRef}
       id="intro-overlay"
-      class="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden safe-area-pad"
-      style={{
-        background:
-          'radial-gradient(ellipse 120% 100% at 50% 65%, #15302a 0%, #0e2220 30%, #0a1a1f 55%, #060e12 100%)',
-      }}
+      class={`relative h-screen w-full flex flex-col items-center safe-area-pad ${compact ? 'justify-start pt-2 overflow-y-auto' : 'justify-center overflow-hidden'}`}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
     >
-      {/* ---- Pond surface layers ---- */}
+      {/* ---- Painted pond background ---- */}
+      <div
+        class="absolute inset-0"
+        style={{
+          backgroundImage: `url(${UI}/Background.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
 
-      {/* Water caustics (subtle light patterns) */}
-      <div class="water-caustics" />
+      {/* ---- Water ripple overlays ---- */}
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${UI}/Flowing_Serenity_Water Ripples 1.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.3,
+          animation: 'ripple-drift-1 12s ease-in-out infinite',
+        }}
+      />
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${UI}/Flowing_Serenity_Water ripples 2.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.2,
+          animation: 'ripple-drift-2 16s ease-in-out infinite',
+        }}
+      />
 
-      {/* Water shimmer streaks */}
-      <div class="water-shimmer" />
-
-      {/* Water ripple rings (existing animation) */}
-      <div class="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        <div class="water-ripple" style={{ width: '160px', height: '160px' }} />
-        <div class="water-ripple" style={{ width: '160px', height: '160px' }} />
-        <div class="water-ripple" style={{ width: '160px', height: '160px' }} />
-      </div>
-
-      {/* Vignette - darker edges like peering through reeds */}
+      {/* Vignette */}
       <div
         class="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse 80% 70% at 50% 45%, transparent 20%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.85) 100%)',
+            'radial-gradient(ellipse 85% 75% at 50% 45%, transparent 25%, rgba(0,0,0,0.35) 65%, rgba(0,0,0,0.7) 100%)',
         }}
       />
 
-      {/* ---- Lily pads scattered across the pond ---- */}
-      <div class="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large lily pad - bottom left */}
-        <div
-          class="lily-pad"
-          style={{ width: '90px', height: '80px', bottom: '12%', left: '8%', opacity: 0.7 }}
-        >
-          <div class="lily-flower" />
-        </div>
-        {/* Medium pad - top right */}
-        <div
-          class="lily-pad"
-          style={{ width: '70px', height: '60px', top: '15%', right: '12%', opacity: 0.5 }}
-        />
-        {/* Small pad - bottom right */}
-        <div
-          class="lily-pad"
-          style={{ width: '50px', height: '45px', bottom: '20%', right: '18%', opacity: 0.6 }}
-        >
-          <div class="lily-flower" />
-        </div>
-        {/* Tiny pad - left mid */}
-        <div
-          class="lily-pad"
-          style={{ width: '40px', height: '35px', top: '55%', left: '5%', opacity: 0.4 }}
-        />
-        {/* Medium pad - top left */}
-        <div
-          class="lily-pad"
-          style={{ width: '65px', height: '55px', top: '8%', left: '20%', opacity: 0.45 }}
-        />
-        {/* Small pad - far right mid */}
-        <div
-          class="lily-pad"
-          style={{ width: '45px', height: '40px', top: '40%', right: '6%', opacity: 0.35 }}
-        >
-          <div class="lily-flower" />
-        </div>
-      </div>
+      {/* ---- Dynamic floating lily pads (JS-driven positions + mutual repulsion) ---- */}
+      {padsSystem.current?.pads.map((p, i) => {
+        const src =
+          p.variant === 'tiny' ? `${UI}/Lillypad-tiny.png` : `${UI}/Lillypad-${p.variant}.png`;
+        const size = p.variant === 'tiny' ? '45px' : '80px';
+        return (
+          <div
+            key={`pad-${i}`}
+            ref={(el) => {
+              padRefs.current[i] = el;
+            }}
+            class="absolute pointer-events-none z-[1]"
+            style={{ width: size, height: size, opacity: p.variant === 'tiny' ? 0.5 : 0.7 }}
+          >
+            <img
+              src={src}
+              alt=""
+              class="w-full h-full object-contain"
+              draggable={false}
+              style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.3))' }}
+            />
+            {p.flower && (
+              <img
+                src={`${UI}/Flower.png`}
+                alt=""
+                class="absolute"
+                style={{ top: '-4px', right: '6px', width: '18px', height: '18px' }}
+                draggable={false}
+              />
+            )}
+          </div>
+        );
+      })}
 
-      {/* ---- Cattails / reeds at edges ---- */}
-      <div class="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Left cattails */}
-        <div class="cattail" style={{ bottom: '0', left: '3%' }}>
-          <div class="cattail-head" />
-          <div class="cattail-stem" style={{ height: '120px' }} />
-        </div>
-        <div class="cattail" style={{ bottom: '0', left: '6%' }}>
-          <div class="cattail-head" />
-          <div class="cattail-stem" style={{ height: '90px' }} />
-        </div>
-        {/* Right cattails */}
-        <div class="cattail" style={{ bottom: '0', right: '4%' }}>
-          <div class="cattail-head" />
-          <div class="cattail-stem" style={{ height: '110px' }} />
-        </div>
-        <div class="cattail" style={{ bottom: '0', right: '7%' }}>
-          <div class="cattail-head" />
-          <div class="cattail-stem" style={{ height: '80px' }} />
-        </div>
-      </div>
+      {/* ---- Swimming otter (Yuka-steered, clickable) ---- */}
+      {/* Shadow layer — stays flat beneath the otter */}
+      <img
+        src={`${UI}/Otter shadow_goes above background but below ripples.png`}
+        alt=""
+        class="absolute z-[5] pointer-events-none"
+        ref={(el) => {
+          // Shadow tracks otter position but doesn't rotate
+          if (el && otterRef.current) {
+            const sync = () => {
+              if (otterAI.current) {
+                el.style.left = `${otterAI.current.x - 40}px`;
+                el.style.top = `${otterAI.current.y - 10}px`;
+              }
+              requestAnimationFrame(sync);
+            };
+            requestAnimationFrame(sync);
+          }
+        }}
+        style={{ width: compact ? '80px' : '130px', opacity: 0.6 }}
+        draggable={false}
+      />
+      {/* Otter sprite — rotates to face heading */}
+      <img
+        ref={otterRef}
+        src={`${UI}/Otter.png`}
+        alt="otter"
+        class="absolute z-10 cursor-pointer"
+        style={{
+          width: compact ? '80px' : '130px',
+          opacity: 0.95,
+        }}
+        draggable={false}
+        onClick={handleOtterClick}
+      />
 
       {/* ---- Fireflies ---- */}
       <div class="absolute inset-0 pointer-events-none overflow-hidden">
@@ -138,291 +294,128 @@ export function MainMenu() {
         <div class="firefly" style={{ bottom: '25%', right: '30%' }} />
         <div class="firefly" style={{ top: '15%', right: '35%' }} />
         <div class="firefly" style={{ bottom: '35%', left: '10%' }} />
-        <div class="firefly" style={{ top: '45%', left: '40%' }} />
-        <div class="firefly" style={{ bottom: '15%', right: '15%' }} />
       </div>
-
-      {/* ---- Moon glow (top-right ambient light) ---- */}
-      <div
-        class="absolute pointer-events-none"
-        style={{
-          top: '-5%',
-          right: '10%',
-          width: '300px',
-          height: '300px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(180, 200, 220, 0.06) 0%, transparent 60%)',
-        }}
-      />
 
       {/* ==== CONTENT ==== */}
 
-      {/* ---- Title with reflection ---- */}
-      <div class="relative z-10 flex flex-col items-center">
-        {/* Main title */}
+      {/* ---- Title ---- */}
+      <div class={`relative z-10 flex flex-col items-center ${compact ? 'mb-1' : 'mb-4'}`}>
         <h1 class="mb-0 tracking-widest uppercase text-center">
-          <span class="logo-pond block text-5xl md:text-8xl leading-tight">Pond</span>
-          <span class="logo-warfare block text-4xl md:text-7xl leading-tight mt-1">Warfare</span>
-        </h1>
-
-        {/* Water reflection of the title */}
-        <div class="title-reflection mt-0" aria-hidden="true">
           <span
-            class="logo-pond block text-5xl md:text-8xl leading-tight"
-            style={{ letterSpacing: '0.15em' }}
+            class={`logo-pond block leading-tight ${compact ? 'text-3xl' : 'text-4xl md:text-7xl'}`}
           >
             Pond
           </span>
           <span
-            class="logo-warfare block text-4xl md:text-7xl leading-tight mt-1"
-            style={{ letterSpacing: '0.25em' }}
+            class={`logo-warfare block leading-tight mt-1 ${compact ? 'text-2xl' : 'text-3xl md:text-6xl'}`}
           >
             Warfare
           </span>
+        </h1>
+        {!compact && (
+          <div
+            class="title-reflection mt-0"
+            aria-hidden="true"
+            style={{ maxHeight: '50px', overflow: 'hidden' }}
+          >
+            <span
+              class="logo-pond block text-4xl md:text-7xl leading-tight"
+              style={{ letterSpacing: '0.15em' }}
+            >
+              Pond
+            </span>
+          </div>
+        )}
+        <p
+          class="font-heading text-xs md:text-sm mt-1 tracking-wider text-center"
+          style={{ color: 'rgba(180,220,210,0.8)' }}
+        >
+          Defend the Pond. Conquer the Wild.
+          {rank && (
+            <span class="ml-2" title={rank.label} style={{ color: rank.color }}>
+              {rank.icon} {rank.label}
+            </span>
+          )}
+        </p>
+      </div>
+
+      {/* ---- Menu buttons (teal bars) ---- */}
+      <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+        {/* Primary row */}
+        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+          <MenuButton
+            label="New Game"
+            wide
+            onClick={() => {
+              menuState.value = 'newGame';
+            }}
+          />
+          <MenuButton
+            label="Continue"
+            wide
+            disabled={!hasSaveGame.value}
+            onClick={() => {
+              if (hasSaveGame.value) {
+                continueRequested.value = true;
+                menuState.value = 'playing';
+              }
+            }}
+          />
+        </div>
+
+        {/* Secondary row */}
+        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+          <MenuButton
+            label="Campaign"
+            onClick={() => {
+              campaignOpen.value = true;
+            }}
+          />
+          <MenuButton
+            label="Settings"
+            onClick={() => {
+              settingsOpen.value = true;
+            }}
+          />
+        </div>
+
+        {/* Tertiary row */}
+        <div class={`flex items-center ${compact ? 'gap-1' : 'gap-2'} flex-wrap justify-center`}>
+          <MenuButton
+            label="Leaderboard"
+            onClick={() => {
+              leaderboardOpen.value = true;
+            }}
+          />
+          <MenuButton
+            label="Achievements"
+            onClick={() => {
+              achievementsOpen.value = true;
+            }}
+          />
+          <MenuButton
+            label="Unlocks"
+            onClick={() => {
+              unlocksOpen.value = true;
+            }}
+          />
+          <MenuButton
+            label="Cosmetics"
+            onClick={() => {
+              cosmeticsOpen.value = true;
+            }}
+          />
         </div>
       </div>
 
-      {/* ---- Tagline ---- */}
-      <p
-        class="font-heading text-sm md:text-lg mt-3 tracking-wider relative z-10 text-center"
-        style={{ color: 'var(--pw-text-muted)' }}
-      >
-        Defend the Pond. Conquer the Wild.
-      </p>
-
-      {/* ---- Rank badge as a medal hanging from a reed ---- */}
-      {rank && (
-        <div class="relative z-10 mt-3">
-          <div class="reed-hang">
-            <div class="reed-medal" title={rank.label}>
-              <span>{rank.icon}</span>
-            </div>
-          </div>
-          <span
-            class="font-heading font-bold text-[11px] tracking-wider uppercase block text-center mt-1"
-            style={{ color: rank.color }}
-          >
-            {rank.label}
+      {/* ---- Version ---- */}
+      {!compact && (
+        <div class="relative z-10 mt-3 mb-4">
+          <span class="font-game text-[10px]" style={{ color: 'rgba(140, 180, 170, 0.5)' }}>
+            v1.0 &middot; Defend the Pond
           </span>
         </div>
       )}
-
-      {/* ---- Hero CTA: Shield-shaped NEW GAME button ---- */}
-      <div class="relative z-10 mt-8 flex flex-col items-center">
-        <button
-          type="button"
-          class="shield-btn font-heading font-bold text-lg md:text-xl tracking-widest flex flex-col items-center justify-center"
-          style={{
-            width: '180px',
-            height: '200px',
-            paddingTop: '20px',
-          }}
-          onClick={() => {
-            menuState.value = 'newGame';
-          }}
-        >
-          <span class="shield-btn-inner" />
-          <span style={{ fontSize: '28px', lineHeight: '1', marginBottom: '8px' }}>&#x2694;</span>
-          <span>NEW</span>
-          <span>GAME</span>
-        </button>
-      </div>
-
-      {/* ---- Primary action wooden sign buttons ---- */}
-      <div
-        class="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 relative z-10 items-center justify-center w-full px-4"
-        style={{ maxWidth: '500px' }}
-      >
-        <button
-          type="button"
-          class="wood-sign-btn font-heading font-bold text-sm md:text-base tracking-wider"
-          style={{
-            minWidth: '180px',
-            minHeight: '52px',
-            padding: '12px 28px',
-            color: 'var(--pw-text-primary)',
-          }}
-          onClick={() => {
-            campaignOpen.value = true;
-          }}
-        >
-          CAMPAIGN
-        </button>
-
-        <button
-          type="button"
-          class="wood-sign-btn font-heading font-bold text-sm md:text-base tracking-wider"
-          disabled={!hasSaveGame.value}
-          style={{
-            minWidth: '180px',
-            minHeight: '52px',
-            padding: '12px 28px',
-            color: hasSaveGame.value ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
-          }}
-          onClick={() => {
-            if (hasSaveGame.value) {
-              continueRequested.value = true;
-              menuState.value = 'playing';
-            }
-          }}
-        >
-          CONTINUE
-        </button>
-      </div>
-
-      {/* ---- Secondary actions: stone tablets in a curved row ---- */}
-      <div
-        class="flex flex-wrap justify-center gap-3 mt-6 relative z-10 w-full px-4"
-        style={{ maxWidth: '520px' }}
-      >
-        <button
-          type="button"
-          class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
-          onClick={() => {
-            leaderboardOpen.value = true;
-          }}
-        >
-          LEADERBOARD
-        </button>
-
-        <button
-          type="button"
-          class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
-          onClick={() => {
-            achievementsOpen.value = true;
-          }}
-        >
-          ACHIEVEMENTS
-        </button>
-
-        <button
-          type="button"
-          class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
-          onClick={() => {
-            unlocksOpen.value = true;
-          }}
-        >
-          UNLOCKS
-        </button>
-
-        <button
-          type="button"
-          class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
-          onClick={() => {
-            cosmeticsOpen.value = true;
-          }}
-        >
-          COSMETICS
-        </button>
-      </div>
-
-      {/* ---- Settings (small, below secondary) ---- */}
-      <div class="relative z-10 mt-4">
-        <button
-          type="button"
-          class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{
-            minHeight: '40px',
-            padding: '8px 20px',
-            color: 'var(--pw-text-muted)',
-            borderColor: 'rgba(42, 80, 96, 0.5)',
-          }}
-          onClick={() => {
-            leaderboardOpen.value = true;
-          }}
-        >
-          LEADERBOARD
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
-          }}
-          onClick={() => {
-            achievementsOpen.value = true;
-          }}
-        >
-          ACHIEVEMENTS
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
-          }}
-          onClick={() => {
-            unlocksOpen.value = true;
-          }}
-        >
-          UNLOCKS
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
-          }}
-          onClick={() => {
-            cosmeticsOpen.value = true;
-          }}
-        >
-          COSMETICS
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
-          }}
-          onClick={() => {
-            settingsOpen.value = true;
-          }}
-        >
-          SETTINGS
-        </button>
-      </div>
-
-      {/* ---- Controls hint ---- */}
-      <p
-        class="font-game text-xs mt-6 text-center px-4 hidden md:block relative z-10"
-        style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
-      >
-        Right-click to command &bull; WASD to scroll &bull; Ctrl+# to set groups
-      </p>
-      <p
-        class="font-game text-xs mt-6 text-center px-4 md:hidden relative z-10"
-        style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
-      >
-        Long-press to command &bull; Two-finger pan &bull; Pinch to zoom
-      </p>
-
-      {/* ---- Version on driftwood ---- */}
-      <div class="driftwood relative z-10 mt-4 mb-6 px-6 py-1">
-        <span class="font-game text-[10px]" style={{ color: 'rgba(160, 140, 110, 0.7)' }}>
-          v1.0 &middot; Defend the Pond
-        </span>
-      </div>
     </div>
   );
 }

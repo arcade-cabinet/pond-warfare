@@ -77,6 +77,7 @@ import {
   selectIdleWorker,
 } from '@/input/selection';
 import { PhysicsManager } from '@/physics/physics-world';
+import { isNative } from '@/platform';
 import { cleanupEntityAnimation, triggerCommandPulse } from '@/rendering/animations';
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import { clampCamera, computeShakeOffset } from '@/rendering/camera';
@@ -110,7 +111,6 @@ import {
   resetMatchUpdateGuard,
   updateProfileAndCheckUnlocks,
 } from '@/systems/unlock-tracker';
-import { isNative } from '@/platform';
 import { EntityKind, Faction, type SpriteId, UnitState } from '@/types';
 // UI store
 import * as store from '@/ui/store';
@@ -1520,6 +1520,7 @@ export class Game {
     } else {
       // Quit to menu
       store.menuState.value = 'main';
+      store.mobilePanelOpen.value = false;
       store.gameState.value = 'playing'; // reset the game state signal
     }
   }

@@ -40,6 +40,8 @@ import {
   getEntityOverlayGfx,
   getEntitySprites,
   getTexture,
+  getUnitLabelTexts,
+  LABEL_STYLE,
   lerpTint,
   PROGRESS_STYLE,
   setDestroyRecoloredTexturesCallback,
@@ -319,6 +321,30 @@ export function renderEntity(eid: number, frameCount: number): void {
         const sy = dy - 14;
         drawStar(entityOverlayGfx, sx, sy, 3, 0xfbbf24);
       }
+    }
+  }
+
+  // --- Selected unit name label ---
+  const unitLabelTexts = getUnitLabelTexts();
+  if (selected && !isResource) {
+    let label = unitLabelTexts.get(eid);
+    if (!label) {
+      label = new Text({ text: '', style: LABEL_STYLE });
+      label.anchor.set(0.5, 1);
+      entityLayer.addChild(label);
+      unitLabelTexts.set(eid, label);
+    }
+    label.text = EntityKind[kind] ?? '';
+    const labelY = ey - sh / 2 + yOff - 16;
+    label.position.set(ex, labelY);
+    label.zIndex = ey + 1;
+    label.visible = true;
+  } else {
+    const label = unitLabelTexts.get(eid);
+    if (label) {
+      entityLayer.removeChild(label);
+      label.destroy();
+      unitLabelTexts.delete(eid);
     }
   }
 
