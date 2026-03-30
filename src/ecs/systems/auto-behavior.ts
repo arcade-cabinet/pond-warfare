@@ -200,7 +200,6 @@ export function autoBehaviorSystem(world: GameWorld): void {
       }
     }
   }
-
 }
 
 /**

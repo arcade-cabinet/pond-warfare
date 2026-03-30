@@ -99,9 +99,7 @@ export interface KeyboardReferenceProps {
 
 export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
   return (
-    <div
-      class="absolute inset-0 z-[60] flex items-center justify-center"
-    >
+    <div class="absolute inset-0 z-[60] flex items-center justify-center">
       {/* Backdrop */}
       <div
         class="absolute inset-0"

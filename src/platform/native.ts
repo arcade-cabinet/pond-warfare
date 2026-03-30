@@ -23,7 +23,7 @@ export const platformType = Capacitor.getPlatform() as 'web' | 'android' | 'ios'
 
 /** True when the device has a touch screen (native OR mobile web). */
 export const isTouchDevice = signal(
-  isNative || ('ontouchstart' in globalThis) || navigator.maxTouchPoints > 0,
+  isNative || 'ontouchstart' in globalThis || navigator.maxTouchPoints > 0,
 );
 
 /** True on phones (native mobile OR small-screen touch web). */

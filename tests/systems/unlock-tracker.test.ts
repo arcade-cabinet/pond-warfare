@@ -4,7 +4,7 @@
  * Validates unlock condition checking and cached state.
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { UNLOCKS } from '@/config/unlocks';
 import type { PlayerProfile } from '@/storage/database';
 

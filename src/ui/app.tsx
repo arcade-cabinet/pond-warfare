@@ -15,11 +15,11 @@ import { SPEED_LEVELS } from '@/constants';
 import { Health, Position, Selectable, UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
-import { isMobile } from '@/platform';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
 import { AchievementsPanel } from './achievements-panel';
+import { ActionPanel } from './action-panel';
 import { CampaignPanel, ObjectiveTracker } from './campaign-panel';
 import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
@@ -30,7 +30,6 @@ import { AbilityBar } from './hud/ability-bar';
 import { AirdropButton } from './hud/airdrop-button';
 import { KeyboardReference } from './keyboard-reference';
 import { LeaderboardPanel } from './leaderboard-panel';
-import { ActionPanel } from './action-panel';
 import { MainMenu } from './main-menu';
 import { NewGameModal } from './new-game-modal';
 import { SelectionPanel } from './selection-panel';
@@ -547,16 +546,30 @@ export function App({ onMount }: AppProps) {
               />
             )}
             <div class="flex-1 min-w-0">
-              <div class={`font-heading text-xs font-bold leading-tight truncate ${store.selectionNameColor.value}`}>
+              <div
+                class={`font-heading text-xs font-bold leading-tight truncate ${store.selectionNameColor.value}`}
+              >
                 {store.selectionName.value}
                 {store.selectionIsMulti.value && ` (${store.selectionCount.value})`}
               </div>
               {store.selectionShowHpBar.value && (
-                <div class="w-full h-1.5 mt-0.5 rounded-sm overflow-hidden" style={{ background: 'rgba(127,29,29,0.5)' }}>
-                  <div class="h-full rounded-sm" style={{ width: `${store.hpPercent.value}%`, background: store.hpBarColor.value }} />
+                <div
+                  class="w-full h-1.5 mt-0.5 rounded-sm overflow-hidden"
+                  style={{ background: 'rgba(127,29,29,0.5)' }}
+                >
+                  <div
+                    class="h-full rounded-sm"
+                    style={{
+                      width: `${store.hpPercent.value}%`,
+                      background: store.hpBarColor.value,
+                    }}
+                  />
                 </div>
               )}
-              <div class="font-numbers text-[9px] truncate" style={{ color: 'var(--pw-text-secondary)' }}>
+              <div
+                class="font-numbers text-[9px] truncate"
+                style={{ color: 'var(--pw-text-secondary)' }}
+              >
                 {store.selectionStatsHtml.value}
               </div>
             </div>
@@ -576,7 +589,12 @@ export function App({ onMount }: AppProps) {
                   type="button"
                   class="px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer flex-1"
                   style={{ border: '1px solid var(--pw-twig)', color: 'var(--pw-otter)' }}
-                  onClick={() => { if (hasPlayerUnitsSelected(game.world)) { game.world.attackMoveMode = true; game.syncUIStore(); } }}
+                  onClick={() => {
+                    if (hasPlayerUnitsSelected(game.world)) {
+                      game.world.attackMoveMode = true;
+                      game.syncUIStore();
+                    }
+                  }}
                 >
                   A-Move
                 </button>
@@ -615,14 +633,22 @@ export function App({ onMount }: AppProps) {
         }}
       >
         {/* Panel header */}
-        <div class="flex items-center justify-between p-2" style={{ borderBottom: '2px solid var(--pw-border)' }}>
-          <span class="font-heading text-xs font-bold tracking-wider" style={{ color: 'var(--pw-accent)' }}>
+        <div
+          class="flex items-center justify-between p-2"
+          style={{ borderBottom: '2px solid var(--pw-border)' }}
+        >
+          <span
+            class="font-heading text-xs font-bold tracking-wider"
+            style={{ color: 'var(--pw-accent)' }}
+          >
             COMMAND PANEL
           </span>
           <button
             type="button"
             class="hud-btn w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer"
-            onClick={() => { store.mobilePanelOpen.value = false; }}
+            onClick={() => {
+              store.mobilePanelOpen.value = false;
+            }}
           >
             X
           </button>
@@ -632,9 +658,20 @@ export function App({ onMount }: AppProps) {
         <div class="flex-1 overflow-y-auto" style={{ height: 'calc(100% - 40px)' }}>
           <SelectionPanel
             onDeselect={deselect}
-            onIdleWorkerClick={() => { selectIdleWorker(game.world); game.syncUIStore(); }}
-            onArmyClick={() => { selectArmy(game.world); game.syncUIStore(); }}
-            onAttackMoveClick={() => { if (hasPlayerUnitsSelected(game.world)) { game.world.attackMoveMode = true; game.syncUIStore(); } }}
+            onIdleWorkerClick={() => {
+              selectIdleWorker(game.world);
+              game.syncUIStore();
+            }}
+            onArmyClick={() => {
+              selectArmy(game.world);
+              game.syncUIStore();
+            }}
+            onAttackMoveClick={() => {
+              if (hasPlayerUnitsSelected(game.world)) {
+                game.world.attackMoveMode = true;
+                game.syncUIStore();
+              }
+            }}
             onHaltClick={() => {
               const w = game.world;
               for (const eid of w.selection) {
@@ -655,7 +692,10 @@ export function App({ onMount }: AppProps) {
               type="button"
               class="action-btn w-full py-2 rounded font-heading font-bold text-xs tracking-wider"
               style={{ color: 'var(--pw-accent)' }}
-              onClick={() => { store.techTreeOpen.value = true; store.mobilePanelOpen.value = false; }}
+              onClick={() => {
+                store.techTreeOpen.value = true;
+                store.mobilePanelOpen.value = false;
+              }}
             >
               &#x1F4DC; TECH TREE
             </button>
@@ -671,9 +711,17 @@ export function App({ onMount }: AppProps) {
                   const difficulty = store.selectedDifficulty.value ?? 'normal';
                   const seed = store.goMapSeed.value ?? 0;
                   saveGameToDb('quicksave', difficulty, seed, json, false)
-                    .then(() => { store.hasSaveGame.value = true; })
+                    .then(() => {
+                      store.hasSaveGame.value = true;
+                    })
                     .catch(() => {});
-                  game.world.floatingTexts.push({ x: game.world.camX + (game.world.viewWidth || 400) / 2, y: game.world.camY + 60, text: 'Game Saved', color: '#4ade80', life: 60 });
+                  game.world.floatingTexts.push({
+                    x: game.world.camX + (game.world.viewWidth || 400) / 2,
+                    y: game.world.camY + 60,
+                    text: 'Game Saved',
+                    color: '#4ade80',
+                    life: 60,
+                  });
                   audio.click();
                 }}
               >
@@ -682,11 +730,19 @@ export function App({ onMount }: AppProps) {
               <button
                 type="button"
                 class={`action-btn flex-1 py-1.5 rounded font-bold text-[10px] ${store.hasSaveGame.value ? '' : 'opacity-35'}`}
-                style={{ color: store.hasSaveGame.value ? 'var(--pw-warning)' : 'var(--pw-text-muted)' }}
+                style={{
+                  color: store.hasSaveGame.value ? 'var(--pw-warning)' : 'var(--pw-text-muted)',
+                }}
                 disabled={!store.hasSaveGame.value}
                 onClick={() => {
                   getLatestSave()
-                    .then((row) => { if (row?.data) { loadGame(game.world, row.data); game.syncUIStore(); audio.click(); } })
+                    .then((row) => {
+                      if (row?.data) {
+                        loadGame(game.world, row.data);
+                        game.syncUIStore();
+                        audio.click();
+                      }
+                    })
                     .catch(() => {});
                 }}
               >
@@ -695,7 +751,10 @@ export function App({ onMount }: AppProps) {
               <button
                 type="button"
                 class="action-btn flex-1 py-1.5 rounded font-bold text-[10px]"
-                onClick={() => { store.settingsOpen.value = true; store.mobilePanelOpen.value = false; }}
+                onClick={() => {
+                  store.settingsOpen.value = true;
+                  store.mobilePanelOpen.value = false;
+                }}
               >
                 &#x2699; Settings
               </button>
@@ -709,7 +768,9 @@ export function App({ onMount }: AppProps) {
         <div
           class="absolute inset-0"
           style={{ background: 'rgba(0,0,0,0.3)', zIndex: 35 }}
-          onClick={() => { store.mobilePanelOpen.value = false; }}
+          onClick={() => {
+            store.mobilePanelOpen.value = false;
+          }}
         />
       )}
 

@@ -10,7 +10,6 @@
  */
 
 import { signal } from '@preact/signals';
-import { isMobile } from '@/platform';
 import * as store from './store';
 
 /** Action button category for tab filtering. */

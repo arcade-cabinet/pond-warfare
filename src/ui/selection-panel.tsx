@@ -69,9 +69,13 @@ function AutoToggle({
         color,
         background: enabled ? `${color}20` : 'transparent',
       }}
-      onClick={(e) => { e.stopPropagation(); onToggle(); }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
     >
-      {enabled ? '\u2713 ' : ''}{label}
+      {enabled ? '\u2713 ' : ''}
+      {label}
     </button>
   );
 }
@@ -103,7 +107,9 @@ function CommandCenterOverview({
           class="flex gap-1 text-[10px] md:text-xs font-numbers"
           style={{ color: 'var(--pw-text-secondary)' }}
         >
-          <span style={{ color: 'var(--pw-food)' }}>{food.value}/{maxFood.value}</span>
+          <span style={{ color: 'var(--pw-food)' }}>
+            {food.value}/{maxFood.value}
+          </span>
         </div>
       </div>
 
@@ -114,7 +120,10 @@ function CommandCenterOverview({
             type="button"
             class="px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer"
             style={{ border: '1px solid var(--pw-warning)', color: 'var(--pw-warning)' }}
-            onClick={(e) => { e.stopPropagation(); onIdleClick?.(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onIdleClick?.();
+            }}
           >
             {totalIdle} Idle
           </button>
@@ -124,7 +133,10 @@ function CommandCenterOverview({
             type="button"
             class="px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer"
             style={{ border: '1px solid var(--pw-enemy)', color: 'var(--pw-enemy-light)' }}
-            onClick={(e) => { e.stopPropagation(); onArmyClick?.(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onArmyClick?.();
+            }}
           >
             Army ({armyCount.value})
           </button>
@@ -136,21 +148,63 @@ function CommandCenterOverview({
         <div class="flex gap-1 flex-wrap">
           {hasGatherers && (
             <>
-              <AutoToggle label="Gather" enabled={autoGatherEnabled.value} color="var(--pw-warning)" onToggle={() => { autoGatherEnabled.value = !autoGatherEnabled.value; }} />
-              <AutoToggle label="Build" enabled={autoBuildEnabled.value} color="var(--pw-twig)" onToggle={() => { autoBuildEnabled.value = !autoBuildEnabled.value; }} />
+              <AutoToggle
+                label="Gather"
+                enabled={autoGatherEnabled.value}
+                color="var(--pw-warning)"
+                onToggle={() => {
+                  autoGatherEnabled.value = !autoGatherEnabled.value;
+                }}
+              />
+              <AutoToggle
+                label="Build"
+                enabled={autoBuildEnabled.value}
+                color="var(--pw-twig)"
+                onToggle={() => {
+                  autoBuildEnabled.value = !autoBuildEnabled.value;
+                }}
+              />
             </>
           )}
           {hasCombat && (
             <>
-              <AutoToggle label="Attack" enabled={autoAttackEnabled.value} color="var(--pw-enemy-light)" onToggle={() => { autoAttackEnabled.value = !autoAttackEnabled.value; }} />
-              <AutoToggle label="Defend" enabled={autoDefendEnabled.value} color="var(--pw-accent)" onToggle={() => { autoDefendEnabled.value = !autoDefendEnabled.value; }} />
+              <AutoToggle
+                label="Attack"
+                enabled={autoAttackEnabled.value}
+                color="var(--pw-enemy-light)"
+                onToggle={() => {
+                  autoAttackEnabled.value = !autoAttackEnabled.value;
+                }}
+              />
+              <AutoToggle
+                label="Defend"
+                enabled={autoDefendEnabled.value}
+                color="var(--pw-accent)"
+                onToggle={() => {
+                  autoDefendEnabled.value = !autoDefendEnabled.value;
+                }}
+              />
             </>
           )}
           {hasHealers && (
-            <AutoToggle label="Heal" enabled={autoHealEnabled.value} color="var(--pw-success)" onToggle={() => { autoHealEnabled.value = !autoHealEnabled.value; }} />
+            <AutoToggle
+              label="Heal"
+              enabled={autoHealEnabled.value}
+              color="var(--pw-success)"
+              onToggle={() => {
+                autoHealEnabled.value = !autoHealEnabled.value;
+              }}
+            />
           )}
           {hasScouts && (
-            <AutoToggle label="Scout" enabled={autoScoutEnabled.value} color="#b090d8" onToggle={() => { autoScoutEnabled.value = !autoScoutEnabled.value; }} />
+            <AutoToggle
+              label="Scout"
+              enabled={autoScoutEnabled.value}
+              color="#b090d8"
+              onToggle={() => {
+                autoScoutEnabled.value = !autoScoutEnabled.value;
+              }}
+            />
           )}
         </div>
       )}
@@ -158,7 +212,13 @@ function CommandCenterOverview({
   );
 }
 
-export function SelectionPanel({ onDeselect, onIdleWorkerClick, onArmyClick, onAttackMoveClick, onHaltClick }: SelectionPanelProps) {
+export function SelectionPanel({
+  onDeselect,
+  onIdleWorkerClick,
+  onArmyClick,
+  onAttackMoveClick,
+  onHaltClick,
+}: SelectionPanelProps) {
   const count = selectionCount.value;
   const showHp = selectionShowHpBar.value;
   const mobile = isMobile.value;
@@ -188,7 +248,9 @@ export function SelectionPanel({ onDeselect, onIdleWorkerClick, onArmyClick, onA
       )}
 
       {/* No selection: compact overview with idle/army/auto-behaviors */}
-      {count === 0 && <CommandCenterOverview onIdleClick={onIdleWorkerClick} onArmyClick={onArmyClick} />}
+      {count === 0 && (
+        <CommandCenterOverview onIdleClick={onIdleWorkerClick} onArmyClick={onArmyClick} />
+      )}
 
       {/* Mobile command buttons (A-Move / Stop) inline when units selected */}
       {mobile && count > 0 && hasPlayerUnits.value && (
@@ -198,7 +260,10 @@ export function SelectionPanel({ onDeselect, onIdleWorkerClick, onArmyClick, onA
               type="button"
               class="px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer"
               style={{ border: '1px solid var(--pw-twig)', color: 'var(--pw-otter)' }}
-              onClick={(e) => { e.stopPropagation(); onAttackMoveClick?.(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAttackMoveClick?.();
+              }}
             >
               A-Move
             </button>
@@ -207,7 +272,10 @@ export function SelectionPanel({ onDeselect, onIdleWorkerClick, onArmyClick, onA
             type="button"
             class="px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer"
             style={{ border: '1px solid var(--pw-border)', color: 'var(--pw-text-secondary)' }}
-            onClick={(e) => { e.stopPropagation(); onHaltClick?.(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onHaltClick?.();
+            }}
           >
             Stop
           </button>

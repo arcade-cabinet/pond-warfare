@@ -20,14 +20,28 @@ export interface SidebarProps {
   onHaltClick?: () => void;
 }
 
-export function Sidebar({ minimapCanvasRef, minimapCamRef, onDeselect, onIdleWorkerClick, onArmyClick, onAttackMoveClick, onHaltClick }: SidebarProps) {
+export function Sidebar({
+  minimapCanvasRef,
+  minimapCamRef,
+  onDeselect,
+  onIdleWorkerClick,
+  onArmyClick,
+  onAttackMoveClick,
+  onHaltClick,
+}: SidebarProps) {
   return (
     <div
       class="w-full md:w-64 h-48 md:h-full flex flex-row md:flex-col ui-panel z-20 shadow-2xl flex-shrink-0 border-t-4 md:border-t-0 md:border-r-4"
       style={{ borderColor: 'var(--pw-border)' }}
     >
       <MinimapPanel canvasRef={minimapCanvasRef} camRef={minimapCamRef} />
-      <SelectionPanel onDeselect={onDeselect} onIdleWorkerClick={onIdleWorkerClick} onArmyClick={onArmyClick} onAttackMoveClick={onAttackMoveClick} onHaltClick={onHaltClick} />
+      <SelectionPanel
+        onDeselect={onDeselect}
+        onIdleWorkerClick={onIdleWorkerClick}
+        onArmyClick={onArmyClick}
+        onAttackMoveClick={onAttackMoveClick}
+        onHaltClick={onHaltClick}
+      />
       <ActionPanel />
     </div>
   );

@@ -71,7 +71,10 @@ export function MainMenu() {
       />
 
       {/* ---- Lily pads scattered across the pond (hidden on compact) ---- */}
-      <div class="absolute inset-0 pointer-events-none overflow-hidden" style={{ display: compact ? 'none' : undefined }}>
+      <div
+        class="absolute inset-0 pointer-events-none overflow-hidden"
+        style={{ display: compact ? 'none' : undefined }}
+      >
         {/* Large lily pad - bottom left */}
         <div
           class="lily-pad"
@@ -111,7 +114,10 @@ export function MainMenu() {
       </div>
 
       {/* ---- Cattails / reeds at edges (hidden on compact) ---- */}
-      <div class="absolute inset-0 pointer-events-none overflow-hidden" style={{ display: compact ? 'none' : undefined }}>
+      <div
+        class="absolute inset-0 pointer-events-none overflow-hidden"
+        style={{ display: compact ? 'none' : undefined }}
+      >
         {/* Left cattails */}
         <div class="cattail" style={{ bottom: '0', left: '3%' }}>
           <div class="cattail-head" />
@@ -163,13 +169,25 @@ export function MainMenu() {
       <div class="relative z-10 flex flex-col items-center">
         {/* Main title */}
         <h1 class="mb-0 tracking-widest uppercase text-center">
-          <span class={`logo-pond block leading-tight ${compact ? 'text-3xl' : 'text-4xl md:text-7xl'}`}>Pond</span>
-          <span class={`logo-warfare block leading-tight mt-1 ${compact ? 'text-2xl' : 'text-3xl md:text-6xl'}`}>Warfare</span>
+          <span
+            class={`logo-pond block leading-tight ${compact ? 'text-3xl' : 'text-4xl md:text-7xl'}`}
+          >
+            Pond
+          </span>
+          <span
+            class={`logo-warfare block leading-tight mt-1 ${compact ? 'text-2xl' : 'text-3xl md:text-6xl'}`}
+          >
+            Warfare
+          </span>
         </h1>
 
         {/* Water reflection of the title (hidden on compact) */}
         {!compact && (
-          <div class="title-reflection mt-0" aria-hidden="true" style={{ maxHeight: '60px', overflow: 'hidden' }}>
+          <div
+            class="title-reflection mt-0"
+            aria-hidden="true"
+            style={{ maxHeight: '60px', overflow: 'hidden' }}
+          >
             <span
               class="logo-pond block text-4xl md:text-7xl leading-tight"
               style={{ letterSpacing: '0.15em' }}
@@ -208,7 +226,15 @@ export function MainMenu() {
           }}
         >
           <span class="shield-btn-inner" />
-          <span style={{ fontSize: compact ? '18px' : '22px', lineHeight: '1', marginBottom: compact ? '4px' : '6px' }}>&#x2694;</span>
+          <span
+            style={{
+              fontSize: compact ? '18px' : '22px',
+              lineHeight: '1',
+              marginBottom: compact ? '4px' : '6px',
+            }}
+          >
+            &#x2694;
+          </span>
           <span>NEW</span>
           <span>GAME</span>
         </button>
@@ -264,7 +290,11 @@ export function MainMenu() {
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
+          style={{
+            minWidth: compact ? '80px' : '110px',
+            minHeight: compact ? '34px' : '44px',
+            padding: compact ? '5px 10px' : '8px 14px',
+          }}
           onClick={() => {
             leaderboardOpen.value = true;
           }}
@@ -275,7 +305,11 @@ export function MainMenu() {
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
+          style={{
+            minWidth: compact ? '80px' : '110px',
+            minHeight: compact ? '34px' : '44px',
+            padding: compact ? '5px 10px' : '8px 14px',
+          }}
           onClick={() => {
             achievementsOpen.value = true;
           }}
@@ -286,7 +320,11 @@ export function MainMenu() {
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
+          style={{
+            minWidth: compact ? '80px' : '110px',
+            minHeight: compact ? '34px' : '44px',
+            padding: compact ? '5px 10px' : '8px 14px',
+          }}
           onClick={() => {
             unlocksOpen.value = true;
           }}
@@ -297,7 +335,11 @@ export function MainMenu() {
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
+          style={{
+            minWidth: compact ? '80px' : '110px',
+            minHeight: compact ? '34px' : '44px',
+            padding: compact ? '5px 10px' : '8px 14px',
+          }}
           onClick={() => {
             cosmeticsOpen.value = true;
           }}
