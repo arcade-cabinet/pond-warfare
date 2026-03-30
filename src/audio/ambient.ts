@@ -38,7 +38,31 @@ export class AmbientManager {
 
       this.setAmbientBedRunning(!this._getMuted());
     } catch {
-      /* ignore ambient start errors */
+      // Clean up any partially created nodes so we can safely retry later.
+      if (this.ambientNoise) {
+        this.ambientNoise.dispose();
+        this.ambientNoise = null;
+      }
+      if (this.ambientFilter) {
+        this.ambientFilter.dispose();
+        this.ambientFilter = null;
+      }
+      if (this.shimmerNoise) {
+        this.shimmerNoise.dispose();
+        this.shimmerNoise = null;
+      }
+      if (this.shimmerFilter) {
+        this.shimmerFilter.dispose();
+        this.shimmerFilter = null;
+      }
+      if (this.shimmerGain) {
+        this.shimmerGain.dispose();
+        this.shimmerGain = null;
+      }
+      if (this.ambientTimerId) {
+        clearTimeout(this.ambientTimerId);
+        this.ambientTimerId = null;
+      }
     }
   }
 
