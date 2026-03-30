@@ -1,25 +1,78 @@
 /** Music module - Background music (startMusic, stopMusic, peaceful/hunting sequences). */
 import * as Tone from 'tone';
 
-/** Note frequencies for procedural music. */
-const PEACEFUL_NOTES = ['C4', 'E4', 'G4', 'A4', 'E4', 'G4', 'C5', 'G4'];
-const HUNTING_NOTES = ['C3', 'Eb3', 'G3', 'Bb3', 'C4', 'Bb3', 'G3', 'Eb3'];
+type Note = string | null;
+type Chord = readonly string[] | null;
+type Score = {
+  tempo: number;
+  melodies: readonly (readonly Note[])[];
+  bass: readonly Note[];
+  pads: readonly Chord[];
+  kick: readonly boolean[];
+  hat: readonly boolean[];
+};
 
-/** Bass notes for chord progression. */
-const PEACEFUL_BASS = ['C2', null, 'G2', null, 'A2', null, 'F2', null];
-const HUNTING_BASS = ['C2', 'C2', 'Eb2', null, 'G2', 'G2', 'Bb2', null];
+const PEACEFUL_SCORE: Score = {
+  tempo: 94,
+  melodies: [
+    ['C4', 'E4', 'G4', 'A4', 'G4', 'E4', 'D4', 'E4', 'G4', 'A4', 'C5', 'A4', 'G4', 'E4', 'D4', null],
+    ['E4', 'G4', 'A4', 'C5', 'A4', 'G4', 'E4', 'D4', 'C4', 'E4', 'G4', 'E4', 'A4', 'G4', 'E4', null],
+    ['G4', 'A4', 'C5', 'E5', 'C5', 'A4', 'G4', 'E4', 'D4', 'E4', 'G4', 'A4', 'G4', 'E4', 'C4', null],
+  ],
+  bass: ['C2', null, 'G1', null, 'A1', null, 'F1', null],
+  pads: [
+    ['C4', 'E4', 'G4'],
+    null,
+    ['G3', 'B3', 'D4'],
+    null,
+    ['A3', 'C4', 'E4'],
+    null,
+    ['F3', 'A3', 'C4'],
+    null,
+  ],
+  kick: [true, false, false, false, true, false, false, false],
+  hat: [false, true, false, true, false, true, false, true],
+};
+
+const HUNTING_SCORE: Score = {
+  tempo: 132,
+  melodies: [
+    ['C4', null, 'Eb4', 'G4', 'Bb4', 'G4', 'Eb4', 'C4', 'G3', 'Bb3', 'C4', 'Eb4', 'G4', 'Eb4', 'C4', null],
+    ['C4', 'Eb4', 'G4', 'Bb4', 'C5', 'Bb4', 'G4', 'Eb4', 'D4', 'F4', 'Ab4', 'Bb4', 'Ab4', 'F4', 'D4', null],
+    ['G3', 'Bb3', 'C4', 'Eb4', 'G4', 'F4', 'Eb4', 'C4', 'Bb3', 'C4', 'Eb4', 'G4', 'Eb4', 'C4', 'Bb3', null],
+  ],
+  bass: ['C2', 'C2', 'Eb2', null, 'G1', 'G1', 'Bb1', null],
+  pads: [
+    ['C3', 'Eb3', 'G3'],
+    null,
+    ['Ab2', 'C3', 'Eb3'],
+    null,
+    ['G2', 'Bb2', 'D3'],
+    null,
+    ['Bb2', 'D3', 'F3'],
+    null,
+  ],
+  kick: [true, false, true, false, true, false, true, false],
+  hat: [true, false, true, true, true, false, true, true],
+};
 
 export class MusicManager {
-  /** Background music state. */
   private musicSynth: Tone.Synth | null = null;
   private bassSynth: Tone.Synth | null = null;
+  private padSynth: Tone.PolySynth | null = null;
+  private kickSynth: Tone.MembraneSynth | null = null;
+  private hatSynth: Tone.MetalSynth | null = null;
   musicGain: Tone.Gain | null = null;
   bassGain: Tone.Gain | null = null;
+  private padGain: Tone.Gain | null = null;
+  private percussionGain: Tone.Gain | null = null;
   private melodySeq: Tone.Sequence | null = null;
   private bassSeq: Tone.Sequence | null = null;
+  private padSeq: Tone.Sequence | null = null;
+  private kickSeq: Tone.Sequence | null = null;
+  private hatSeq: Tone.Sequence | null = null;
   private musicPlaying = false;
 
-  /** These are set by AudioSystem. */
   private _getStarted: () => boolean;
   private _getMusicGainLevel: () => number;
   private _getMuted: () => boolean;
@@ -32,72 +85,123 @@ export class MusicManager {
 
   /** Apply current music volume to gain nodes. */
   applyMusicVolume(): void {
-    if (this._getMuted()) return;
-    const ml = this._getMusicGainLevel();
-    if (this.musicGain) {
-      this.musicGain.gain.rampTo(0.15 * ml, 0.1);
-    }
-    if (this.bassGain) {
-      this.bassGain.gain.rampTo(0.08 * ml, 0.1);
-    }
+    const ml = this._getMuted() ? 0 : this._getMusicGainLevel();
+    this.musicGain?.gain.rampTo(0.16 * ml, 0.1);
+    this.bassGain?.gain.rampTo(0.1 * ml, 0.1);
+    this.padGain?.gain.rampTo(0.08 * ml, 0.1);
+    this.percussionGain?.gain.rampTo(0.09 * ml, 0.1);
   }
 
   /**
-   * Start procedural chiptune background music.
-   * @param peaceful - true for calm C-major pentatonic, false for tense C-minor
+   * Start procedural background music with melodic variation, harmony, and percussion.
+   * @param peaceful - true for calm pond score, false for tense hunting score
    */
   startMusic(peaceful: boolean): void {
     if (!this._getStarted()) return;
-    // If music is already playing, tear it down first
     this.stopMusic();
 
     try {
+      const score = peaceful ? PEACEFUL_SCORE : HUNTING_SCORE;
       const transport = Tone.getTransport();
-      transport.bpm.value = peaceful ? 100 : 140;
+      transport.bpm.value = score.tempo;
 
-      // Melody synth through a gain node for volume control
-      const ml = this._getMusicGainLevel();
-      this.musicGain = new Tone.Gain(this._getMuted() ? 0 : 0.15 * ml).toDestination();
+      this.musicGain = new Tone.Gain(0).toDestination();
       this.musicSynth = new Tone.Synth({
-        oscillator: { type: 'square' },
-        envelope: { attack: 0.005, decay: 0.15, sustain: 0.1, release: 0.2 },
+        oscillator: { type: peaceful ? 'triangle' : 'square' },
+        envelope: { attack: 0.01, decay: 0.18, sustain: 0.12, release: 0.25 },
       }).connect(this.musicGain);
 
-      // Bass synth
-      this.bassGain = new Tone.Gain(this._getMuted() ? 0 : 0.08 * ml).toDestination();
+      this.bassGain = new Tone.Gain(0).toDestination();
       this.bassSynth = new Tone.Synth({
-        oscillator: { type: 'triangle' },
-        envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.3 },
+        oscillator: { type: peaceful ? 'sine' : 'triangle' },
+        envelope: { attack: 0.02, decay: 0.25, sustain: 0.15, release: 0.35 },
       }).connect(this.bassGain);
 
-      const melodyNotes = peaceful ? PEACEFUL_NOTES : HUNTING_NOTES;
-      const bassNotes = peaceful ? PEACEFUL_BASS : HUNTING_BASS;
+      this.padGain = new Tone.Gain(0).toDestination();
+      this.padSynth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: peaceful ? 'sine' : 'triangle' },
+        envelope: { attack: 0.08, decay: 0.4, sustain: 0.35, release: 0.8 },
+      }).connect(this.padGain);
 
-      // Melody sequence: 8 notes over 8 eighth-notes = 4 beats = 1 bar
+      this.percussionGain = new Tone.Gain(0).toDestination();
+      this.kickSynth = new Tone.MembraneSynth({
+        pitchDecay: 0.03,
+        octaves: 4,
+        envelope: { attack: 0.001, decay: 0.22, sustain: 0, release: 0.08 },
+      }).connect(this.percussionGain);
+      this.hatSynth = new Tone.MetalSynth({
+        envelope: { attack: 0.001, decay: peaceful ? 0.08 : 0.12, release: 0.02 },
+      }).connect(this.percussionGain);
+
+      this.applyMusicVolume();
+
+      let melodyStep = 0;
+      const phraseLength = score.melodies[0].length;
+      const melodyTimeline = Array.from({ length: phraseLength }, (_, step) => step);
       this.melodySeq = new Tone.Sequence(
-        (time, note) => {
+        (time) => {
+          const phrase = score.melodies[Math.floor(melodyStep / phraseLength) % score.melodies.length];
+          const note = phrase[melodyStep % phraseLength];
           if (note && this.musicSynth) {
-            this.musicSynth.triggerAttackRelease(note, '16n', time);
+            this.musicSynth.triggerAttackRelease(note, '8n', time);
           }
+          melodyStep += 1;
         },
-        melodyNotes,
+        melodyTimeline,
         '8n',
       );
       this.melodySeq.loop = true;
       this.melodySeq.start(0);
 
-      // Bass sequence
       this.bassSeq = new Tone.Sequence(
         (time, note) => {
           if (note && this.bassSynth) {
             this.bassSynth.triggerAttackRelease(note, '4n', time);
           }
         },
-        bassNotes,
-        '8n',
+        [...score.bass],
+        '4n',
       );
       this.bassSeq.loop = true;
       this.bassSeq.start(0);
+
+      const padTimeline = Array.from({ length: score.pads.length }, (_, step) => step);
+      this.padSeq = new Tone.Sequence(
+        (time, step) => {
+          const chord = score.pads[step];
+          if (chord && this.padSynth) {
+            this.padSynth.triggerAttackRelease([...chord], '2n', time);
+          }
+        },
+        padTimeline,
+        '4n',
+      );
+      this.padSeq.loop = true;
+      this.padSeq.start(0);
+
+      this.kickSeq = new Tone.Sequence(
+        (time, shouldHit) => {
+          if (shouldHit && this.kickSynth) {
+            this.kickSynth.triggerAttackRelease('C1', '8n', time);
+          }
+        },
+        [...score.kick],
+        '8n',
+      );
+      this.kickSeq.loop = true;
+      this.kickSeq.start(0);
+
+      this.hatSeq = new Tone.Sequence(
+        (time, shouldHit) => {
+          if (shouldHit && this.hatSynth) {
+            this.hatSynth.triggerAttackRelease('16n', time);
+          }
+        },
+        [...score.hat],
+        '8n',
+      );
+      this.hatSeq.loop = true;
+      this.hatSeq.start(0);
 
       transport.start();
       this.musicPlaying = true;
@@ -109,32 +213,39 @@ export class MusicManager {
   /** Stop background music and dispose music resources. */
   stopMusic(): void {
     try {
-      if (this.melodySeq) {
-        this.melodySeq.stop();
-        this.melodySeq.dispose();
-        this.melodySeq = null;
+      for (const seq of [this.melodySeq, this.bassSeq, this.padSeq, this.kickSeq, this.hatSeq]) {
+        seq?.stop();
+        seq?.dispose();
       }
-      if (this.bassSeq) {
-        this.bassSeq.stop();
-        this.bassSeq.dispose();
-        this.bassSeq = null;
+      this.melodySeq = null;
+      this.bassSeq = null;
+      this.padSeq = null;
+      this.kickSeq = null;
+      this.hatSeq = null;
+
+      for (const synth of [
+        this.musicSynth,
+        this.bassSynth,
+        this.padSynth,
+        this.kickSynth,
+        this.hatSynth,
+      ]) {
+        synth?.dispose();
       }
-      if (this.musicSynth) {
-        this.musicSynth.dispose();
-        this.musicSynth = null;
+      this.musicSynth = null;
+      this.bassSynth = null;
+      this.padSynth = null;
+      this.kickSynth = null;
+      this.hatSynth = null;
+
+      for (const gain of [this.musicGain, this.bassGain, this.padGain, this.percussionGain]) {
+        gain?.dispose();
       }
-      if (this.bassSynth) {
-        this.bassSynth.dispose();
-        this.bassSynth = null;
-      }
-      if (this.musicGain) {
-        this.musicGain.dispose();
-        this.musicGain = null;
-      }
-      if (this.bassGain) {
-        this.bassGain.dispose();
-        this.bassGain = null;
-      }
+      this.musicGain = null;
+      this.bassGain = null;
+      this.padGain = null;
+      this.percussionGain = null;
+
       if (this.musicPlaying) {
         Tone.getTransport().stop();
         this.musicPlaying = false;

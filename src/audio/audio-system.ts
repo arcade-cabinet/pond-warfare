@@ -104,14 +104,7 @@ export class AudioSystem {
   toggleMute(): void {
     this._muted = !this._muted;
     this.ambientMgr.onMuteToggle(this._muted);
-    // Mute/unmute background music gain nodes
-    const ml = this.musicGainLevel;
-    if (this.musicMgr.musicGain) {
-      this.musicMgr.musicGain.gain.rampTo(this._muted ? 0 : 0.15 * ml, 0.1);
-    }
-    if (this.musicMgr.bassGain) {
-      this.musicMgr.bassGain.gain.rampTo(this._muted ? 0 : 0.08 * ml, 0.1);
-    }
+    this.musicMgr.applyMusicVolume();
   }
 
   // ─── SFX Delegate Methods ──────────────────────────────────────

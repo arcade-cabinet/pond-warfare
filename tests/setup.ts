@@ -19,6 +19,7 @@ function MockToneNode(this: any) {
   this.triggerAttack = vi.fn();
   this.triggerRelease = vi.fn();
   this.frequency = { rampTo: vi.fn(), value: 0, exponentialRampTo: vi.fn() };
+  this.gain = { value: 0, rampTo: vi.fn() };
   this.volume = { value: 0, rampTo: vi.fn() };
   this.oscillator = { type: 'sine', frequency: { exponentialRampTo: vi.fn() } };
   this.pan = { value: 0 };
@@ -34,6 +35,7 @@ vi.mock('tone', () => ({
   PolySynth: MockToneNode,
   MembraneSynth: MockToneNode,
   MetalSynth: MockToneNode,
+  Gain: MockToneNode,
   Panner: MockToneNode,
   Noise: MockToneNode,
   Filter: MockToneNode,
@@ -41,7 +43,13 @@ vi.mock('tone', () => ({
   Reverb: MockToneNode,
   Limiter: MockToneNode,
   Channel: MockToneNode,
-  Sequence: vi.fn().mockImplementation(() => ({ start: vi.fn(), stop: vi.fn(), dispose: vi.fn() })),
+  Sequence: vi.fn(function MockSequence(this: any) {
+    this.start = vi.fn();
+    this.stop = vi.fn();
+    this.dispose = vi.fn();
+    this.loop = false;
+    return this;
+  }),
 }));
 
 // Mock HTMLCanvasElement.getContext for environments that don't support it
