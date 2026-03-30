@@ -42,18 +42,34 @@ import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /**
- * Commander aura: every 60 frames, find player Commander entities and
- * buff all player combat units within 150px with +10% damage.
+ * Commander aura: rebuild on the normal 60-frame cadence, but clear
+ * immediately if all living player Commanders are gone so buffs never linger
+ * after commander death/removal.
  */
 function commanderAura(world: GameWorld): void {
-  if (world.frameCount % 60 !== 0) return;
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
+  const shouldRefresh = world.frameCount % 60 === 0;
+
+  if (!shouldRefresh) {
+    if (world.commanderDamageBuff.size === 0 && world.commanderSpeedBuff.size === 0) return;
+
+    for (let i = 0; i < allUnits.length; i++) {
+      const eid = allUnits[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if ((EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Commander) return;
+    }
+
+    world.commanderDamageBuff.clear();
+    world.commanderSpeedBuff.clear();
+    return;
+  }
 
   // Clear previous buff sets; we rebuild each tick
   world.commanderDamageBuff.clear();
   world.commanderSpeedBuff.clear();
 
   const mods = world.commanderModifiers;
-  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
 
   // Find living player Commanders
   for (let i = 0; i < allUnits.length; i++) {
@@ -104,16 +120,36 @@ function commanderAura(world: GameWorld): void {
 }
 
 /**
- * War Drums aura: every 60 frames, find player Armory buildings and
- * buff all player combat units within 200px with +15% damage.
+ * War Drums aura: rebuild on the normal 60-frame cadence, but clear
+ * immediately if no completed living player Armory remains so buffs never
+ * linger after the source is destroyed or disabled.
  */
 function warDrumsAura(world: GameWorld): void {
-  if (!world.tech.warDrums) return;
-  if (world.frameCount % 60 !== 0) return;
+  if (!world.tech.warDrums) {
+    world.warDrumsBuff.clear();
+    return;
+  }
+
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+  const shouldRefresh = world.frameCount % 60 === 0;
+
+  if (!shouldRefresh) {
+    if (world.warDrumsBuff.size === 0) return;
+
+    for (let i = 0; i < allUnits.length; i++) {
+      const eid = allUnits[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if ((EntityTypeTag.kind[eid] as EntityKind) !== EntityKind.Armory) continue;
+      if (!hasComponent(world.ecs, eid, Building) || Building.progress[eid] < 100) continue;
+      return;
+    }
+
+    world.warDrumsBuff.clear();
+    return;
+  }
 
   world.warDrumsBuff.clear();
-
-  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
 
   // Find living player Armories
   for (let i = 0; i < allUnits.length; i++) {

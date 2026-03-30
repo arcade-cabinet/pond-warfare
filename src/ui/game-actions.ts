@@ -43,6 +43,10 @@ export function haltSelection(): void {
     if (hasComponent(w.ecs, eid, UnitStateMachine)) {
       UnitStateMachine.state[eid] = 0; // UnitState.Idle
       UnitStateMachine.targetEntity[eid] = -1;
+      UnitStateMachine.returnEntity[eid] = -1;
+      UnitStateMachine.gatherTimer[eid] = 0;
+      UnitStateMachine.attackMoveTargetX[eid] = 0;
+      UnitStateMachine.attackMoveTargetY[eid] = 0;
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
       // Remove from Yuka so the unit physically stops moving immediately
       w.yukaManager.clearFormationBehaviors(eid);

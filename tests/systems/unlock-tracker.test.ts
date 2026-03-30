@@ -54,8 +54,11 @@ describe('unlock-tracker', () => {
 
   it('should trigger unlock when condition is met', () => {
     // "Island Map" requires total_wins >= 1
-    const islandUnlock = UNLOCKS.find((u) => u.id === 'scenario_island')!;
+    const islandUnlock = UNLOCKS.find((u) => u.id === 'scenario_island');
     expect(islandUnlock).toBeDefined();
+    if (!islandUnlock) {
+      throw new Error('Expected scenario_island unlock to exist');
+    }
 
     expect(islandUnlock.check(makeProfile({ total_wins: 0 }))).toBe(false);
     expect(islandUnlock.check(makeProfile({ total_wins: 1 }))).toBe(true);

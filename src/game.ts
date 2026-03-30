@@ -280,7 +280,7 @@ export class Game {
     const { fogPattern } = buildFogTexture(this.fogCtx);
     this.fogState = {
       fogCtx: this.fogCtx,
-      fogPattern: fogPattern!,
+      fogPattern,
     };
 
     // Explored fog canvas
@@ -336,6 +336,10 @@ export class Game {
             // Set to idle and stop Yuka steering so the unit actually halts
             UnitStateMachine.state[eid] = UnitState.Idle;
             UnitStateMachine.targetEntity[eid] = -1;
+            UnitStateMachine.returnEntity[eid] = -1;
+            UnitStateMachine.gatherTimer[eid] = 0;
+            UnitStateMachine.attackMoveTargetX[eid] = 0;
+            UnitStateMachine.attackMoveTargetY[eid] = 0;
             UnitStateMachine.hasAttackMoveTarget[eid] = 0;
             this.world.yukaManager.clearFormationBehaviors(eid);
             this.world.yukaManager.removeUnit(eid);
@@ -540,13 +544,11 @@ export class Game {
       this.webglContextLost = true;
       this.world.paused = true;
       store.paused.value = true;
-      console.warn('[PondWarfare] WebGL context lost — pausing game');
     };
     this.boundContextRestored = () => {
       this.webglContextLost = false;
       this.world.paused = false;
       store.paused.value = false;
-      console.info('[PondWarfare] WebGL context restored — resuming');
     };
     gameCanvas.addEventListener('webglcontextlost', this.boundContextLost);
     gameCanvas.addEventListener('webglcontextrestored', this.boundContextRestored);

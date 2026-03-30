@@ -11,20 +11,15 @@
  *   threat-sync.ts        – wave countdown, production queue, base threat, nests
  */
 
-import { hasComponent, query } from 'bitecs';
+import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { EXPLORED_SCALE, DAY_FRAMES } from '@/constants';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-} from '@/ecs/components';
+import { DAY_FRAMES, EXPLORED_SCALE } from '@/constants';
+import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction } from '@/types';
+import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
-import { computePopulation, type PopulationResult } from './population-counter';
 import { resetPermadeathGuard, syncGameOverStats } from './game-over-sync';
+import { computePopulation, type PopulationResult } from './population-counter';
 import { syncThreatAndObjectives } from './threat-sync';
 
 export type { PopulationResult };

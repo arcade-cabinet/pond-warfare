@@ -37,8 +37,11 @@ describe('achievements', () => {
   }
 
   it('First Blood triggers at 1 kill', () => {
-    const firstBlood = ACHIEVEMENTS.find((a) => a.id === 'first_blood')!;
+    const firstBlood = ACHIEVEMENTS.find((a) => a.id === 'first_blood');
     expect(firstBlood).toBeDefined();
+    if (!firstBlood) {
+      throw new Error('Expected first_blood achievement to exist');
+    }
 
     expect(firstBlood.check(makeSnapshot({ unitsKilled: 0 }))).toBe(false);
     expect(firstBlood.check(makeSnapshot({ unitsKilled: 1 }))).toBe(true);
@@ -46,8 +49,11 @@ describe('achievements', () => {
   });
 
   it('Triple Kill triggers at 3 kill streak', () => {
-    const tripleKill = ACHIEVEMENTS.find((a) => a.id === 'triple_kill')!;
+    const tripleKill = ACHIEVEMENTS.find((a) => a.id === 'triple_kill');
     expect(tripleKill).toBeDefined();
+    if (!tripleKill) {
+      throw new Error('Expected triple_kill achievement to exist');
+    }
 
     expect(tripleKill.check(makeSnapshot({ killStreak: 2 }))).toBe(false);
     expect(tripleKill.check(makeSnapshot({ killStreak: 3 }))).toBe(true);

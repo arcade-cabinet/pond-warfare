@@ -7,6 +7,7 @@
 
 import { DAY_FRAMES } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
+import { deleteSave, getLatestSave } from '@/storage';
 import * as store from '@/ui/store';
 
 /** Module-level guard so permadeath deletion only fires once per loss. */
@@ -64,12 +65,12 @@ export function syncGameOverStats(world: GameWorld): void {
   if (w.state === 'lose' && w.permadeath && !_permadeathDeleteFired) {
     _permadeathDeleteFired = true;
     store.hasSaveGame.value = false;
-    import('@/storage')
-      .then(({ getLatestSave, deleteSave }) =>
-        getLatestSave().then((save) => {
-          if (save) return deleteSave(save.id);
-        }),
-      )
+    getLatestSave()
+      .then((save) => {
+        if (save) {
+          return deleteSave(save.id);
+        }
+      })
       .catch(() => {
         /* best-effort cleanup */
       });

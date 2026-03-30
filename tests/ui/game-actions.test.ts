@@ -45,6 +45,10 @@ vi.mock('@/ecs/components', () => ({
   UnitStateMachine: {
     state: new Float32Array(1000),
     targetEntity: new Float32Array(1000),
+    returnEntity: new Float32Array(1000),
+    gatherTimer: new Float32Array(1000),
+    attackMoveTargetX: new Float32Array(1000),
+    attackMoveTargetY: new Float32Array(1000),
     hasAttackMoveTarget: new Float32Array(1000),
   },
 }));
@@ -74,6 +78,7 @@ vi.mock('@/storage', () => ({
 }));
 
 import { audio } from '@/audio/audio-system';
+import { UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
 import { selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
@@ -121,12 +126,20 @@ describe('game-actions', () => {
 
   it('haltSelection stops units and syncs', () => {
     game.world.selection = [1, 2];
+    UnitStateMachine.returnEntity[1] = 9;
+    UnitStateMachine.gatherTimer[1] = 30;
+    UnitStateMachine.attackMoveTargetX[1] = 100;
+    UnitStateMachine.attackMoveTargetY[1] = 200;
     haltSelection();
     expect(game.syncUIStore).toHaveBeenCalled();
     // Yuka steering must be cleared so units physically stop
     expect(game.world.yukaManager.clearFormationBehaviors).toHaveBeenCalledTimes(2);
     expect(game.world.yukaManager.removeUnit).toHaveBeenCalledWith(1);
     expect(game.world.yukaManager.removeUnit).toHaveBeenCalledWith(2);
+    expect(UnitStateMachine.returnEntity[1]).toBe(-1);
+    expect(UnitStateMachine.gatherTimer[1]).toBe(0);
+    expect(UnitStateMachine.attackMoveTargetX[1]).toBe(0);
+    expect(UnitStateMachine.attackMoveTargetY[1]).toBe(0);
   });
 
   it('selectAllUnits calls selectArmy and syncs', () => {

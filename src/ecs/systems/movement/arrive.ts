@@ -11,11 +11,11 @@ import { hasComponent } from 'bitecs';
 import { BUILD_TIMER, GATHER_AMOUNT, GATHER_TIMER, REPAIR_TIMER } from '@/constants';
 import {
   Carrying,
+  FactionTag,
   Position,
   Resource,
   Sprite,
   UnitStateMachine,
-  FactionTag,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { Faction, ResourceType, UnitState } from '@/types';

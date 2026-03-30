@@ -113,6 +113,13 @@ afterEach(() => {
   cleanup();
 });
 
+function must<T>(value: T | null | undefined, message: string): T {
+  if (value == null) {
+    throw new Error(message);
+  }
+  return value;
+}
+
 // ---------------------------------------------------------------------------
 // HUD Button Interactions
 // ---------------------------------------------------------------------------
@@ -138,7 +145,7 @@ describe('HUD button interactions', () => {
       ),
     );
 
-    const speedBtn = document.getElementById('speed-btn')!;
+    const speedBtn = must(document.getElementById('speed-btn'), 'Missing speed button');
     expect(speedBtn).toBeTruthy();
     speedBtn.click();
     expect(onSpeedClick).toHaveBeenCalledTimes(1);
@@ -164,7 +171,7 @@ describe('HUD button interactions', () => {
       ),
     );
 
-    const pauseBtn = document.getElementById('pause-btn')!;
+    const pauseBtn = must(document.getElementById('pause-btn'), 'Missing pause button');
     expect(pauseBtn).toBeTruthy();
     pauseBtn.click();
     expect(onPauseClick).toHaveBeenCalledTimes(1);
@@ -190,7 +197,7 @@ describe('HUD button interactions', () => {
       ),
     );
 
-    const muteBtn = document.getElementById('mute-btn')!;
+    const muteBtn = must(document.getElementById('mute-btn'), 'Missing mute button');
     expect(muteBtn).toBeTruthy();
     muteBtn.click();
     expect(onMuteClick).toHaveBeenCalledTimes(1);
@@ -216,7 +223,7 @@ describe('HUD button interactions', () => {
       ),
     );
 
-    const cbBtn = document.getElementById('cb-btn')!;
+    const cbBtn = must(document.getElementById('cb-btn'), 'Missing color blind button');
     expect(cbBtn).toBeTruthy();
     cbBtn.click();
     expect(onColorBlindToggle).toHaveBeenCalledTimes(1);
@@ -234,7 +241,7 @@ describe('HUD button interactions', () => {
     const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
     const idleBtn = Array.from(allBtns).find((btn) => btn.textContent?.includes('Idle'));
     expect(idleBtn).toBeTruthy();
-    expect(idleBtn!.textContent).toContain('3');
+    expect(must(idleBtn, 'Missing idle button').textContent).toContain('3');
   });
 
   it('army select button click calls onArmyClick', async () => {
@@ -258,7 +265,7 @@ describe('HUD button interactions', () => {
       ),
     );
 
-    const armyBtn = document.getElementById('select-army-btn')!;
+    const armyBtn = must(document.getElementById('select-army-btn'), 'Missing select army button');
     expect(armyBtn).toBeTruthy();
     armyBtn.click();
     expect(onArmyClick).toHaveBeenCalledTimes(1);
@@ -286,7 +293,7 @@ describe('HUD button interactions', () => {
       ),
     );
 
-    const aMoveBtn = document.getElementById('attack-move-btn')!;
+    const aMoveBtn = must(document.getElementById('attack-move-btn'), 'Missing attack move button');
     expect(aMoveBtn).toBeTruthy();
     aMoveBtn.click();
     expect(onAttackMoveClick).toHaveBeenCalledTimes(1);
@@ -361,7 +368,7 @@ describe('CommandsTab auto-behavior toggle interactions', () => {
 
     expect(store.autoGatherEnabled.value).toBe(false);
 
-    const gatherBtn = findBtnByText('Gather')!;
+    const gatherBtn = must(findBtnByText('Gather'), 'Missing Gather button');
     expect(gatherBtn).toBeTruthy();
     gatherBtn.click();
 
@@ -377,7 +384,7 @@ describe('CommandsTab auto-behavior toggle interactions', () => {
 
     expect(store.autoDefendEnabled.value).toBe(false);
 
-    const defendBtn = findBtnByText('Defend')!;
+    const defendBtn = must(findBtnByText('Defend'), 'Missing Defend button');
     expect(defendBtn).toBeTruthy();
     defendBtn.click();
 
@@ -389,7 +396,7 @@ describe('CommandsTab auto-behavior toggle interactions', () => {
 
     expect(store.autoAttackEnabled.value).toBe(false);
 
-    const attackBtn = findBtnByText('Attack')!;
+    const attackBtn = must(findBtnByText('Attack'), 'Missing Attack button');
     expect(attackBtn).toBeTruthy();
     attackBtn.click();
 
@@ -401,7 +408,7 @@ describe('CommandsTab auto-behavior toggle interactions', () => {
 
     expect(store.autoScoutEnabled.value).toBe(false);
 
-    const scoutBtn = findBtnByText('Scout')!;
+    const scoutBtn = must(findBtnByText('Scout'), 'Missing Scout button');
     expect(scoutBtn).toBeTruthy();
     scoutBtn.click();
 
@@ -411,7 +418,7 @@ describe('CommandsTab auto-behavior toggle interactions', () => {
   it('Select All button is always present in CommandsTab', async () => {
     renderCommandsTabWithIdleUnits({ gatherers: 3 });
 
-    const selectAllBtn = findBtnByText('Select All')!;
+    const selectAllBtn = must(findBtnByText('Select All'), 'Missing Select All button');
     expect(selectAllBtn).toBeTruthy();
   });
 
@@ -419,7 +426,7 @@ describe('CommandsTab auto-behavior toggle interactions', () => {
     store.selectionCount.value = 0;
     renderCommandsTabWithIdleUnits({ gatherers: 2 });
 
-    const deselectBtn = findBtnByText('Deselect')!;
+    const deselectBtn = must(findBtnByText('Deselect'), 'Missing Deselect button');
     expect(deselectBtn).toBeTruthy();
     expect(deselectBtn.disabled).toBe(true);
   });
@@ -672,7 +679,7 @@ describe('Game Over interactions', () => {
       ),
     );
 
-    const restartBtn = document.getElementById('restart-btn')!;
+    const restartBtn = must(document.getElementById('restart-btn'), 'Missing restart button');
     expect(restartBtn).toBeTruthy();
     expect(restartBtn.textContent).toContain('Play Again');
     restartBtn.click();
@@ -715,7 +722,7 @@ describe('Game Over interactions', () => {
     const banner = document.getElementById('game-over-banner');
     expect(banner).toBeTruthy();
 
-    const restartBtn = document.getElementById('restart-btn')!;
+    const restartBtn = must(document.getElementById('restart-btn'), 'Missing restart button');
     restartBtn.click();
     expect(onRestart).toHaveBeenCalledTimes(1);
   });
@@ -744,7 +751,7 @@ describe('CommandsTab idle worker flow', () => {
     const selectAllBtn = findBtnByText('Select All');
     expect(idleBtn).toBeTruthy();
     expect(selectAllBtn).toBeTruthy();
-    expect(idleBtn!.textContent).toContain('4');
+    expect(must(idleBtn, 'Missing idle button').textContent).toContain('4');
   });
 
   it('toggle auto-gather and auto-defend in CommandsTab and signals persist', async () => {
@@ -757,13 +764,13 @@ describe('CommandsTab idle worker flow', () => {
     );
 
     // Toggle gather on
-    const gatherBtn = findBtnByText('Gather')!;
+    const gatherBtn = must(findBtnByText('Gather'), 'Missing Gather button');
     expect(gatherBtn).toBeTruthy();
     gatherBtn.click();
     expect(store.autoGatherEnabled.value).toBe(true);
 
     // Toggle defend on
-    const defendBtn = findBtnByText('Defend')!;
+    const defendBtn = must(findBtnByText('Defend'), 'Missing Defend button');
     expect(defendBtn).toBeTruthy();
     defendBtn.click();
     expect(store.autoDefendEnabled.value).toBe(true);
@@ -925,7 +932,10 @@ describe('Keyboard Reference overlay interactions', () => {
       ),
     );
 
-    const kbBtn = document.getElementById('keyboard-ref-btn')!;
+    const kbBtn = must(
+      document.getElementById('keyboard-ref-btn'),
+      'Missing keyboard reference button',
+    );
     expect(kbBtn).toBeTruthy();
     expect(kbBtn.textContent).toContain('?');
     kbBtn.click();
@@ -1047,7 +1057,7 @@ describe('New Game Modal interactions', () => {
     const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
     const rulesTab = Array.from(allBtns).find((btn) => btn.textContent?.trim() === 'RULES');
     expect(rulesTab).toBeTruthy();
-    rulesTab!.click();
+    must(rulesTab, 'Missing RULES tab').click();
     await new Promise((r) => setTimeout(r, 50));
 
     // Find the Permadeath toggle — it is a rounded-full button inside a ToggleRow
@@ -1059,9 +1069,12 @@ describe('New Game Modal interactions', () => {
     expect(permadeathLabel).toBeTruthy();
 
     // The toggle button is in the same parent row
-    const toggleRow = permadeathLabel!.closest('.mb-3');
+    const toggleRow = must(permadeathLabel, 'Missing permadeath label').closest('.mb-3');
     expect(toggleRow).toBeTruthy();
-    const toggleBtn = toggleRow!.querySelector('button') as HTMLButtonElement;
+    const toggleBtn = must(
+      must(toggleRow, 'Missing permadeath toggle row').querySelector('button'),
+      'Missing permadeath toggle button',
+    ) as HTMLButtonElement;
     expect(toggleBtn).toBeTruthy();
 
     // Initially off (Normal preset has permadeath: false)
@@ -1101,7 +1114,7 @@ describe('New Game Modal interactions', () => {
     const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
     const rulesTab = Array.from(allBtns).find((btn) => btn.textContent?.trim() === 'RULES');
     expect(rulesTab).toBeTruthy();
-    rulesTab!.click();
+    must(rulesTab, 'Missing RULES tab').click();
     await new Promise((r) => setTimeout(r, 50));
 
     // Find the Permadeath toggle row
@@ -1111,9 +1124,12 @@ describe('New Game Modal interactions', () => {
     );
     expect(permadeathLabel).toBeTruthy();
 
-    const toggleRow = permadeathLabel!.closest('.mb-3');
+    const toggleRow = must(permadeathLabel, 'Missing permadeath label').closest('.mb-3');
     expect(toggleRow).toBeTruthy();
-    const toggleBtn = toggleRow!.querySelector('button') as HTMLButtonElement;
+    const toggleBtn = must(
+      must(toggleRow, 'Missing permadeath toggle row').querySelector('button'),
+      'Missing permadeath toggle button',
+    ) as HTMLButtonElement;
     expect(toggleBtn).toBeTruthy();
 
     // Ultra Nightmare preset forces permadeath on
@@ -1320,7 +1336,7 @@ describe('CommandsTab contextual auto-behavior visibility', () => {
 
     expect(store.autoBuildEnabled.value).toBe(false);
 
-    const buildBtn = findBtnByText('Build')!;
+    const buildBtn = must(findBtnByText('Build'), 'Missing Build button');
     expect(buildBtn).toBeTruthy();
     buildBtn.click();
 

@@ -11,7 +11,7 @@
  *   Diamond  — 30+ wins
  */
 
-import { getPlayerProfile } from '@/storage';
+import { getPlayerProfile, getSetting, setSetting } from '@/storage';
 
 // ---------------------------------------------------------------------------
 // Rank definitions
@@ -107,7 +107,6 @@ export async function loadLeaderboardData(): Promise<LeaderboardData> {
  */
 async function computeWinStreaks(): Promise<{ currentStreak: number; bestStreak: number }> {
   // Win streaks are tracked via settings keys for accuracy
-  const { getSetting } = await import('@/storage');
   const current = Number(await getSetting('win_streak_current', '0'));
   const best = Number(await getSetting('win_streak_best', '0'));
   return { currentStreak: current, bestStreak: best };
@@ -119,7 +118,6 @@ async function computeWinStreaks(): Promise<{ currentStreak: number; bestStreak:
  * @param won Whether the player won
  */
 export async function updateWinStreak(won: boolean): Promise<void> {
-  const { getSetting, setSetting } = await import('@/storage');
   let current = Number(await getSetting('win_streak_current', '0'));
   let best = Number(await getSetting('win_streak_best', '0'));
 

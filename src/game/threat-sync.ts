@@ -117,7 +117,9 @@ export function syncThreatAndObjectives(world: GameWorld): void {
 
   if (newDestroyed > store.destroyedEnemyNests.value) {
     store.nestJustDestroyed.value = true;
-    setTimeout(() => { store.nestJustDestroyed.value = false; }, 3000);
+    setTimeout(() => {
+      store.nestJustDestroyed.value = false;
+    }, 3000);
   }
   store.destroyedEnemyNests.value = newDestroyed;
 }

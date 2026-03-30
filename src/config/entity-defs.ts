@@ -14,9 +14,13 @@
  *   kind-helpers.ts      – entityKindFromString + entityKindName
  */
 
-import { EntityKind } from '@/types';
+import type { EntityKind } from '@/types';
 import { BUILDING_DEFS } from './entity-defs/buildings';
-import { DAMAGE_MULTIPLIERS, getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from './entity-defs/damage-multipliers';
+import {
+  DAMAGE_MULTIPLIERS,
+  getDamageMultiplier,
+  SIEGE_BUILDING_MULTIPLIER,
+} from './entity-defs/damage-multipliers';
 import { ENEMY_UNIT_DEFS } from './entity-defs/enemy-units';
 import { entityKindFromString, entityKindName } from './entity-defs/kind-helpers';
 import { PLAYER_UNIT_DEFS } from './entity-defs/player-units';
@@ -24,8 +28,13 @@ import { RESOURCE_DEFS } from './entity-defs/resources';
 import type { UnitDef } from './entity-defs/unit-def';
 
 export type { UnitDef };
-export { DAMAGE_MULTIPLIERS, SIEGE_BUILDING_MULTIPLIER, getDamageMultiplier };
-export { entityKindFromString, entityKindName };
+export {
+  DAMAGE_MULTIPLIERS,
+  entityKindFromString,
+  entityKindName,
+  getDamageMultiplier,
+  SIEGE_BUILDING_MULTIPLIER,
+};
 
 /** Complete entity definitions map. One entry per EntityKind. */
 export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {

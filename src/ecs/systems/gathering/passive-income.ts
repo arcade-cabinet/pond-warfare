@@ -7,26 +7,14 @@
  */
 
 import { query } from 'bitecs';
-import {
-  Building,
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-} from '@/ecs/components';
+import { Building, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 
 export function applyPassiveIncome(world: GameWorld): void {
   if (world.frameCount % 300 !== 0) return;
 
-  const buildings = query(world.ecs, [
-    Position,
-    Building,
-    FactionTag,
-    EntityTypeTag,
-    Health,
-  ]);
+  const buildings = query(world.ecs, [Position, Building, FactionTag, EntityTypeTag, Health]);
 
   // ---- Trade Routes passive income ----
   // Every 300 frames (~5 sec), completed player-owned Lodges generate +3 clams each
