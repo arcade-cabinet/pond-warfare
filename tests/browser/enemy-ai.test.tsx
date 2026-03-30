@@ -151,7 +151,7 @@ describe('Enemy AI systems', () => {
   // -- 2. Enemy spawns gatherers from nests ---------------------------------
 
   describe('2. Enemy gatherer spawning', () => {
-    it.todo('enemy spawns gatherers after peace ends', async () => {
+    it('enemy spawns gatherers after peace ends', async () => {
       // Ensure we are past peace timer so AI economy ticks
       if (game.world.frameCount < game.world.peaceTimer) {
         // Fast-forward past peace period
@@ -165,8 +165,9 @@ describe('Enemy AI systems', () => {
 
       const gatherersBefore = getUnits(EntityKind.Gatherer, Faction.Enemy).length;
 
-      // Wait for gatherer spawn interval (900 frames at normal, we are at 3x speed)
-      await waitFrames(1200);
+      // Wait for gatherer spawn interval (ENEMY_GATHERER_SPAWN_INTERVAL=900 frames)
+      // Give generous time for the AI to tick
+      await waitFrames(2400);
 
       keepPlayerAlive();
 
@@ -187,7 +188,12 @@ describe('Enemy AI systems', () => {
       expect(typeof game.world.enemyResources.twigs).toBe('number');
     });
 
-    it.todo('enemy resources change over time as gatherers work', async () => {
+    it('enemy resources change over time as gatherers work', async () => {
+      // Ensure we are past peace so enemy AI is fully active
+      if (game.world.frameCount < game.world.peaceTimer) {
+        await waitFrames(game.world.peaceTimer - game.world.frameCount + 60);
+      }
+
       // Give enemy ample resources to observe spending
       game.world.enemyResources.clams = 3000;
       game.world.enemyResources.twigs = 1500;
@@ -196,7 +202,7 @@ describe('Enemy AI systems', () => {
       // The enemy AI spends resources on gatherers, units, and buildings.
       // After enough frames, clams should have changed (either up from
       // gathering or down from spending).
-      await waitFrames(1800);
+      await waitFrames(3600);
 
       keepPlayerAlive();
 
@@ -215,7 +221,7 @@ describe('Enemy AI systems', () => {
       expect(game.world.peaceTimer).toBeGreaterThan(0);
     });
 
-    it.todo('enemy trains army units after peace ends', async () => {
+    it('enemy trains army units after peace ends', async () => {
       // Ensure past peace
       if (game.world.frameCount < game.world.peaceTimer) {
         await waitFrames(game.world.peaceTimer - game.world.frameCount + 60);
@@ -225,8 +231,9 @@ describe('Enemy AI systems', () => {
       game.world.enemyResources.clams = 5000;
       game.world.enemyResources.twigs = 3000;
 
-      // Wait for training ticks to produce combat units
-      await waitFrames(1800);
+      // Wait for training ticks to produce combat units (ENEMY_TRAIN_CHECK_INTERVAL=300,
+      // ENEMY_TRAIN_TIME=240, so need at least 540+ frames per unit)
+      await waitFrames(3600);
 
       keepPlayerAlive();
 
@@ -238,13 +245,13 @@ describe('Enemy AI systems', () => {
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-04-army.png' });
     });
 
-    it.todo('enemy units enter AttackMove state toward player buildings', async () => {
+    it('enemy units enter AttackMove state toward player buildings', async () => {
       // Give enemy resources and wait for attack decision
-      game.world.enemyResources.clams = 5000;
-      game.world.enemyResources.twigs = 3000;
+      game.world.enemyResources.clams = 8000;
+      game.world.enemyResources.twigs = 5000;
 
-      // Wait for army to build and attack decision (every 600 frames)
-      await waitFrames(2400);
+      // Wait for army to build and attack decision (ENEMY_ATTACK_CHECK_INTERVAL=600)
+      await waitFrames(4800);
 
       keepPlayerAlive();
 
@@ -275,12 +282,12 @@ describe('Enemy AI systems', () => {
   // -- 5. Wave units attack player buildings --------------------------------
 
   describe('5. Wave units attack player buildings', () => {
-    it.todo('enemy attack-move targets a player building', async () => {
+    it('enemy attack-move targets a player building', async () => {
       game.world.enemyResources.clams = 8000;
       game.world.enemyResources.twigs = 5000;
 
       // Wait for several attack decision ticks
-      await waitFrames(3600);
+      await waitFrames(4800);
 
       keepPlayerAlive();
 
@@ -321,18 +328,22 @@ describe('Enemy AI systems', () => {
       expect(game.world.enemyEvolution.unlockedUnits).toContain(EntityKind.Snake);
     });
 
-    it.todo('evolution tier increases after sufficient game time', async () => {
+    it('evolution tier increases after sufficient game time', async () => {
       const initialTier = game.world.enemyEvolution.tier;
 
       // Evolution checks every 600 frames. Tier 1 unlocks at 5 min (18000 frames)
-      // after peace ends. We need frameCount >= peaceTimer + 18000.
+      // after peace ends, scaled by evolutionSpeedMod (default 1.0).
+      // We need frameCount >= peaceTimer + 18000.
       // With gameSpeed=3, we advance faster in real time.
       const targetFrame = game.world.peaceTimer + 18000;
       if (game.world.frameCount < targetFrame) {
         const needed = targetFrame - game.world.frameCount + 600;
-        // Cap wait to avoid excessively long test
-        const framesToWait = Math.min(needed, 24000);
+        // Cap wait to avoid excessively long test -- raise speed for this
+        const savedSpeed = game.world.gameSpeed;
+        game.world.gameSpeed = 10;
+        const framesToWait = Math.min(needed, 30000);
         await waitFrames(framesToWait);
+        game.world.gameSpeed = savedSpeed;
         keepPlayerAlive();
       }
 
@@ -361,7 +372,7 @@ describe('Enemy AI systems', () => {
   // -- 7. Enemy builds towers for defense -----------------------------------
 
   describe('7. Enemy builds towers', () => {
-    it.todo('enemy constructs towers near nests after mid-game', async () => {
+    it('enemy constructs towers near nests after mid-game', async () => {
       // Tower building starts at ENEMY_MID_GAME_FRAME (18000 frames)
       // and requires ENEMY_TOWER_COST_CLAMS=200 + ENEMY_TOWER_COST_TWIGS=250
       game.world.enemyResources.clams = 5000;
@@ -370,13 +381,18 @@ describe('Enemy AI systems', () => {
       // Ensure we are past mid-game frame
       const midGameFrame = 18000;
       if (game.world.frameCount < midGameFrame) {
+        const savedSpeed = game.world.gameSpeed;
+        game.world.gameSpeed = 10;
         await waitFrames(midGameFrame - game.world.frameCount + 60);
+        game.world.gameSpeed = savedSpeed;
       }
 
       const towersBefore = getEnemyBuildings(EntityKind.Tower).length;
 
-      // Wait for building tick interval (1800 frames, or 1200 late game)
-      await waitFrames(3600);
+      // Give enough resources and wait for building tick (ENEMY_BUILD_CHECK_INTERVAL=1800)
+      game.world.enemyResources.clams = 5000;
+      game.world.enemyResources.twigs = 5000;
+      await waitFrames(4800);
 
       keepPlayerAlive();
 
@@ -391,7 +407,7 @@ describe('Enemy AI systems', () => {
   // -- 8. Enemy counter-picks units based on player army --------------------
 
   describe('8. Enemy counter-composition', () => {
-    it.todo('enemy trains units that counter the player army', async () => {
+    it('enemy trains units that counter the player army', async () => {
       // The AI analyzes player army: if player has many Snipers, it
       // trains more Snakes (which counter snipers). If player has more
       // Brawlers, it trains more Gators.
@@ -399,7 +415,7 @@ describe('Enemy AI systems', () => {
       game.world.enemyResources.twigs = 5000;
 
       // Wait for several training cycles
-      await waitFrames(2400);
+      await waitFrames(4800);
 
       keepPlayerAlive();
 
@@ -432,7 +448,7 @@ describe('Enemy AI systems', () => {
   // -- 9. Boss Croc spawns in boss waves ------------------------------------
 
   describe('9. Boss Croc spawning', () => {
-    it.todo('Boss Croc spawns after wave 10 timing threshold', async () => {
+    it('Boss Croc spawns after wave 10 timing threshold', async () => {
       // Boss wave logic triggers when:
       //   frameCount > peaceTimer + 10 * WAVE_INTERVAL (1800)
       //   AND frameCount % (WAVE_INTERVAL * 3) === 0
@@ -442,9 +458,13 @@ describe('Enemy AI systems', () => {
       const bossThreshold = game.world.peaceTimer + 10 * 1800; // peaceTimer + 18000
       const bossCrocsBefore = getUnits(EntityKind.BossCroc, Faction.Enemy).length;
 
+      // Use high speed to fast-forward to boss wave threshold
+      const savedSpeed = game.world.gameSpeed;
+      game.world.gameSpeed = 10;
+
       if (game.world.frameCount <= bossThreshold) {
         const needed = bossThreshold - game.world.frameCount + 5400;
-        const framesToWait = Math.min(needed, 30000);
+        const framesToWait = Math.min(needed, 36000);
         await waitFrames(framesToWait);
         keepPlayerAlive();
       }
@@ -452,8 +472,9 @@ describe('Enemy AI systems', () => {
       // Wait for the next boss wave trigger (every 5400 frames)
       // Ensure frameCount aligns to a WAVE_INTERVAL*3 boundary
       const framesUntilNextBoss = 5400 - (game.world.frameCount % 5400);
-      await waitFrames(framesUntilNextBoss + 60);
+      await waitFrames(framesUntilNextBoss + 600);
 
+      game.world.gameSpeed = savedSpeed;
       keepPlayerAlive();
 
       const bossCrocsAfter = getUnits(EntityKind.BossCroc, Faction.Enemy).length;
@@ -493,28 +514,30 @@ describe('Enemy AI systems', () => {
   // -- 10. Champion enemies appear ------------------------------------------
 
   describe('10. Champion enemies', () => {
-    it.todo('champion enemies set is populated during mega-waves', async () => {
+    it('champion enemies set is populated during mega-waves', async () => {
       // Champions are marked during mega-waves in the evolution system.
       // Mega-waves trigger every 18000 frames (5 min) after peace ends.
       // The first mega-wave is at peaceTimer + 18000.
 
       const megaWaveFrame = game.world.peaceTimer + 18000;
 
+      const savedSpeed = game.world.gameSpeed;
+      game.world.gameSpeed = 10;
+
       if (game.world.frameCount < megaWaveFrame) {
         const needed = megaWaveFrame - game.world.frameCount + 600;
-        const framesToWait = Math.min(needed, 24000);
+        const framesToWait = Math.min(needed, 30000);
         await waitFrames(framesToWait);
         keepPlayerAlive();
       }
 
       // Wait a bit more for the mega-wave to trigger
-      await waitFrames(1200);
+      await waitFrames(2400);
 
+      game.world.gameSpeed = savedSpeed;
       keepPlayerAlive();
 
       // Check if any champions have been marked
-      const champCount = game.world.championEnemies.size;
-
       // Champions spawn during mega-waves. If the mega-wave already fired,
       // champions should exist. If they died, the set may have been cleaned.
       // We check that the Set is accessible and was populated at some point.

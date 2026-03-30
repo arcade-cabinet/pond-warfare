@@ -463,7 +463,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('13. Losing last Lodge triggers game over', () => {
-    it.todo('destroying all Lodges sets state to lose', async () => {
+    it('destroying all Lodges sets state to lose', async () => {
       // This test must run last or with care since it ends the game.
       // Save current state to restore.
       const savedState = game.world.state;
@@ -472,13 +472,21 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const lodges = getUnits(EntityKind.Lodge);
       expect(lodges.length).toBeGreaterThanOrEqual(1);
 
+      // Save their HPs so we can restore after the test
+      const savedHPs = lodges.map((eid) => ({
+        eid,
+        current: Health.current[eid],
+        max: Health.max[eid],
+      }));
+
       // Kill all Lodges by setting HP to 0
       for (const eid of lodges) {
         Health.current[eid] = 0;
       }
 
-      // The health system checks win/lose every 60 frames
-      await waitFrames(120);
+      // The health system checks win/lose every 60 frames -- align to boundary
+      const remainder = 60 - (game.world.frameCount % 60);
+      await waitFrames(remainder + 120);
 
       expect(game.world.state).toBe('lose');
       await page.screenshot({ path: 'tests/browser/screenshots/bld-13-lodge-game-over.png' });
@@ -496,12 +504,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('14. Tower targets nearest enemy within range', () => {
-    it.todo('Tower fires at an enemy placed within 200px range', async () => {
+    it('Tower fires at an enemy placed within 200px range', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const tx = Position.x[lodge] - 250;
       const ty = Position.y[lodge] - 250;
 
-      // Spawn a complete Tower
+      // Spawn a complete Tower via archetype (sets TowerAI, Combat, Building progress, etc.)
       const towerEid = spawnCompleteBuilding(EntityKind.Tower, tx, ty);
       // Reset cooldown so it fires immediately
       Combat.attackCooldown[towerEid] = 0;
@@ -511,7 +519,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const enemyHpBefore = Health.current[enemyEid];
 
       // Wait for combat system to process tower auto-attack and projectile to land
-      await waitFrames(120);
+      // Tower fires projectile -> projectile system needs frames to reach target
+      await waitFrames(180);
 
       // The enemy should have taken damage (from tower projectile)
       expect(Health.current[enemyEid]).toBeLessThan(enemyHpBefore);
@@ -521,12 +530,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       Health.current[enemyEid] = 0;
     });
 
-    it.todo('Tower ignores enemies outside 200px range', async () => {
+    it('Tower ignores enemies outside 200px range', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const tx = Position.x[lodge] - 350;
       const ty = Position.y[lodge] + 350;
 
-      // Spawn a complete Tower
+      // Spawn a complete Tower via archetype
       const towerEid = spawnCompleteBuilding(EntityKind.Tower, tx, ty);
       Combat.attackCooldown[towerEid] = 0;
 
@@ -535,7 +544,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const enemyHpBefore = Health.current[enemyEid];
 
       // Wait for a few combat system ticks
-      await waitFrames(120);
+      await waitFrames(180);
 
       // The enemy should NOT have taken damage since it is out of range
       expect(Health.current[enemyEid]).toBe(enemyHpBefore);
@@ -550,7 +559,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('15. Construction progress', () => {
-    it.todo('building progress increases from 1 toward 100 with a builder', async () => {
+    it('building progress increases from 1 toward 100 with a builder', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const bx = Position.x[lodge] + 400;
       const by = Position.y[lodge] + 100;
@@ -563,7 +572,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       UnitStateMachine.targetEntity[builderEid] = buildingEid;
       UnitStateMachine.gatherTimer[builderEid] = BUILD_TIMER;
 
-      await waitFrames(300);
+      // Wait for sufficient build ticks (BUILD_TIMER=25 frames per tick, each adds 10 HP)
+      await waitFrames(600);
 
       expect(Building.progress[buildingEid]).toBeGreaterThan(1);
     });
@@ -574,7 +584,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('16. Building destruction', () => {
-    it.todo('building is removed when HP reaches 0 via takeDamage', async () => {
+    it('building is removed when HP reaches 0 via takeDamage', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const bx = Position.x[lodge] + 500;
       const by = Position.y[lodge] + 500;
@@ -586,7 +596,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       takeDamage(game.world, wallEid, Health.max[wallEid] + 100, -1);
 
       // Entity should be removed from queries after death processing
-      await waitFrames(10);
+      // processDeath removes entity synchronously via removeEntity
+      await waitFrames(30);
       const walls = getUnits(EntityKind.Wall).filter((e) =>
         Position.x[e] === bx && Position.y[e] === by,
       );
@@ -614,7 +625,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('17. Fortified Walls tech', () => {
-    it.todo('Wall completed with fortifiedWalls tech gets +100 HP', async () => {
+    it('Wall completed with fortifiedWalls tech gets +100 HP', async () => {
       game.world.tech.fortifiedWalls = true;
 
       const lodge = getUnits(EntityKind.Lodge)[0];
@@ -630,14 +641,16 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       UnitStateMachine.targetEntity[builderEid] = wallEid;
       UnitStateMachine.gatherTimer[builderEid] = BUILD_TIMER;
 
-      // Wait for construction to complete (Wall is 400 HP, each build tick adds 10 HP)
-      await waitFrames(1500);
+      // Wait for construction to complete (Wall is 400 HP, BUILD_TIMER=25 frames per tick,
+      // each tick adds 10 HP, so 40 ticks * 25 frames = 1000 frames at 1x speed)
+      // With gameSpeed=3, this goes faster but waitFrames counts game frames
+      await waitFrames(1800);
 
-      if (Building.progress[wallEid] >= 100) {
-        // Fortified Walls adds +100 HP on completion
-        expect(Health.max[wallEid]).toBe(baseMax + 100);
-        expect(Health.current[wallEid]).toBe(Health.max[wallEid]);
-      }
+      // Verify the wall completed
+      expect(Building.progress[wallEid]).toBeGreaterThanOrEqual(100);
+      // Fortified Walls adds +100 HP on completion
+      expect(Health.max[wallEid]).toBe(baseMax + 100);
+      expect(Health.current[wallEid]).toBe(Health.max[wallEid]);
 
       game.world.tech.fortifiedWalls = false;
     });
@@ -666,23 +679,25 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('19. Incomplete buildings are inactive', () => {
-    it.todo('Tower at progress < 100 does not fire', async () => {
+    it('Tower at progress < 100 does not fire', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const tx = Position.x[lodge] - 400;
       const ty = Position.y[lodge] - 400;
 
+      // Spawn incomplete tower via archetype (progress starts at 1 for non-Lodge player buildings)
       const towerEid = spawnIncompleteBuilding(EntityKind.Tower, tx, ty);
-      // Ensure progress is low
+      // Ensure progress stays low
       Building.progress[towerEid] = 10;
+      Health.current[towerEid] = Math.floor(Health.max[towerEid] * 0.1);
       Combat.attackCooldown[towerEid] = 0;
 
       // Spawn enemy in range
       const enemyEid = spawnEntity(game.world, EntityKind.Gator, tx + 50, ty, Faction.Enemy);
       const hpBefore = Health.current[enemyEid];
 
-      await waitFrames(120);
+      await waitFrames(180);
 
-      // Tower should not have fired because building is incomplete
+      // Tower should not have fired because building is incomplete (progress < 100)
       expect(Health.current[enemyEid]).toBe(hpBefore);
 
       Health.current[enemyEid] = 0;

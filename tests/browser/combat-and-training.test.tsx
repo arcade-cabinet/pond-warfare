@@ -120,7 +120,7 @@ describe('Training & Building', () => {
     game.world.resources.twigs = 1000;
   }, 30_000);
 
-  it.todo('select lodge shows train actions in panel', async () => {
+  it('select lodge shows train actions in panel', async () => {
     const lodge = getUnits(EntityKind.Lodge)[0];
     await selectEntity(lodge);
     await delay(200);
@@ -132,7 +132,7 @@ describe('Training & Building', () => {
     await closePanel();
   });
 
-  it.todo('train gatherer from lodge', async () => {
+  it('train gatherer from lodge', async () => {
     const countBefore = getUnits(EntityKind.Gatherer).length;
     const lodge = getUnits(EntityKind.Lodge)[0];
     await selectEntity(lodge);
@@ -183,7 +183,7 @@ describe('Training & Building', () => {
     await page.screenshot({ path: 'tests/browser/screenshots/ct-burrow-built.png' });
   });
 
-  it.todo('build armory and train brawler', async () => {
+  it('build armory and train brawler', async () => {
     const gid = getUnits(EntityKind.Gatherer)[0];
     const lodge = getUnits(EntityKind.Lodge)[0];
     const lx = Position.x[lodge], ly = Position.y[lodge];

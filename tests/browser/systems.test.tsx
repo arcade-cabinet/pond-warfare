@@ -143,9 +143,14 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
   describe('Auto-behaviors', () => {
 
     // 1. Toggle auto-gather ON -> idle gatherers enter GatherMove state
-    it.todo('toggle auto-gather ON -> idle gatherers enter GatherMove state', async () => {
-      // First ensure there are idle gatherers by turning gather off and waiting
+    it('toggle auto-gather ON -> idle gatherers enter GatherMove state', async () => {
+      // First ensure there are idle gatherers by turning all auto-behaviors off
       game.world.autoBehaviors.gather = false;
+      game.world.autoBehaviors.build = false;
+      game.world.autoBehaviors.defend = false;
+      game.world.autoBehaviors.attack = false;
+      game.world.autoBehaviors.heal = false;
+      game.world.autoBehaviors.scout = false;
       await waitFrames(120);
 
       // Force a gatherer to idle state so we have a clean test
@@ -163,7 +168,9 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       game.world.autoBehaviors.gather = true;
 
       // Wait for the auto-behavior system to tick (runs every 60 frames)
-      await waitFrames(120);
+      // Align to the next 60-frame boundary then wait one more cycle
+      const remainder = 60 - (game.world.frameCount % 60);
+      await waitFrames(remainder + 120);
 
       const state = UnitStateMachine.state[gid];
       expect(
@@ -172,6 +179,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
         state === UnitState.ReturnMove,
       ).toBe(true);
 
+      game.world.autoBehaviors.gather = false;
       await page.screenshot({ path: 'tests/browser/screenshots/sys-01-auto-gather-on.png' });
     });
 
@@ -235,7 +243,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     });
 
     // 4. Toggle auto-attack ON -> idle combat units enter AttackMove toward enemies
-    it.todo('toggle auto-attack ON -> idle combat units enter AttackMove toward enemies', async () => {
+    it('toggle auto-attack ON -> idle combat units enter AttackMove toward enemies', async () => {
       // Spawn an enemy unit so there is a target
       const lodge = getUnits(EntityKind.Lodge)[0];
       const lx = Position.x[lodge];
@@ -247,11 +255,19 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       UnitStateMachine.state[brawlerEid] = UnitState.Idle;
       UnitStateMachine.targetEntity[brawlerEid] = -1;
 
+      // Disable competing behaviors
+      game.world.autoBehaviors.gather = false;
+      game.world.autoBehaviors.build = false;
+      game.world.autoBehaviors.defend = false;
+      game.world.autoBehaviors.heal = false;
+      game.world.autoBehaviors.scout = false;
+
       // Enable auto-attack
       game.world.autoBehaviors.attack = true;
 
-      // Wait for auto-behavior tick
-      await waitFrames(120);
+      // Wait for auto-behavior tick (every 60 frames)
+      const remainder = 60 - (game.world.frameCount % 60);
+      await waitFrames(remainder + 120);
 
       const state = UnitStateMachine.state[brawlerEid];
       expect(
@@ -267,7 +283,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     });
 
     // 5. Toggle auto-defend ON -> idle combat units patrol near Lodge
-    it.todo('toggle auto-defend ON -> idle combat units patrol near Lodge', async () => {
+    it('toggle auto-defend ON -> idle combat units patrol near Lodge', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const lx = Position.x[lodge];
       const ly = Position.y[lodge];
@@ -277,11 +293,17 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       UnitStateMachine.state[brawlerEid] = UnitState.Idle;
       UnitStateMachine.targetEntity[brawlerEid] = -1;
 
-      // Make sure auto-attack is off so defend gets priority
+      // Disable all auto-behaviors except defend
+      game.world.autoBehaviors.gather = false;
+      game.world.autoBehaviors.build = false;
       game.world.autoBehaviors.attack = false;
+      game.world.autoBehaviors.heal = false;
+      game.world.autoBehaviors.scout = false;
       game.world.autoBehaviors.defend = true;
 
-      await waitFrames(120);
+      // Wait for auto-behavior tick
+      const remainder = 60 - (game.world.frameCount % 60);
+      await waitFrames(remainder + 120);
 
       const state = UnitStateMachine.state[brawlerEid];
       expect(state).toBe(UnitState.AttackMovePatrol);
@@ -297,12 +319,19 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     });
 
     // 6. Toggle auto-heal ON -> idle healers seek wounded allies
-    it.todo('toggle auto-heal ON -> idle healers seek wounded allies', async () => {
+    it('toggle auto-heal ON -> idle healers seek wounded allies', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const lx = Position.x[lodge];
       const ly = Position.y[lodge];
 
-      // Spawn a healer
+      // Disable competing behaviors
+      game.world.autoBehaviors.gather = false;
+      game.world.autoBehaviors.build = false;
+      game.world.autoBehaviors.defend = false;
+      game.world.autoBehaviors.attack = false;
+      game.world.autoBehaviors.scout = false;
+
+      // Spawn a healer via archetype
       const healerEid = spawnEntity(game.world, EntityKind.Healer, lx + 40, ly + 40, Faction.Player);
       UnitStateMachine.state[healerEid] = UnitState.Idle;
       UnitStateMachine.targetEntity[healerEid] = -1;
@@ -313,7 +342,9 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
 
       game.world.autoBehaviors.heal = true;
 
-      await waitFrames(120);
+      // Wait for auto-behavior tick (every 60 frames)
+      const remainder = 60 - (game.world.frameCount % 60);
+      await waitFrames(remainder + 120);
 
       // Healer should be moving toward the wounded ally
       const state = UnitStateMachine.state[healerEid];
@@ -328,7 +359,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     });
 
     // 7. Toggle auto-scout ON -> idle scouts move to unexplored areas
-    it.todo('toggle auto-scout ON -> idle scouts move to unexplored areas', async () => {
+    it('toggle auto-scout ON -> idle scouts move to unexplored areas', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       const lx = Position.x[lodge];
       const ly = Position.y[lodge];
@@ -493,7 +524,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     });
 
     // 14. Unexplored areas have fog (check fog canvas opacity)
-    it.todo('unexplored areas have fog', async () => {
+    it('unexplored areas have fog', async () => {
       const fogCanvas = document.getElementById('fog-canvas') as HTMLCanvasElement;
       expect(fogCanvas).toBeTruthy();
 

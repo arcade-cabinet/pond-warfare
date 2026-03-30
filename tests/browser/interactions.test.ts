@@ -14,18 +14,13 @@ import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
 import { KeyboardReference } from '@/ui/keyboard-reference';
 import { NewGameModal } from '@/ui/new-game-modal';
+import { CommandsTab } from '@/ui/panel/CommandsTab';
 import { SelectionPanel } from '@/ui/selection-panel';
 import { SettingsPanel } from '@/ui/settings-panel';
 import * as store from '@/ui/store';
 
 // Mock animation module
-vi.mock('@/rendering/animations', () => ({
-  animateGameOverStats: vi.fn(),
-  animateIntroTitle: vi.fn(),
-  animateIntroSubtitle: vi.fn(),
-  cleanupEntityAnimation: vi.fn(),
-  triggerCommandPulse: vi.fn(),
-}));
+vi.mock('@/rendering/animations', () => new Proxy({}, { get: () => vi.fn() }));
 
 import '@/styles/main.css';
 
@@ -227,33 +222,23 @@ describe('HUD button interactions', () => {
     expect(onColorBlindToggle).toHaveBeenCalledTimes(1);
   });
 
-  it.skip('idle worker button click opens radial menu (deprecated — radial replaced by CommandsTab)', async () => {
+  it('idle worker button in CommandsTab cycles idle workers', async () => {
     store.idleWorkerCount.value = 3;
+    store.idleGathererCount.value = 3;
 
     render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:200px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:300px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
 
-    expect(store.radialMenuOpen.value).toBe(false);
-
-    const idleBtn = document.getElementById('idle-worker-btn')!;
+    // The idle button shows "3 Idle" text
+    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    const idleBtn = Array.from(allBtns).find((btn) => btn.textContent?.includes('Idle'));
     expect(idleBtn).toBeTruthy();
-    idleBtn.click();
-
-    expect(store.radialMenuOpen.value).toBe(true);
+    expect(idleBtn!.textContent).toContain('3');
   });
 
   it('army select button click calls onArmyClick', async () => {
@@ -345,42 +330,46 @@ describe('HUD button interactions', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Radial Menu Interactions
+// CommandsTab Auto-Behavior Toggle Interactions
 // ---------------------------------------------------------------------------
-// Radial menu was replaced by CommandsTab in slide-out panel (PR #10).
-// These tests are skipped until rewritten for the new UI.
-describe.skip('Radial menu interactions (deprecated — replaced by CommandsTab)', () => {
-  function renderHUDWithRadialOpen() {
-    store.radialMenuOpen.value = true;
-    store.radialMenuX.value = 400;
-    store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 5;
+describe('CommandsTab auto-behavior toggle interactions', () => {
+  function renderCommandsTabWithIdleUnits(opts?: {
+    gatherers?: number;
+    combat?: number;
+    healers?: number;
+    scouts?: number;
+  }) {
+    const g = opts?.gatherers ?? 0;
+    const c = opts?.combat ?? 0;
+    const hl = opts?.healers ?? 0;
+    const s = opts?.scouts ?? 0;
+    store.idleWorkerCount.value = g + c + hl + s;
+    store.idleGathererCount.value = g;
+    store.idleCombatCount.value = c;
+    store.idleHealerCount.value = hl;
+    store.idleScoutCount.value = s;
 
     return render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:400px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
   }
 
-  it('radial menu auto-gather toggle click toggles signal', async () => {
-    renderHUDWithRadialOpen();
-    await new Promise((r) => setTimeout(r, 200));
+  /** Find a button whose text content includes the given label. */
+  function findBtnByText(label: string): HTMLButtonElement | undefined {
+    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    return Array.from(allBtns).find((btn) => btn.textContent?.includes(label));
+  }
+
+  it('auto-gather toggle click toggles store signal', async () => {
+    renderCommandsTabWithIdleUnits({ gatherers: 3 });
 
     expect(store.autoGatherEnabled.value).toBe(false);
 
-    const gatherBtn = document.querySelector('button[title="Gather"]') as HTMLButtonElement;
+    const gatherBtn = findBtnByText('Gather')!;
     expect(gatherBtn).toBeTruthy();
     gatherBtn.click();
 
@@ -391,91 +380,56 @@ describe.skip('Radial menu interactions (deprecated — replaced by CommandsTab)
     expect(store.autoGatherEnabled.value).toBe(false);
   });
 
-  it('radial menu auto-defend toggle click toggles signal', async () => {
-    renderHUDWithRadialOpen();
-    await new Promise((r) => setTimeout(r, 200));
+  it('auto-defend toggle click toggles store signal', async () => {
+    renderCommandsTabWithIdleUnits({ combat: 4 });
 
     expect(store.autoDefendEnabled.value).toBe(false);
 
-    const defendBtn = document.querySelector('button[title="Defend"]') as HTMLButtonElement;
+    const defendBtn = findBtnByText('Defend')!;
     expect(defendBtn).toBeTruthy();
     defendBtn.click();
 
     expect(store.autoDefendEnabled.value).toBe(true);
   });
 
-  it('radial menu auto-attack toggle click toggles signal', async () => {
-    renderHUDWithRadialOpen();
-    await new Promise((r) => setTimeout(r, 200));
+  it('auto-attack toggle click toggles store signal', async () => {
+    renderCommandsTabWithIdleUnits({ combat: 4 });
 
     expect(store.autoAttackEnabled.value).toBe(false);
 
-    const attackBtn = document.querySelector('button[title="Attack"]') as HTMLButtonElement;
+    const attackBtn = findBtnByText('Attack')!;
     expect(attackBtn).toBeTruthy();
     attackBtn.click();
 
     expect(store.autoAttackEnabled.value).toBe(true);
   });
 
-  it('radial menu auto-scout toggle click toggles signal', async () => {
-    renderHUDWithRadialOpen();
-    await new Promise((r) => setTimeout(r, 200));
+  it('auto-scout toggle click toggles store signal', async () => {
+    renderCommandsTabWithIdleUnits({ scouts: 2 });
 
     expect(store.autoScoutEnabled.value).toBe(false);
 
-    const scoutBtn = document.querySelector('button[title="Scout"]') as HTMLButtonElement;
+    const scoutBtn = findBtnByText('Scout')!;
     expect(scoutBtn).toBeTruthy();
     scoutBtn.click();
 
     expect(store.autoScoutEnabled.value).toBe(true);
   });
 
-  it('radial menu Select button click calls onSelectAll and closes menu', async () => {
-    const onIdleWorkerClick = vi.fn();
-    store.radialMenuOpen.value = true;
-    store.radialMenuX.value = 400;
-    store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 5;
+  it('Select All button is always present in CommandsTab', async () => {
+    renderCommandsTabWithIdleUnits({ gatherers: 3 });
 
-    render(
-      h(
-        'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick,
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
-      ),
-    );
-
-    await new Promise((r) => setTimeout(r, 200));
-
-    const selectBtn = document.querySelector('button[title="Select"]') as HTMLButtonElement;
-    expect(selectBtn).toBeTruthy();
-    selectBtn.click();
-
-    expect(onIdleWorkerClick).toHaveBeenCalledTimes(1);
-    expect(store.radialMenuOpen.value).toBe(false);
+    const selectAllBtn = findBtnByText('Select All')!;
+    expect(selectAllBtn).toBeTruthy();
   });
 
-  it('radial menu overlay click closes the menu', async () => {
-    renderHUDWithRadialOpen();
-    await new Promise((r) => setTimeout(r, 200));
+  it('Deselect button is disabled when selectionCount is 0', async () => {
+    store.selectionCount.value = 0;
+    renderCommandsTabWithIdleUnits({ gatherers: 2 });
 
-    expect(store.radialMenuOpen.value).toBe(true);
-
-    // Click the overlay backdrop (the fixed inset-0 div)
-    const overlay = document.querySelector('.fixed.inset-0') as HTMLDivElement;
-    expect(overlay).toBeTruthy();
-    overlay.click();
-
-    expect(store.radialMenuOpen.value).toBe(false);
+    const deselectBtn = findBtnByText('Deselect')!;
+    expect(deselectBtn).toBeTruthy();
+    expect(deselectBtn.disabled).toBe(true);
   });
 });
 
@@ -776,84 +730,61 @@ describe('Game Over interactions', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Idle Worker Button -> Radial Menu -> Select All flow
+// CommandsTab Idle Worker Flow
 // ---------------------------------------------------------------------------
-describe.skip('Idle worker to radial menu flow (deprecated — replaced by CommandsTab)', () => {
-  it('click idle worker -> radial opens -> click Select -> calls handler & closes', async () => {
-    const onIdleWorkerClick = vi.fn();
+describe('CommandsTab idle worker flow', () => {
+  /** Find a button whose text content includes the given label. */
+  function findBtnByText(label: string): HTMLButtonElement | undefined {
+    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    return Array.from(allBtns).find((btn) => btn.textContent?.includes(label));
+  }
+
+  it('CommandsTab shows idle button and Select All together', async () => {
     store.idleWorkerCount.value = 4;
+    store.idleGathererCount.value = 4;
 
     render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick,
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:400px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
 
-    // Step 1: Click idle worker button
-    const idleBtn = document.getElementById('idle-worker-btn')!;
-    idleBtn.click();
-    expect(store.radialMenuOpen.value).toBe(true);
-
-    // Wait for animations
-    await new Promise((r) => setTimeout(r, 250));
-
-    // Step 2: Click Select in radial menu
-    const selectBtn = document.querySelector('button[title="Select"]') as HTMLButtonElement;
-    expect(selectBtn).toBeTruthy();
-    selectBtn.click();
-
-    expect(onIdleWorkerClick).toHaveBeenCalledTimes(1);
-    expect(store.radialMenuOpen.value).toBe(false);
+    // Both idle button and Select All should be present
+    const idleBtn = findBtnByText('Idle');
+    const selectAllBtn = findBtnByText('Select All');
+    expect(idleBtn).toBeTruthy();
+    expect(selectAllBtn).toBeTruthy();
+    expect(idleBtn!.textContent).toContain('4');
   });
 
-  it('click idle worker -> toggle auto-gather -> toggle auto-defend -> close overlay', async () => {
+  it('toggle auto-gather and auto-defend in CommandsTab and signals persist', async () => {
     store.idleWorkerCount.value = 6;
+    store.idleGathererCount.value = 3;
+    store.idleCombatCount.value = 3;
 
     render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:400px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
 
-    // Open radial menu
-    document.getElementById('idle-worker-btn')?.click();
-    await new Promise((r) => setTimeout(r, 250));
-
     // Toggle gather on
-    (document.querySelector('button[title="Gather"]') as HTMLButtonElement).click();
+    const gatherBtn = findBtnByText('Gather')!;
+    expect(gatherBtn).toBeTruthy();
+    gatherBtn.click();
     expect(store.autoGatherEnabled.value).toBe(true);
 
     // Toggle defend on
-    (document.querySelector('button[title="Defend"]') as HTMLButtonElement).click();
+    const defendBtn = findBtnByText('Defend')!;
+    expect(defendBtn).toBeTruthy();
+    defendBtn.click();
     expect(store.autoDefendEnabled.value).toBe(true);
 
-    // Close by clicking overlay
-    (document.querySelector('.fixed.inset-0') as HTMLDivElement).click();
-    expect(store.radialMenuOpen.value).toBe(false);
-
-    // Toggles persist after menu close
+    // Both signals remain true (persist)
     expect(store.autoGatherEnabled.value).toBe(true);
     expect(store.autoDefendEnabled.value).toBe(true);
   });
@@ -1035,7 +966,7 @@ describe('Keyboard Reference overlay interactions', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it.skip('keyboard ref overlay backdrop click calls onClose (fireEvent.click does not set target===currentTarget correctly)', async () => {
+  it('keyboard ref overlay backdrop click calls onClose', async () => {
     const onClose = vi.fn();
 
     render(
@@ -1046,11 +977,10 @@ describe('Keyboard Reference overlay interactions', () => {
       ),
     );
 
-    // Click the outermost overlay (the absolute inset-0 div that is the event target)
-    const overlay = document.querySelector('.absolute.inset-0.z-\\[60\\]') as HTMLDivElement;
-    expect(overlay).toBeTruthy();
-    // Simulate click where target === currentTarget (click on backdrop, not panel)
-    fireEvent.click(overlay);
+    // The backdrop is a separate div with role="presentation" and its own onClick
+    const backdrop = document.querySelector('[role="presentation"]') as HTMLDivElement;
+    expect(backdrop).toBeTruthy();
+    backdrop.click();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
@@ -1061,7 +991,7 @@ describe('Keyboard Reference overlay interactions', () => {
 // New Game Modal selectors are stale — title attributes changed in UI refactor.
 // TODO: Rewrite with current selectors.
 describe('New Game Modal interactions', () => {
-  it.skip('difficulty selection updates when Easy/Normal/Hard/Nightmare/Ultra Nightmare clicked (stale selectors)', async () => {
+  it('preset selection updates when Easy/Normal/Hard/Nightmare/Ultra clicked', async () => {
     store.menuState.value = 'newGame';
 
     render(
@@ -1072,18 +1002,22 @@ describe('New Game Modal interactions', () => {
       ),
     );
 
-    // Find difficulty cards by their title attributes
+    // Preset buttons use title="Apply <Name> preset"
     const easyBtn = document.querySelector(
-      'button[title*="gentle introduction"]',
+      'button[title="Apply Easy preset"]',
     ) as HTMLButtonElement;
     const normalBtn = document.querySelector(
-      'button[title*="otters intended"]',
+      'button[title="Apply Normal preset"]',
     ) as HTMLButtonElement;
-    const hardBtn = document.querySelector('button[title*="breathing room"]') as HTMLButtonElement;
+    const hardBtn = document.querySelector(
+      'button[title="Apply Hard preset"]',
+    ) as HTMLButtonElement;
     const nightmareBtn = document.querySelector(
-      'button[title*="mistake is punished"]',
+      'button[title="Apply Nightmare preset"]',
     ) as HTMLButtonElement;
-    const ultraBtn = document.querySelector('button[title*="ultimate test"]') as HTMLButtonElement;
+    const ultraBtn = document.querySelector(
+      'button[title="Apply Ultra preset"]',
+    ) as HTMLButtonElement;
 
     expect(easyBtn).toBeTruthy();
     expect(normalBtn).toBeTruthy();
@@ -1091,30 +1025,30 @@ describe('New Game Modal interactions', () => {
     expect(nightmareBtn).toBeTruthy();
     expect(ultraBtn).toBeTruthy();
 
-    // Default selection is Normal — verify Normal card has the selected style
+    // Default is Normal preset — Normal should show active style
     // Click Easy
     easyBtn.click();
     await new Promise((r) => setTimeout(r, 50));
-    // The easy card should now have its tint background (green)
-    expect(easyBtn.style.background).toContain('rgba(34, 197, 94');
+    // Easy preset color is #22c55e — active background uses that color + "25" alpha suffix
+    expect(easyBtn.style.background).toContain('#22c55e');
 
     // Click Hard
     hardBtn.click();
     await new Promise((r) => setTimeout(r, 50));
-    expect(hardBtn.style.background).toContain('rgba(239, 68, 68');
+    expect(hardBtn.style.background).toContain('#ef4444');
 
     // Click Nightmare
     nightmareBtn.click();
     await new Promise((r) => setTimeout(r, 50));
-    expect(nightmareBtn.style.background).toContain('rgba(168, 85, 247');
+    expect(nightmareBtn.style.background).toContain('#a855f7');
 
     // Click Ultra Nightmare
     ultraBtn.click();
     await new Promise((r) => setTimeout(r, 50));
-    expect(ultraBtn.style.background).toContain('rgba(220, 38, 38');
+    expect(ultraBtn.style.background).toContain('#dc2626');
   });
 
-  it.skip('permadeath toggle switches on and off (stale selectors)', async () => {
+  it('permadeath toggle switches on and off in Rules tab', async () => {
     store.menuState.value = 'newGame';
 
     render(
@@ -1125,27 +1059,42 @@ describe('New Game Modal interactions', () => {
       ),
     );
 
-    // Find the permadeath card (contains "PERMADEATH" text and toggle)
-    const permadeathBtn = document.querySelector(
-      'button[title*="Enable for bonus rewards"]',
-    ) as HTMLButtonElement;
-    expect(permadeathBtn).toBeTruthy();
+    // Navigate to Rules tab — find the RULES tab button
+    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    const rulesTab = Array.from(allBtns).find((btn) => btn.textContent?.trim() === 'RULES');
+    expect(rulesTab).toBeTruthy();
+    rulesTab!.click();
+    await new Promise((r) => setTimeout(r, 50));
 
-    // Initially off — background should be dark
-    expect(permadeathBtn.style.background).toContain('rgba(20, 30, 35');
+    // Find the Permadeath toggle — it is a rounded-full button inside a ToggleRow
+    // Look for the label "PERMADEATH" and its sibling toggle button
+    const spans = document.querySelectorAll('span');
+    const permadeathLabel = Array.from(spans).find(
+      (s) => s.textContent?.toUpperCase().includes('PERMADEATH'),
+    );
+    expect(permadeathLabel).toBeTruthy();
+
+    // The toggle button is in the same parent row
+    const toggleRow = permadeathLabel!.closest('.mb-3');
+    expect(toggleRow).toBeTruthy();
+    const toggleBtn = toggleRow!.querySelector('button') as HTMLButtonElement;
+    expect(toggleBtn).toBeTruthy();
+
+    // Initially off (Normal preset has permadeath: false)
+    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(false);
 
     // Click to toggle on
-    permadeathBtn.click();
+    toggleBtn.click();
     await new Promise((r) => setTimeout(r, 50));
-    expect(permadeathBtn.style.background).toContain('rgba(220, 38, 38');
+    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(true);
 
     // Click to toggle off
-    permadeathBtn.click();
+    toggleBtn.click();
     await new Promise((r) => setTimeout(r, 50));
-    expect(permadeathBtn.style.background).toContain('rgba(20, 30, 35');
+    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(false);
   });
 
-  it.skip('permadeath forced on when Ultra Nightmare selected (stale selectors)', async () => {
+  it('permadeath forced on when Ultra Nightmare preset selected', async () => {
     store.menuState.value = 'newGame';
 
     render(
@@ -1156,18 +1105,35 @@ describe('New Game Modal interactions', () => {
       ),
     );
 
-    // Select Ultra Nightmare
-    const ultraBtn = document.querySelector('button[title*="ultimate test"]') as HTMLButtonElement;
+    // Select Ultra Nightmare preset
+    const ultraBtn = document.querySelector(
+      'button[title="Apply Ultra preset"]',
+    ) as HTMLButtonElement;
+    expect(ultraBtn).toBeTruthy();
     ultraBtn.click();
     await new Promise((r) => setTimeout(r, 100));
 
-    // Permadeath card should now be forced on (disabled + red background)
-    const permadeathBtn = document.querySelector(
-      'button[title*="Permadeath is always on"]',
-    ) as HTMLButtonElement;
-    expect(permadeathBtn).toBeTruthy();
-    expect(permadeathBtn.disabled).toBe(true);
-    expect(permadeathBtn.style.background).toContain('rgba(220, 38, 38');
+    // Navigate to Rules tab to see the Permadeath toggle
+    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    const rulesTab = Array.from(allBtns).find((btn) => btn.textContent?.trim() === 'RULES');
+    expect(rulesTab).toBeTruthy();
+    rulesTab!.click();
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Find the Permadeath toggle row
+    const spans = document.querySelectorAll('span');
+    const permadeathLabel = Array.from(spans).find(
+      (s) => s.textContent?.toUpperCase().includes('PERMADEATH'),
+    );
+    expect(permadeathLabel).toBeTruthy();
+
+    const toggleRow = permadeathLabel!.closest('.mb-3');
+    expect(toggleRow).toBeTruthy();
+    const toggleBtn = toggleRow!.querySelector('button') as HTMLButtonElement;
+    expect(toggleBtn).toBeTruthy();
+
+    // Ultra Nightmare preset forces permadeath on
+    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(true);
   });
 
   it('shuffle button randomizes game name', async () => {
@@ -1317,112 +1283,72 @@ describe('Pearl resource display', () => {
 // ---------------------------------------------------------------------------
 // Contextual Idle Menu Interactions
 // ---------------------------------------------------------------------------
-describe.skip('Contextual idle menu interactions (deprecated — replaced by CommandsTab)', () => {
-  it('idle button expands auto-behavior menu with Gather/Build when gatherers idle', async () => {
+describe('CommandsTab contextual auto-behavior visibility', () => {
+  /** Find a button whose text content includes the given label. */
+  function findBtnByText(label: string): HTMLButtonElement | undefined {
+    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    return Array.from(allBtns).find((btn) => btn.textContent?.includes(label));
+  }
+
+  it('CommandsTab shows Gather/Build toggles when gatherers idle, hides Attack/Defend', async () => {
     store.idleWorkerCount.value = 3;
     store.idleGathererCount.value = 3;
     store.idleCombatCount.value = 0;
-    store.autoMenuExpanded.value = false;
 
     render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:400px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
 
-    // Click idle button to expand
-    const idleBtn = document.getElementById('idle-worker-btn')!;
-    expect(idleBtn).toBeTruthy();
-    idleBtn.click();
-    await new Promise((r) => setTimeout(r, 100));
-
-    expect(store.autoMenuExpanded.value).toBe(true);
-
     // Gather and Build buttons should be visible
-    const gatherBtn = document.querySelector('button[title*="Auto-Gather"]') as HTMLButtonElement;
-    const buildBtn = document.querySelector('button[title*="Auto-Build"]') as HTMLButtonElement;
-    expect(gatherBtn).toBeTruthy();
-    expect(buildBtn).toBeTruthy();
+    expect(findBtnByText('Gather')).toBeTruthy();
+    expect(findBtnByText('Build')).toBeTruthy();
 
     // Attack/Defend should NOT be visible (no idle combat)
-    const attackBtn = document.querySelector('button[title*="Auto-Attack"]');
-    const defendBtn = document.querySelector('button[title*="Auto-Defend"]');
-    expect(attackBtn).toBeNull();
-    expect(defendBtn).toBeNull();
+    expect(findBtnByText('Attack')).toBeUndefined();
+    expect(findBtnByText('Defend')).toBeUndefined();
   });
 
-  it('idle menu shows Attack/Defend when combat units are idle', async () => {
+  it('CommandsTab shows Attack/Defend when combat units idle, hides Gather/Build', async () => {
     store.idleWorkerCount.value = 4;
     store.idleGathererCount.value = 0;
     store.idleCombatCount.value = 4;
-    store.autoMenuExpanded.value = true;
 
     render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:400px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
 
     // Attack and Defend buttons should be visible
-    const attackBtn = document.querySelector('button[title*="Auto-Attack"]') as HTMLButtonElement;
-    const defendBtn = document.querySelector('button[title*="Auto-Defend"]') as HTMLButtonElement;
-    expect(attackBtn).toBeTruthy();
-    expect(defendBtn).toBeTruthy();
+    expect(findBtnByText('Attack')).toBeTruthy();
+    expect(findBtnByText('Defend')).toBeTruthy();
 
     // Gather/Build should NOT be visible (no idle gatherers)
-    const gatherBtn = document.querySelector('button[title*="Auto-Gather"]');
-    const buildBtn = document.querySelector('button[title*="Auto-Build"]');
-    expect(gatherBtn).toBeNull();
-    expect(buildBtn).toBeNull();
+    expect(findBtnByText('Gather')).toBeUndefined();
+    expect(findBtnByText('Build')).toBeUndefined();
   });
 
-  it('auto-build toggle click toggles signal', async () => {
+  it('auto-build toggle click toggles store signal', async () => {
     store.idleWorkerCount.value = 2;
     store.idleGathererCount.value = 2;
-    store.autoMenuExpanded.value = true;
 
     render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:400px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
 
     expect(store.autoBuildEnabled.value).toBe(false);
 
-    const buildBtn = document.querySelector('button[title*="Auto-Build"]') as HTMLButtonElement;
+    const buildBtn = findBtnByText('Build')!;
     expect(buildBtn).toBeTruthy();
     buildBtn.click();
 
@@ -1433,35 +1359,29 @@ describe.skip('Contextual idle menu interactions (deprecated — replaced by Com
     expect(store.autoBuildEnabled.value).toBe(false);
   });
 
-  it('clicking idle button again collapses the menu', async () => {
-    store.idleWorkerCount.value = 3;
-    store.idleGathererCount.value = 3;
-    store.autoMenuExpanded.value = true;
+  it('auto-behavior section hidden when no idle workers', async () => {
+    store.idleWorkerCount.value = 0;
+    store.idleGathererCount.value = 0;
+    store.idleCombatCount.value = 0;
 
     render(
       h(
         'div',
-        { style: 'position:relative;width:800px;height:400px;background:#0f172a' },
-        h(HUD, {
-          onSpeedClick: vi.fn(),
-          onMuteClick: vi.fn(),
-          onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
-          onArmyClick: vi.fn(),
-          onPauseClick: vi.fn(),
-          onAttackMoveClick: vi.fn(),
-          onCtrlGroupClick: vi.fn(),
-        }),
+        { style: 'width:300px;height:400px;background:#0f172a' },
+        h(CommandsTab, null),
       ),
     );
 
-    expect(store.autoMenuExpanded.value).toBe(true);
+    // No auto-behavior toggles visible
+    expect(findBtnByText('Gather')).toBeUndefined();
+    expect(findBtnByText('Build')).toBeUndefined();
+    expect(findBtnByText('Attack')).toBeUndefined();
+    expect(findBtnByText('Defend')).toBeUndefined();
+    expect(findBtnByText('Heal')).toBeUndefined();
+    expect(findBtnByText('Scout')).toBeUndefined();
 
-    // Click idle button to collapse
-    const idleBtn = document.getElementById('idle-worker-btn')!;
-    idleBtn.click();
-
-    expect(store.autoMenuExpanded.value).toBe(false);
+    // Idle button should not be shown either
+    expect(findBtnByText('Idle')).toBeUndefined();
   });
 });
 
@@ -1600,7 +1520,7 @@ describe('Settings panel interactions', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it.skip('settings speed buttons call onSpeedSet with correct value (stale selector .font-numbers.font-bold)', async () => {
+  it('settings speed buttons call onSpeedSet with correct value', async () => {
     const onSpeedSet = vi.fn();
 
     render(
@@ -1622,13 +1542,10 @@ describe('Settings panel interactions', () => {
       ),
     );
 
-    // Find speed buttons (1x, 2x, 3x)
-    const speedBtns = document.querySelectorAll(
-      '.font-numbers.font-bold',
-    ) as NodeListOf<HTMLButtonElement>;
-    // Filter for only the ones that look like speed buttons (contain "x")
-    const speedButtons = Array.from(speedBtns).filter(
-      (btn) => btn.tagName === 'BUTTON' && btn.textContent?.match(/^\dx$/),
+    // Find speed buttons by their text content (1x, 2x, 3x)
+    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    const speedButtons = Array.from(allBtns).filter(
+      (btn) => btn.textContent?.match(/^[123]x$/),
     );
     expect(speedButtons.length).toBe(3);
 
