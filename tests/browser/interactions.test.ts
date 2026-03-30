@@ -227,11 +227,7 @@ describe('HUD button interactions', () => {
     store.idleGathererCount.value = 3;
 
     render(
-      h(
-        'div',
-        { style: 'width:300px;height:300px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:300px;background:#0f172a' }, h(CommandsTab, null)),
     );
 
     // The idle button shows "3 Idle" text
@@ -350,11 +346,7 @@ describe('CommandsTab auto-behavior toggle interactions', () => {
     store.idleScoutCount.value = s;
 
     return render(
-      h(
-        'div',
-        { style: 'width:300px;height:400px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
     );
   }
 
@@ -744,11 +736,7 @@ describe('CommandsTab idle worker flow', () => {
     store.idleGathererCount.value = 4;
 
     render(
-      h(
-        'div',
-        { style: 'width:300px;height:400px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
     );
 
     // Both idle button and Select All should be present
@@ -765,11 +753,7 @@ describe('CommandsTab idle worker flow', () => {
     store.idleCombatCount.value = 3;
 
     render(
-      h(
-        'div',
-        { style: 'width:300px;height:400px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
     );
 
     // Toggle gather on
@@ -1069,8 +1053,8 @@ describe('New Game Modal interactions', () => {
     // Find the Permadeath toggle — it is a rounded-full button inside a ToggleRow
     // Look for the label "PERMADEATH" and its sibling toggle button
     const spans = document.querySelectorAll('span');
-    const permadeathLabel = Array.from(spans).find(
-      (s) => s.textContent?.toUpperCase().includes('PERMADEATH'),
+    const permadeathLabel = Array.from(spans).find((s) =>
+      s.textContent?.toUpperCase().includes('PERMADEATH'),
     );
     expect(permadeathLabel).toBeTruthy();
 
@@ -1122,8 +1106,8 @@ describe('New Game Modal interactions', () => {
 
     // Find the Permadeath toggle row
     const spans = document.querySelectorAll('span');
-    const permadeathLabel = Array.from(spans).find(
-      (s) => s.textContent?.toUpperCase().includes('PERMADEATH'),
+    const permadeathLabel = Array.from(spans).find((s) =>
+      s.textContent?.toUpperCase().includes('PERMADEATH'),
     );
     expect(permadeathLabel).toBeTruthy();
 
@@ -1296,11 +1280,7 @@ describe('CommandsTab contextual auto-behavior visibility', () => {
     store.idleCombatCount.value = 0;
 
     render(
-      h(
-        'div',
-        { style: 'width:300px;height:400px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
     );
 
     // Gather and Build buttons should be visible
@@ -1318,11 +1298,7 @@ describe('CommandsTab contextual auto-behavior visibility', () => {
     store.idleCombatCount.value = 4;
 
     render(
-      h(
-        'div',
-        { style: 'width:300px;height:400px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
     );
 
     // Attack and Defend buttons should be visible
@@ -1339,11 +1315,7 @@ describe('CommandsTab contextual auto-behavior visibility', () => {
     store.idleGathererCount.value = 2;
 
     render(
-      h(
-        'div',
-        { style: 'width:300px;height:400px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
     );
 
     expect(store.autoBuildEnabled.value).toBe(false);
@@ -1365,11 +1337,7 @@ describe('CommandsTab contextual auto-behavior visibility', () => {
     store.idleCombatCount.value = 0;
 
     render(
-      h(
-        'div',
-        { style: 'width:300px;height:400px;background:#0f172a' },
-        h(CommandsTab, null),
-      ),
+      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
     );
 
     // No auto-behavior toggles visible
@@ -1544,9 +1512,7 @@ describe('Settings panel interactions', () => {
 
     // Find speed buttons by their text content (1x, 2x, 3x)
     const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    const speedButtons = Array.from(allBtns).filter(
-      (btn) => btn.textContent?.match(/^[123]x$/),
-    );
+    const speedButtons = Array.from(allBtns).filter((btn) => btn.textContent?.match(/^[123]x$/));
     expect(speedButtons.length).toBe(3);
 
     speedButtons[0].click();
