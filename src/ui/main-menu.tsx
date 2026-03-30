@@ -1,13 +1,13 @@
 /**
- * Main Menu — Diegetic Lily Pad Interface
+ * Main Menu — Diegetic Pond Interface
  *
- * Uses hand-painted art assets (public/assets/ui/) to create an immersive
- * pond scene. Lily pad button sprites float on a watercolor pond background
- * with ripple overlays, a swimming otter, and flower accents. Text is
- * scrawled on each pad in the game's heading font.
+ * Hand-painted watercolor pond with floating lily pads as scenery, a swimming
+ * otter (Yuka.js steered), and teal bar buttons for all menu actions. The lily
+ * pads drift organically — all 3 variants plus tiny pads — while the otter
+ * navigates between them, aware of pads, buttons, and the logo.
  */
 
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { isMobile, isTablet } from '@/platform';
 import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
@@ -23,94 +23,41 @@ import {
   unlocksOpen,
 } from './store';
 
-/** Pad-1 = enabled (vibrant green), Pad-2 = disabled (faded), Pad-3 = active/pressed (darker). */
-const PAD_ENABLED = '/pond-warfare/assets/ui/Lillypad-1.png';
-const PAD_DISABLED = '/pond-warfare/assets/ui/Lillypad-2.png';
-const PAD_ACTIVE = '/pond-warfare/assets/ui/Lillypad-3.png';
+const UI = '/pond-warfare/assets/ui';
 
-/** A clickable lily pad button using a real sprite. */
-function LilyPadButton({
+/** Teal bar button using the painted Button.png asset. */
+function MenuButton({
   label,
   onClick,
   disabled,
-  size = 'md',
-  delay = 0,
-  flower,
+  wide,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
-  size?: 'lg' | 'md' | 'sm';
-  delay?: number;
-  flower?: boolean;
+  wide?: boolean;
 }) {
-  const [pressed, setPressed] = useState(false);
-  const small = typeof window !== 'undefined' && window.innerHeight < 500;
-  const dims =
-    size === 'lg'
-      ? { w: small ? 130 : 170, h: small ? 110 : 140 }
-      : size === 'md'
-        ? { w: small ? 110 : 140, h: small ? 90 : 115 }
-        : { w: small ? 90 : 115, h: small ? 74 : 95 };
-
-  const fontSize =
-    size === 'lg'
-      ? small
-        ? '15px'
-        : '18px'
-      : size === 'md'
-        ? small
-          ? '12px'
-          : '15px'
-        : small
-          ? '10px'
-          : '12px';
-
-  const sprite = disabled ? PAD_DISABLED : pressed ? PAD_ACTIVE : PAD_ENABLED;
-
   return (
     <button
       type="button"
-      class={`lily-pad-btn relative flex items-center justify-center cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-      style={{
-        width: `${dims.w}px`,
-        height: `${dims.h}px`,
-        animationDelay: `${delay}s`,
-      }}
+      class={`menu-pond-btn relative flex items-center justify-center cursor-pointer min-h-[44px] transition-transform ${disabled ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
+      style={{ width: wide ? '170px' : '140px', height: wide ? '48px' : '42px' }}
       disabled={disabled}
       onClick={disabled ? undefined : onClick}
-      onPointerDown={() => {
-        if (!disabled) setPressed(true);
-      }}
-      onPointerUp={() => setPressed(false)}
-      onPointerLeave={() => setPressed(false)}
     >
-      {/* Painted lily pad sprite */}
       <img
-        src={sprite}
+        src={`${UI}/Button.png`}
         alt=""
-        class="absolute inset-0 w-full h-full object-contain pointer-events-none render-pixelated"
+        class="absolute inset-0 w-full h-full object-fill pointer-events-none"
         draggable={false}
-        style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))' }}
+        style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))' }}
       />
-      {/* Flower accent */}
-      {flower && (
-        <img
-          src="/pond-warfare/assets/ui/Flower.png"
-          alt=""
-          class="absolute pointer-events-none"
-          style={{ top: '-6px', right: '8px', width: '20px', height: '20px' }}
-          draggable={false}
-        />
-      )}
-      {/* Scrawled label */}
       <span
-        class="relative z-10 font-heading font-bold text-center leading-tight tracking-wide uppercase"
+        class="relative z-10 font-heading font-bold tracking-wider uppercase"
         style={{
-          color: '#2a4a2a',
-          fontSize,
-          textShadow: '0 1px 2px rgba(200,230,200,0.5)',
-          fontStyle: 'italic',
+          color: '#1a3a3a',
+          fontSize: wide ? '14px' : '11px',
+          textShadow: '0 1px 1px rgba(180,220,220,0.4)',
         }}
       >
         {label}
@@ -119,44 +66,48 @@ function LilyPadButton({
   );
 }
 
-/** A teal bar button using the Button.png asset for secondary actions. */
-function BarButton({
-  label,
-  onClick,
-  disabled,
+/** Decorative floating lily pad (not interactive). */
+function FloatingPad({
+  variant,
+  style,
+  flower,
 }: {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
+  variant: 1 | 2 | 3 | 'tiny';
+  style: Record<string, string | number>;
+  flower?: boolean;
 }) {
+  const src = variant === 'tiny' ? `${UI}/Lillypad-tiny.png` : `${UI}/Lillypad-${variant}.png`;
+  const size = variant === 'tiny' ? '45px' : '80px';
+
   return (
-    <button
-      type="button"
-      class={`relative flex items-center justify-center cursor-pointer min-h-[44px] ${disabled ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
-      style={{ width: '130px', height: '42px' }}
-      disabled={disabled}
-      onClick={disabled ? undefined : onClick}
+    <div
+      class="absolute pointer-events-none lily-pad"
+      style={{ width: size, height: size, ...style }}
     >
       <img
-        src="/pond-warfare/assets/ui/Button.png"
+        src={src}
         alt=""
-        class="absolute inset-0 w-full h-full object-fill pointer-events-none"
+        class="w-full h-full object-contain"
         draggable={false}
-        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+        style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.3))' }}
       />
-      <span
-        class="relative z-10 font-heading font-bold text-[10px] tracking-wider uppercase"
-        style={{ color: '#1a3a3a', textShadow: '0 1px 1px rgba(180,220,220,0.4)' }}
-      >
-        {label}
-      </span>
-    </button>
+      {flower && (
+        <img
+          src={`${UI}/Flower.png`}
+          alt=""
+          class="absolute"
+          style={{ top: '-4px', right: '6px', width: '18px', height: '18px' }}
+          draggable={false}
+        />
+      )}
+    </div>
   );
 }
 
 export function MainMenu() {
   const [rank, setRank] = useState<RankInfo | null>(null);
   const compact = isMobile.value || isTablet.value;
+  const otterRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     getPlayerProfile()
@@ -164,6 +115,7 @@ export function MainMenu() {
       .catch(() => {});
   }, []);
 
+  // Simple otter wander animation via CSS for now — Yuka steering next iteration
   return (
     <div
       id="intro-overlay"
@@ -173,17 +125,17 @@ export function MainMenu() {
       <div
         class="absolute inset-0"
         style={{
-          backgroundImage: 'url(/pond-warfare/assets/ui/Background.png)',
+          backgroundImage: `url(${UI}/Background.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       />
 
-      {/* ---- Water ripple overlay layers ---- */}
+      {/* ---- Water ripple overlays ---- */}
       <div
         class="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: 'url(/pond-warfare/assets/ui/Flowing_Serenity_Water Ripples 1.png)',
+          backgroundImage: `url(${UI}/Flowing_Serenity_Water Ripples 1.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           opacity: 0.3,
@@ -193,7 +145,7 @@ export function MainMenu() {
       <div
         class="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: 'url(/pond-warfare/assets/ui/Flowing_Serenity_Water ripples 2.png)',
+          backgroundImage: `url(${UI}/Flowing_Serenity_Water ripples 2.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           opacity: 0.2,
@@ -201,7 +153,7 @@ export function MainMenu() {
         }}
       />
 
-      {/* Vignette for depth */}
+      {/* Vignette */}
       <div
         class="absolute inset-0 pointer-events-none"
         style={{
@@ -210,34 +162,23 @@ export function MainMenu() {
         }}
       />
 
-      {/* ---- Decorative tiny lily pads (not buttons) ---- */}
-      <img
-        src="/pond-warfare/assets/ui/Lillypad-tiny.png"
-        alt=""
-        class="absolute pointer-events-none lily-pad"
-        style={{ width: '50px', bottom: '12%', left: '8%', opacity: 0.6 }}
-        draggable={false}
-      />
-      <img
-        src="/pond-warfare/assets/ui/Lillypad-tiny.png"
-        alt=""
-        class="absolute pointer-events-none lily-pad"
-        style={{ width: '35px', top: '18%', right: '10%', opacity: 0.45 }}
-        draggable={false}
-      />
-      <img
-        src="/pond-warfare/assets/ui/Lillypad-tiny.png"
-        alt=""
-        class="absolute pointer-events-none lily-pad"
-        style={{ width: '40px', bottom: '25%', right: '5%', opacity: 0.4 }}
-        draggable={false}
-      />
+      {/* ---- Decorative floating lily pads (all 3 varieties + tiny) ---- */}
+      <FloatingPad variant={1} flower style={{ top: '10%', left: '6%', opacity: 0.7 }} />
+      <FloatingPad variant={2} style={{ bottom: '15%', left: '12%', opacity: 0.6 }} />
+      <FloatingPad variant={3} flower style={{ top: '20%', right: '8%', opacity: 0.65 }} />
+      <FloatingPad variant={1} style={{ bottom: '10%', right: '10%', opacity: 0.55 }} />
+      <FloatingPad variant={2} style={{ top: '50%', left: '3%', opacity: 0.4 }} />
+      <FloatingPad variant={3} style={{ top: '8%', right: '25%', opacity: 0.5 }} />
+      <FloatingPad variant="tiny" style={{ bottom: '30%', right: '4%', opacity: 0.45 }} />
+      <FloatingPad variant="tiny" style={{ top: '40%', left: '18%', opacity: 0.35 }} />
+      <FloatingPad variant="tiny" style={{ bottom: '8%', left: '30%', opacity: 0.4 }} />
 
       {/* ---- Swimming otter ---- */}
       <img
-        src="/pond-warfare/assets/ui/Otter w Shadow.png"
+        ref={otterRef}
+        src={`${UI}/Otter w Shadow.png`}
         alt="otter"
-        class="absolute pointer-events-none"
+        class="absolute pointer-events-none z-10"
         style={{
           width: compact ? '100px' : '160px',
           bottom: compact ? '4%' : '6%',
@@ -261,7 +202,7 @@ export function MainMenu() {
       {/* ==== CONTENT ==== */}
 
       {/* ---- Title ---- */}
-      <div class={`relative z-10 flex flex-col items-center ${compact ? 'mb-1' : 'mb-3'}`}>
+      <div class={`relative z-10 flex flex-col items-center ${compact ? 'mb-1' : 'mb-4'}`}>
         <h1 class="mb-0 tracking-widest uppercase text-center">
           <span
             class={`logo-pond block leading-tight ${compact ? 'text-3xl' : 'text-4xl md:text-7xl'}`}
@@ -301,23 +242,20 @@ export function MainMenu() {
         </p>
       </div>
 
-      {/* ---- Lily pad buttons ---- */}
-      <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-1' : 'gap-2'}`}>
-        {/* Primary: New Game + Continue */}
-        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-4'}`}>
-          <LilyPadButton
+      {/* ---- Menu buttons (teal bars) ---- */}
+      <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+        {/* Primary row */}
+        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+          <MenuButton
             label="New Game"
-            size="lg"
-            flower
-            delay={0}
+            wide
             onClick={() => {
               menuState.value = 'newGame';
             }}
           />
-          <LilyPadButton
+          <MenuButton
             label="Continue"
-            size="lg"
-            delay={0.4}
+            wide
             disabled={!hasSaveGame.value}
             onClick={() => {
               if (hasSaveGame.value) {
@@ -328,48 +266,43 @@ export function MainMenu() {
           />
         </div>
 
-        {/* Secondary: Campaign + Settings on pads */}
+        {/* Secondary row */}
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-          <LilyPadButton
+          <MenuButton
             label="Campaign"
-            size="md"
-            delay={0.7}
             onClick={() => {
               campaignOpen.value = true;
             }}
           />
-          <LilyPadButton
+          <MenuButton
             label="Settings"
-            size="md"
-            flower
-            delay={1.0}
             onClick={() => {
               settingsOpen.value = true;
             }}
           />
         </div>
 
-        {/* Tertiary: bar buttons for secondary features */}
+        {/* Tertiary row */}
         <div class={`flex items-center ${compact ? 'gap-1' : 'gap-2'} flex-wrap justify-center`}>
-          <BarButton
+          <MenuButton
             label="Leaderboard"
             onClick={() => {
               leaderboardOpen.value = true;
             }}
           />
-          <BarButton
+          <MenuButton
             label="Achievements"
             onClick={() => {
               achievementsOpen.value = true;
             }}
           />
-          <BarButton
+          <MenuButton
             label="Unlocks"
             onClick={() => {
               unlocksOpen.value = true;
             }}
           />
-          <BarButton
+          <MenuButton
             label="Cosmetics"
             onClick={() => {
               cosmeticsOpen.value = true;
