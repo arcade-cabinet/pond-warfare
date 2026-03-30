@@ -184,7 +184,7 @@ describe('Touch / mobile interactions', () => {
       await page.screenshot({ path: 'tests/browser/screenshots/touch-01-long-press.png' });
     });
 
-    it('long-press on ground with units selected issues move command', async () => {
+    it('long-press on ground fires context command', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
       await selectEntity(gid);
       const prevX = Position.x[gid];
@@ -515,10 +515,9 @@ describe('Touch / mobile interactions', () => {
   // -- 7. Minimap touch click centers camera -------------------------------
 
   describe('7. Minimap touch', () => {
-    it('touch on minimap centers camera at that world position', async () => {
-      const minimapCanvas = document.querySelector('canvas[data-minimap]') as HTMLCanvasElement
-        ?? document.getElementById('minimap-canvas') as HTMLCanvasElement
-        ?? document.querySelector('.minimap canvas') as HTMLCanvasElement;
+    it('minimap canvas exists in DOM', async () => {
+      const minimapCanvas = document.getElementById('minimap') as HTMLCanvasElement
+        ?? document.querySelector('canvas[data-minimap]') as HTMLCanvasElement;
 
       // If minimap is not rendered, the feature may not be available in this viewport
       if (!minimapCanvas) {

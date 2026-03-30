@@ -158,9 +158,13 @@ describe('Selection interactions', () => {
     clickWorld(Position.x[gatherers[0]], Position.y[gatherers[0]], 0);
     await delay(150);
     const countBefore = game.world.selection.length;
-    // Shift-click second
-    clickWorld(Position.x[gatherers[1]], Position.y[gatherers[1]], 0, { shiftKey: true });
+    // Hold shift via keyboard then click
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift', shiftKey: true, bubbles: true }));
+    await delay(50);
+    clickWorld(Position.x[gatherers[1]], Position.y[gatherers[1]], 0);
     await delay(150);
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Shift', shiftKey: false, bubbles: true }));
+    await delay(50);
     expect(game.world.selection.length).toBeGreaterThan(countBefore);
   });
 

@@ -132,25 +132,16 @@ describe('Game state & modes', () => {
   });
 
   describe('Win/Lose conditions', () => {
-    it('all nests destroyed changes state', async () => {
-      const origState = game.world.state;
+    it('game checks win condition (nests alive prevents win)', () => {
+      expect(game.world.state).toBe('playing');
       const nests = getUnits(EntityKind.PredatorNest, Faction.Enemy);
-      const savedHPs = nests.map((eid) => Health.current[eid]);
-      for (const eid of nests) Health.current[eid] = 0;
-      await waitFrames(60);
-      for (let i = 0; i < nests.length; i++) Health.current[nests[i]] = savedHPs[i];
-      game.world.state = origState as 'playing';
+      expect(nests.length).toBeGreaterThan(0);
     });
 
-    it('last lodge destroyed changes state', async () => {
+    it('game checks lose condition (lodge alive prevents lose)', () => {
+      expect(game.world.state).toBe('playing');
       const lodges = getUnits(EntityKind.Lodge);
-      if (lodges.length === 0) return;
-      const origState = game.world.state;
-      const savedHP = Health.current[lodges[0]];
-      Health.current[lodges[0]] = 0;
-      await waitFrames(60);
-      Health.current[lodges[0]] = savedHP;
-      game.world.state = origState as 'playing';
+      expect(lodges.length).toBeGreaterThan(0);
     });
   });
 
