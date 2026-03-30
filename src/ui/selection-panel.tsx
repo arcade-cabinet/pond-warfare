@@ -67,7 +67,7 @@ function AutoToggle({
       style={{
         border: `1px solid ${color}`,
         color,
-        background: enabled ? `${color}20` : 'transparent',
+        background: enabled ? `color-mix(in srgb, ${color} 12%, transparent)` : 'transparent',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -236,7 +236,7 @@ export function SelectionPanel({
       {count > 0 && onDeselect && (
         <button
           type="button"
-          class="absolute top-1 right-1 rounded-full w-6 h-6 flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors hud-btn"
+          class="absolute top-1 right-1 rounded-full w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors hud-btn"
           title="Clear selection (Esc)"
           onClick={(e) => {
             e.stopPropagation();
@@ -258,7 +258,7 @@ export function SelectionPanel({
           {!attackMoveActive.value && (
             <button
               type="button"
-              class="px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer"
+              class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
               style={{ border: '1px solid var(--pw-twig)', color: 'var(--pw-otter)' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -270,7 +270,7 @@ export function SelectionPanel({
           )}
           <button
             type="button"
-            class="px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer"
+            class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
             style={{ border: '1px solid var(--pw-border)', color: 'var(--pw-text-secondary)' }}
             onClick={(e) => {
               e.stopPropagation();

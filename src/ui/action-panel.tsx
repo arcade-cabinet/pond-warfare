@@ -169,7 +169,7 @@ function TabButton({
   return (
     <button
       type="button"
-      class={`flex-1 py-1 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[32px] md:min-h-0 font-heading`}
+      class={`flex-1 py-1 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[44px] md:min-h-0 font-heading`}
       style={{
         background: active
           ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'

@@ -88,9 +88,9 @@ export function UnitCommands(props: UnitCommandsProps) {
 
   return (
     <>
-      {/* Idle units button + contextual auto-behavior row (desktop only — mobile has these in sidebar) */}
+      {/* Idle units button + contextual auto-behavior row (desktop only — mobile uses slide-out panel) */}
       {!mobile && totalIdle > 0 && (
-        <div class="absolute md:top-14 md:right-6 z-20 flex flex-wrap items-center gap-1">
+        <div class="absolute top-14 right-2 md:right-6 z-20 flex flex-wrap items-center gap-1">
           {/* Main idle button */}
           <button
             type="button"
@@ -224,7 +224,7 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Attack-move button — desktop only (keyboard A on mobile) */}
+      {/* Attack-move button — desktop only (mobile uses slide-out panel buttons) */}
       {!mobile && hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
         <button
           type="button"

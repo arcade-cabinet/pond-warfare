@@ -582,7 +582,7 @@ export function App({ onMount }: AppProps) {
             </div>
             <button
               type="button"
-              class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer hud-btn flex-shrink-0"
+              class="w-8 h-8 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer hud-btn flex-shrink-0"
               onClick={deselect}
             >
               X
@@ -594,33 +594,18 @@ export function App({ onMount }: AppProps) {
               {!store.attackMoveActive.value && (
                 <button
                   type="button"
-                  class="px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer flex-1"
+                  class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer flex-1 min-h-[44px]"
                   style={{ border: '1px solid var(--pw-twig)', color: 'var(--pw-otter)' }}
-                  onClick={() => {
-                    if (hasPlayerUnitsSelected(game.world)) {
-                      game.world.attackMoveMode = true;
-                      game.syncUIStore();
-                    }
-                  }}
+                  onClick={activateAttackMove}
                 >
                   A-Move
                 </button>
               )}
               <button
                 type="button"
-                class="px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer flex-1"
+                class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer flex-1 min-h-[44px]"
                 style={{ border: '1px solid var(--pw-border)', color: 'var(--pw-text-secondary)' }}
-                onClick={() => {
-                  const w = game.world;
-                  for (const eid of w.selection) {
-                    if (hasComponent(w.ecs, eid, UnitStateMachine)) {
-                      UnitStateMachine.state[eid] = 0;
-                      UnitStateMachine.targetEntity[eid] = -1;
-                      w.yukaManager.removeUnit(eid);
-                    }
-                  }
-                  game.syncUIStore();
-                }}
+                onClick={haltSelection}
               >
                 Stop
               </button>
@@ -631,7 +616,7 @@ export function App({ onMount }: AppProps) {
 
       {/* ---- Slide-out panel (right edge) ---- */}
       <div
-        class={`absolute top-0 right-0 h-full z-40 transition-transform duration-200 ease-out ${panelOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        class={`absolute top-0 right-0 h-full z-40 flex flex-col transition-transform duration-200 ease-out ${panelOpen ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
           width: 'min(260px, 45vw)',
           background: 'linear-gradient(180deg, var(--pw-wood-mid), var(--pw-wood-dark))',
@@ -641,7 +626,7 @@ export function App({ onMount }: AppProps) {
       >
         {/* Panel header */}
         <div
-          class="flex items-center justify-between p-2"
+          class="flex items-center justify-between p-2 flex-shrink-0"
           style={{ borderBottom: '2px solid var(--pw-border)' }}
         >
           <span
@@ -652,7 +637,7 @@ export function App({ onMount }: AppProps) {
           </span>
           <button
             type="button"
-            class="hud-btn w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer"
+            class="hud-btn w-8 h-8 min-w-[44px] min-h-[44px] rounded flex items-center justify-center text-xs font-bold cursor-pointer"
             onClick={() => {
               store.mobilePanelOpen.value = false;
             }}
@@ -662,7 +647,7 @@ export function App({ onMount }: AppProps) {
         </div>
 
         {/* Panel body: selection + action panel + auto-behaviors */}
-        <div class="flex-1 overflow-y-auto" style={{ height: 'calc(100% - 40px)' }}>
+        <div class="flex-1 overflow-y-auto min-h-0">
           <SelectionPanel
             onDeselect={deselect}
             onIdleWorkerClick={() => {
