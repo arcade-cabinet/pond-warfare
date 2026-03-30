@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/arcade-cabinet/pond-warfare/compare/v1.0.0...v1.1.0) (2026-03-30)
+
+
+### Features
+
+* unified slide-out panel UI, diegetic pond landing page, Yuka otter ([#10](https://github.com/arcade-cabinet/pond-warfare/issues/10)) ([fa73450](https://github.com/arcade-cabinet/pond-warfare/commit/fa73450282449799f619bf19875f178ab65b2d87))
+
 ## 1.0.0 (2026-03-29)
 
 
