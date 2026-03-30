@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from 'preact/hooks';
+import { isMobile, isTablet } from '@/platform';
 import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
 import {
@@ -28,6 +29,7 @@ import {
 
 export function MainMenu() {
   const [rank, setRank] = useState<RankInfo | null>(null);
+  const compact = isMobile.value || isTablet.value;
 
   useEffect(() => {
     getPlayerProfile()
@@ -38,7 +40,7 @@ export function MainMenu() {
   return (
     <div
       id="intro-overlay"
-      class="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden safe-area-pad"
+      class={`relative h-screen w-full flex flex-col items-center ${compact ? 'justify-start pt-4 overflow-y-auto' : 'justify-center overflow-hidden'} safe-area-pad`}
       style={{
         background:
           'radial-gradient(ellipse 120% 100% at 50% 65%, #15302a 0%, #0e2220 30%, #0a1a1f 55%, #060e12 100%)',
@@ -68,8 +70,8 @@ export function MainMenu() {
         }}
       />
 
-      {/* ---- Lily pads scattered across the pond ---- */}
-      <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* ---- Lily pads scattered across the pond (hidden on compact) ---- */}
+      <div class="absolute inset-0 pointer-events-none overflow-hidden" style={{ display: compact ? 'none' : undefined }}>
         {/* Large lily pad - bottom left */}
         <div
           class="lily-pad"
@@ -108,8 +110,8 @@ export function MainMenu() {
         </div>
       </div>
 
-      {/* ---- Cattails / reeds at edges ---- */}
-      <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* ---- Cattails / reeds at edges (hidden on compact) ---- */}
+      <div class="absolute inset-0 pointer-events-none overflow-hidden" style={{ display: compact ? 'none' : undefined }}>
         {/* Left cattails */}
         <div class="cattail" style={{ bottom: '0', left: '3%' }}>
           <div class="cattail-head" />
@@ -161,68 +163,52 @@ export function MainMenu() {
       <div class="relative z-10 flex flex-col items-center">
         {/* Main title */}
         <h1 class="mb-0 tracking-widest uppercase text-center">
-          <span class="logo-pond block text-5xl md:text-8xl leading-tight">Pond</span>
-          <span class="logo-warfare block text-4xl md:text-7xl leading-tight mt-1">Warfare</span>
+          <span class={`logo-pond block leading-tight ${compact ? 'text-3xl' : 'text-4xl md:text-7xl'}`}>Pond</span>
+          <span class={`logo-warfare block leading-tight mt-1 ${compact ? 'text-2xl' : 'text-3xl md:text-6xl'}`}>Warfare</span>
         </h1>
 
-        {/* Water reflection of the title */}
-        <div class="title-reflection mt-0" aria-hidden="true">
-          <span
-            class="logo-pond block text-5xl md:text-8xl leading-tight"
-            style={{ letterSpacing: '0.15em' }}
-          >
-            Pond
-          </span>
-          <span
-            class="logo-warfare block text-4xl md:text-7xl leading-tight mt-1"
-            style={{ letterSpacing: '0.25em' }}
-          >
-            Warfare
-          </span>
-        </div>
+        {/* Water reflection of the title (hidden on compact) */}
+        {!compact && (
+          <div class="title-reflection mt-0" aria-hidden="true" style={{ maxHeight: '60px', overflow: 'hidden' }}>
+            <span
+              class="logo-pond block text-4xl md:text-7xl leading-tight"
+              style={{ letterSpacing: '0.15em' }}
+            >
+              Pond
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* ---- Tagline ---- */}
+      {/* ---- Tagline + Rank badge inline ---- */}
       <p
-        class="font-heading text-sm md:text-lg mt-3 tracking-wider relative z-10 text-center"
+        class="font-heading text-xs md:text-base mt-2 tracking-wider relative z-10 text-center"
         style={{ color: 'var(--pw-text-muted)' }}
       >
         Defend the Pond. Conquer the Wild.
+        {rank && (
+          <span class="ml-2" title={rank.label} style={{ color: rank.color }}>
+            {rank.icon} {rank.label}
+          </span>
+        )}
       </p>
 
-      {/* ---- Rank badge as a medal hanging from a reed ---- */}
-      {rank && (
-        <div class="relative z-10 mt-3">
-          <div class="reed-hang">
-            <div class="reed-medal" title={rank.label}>
-              <span>{rank.icon}</span>
-            </div>
-          </div>
-          <span
-            class="font-heading font-bold text-[11px] tracking-wider uppercase block text-center mt-1"
-            style={{ color: rank.color }}
-          >
-            {rank.label}
-          </span>
-        </div>
-      )}
-
       {/* ---- Hero CTA: Shield-shaped NEW GAME button ---- */}
-      <div class="relative z-10 mt-8 flex flex-col items-center">
+      <div class={`relative z-10 ${compact ? 'mt-2' : 'mt-4'} flex flex-col items-center`}>
         <button
           type="button"
-          class="shield-btn font-heading font-bold text-lg md:text-xl tracking-widest flex flex-col items-center justify-center"
+          class={`shield-btn font-heading font-bold tracking-widest flex flex-col items-center justify-center ${compact ? 'text-sm' : 'text-base md:text-xl'}`}
           style={{
-            width: '180px',
-            height: '200px',
-            paddingTop: '20px',
+            width: compact ? '110px' : '140px',
+            height: compact ? '120px' : '156px',
+            paddingTop: compact ? '12px' : '16px',
           }}
           onClick={() => {
             menuState.value = 'newGame';
           }}
         >
           <span class="shield-btn-inner" />
-          <span style={{ fontSize: '28px', lineHeight: '1', marginBottom: '8px' }}>&#x2694;</span>
+          <span style={{ fontSize: compact ? '18px' : '22px', lineHeight: '1', marginBottom: compact ? '4px' : '6px' }}>&#x2694;</span>
           <span>NEW</span>
           <span>GAME</span>
         </button>
@@ -230,16 +216,16 @@ export function MainMenu() {
 
       {/* ---- Primary action wooden sign buttons ---- */}
       <div
-        class="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 relative z-10 items-center justify-center w-full px-4"
+        class={`flex flex-row gap-2 ${compact ? 'mt-2' : 'mt-4'} relative z-10 items-center justify-center w-full px-4`}
         style={{ maxWidth: '500px' }}
       >
         <button
           type="button"
-          class="wood-sign-btn font-heading font-bold text-sm md:text-base tracking-wider"
+          class={`wood-sign-btn font-heading font-bold tracking-wider ${compact ? 'text-xs' : 'text-sm md:text-base'}`}
           style={{
-            minWidth: '180px',
-            minHeight: '52px',
-            padding: '12px 28px',
+            minWidth: compact ? '130px' : '180px',
+            minHeight: compact ? '40px' : '52px',
+            padding: compact ? '8px 20px' : '12px 28px',
             color: 'var(--pw-text-primary)',
           }}
           onClick={() => {
@@ -251,12 +237,12 @@ export function MainMenu() {
 
         <button
           type="button"
-          class="wood-sign-btn font-heading font-bold text-sm md:text-base tracking-wider"
+          class={`wood-sign-btn font-heading font-bold tracking-wider ${compact ? 'text-xs' : 'text-sm md:text-base'}`}
           disabled={!hasSaveGame.value}
           style={{
-            minWidth: '180px',
-            minHeight: '52px',
-            padding: '12px 28px',
+            minWidth: compact ? '130px' : '180px',
+            minHeight: compact ? '40px' : '52px',
+            padding: compact ? '8px 20px' : '12px 28px',
             color: hasSaveGame.value ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
           }}
           onClick={() => {
@@ -272,13 +258,13 @@ export function MainMenu() {
 
       {/* ---- Secondary actions: stone tablets in a curved row ---- */}
       <div
-        class="flex flex-wrap justify-center gap-3 mt-6 relative z-10 w-full px-4"
-        style={{ maxWidth: '520px' }}
+        class={`flex flex-wrap justify-center gap-2 ${compact ? 'mt-2' : 'mt-4'} relative z-10 w-full px-4`}
+        style={{ maxWidth: '560px' }}
       >
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
+          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
           onClick={() => {
             leaderboardOpen.value = true;
           }}
@@ -289,7 +275,7 @@ export function MainMenu() {
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
+          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
           onClick={() => {
             achievementsOpen.value = true;
           }}
@@ -300,7 +286,7 @@ export function MainMenu() {
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
+          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
           onClick={() => {
             unlocksOpen.value = true;
           }}
@@ -311,7 +297,7 @@ export function MainMenu() {
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
-          style={{ minWidth: '110px', minHeight: '44px', padding: '8px 14px' }}
+          style={{ minWidth: compact ? '80px' : '110px', minHeight: compact ? '34px' : '44px', padding: compact ? '5px 10px' : '8px 14px' }}
           onClick={() => {
             cosmeticsOpen.value = true;
           }}
@@ -321,108 +307,50 @@ export function MainMenu() {
       </div>
 
       {/* ---- Settings (small, below secondary) ---- */}
-      <div class="relative z-10 mt-4">
+      <div class={`relative z-10 ${compact ? 'mt-1' : 'mt-3'}`}>
         <button
           type="button"
           class="stone-tablet-btn font-heading font-bold text-xs tracking-wider"
           style={{
-            minHeight: '40px',
-            padding: '8px 20px',
+            minHeight: compact ? '30px' : '40px',
+            padding: compact ? '5px 14px' : '8px 20px',
             color: 'var(--pw-text-muted)',
             borderColor: 'rgba(42, 80, 96, 0.5)',
-          }}
-          onClick={() => {
-            leaderboardOpen.value = true;
-          }}
-        >
-          LEADERBOARD
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
-          }}
-          onClick={() => {
-            achievementsOpen.value = true;
-          }}
-        >
-          ACHIEVEMENTS
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
-          }}
-          onClick={() => {
-            unlocksOpen.value = true;
-          }}
-        >
-          UNLOCKS
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
-          }}
-          onClick={() => {
-            cosmeticsOpen.value = true;
-          }}
-        >
-          COSMETICS
-        </button>
-
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider"
-          style={{
-            minWidth: '220px',
-            minHeight: '60px',
-            padding: '14px 32px',
-            color: 'var(--pw-text-secondary)',
           }}
           onClick={() => {
             settingsOpen.value = true;
           }}
         >
-          SETTINGS
+          &#x2699; SETTINGS
         </button>
       </div>
 
-      {/* ---- Controls hint ---- */}
-      <p
-        class="font-game text-xs mt-6 text-center px-4 hidden md:block relative z-10"
-        style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
-      >
-        Right-click to command &bull; WASD to scroll &bull; Ctrl+# to set groups
-      </p>
-      <p
-        class="font-game text-xs mt-6 text-center px-4 md:hidden relative z-10"
-        style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
-      >
-        Long-press to command &bull; Two-finger pan &bull; Pinch to zoom
-      </p>
+      {/* ---- Controls hint (hidden on compact) ---- */}
+      {!compact && (
+        <>
+          <p
+            class="font-game text-[10px] mt-3 text-center px-4 hidden md:block relative z-10"
+            style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
+          >
+            Right-click to command &bull; WASD to scroll &bull; Ctrl+# to set groups
+          </p>
+          <p
+            class="font-game text-[10px] mt-3 text-center px-4 md:hidden relative z-10"
+            style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
+          >
+            Long-press to command &bull; Two-finger pan &bull; Pinch to zoom
+          </p>
+        </>
+      )}
 
-      {/* ---- Version on driftwood ---- */}
-      <div class="driftwood relative z-10 mt-4 mb-6 px-6 py-1">
-        <span class="font-game text-[10px]" style={{ color: 'rgba(160, 140, 110, 0.7)' }}>
-          v1.0 &middot; Defend the Pond
-        </span>
-      </div>
+      {/* ---- Version on driftwood (hidden on compact) ---- */}
+      {!compact && (
+        <div class="driftwood relative z-10 mt-2 mb-4 px-6 py-1">
+          <span class="font-game text-[10px]" style={{ color: 'rgba(160, 140, 110, 0.7)' }}>
+            v1.0 &middot; Defend the Pond
+          </span>
+        </div>
+      )}
     </div>
   );
 }

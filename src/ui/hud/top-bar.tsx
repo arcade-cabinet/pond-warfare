@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { isMobile, isTablet } from '@/platform';
 import {
   clams,
   colorBlindMode,
@@ -38,11 +39,13 @@ export interface TopBarProps {
   onLoadClick?: () => void;
   onSettingsClick?: () => void;
   onKeyboardRefClick?: () => void;
+  onPanelToggle?: () => void;
 }
 
 export function TopBar(props: TopBarProps) {
   const clamsRate = rateClams.value;
   const twigsRate = rateTwigs.value;
+  const compact = isMobile.value || isTablet.value;
 
   // Resource flash: track previous values and set flash class on significant change
   const prevClams = useRef(clams.value);
@@ -77,11 +80,10 @@ export function TopBar(props: TopBarProps) {
 
   return (
     <div
-      class="absolute top-0 left-0 w-full wood-panel border-0 border-b-2 md:border-b-3 flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm"
+      class={`absolute top-0 left-0 w-full wood-panel border-0 border-b-2 md:border-b-3 flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm ${compact ? 'h-10' : 'h-10 md:h-12'}`}
       style={{
         borderBottomColor: 'var(--pw-border)',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-        minHeight: 'calc(2.75rem + env(safe-area-inset-top, 0px))',
       }}
     >
       {/* Resources */}
@@ -230,10 +232,11 @@ export function TopBar(props: TopBarProps) {
           {gameTimeDisplay}
         </div>
         <div class="flex items-center gap-1">
+          {/* Primary controls: always visible */}
           <button
             type="button"
             id="pause-btn"
-            class={`hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center`}
+            class="hud-btn text-[10px] md:text-xs px-2 py-0.5 min-w-[36px] min-h-[36px] md:min-w-[32px] md:min-h-0 rounded font-bold flex items-center justify-center"
             style={{
               background: paused.value
                 ? 'linear-gradient(180deg, var(--pw-twig), #8a4820)'
@@ -249,7 +252,7 @@ export function TopBar(props: TopBarProps) {
           <button
             type="button"
             id="speed-btn"
-            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center font-numbers"
+            class="hud-btn text-[10px] md:text-xs px-2 py-0.5 min-w-[36px] min-h-[36px] md:min-w-[32px] md:min-h-0 rounded font-bold flex items-center justify-center font-numbers"
             style={{ color: 'var(--pw-accent)' }}
             title="Game Speed (F)"
             onClick={props.onSpeedClick}
@@ -259,72 +262,89 @@ export function TopBar(props: TopBarProps) {
           <button
             type="button"
             id="mute-btn"
-            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded flex items-center justify-center"
+            class="hud-btn text-[10px] md:text-xs px-2 py-0.5 min-w-[36px] min-h-[36px] md:min-w-[32px] md:min-h-0 rounded flex items-center justify-center"
             title="Toggle Sound (M)"
             onClick={props.onMuteClick}
           >
             {muteLabel}
           </button>
+
+          {/* Hamburger: open command panel */}
           <button
             type="button"
-            id="cb-btn"
-            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center"
-            style={{
-              background: colorBlindMode.value
-                ? 'linear-gradient(180deg, var(--pw-twig), #8a4820)'
-                : undefined,
-              borderColor: colorBlindMode.value ? 'var(--pw-otter)' : undefined,
-              color: colorBlindMode.value ? 'var(--pw-otter-light)' : 'var(--pw-text-muted)',
-            }}
-            title="Color Blind Mode"
-            onClick={props.onColorBlindToggle}
+            class="hud-btn text-sm px-2 py-0.5 min-w-[36px] min-h-[36px] md:min-w-[32px] md:min-h-0 rounded font-bold flex items-center justify-center"
+            style={{ color: 'var(--pw-accent)' }}
+            title="Command Panel"
+            onClick={props.onPanelToggle}
           >
-            CB
+            {'\u2630'}
           </button>
-          <button
-            type="button"
-            id="save-btn"
-            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center"
-            style={{ color: 'var(--pw-success)' }}
-            title="Save Game"
-            onClick={props.onSaveClick}
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            id="load-btn"
-            class={`hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center ${
-              hasSave ? '' : 'opacity-35 cursor-not-allowed'
-            }`}
-            style={{
-              color: hasSave ? 'var(--pw-warning)' : 'var(--pw-text-muted)',
-            }}
-            title="Load Game"
-            disabled={!hasSave}
-            onClick={props.onLoadClick}
-          >
-            Load
-          </button>
-          <button
-            type="button"
-            id="settings-btn"
-            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded flex items-center justify-center"
-            title="Settings"
-            onClick={props.onSettingsClick}
-          >
-            {'\u2699'}
-          </button>
-          <button
-            type="button"
-            id="keyboard-ref-btn"
-            class="hud-btn text-[10px] md:text-xs px-2 py-1 min-w-[44px] min-h-[44px] md:min-h-0 md:py-0.5 rounded font-bold flex items-center justify-center"
-            style={{ color: 'var(--pw-text-muted)' }}
-            title="Keyboard Shortcuts"
-            onClick={props.onKeyboardRefClick}
-          >
-            ?
-          </button>
+
+          {/* Secondary controls: only visible on desktop (compact uses the slide-out panel) */}
+          {!compact && (
+            <>
+              <button
+                type="button"
+                id="cb-btn"
+                class="hud-btn text-[10px] md:text-xs px-2 py-0.5 rounded font-bold flex items-center justify-center"
+                style={{
+                  background: colorBlindMode.value
+                    ? 'linear-gradient(180deg, var(--pw-twig), #8a4820)'
+                    : undefined,
+                  borderColor: colorBlindMode.value ? 'var(--pw-otter)' : undefined,
+                  color: colorBlindMode.value ? 'var(--pw-otter-light)' : 'var(--pw-text-muted)',
+                }}
+                title="Color Blind Mode"
+                onClick={props.onColorBlindToggle}
+              >
+                CB
+              </button>
+              <button
+                type="button"
+                id="save-btn"
+                class="hud-btn text-[10px] md:text-xs px-2 py-0.5 rounded font-bold flex items-center justify-center"
+                style={{ color: 'var(--pw-success)' }}
+                title="Save Game"
+                onClick={props.onSaveClick}
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                id="load-btn"
+                class={`hud-btn text-[10px] md:text-xs px-2 py-0.5 rounded font-bold flex items-center justify-center ${
+                  hasSave ? '' : 'opacity-35 cursor-not-allowed'
+                }`}
+                style={{
+                  color: hasSave ? 'var(--pw-warning)' : 'var(--pw-text-muted)',
+                }}
+                title="Load Game"
+                disabled={!hasSave}
+                onClick={props.onLoadClick}
+              >
+                Load
+              </button>
+              <button
+                type="button"
+                id="settings-btn"
+                class="hud-btn text-[10px] md:text-xs px-2 py-0.5 rounded flex items-center justify-center"
+                title="Settings"
+                onClick={props.onSettingsClick}
+              >
+                {'\u2699'}
+              </button>
+              <button
+                type="button"
+                id="keyboard-ref-btn"
+                class="hud-btn text-[10px] md:text-xs px-2 py-0.5 rounded font-bold flex items-center justify-center"
+                style={{ color: 'var(--pw-text-muted)' }}
+                title="Keyboard Shortcuts"
+                onClick={props.onKeyboardRefClick}
+              >
+                ?
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

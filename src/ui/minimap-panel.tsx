@@ -8,6 +8,7 @@
 
 import type { Ref } from 'preact';
 import { MINIMAP_SIZE } from '@/constants';
+import { isMobile } from '@/platform';
 import { baseUnderAttack, mapScenario } from '@/ui/store';
 
 export interface MinimapPanelProps {
@@ -18,10 +19,11 @@ export interface MinimapPanelProps {
 export function MinimapPanel({ canvasRef, camRef }: MinimapPanelProps) {
   const scenario = mapScenario.value;
   const label = scenario ? scenario.charAt(0).toUpperCase() + scenario.slice(1) : '';
+  const mobile = isMobile.value;
 
   return (
     <div
-      class="w-1/3 md:w-full flex-shrink-0 p-1 md:p-2 flex flex-col justify-center items-center border-r-2 md:border-r-0 md:border-b-2 md:max-h-[190px]"
+      class={`${mobile ? 'w-1/4' : 'w-1/3'} md:w-full flex-shrink-0 p-1 md:p-2 flex flex-col justify-center items-center border-r-2 md:border-r-0 md:border-b-2 md:max-h-[190px]`}
       style={{ background: 'var(--pw-bg-deep)', borderColor: 'var(--pw-border)' }}
     >
       <div

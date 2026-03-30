@@ -50,6 +50,7 @@ export interface HUDProps {
   onLoadClick?: () => void;
   onSettingsClick?: () => void;
   onKeyboardRefClick?: () => void;
+  onPanelToggle?: () => void;
 }
 
 export function HUD(props: HUDProps) {
@@ -64,6 +65,7 @@ export function HUD(props: HUDProps) {
         onLoadClick={props.onLoadClick}
         onSettingsClick={props.onSettingsClick}
         onKeyboardRefClick={props.onKeyboardRefClick}
+        onPanelToggle={props.onPanelToggle}
       />
       <ProductionQueue />
       <Overlays />

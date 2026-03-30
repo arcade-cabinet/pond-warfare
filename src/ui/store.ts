@@ -241,6 +241,9 @@ export const cosmeticsOpen = signal(false);
 
 // ---- Keyboard reference overlay ----
 export const keyboardRefOpen = signal(false);
+
+// ---- Mobile slide-out panel ----
+export const mobilePanelOpen = signal(false);
 export const masterVolume = signal(80);
 export const musicVolume = signal(50);
 export const sfxVolume = signal(80);
