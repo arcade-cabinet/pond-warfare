@@ -85,8 +85,12 @@ export class YukaManager {
 
     const vehicle = new Vehicle();
     vehicle.position.set(x, 0, y); // Yuka uses 3D; we map 2D x,y to x,z
-    vehicle.maxSpeed = speed;
-    vehicle.maxForce = speed * 2;
+    // Entity speed is in pixels/frame (matching the original POC).
+    // Yuka operates in units/second with 1/60s timestep, so multiply by 60
+    // to convert pixels/frame → pixels/second.
+    const pixelsPerSec = speed * 60;
+    vehicle.maxSpeed = pixelsPerSec;
+    vehicle.maxForce = pixelsPerSec * 2;
 
     // Enable neighborhood tracking for SeparationBehavior
     vehicle.updateNeighborhood = true;
