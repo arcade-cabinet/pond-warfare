@@ -11,7 +11,10 @@ type VoiceStep = {
   delay?: number;
 };
 
-type VoicePalette = Record<'worker' | 'skirmisher' | 'heavy' | 'support' | 'leader', readonly VoiceStep[]>;
+type VoicePalette = Record<
+  'worker' | 'skirmisher' | 'heavy' | 'support' | 'leader',
+  readonly VoiceStep[]
+>;
 
 const OTTER_PALETTE: VoicePalette = {
   worker: [
@@ -73,7 +76,11 @@ export class VoiceManager {
     ) {
       return 'support';
     }
-    if (kind === EntityKind.Commander || kind === EntityKind.BossCroc || kind === EntityKind.AlphaPredator) {
+    if (
+      kind === EntityKind.Commander ||
+      kind === EntityKind.BossCroc ||
+      kind === EntityKind.AlphaPredator
+    ) {
       return 'leader';
     }
     if (

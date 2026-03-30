@@ -1,7 +1,7 @@
 /** Synthesized audio system using Tone.js. All sounds are procedurally generated. */
 import * as Tone from 'tone';
 import type { PlayableFaction } from '@/config/factions';
-import { EntityKind } from '@/types';
+import type { EntityKind } from '@/types';
 import { AmbientManager } from './ambient';
 import { CueManager } from './cues';
 import { MusicManager } from './music';
