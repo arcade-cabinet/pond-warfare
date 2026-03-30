@@ -26,7 +26,9 @@ export class AmbientManager {
     if (this.ambientNoise || !this._getStarted()) return;
     try {
       this.ambientFilter = new Tone.Filter({ frequency: 400, type: 'bandpass' }).toDestination();
-      this.ambientNoise = new Tone.Noise({ type: 'brown', volume: -30 }).connect(this.ambientFilter);
+      this.ambientNoise = new Tone.Noise({ type: 'brown', volume: -30 }).connect(
+        this.ambientFilter,
+      );
 
       this.shimmerGain = new Tone.Gain(0.01).toDestination();
       this.shimmerFilter = new Tone.Filter({ frequency: 1200, type: 'highpass' }).connect(

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Tone from 'tone';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AudioSystem } from '@/audio/audio-system';
 
 describe('AudioSystem – richer music layers', () => {
