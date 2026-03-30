@@ -17,6 +17,7 @@ import {
 import { game } from '@/game';
 import { App } from '@/ui/app';
 import '@/styles/main.css';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -48,7 +49,6 @@ function spawnTestUnit(kind: EntityKind, faction: Faction, x: number, y: number,
   addComponent(w.ecs, eid, Carrying);
   addComponent(w.ecs, eid, Selectable);
 
-  const { ENTITY_DEFS } = require('@/config/entity-defs');
   const def = ENTITY_DEFS[kind];
 
   Position.x[eid] = x;
