@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcade-cabinet/pond-warfare/compare/v1.1.0...v1.2.0) (2026-03-30)
+
+
+### Features
+
+* code quality enforcement + movement integration tests ([#16](https://github.com/arcade-cabinet/pond-warfare/issues/16)) ([64498e3](https://github.com/arcade-cabinet/pond-warfare/commit/64498e3c548c1b12645270125ed6469c82375d32))
+* comprehensive browser tests, Yuka speed fix, code quality enforcement ([#17](https://github.com/arcade-cabinet/pond-warfare/issues/17)) ([9c59fcc](https://github.com/arcade-cabinet/pond-warfare/commit/9c59fcc3fa8ccb601716f6a0a892fd19a7d9db6b))
+
+
+### Bug Fixes
+
+* add UI art assets for pond landing page ([#13](https://github.com/arcade-cabinet/pond-warfare/issues/13)) ([e97289b](https://github.com/arcade-cabinet/pond-warfare/commit/e97289b3ccfe4fc93abb1e0425f11875c462de95))
+
 ## [1.1.0](https://github.com/arcade-cabinet/pond-warfare/compare/v1.0.0...v1.1.0) (2026-03-30)
 
 
