@@ -27,6 +27,7 @@ jobs:
         with:
           release-type: node
 
+
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
