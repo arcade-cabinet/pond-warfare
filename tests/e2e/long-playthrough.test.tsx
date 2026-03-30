@@ -32,7 +32,7 @@ async function mountGame(): Promise<void> {
   document.body.style.padding = '0';
   document.body.style.overflow = 'hidden';
 
-  await new Promise<void>((resolve) => {
+  const gameReady = new Promise<void>((resolve) => {
     render(
       <App
         onMount={async (refs) => {
@@ -50,6 +50,21 @@ async function mountGame(): Promise<void> {
       root!,
     );
   });
+
+  // Click through menu: New Game → Start Game
+  await new Promise((r) => setTimeout(r, 500));
+  const newGameBtn = Array.from(document.querySelectorAll('button')).find(
+    (b) => b.textContent?.includes('New Game'),
+  );
+  if (newGameBtn) newGameBtn.click();
+
+  await new Promise((r) => setTimeout(r, 500));
+  const startBtn = Array.from(document.querySelectorAll('button')).find(
+    (b) => b.textContent?.includes('START'),
+  );
+  if (startBtn) startBtn.click();
+
+  await gameReady;
 }
 
 async function waitForIntro(): Promise<void> {
