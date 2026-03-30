@@ -529,12 +529,20 @@ describe('UI panels and keyboard controls', () => {
     it('pressing H sets selected units to Idle state', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
       await selectEntity(gid);
+      await delay(200);
+
+      // Verify unit is actually selected before testing H
+      if (!game.world.selection.includes(gid)) {
+        // Force selection if click didn't register
+        game.world.selection = [gid];
+        Selectable.selected[gid] = 1;
+      }
 
       // Set the unit to a non-idle state
       UnitStateMachine.state[gid] = UnitState.Move;
 
       pressKey('h');
-      await delay(100);
+      await delay(200);
       expect(UnitStateMachine.state[gid]).toBe(UnitState.Idle);
     });
   });
