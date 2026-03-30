@@ -12,6 +12,7 @@ import { isMobile, isTablet } from '@/platform';
 import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
 import { MenuOtter } from './menu-otter';
+import { MenuPads } from './menu-pads';
 import {
   achievementsOpen,
   campaignOpen,
@@ -67,49 +68,15 @@ function MenuButton({
   );
 }
 
-/** Decorative floating lily pad (not interactive). */
-function FloatingPad({
-  variant,
-  style,
-  flower,
-}: {
-  variant: 1 | 2 | 3 | 'tiny';
-  style: Record<string, string | number>;
-  flower?: boolean;
-}) {
-  const src = variant === 'tiny' ? `${UI}/Lillypad-tiny.png` : `${UI}/Lillypad-${variant}.png`;
-  const size = variant === 'tiny' ? '45px' : '80px';
-
-  return (
-    <div
-      class="absolute pointer-events-none lily-pad"
-      style={{ width: size, height: size, ...style }}
-    >
-      <img
-        src={src}
-        alt=""
-        class="w-full h-full object-contain"
-        draggable={false}
-        style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.3))' }}
-      />
-      {flower && (
-        <img
-          src={`${UI}/Flower.png`}
-          alt=""
-          class="absolute"
-          style={{ top: '-4px', right: '6px', width: '18px', height: '18px' }}
-          draggable={false}
-        />
-      )}
-    </div>
-  );
-}
+/* FloatingPad removed — lily pads are now dynamically positioned by MenuPads */
 
 export function MainMenu() {
   const [rank, setRank] = useState<RankInfo | null>(null);
   const compact = isMobile.value || isTablet.value;
   const otterRef = useRef<HTMLImageElement>(null);
   const otterAI = useRef<MenuOtter | null>(null);
+  const padsSystem = useRef<MenuPads | null>(null);
+  const padRefs = useRef<(HTMLDivElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -132,33 +99,53 @@ export function MainMenu() {
     );
     otterAI.current = otter;
 
-    // Sync otter position to DOM element each frame
+    // Create lily pad system
+    const pads = new MenuPads({ width: w, height: h }, 10);
+    padsSystem.current = pads;
+
+    // Sync otter + pads position to DOM each frame
     let rafId = 0;
     const syncDOM = () => {
+      // Otter
       const img = otterRef.current;
       if (img && otter) {
         img.style.left = `${otter.x - 50}px`;
         img.style.top = `${otter.y - 25}px`;
-        // Rotate to face heading — offset by -90deg since sprite faces up
         const deg = (otter.rotation * 180) / Math.PI - 90;
         img.style.transform = `rotate(${deg}deg)`;
+      }
+      // Pads
+      for (let i = 0; i < pads.pads.length; i++) {
+        const padEl = padRefs.current[i];
+        const p = pads.pads[i];
+        if (padEl && p) {
+          padEl.style.left = `${p.x - p.size}px`;
+          padEl.style.top = `${p.y - p.size}px`;
+          padEl.style.transform = `rotate(${p.rotation}deg)`;
+        }
       }
       rafId = requestAnimationFrame(syncDOM);
     };
 
     otter.start();
+    pads.start();
     rafId = requestAnimationFrame(syncDOM);
 
     const onResize = () => {
-      if (el) otter.resize(el.clientWidth, el.clientHeight);
+      if (el) {
+        otter.resize(el.clientWidth, el.clientHeight);
+        pads.resize(el.clientWidth, el.clientHeight);
+      }
     };
     window.addEventListener('resize', onResize);
 
     return () => {
       otter.destroy();
+      pads.destroy();
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', onResize);
       otterAI.current = null;
+      padsSystem.current = null;
     };
   }, []);
 
@@ -229,16 +216,39 @@ export function MainMenu() {
         }}
       />
 
-      {/* ---- Decorative floating lily pads (all 3 varieties + tiny) ---- */}
-      <FloatingPad variant={1} flower style={{ top: '10%', left: '6%', opacity: 0.7 }} />
-      <FloatingPad variant={2} style={{ bottom: '15%', left: '12%', opacity: 0.6 }} />
-      <FloatingPad variant={3} flower style={{ top: '20%', right: '8%', opacity: 0.65 }} />
-      <FloatingPad variant={1} style={{ bottom: '10%', right: '10%', opacity: 0.55 }} />
-      <FloatingPad variant={2} style={{ top: '50%', left: '3%', opacity: 0.4 }} />
-      <FloatingPad variant={3} style={{ top: '8%', right: '25%', opacity: 0.5 }} />
-      <FloatingPad variant="tiny" style={{ bottom: '30%', right: '4%', opacity: 0.45 }} />
-      <FloatingPad variant="tiny" style={{ top: '40%', left: '18%', opacity: 0.35 }} />
-      <FloatingPad variant="tiny" style={{ bottom: '8%', left: '30%', opacity: 0.4 }} />
+      {/* ---- Dynamic floating lily pads (JS-driven positions + mutual repulsion) ---- */}
+      {padsSystem.current?.pads.map((p, i) => {
+        const src =
+          p.variant === 'tiny' ? `${UI}/Lillypad-tiny.png` : `${UI}/Lillypad-${p.variant}.png`;
+        const size = p.variant === 'tiny' ? '45px' : '80px';
+        return (
+          <div
+            key={`pad-${i}`}
+            ref={(el) => {
+              padRefs.current[i] = el;
+            }}
+            class="absolute pointer-events-none z-[1]"
+            style={{ width: size, height: size, opacity: p.variant === 'tiny' ? 0.5 : 0.7 }}
+          >
+            <img
+              src={src}
+              alt=""
+              class="w-full h-full object-contain"
+              draggable={false}
+              style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.3))' }}
+            />
+            {p.flower && (
+              <img
+                src={`${UI}/Flower.png`}
+                alt=""
+                class="absolute"
+                style={{ top: '-4px', right: '6px', width: '18px', height: '18px' }}
+                draggable={false}
+              />
+            )}
+          </div>
+        );
+      })}
 
       {/* ---- Swimming otter (Yuka-steered, clickable) ---- */}
       {/* Shadow layer — stays flat beneath the otter */}
