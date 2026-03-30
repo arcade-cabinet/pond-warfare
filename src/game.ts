@@ -6,7 +6,7 @@
  */
 
 import { animate } from 'animejs';
-import { query } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
 // Audio
 import { audio } from '@/audio/audio-system';
 // Campaign
@@ -280,7 +280,7 @@ export class Game {
     const { fogPattern } = buildFogTexture(this.fogCtx);
     this.fogState = {
       fogCtx: this.fogCtx,
-      fogPattern: fogPattern!,
+      fogPattern,
     };
 
     // Explored fog canvas
@@ -333,10 +333,16 @@ export class Game {
             FactionTag.faction[eid] === Faction.Player &&
             !ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding
           ) {
-            // Set to idle
+            // Set to idle and stop Yuka steering so the unit actually halts
             UnitStateMachine.state[eid] = UnitState.Idle;
             UnitStateMachine.targetEntity[eid] = -1;
+            UnitStateMachine.returnEntity[eid] = -1;
+            UnitStateMachine.gatherTimer[eid] = 0;
+            UnitStateMachine.attackMoveTargetX[eid] = 0;
+            UnitStateMachine.attackMoveTargetY[eid] = 0;
             UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+            this.world.yukaManager.clearFormationBehaviors(eid);
+            this.world.yukaManager.removeUnit(eid);
           }
         }
         this.recorder.record(this.world.frameCount, 'stop', {
@@ -362,7 +368,22 @@ export class Game {
         }
         const wx = this.pointer.mouse.worldX;
         const wy = this.pointer.mouse.worldY;
-        issueContextCommand(this.world, target, wx, wy);
+        // Capture snapshot before any potential auto-deselect so replay records
+        // which units received the command.
+        const selectionSnapshot = [...this.world.selection];
+        const dispatched = issueContextCommand(this.world, target, wx, wy);
+
+        // Auto-deselect after any move/attack/gather/build dispatch so the
+        // player doesn't need to manually click "Deselect" after issuing orders.
+        if (dispatched) {
+          for (const eid of this.world.selection) {
+            if (hasComponent(this.world.ecs, eid, Selectable)) {
+              Selectable.selected[eid] = 0;
+            }
+          }
+          this.world.selection = [];
+          this.world.isTracking = false;
+        }
 
         // Record for replay: determine command type from target
         const cmdType =
@@ -373,7 +394,7 @@ export class Game {
           target,
           worldX: wx,
           worldY: wy,
-          selection: [...this.world.selection],
+          selection: selectionSnapshot,
         });
       },
       onUpdateUI: () => this.syncUIStore(),
@@ -523,13 +544,11 @@ export class Game {
       this.webglContextLost = true;
       this.world.paused = true;
       store.paused.value = true;
-      console.warn('[PondWarfare] WebGL context lost — pausing game');
     };
     this.boundContextRestored = () => {
       this.webglContextLost = false;
       this.world.paused = false;
       store.paused.value = false;
-      console.info('[PondWarfare] WebGL context restored — resuming');
     };
     gameCanvas.addEventListener('webglcontextlost', this.boundContextLost);
     gameCanvas.addEventListener('webglcontextrestored', this.boundContextRestored);

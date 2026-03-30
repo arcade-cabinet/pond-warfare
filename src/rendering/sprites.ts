@@ -9,6 +9,14 @@ import { PALETTE } from '@/constants';
 import { SpriteId } from '@/types';
 import { registerSpriteTexture } from './pixi-app';
 
+function require2DContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('2D canvas context is unavailable');
+  }
+  return ctx;
+}
+
 /** Names used internally to map to SpriteId enum values. */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'gatherer', id: SpriteId.Gatherer },
@@ -76,7 +84,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = size;
   c.height = size;
-  const ctx = c.getContext('2d')!;
+  const ctx = require2DContext(c);
 
   const p = (x: number, y: number, color: string): void => {
     ctx.fillStyle = color;
@@ -764,7 +772,7 @@ function generateSpriteCanvas(type: string): HTMLCanvasElement {
   const sCanvas = document.createElement('canvas');
   sCanvas.width = size * scale;
   sCanvas.height = size * scale;
-  const sCtx = sCanvas.getContext('2d')!;
+  const sCtx = require2DContext(sCanvas);
   sCtx.imageSmoothingEnabled = false;
   sCtx.drawImage(c, 0, 0, size * scale, size * scale);
 

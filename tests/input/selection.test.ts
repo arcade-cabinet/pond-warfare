@@ -496,6 +496,16 @@ describe('selectArmy()', () => {
 
     expect(Selectable.selected[prevSelected]).toBe(0);
   });
+
+  it('excludes Commander from army selection', () => {
+    const commander = createPlayerUnit(world, 100, 100, EntityKind.Commander);
+    const brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+
+    selectArmy(world);
+
+    expect(world.selection).not.toContain(commander);
+    expect(world.selection).toContain(brawler);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -856,5 +866,46 @@ describe('issueContextCommand()', () => {
 
     issueContextCommand(world, null, 500, 500);
     expect(UnitStateMachine.hasAttackMoveTarget[unit]).toBe(0);
+  });
+
+  it('returns true when movable player units are dispatched on ground move', () => {
+    const unit = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    world.selection = [unit];
+
+    const result = issueContextCommand(world, null, 500, 500);
+    expect(result).toBe(true);
+  });
+
+  it('returns true when movable player units are dispatched on attack command', () => {
+    const unit = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    const enemy = createEnemyUnit(world, 300, 300);
+    world.selection = [unit];
+
+    const result = issueContextCommand(world, enemy, 300, 300);
+    expect(result).toBe(true);
+  });
+
+  it('returns false for building rally-point (no units dispatched)', () => {
+    const lodge = spawnEntity(world, EntityKind.Lodge, 1280, 1280, Faction.Player);
+    world.selection = [lodge];
+
+    const result = issueContextCommand(world, null, 400, 400);
+    expect(result).toBe(false);
+  });
+
+  it('returns false when selection is empty', () => {
+    world.selection = [];
+
+    const result = issueContextCommand(world, null, 500, 500);
+    expect(result).toBe(false);
+  });
+
+  it('returns false when cancelling building placement', () => {
+    world.placingBuilding = 'burrow';
+    const unit = createPlayerUnit(world, 100, 100);
+    world.selection = [unit];
+
+    const result = issueContextCommand(world, null, 500, 500);
+    expect(result).toBe(false);
   });
 });

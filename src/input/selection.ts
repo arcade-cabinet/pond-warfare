@@ -86,16 +86,21 @@ export function hasPlayerUnitsSelected(world: GameWorld): boolean {
  * Issue a context command (right-click or ground click) to selected units.
  * Handles: attack enemy, gather resource, build/repair building, rally point,
  * move with diamond formation pattern.
+ *
+ * Returns `true` when at least one movable unit was dispatched (units are now
+ * moving to a new target), so the caller can auto-deselect the selection after
+ * the command is confirmed.  Returns `false` for building rally-point sets,
+ * cancelled placements, and empty selections.
  */
 export function issueContextCommand(
   world: GameWorld,
   target: number | null,
   worldX: number,
   worldY: number,
-): void {
+): boolean {
   if (world.placingBuilding) {
     world.placingBuilding = null;
-    return;
+    return false;
   }
 
   // Rally point for single selected building
@@ -108,10 +113,10 @@ export function issueContextCommand(
     Building.rallyX[world.selection[0]] = worldX;
     Building.rallyY[world.selection[0]] = worldY;
     Building.hasRally[world.selection[0]] = 1;
-    return;
+    return false;
   }
 
-  if (world.selection.length === 0) return;
+  if (world.selection.length === 0) return false;
 
   audio.click();
 
@@ -272,12 +277,17 @@ export function issueContextCommand(
       world.yukaManager.setFormation(movableUnits, worldX, worldY);
     }
   }
+
+  // Units were dispatched to a new task
+  return movableUnits.length > 0;
 }
 
 // ---- Formation Helpers ----
 
-/** Spacing between units in a formation row, in world pixels. */
-const FORMATION_SPACING = 40;
+/** Spacing between units in a formation row, in world pixels.
+ * 60px gives enough separation for mobile finger-tap accuracy while keeping
+ * groups tactically cohesive. */
+const FORMATION_SPACING = 60;
 
 /**
  * Calculate role-based formation positions for a group move command.
@@ -385,6 +395,7 @@ export function selectArmy(world: GameWorld): void {
       !hasComponent(world.ecs, eid, IsBuilding) &&
       !hasComponent(world.ecs, eid, IsResource) &&
       EntityTypeTag.kind[eid] !== EntityKind.Gatherer &&
+      EntityTypeTag.kind[eid] !== EntityKind.Commander &&
       Health.current[eid] > 0,
   );
 

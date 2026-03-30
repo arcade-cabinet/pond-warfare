@@ -5,10 +5,11 @@
  * and provides objective checking each frame.
  */
 
+import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { query } from 'bitecs';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { persist } from '@/storage';
+import { isDatabaseReady, persist } from '@/storage';
 import { EntityKind, Faction } from '@/types';
 import { CAMPAIGN_MISSIONS, type MissionDef, type MissionObjective } from './missions';
 
@@ -24,11 +25,8 @@ let _dbReady = false;
  */
 async function ensureCampaignTable(): Promise<void> {
   if (_dbReady) return;
-  // Dynamic import to avoid circular dependency with storage init
-  const { isDatabaseReady } = await import('@/storage');
   if (!isDatabaseReady()) return;
 
-  const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
   const sqlite = new SQLiteConnection(CapacitorSQLite);
   const db = await sqlite.retrieveConnection('pond_warfare', false);
   await db.execute(`
@@ -47,7 +45,6 @@ async function ensureCampaignTable(): Promise<void> {
 export async function saveMissionCompleted(missionId: string, frames: number): Promise<void> {
   try {
     await ensureCampaignTable();
-    const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
     const sqlite = new SQLiteConnection(CapacitorSQLite);
     const db = await sqlite.retrieveConnection('pond_warfare', false);
     // Upsert: insert or update best time
@@ -71,7 +68,6 @@ export async function loadCampaignProgress(): Promise<Set<string>> {
   const completed = new Set<string>();
   try {
     await ensureCampaignTable();
-    const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
     const sqlite = new SQLiteConnection(CapacitorSQLite);
     const db = await sqlite.retrieveConnection('pond_warfare', false);
     const result = await db.query('SELECT mission_id FROM campaign_progress WHERE completed = 1');
@@ -163,15 +159,26 @@ function getExploredPercent(world: GameWorld): number {
 }
 
 function checkObjective(world: GameWorld, campaign: CampaignState, obj: MissionObjective): boolean {
+  const objectiveKind = obj.entityKind;
+
   switch (obj.type) {
     case 'build':
-      return countPlayerBuildings(world, obj.entityKind!) >= (obj.count ?? 1);
+      return (
+        objectiveKind !== undefined &&
+        countPlayerBuildings(world, objectiveKind) >= (obj.count ?? 1)
+      );
 
     case 'buildCount':
-      return countPlayerBuildings(world, obj.entityKind!) >= (obj.count ?? 1);
+      return (
+        objectiveKind !== undefined &&
+        countPlayerBuildings(world, objectiveKind) >= (obj.count ?? 1)
+      );
 
     case 'train':
-      return (campaign.trainedCounts.get(obj.entityKind!) ?? 0) >= (obj.count ?? 1);
+      return (
+        objectiveKind !== undefined &&
+        (campaign.trainedCounts.get(objectiveKind) ?? 0) >= (obj.count ?? 1)
+      );
 
     case 'explore':
       return getExploredPercent(world) >= (obj.percent ?? 50);
@@ -184,7 +191,10 @@ function checkObjective(world: GameWorld, campaign: CampaignState, obj: MissionO
       return world.enemyEvolution.tier >= (obj.tier ?? 3);
 
     case 'kill':
-      return (campaign.killedCounts.get(obj.entityKind!) ?? 0) >= (obj.count ?? 1);
+      return (
+        objectiveKind !== undefined &&
+        (campaign.killedCounts.get(objectiveKind) ?? 0) >= (obj.count ?? 1)
+      );
 
     default:
       return false;

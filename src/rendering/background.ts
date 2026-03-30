@@ -21,6 +21,17 @@ const BIOME_COLORS = {
 
 type RGB = { r: number; g: number; b: number };
 
+function require2DContext(
+  canvas: HTMLCanvasElement,
+  options?: CanvasRenderingContext2DSettings,
+): CanvasRenderingContext2D {
+  const ctx = canvas.getContext('2d', options);
+  if (!ctx) {
+    throw new Error('2D canvas context is unavailable');
+  }
+  return ctx;
+}
+
 /** Simple hash-based value noise. */
 function valueNoise(x: number, y: number, seed: number): number {
   const n = Math.sin(x * 127.1 + y * 311.7 + seed * 113.5) * 43758.5453;
@@ -116,7 +127,7 @@ export function buildBackground(): HTMLCanvasElement {
   const bgCanvas = document.createElement('canvas');
   bgCanvas.width = WORLD_WIDTH;
   bgCanvas.height = WORLD_HEIGHT;
-  const ctx = bgCanvas.getContext('2d', { alpha: false })!;
+  const ctx = require2DContext(bgCanvas, { alpha: false });
 
   const imageData = ctx.createImageData(WORLD_WIDTH, WORLD_HEIGHT);
   const pixels = imageData.data;
@@ -230,7 +241,7 @@ export function buildFogTexture(patternCtx: CanvasRenderingContext2D): {
   const fogBgCanvas = document.createElement('canvas');
   fogBgCanvas.width = size;
   fogBgCanvas.height = size;
-  const ctx = fogBgCanvas.getContext('2d')!;
+  const ctx = require2DContext(fogBgCanvas);
 
   // Base fill
   ctx.fillStyle = '#0f172a';
@@ -266,7 +277,10 @@ export function buildFogTexture(patternCtx: CanvasRenderingContext2D): {
     }
   }
 
-  const fogPattern = patternCtx.createPattern(fogBgCanvas, 'repeat')!;
+  const fogPattern = patternCtx.createPattern(fogBgCanvas, 'repeat');
+  if (!fogPattern) {
+    throw new Error('Unable to create fog pattern');
+  }
   return { fogBgCanvas, fogPattern };
 }
 
@@ -281,7 +295,7 @@ export function buildExploredCanvas(): {
   const exploredCanvas = document.createElement('canvas');
   exploredCanvas.width = Math.ceil(WORLD_WIDTH / 16);
   exploredCanvas.height = Math.ceil(WORLD_HEIGHT / 16);
-  const exploredCtx = exploredCanvas.getContext('2d', { willReadFrequently: true })!;
+  const exploredCtx = require2DContext(exploredCanvas, { willReadFrequently: true });
   exploredCtx.fillStyle = '#000';
   exploredCtx.fillRect(0, 0, exploredCanvas.width, exploredCanvas.height);
   return { exploredCanvas, exploredCtx };

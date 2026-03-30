@@ -1,3 +1,5 @@
+import { loadPreference, savePreference } from '@/platform';
+
 export interface KeyMap {
   panUp: string[];
   panDown: string[];
@@ -154,7 +156,6 @@ function warnKeymapStorage(action: string, error: unknown): void {
 
 export async function loadKeymapFromStorage(): Promise<void> {
   try {
-    const { loadPreference } = await import('@/platform/native');
     const stored = await loadPreference(KEYMAP_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
@@ -169,7 +170,6 @@ export async function loadKeymapFromStorage(): Promise<void> {
 
 export async function saveKeymapToStorage(): Promise<void> {
   try {
-    const { savePreference } = await import('@/platform/native');
     await savePreference(KEYMAP_STORAGE_KEY, JSON.stringify(activeKeymap));
   } catch (error) {
     warnKeymapStorage('save', error);

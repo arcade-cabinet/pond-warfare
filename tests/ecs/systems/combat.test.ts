@@ -7,12 +7,14 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  Building,
   Carrying,
   Collider,
   Combat,
   EntityTypeTag,
   FactionTag,
   Health,
+  IsBuilding,
   Position,
   Sprite,
   UnitStateMachine,
@@ -64,6 +66,7 @@ describe('combatSystem', () => {
 
   beforeEach(() => {
     world = createGameWorld();
+    world.spatialHash = undefined as never;
   });
 
   it('should set attack cooldown after attacking', () => {
@@ -106,5 +109,75 @@ describe('combatSystem', () => {
 
     // Target should not have taken damage because attacker is on cooldown
     expect(Health.current[target]).toBe(startHp);
+  });
+
+  it('clears commander aura buffs immediately after the commander dies', () => {
+    const commander = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Commander);
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+
+    combatSystem(world);
+    expect(world.commanderDamageBuff.has(ally)).toBe(true);
+
+    Health.current[commander] = 0;
+    world.frameCount += 1;
+
+    combatSystem(world);
+    expect(world.commanderDamageBuff.has(ally)).toBe(false);
+    expect(world.commanderSpeedBuff.has(ally)).toBe(false);
+  });
+
+  it('applies war drums buffs from a nearby armory', () => {
+    const armory = addEntity(world.ecs);
+    addComponent(world.ecs, armory, Position);
+    addComponent(world.ecs, armory, Building);
+    addComponent(world.ecs, armory, Health);
+    addComponent(world.ecs, armory, FactionTag);
+    addComponent(world.ecs, armory, EntityTypeTag);
+    addComponent(world.ecs, armory, IsBuilding);
+
+    Position.x[armory] = 100;
+    Position.y[armory] = 100;
+    Building.progress[armory] = 100;
+    Health.current[armory] = 500;
+    Health.max[armory] = 500;
+    FactionTag.faction[armory] = Faction.Player;
+    EntityTypeTag.kind[armory] = EntityKind.Armory;
+
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    world.tech.warDrums = true;
+
+    combatSystem(world);
+
+    expect(world.warDrumsBuff.has(ally)).toBe(true);
+  });
+
+  it('clears war drums buffs immediately after the armory is destroyed', () => {
+    const armory = addEntity(world.ecs);
+    addComponent(world.ecs, armory, Position);
+    addComponent(world.ecs, armory, Building);
+    addComponent(world.ecs, armory, Health);
+    addComponent(world.ecs, armory, FactionTag);
+    addComponent(world.ecs, armory, EntityTypeTag);
+    addComponent(world.ecs, armory, IsBuilding);
+
+    Position.x[armory] = 100;
+    Position.y[armory] = 100;
+    Building.progress[armory] = 100;
+    Health.current[armory] = 500;
+    Health.max[armory] = 500;
+    FactionTag.faction[armory] = Faction.Player;
+    EntityTypeTag.kind[armory] = EntityKind.Armory;
+
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    world.tech.warDrums = true;
+
+    combatSystem(world);
+    expect(world.warDrumsBuff.has(ally)).toBe(true);
+
+    Health.current[armory] = 0;
+    world.frameCount += 1;
+
+    combatSystem(world);
+    expect(world.warDrumsBuff.has(ally)).toBe(false);
   });
 });

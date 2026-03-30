@@ -48,6 +48,10 @@ export function autoBehaviorSystem(world: GameWorld): void {
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
 
+    // Never auto-assign the Commander — the player always controls it manually
+    // and it must stay near the Lodge to protect it and provide its aura.
+    if ((EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Commander) continue;
+
     const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
 
     // Track idle duration for idle barks
