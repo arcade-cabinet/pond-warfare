@@ -197,8 +197,8 @@ describe('AudioSystem – updateAmbient()', () => {
     const fakeFilter = { frequency: { rampTo: vi.fn() } };
     (sys as any).ambientMgr.ambientFilter = fakeFilter;
 
-    sys.updateAmbient(0); // full day (darkness=0): max freq = 200 + 400 = 600
-    expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(600, 2);
+    sys.updateAmbient(0);
+    expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(500, 2);
   });
 
   it('uses lower frequency at full darkness (night)', () => {
@@ -206,8 +206,8 @@ describe('AudioSystem – updateAmbient()', () => {
     const fakeFilter = { frequency: { rampTo: vi.fn() } };
     (sys as any).ambientMgr.ambientFilter = fakeFilter;
 
-    sys.updateAmbient(1); // full night (darkness=1): freq = 200 + 0 = 200
-    expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(200, 2);
+    sys.updateAmbient(1);
+    expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(280, 2);
   });
 
   it('interpolates frequency linearly between day and night', () => {
@@ -215,8 +215,8 @@ describe('AudioSystem – updateAmbient()', () => {
     const fakeFilter = { frequency: { rampTo: vi.fn() } };
     (sys as any).ambientMgr.ambientFilter = fakeFilter;
 
-    sys.updateAmbient(0.5); // mid: 200 + (0.5 * 400) = 400
-    expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(400, 2);
+    sys.updateAmbient(0.5);
+    expect(fakeFilter.frequency.rampTo).toHaveBeenCalledWith(390, 2);
   });
 });
 

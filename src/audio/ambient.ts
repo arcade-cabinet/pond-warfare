@@ -1,5 +1,8 @@
 /** Ambient module - Pond bed, weather texture, and scheduled nature sounds. */
 import * as Tone from 'tone';
+import { mapScenario } from '@/ui/store';
+import { AmbientAccentPlayer } from './ambient-accents';
+import { BIOME_AUDIO_PROFILES, type BiomeAccent } from './ambient-biomes';
 import type { SfxManager } from './sfx';
 
 export class AmbientManager {
@@ -10,6 +13,7 @@ export class AmbientManager {
   private shimmerGain: Tone.Gain | null = null;
   private ambientTimerId: ReturnType<typeof setTimeout> | null = null;
   private lastDarkness = 0;
+  private accentPlayer: AmbientAccentPlayer;
 
   private _getStarted: () => boolean;
   private _getMuted: () => boolean;
@@ -19,6 +23,12 @@ export class AmbientManager {
     this._getStarted = getStarted;
     this._getMuted = getMuted;
     this.sfx = sfx;
+    this.accentPlayer = new AmbientAccentPlayer(
+      () => this._getStarted(),
+      () => this._getMuted(),
+      this.sfx,
+      (span) => this.randomWorldX(span),
+    );
   }
 
   /** Start layered ambient beds for pond water and wind through reeds. */
@@ -72,8 +82,9 @@ export class AmbientManager {
    */
   updateAmbient(darkness: number): void {
     if (!this.ambientFilter) return;
-    this.ambientFilter.frequency.rampTo(200 + (1 - darkness) * 400, 2);
-    this.shimmerFilter?.frequency.rampTo(900 + (1 - darkness) * 900, 2);
+    const profile = BIOME_AUDIO_PROFILES[mapScenario.value];
+    this.ambientFilter.frequency.rampTo(profile.baseFrequency + (1 - darkness) * 220, 2);
+    this.shimmerFilter?.frequency.rampTo(profile.shimmerFrequency + (1 - darkness) * 420, 2);
     this.shimmerGain?.gain.rampTo(0.008 + (1 - darkness) * 0.012, 2);
     this.lastDarkness = darkness;
 
@@ -89,7 +100,8 @@ export class AmbientManager {
 
   /** Schedule the next ambient event with day/night-specific color. */
   private scheduleNextAmbientSound(): void {
-    const delay = 2500 + Math.random() * 4500;
+    const profile = BIOME_AUDIO_PROFILES[mapScenario.value];
+    const delay = profile.eventMinMs + Math.random() * (profile.eventMaxMs - profile.eventMinMs);
     this.ambientTimerId = setTimeout(() => {
       this.ambientTimerId = null;
       if (!this._getStarted() || this._getMuted()) {
@@ -98,21 +110,65 @@ export class AmbientManager {
       }
 
       try {
-        if (this.lastDarkness > 0.65) {
-          this.playCricketChirp();
-          if (Math.random() > 0.35) this.playFrogCroak();
-        } else {
-          this.playWindGust();
-          if (Math.random() > 0.4) this.playReedRustle();
-        }
         this.playPondBubble();
-        if (Math.random() > 0.45) this.playWaterRipple();
+        if (mapScenario.value === 'standard') {
+          if (this.lastDarkness > 0.65) {
+            this.playCricketChirp();
+            if (Math.random() > 0.35) this.playFrogCroak();
+          } else {
+            this.playWindGust();
+            if (Math.random() > 0.4) this.playReedRustle();
+          }
+          if (Math.random() > 0.45) this.playWaterRipple();
+        } else {
+          const accents = this.lastDarkness > 0.65 ? profile.nightAccents : profile.dayAccents;
+          this.playBiomeAccent(accents[Math.floor(Math.random() * accents.length)]);
+          if (Math.random() > 0.45 && !accents.includes('ripple')) this.playWaterRipple();
+        }
       } catch {
         /* ignore ambient sound errors */
       }
 
       this.scheduleNextAmbientSound();
     }, delay);
+  }
+
+  private playBiomeAccent(accent: BiomeAccent): void {
+    switch (accent) {
+      case 'cricket':
+        this.playCricketChirp();
+        break;
+      case 'frog':
+        this.playFrogCroak();
+        break;
+      case 'ripple':
+        this.playWaterRipple();
+        break;
+      case 'wind':
+        this.playWindGust();
+        break;
+      case 'reed':
+        this.playReedRustle();
+        break;
+      case 'wave':
+        this.accentPlayer.playWaveWash();
+        break;
+      case 'gull':
+        this.accentPlayer.playSeaGull();
+        break;
+      case 'drum':
+        this.accentPlayer.playWarDrum();
+        break;
+      case 'drip':
+        this.accentPlayer.playCavernDrip();
+        break;
+      case 'current':
+        this.accentPlayer.playCurrentRush();
+        break;
+      case 'stone':
+        this.accentPlayer.playStoneTap();
+        break;
+    }
   }
 
   private setAmbientBedRunning(shouldRun: boolean): void {
