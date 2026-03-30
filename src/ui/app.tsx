@@ -2,9 +2,9 @@
  * Root Preact component.
  *
  * When the player is on the main menu or new-game screen, renders only the
- * fullscreen MainMenu (no sidebar, HUD, or game canvases). Once the game
- * starts (menuState === 'playing'), renders the full game layout: sidebar on
- * left, main game container on right with canvases and overlays.
+ * fullscreen MainMenu. Once the game starts (menuState === 'playing'),
+ * renders the fullscreen game canvas with floating HUD elements and a
+ * slide-out command panel.
  */
 
 import { entityExists, hasComponent } from 'bitecs';
@@ -207,6 +207,62 @@ export function App({ onMount }: AppProps) {
     game.syncUIStore();
   };
 
+  const activateAttackMove = () => {
+    if (hasPlayerUnitsSelected(game.world)) {
+      game.world.attackMoveMode = true;
+      game.syncUIStore();
+    }
+  };
+
+  const haltSelection = () => {
+    const w = game.world;
+    for (const eid of w.selection) {
+      if (hasComponent(w.ecs, eid, UnitStateMachine)) {
+        UnitStateMachine.state[eid] = 0; // UnitState.Idle
+        UnitStateMachine.targetEntity[eid] = -1;
+        w.yukaManager.removeUnit(eid);
+      }
+    }
+    game.syncUIStore();
+  };
+
+  const quickSave = () => {
+    const json = saveGame(game.world);
+    const difficulty = store.selectedDifficulty.value ?? 'normal';
+    const seed = store.goMapSeed.value ?? 0;
+    saveGameToDb('quicksave', difficulty, seed, json, false)
+      .then(() => {
+        store.hasSaveGame.value = true;
+      })
+      .catch((err) => {
+        // biome-ignore lint/suspicious/noConsole: surface save failures
+        console.error('Failed to save game to DB', err);
+      });
+    game.world.floatingTexts.push({
+      x: game.world.camX + (game.world.viewWidth || 400) / 2,
+      y: game.world.camY + 60,
+      text: 'Game Saved',
+      color: '#4ade80',
+      life: 60,
+    });
+    audio.click();
+  };
+
+  const quickLoad = () => {
+    getLatestSave()
+      .then((row) => {
+        if (row?.data) {
+          loadGame(game.world, row.data);
+          game.syncUIStore();
+          audio.click();
+        }
+      })
+      .catch((err) => {
+        // biome-ignore lint/suspicious/noConsole: surface load failures
+        console.error('Failed to load game from DB', err);
+      });
+  };
+
   return (
     <div
       class="relative h-screen w-screen text-sm font-game safe-area-pad overflow-hidden"
@@ -252,59 +308,10 @@ export function App({ onMount }: AppProps) {
             game.world.paused = !game.world.paused;
             game.syncUIStore();
           }}
-          onAttackMoveClick={() => {
-            if (hasPlayerUnitsSelected(game.world)) {
-              game.world.attackMoveMode = true;
-              game.syncUIStore();
-            }
-          }}
-          onHaltClick={() => {
-            const w = game.world;
-            for (const eid of w.selection) {
-              if (hasComponent(w.ecs, eid, UnitStateMachine)) {
-                UnitStateMachine.state[eid] = 0; // UnitState.Idle
-                UnitStateMachine.targetEntity[eid] = -1;
-                w.yukaManager.removeUnit(eid);
-              }
-            }
-            game.syncUIStore();
-          }}
-          onSaveClick={() => {
-            const json = saveGame(game.world);
-            const difficulty = store.selectedDifficulty.value ?? 'normal';
-            const seed = store.goMapSeed.value ?? 0;
-            saveGameToDb('quicksave', difficulty, seed, json, false)
-              .then(() => {
-                store.hasSaveGame.value = true;
-              })
-              .catch((err) => {
-                // biome-ignore lint/suspicious/noConsole: surface save failures
-                console.error('Failed to save game to DB', err);
-              });
-
-            game.world.floatingTexts.push({
-              x: game.world.camX + (game.world.viewWidth || 400) / 2,
-              y: game.world.camY + 60,
-              text: 'Game Saved',
-              color: '#4ade80',
-              life: 60,
-            });
-            audio.click();
-          }}
-          onLoadClick={() => {
-            getLatestSave()
-              .then((row) => {
-                if (row?.data) {
-                  loadGame(game.world, row.data);
-                  game.syncUIStore();
-                  audio.click();
-                }
-              })
-              .catch((err) => {
-                // biome-ignore lint/suspicious/noConsole: surface load failures
-                console.error('Failed to load game from DB', err);
-              });
-          }}
+          onAttackMoveClick={activateAttackMove}
+          onHaltClick={haltSelection}
+          onSaveClick={quickSave}
+          onLoadClick={quickLoad}
           onSettingsClick={() => {
             store.settingsOpen.value = !store.settingsOpen.value;
             audio.click();
@@ -666,23 +673,8 @@ export function App({ onMount }: AppProps) {
               selectArmy(game.world);
               game.syncUIStore();
             }}
-            onAttackMoveClick={() => {
-              if (hasPlayerUnitsSelected(game.world)) {
-                game.world.attackMoveMode = true;
-                game.syncUIStore();
-              }
-            }}
-            onHaltClick={() => {
-              const w = game.world;
-              for (const eid of w.selection) {
-                if (hasComponent(w.ecs, eid, UnitStateMachine)) {
-                  UnitStateMachine.state[eid] = 0;
-                  UnitStateMachine.targetEntity[eid] = -1;
-                  w.yukaManager.removeUnit(eid);
-                }
-              }
-              game.syncUIStore();
-            }}
+            onAttackMoveClick={activateAttackMove}
+            onHaltClick={haltSelection}
           />
           <ActionPanel />
 
@@ -706,24 +698,7 @@ export function App({ onMount }: AppProps) {
                 type="button"
                 class="action-btn flex-1 py-1.5 rounded font-bold text-[10px]"
                 style={{ color: 'var(--pw-success)' }}
-                onClick={() => {
-                  const json = saveGame(game.world);
-                  const difficulty = store.selectedDifficulty.value ?? 'normal';
-                  const seed = store.goMapSeed.value ?? 0;
-                  saveGameToDb('quicksave', difficulty, seed, json, false)
-                    .then(() => {
-                      store.hasSaveGame.value = true;
-                    })
-                    .catch(() => {});
-                  game.world.floatingTexts.push({
-                    x: game.world.camX + (game.world.viewWidth || 400) / 2,
-                    y: game.world.camY + 60,
-                    text: 'Game Saved',
-                    color: '#4ade80',
-                    life: 60,
-                  });
-                  audio.click();
-                }}
+                onClick={quickSave}
               >
                 Save
               </button>
@@ -734,17 +709,7 @@ export function App({ onMount }: AppProps) {
                   color: store.hasSaveGame.value ? 'var(--pw-warning)' : 'var(--pw-text-muted)',
                 }}
                 disabled={!store.hasSaveGame.value}
-                onClick={() => {
-                  getLatestSave()
-                    .then((row) => {
-                      if (row?.data) {
-                        loadGame(game.world, row.data);
-                        game.syncUIStore();
-                        audio.click();
-                      }
-                    })
-                    .catch(() => {});
-                }}
+                onClick={quickLoad}
               >
                 Load
               </button>

@@ -77,9 +77,16 @@ function updateDeviceClass(): void {
   }
 }
 
+// Debounced resize handler — resize fires rapidly during drag; 150ms is enough to settle
+let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+function debouncedUpdate() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(updateDeviceClass, 150);
+}
+
 // Initial classification + listen for resize/orientation changes
 updateDeviceClass();
-window.addEventListener('resize', updateDeviceClass);
+window.addEventListener('resize', debouncedUpdate);
 window.addEventListener('orientationchange', updateDeviceClass);
 
 /** Initialize native platform features (StatusBar, ScreenOrientation, back button, app state). */

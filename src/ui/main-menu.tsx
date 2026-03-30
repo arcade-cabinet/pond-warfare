@@ -72,8 +72,7 @@ export function MainMenu() {
 
       {/* ---- Lily pads scattered across the pond (hidden on compact) ---- */}
       <div
-        class="absolute inset-0 pointer-events-none overflow-hidden"
-        style={{ display: compact ? 'none' : undefined }}
+        class={`absolute inset-0 pointer-events-none overflow-hidden ${compact ? 'hidden' : ''}`}
       >
         {/* Large lily pad - bottom left */}
         <div
@@ -115,8 +114,7 @@ export function MainMenu() {
 
       {/* ---- Cattails / reeds at edges (hidden on compact) ---- */}
       <div
-        class="absolute inset-0 pointer-events-none overflow-hidden"
-        style={{ display: compact ? 'none' : undefined }}
+        class={`absolute inset-0 pointer-events-none overflow-hidden ${compact ? 'hidden' : ''}`}
       >
         {/* Left cattails */}
         <div class="cattail" style={{ bottom: '0', left: '3%' }}>
