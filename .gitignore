@@ -160,3 +160,5 @@ vite.config.ts.timestamp-*
 tests/browser/screenshots/
 tests/e2e/screenshots/
 screenshots/
+tests/e2e/*.png
+tests/browser/screenshots/
