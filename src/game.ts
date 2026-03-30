@@ -1520,6 +1520,7 @@ export class Game {
     } else {
       // Quit to menu
       store.menuState.value = 'main';
+      store.mobilePanelOpen.value = false;
       store.gameState.value = 'playing'; // reset the game state signal
     }
   }

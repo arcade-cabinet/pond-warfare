@@ -63,7 +63,7 @@ function AutoToggle({
   return (
     <button
       type="button"
-      class="px-1.5 py-0.5 rounded text-[9px] font-bold cursor-pointer transition-colors"
+      class="px-1.5 py-1 rounded text-[9px] font-bold cursor-pointer transition-colors min-h-[36px]"
       style={{
         border: `1px solid ${color}`,
         color,
