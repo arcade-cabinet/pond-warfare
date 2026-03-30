@@ -7,10 +7,11 @@
  * navigates between them, aware of pads, buttons, and the logo.
  */
 
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { isMobile, isTablet } from '@/platform';
 import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
+import { MenuOtter } from './menu-otter';
 import {
   achievementsOpen,
   campaignOpen,
@@ -108,6 +109,8 @@ export function MainMenu() {
   const [rank, setRank] = useState<RankInfo | null>(null);
   const compact = isMobile.value || isTablet.value;
   const otterRef = useRef<HTMLImageElement>(null);
+  const otterAI = useRef<MenuOtter | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getPlayerProfile()
@@ -115,11 +118,73 @@ export function MainMenu() {
       .catch(() => {});
   }, []);
 
-  // Simple otter wander animation via CSS for now — Yuka steering next iteration
+  // Initialize Yuka otter on mount
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    const otter = new MenuOtter(
+      { width: w, height: h },
+      w * 0.75, // start right of center
+      h * 0.7, // start in lower area
+    );
+    otterAI.current = otter;
+
+    // Sync otter position to DOM element each frame
+    let rafId = 0;
+    const syncDOM = () => {
+      const img = otterRef.current;
+      if (img && otter) {
+        img.style.left = `${otter.x - 50}px`;
+        img.style.top = `${otter.y - 25}px`;
+        img.style.transform = otter.facingLeft ? 'scaleX(-1)' : 'scaleX(1)';
+      }
+      rafId = requestAnimationFrame(syncDOM);
+    };
+
+    otter.start();
+    rafId = requestAnimationFrame(syncDOM);
+
+    const onResize = () => {
+      if (el) otter.resize(el.clientWidth, el.clientHeight);
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      otter.destroy();
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', onResize);
+      otterAI.current = null;
+    };
+  }, []);
+
+  const handlePointerMove = useCallback((e: PointerEvent) => {
+    const el = containerRef.current;
+    if (!el || !otterAI.current) return;
+    const rect = el.getBoundingClientRect();
+    otterAI.current.setPointer(e.clientX - rect.left, e.clientY - rect.top);
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    otterAI.current?.clearPointer();
+  }, []);
+
+  const handleOtterClick = useCallback((e: MouseEvent) => {
+    e.stopPropagation();
+    const el = containerRef.current;
+    if (!el || !otterAI.current) return;
+    const rect = el.getBoundingClientRect();
+    otterAI.current.poke(e.clientX - rect.left, e.clientY - rect.top);
+  }, []);
   return (
     <div
+      ref={containerRef}
       id="intro-overlay"
       class={`relative h-screen w-full flex flex-col items-center safe-area-pad ${compact ? 'justify-start pt-2 overflow-y-auto' : 'justify-center overflow-hidden'}`}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
     >
       {/* ---- Painted pond background ---- */}
       <div
@@ -173,20 +238,19 @@ export function MainMenu() {
       <FloatingPad variant="tiny" style={{ top: '40%', left: '18%', opacity: 0.35 }} />
       <FloatingPad variant="tiny" style={{ bottom: '8%', left: '30%', opacity: 0.4 }} />
 
-      {/* ---- Swimming otter ---- */}
+      {/* ---- Swimming otter (Yuka-steered, clickable) ---- */}
       <img
         ref={otterRef}
         src={`${UI}/Otter w Shadow.png`}
         alt="otter"
-        class="absolute pointer-events-none z-10"
+        class="absolute z-10 cursor-pointer"
         style={{
           width: compact ? '100px' : '160px',
-          bottom: compact ? '4%' : '6%',
-          right: compact ? '10%' : '15%',
-          animation: 'lily-drift 14s ease-in-out infinite',
           opacity: 0.9,
+          transition: 'transform 0.1s ease-out',
         }}
         draggable={false}
+        onClick={handleOtterClick}
       />
 
       {/* ---- Fireflies ---- */}
