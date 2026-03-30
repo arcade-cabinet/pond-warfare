@@ -16,7 +16,13 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: playwright(),
-      instances: [{ browser: 'chromium' }],
+      instances: [{
+        browser: 'chromium',
+        launch: {
+          args: ['--window-size=1280,720'],
+        },
+      }],
+      viewport: { width: 1280, height: 720 },
       screenshotDirectory: 'tests/browser/screenshots',
     },
   },
