@@ -244,6 +244,10 @@ export const keyboardRefOpen = signal(false);
 
 // ---- Mobile slide-out panel ----
 export const mobilePanelOpen = signal(false);
+
+/** Active tab in the slide-out command panel. */
+export type PanelTab = 'map' | 'actions' | 'commands' | 'menu';
+export const activePanelTab = signal<PanelTab>('map');
 export const masterVolume = signal(80);
 export const musicVolume = signal(50);
 export const sfxVolume = signal(80);
