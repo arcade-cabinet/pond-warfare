@@ -45,6 +45,7 @@ vi.mock('@/ecs/components', () => ({
   UnitStateMachine: {
     state: new Float32Array(1000),
     targetEntity: new Float32Array(1000),
+    hasAttackMoveTarget: new Float32Array(1000),
   },
 }));
 

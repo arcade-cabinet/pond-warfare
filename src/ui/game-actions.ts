@@ -36,14 +36,14 @@ export function activateAttackMove(): void {
   }
 }
 
-/** Stop all selected units (halt movement + clear targets). */
+/** Stop all selected units (halt movement + clear targets + attack-move). */
 export function haltSelection(): void {
   const w = game.world;
   for (const eid of w.selection) {
     if (hasComponent(w.ecs, eid, UnitStateMachine)) {
       UnitStateMachine.state[eid] = 0; // UnitState.Idle
       UnitStateMachine.targetEntity[eid] = -1;
-      w.yukaManager.removeUnit(eid);
+      UnitStateMachine.hasAttackMoveTarget[eid] = 0;
     }
   }
   game.syncUIStore();
@@ -75,7 +75,7 @@ export function selectArmyUnits(): void {
   game.syncUIStore();
 }
 
-/** Quick-save to DB with floating text feedback. */
+/** Quick-save to DB with floating text feedback after write resolves. */
 export function quickSave(): void {
   const json = saveGame(game.world);
   const difficulty = store.selectedDifficulty.value ?? 'normal';
@@ -83,19 +83,26 @@ export function quickSave(): void {
   saveGameToDb('quicksave', difficulty, seed, json, false)
     .then(() => {
       store.hasSaveGame.value = true;
+      game.world.floatingTexts.push({
+        x: game.world.camX + (game.world.viewWidth || 400) / 2,
+        y: game.world.camY + 60,
+        text: 'Game Saved',
+        color: '#4ade80',
+        life: 60,
+      });
+      audio.click();
     })
     .catch((err) => {
       // biome-ignore lint/suspicious/noConsole: surface save failures
       console.error('Failed to save game to DB', err);
+      game.world.floatingTexts.push({
+        x: game.world.camX + (game.world.viewWidth || 400) / 2,
+        y: game.world.camY + 60,
+        text: 'Save Failed',
+        color: '#f87171',
+        life: 90,
+      });
     });
-  game.world.floatingTexts.push({
-    x: game.world.camX + (game.world.viewWidth || 400) / 2,
-    y: game.world.camY + 60,
-    text: 'Game Saved',
-    color: '#4ade80',
-    life: 60,
-  });
-  audio.click();
 }
 
 /** Quick-load latest save from DB. */

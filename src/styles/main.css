@@ -638,6 +638,17 @@ body {
   75%      { transform: translate(4px, 2px) rotate(1.5deg); }
 }
 
+/* Water ripple overlay drift animations */
+@keyframes ripple-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-8px, 5px) scale(1.02); }
+}
+
+@keyframes ripple-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(6px, -4px) scale(0.98); }
+}
+
 .lily-pad {
   position: absolute;
   border-radius: 50%;
@@ -705,6 +716,35 @@ body {
   box-shadow: 0 0 6px rgba(240, 180, 200, 0.3);
   top: 20%;
   right: 20%;
+}
+
+/* --- Interactive lily pad buttons (main menu) --- */
+@keyframes lily-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33%      { transform: translateY(-3px) rotate(1deg); }
+  66%      { transform: translateY(2px) rotate(-0.5deg); }
+}
+
+.lily-pad-btn {
+  animation: lily-bob 4s ease-in-out infinite;
+  transform-origin: center center;
+  border: none;
+  background: transparent;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lily-pad-btn:hover:not(:disabled) .lily-pad-surface {
+  filter: brightness(1.15);
+}
+
+.lily-pad-btn:active:not(:disabled) {
+  transform: translateY(3px) scale(0.95);
+  animation-play-state: paused;
+}
+
+.lily-pad-btn:active:not(:disabled) .lily-pad-surface {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5), inset 0 -1px 3px rgba(0,0,0,0.4) !important;
 }
 
 /* --- Firefly particles --- */
