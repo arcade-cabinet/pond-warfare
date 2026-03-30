@@ -333,10 +333,12 @@ export class Game {
             FactionTag.faction[eid] === Faction.Player &&
             !ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding
           ) {
-            // Set to idle
+            // Set to idle and stop Yuka steering so the unit actually halts
             UnitStateMachine.state[eid] = UnitState.Idle;
             UnitStateMachine.targetEntity[eid] = -1;
             UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+            this.world.yukaManager.clearFormationBehaviors(eid);
+            this.world.yukaManager.removeUnit(eid);
           }
         }
         this.recorder.record(this.world.frameCount, 'stop', {
@@ -362,7 +364,19 @@ export class Game {
         }
         const wx = this.pointer.mouse.worldX;
         const wy = this.pointer.mouse.worldY;
-        issueContextCommand(this.world, target, wx, wy);
+        const dispatched = issueContextCommand(this.world, target, wx, wy);
+
+        // Auto-deselect after any move/attack/gather/build dispatch so the
+        // player doesn't need to manually click "Deselect" after issuing orders.
+        if (dispatched) {
+          for (const eid of this.world.selection) {
+            if (hasComponent(this.world.ecs, eid, Selectable)) {
+              Selectable.selected[eid] = 0;
+            }
+          }
+          this.world.selection = [];
+          this.world.isTracking = false;
+        }
 
         // Record for replay: determine command type from target
         const cmdType =

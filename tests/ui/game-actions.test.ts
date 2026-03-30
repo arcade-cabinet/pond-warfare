@@ -17,7 +17,7 @@ vi.mock('@/game', () => ({
       paused: false,
       gameSpeed: 1,
       ecs: {},
-      yukaManager: { removeUnit: vi.fn() },
+      yukaManager: { removeUnit: vi.fn(), clearFormationBehaviors: vi.fn() },
       resources: { clams: 500, twigs: 300 },
       floatingTexts: [] as unknown[],
       camX: 0,

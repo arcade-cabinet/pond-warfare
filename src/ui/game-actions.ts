@@ -44,6 +44,9 @@ export function haltSelection(): void {
       UnitStateMachine.state[eid] = 0; // UnitState.Idle
       UnitStateMachine.targetEntity[eid] = -1;
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+      // Remove from Yuka so the unit physically stops moving immediately
+      w.yukaManager.clearFormationBehaviors(eid);
+      w.yukaManager.removeUnit(eid);
     }
   }
   game.syncUIStore();
