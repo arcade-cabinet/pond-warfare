@@ -284,8 +284,10 @@ export function issueContextCommand(
 
 // ---- Formation Helpers ----
 
-/** Spacing between units in a formation row, in world pixels. */
-const FORMATION_SPACING = 40;
+/** Spacing between units in a formation row, in world pixels.
+ * 60px gives enough separation for mobile finger-tap accuracy while keeping
+ * groups tactically cohesive. */
+const FORMATION_SPACING = 60;
 
 /**
  * Calculate role-based formation positions for a group move command.

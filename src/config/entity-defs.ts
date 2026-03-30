@@ -162,7 +162,7 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     resourceAmount: 4000,
   },
   [EntityKind.Healer]: {
-    hp: 25,
+    hp: 35,
     speed: 1.8,
     damage: 0,
     attackRange: 0,
@@ -170,8 +170,8 @@ export const ENTITY_DEFS: Record<EntityKind, UnitDef> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 80,
-    twigCost: 60,
+    clamCost: 60,
+    twigCost: 40,
     foodCost: 1,
   },
   [EntityKind.Watchtower]: {

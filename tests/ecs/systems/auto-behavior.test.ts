@@ -110,4 +110,19 @@ describe('autoBehaviorSystem', () => {
 
     expect(UnitStateMachine.state[brawler]).toBe(UnitState.Idle);
   });
+
+  it('should never auto-assign the Commander regardless of which behaviors are enabled', () => {
+    world.autoBehaviors.gather = true;
+    world.autoBehaviors.attack = true;
+    world.autoBehaviors.defend = true;
+    world.autoBehaviors.scout = true;
+    world.autoBehaviors.heal = true;
+    const commander = createPlayerUnit(world, EntityKind.Commander);
+    createResource(world, 120, 100);
+
+    autoBehaviorSystem(world);
+
+    // Commander must remain idle — never wandering off to gather, attack, or scout
+    expect(UnitStateMachine.state[commander]).toBe(UnitState.Idle);
+  });
 });

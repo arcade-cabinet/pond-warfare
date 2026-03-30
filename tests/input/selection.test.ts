@@ -496,6 +496,16 @@ describe('selectArmy()', () => {
 
     expect(Selectable.selected[prevSelected]).toBe(0);
   });
+
+  it('excludes Commander from army selection', () => {
+    const commander = createPlayerUnit(world, 100, 100, EntityKind.Commander);
+    const brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+
+    selectArmy(world);
+
+    expect(world.selection).not.toContain(commander);
+    expect(world.selection).toContain(brawler);
+  });
 });
 
 // ---------------------------------------------------------------------------

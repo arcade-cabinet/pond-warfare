@@ -9,7 +9,7 @@
  * - SFX calls (chop for cattails, mine for clambeds) every 30 frames while gathering
  * - Particle spawning at resource location
  * - Find nearby resource of same type if current resource is depleted
- * - Idle auto-gather: player gatherers near resources auto-start gathering every 90 frames
+ * - Idle auto-gather: player gatherers near resources auto-start gathering every 30 frames
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -65,7 +65,7 @@ export function gatheringSystem(world: GameWorld): void {
       state === UnitState.Idle &&
       kind === EntityKind.Gatherer &&
       canAutoGather &&
-      world.frameCount % 90 === 0
+      world.frameCount % 30 === 0
     ) {
       // Only auto-gather if not holding resources
       if (Carrying.resourceType[eid] === ResourceType.None) {

@@ -159,8 +159,18 @@ export function movementSystem(world: GameWorld): void {
       arriveDist = Collider.radius[eid] + targetRad + 15;
     }
     if (state === UnitState.AttackMove) {
-      // a_move: arrive when in attack range
-      arriveDist = Combat.attackRange[eid];
+      // a_move: arrive when the attacker's leading edge is within attack range
+      // of the target's leading edge. Including both collider radii prevents
+      // units from stopping too far away on long-range targets (e.g. Catapult
+      // attackRange 250 would otherwise stop the unit 250 px from the target
+      // center before the target's own radius is accounted for).
+      const tEnt = UnitStateMachine.targetEntity[eid];
+      const tRad = tEnt !== -1 && hasComponent(world.ecs, tEnt, Collider)
+        ? Collider.radius[tEnt]
+        : 0;
+      arriveDist = Combat.attackRange[eid] - Collider.radius[eid] - tRad;
+      // Ensure a minimum positive arrival distance so units never overshoot.
+      arriveDist = Math.max(arriveDist, speed);
     }
     if (state === UnitState.AttackMovePatrol) {
       // atk_move: arrive at speed distance (same as move)

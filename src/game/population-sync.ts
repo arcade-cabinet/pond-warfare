@@ -168,6 +168,9 @@ export function syncPopulationAndTimers(
       } else if (kind === EntityKind.Healer) {
         armyUnits++;
         if (isIdle) idleHealers++;
+      } else if (kind === EntityKind.Commander) {
+        // Commander counts toward population but is never auto-assigned;
+        // exclude it from army counts and idle menus so it stays near the Lodge.
       } else {
         // Combat units (including Scouts): Attack/Defend apply to all
         armyUnits++;
