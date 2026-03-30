@@ -12,11 +12,17 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['tests/browser/**/*.test.ts'],
+    include: ['tests/browser/**/*.test.{ts,tsx}'],
     browser: {
       enabled: true,
       provider: playwright(),
-      instances: [{ browser: 'chromium' }],
+      instances: [{
+        browser: 'chromium',
+        launch: {
+          args: ['--window-size=1280,720'],
+        },
+      }],
+      viewport: { width: 1280, height: 720 },
       screenshotDirectory: 'tests/browser/screenshots',
     },
   },

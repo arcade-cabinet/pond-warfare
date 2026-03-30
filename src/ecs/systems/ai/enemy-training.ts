@@ -132,14 +132,14 @@ export function enemyTrainingTick(world: GameWorld): void {
 
   // Counter logic: gators counter brawlers, snakes counter snipers
   // Default to 50/50 if player has no army
-  let gatorWeight = 0.5;
+  let _gatorWeight = 0.5;
   const totalPlayerCombat = playerSnipers + playerBrawlers;
   if (totalPlayerCombat > 0) {
     // More snipers -> train more gators (gators are strong vs brawlers, but snakes counter snipers)
     // Actually from DAMAGE_MULTIPLIERS: Snake is strong vs Sniper, Gator is strong vs Brawler
     const sniperRatio = playerSnipers / totalPlayerCombat;
     // If player has many snipers, train more snakes (which counter snipers)
-    gatorWeight = 1.0 - sniperRatio * 0.7; // Bias toward snakes when snipers dominate
+    _gatorWeight = 1.0 - sniperRatio * 0.7; // Bias toward snakes when snipers dominate
   }
 
   // Queue training at each nest that isn't already training
