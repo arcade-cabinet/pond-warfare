@@ -4,12 +4,13 @@ Pre-edit hook: Block writes that would create files over 300 lines.
 Enforces the no-monoliths rule.
 """
 import json
+import os
 import sys
 
 MAX_LINES = 300
 EXEMPT = {
     "package.json", "pnpm-lock.yaml", "AGENTS.md",
-    "main.css", "vitest.config.ts", "vitest.browser.config.ts",
+    "main.css", "vitest.config.ts", "vitest.browser.config.ts", "CLAUDE.md",
 }
 
 try:
@@ -26,7 +27,6 @@ if not content:
     sys.exit(0)
 
 # Check exemptions
-import os
 basename = os.path.basename(file_path)
 if basename in EXEMPT:
     sys.exit(0)

@@ -59,13 +59,15 @@ async function mountGame(): Promise<void> {
   const newGameBtn = Array.from(document.querySelectorAll('button')).find(
     (b) => b.textContent?.includes('New Game'),
   );
-  if (newGameBtn) newGameBtn.click();
+  if (!newGameBtn) throw new Error('New Game button not found');
+  newGameBtn.click();
 
   await new Promise((r) => setTimeout(r, 500));
   const startBtn = Array.from(document.querySelectorAll('button')).find(
     (b) => b.textContent?.includes('START'),
   );
-  if (startBtn) startBtn.click();
+  if (!startBtn) throw new Error('START button not found');
+  startBtn.click();
 
   await gameReady;
 }
