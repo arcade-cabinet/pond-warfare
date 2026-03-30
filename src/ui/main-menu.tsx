@@ -139,7 +139,9 @@ export function MainMenu() {
       if (img && otter) {
         img.style.left = `${otter.x - 50}px`;
         img.style.top = `${otter.y - 25}px`;
-        img.style.transform = otter.facingLeft ? 'scaleX(-1)' : 'scaleX(1)';
+        // Rotate to face heading — offset by -90deg since sprite faces up
+        const deg = (otter.rotation * 180) / Math.PI - 90;
+        img.style.transform = `rotate(${deg}deg)`;
       }
       rafId = requestAnimationFrame(syncDOM);
     };
@@ -239,15 +241,36 @@ export function MainMenu() {
       <FloatingPad variant="tiny" style={{ bottom: '8%', left: '30%', opacity: 0.4 }} />
 
       {/* ---- Swimming otter (Yuka-steered, clickable) ---- */}
+      {/* Shadow layer — stays flat beneath the otter */}
+      <img
+        src={`${UI}/Otter shadow_goes above background but below ripples.png`}
+        alt=""
+        class="absolute z-[5] pointer-events-none"
+        ref={(el) => {
+          // Shadow tracks otter position but doesn't rotate
+          if (el && otterRef.current) {
+            const sync = () => {
+              if (otterAI.current) {
+                el.style.left = `${otterAI.current.x - 40}px`;
+                el.style.top = `${otterAI.current.y - 10}px`;
+              }
+              requestAnimationFrame(sync);
+            };
+            requestAnimationFrame(sync);
+          }
+        }}
+        style={{ width: compact ? '80px' : '130px', opacity: 0.6 }}
+        draggable={false}
+      />
+      {/* Otter sprite — rotates to face heading */}
       <img
         ref={otterRef}
-        src={`${UI}/Otter w Shadow.png`}
+        src={`${UI}/Otter.png`}
         alt="otter"
         class="absolute z-10 cursor-pointer"
         style={{
-          width: compact ? '100px' : '160px',
-          opacity: 0.9,
-          transition: 'transform 0.1s ease-out',
+          width: compact ? '80px' : '130px',
+          opacity: 0.95,
         }}
         draggable={false}
         onClick={handleOtterClick}
