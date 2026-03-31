@@ -1,11 +1,16 @@
 /**
  * Settings Panel
  *
- * Full-screen modal overlay with volume sliders, game speed controls,
- * color blind mode toggle, and auto-save toggle. Accessible from the
- * gear icon button in the HUD top bar.
+ * Full-screen modal overlay with tabbed organization:
+ *   Audio   — volume sliders (master, music, SFX)
+ *   Game    — game speed controls
+ *   Options — color blind mode, auto-save toggles
+ *   Access  — UI scale, screen shake, reduce visual noise
+ *
+ * Accessible from the gear icon button in the HUD top bar.
  */
 
+import { useState } from 'preact/hooks';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import {
   autoSaveEnabled,
@@ -31,6 +36,8 @@ export interface SettingsPanelProps {
   onReduceVisualNoiseToggle?: () => void;
   onClose: () => void;
 }
+
+type SettingsTab = 'audio' | 'game' | 'options' | 'access';
 
 function VolumeSlider({
   label,
@@ -62,9 +69,48 @@ function VolumeSlider({
   );
 }
 
+function Toggle({
+  label,
+  active,
+  onToggle,
+}: {
+  label: string;
+  active: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div class="flex items-center justify-between min-h-[44px]">
+      <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
+        {label}
+      </span>
+      <button
+        type="button"
+        class={`w-12 h-7 rounded-full relative cursor-pointer ${
+          active ? 'toggle-track-active' : 'toggle-track'
+        }`}
+        onClick={onToggle}
+      >
+        <span
+          class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
+            active ? 'translate-x-5' : 'translate-x-0.5'
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+const TAB_DEFS: { id: SettingsTab; icon: string; label: string }[] = [
+  { id: 'audio', icon: '\uD83D\uDD0A', label: 'Audio' },
+  { id: 'game', icon: '\u23F1', label: 'Game' },
+  { id: 'options', icon: '\u2699', label: 'Options' },
+  { id: 'access', icon: '\u267F', label: 'Access' },
+];
+
 export function SettingsPanel(props: SettingsPanelProps) {
   const currentSpeed = gameSpeed.value;
   const scrollRef = useScrollDrag<HTMLDivElement>();
+  const [tab, setTab] = useState<SettingsTab>('audio');
 
   return (
     <div
@@ -80,12 +126,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
       <div
         ref={scrollRef}
         class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel"
-        style={{
-          color: 'var(--pw-text-primary)',
-        }}
+        style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-2">
           <h2 class="font-title text-lg tracking-wide" style={{ color: 'var(--pw-accent)' }}>
             Settings
           </h2>
@@ -99,171 +143,124 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </button>
         </div>
 
-        {/* Volume section */}
-        <div class="space-y-3 mb-5">
-          <div class="section-header mb-1">Audio</div>
-          <VolumeSlider
-            label="Master Volume"
-            value={masterVolume.value}
-            onChange={props.onMasterVolumeChange}
-          />
-          <VolumeSlider
-            label="Music Volume"
-            value={musicVolume.value}
-            onChange={props.onMusicVolumeChange}
-          />
-          <VolumeSlider
-            label="SFX Volume"
-            value={sfxVolume.value}
-            onChange={props.onSfxVolumeChange}
-          />
-        </div>
-
-        {/* Game Speed section */}
-        <div class="mb-5">
-          <div class="section-header mb-2">Game Speed</div>
-          <div class="flex gap-2">
-            {[1, 2, 3].map((s) => (
-              <button
-                type="button"
-                key={`speed-${s}`}
-                class={`flex-1 py-1.5 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn`}
-                style={{
-                  background:
-                    currentSpeed === s
-                      ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
-                      : undefined,
-                  borderColor: currentSpeed === s ? 'var(--pw-accent)' : undefined,
-                  color: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
-                }}
-                onClick={() => props.onSpeedSet(s)}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Toggles section */}
-        <div class="space-y-3">
-          <div class="section-header mb-1">Options</div>
-
-          {/* Color Blind Mode */}
-          <div class="flex items-center justify-between min-h-[44px]">
-            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
-              Color Blind Mode
-            </span>
+        {/* Tab bar */}
+        <div class="settings-tab-bar">
+          {TAB_DEFS.map((t) => (
             <button
+              key={t.id}
               type="button"
-              class={`w-12 h-7 rounded-full relative cursor-pointer ${
-                colorBlindMode.value ? 'toggle-track-active' : 'toggle-track'
-              }`}
-              onClick={props.onColorBlindToggle}
-              title="Toggle Color Blind Mode"
+              class="settings-tab-btn font-heading"
+              data-active={tab === t.id ? 'true' : 'false'}
+              onClick={() => setTab(t.id)}
             >
-              <span
-                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
-                  colorBlindMode.value ? 'translate-x-5' : 'translate-x-0.5'
-                }`}
-              />
+              <span class="block text-sm">{t.icon}</span>
+              {t.label}
             </button>
-          </div>
-
-          {/* Auto-save */}
-          <div class="flex items-center justify-between min-h-[44px]">
-            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
-              Auto-save (every 60s)
-            </span>
-            <button
-              type="button"
-              class={`w-12 h-7 rounded-full relative cursor-pointer ${
-                autoSaveEnabled.value ? 'toggle-track-active' : 'toggle-track'
-              }`}
-              onClick={props.onAutoSaveToggle}
-              title="Toggle Auto-save"
-            >
-              <span
-                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
-                  autoSaveEnabled.value ? 'translate-x-5' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </div>
+          ))}
         </div>
 
-        {/* Accessibility section */}
-        <div class="space-y-3 mt-5">
-          <div class="section-header mb-1">Accessibility</div>
+        {/* Tab content */}
+        {tab === 'audio' && (
+          <div class="space-y-3">
+            <VolumeSlider
+              label="Master Volume"
+              value={masterVolume.value}
+              onChange={props.onMasterVolumeChange}
+            />
+            <VolumeSlider
+              label="Music Volume"
+              value={musicVolume.value}
+              onChange={props.onMusicVolumeChange}
+            />
+            <VolumeSlider
+              label="SFX Volume"
+              value={sfxVolume.value}
+              onChange={props.onSfxVolumeChange}
+            />
+          </div>
+        )}
 
-          {/* UI Scale */}
-          <div class="flex items-center justify-between min-h-[44px]">
-            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
-              UI Scale
-            </span>
+        {tab === 'game' && (
+          <div>
+            <div class="section-header mb-2">Game Speed</div>
             <div class="flex gap-2">
-              {[1, 1.5, 2].map((s) => (
+              {[1, 2, 3].map((s) => (
                 <button
                   type="button"
-                  key={`scale-${s}`}
-                  class="px-2 py-1 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
+                  key={`speed-${s}`}
+                  class="flex-1 py-1.5 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
                   style={{
                     background:
-                      uiScale.value === s
+                      currentSpeed === s
                         ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
                         : undefined,
-                    borderColor: uiScale.value === s ? 'var(--pw-accent)' : undefined,
-                    color: uiScale.value === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
+                    borderColor: currentSpeed === s ? 'var(--pw-accent)' : undefined,
+                    color: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
                   }}
-                  onClick={() => props.onUiScaleChange?.(s)}
+                  onClick={() => props.onSpeedSet(s)}
                 >
                   {s}x
                 </button>
               ))}
             </div>
           </div>
+        )}
 
-          {/* Screen Shake */}
-          <div class="flex items-center justify-between min-h-[44px]">
-            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
-              Screen Shake
-            </span>
-            <button
-              type="button"
-              class={`w-12 h-7 rounded-full relative cursor-pointer ${
-                screenShakeEnabled.value ? 'toggle-track-active' : 'toggle-track'
-              }`}
-              onClick={() => props.onScreenShakeToggle?.()}
-              title="Toggle Screen Shake"
-            >
-              <span
-                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
-                  screenShakeEnabled.value ? 'translate-x-5' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
+        {tab === 'options' && (
+          <div class="space-y-3">
+            <Toggle
+              label="Color Blind Mode"
+              active={colorBlindMode.value}
+              onToggle={props.onColorBlindToggle}
+            />
+            <Toggle
+              label="Auto-save (every 60s)"
+              active={autoSaveEnabled.value}
+              onToggle={props.onAutoSaveToggle}
+            />
           </div>
+        )}
 
-          {/* Reduce Visual Noise */}
-          <div class="flex items-center justify-between min-h-[44px]">
-            <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
-              Reduce Visual Noise
-            </span>
-            <button
-              type="button"
-              class={`w-12 h-7 rounded-full relative cursor-pointer ${
-                reduceVisualNoise.value ? 'toggle-track-active' : 'toggle-track'
-              }`}
-              onClick={() => props.onReduceVisualNoiseToggle?.()}
-              title="Toggle Reduce Visual Noise"
-            >
-              <span
-                class={`toggle-thumb absolute top-0.5 w-6 h-6 rounded-full ${
-                  reduceVisualNoise.value ? 'translate-x-5' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
+        {tab === 'access' && (
+          <div class="space-y-3">
+            {/* UI Scale */}
+            <div class="flex items-center justify-between min-h-[44px]">
+              <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
+                UI Scale
+              </span>
+              <div class="flex gap-2">
+                {[1, 1.5, 2].map((s) => (
+                  <button
+                    type="button"
+                    key={`scale-${s}`}
+                    class="px-2 py-1 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
+                    style={{
+                      background:
+                        uiScale.value === s
+                          ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
+                          : undefined,
+                      borderColor: uiScale.value === s ? 'var(--pw-accent)' : undefined,
+                      color: uiScale.value === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
+                    }}
+                    onClick={() => props.onUiScaleChange?.(s)}
+                  >
+                    {s}x
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Toggle
+              label="Screen Shake"
+              active={screenShakeEnabled.value}
+              onToggle={() => props.onScreenShakeToggle?.()}
+            />
+            <Toggle
+              label="Reduce Visual Noise"
+              active={reduceVisualNoise.value}
+              onToggle={() => props.onReduceVisualNoiseToggle?.()}
+            />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
