@@ -30,6 +30,17 @@ describe('AudioSystem – richer music layers', () => {
     expect(transport.start).toHaveBeenCalledOnce();
   });
 
+  it('startMusic() schedules the hat synth with a fixed pitch and duration', () => {
+    sys.startMusic(false);
+
+    const musicMgr = (sys as any).musicMgr;
+    const sequenceCalls = (Tone.Sequence as any).mock.calls;
+    const hatSequenceCallback = sequenceCalls[sequenceCalls.length - 1][0];
+    hatSequenceCallback('now', true);
+
+    expect(musicMgr.hatSynth.triggerAttackRelease).toHaveBeenCalledWith('C6', '16n', 'now');
+  });
+
   it('toggleMute() ramps every music layer down and back up', () => {
     sys.startMusic(false);
     const musicMgr = (sys as any).musicMgr;

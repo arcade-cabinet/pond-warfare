@@ -1,6 +1,6 @@
 /** Music module - Background music (startMusic, stopMusic, peaceful/hunting sequences). */
 import * as Tone from 'tone';
-import { HUNTING_SCORE, PEACEFUL_SCORE, type Score } from './scores';
+import { HUNTING_SCORE, PEACEFUL_SCORE } from './scores';
 
 export class MusicManager {
   private musicSynth: Tone.Synth | null = null;

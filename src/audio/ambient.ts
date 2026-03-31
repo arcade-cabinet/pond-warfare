@@ -94,12 +94,8 @@ export class AmbientManager {
   }
 
   /** Handle mute toggle for the continuous ambient bed. */
-  onMuteToggle(muted: boolean, audio: { muted: boolean; stopMusic: () => void }): void {
-    audio.muted = muted;
+  onMuteToggle(muted: boolean): void {
     this.setAmbientBedRunning(!muted);
-    if (muted) {
-      audio.stopMusic();
-    }
   }
 
   /** Schedule the next ambient event with day/night-specific color. */
