@@ -13,11 +13,13 @@ import {
   loadLeaderboardData,
   winsToNextRank,
 } from '@/systems/leaderboard';
+import { useScrollDrag } from './hooks/useScrollDrag';
 import { leaderboardOpen } from './store';
 
 export function LeaderboardPanel() {
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const scrollRef = useScrollDrag<HTMLDivElement>();
 
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +45,7 @@ export function LeaderboardPanel() {
 
   return (
     <div
-      class="absolute inset-0 z-[60] flex items-center justify-center"
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -53,7 +55,8 @@ export function LeaderboardPanel() {
 
       {/* Panel card */}
       <div
-        class="relative rounded-lg shadow-2xl w-[420px] max-w-[95vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 md:p-6 font-game text-sm z-10 parchment-panel"
+        ref={scrollRef}
+        class="relative rounded-lg shadow-2xl w-[420px] max-w-[95vw] modal-scroll p-5 md:p-6 font-game text-sm z-10 parchment-panel"
         style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}

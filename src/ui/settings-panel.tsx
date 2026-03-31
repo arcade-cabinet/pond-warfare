@@ -6,6 +6,7 @@
  * gear icon button in the HUD top bar.
  */
 
+import { useScrollDrag } from './hooks/useScrollDrag';
 import {
   autoSaveEnabled,
   colorBlindMode,
@@ -63,10 +64,11 @@ function VolumeSlider({
 
 export function SettingsPanel(props: SettingsPanelProps) {
   const currentSpeed = gameSpeed.value;
+  const scrollRef = useScrollDrag<HTMLDivElement>();
 
   return (
     <div
-      class="absolute inset-0 z-[60] flex items-center justify-center"
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) props.onClose();
       }}
@@ -76,7 +78,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       {/* Panel card */}
       <div
-        class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 font-game text-sm z-10 parchment-panel"
+        ref={scrollRef}
+        class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel"
         style={{
           color: 'var(--pw-text-primary)',
         }}

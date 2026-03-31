@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'preact/hooks';
+import { useScrollDrag } from './hooks/useScrollDrag';
 import {
   type CustomGameSettings,
   customGameSettings,
@@ -557,6 +558,7 @@ export function NewGameModal() {
   const [editingSeed, setEditingSeed] = useState(false);
   const [seedText, setSeedText] = useState('');
   const [shuffleAnim, setShuffleAnim] = useState(false);
+  const scrollRef = useScrollDrag<HTMLDivElement>();
 
   const handleUpdate = useCallback((patch: Partial<CustomGameSettings>) => {
     setSettings((prev) => ({ ...prev, ...patch }));
@@ -618,7 +620,7 @@ export function NewGameModal() {
 
   return (
     <div
-      class="absolute inset-0 z-[60] flex items-center justify-center"
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -628,7 +630,8 @@ export function NewGameModal() {
 
       {/* Modal panel */}
       <div
-        class="relative rounded-lg shadow-2xl w-[480px] max-w-[95vw] max-h-[95vh] overflow-y-auto overscroll-contain p-5 md:p-6 font-game text-sm z-10 parchment-panel"
+        ref={scrollRef}
+        class="relative rounded-lg shadow-2xl w-[480px] max-w-[95vw] modal-scroll-lg p-5 md:p-6 font-game text-sm z-10 parchment-panel"
         style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}

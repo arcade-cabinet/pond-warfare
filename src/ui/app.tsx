@@ -207,49 +207,57 @@ export function App({ onMount }: AppProps) {
             game.handleEvacuationChoice(choice);
           }}
         />
-
-        {store.techTreeOpen.value && (
-          <TechTreePanel
-            techState={{ ...game.world.tech }}
-            clams={store.clams.value}
-            twigs={store.twigs.value}
-            onResearch={(id: TechId) => {
-              const w = game.world;
-              const upgrade = TECH_UPGRADES[id as keyof typeof TECH_UPGRADES];
-              if (
-                upgrade &&
-                canResearch(id, w.tech) &&
-                w.resources.clams >= upgrade.clamCost &&
-                w.resources.twigs >= upgrade.twigCost
-              ) {
-                w.resources.clams -= upgrade.clamCost;
-                w.resources.twigs -= upgrade.twigCost;
-                w.tech[id] = true;
-                game.syncUIStore();
-              }
-            }}
-            onClose={() => {
-              store.techTreeOpen.value = false;
-            }}
-          />
-        )}
-
-        <SettingsOverlay />
-        {store.keyboardRefOpen.value && (
-          <KeyboardReference
-            onClose={() => {
-              store.keyboardRefOpen.value = false;
-            }}
-          />
-        )}
-        {store.achievementsOpen.value && <AchievementsPanel />}
-        {store.leaderboardOpen.value && <LeaderboardPanel />}
-        {store.unlocksOpen.value && <UnlocksPanel />}
-        {store.cosmeticsOpen.value && <CosmeticsPanel />}
       </div>
 
       {/* Hamburger button — sole floating DOM element */}
       <HamburgerButton />
+
+      {/*
+        Modal overlays — rendered as SIBLINGS of #game-container so they are
+        NOT affected by its `touch-action: none`. Per the W3C Pointer Events
+        spec, touch-action is computed by intersecting an element's value with
+        each ancestor's value, so any overlay inside #game-container would
+        inherit `touch-action: none` and lose native touch-scroll even if it
+        set its own touch-action. Moving them here keeps game input isolated
+        while restoring proper touch behaviour in all modal scroll areas.
+      */}
+      {store.techTreeOpen.value && (
+        <TechTreePanel
+          techState={{ ...game.world.tech }}
+          clams={store.clams.value}
+          twigs={store.twigs.value}
+          onResearch={(id: TechId) => {
+            const w = game.world;
+            const upgrade = TECH_UPGRADES[id as keyof typeof TECH_UPGRADES];
+            if (
+              upgrade &&
+              canResearch(id, w.tech) &&
+              w.resources.clams >= upgrade.clamCost &&
+              w.resources.twigs >= upgrade.twigCost
+            ) {
+              w.resources.clams -= upgrade.clamCost;
+              w.resources.twigs -= upgrade.twigCost;
+              w.tech[id] = true;
+              game.syncUIStore();
+            }
+          }}
+          onClose={() => {
+            store.techTreeOpen.value = false;
+          }}
+        />
+      )}
+      <SettingsOverlay />
+      {store.keyboardRefOpen.value && (
+        <KeyboardReference
+          onClose={() => {
+            store.keyboardRefOpen.value = false;
+          }}
+        />
+      )}
+      {store.achievementsOpen.value && <AchievementsPanel />}
+      {store.leaderboardOpen.value && <LeaderboardPanel />}
+      {store.unlocksOpen.value && <UnlocksPanel />}
+      {store.cosmeticsOpen.value && <CosmeticsPanel />}
 
       {/* Tabbed command panel */}
       <CommandPanel minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />

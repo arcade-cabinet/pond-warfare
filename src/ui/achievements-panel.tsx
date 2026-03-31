@@ -8,10 +8,12 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { ACHIEVEMENTS, getEarnedAchievements, loadAchievements } from '@/systems/achievements';
+import { useScrollDrag } from './hooks/useScrollDrag';
 import { achievementsOpen } from './store';
 
 export function AchievementsPanel() {
   const [earned, setEarned] = useState<Set<string>>(new Set());
+  const scrollRef = useScrollDrag<HTMLDivElement>();
 
   useEffect(() => {
     // Load achievements from DB and refresh state
@@ -30,7 +32,7 @@ export function AchievementsPanel() {
 
   return (
     <div
-      class="absolute inset-0 z-[60] flex items-center justify-center"
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       style={{ background: 'rgba(0, 0, 0, 0.75)' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -39,7 +41,8 @@ export function AchievementsPanel() {
       }}
     >
       <div
-        class="relative w-[90vw] max-w-[700px] max-h-[80vh] overflow-y-auto rounded-lg p-6"
+        ref={scrollRef}
+        class="relative w-[90vw] max-w-[700px] modal-scroll rounded-lg p-6"
         style={{
           background: 'linear-gradient(135deg, #1a2332 0%, #0f1923 100%)',
           border: '1px solid rgba(251, 191, 36, 0.3)',

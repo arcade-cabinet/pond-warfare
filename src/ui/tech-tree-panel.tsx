@@ -8,6 +8,7 @@
 
 import type { TechState } from '@/config/tech-tree';
 import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
+import { useScrollDrag } from './hooks/useScrollDrag';
 
 // -------------------------------------------------------------------
 // Tree layout definition
@@ -349,9 +350,11 @@ export function TechTreePanel({
   onResearch,
   onClose,
 }: TechTreePanelProps) {
+  const scrollRef = useScrollDrag<HTMLDivElement>();
   return (
     <div
-      class="absolute inset-0 z-50 flex flex-col items-center overflow-auto overscroll-contain touch-pan-y parchment-panel"
+      ref={scrollRef}
+      class="absolute inset-0 z-50 flex flex-col items-center modal-scroll-both parchment-panel"
       style={{ background: 'rgba(12, 26, 31, 0.9)' }}
       onClick={(e) => {
         // Close when clicking the backdrop

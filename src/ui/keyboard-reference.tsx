@@ -6,6 +6,8 @@
  * Styled with parchment-panel and font-game classes.
  */
 
+import { useScrollDrag } from './hooks/useScrollDrag';
+
 interface ShortcutEntry {
   keys: string;
   label: string;
@@ -98,8 +100,9 @@ export interface KeyboardReferenceProps {
 }
 
 export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
+  const scrollRef = useScrollDrag<HTMLDivElement>();
   return (
-    <div class="absolute inset-0 z-[60] flex items-center justify-center">
+    <div class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay">
       {/* Backdrop */}
       <div
         class="absolute inset-0"
@@ -110,7 +113,8 @@ export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
 
       {/* Panel card */}
       <div
-        class="relative rounded-lg shadow-2xl w-[520px] max-w-[95vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 font-game text-sm z-10 parchment-panel"
+        ref={scrollRef}
+        class="relative rounded-lg shadow-2xl w-[520px] max-w-[95vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel"
         style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}
