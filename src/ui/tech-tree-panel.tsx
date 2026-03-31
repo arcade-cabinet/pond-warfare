@@ -83,94 +83,99 @@ export function TechTreePanel({
 
   return (
     <div
-      ref={scrollRef}
-      class="absolute inset-0 z-50 flex flex-col items-center modal-scroll-both parchment-panel"
+      class="absolute inset-0 z-50 modal-overlay"
       style={{ background: 'rgba(12, 26, 31, 0.9)' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* Header */}
-      <div class="w-full flex items-center justify-between px-6 pt-4 pb-2 max-w-4xl mx-auto">
-        <h2
-          class="font-title text-lg uppercase tracking-widest"
-          style={{ color: 'var(--pw-text-primary)' }}
-        >
-          Tech Tree
-        </h2>
-        <button
-          type="button"
-          class="hud-btn w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded text-lg font-bold transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
-        >
-          X
-        </button>
-      </div>
-
-      {/* Resources bar */}
-      <div class="flex gap-4 text-xs mb-4 font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
-        <span>
-          Clams:{' '}
-          <span class="font-bold" style={{ color: 'var(--pw-clam)' }}>
-            {clams}
-          </span>
-        </span>
-        <span>
-          Twigs:{' '}
-          <span class="font-bold" style={{ color: 'var(--pw-twig)' }}>
-            {twigs}
-          </span>
-        </span>
-      </div>
-
-      {/* Mobile: branch tabs + card grid (visible <768px) */}
-      <div class="md:hidden w-full flex-1 flex flex-col">
-        <BranchTabs active={branch} onSelect={setBranch} />
-        <div class="px-4 pb-8">
-          {branch === 'lodge' && (
-            <BranchGrid
-              nodes={LODGE_NODES}
-              techState={techState}
-              clams={clams}
-              twigs={twigs}
-              onResearch={onResearch}
-            />
-          )}
-          {branch === 'armory' && (
-            <BranchGrid
-              nodes={ARMORY_NODES}
-              techState={techState}
-              clams={clams}
-              twigs={twigs}
-              onResearch={onResearch}
-            />
-          )}
+      {/* Inner scroll container — has max-height constraint, centered */}
+      <div
+        ref={scrollRef}
+        class="absolute inset-0 flex flex-col items-center modal-scroll-both parchment-panel"
+      >
+        {/* Header */}
+        <div class="w-full flex items-center justify-between px-6 pt-4 pb-2 max-w-4xl mx-auto">
+          <h2
+            class="font-title text-lg uppercase tracking-widest"
+            style={{ color: 'var(--pw-text-primary)' }}
+          >
+            Tech Tree
+          </h2>
+          <button
+            type="button"
+            class="hud-btn w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center rounded text-lg font-bold transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+          >
+            X
+          </button>
         </div>
-      </div>
 
-      {/* Desktop: side-by-side graphs (visible ≥768px) */}
-      <div class="hidden md:flex gap-16 px-4 pb-8 items-start justify-center">
-        <BranchPanel
-          title="Lodge / Nature"
-          nodes={LODGE_NODES}
-          edges={LODGE_EDGES}
-          techState={techState}
-          clams={clams}
-          twigs={twigs}
-          onResearch={onResearch}
-        />
-        <BranchPanel
-          title="Armory"
-          nodes={ARMORY_NODES}
-          edges={ARMORY_EDGES}
-          techState={techState}
-          clams={clams}
-          twigs={twigs}
-          onResearch={onResearch}
-        />
+        {/* Resources bar */}
+        <div class="flex gap-4 text-xs mb-4 font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
+          <span>
+            Clams:{' '}
+            <span class="font-bold" style={{ color: 'var(--pw-clam)' }}>
+              {clams}
+            </span>
+          </span>
+          <span>
+            Twigs:{' '}
+            <span class="font-bold" style={{ color: 'var(--pw-twig)' }}>
+              {twigs}
+            </span>
+          </span>
+        </div>
+
+        {/* Mobile: branch tabs + card grid (visible <768px) */}
+        <div class="md:hidden w-full flex-1 flex flex-col">
+          <BranchTabs active={branch} onSelect={setBranch} />
+          <div class="px-4 pb-8">
+            {branch === 'lodge' && (
+              <BranchGrid
+                nodes={LODGE_NODES}
+                techState={techState}
+                clams={clams}
+                twigs={twigs}
+                onResearch={onResearch}
+              />
+            )}
+            {branch === 'armory' && (
+              <BranchGrid
+                nodes={ARMORY_NODES}
+                techState={techState}
+                clams={clams}
+                twigs={twigs}
+                onResearch={onResearch}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Desktop: side-by-side graphs (visible ≥768px) */}
+        <div class="hidden md:flex gap-16 px-4 pb-8 items-start justify-center">
+          <BranchPanel
+            title="Lodge / Nature"
+            nodes={LODGE_NODES}
+            edges={LODGE_EDGES}
+            techState={techState}
+            clams={clams}
+            twigs={twigs}
+            onResearch={onResearch}
+          />
+          <BranchPanel
+            title="Armory"
+            nodes={ARMORY_NODES}
+            edges={ARMORY_EDGES}
+            techState={techState}
+            clams={clams}
+            twigs={twigs}
+            onResearch={onResearch}
+          />
+        </div>
       </div>
     </div>
   );

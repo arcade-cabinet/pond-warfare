@@ -1,18 +1,10 @@
 /**
  * Modal Responsive Design — Unit Tests
  *
- * Covers two areas:
- *
- * 1. useScrollDrag hook — verifies pointer drag-to-scroll behaviour.
- *    The hook is designed to handle mouse/pen input; touch is intentionally
- *    delegated to the browser's native touch-action handling.
- *
- * 2. CSS class convention checks — verifies that every modal panel
- *    component exports the expected responsive CSS class markers so a
- *    reviewer can quickly confirm the classes are present.
- *
- * The hook tests spin up a minimal JSDOM element, attach the hook via a
- * Preact render, fire synthetic PointerEvents, and assert scrollTop changes.
+ * 1. useScrollDrag hook — pointer drag-to-scroll behaviour. Mouse/pen only;
+ *    touch is delegated to native touch-action handling.
+ * 2. CSS class convention checks — static source checks that every modal panel
+ *    uses the correct responsive CSS classes.
  */
 
 import { cleanup, render } from '@testing-library/preact';
@@ -65,9 +57,7 @@ function firePointer(
   );
 }
 
-// ---------------------------------------------------------------------------
 // useScrollDrag tests
-// ---------------------------------------------------------------------------
 
 describe('useScrollDrag', () => {
   beforeEach(() => {
@@ -184,22 +174,41 @@ describe('useScrollDrag', () => {
 
     expect(box.scrollLeft).toBe(50);
   });
+
+  it('suppresses click event after a drag to prevent accidental activations', () => {
+    const box = getBox();
+    box.scrollTop = 0;
+
+    let clickFired = false;
+    box.addEventListener('click', () => {
+      clickFired = true;
+    });
+
+    // Perform a drag (exceeds dead zone)
+    firePointer(box, 'pointerdown', { clientY: 100 });
+    firePointer(box, 'pointermove', { clientY: 50 });
+    firePointer(box, 'pointerup', { clientY: 50 });
+
+    // Fire a click — the capture-phase handler should eat it.
+    box.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(clickFired).toBe(false);
+  });
 });
 
-// ---------------------------------------------------------------------------
 // CSS class convention checks
-// ---------------------------------------------------------------------------
 
 describe('Modal responsive CSS classes', () => {
-  /**
-   * Reads the raw source of a module file and asserts that it contains the
-   * given CSS class names. This is a lightweight static check — it does not
-   * require rendering the component but confirms the developer applied the
-   * correct classes when editing the file.
-   */
+  /** Asserts class names appear as standalone tokens in the given source. */
+  function escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   function assertClasses(source: string, classes: string[], file: string) {
     for (const cls of classes) {
-      expect(source, `${file} is missing class "${cls}"`).toContain(cls);
+      const escaped = escapeRegExp(cls);
+      // Ensure the class name appears as a standalone token, not just as a prefix.
+      const pattern = new RegExp(`(^|[^a-zA-Z0-9-])${escaped}([^a-zA-Z0-9-]|$)`);
+      expect(source, `${file} is missing class "${cls}"`).toMatch(pattern);
     }
   }
 
