@@ -1278,3 +1278,122 @@ input[type="range"]::-moz-range-thumb {
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
 }
+
+/* ====================================================================
+   Modal Responsive Utilities
+   ====================================================================
+   Problem: modals rendered inside #game-container inherited its
+   `touch-action: none`, which blocks ALL native touch scrolling even
+   on descendants that set their own touch-action (per W3C spec, touch
+   action is computed by intersection with ancestors). The architectural
+   fix is to render modal overlays as siblings of #game-container.
+   These classes provide the corresponding CSS behaviour for those
+   siblings, and for components used on both menu and game screens.
+
+   .modal-overlay   — outer backdrop wrapper; positions the overlay
+                      over the full viewport and establishes a touch-
+                      action that permits vertical pan gestures.
+   .modal-scroll    — scrollable panel card; uses dvh (dynamic viewport
+                      height) so the panel shrinks when mobile browser
+                      chrome (address bar, nav) is visible. Falls back
+                      to vh for older browsers (cascade override).
+   .modal-scroll-lg — same but allows 95 % of viewport (larger modals).
+   .modal-scroll-both — two-axis scroll for the tech tree and other
+                      panels that need horizontal + vertical panning.
+   ==================================================================== */
+
+/** Outer backdrop for any modal overlay (sibling of #game-container). */
+.modal-overlay {
+  touch-action: pan-y;
+}
+
+/**
+ * Scrollable panel card inside a modal.
+ * dvh = dynamic viewport height — excludes transient browser UI (address
+ * bar, bottom navigation bar on mobile). Falls back silently to vh on
+ * browsers that do not yet support dvh units (cascade override).
+ */
+.modal-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  max-height: 90vh;      /* fallback for browsers without dvh */
+  max-height: 90dvh;     /* preferred: adapts to visible viewport */
+}
+
+/** Larger variant — 95 % of visible viewport. */
+.modal-scroll-lg {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  max-height: 95vh;
+  max-height: 95dvh;
+}
+
+/**
+ * Two-axis scrollable area — used by the Tech Tree and any other panel
+ * that requires both horizontal and vertical touch panning.
+ */
+.modal-scroll-both {
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  max-height: 95vh;
+  max-height: 95dvh;
+}
+
+/* ====================================================================
+   Tech Tree Mobile Card Grid
+   ====================================================================
+   Responsive CSS grid that replaces SVG dependency lines on mobile.
+   Each card is a self-contained touch target with text-based dependency
+   badges instead of graph edges.
+   ==================================================================== */
+
+.tech-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.tech-card {
+  border-width: 2px;
+  border-style: solid;
+  min-width: 0;
+  width: 100%;
+}
+
+/* ====================================================================
+   Settings Tabs
+   ==================================================================== */
+
+.settings-tab-bar {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  border-bottom: 2px solid var(--pw-border);
+  margin-bottom: 12px;
+}
+
+.settings-tab-btn {
+  flex: 1;
+  padding: 6px 4px;
+  min-height: 40px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border: none;
+  background: transparent;
+  color: var(--pw-text-muted);
+  border-bottom: 2px solid transparent;
+}
+
+.settings-tab-btn[data-active='true'] {
+  background: linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid));
+  color: var(--pw-accent);
+  border-bottom-color: var(--pw-accent);
+}

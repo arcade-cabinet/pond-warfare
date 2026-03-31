@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { COSMETICS, type CosmeticDef } from '@/config/cosmetics';
 import { getPlayerProfile, getSetting, type PlayerProfile, setSetting } from '@/storage';
+import { useScrollDrag } from './hooks/useScrollDrag';
 import { cosmeticsOpen } from './store';
 
 /** Key prefix for cosmetic activation in the settings table. */
@@ -18,6 +19,7 @@ const COSMETIC_ACTIVE_PREFIX = 'cosmetic_active_';
 export function CosmeticsPanel() {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [activeIds, setActiveIds] = useState<Set<string>>(new Set());
+  const scrollRef = useScrollDrag<HTMLDivElement>();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export function CosmeticsPanel() {
 
   return (
     <div
-      class="absolute inset-0 z-[60] flex items-center justify-center"
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -90,7 +92,8 @@ export function CosmeticsPanel() {
 
       {/* Panel card */}
       <div
-        class="relative rounded-lg shadow-2xl w-[440px] max-w-[95vw] max-h-[90vh] overflow-y-auto overscroll-contain p-5 md:p-6 font-game text-sm z-10 parchment-panel"
+        ref={scrollRef}
+        class="relative rounded-lg shadow-2xl w-[440px] max-w-[95vw] modal-scroll p-5 md:p-6 font-game text-sm z-10 parchment-panel"
         style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}

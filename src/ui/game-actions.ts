@@ -177,3 +177,21 @@ export function setSpeed(speed: number): void {
     store.gameSpeed.value = speed;
   }
 }
+
+/** Open achievements panel and close hamburger panel. */
+export function openAchievements(): void {
+  store.achievementsOpen.value = true;
+  store.mobilePanelOpen.value = false;
+}
+
+/** Open leaderboard panel and close hamburger panel. */
+export function openLeaderboard(): void {
+  store.leaderboardOpen.value = true;
+  store.mobilePanelOpen.value = false;
+}
+
+/** Open keyboard reference and close hamburger panel. */
+export function openKeyboardRef(): void {
+  store.keyboardRefOpen.value = true;
+  store.mobilePanelOpen.value = false;
+}

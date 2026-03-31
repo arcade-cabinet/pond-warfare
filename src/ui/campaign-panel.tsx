@@ -8,12 +8,16 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { loadCampaignProgress, type MissionDef } from '@/campaign';
 import { CAMPAIGN_MISSIONS } from '@/campaign/missions';
+import { useScrollDrag } from './hooks/useScrollDrag';
 import { campaignMissionId, campaignOpen, menuState } from './store';
 
 export function CampaignPanel() {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [selectedMission, setSelectedMission] = useState<MissionDef | null>(null);
   const [showBriefing, setShowBriefing] = useState(false);
+  // Both views may need scroll on small screens — hooks must be at the top.
+  const briefingScrollRef = useScrollDrag<HTMLDivElement>();
+  const missionScrollRef = useScrollDrag<HTMLDivElement>();
 
   // Load progress on mount
   useEffect(() => {
@@ -63,88 +67,91 @@ export function CampaignPanel() {
   if (showBriefing && selectedMission) {
     return (
       <div
-        class="absolute inset-0 z-50 flex items-center justify-center"
+        ref={briefingScrollRef}
+        class="absolute inset-0 z-50 overflow-y-auto modal-overlay"
         style={{ background: 'rgba(6, 14, 18, 0.95)' }}
       >
-        <div
-          class="flex flex-col items-center gap-6 max-w-lg px-8 py-10 rounded-lg"
-          style={{
-            background: 'rgba(19, 40, 48, 0.9)',
-            border: '1px solid var(--pw-border)',
-          }}
-        >
-          <div class="text-center">
-            <span
-              class="font-numbers text-xs tracking-wider"
+        <div class="min-h-full flex items-center justify-center p-4">
+          <div
+            class="flex flex-col items-center gap-6 max-w-lg w-full px-8 py-10 rounded-lg"
+            style={{
+              background: 'rgba(19, 40, 48, 0.9)',
+              border: '1px solid var(--pw-border)',
+            }}
+          >
+            <div class="text-center">
+              <span
+                class="font-numbers text-xs tracking-wider"
+                style={{ color: 'var(--pw-text-muted)' }}
+              >
+                MISSION {selectedMission.number}
+              </span>
+              <h2
+                class="font-heading text-2xl md:text-3xl font-bold mt-1"
+                style={{ color: 'var(--pw-accent)' }}
+              >
+                {selectedMission.title}
+              </h2>
+              <p class="font-game text-sm mt-1" style={{ color: 'var(--pw-text-secondary)' }}>
+                {selectedMission.subtitle}
+              </p>
+            </div>
+
+            {/* Briefing text */}
+            <div
+              class="font-game text-xs md:text-sm leading-relaxed whitespace-pre-line text-center"
               style={{ color: 'var(--pw-text-muted)' }}
             >
-              MISSION {selectedMission.number}
-            </span>
-            <h2
-              class="font-heading text-2xl md:text-3xl font-bold mt-1"
-              style={{ color: 'var(--pw-accent)' }}
-            >
-              {selectedMission.title}
-            </h2>
-            <p class="font-game text-sm mt-1" style={{ color: 'var(--pw-text-secondary)' }}>
-              {selectedMission.subtitle}
-            </p>
-          </div>
+              {selectedMission.briefing}
+            </div>
 
-          {/* Briefing text */}
-          <div
-            class="font-game text-xs md:text-sm leading-relaxed whitespace-pre-line text-center"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
-            {selectedMission.briefing}
-          </div>
+            {/* Objectives */}
+            <div class="w-full">
+              <h3
+                class="font-heading text-xs font-bold tracking-wider mb-2"
+                style={{ color: 'var(--pw-text-secondary)' }}
+              >
+                OBJECTIVES
+              </h3>
+              <ul class="flex flex-col gap-1">
+                {selectedMission.objectives.map((obj) => (
+                  <li
+                    key={obj.id}
+                    class="font-game text-xs flex items-center gap-2"
+                    style={{ color: 'var(--pw-text-primary)' }}
+                  >
+                    <span style={{ color: 'var(--pw-accent)' }}>&#9679;</span>
+                    {obj.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* Objectives */}
-          <div class="w-full">
-            <h3
-              class="font-heading text-xs font-bold tracking-wider mb-2"
-              style={{ color: 'var(--pw-text-secondary)' }}
-            >
-              OBJECTIVES
-            </h3>
-            <ul class="flex flex-col gap-1">
-              {selectedMission.objectives.map((obj) => (
-                <li
-                  key={obj.id}
-                  class="font-game text-xs flex items-center gap-2"
-                  style={{ color: 'var(--pw-text-primary)' }}
-                >
-                  <span style={{ color: 'var(--pw-accent)' }}>&#9679;</span>
-                  {obj.label}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Buttons */}
-          <div class="flex gap-4 mt-2">
-            <button
-              type="button"
-              class="action-btn font-heading font-bold text-sm tracking-wider"
-              style={{
-                padding: '10px 28px',
-                color: 'var(--pw-text-muted)',
-              }}
-              onClick={handleClose}
-            >
-              BACK
-            </button>
-            <button
-              type="button"
-              class="action-btn font-heading font-bold text-sm tracking-wider"
-              style={{
-                padding: '10px 28px',
-                color: 'var(--pw-accent)',
-              }}
-              onClick={handleLaunch}
-            >
-              LAUNCH MISSION
-            </button>
+            {/* Buttons */}
+            <div class="flex gap-4 mt-2">
+              <button
+                type="button"
+                class="action-btn font-heading font-bold text-sm tracking-wider"
+                style={{
+                  padding: '10px 28px',
+                  color: 'var(--pw-text-muted)',
+                }}
+                onClick={handleClose}
+              >
+                BACK
+              </button>
+              <button
+                type="button"
+                class="action-btn font-heading font-bold text-sm tracking-wider"
+                style={{
+                  padding: '10px 28px',
+                  color: 'var(--pw-accent)',
+                }}
+                onClick={handleLaunch}
+              >
+                LAUNCH MISSION
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -154,79 +161,82 @@ export function CampaignPanel() {
   // ---- Mission select grid ----
   return (
     <div
-      class="absolute inset-0 z-50 flex flex-col items-center justify-center"
+      ref={missionScrollRef}
+      class="absolute inset-0 z-50 overflow-y-auto modal-overlay"
       style={{ background: 'rgba(6, 14, 18, 0.95)' }}
     >
-      <h2
-        class="font-heading text-2xl md:text-3xl font-bold mb-2 tracking-widest"
-        style={{ color: 'var(--pw-accent)' }}
-      >
-        CAMPAIGN
-      </h2>
-      <p class="font-game text-sm mb-8" style={{ color: 'var(--pw-text-muted)' }}>
-        Complete missions in order to unlock the next
-      </p>
+      <div class="min-h-full flex flex-col items-center justify-center py-8 px-4">
+        <h2
+          class="font-heading text-2xl md:text-3xl font-bold mb-2 tracking-widest"
+          style={{ color: 'var(--pw-accent)' }}
+        >
+          CAMPAIGN
+        </h2>
+        <p class="font-game text-sm mb-8" style={{ color: 'var(--pw-text-muted)' }}>
+          Complete missions in order to unlock the next
+        </p>
 
-      <div class="flex flex-col gap-3 w-full max-w-md px-4">
-        {CAMPAIGN_MISSIONS.map((mission) => {
-          const unlocked = isMissionUnlocked(mission);
-          const done = completed.has(mission.id);
+        <div class="flex flex-col gap-3 w-full max-w-md px-4">
+          {CAMPAIGN_MISSIONS.map((mission) => {
+            const unlocked = isMissionUnlocked(mission);
+            const done = completed.has(mission.id);
 
-          return (
-            <button
-              key={mission.id}
-              type="button"
-              class="action-btn flex items-center gap-4 text-left w-full"
-              disabled={!unlocked}
-              style={{
-                padding: '12px 16px',
-                opacity: unlocked ? 1 : 0.4,
-                cursor: unlocked ? 'pointer' : 'not-allowed',
-                border: done ? '1px solid var(--pw-success)' : undefined,
-              }}
-              onClick={() => handleMissionClick(mission)}
-            >
-              <span
-                class="font-numbers text-lg font-bold w-8 text-center"
+            return (
+              <button
+                key={mission.id}
+                type="button"
+                class="action-btn flex items-center gap-4 text-left w-full"
+                disabled={!unlocked}
                 style={{
-                  color: done
-                    ? 'var(--pw-success)'
-                    : unlocked
-                      ? 'var(--pw-accent)'
-                      : 'var(--pw-text-muted)',
+                  padding: '12px 16px',
+                  opacity: unlocked ? 1 : 0.4,
+                  cursor: unlocked ? 'pointer' : 'not-allowed',
+                  border: done ? '1px solid var(--pw-success)' : undefined,
                 }}
+                onClick={() => handleMissionClick(mission)}
               >
-                {done ? '\u2713' : mission.number}
-              </span>
-              <div class="flex-1">
-                <div
-                  class="font-heading font-bold text-sm"
+                <span
+                  class="font-numbers text-lg font-bold w-8 text-center"
                   style={{
-                    color: unlocked ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
+                    color: done
+                      ? 'var(--pw-success)'
+                      : unlocked
+                        ? 'var(--pw-accent)'
+                        : 'var(--pw-text-muted)',
                   }}
                 >
-                  {mission.title}
+                  {done ? '\u2713' : mission.number}
+                </span>
+                <div class="flex-1">
+                  <div
+                    class="font-heading font-bold text-sm"
+                    style={{
+                      color: unlocked ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
+                    }}
+                  >
+                    {mission.title}
+                  </div>
+                  <div class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+                    {unlocked ? mission.subtitle : 'Locked'}
+                  </div>
                 </div>
-                <div class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
-                  {unlocked ? mission.subtitle : 'Locked'}
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+              </button>
+            );
+          })}
+        </div>
 
-      <button
-        type="button"
-        class="action-btn font-heading font-bold text-sm tracking-wider mt-8"
-        style={{
-          padding: '10px 28px',
-          color: 'var(--pw-text-muted)',
-        }}
-        onClick={handleClose}
-      >
-        BACK TO MENU
-      </button>
+        <button
+          type="button"
+          class="action-btn font-heading font-bold text-sm tracking-wider mt-8"
+          style={{
+            padding: '10px 28px',
+            color: 'var(--pw-text-muted)',
+          }}
+          onClick={handleClose}
+        >
+          BACK TO MENU
+        </button>
+      </div>
     </div>
   );
 }

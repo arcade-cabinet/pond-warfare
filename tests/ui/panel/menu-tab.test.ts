@@ -16,6 +16,9 @@ vi.mock('@/ui/game-actions', () => ({
   quickLoad: vi.fn(),
   openSettings: vi.fn(),
   toggleColorBlind: vi.fn(),
+  openAchievements: vi.fn(),
+  openLeaderboard: vi.fn(),
+  openKeyboardRef: vi.fn(),
 }));
 
 vi.mock('@/rendering/animations', () => ({
@@ -29,6 +32,10 @@ import { MenuTab } from '@/ui/panel/MenuTab';
 beforeEach(() => {
   store.hasSaveGame.value = false;
   store.colorBlindMode.value = false;
+  store.clams.value = 200;
+  store.twigs.value = 50;
+  store.pearls.value = 0;
+  store.gameTimeDisplay.value = 'Day 1 - 08:00';
   vi.clearAllMocks();
 });
 
@@ -42,8 +49,8 @@ describe('MenuTab', () => {
     const buttons = Array.from(document.querySelectorAll('button'));
     const texts = buttons.map((b) => b.textContent?.trim());
     expect(texts.some((t) => t?.includes('TECH TREE'))).toBe(true);
-    expect(texts).toContain('Save');
-    expect(texts).toContain('Load');
+    expect(texts.some((t) => t?.includes('Save'))).toBe(true);
+    expect(texts.some((t) => t?.includes('Load'))).toBe(true);
     expect(texts.some((t) => t?.includes('Settings'))).toBe(true);
     expect(texts.some((t) => t?.includes('Color Blind'))).toBe(true);
   });
@@ -51,8 +58,8 @@ describe('MenuTab', () => {
   it('Load button is disabled when no save exists', () => {
     store.hasSaveGame.value = false;
     render(h(MenuTab, {}));
-    const loadBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent?.trim() === 'Load',
+    const loadBtn = Array.from(document.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Load'),
     );
     expect(loadBtn?.disabled).toBe(true);
   });
@@ -60,8 +67,8 @@ describe('MenuTab', () => {
   it('Load button is enabled when save exists', () => {
     store.hasSaveGame.value = true;
     render(h(MenuTab, {}));
-    const loadBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent?.trim() === 'Load',
+    const loadBtn = Array.from(document.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Load'),
     );
     expect(loadBtn?.disabled).toBe(false);
   });
@@ -77,8 +84,8 @@ describe('MenuTab', () => {
 
   it('Save click calls quickSave', () => {
     render(h(MenuTab, {}));
-    const saveBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent?.trim() === 'Save',
+    const saveBtn = Array.from(document.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Save'),
     );
     saveBtn?.click();
     expect(quickSave).toHaveBeenCalledTimes(1);

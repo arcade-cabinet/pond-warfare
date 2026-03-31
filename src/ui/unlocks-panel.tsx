@@ -13,6 +13,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { UNLOCK_CATEGORIES, UNLOCKS, type UnlockCategory } from '@/config/unlocks';
 import type { PlayerProfile } from '@/storage/database';
 import { getCachedProfile, getUnlockedIds, loadUnlocks } from '@/systems/unlock-tracker';
+import { useScrollDrag } from './hooks/useScrollDrag';
 import { unlocksOpen } from './store';
 
 /** Build a human-readable progress string for a locked unlock. */
@@ -49,6 +50,7 @@ export function UnlocksPanel() {
   const [unlockedSet, setUnlockedSet] = useState<ReadonlySet<string>>(new Set());
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [activeCategory, setActiveCategory] = useState<UnlockCategory | 'all'>('all');
+  const scrollRef = useScrollDrag<HTMLDivElement>();
 
   useEffect(() => {
     loadUnlocks()
@@ -87,7 +89,7 @@ export function UnlocksPanel() {
 
   return (
     <div
-      class="absolute inset-0 z-[60] flex items-center justify-center"
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       style={{ background: 'rgba(0, 0, 0, 0.75)' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -96,7 +98,8 @@ export function UnlocksPanel() {
       }}
     >
       <div
-        class="relative w-[90vw] max-w-[720px] max-h-[85vh] overflow-y-auto rounded-lg p-6"
+        ref={scrollRef}
+        class="relative w-[90vw] max-w-[720px] modal-scroll-lg rounded-lg p-6"
         style={{
           background: 'linear-gradient(135deg, #1a2332 0%, #0f1923 100%)',
           border: '1px solid rgba(167, 139, 250, 0.3)',
