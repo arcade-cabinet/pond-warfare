@@ -172,3 +172,164 @@ New unit tests in `tests/ui/modals/responsive.test.ts` cover:
    - Every modal file contains the expected `modal-overlay` / `modal-scroll*`
      class strings (static source inspection)
    - Every modal file imports `useScrollDrag`
+
+---
+
+## Tech Tree — Mobile Redesign
+
+### Problem
+
+The original tech tree panel (423 lines) rendered all techs using absolute
+pixel positioning with SVG dependency lines. On mobile screens (<768px) this
+forced two-axis scrolling through a fixed-size graph, which was:
+
+- Hard to read: nodes were tiny on phone screens
+- Hard to navigate: required pinch zoom + pan-x + pan-y simultaneously
+- Not diegetic: a floating graph doesn't match the RTS in-game UI idiom
+
+### Solution: Viewport-Aware Dual Layout
+
+The panel now detects viewport width and renders two different UIs:
+
+| Viewport | Layout | Component |
+|---|---|---|
+| **≥768px** (desktop/tablet) | Side-by-side branch graphs with SVG dependency lines | `BranchPanel` + `EdgeLines` + `TechNode` |
+| **<768px** (mobile) | Branch tabs (Lodge/Nature \| Armory) + vertical scrollable card grid | `BranchTabs` + `BranchGrid` + `TechCard` |
+
+```
+Desktop:                          Mobile:
+┌───────────┬───────────┐         ┌──────────────────────┐
+│ Lodge     │  Armory   │         │ [Lodge] [Armory]     │  ← tabs
+│  ┌─┐ ┌─┐ │  ┌─┐ ┌─┐  │         ├──────────────────────┤
+│  │▣│─│▣│ │  │▣│─│▣│  │         │ ┌────┐ ┌────┐        │
+│  └─┘ └─┘ │  └─┘ └─┘  │         │ │Card│ │Card│        │
+│    │      │    │      │         │ │    │ │    │        │
+│  ┌─┐      │  ┌─┐ ┌─┐  │         │ └────┘ └────┘        │
+│  │▣│      │  │▣│─│▣│  │         │ ┌────┐ ┌────┐        │
+│  └─┘      │  └─┘ └─┘  │         │ │Card│ │Card│        │
+└───────────┴───────────┘         └──────────────────────┘
+```
+
+### Decomposed File Structure
+
+The monolithic `tech-tree-panel.tsx` (423 lines) was decomposed into 7 focused
+modules, all under the 300-line limit:
+
+| File | Lines | Purpose |
+|---|---|---|
+| `src/ui/tech-tree/tree-data.ts` | 104 | TreeNode, TreeEdge interfaces + LODGE/ARMORY data + cell constants |
+| `src/ui/tech-tree/tree-helpers.ts` | 73 | NodeState type, `getNodeState()`, `stateStyles()` |
+| `src/ui/tech-tree/TechCard.tsx` | 95 | Mobile card with text dependency badge |
+| `src/ui/tech-tree/TechNode.tsx` | 79 | Desktop absolute-positioned node |
+| `src/ui/tech-tree/EdgeLines.tsx` | 65 | SVG dependency lines (desktop only) |
+| `src/ui/tech-tree/BranchPanel.tsx` | 65 | Desktop graph container |
+| `src/ui/tech-tree/BranchGrid.tsx` | 45 | Mobile responsive card grid |
+| `src/ui/tech-tree-panel.tsx` | 177 | Thin shell: header + resources + viewport routing |
+
+### TechCard — Mobile-friendly tech display
+
+Each `TechCard` shows:
+- **Tech name** and **description**
+- **Cost** with pearl cost if applicable
+- **Dependency text badge**: "Needs: Sturdy Mud" (locked) or "From: Sturdy Mud" (available)
+- **Unlock badge**: "🔓 Shieldbearer" for techs that gate units
+
+This replaces SVG dependency lines entirely on mobile — no SVG rendering,
+no absolute positioning, just a flowing CSS grid.
+
+### CSS: `.tech-card-grid`
+
+```css
+.tech-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+```
+
+Cards auto-flow into 1, 2, or 3 columns depending on screen width.
+
+### Tests
+
+`tests/ui/tech-tree/tech-tree-mobile.test.ts` (14 tests):
+
+1. **tree-data**: validates node/edge data references valid TechIds
+2. **tree-helpers**: tests all 4 NodeState computations + stateStyles
+3. **TechCard**: renders name/cost/description, dependency badges, unlock badges
+4. **BranchGrid**: renders a `.tech-card-grid` container with correct card count
+5. **File structure**: verifies `md:hidden` / `hidden md:flex` responsive classes
+
+---
+
+## Settings Panel — Tab Organization
+
+### Problem
+
+The settings panel was a single long scroll with all options displayed at once.
+On mobile, users had to scroll through unrelated sections to find what they wanted.
+
+### Solution: 4 Tabs
+
+| Tab | Content |
+|---|---|
+| **🔊 Audio** | Master volume, music volume, SFX volume sliders |
+| **⏱ Game** | Game speed selector (1x / 2x / 3x) |
+| **⚙ Options** | Color blind mode toggle, auto-save toggle |
+| **♿ Access** | UI scale buttons, screen shake toggle, reduce visual noise toggle |
+
+Each tab shows only its relevant controls, reducing cognitive load. Tab bar uses
+the `.settings-tab-bar` / `.settings-tab-btn` CSS classes.
+
+---
+
+## New Game Modal — Decomposition
+
+### Problem
+
+At 844 lines, `new-game-modal.tsx` was the largest UI file, well over the
+300-line hard limit.
+
+### Solution: Extract Submodules
+
+| File | Lines | Purpose |
+|---|---|---|
+| `src/ui/new-game/presets.ts` | 226 | All preset configs, name generator, difficulty mapping |
+| `src/ui/new-game/controls.tsx` | 174 | Shared OptionRow, SliderRow, ToggleRow + TabKey/TAB_LABELS |
+| `src/ui/new-game/tabs.tsx` | 127 | Map, Economy, Enemies, Rules tab content |
+| `src/ui/new-game/SeedDisplay.tsx` | 83 | Inline seed editor with hash fallback |
+| `src/ui/new-game-modal.tsx` | 271 | Thin shell: state management + UI composition |
+
+The existing tab-based layout (Map / Economy / Enemies / Rules) was preserved.
+Tab labels were shortened for mobile: "ECON" instead of "ECONOMY", "FOES"
+instead of "ENEMIES".
+
+---
+
+## Hamburger Menu (MenuTab) — Better Information Density
+
+### Problem
+
+The MenuTab had only 4 buttons (Tech Tree, Save, Load, Settings, Color Blind)
+with no resource context and no access to achievements/leaderboard/keyboard ref.
+
+### Solution: Resource Bar + Grouped Actions
+
+```
+┌──────────────────────┐
+│ 200C  50T  0P  08:00 │  ← resource summary bar
+├──────────────────────┤
+│   📜 TECH TREE        │  ← prominent action
+├──────────────────────┤
+│ 💾 Save   │ 📂 Load  │  ← save/load row
+├──────────────────────┤
+│ ⚙ Settings│ ⌨ Keys   │  ← settings + keyboard
+├──────────────────────┤
+│ 🏆 Achieve│ 📊 Ranks  │  ← stats row
+├──────────────────────┤
+│     Color Blind       │  ← toggle
+└──────────────────────┘
+```
+
+New `openAchievements`, `openLeaderboard`, `openKeyboardRef` functions were
+added to `src/ui/game-actions.ts` — each opens its respective panel and
+closes the hamburger menu.

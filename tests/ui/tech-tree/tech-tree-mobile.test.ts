@@ -14,13 +14,8 @@ import { h } from 'preact';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createInitialTechState, TECH_UPGRADES } from '@/config/tech-tree';
+import { ARMORY_EDGES, ARMORY_NODES, LODGE_EDGES, LODGE_NODES } from '@/ui/tech-tree/tree-data';
 import { getNodeState, stateStyles } from '@/ui/tech-tree/tree-helpers';
-import {
-  ARMORY_EDGES,
-  ARMORY_NODES,
-  LODGE_EDGES,
-  LODGE_NODES,
-} from '@/ui/tech-tree/tree-data';
 
 afterEach(() => {
   cleanup();
@@ -70,9 +65,7 @@ describe('tree-helpers', () => {
     const state = createInitialTechState();
     state.sturdyMud = true;
     const upgrade = TECH_UPGRADES.swiftPaws;
-    expect(getNodeState('swiftPaws', state, upgrade.clamCost, upgrade.twigCost)).toBe(
-      'available',
-    );
+    expect(getNodeState('swiftPaws', state, upgrade.clamCost, upgrade.twigCost)).toBe('available');
   });
 
   it('returns "unaffordable" when prerequisite is met but resources insufficient', () => {
@@ -99,7 +92,6 @@ describe('tree-helpers', () => {
 describe('TechCard', () => {
   it('renders a card with tech name, cost, and description', async () => {
     const { TechCard } = await import('@/ui/tech-tree/TechCard');
-    const state = createInitialTechState();
     render(
       h(TechCard, {
         node: LODGE_NODES[0],
@@ -115,7 +107,8 @@ describe('TechCard', () => {
   it('shows dependency text badge for locked tech with requirement', async () => {
     const { TechCard } = await import('@/ui/tech-tree/TechCard');
     // swiftPaws requires sturdyMud
-    const node = ARMORY_NODES.find((n) => n.id === 'swiftPaws')!;
+    const node = ARMORY_NODES.find((n) => n.id === 'swiftPaws');
+    if (!node) throw new Error('swiftPaws node not found');
     render(h(TechCard, { node, state: 'locked', onClick: () => {} }));
     const text = document.body.textContent ?? '';
     expect(text).toContain('Needs');
@@ -124,7 +117,8 @@ describe('TechCard', () => {
 
   it('shows unlock badge for nodes with unlocks', async () => {
     const { TechCard } = await import('@/ui/tech-tree/TechCard');
-    const node = ARMORY_NODES.find((n) => n.id === 'ironShell')!;
+    const node = ARMORY_NODES.find((n) => n.id === 'ironShell');
+    if (!node) throw new Error('ironShell node not found');
     render(h(TechCard, { node, state: 'available', onClick: () => {} }));
     expect(document.body.textContent).toContain('Shieldbearer');
   });

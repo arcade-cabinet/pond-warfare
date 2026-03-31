@@ -28,7 +28,8 @@ export interface TreeEdge {
 }
 
 // -------------------------------------------------------------------
-// Cell sizing (desktop graph layout)
+// Cell sizing constants — used by desktop graph layout only (BranchPanel,
+// TechNode, EdgeLines). Mobile card layout uses CSS grid instead.
 // -------------------------------------------------------------------
 
 export const NODE_W = 130;
