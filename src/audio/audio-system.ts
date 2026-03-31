@@ -1,8 +1,12 @@
 /** Synthesized audio system using Tone.js. All sounds are procedurally generated. */
 import * as Tone from 'tone';
+import type { PlayableFaction } from '@/config/factions';
+import type { EntityKind } from '@/types';
 import { AmbientManager } from './ambient';
+import { CueManager } from './cues';
 import { MusicManager } from './music';
 import { SfxManager } from './sfx';
+import { VoiceManager } from './voices';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
@@ -21,6 +25,8 @@ export class AudioSystem {
   private sfxMgr: SfxManager;
   private musicMgr: MusicManager;
   private ambientMgr: AmbientManager;
+  private cueMgr: CueManager;
+  private voiceMgr: VoiceManager;
 
   constructor() {
     this.sfxMgr = new SfxManager(
@@ -38,6 +44,12 @@ export class AudioSystem {
       () => this._muted,
       this.sfxMgr,
     );
+    this.cueMgr = new CueManager(
+      () => this._started,
+      () => this._muted,
+      this.sfxMgr,
+    );
+    this.voiceMgr = new VoiceManager(this.sfxMgr);
   }
 
   /** Camera state for spatial panning -- updated externally each frame. */
@@ -104,14 +116,7 @@ export class AudioSystem {
   toggleMute(): void {
     this._muted = !this._muted;
     this.ambientMgr.onMuteToggle(this._muted);
-    // Mute/unmute background music gain nodes
-    const ml = this.musicGainLevel;
-    if (this.musicMgr.musicGain) {
-      this.musicMgr.musicGain.gain.rampTo(this._muted ? 0 : 0.15 * ml, 0.1);
-    }
-    if (this.musicMgr.bassGain) {
-      this.musicMgr.bassGain.gain.rampTo(this._muted ? 0 : 0.08 * ml, 0.1);
-    }
+    this.musicMgr.applyMusicVolume();
   }
 
   // ─── SFX Delegate Methods ──────────────────────────────────────
@@ -126,9 +131,11 @@ export class AudioSystem {
     this.sfxMgr.build(worldX);
   }
   hit(worldX?: number): void {
+    this.cueMgr.combatStinger();
     this.sfxMgr.hit(worldX);
   }
   shoot(worldX?: number): void {
+    this.cueMgr.combatStinger();
     this.sfxMgr.shoot(worldX);
   }
   alert(): void {
@@ -183,10 +190,10 @@ export class AudioSystem {
     this.sfxMgr.upgrade();
   }
   win(): void {
-    this.sfxMgr.win();
+    this.cueMgr.victoryMotif();
   }
   lose(): void {
-    this.sfxMgr.lose();
+    this.cueMgr.defeatMotif();
   }
   heal(worldX?: number): void {
     this.sfxMgr.heal(worldX);
@@ -205,6 +212,18 @@ export class AudioSystem {
   }
   buildComplete(): void {
     this.sfxMgr.buildComplete();
+  }
+  playSelectionVoice(kind: EntityKind, faction: PlayableFaction): void {
+    this.voiceMgr.playSelectionVoice(kind, faction);
+  }
+  combatStinger(): void {
+    this.cueMgr.combatStinger();
+  }
+  victoryMotif(): void {
+    this.cueMgr.victoryMotif();
+  }
+  defeatMotif(): void {
+    this.cueMgr.defeatMotif();
   }
 
   // ─── Music Delegate Methods ────────────────────────────────────

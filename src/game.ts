@@ -1347,35 +1347,7 @@ export class Game {
     }
     const eid = this.world.selection[0];
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    switch (kind) {
-      case EntityKind.Brawler:
-        audio.selectBrawler();
-        break;
-      case EntityKind.Sniper:
-        audio.selectSniper();
-        break;
-      case EntityKind.Healer:
-        audio.selectHealer();
-        break;
-      case EntityKind.Catapult:
-        audio.selectCatapult();
-        break;
-      case EntityKind.Scout:
-        audio.selectScout();
-        break;
-      case EntityKind.Commander:
-        audio.selectCommander();
-        break;
-      case EntityKind.Gatherer:
-        audio.selectGatherer();
-        break;
-      case EntityKind.Shieldbearer:
-        audio.selectShieldbearer();
-        break;
-      default:
-        audio.selectUnit();
-        break;
-    }
+    audio.playSelectionVoice(kind, this.world.playerFaction);
   }
 
   // ---- Active abilities (tech tree) ----
