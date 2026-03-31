@@ -71,24 +71,27 @@ describe('AudioSystem – expanded ambient soundscape', () => {
       .mockReturnValue(0.9);
 
     const sys = new AudioSystem();
-    await sys.init();
-    const ambientMgr = (sys as any).ambientMgr;
-    ambientMgr.ambientFilter = { frequency: { rampTo: vi.fn() }, dispose: vi.fn() };
-    ambientMgr.playCricketChirp = vi.fn();
-    ambientMgr.playFrogCroak = vi.fn();
-    ambientMgr.playPondBubble = vi.fn();
-    ambientMgr.playWaterRipple = vi.fn();
+    try {
+      await sys.init();
+      const ambientMgr = (sys as any).ambientMgr;
+      ambientMgr.ambientFilter = { frequency: { rampTo: vi.fn() }, dispose: vi.fn() };
+      ambientMgr.playCricketChirp = vi.fn();
+      ambientMgr.playFrogCroak = vi.fn();
+      ambientMgr.playPondBubble = vi.fn();
+      ambientMgr.playWaterRipple = vi.fn();
 
-    sys.updateAmbient(0.9);
-    await vi.advanceTimersByTimeAsync(2500);
+      sys.updateAmbient(0.9);
+      await vi.advanceTimersByTimeAsync(2500);
 
-    expect(ambientMgr.playCricketChirp).toHaveBeenCalledOnce();
-    expect(ambientMgr.playFrogCroak).toHaveBeenCalledOnce();
-    expect(ambientMgr.playPondBubble).toHaveBeenCalledOnce();
-    expect(ambientMgr.playWaterRipple).toHaveBeenCalledOnce();
+      expect(ambientMgr.playCricketChirp).toHaveBeenCalledOnce();
+      expect(ambientMgr.playFrogCroak).toHaveBeenCalledOnce();
+      expect(ambientMgr.playPondBubble).toHaveBeenCalledOnce();
+      expect(ambientMgr.playWaterRipple).toHaveBeenCalledOnce();
 
-    ambientMgr.shutdown();
-    randomSpy.mockRestore();
-    vi.useRealTimers();
+      ambientMgr.shutdown();
+    } finally {
+      randomSpy.mockRestore();
+      vi.useRealTimers();
+    }
   });
 });

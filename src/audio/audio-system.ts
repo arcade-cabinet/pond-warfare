@@ -115,7 +115,10 @@ export class AudioSystem {
 
   toggleMute(): void {
     this._muted = !this._muted;
-    this.ambientMgr.onMuteToggle(this._muted);
+    this.ambientMgr.onMuteToggle(this._muted, {
+      muted: this._muted,
+      stopMusic: () => this.musicMgr.stopMusic(),
+    });
     this.musicMgr.applyMusicVolume();
   }
 
