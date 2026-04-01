@@ -51,7 +51,7 @@ describe('PondAccordion', () => {
   it('summary text shows when collapsed, hidden when expanded', () => {
     renderAccordion();
     expect(summary('alpha')).toBeTruthy();
-    expect(summary('alpha')!.textContent).toBe('3 items');
+    expect(summary('alpha')?.textContent).toBe('3 items');
     // Beta is defaultOpen -- summary hidden
     expect(summary('beta')).toBeNull();
   });

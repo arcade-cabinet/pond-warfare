@@ -140,4 +140,54 @@ declare module 'yuka' {
     update(delta: number): this;
     clear(): this;
   }
+
+  // ---- Goal-Driven Agent Design ----
+
+  interface GoalStatus {
+    ACTIVE: 'active';
+    INACTIVE: 'inactive';
+    COMPLETED: 'completed';
+    FAILED: 'failed';
+  }
+
+  export class Goal {
+    static STATUS: GoalStatus;
+    owner: GameEntity | null;
+    status: string;
+    constructor(owner?: GameEntity | null);
+    activate(): void;
+    execute(): void;
+    terminate(): void;
+    active(): boolean;
+    inactive(): boolean;
+    completed(): boolean;
+    failed(): boolean;
+    activateIfInactive(): this;
+    replanIfFailed(): this;
+  }
+
+  export class CompositeGoal extends Goal {
+    subgoals: Goal[];
+    addSubgoal(goal: Goal): this;
+    removeSubgoal(goal: Goal): this;
+    clearSubgoals(): this;
+    currentSubgoal(): Goal | null;
+    executeSubgoals(): string;
+    hasSubgoals(): boolean;
+  }
+
+  export class GoalEvaluator {
+    characterBias: number;
+    constructor(characterBias?: number);
+    calculateDesirability(owner: GameEntity): number;
+    setGoal(owner: GameEntity): void;
+  }
+
+  export class Think extends CompositeGoal {
+    evaluators: GoalEvaluator[];
+    constructor(owner?: GameEntity | null);
+    addEvaluator(evaluator: GoalEvaluator): this;
+    removeEvaluator(evaluator: GoalEvaluator): this;
+    arbitrate(): this;
+  }
 }

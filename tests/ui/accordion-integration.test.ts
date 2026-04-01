@@ -86,15 +86,15 @@ describe('NewGameModal accordion integration', () => {
     await renderNewGame();
     const s = summaryEl('map');
     expect(s).toBeTruthy();
-    expect(s!.textContent).toContain('Standard');
-    expect(s!.textContent).toContain('density');
+    expect(s?.textContent).toContain('Standard');
+    expect(s?.textContent).toContain('density');
   });
 
   it('enemies section shows nest count summary', async () => {
     await renderNewGame();
     const s = summaryEl('enemies');
     expect(s).toBeTruthy();
-    expect(s!.textContent).toContain('nests');
+    expect(s?.textContent).toContain('nests');
   });
 
   it('clicking a section header expands it', async () => {
@@ -149,14 +149,14 @@ describe('CommandPanel accordion integration', () => {
     await renderPanel();
     const s = summaryEl('forces');
     expect(s).toBeTruthy();
-    expect(s!.textContent).toContain('No units');
+    expect(s?.textContent).toContain('No units');
   });
 
   it('buildings summary shows no buildings when empty', async () => {
     await renderPanel();
     const s = summaryEl('buildings');
     expect(s).toBeTruthy();
-    expect(s!.textContent).toContain('No buildings');
+    expect(s?.textContent).toContain('No buildings');
   });
 
   it('has pond-panel-bg class on panel container', async () => {
@@ -203,14 +203,14 @@ describe('SettingsPanel accordion integration', () => {
     fireEvent.click(header('audio'));
     const s = summaryEl('audio');
     expect(s).toBeTruthy();
-    expect(s!.textContent).toContain('Master 80%');
+    expect(s?.textContent).toContain('Master 80%');
   });
 
   it('gameplay summary shows speed', async () => {
     await renderSettings();
     const s = summaryEl('gameplay');
     expect(s).toBeTruthy();
-    expect(s!.textContent).toContain('Speed 1x');
+    expect(s?.textContent).toContain('Speed 1x');
   });
 
   it('has pond-panel-bg class on settings card', async () => {
