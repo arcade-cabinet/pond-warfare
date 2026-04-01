@@ -168,7 +168,7 @@ export const TECH_UPGRADES = {
   tradeRoutes: {
     id: 'tradeRoutes',
     name: 'Trade Routes',
-    description: '+3 clams/5sec passive income per Lodge',
+    description: '+6 clams/5sec passive income per Lodge',
     clamCost: 200,
     twigCost: 150,
     requires: 'cartography',

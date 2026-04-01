@@ -2,7 +2,7 @@
  * Passive Income
  *
  * Handles resource generation from completed player buildings:
- *   - Trade Routes tech: completed Lodges produce +3 clams every 300 frames
+ *   - Trade Routes tech: completed Lodges produce +6 clams every 300 frames
  *   - Fishing Huts: produce +5 clams every 300 frames unconditionally
  */
 
@@ -17,14 +17,14 @@ export function applyPassiveIncome(world: GameWorld): void {
   const buildings = query(world.ecs, [Position, Building, FactionTag, EntityTypeTag, Health]);
 
   // ---- Trade Routes passive income ----
-  // Every 300 frames (~5 sec), completed player-owned Lodges generate +3 clams each
+  // Every 300 frames (~5 sec), completed player-owned Lodges generate +6 clams each
   if (world.tech.tradeRoutes) {
     for (let i = 0; i < buildings.length; i++) {
       const bid = buildings[i];
       if (EntityTypeTag.kind[bid] !== EntityKind.Lodge) continue;
       if (FactionTag.faction[bid] !== Faction.Player) continue;
       if (Health.current[bid] <= 0 || Building.progress[bid] < 100) continue;
-      world.resources.clams += 3;
+      world.resources.clams += 6;
       world.particles.push({
         x: Position.x[bid] + (Math.random() - 0.5) * 16,
         y: Position.y[bid] - 8,
