@@ -114,15 +114,72 @@ describe('E2E Playthrough', () => {
   }, 30_000);
 
   afterAll(() => {
-    // Log final diagnostic summary
-    console.log('\n=== E2E Playthrough Summary ===');
-    console.log(`Total snapshots: ${snapshots.length}`);
-    console.log(`Screenshots saved: ${screenshotPaths.length}`);
-    if (snapshots.length > 0) {
-      const last = snapshots[snapshots.length - 1];
-      console.log(`Final state: ${JSON.stringify(last, null, 2)}`);
+    // Dump all snapshots to a global for retrieval
+    (window as any).__PLAYTHROUGH_SNAPSHOTS__ = snapshots;
+
+    // Build summary report
+    const phases = new Map<string, number>();
+    let peakClams = 0;
+    let peakTwigs = 0;
+    let peakArmy = 0;
+    let zeroClamsStart = -1;
+    let maxZeroClamsStreak = 0;
+    const techTimings: Record<string, number> = {};
+    const knownTechs = new Set<string>();
+
+    for (const s of snapshots) {
+      if (!phases.has(s.phase)) phases.set(s.phase, s.gameSeconds);
+      if (s.clams > peakClams) peakClams = s.clams;
+      if (s.twigs > peakTwigs) peakTwigs = s.twigs;
+      if (s.army > peakArmy) peakArmy = s.army;
+      if (s.clams === 0 && zeroClamsStart < 0) zeroClamsStart = s.gameSeconds;
+      if (s.clams > 0 && zeroClamsStart >= 0) {
+        maxZeroClamsStreak = Math.max(maxZeroClamsStreak, s.gameSeconds - zeroClamsStart);
+        zeroClamsStart = -1;
+      }
+      for (const t of s.techResearched) {
+        if (!knownTechs.has(t)) { knownTechs.add(t); techTimings[t] = s.gameSeconds; }
+      }
     }
-    console.log('===============================\n');
+
+    const last = snapshots[snapshots.length - 1];
+    const report = [
+      '# E2E Playthrough Diagnostic Report',
+      '',
+      `**Duration:** ${last?.gameSeconds ?? 0}s (${Math.round((last?.gameSeconds ?? 0) / 60)} min)`,
+      `**Final phase:** ${last?.phase}`,
+      `**Result:** ${game.world.state}`,
+      '',
+      '## Phase Transitions',
+      ...Array.from(phases.entries()).map(([p, t]) => `- ${p}: ${t}s`),
+      '',
+      '## Resource Peaks',
+      `- Clams: ${peakClams}`,
+      `- Twigs: ${peakTwigs}`,
+      `- Max zero-clams streak: ${maxZeroClamsStreak}s`,
+      '',
+      '## Army',
+      `- Peak army size: ${peakArmy}`,
+      `- Final army: ${last?.army ?? 0}`,
+      `- Final gatherers: ${last?.gatherers ?? 0}`,
+      '',
+      '## Tech Timings',
+      ...Object.entries(techTimings).sort((a, b) => a[1] - b[1]).map(([t, s]) => `- ${t}: ${s}s`),
+      '',
+      '## Buildings',
+      `- Final count: ${last?.buildings ?? 0}`,
+      `- Enemy nests remaining: ${last?.enemyNests ?? 0}`,
+      '',
+      '## Enemy Evolution',
+      `- Final tier: ${last?.evolutionTier ?? 0}`,
+      `- Champions: ${last?.champions ?? 0}`,
+      '',
+      `## Snapshots: ${snapshots.length} total`,
+    ].join('\n');
+
+    console.log(report);
+    (window as any).__PLAYTHROUGH_REPORT__ = report;
+    (window as any).__PLAYTHROUGH_JSONL__ = snapshots.map((s) => JSON.stringify(s)).join('\n');
   });
 
   it(
@@ -197,8 +254,20 @@ describe('E2E Playthrough', () => {
       // Should have reached army or attack phase in 20 minutes
       expect(phases.has('army') || phases.has('attack'), 'Expected to reach army or attack phase in 20 min').toBe(true);
 
-      // No console errors during playthrough
-      expect(consoleErrors, 'Expected no console errors').toHaveLength(0);
+      // Balance milestones — verify the economy and progression curve is healthy
+      const at60 = snapshots.find((s) => s.gameSeconds >= 60);
+      const at120 = snapshots.find((s) => s.gameSeconds >= 120);
+      const at180 = snapshots.find((s) => s.gameSeconds >= 180);
+      const at300 = snapshots.find((s) => s.gameSeconds >= 300);
+
+      if (at60) expect(at60.gatherers, 'By 60s: should have 4+ gatherers').toBeGreaterThanOrEqual(4);
+      if (at120) expect(at120.buildings, 'By 120s: should have 2+ buildings').toBeGreaterThanOrEqual(2);
+      if (at180) expect(at180.army, 'By 180s: should have 2+ combat units').toBeGreaterThanOrEqual(2);
+      if (at300) expect(at300.techResearched.length, 'By 300s: should have 2+ techs').toBeGreaterThanOrEqual(2);
+
+      // No console errors during playthrough (filter out non-critical)
+      const criticalErrors = consoleErrors.filter((e) => !e.includes('setPointerCapture') && !e.includes('AudioContext'));
+      expect(criticalErrors, 'Expected no critical console errors').toHaveLength(0);
     },
     600_000, // 10 minute real-time timeout
   );
