@@ -30,7 +30,8 @@ export function TopBar(props: TopBarProps) {
       style={{
         borderBottomColor: 'rgba(64, 200, 208, 0.12)',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-        background: 'linear-gradient(180deg, rgba(13, 33, 40, 0.85) 0%, rgba(19, 45, 54, 0.8) 100%)',
+        background:
+          'linear-gradient(180deg, rgba(13, 33, 40, 0.85) 0%, rgba(19, 45, 54, 0.8) 100%)',
         backdropFilter: 'blur(8px)',
       }}
     >
