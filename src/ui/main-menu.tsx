@@ -13,6 +13,7 @@ import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
 import { MenuBackground } from './menu-background';
 import { MenuButton } from './menu-button';
+import { MenuLilyPads } from './menu-lily-pads';
 import { MenuOtter } from './menu-otter';
 import { MenuPads } from './menu-pads';
 import {
@@ -130,38 +131,7 @@ export function MainMenu() {
       <MenuBackground />
 
       {/* ---- Dynamic floating lily pads ---- */}
-      {padsSystem.current?.pads.map((p, i) => {
-        const src =
-          p.variant === 'tiny' ? `${UI}/Lillypad-tiny.png` : `${UI}/Lillypad-${p.variant}.png`;
-        const size = p.variant === 'tiny' ? '45px' : '80px';
-        return (
-          <div
-            key={`pad-${i}`}
-            ref={(el) => {
-              padRefs.current[i] = el;
-            }}
-            class="absolute pointer-events-none z-[1]"
-            style={{ width: size, height: size, opacity: p.variant === 'tiny' ? 0.5 : 0.7 }}
-          >
-            <img
-              src={src}
-              alt=""
-              class="w-full h-full object-contain"
-              draggable={false}
-              style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.3))' }}
-            />
-            {p.flower && (
-              <img
-                src={`${UI}/Flower.png`}
-                alt=""
-                class="absolute"
-                style={{ top: '-4px', right: '6px', width: '18px', height: '18px' }}
-                draggable={false}
-              />
-            )}
-          </div>
-        );
-      })}
+      {padsSystem.current && <MenuLilyPads pads={padsSystem.current.pads} padRefs={padRefs} />}
 
       {/* ---- Swimming otter (Yuka-steered, clickable) ---- */}
       <img

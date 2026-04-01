@@ -1,0 +1,55 @@
+/**
+ * Tooltip – floating tooltip rendered from store signals.
+ */
+
+import * as store from '@/ui/store';
+
+export function Tooltip() {
+  if (!store.tooltipVisible.value || !store.tooltipData.value) return null;
+  const d = store.tooltipData.value;
+  return (
+    <div
+      class="tooltip"
+      style={{ left: `${store.tooltipX.value}px`, top: `${store.tooltipY.value}px` }}
+    >
+      <div class="font-heading font-bold">{d.title}</div>
+      {d.costBreakdown ? (
+        <div class="flex gap-2 font-numbers text-[10px]">
+          {d.costBreakdown.clams != null && d.costBreakdown.clams > 0 && (
+            <span style={{ color: 'var(--pw-clam)' }}>{d.costBreakdown.clams} Clams</span>
+          )}
+          {d.costBreakdown.twigs != null && d.costBreakdown.twigs > 0 && (
+            <span style={{ color: 'var(--pw-twig)' }}>{d.costBreakdown.twigs} Twigs</span>
+          )}
+          {d.costBreakdown.food != null && d.costBreakdown.food > 0 && (
+            <span style={{ color: 'var(--pw-food)' }}>{d.costBreakdown.food} Food</span>
+          )}
+          {d.costBreakdown.pearls != null && d.costBreakdown.pearls > 0 && (
+            <span style={{ color: 'var(--pw-pearl, #e0b0ff)' }}>
+              {d.costBreakdown.pearls} Pearls
+            </span>
+          )}
+        </div>
+      ) : (
+        d.cost && (
+          <div class="font-numbers" style={{ color: 'var(--pw-accent)' }}>
+            {d.cost}
+          </div>
+        )
+      )}
+      {d.description && (
+        <div class="text-xs font-game" style={{ color: 'var(--pw-text-muted)' }}>
+          {d.description}
+        </div>
+      )}
+      {d.requires && (
+        <div class="text-[10px] font-game italic" style={{ color: 'var(--pw-warning)' }}>
+          {d.requires}
+        </div>
+      )}
+      <div class="text-xs font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
+        [{d.hotkey}]
+      </div>
+    </div>
+  );
+}

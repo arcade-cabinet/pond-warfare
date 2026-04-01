@@ -22,68 +22,8 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import type { SaveData, SavedEntity } from '@/save-types';
 import { EntityKind, type Faction, UnitState } from '@/types';
-
-interface SavedEntity {
-  kind: number;
-  faction: number;
-  x: number;
-  y: number;
-  hp: number;
-  maxHp: number;
-  state: number;
-  targetX: number;
-  targetY: number;
-  speed: number;
-  damage: number;
-  attackRange: number;
-  kills: number;
-  progress: number;
-  resourceType: number;
-  resourceAmount: number;
-  carryingType: number;
-  isBuilding: boolean;
-  isResource: boolean;
-}
-
-interface SaveData {
-  version: 2;
-  resources: { clams: number; twigs: number; pearls?: number; food: number; maxFood: number };
-  enemyResources: { clams: number; twigs: number };
-  autoBehaviors: {
-    // New per-role format (v3+)
-    gatherer?: boolean;
-    combat?: boolean;
-    healer?: boolean;
-    scout?: boolean;
-    // Legacy per-action format (v2, migrated on load)
-    gather?: boolean;
-    defend?: boolean;
-    attack?: boolean;
-    build?: boolean;
-    heal?: boolean;
-  };
-  tech: Record<string, boolean>;
-  stats: {
-    unitsKilled: number;
-    unitsLost: number;
-    resourcesGathered: number;
-    buildingsBuilt: number;
-    peakArmy: number;
-    pearlsEarned?: number;
-  };
-  frameCount: number;
-  timeOfDay: number;
-  gameSpeed: number;
-  peaceTimer: number;
-  entities: SavedEntity[];
-  enemyEvolution?: {
-    tier: number;
-    unlockedUnits: number[];
-    lastEvolutionFrame: number;
-  };
-  poisonTimers?: [number, number][];
-}
 
 /** Serialize the current game state to a JSON string. */
 export function saveGame(world: GameWorld): string {

@@ -11,44 +11,17 @@
 import type { GameWorld } from '@/ecs/world';
 import { type ClickState, handleClick } from './pointer-click';
 import { MinimapHandler } from './pointer-minimap';
+import {
+  DRAG_THRESHOLD,
+  LONG_PRESS_MOVE_THRESHOLD,
+  LONG_PRESS_MS,
+  MAX_ZOOM,
+  MIN_ZOOM,
+  type PointerCallbacks,
+  type PointerState,
+} from './pointer-types';
 
-export interface PointerState {
-  x: number;
-  y: number;
-  worldX: number;
-  worldY: number;
-  startX: number;
-  startY: number;
-  isDown: boolean;
-  btn: number;
-  in: boolean;
-}
-
-export interface PointerCallbacks {
-  getEntityAt: (wx: number, wy: number) => number | null;
-  hasPlayerUnitsSelected: () => boolean;
-  issueContextCommand: (target: number | null) => void;
-  onUpdateUI: () => void;
-  onPlaceBuilding: () => void;
-  onPlaySound: (name: 'selectUnit' | 'selectBuild' | 'click') => void;
-  isPlayerUnit: (eid: number) => boolean;
-  isPlayerBuilding: (eid: number) => boolean;
-  isEnemyFaction: (eid: number) => boolean;
-  isBuildingEntity: (eid: number) => boolean;
-  getEntityKind: (eid: number) => number;
-  getEntityPosition: (eid: number) => { x: number; y: number } | null;
-  isEntityOnScreen: (eid: number) => boolean;
-  getAllPlayerUnitsOfKind: (kind: number) => number[];
-  selectEntity: (eid: number) => void;
-  deselectEntity: (eid: number) => void;
-  deselectAll: () => void;
-}
-
-const DRAG_THRESHOLD = 10;
-const LONG_PRESS_MS = 500;
-const LONG_PRESS_MOVE_THRESHOLD = 10;
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 2.0;
+export type { PointerCallbacks, PointerState } from './pointer-types';
 
 export class PointerHandler {
   readonly mouse: PointerState = {
