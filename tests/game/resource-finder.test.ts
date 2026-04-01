@@ -8,7 +8,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
-import { Position, Resource, TaskOverride, UnitStateMachine } from '@/ecs/components';
+import { Resource, TaskOverride, UnitStateMachine } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { clearTaskOverride, findNearestResourceByType } from '@/game/resource-finder';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -23,7 +23,7 @@ describe('findNearestResourceByType', () => {
   });
 
   it('finds the nearest Clambed when requesting Clams', () => {
-    const far = spawnEntity(world, EntityKind.Clambed, 500, 500, Faction.Neutral);
+    const _far = spawnEntity(world, EntityKind.Clambed, 500, 500, Faction.Neutral);
     const near = spawnEntity(world, EntityKind.Clambed, 120, 110, Faction.Neutral);
 
     const result = findNearestResourceByType(world, gatherer, ResourceType.Clams);
@@ -81,7 +81,7 @@ describe('findNearestResourceByType', () => {
   it('picks the closest of multiple valid resources', () => {
     // Place three clam beds at increasing distances
     spawnEntity(world, EntityKind.Clambed, 500, 500, Faction.Neutral); // far
-    const mid = spawnEntity(world, EntityKind.Clambed, 200, 200, Faction.Neutral);
+    const _mid = spawnEntity(world, EntityKind.Clambed, 200, 200, Faction.Neutral);
     const closest = spawnEntity(world, EntityKind.Clambed, 105, 102, Faction.Neutral);
 
     const result = findNearestResourceByType(world, gatherer, ResourceType.Clams);

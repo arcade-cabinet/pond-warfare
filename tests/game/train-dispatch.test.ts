@@ -22,7 +22,7 @@ import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { train } from '@/input/selection';
 import { EntityKind, Faction } from '@/types';
 
-function createPlayerBuilding(world: GameWorld, kind: EntityKind): number {
+function createPlayerBuilding(world: GameWorld, _kind: EntityKind): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

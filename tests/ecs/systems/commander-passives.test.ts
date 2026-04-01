@@ -14,7 +14,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TECH_UPGRADES } from '@/config/tech-tree';
-import { TRAIN_TIMER } from '@/constants';
 import {
   Building,
   Combat,
@@ -207,7 +206,7 @@ describe('commander passives', () => {
 
   it('Ironpaw: +20% HP aura applied to units in range', () => {
     world.commanderModifiers.auraUnitHpBonus = 0.2;
-    const commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
+    const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
     const brawler = createUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 60);
 
     // Run combat system to trigger aura refresh
@@ -222,7 +221,7 @@ describe('commander passives', () => {
 
   it('Ironpaw: HP aura not applied twice', () => {
     world.commanderModifiers.auraUnitHpBonus = 0.2;
-    const commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
+    const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
     const brawler = createUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 60);
 
     world.frameCount = 60;

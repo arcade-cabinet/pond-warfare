@@ -135,7 +135,7 @@ export function setupInput(
     recorder,
     syncUIStore,
     playUnitSelectSound,
-    getPointerMouse: () => pointerRef!.mouse,
+    getPointerMouse: () => pointerRef?.mouse as { worldX: number; worldY: number },
   });
   const pointer = new PointerHandler(world, container, gameCanvas, ptrCallbacks);
   pointerRef = pointer;

@@ -16,11 +16,11 @@ import * as store from '@/ui/store';
 vi.mock('@/config/entity-defs', () => ({
   entityKindName: (kind: number) => {
     const names: Record<number, string> = {
-      [0]: 'Gatherer',
-      [1]: 'Brawler',
-      [12]: 'Healer',
-      [16]: 'Scout',
-      [30]: 'Commander',
+      0: 'Gatherer',
+      1: 'Brawler',
+      12: 'Healer',
+      16: 'Scout',
+      30: 'Commander',
     };
     return names[kind] ?? 'Unit';
   },
@@ -72,7 +72,7 @@ describe('ForcesTab', () => {
     render(h(ForcesTab, {}));
     const el = document.querySelector('[data-testid="no-units"]');
     expect(el).toBeTruthy();
-    expect(el!.textContent).toContain('No units');
+    expect(el?.textContent).toContain('No units');
   });
 
   it('renders a group for each roster entry', () => {
@@ -118,6 +118,6 @@ describe('ForcesTab', () => {
     render(h(ForcesTab, {}));
     const badge = document.querySelector('[data-testid="idle-badge"]');
     expect(badge).toBeTruthy();
-    expect(badge!.textContent).toContain('1 idle');
+    expect(badge?.textContent).toContain('1 idle');
   });
 });

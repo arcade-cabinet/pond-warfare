@@ -14,9 +14,9 @@ import type { RosterUnit } from '@/ui/roster-types';
 vi.mock('@/config/entity-defs', () => ({
   entityKindName: (kind: number) => {
     const names: Record<number, string> = {
-      [0]: 'Gatherer',
-      [1]: 'Brawler',
-      [12]: 'Healer',
+      0: 'Gatherer',
+      1: 'Brawler',
+      12: 'Healer',
     };
     return names[kind] ?? 'Unit';
   },
@@ -57,10 +57,10 @@ describe('ForceUnitRow', () => {
     render(h(ForceUnitRow, { unit, onSelect: vi.fn(), onTaskChange: vi.fn() }));
     const nameBtn = document.querySelector('[data-testid="unit-name-btn"]');
     expect(nameBtn).toBeTruthy();
-    expect(nameBtn!.textContent).toContain('Brawler');
+    expect(nameBtn?.textContent).toContain('Brawler');
     const pill = document.querySelector('[data-testid="task-pill"]');
     expect(pill).toBeTruthy();
-    expect(pill!.textContent).toContain('Patrol');
+    expect(pill?.textContent).toContain('Patrol');
   });
 
   it('HP bar is green when HP > 50%', () => {
