@@ -45,7 +45,6 @@ export class Game {
   spriteCanvases: Map<SpriteId, HTMLCanvasElement> = new Map();
   recorder = new ReplayRecorder();
   physicsManager!: PhysicsManager;
-
   private container!: HTMLElement;
   private gameCanvas!: HTMLCanvasElement;
   private fogCanvas!: HTMLCanvasElement;
@@ -62,18 +61,19 @@ export class Game {
   private pointer!: PointerHandler;
   private panHandle: PanAnimHandle = { anim: null };
   private loopState: GameLoopState | null = null;
-  private initializing = false; private running = false; private audioInitialized = false;
-  private colorBlindUnsubscribe: (() => void) | null = null; private dockPanelUnsubscribe: (() => void) | null = null;
+  private initializing = false;
+  private running = false;
+  private audioInitialized = false;
+  private colorBlindUnsubscribe: (() => void) | null = null;
+  private dockPanelUnsubscribe: (() => void) | null = null;
   private boundResize!: () => void;
   private boundContextLost: ((e: Event) => void) | null = null;
   private boundContextRestored: (() => void) | null = null;
   private boundVisibilityChange: (() => void) | null = null;
   private initAudioHandler: ((e: Event) => void) | null = null;
-
   constructor() {
     this.world = createGameWorld();
   }
-
   async init(
     container: HTMLElement,
     gameCanvas: HTMLCanvasElement,
