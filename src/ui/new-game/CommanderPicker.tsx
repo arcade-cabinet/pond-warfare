@@ -7,6 +7,7 @@
  */
 
 import { COMMANDERS, type CommanderDef } from '@/config/commanders';
+import { persistSetting } from '@/storage/settings-persistence';
 import { selectedCommander } from '@/ui/store';
 
 /** Map sprite variant names to CSS color values. */
@@ -36,6 +37,7 @@ function CommanderCard({ def, selected }: { def: CommanderDef; selected: boolean
       }}
       onClick={() => {
         selectedCommander.value = def.id;
+        persistSetting('selectedCommander', def.id);
       }}
       data-testid={`commander-${def.id}`}
       aria-pressed={selected}

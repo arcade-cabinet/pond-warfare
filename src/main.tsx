@@ -15,6 +15,7 @@ import { game } from '@/game';
 import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { loadGame } from '@/save-system';
 import { getLatestSave, initDatabase } from '@/storage';
+import { loadPersistedSettings } from '@/storage/settings-persistence';
 
 // Install global error handlers FIRST — before anything else can fail
 installGlobalErrorHandlers();
@@ -73,6 +74,9 @@ function startGame(isContinue: boolean) {
     reportFatalError(err);
     // Still render the app so the ErrorOverlay can show the fatal error
   }
+
+  // Load persisted user settings (volume, speed, accessibility, commander)
+  await loadPersistedSettings();
 
   // Load keymap from Capacitor Preferences
   await loadKeymapFromStorage();
