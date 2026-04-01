@@ -27,7 +27,7 @@ describe('Auto Behaviors', () => {
   });
 
   it('auto-gather should only activate when toggled on', () => {
-    world.autoBehaviors.gather = false;
+    world.autoBehaviors.gatherer = false;
 
     const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     UnitStateMachine.state[gatherer] = UnitState.Idle;
@@ -41,7 +41,7 @@ describe('Auto Behaviors', () => {
   });
 
   it('auto-gather should send idle gatherers to nearest resource', () => {
-    world.autoBehaviors.gather = true;
+    world.autoBehaviors.gatherer = true;
 
     const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     UnitStateMachine.state[gatherer] = UnitState.Idle;
@@ -58,7 +58,7 @@ describe('Auto Behaviors', () => {
   });
 
   it('auto-build should build burrow when at pop cap', () => {
-    world.autoBehaviors.build = true;
+    world.autoBehaviors.gatherer = true;
     world.frameCount = 300; // Auto-build runs every 300 frames
     world.resources.clams = 10000;
     world.resources.twigs = 10000;
@@ -88,7 +88,7 @@ describe('Auto Behaviors', () => {
   });
 
   it('auto-build should build tower when under attack', () => {
-    world.autoBehaviors.build = true;
+    world.autoBehaviors.gatherer = true;
     world.frameCount = 300;
     world.resources.clams = 10000;
     world.resources.twigs = 10000;
@@ -117,7 +117,7 @@ describe('Auto Behaviors', () => {
   });
 
   it('auto-defend should patrol combat units near lodge', () => {
-    world.autoBehaviors.defend = true;
+    world.autoBehaviors.combat = true;
 
     spawnEntity(world, EntityKind.Lodge, 500, 500, Faction.Player);
     const brawler = spawnEntity(world, EntityKind.Brawler, 510, 510, Faction.Player);
@@ -130,7 +130,7 @@ describe('Auto Behaviors', () => {
   });
 
   it('auto-attack should send combat units toward enemies', () => {
-    world.autoBehaviors.attack = true;
+    world.autoBehaviors.combat = true;
 
     const brawler = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
     UnitStateMachine.state[brawler] = UnitState.Idle;
@@ -145,7 +145,7 @@ describe('Auto Behaviors', () => {
   });
 
   it('auto-heal should send healers to wounded allies', () => {
-    world.autoBehaviors.heal = true;
+    world.autoBehaviors.healer = true;
 
     const healer = spawnEntity(world, EntityKind.Healer, 100, 100, Faction.Player);
     UnitStateMachine.state[healer] = UnitState.Idle;

@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { isMobile, isTablet } from '@/platform';
+import { screenClass } from '@/platform';
 import {
   clams,
   colorBlindMode,
@@ -45,7 +45,7 @@ export interface TopBarProps {
 export function TopBar(props: TopBarProps) {
   const clamsRate = rateClams.value;
   const twigsRate = rateTwigs.value;
-  const compact = isMobile.value || isTablet.value;
+  const compact = screenClass.value !== 'large';
 
   // Resource flash: track previous values and set flash class on significant change
   const prevClams = useRef(clams.value);
@@ -98,9 +98,11 @@ export function TopBar(props: TopBarProps) {
               boxShadow: '0 0 4px rgba(240, 208, 96, 0.3)',
             }}
           />
-          <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-            Clams:{' '}
-          </span>
+          {!compact && (
+            <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+              Clams:{' '}
+            </span>
+          )}
           <span
             class={`font-numbers font-bold ${clamsFlash ? 'animate-resource-flash' : ''} ${lowClams.value ? 'animate-pulse' : ''}`}
             style={{ color: lowClams.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
@@ -116,9 +118,9 @@ export function TopBar(props: TopBarProps) {
               !
             </span>
           )}
-          {clamsRate !== 0 && (
+          {!compact && clamsRate !== 0 && (
             <span
-              class="text-[10px] hidden md:inline font-numbers"
+              class="text-[10px] font-numbers"
               style={{
                 color: clamsRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)',
               }}
@@ -137,9 +139,11 @@ export function TopBar(props: TopBarProps) {
               border: '1px solid var(--pw-otter)',
             }}
           />
-          <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-            Twigs:{' '}
-          </span>
+          {!compact && (
+            <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+              Twigs:{' '}
+            </span>
+          )}
           <span
             class={`font-numbers font-bold ${twigsFlash ? 'animate-resource-flash' : ''} ${lowTwigs.value ? 'animate-pulse' : ''}`}
             style={{ color: lowTwigs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
@@ -155,9 +159,9 @@ export function TopBar(props: TopBarProps) {
               !
             </span>
           )}
-          {twigsRate !== 0 && (
+          {!compact && twigsRate !== 0 && (
             <span
-              class="text-[10px] hidden md:inline font-numbers"
+              class="text-[10px] font-numbers"
               style={{
                 color: twigsRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)',
               }}
@@ -178,9 +182,11 @@ export function TopBar(props: TopBarProps) {
                 boxShadow: '0 0 4px rgba(165, 180, 252, 0.4)',
               }}
             />
-            <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-              Pearls:{' '}
-            </span>
+            {!compact && (
+              <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+                Pearls:{' '}
+              </span>
+            )}
             <span class="font-numbers font-bold" style={{ color: '#a5b4fc' }}>
               {pearls}
             </span>
@@ -196,9 +202,11 @@ export function TopBar(props: TopBarProps) {
               border: '1px solid var(--pw-enemy-light)',
             }}
           />
-          <span class="hidden md:inline font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-            Food:{' '}
-          </span>
+          {!compact && (
+            <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+              Food:{' '}
+            </span>
+          )}
           <span
             class="font-numbers font-bold"
             style={{
@@ -209,7 +217,6 @@ export function TopBar(props: TopBarProps) {
           </span>
         </div>
       </div>
-
       {/* Status + Controls */}
       <div class="flex items-center space-x-2 md:space-x-4">
         <div class={peaceStatusColor.value} style={peaceStatusStyle.value}>
@@ -347,6 +354,7 @@ export function TopBar(props: TopBarProps) {
           )}
         </div>
       </div>
+      ;
     </div>
   );
 }

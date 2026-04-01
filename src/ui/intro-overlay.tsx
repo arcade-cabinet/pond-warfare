@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { screenClass } from '@/platform';
 import { animateIntroSubtitle, animateIntroTitle } from '@/rendering/animations';
 import { customMapSeed, type Difficulty, selectedDifficulty } from '@/ui/store';
 
@@ -224,16 +225,12 @@ export function IntroOverlay() {
       </button>
 
       <p
-        class="font-game text-xs mt-4 text-center px-4 hidden md:block relative z-10"
+        class="font-game text-xs mt-4 text-center px-4 relative z-10"
         style={{ color: 'var(--pw-text-muted)' }}
       >
-        Right-click to command &bull; WASD to scroll &bull; Ctrl+# to set groups
-      </p>
-      <p
-        class="font-game text-xs mt-4 text-center px-4 md:hidden relative z-10"
-        style={{ color: 'var(--pw-text-muted)' }}
-      >
-        Long-press to command &bull; Two-finger pan &bull; Pinch to zoom
+        {screenClass.value === 'compact'
+          ? 'Long-press to command \u2022 Two-finger pan \u2022 Pinch to zoom'
+          : 'Right-click to command \u2022 WASD to scroll \u2022 Ctrl+# to set groups'}
       </p>
     </div>
   );

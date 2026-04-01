@@ -1,21 +1,25 @@
 /**
- * CommandPanel — Slide-out panel with four tabs: Map, Actions, Commands, Menu.
+ * CommandPanel -- Slide-out (mobile) or docked (desktop) panel with
+ * four tabs: Map, Forces, Buildings, Menu.
  *
- * Slides in from the right edge. Contains all game UI — no top bar or
- * floating DOM elements exist outside this panel (except the hamburger button).
+ * When `canDockPanels` is true the panel is always visible as a fixed
+ * sidebar on the right edge with a collapse/expand toggle. Otherwise it
+ * uses the hamburger-driven slide-out with a dim overlay.
  */
 
+import { useSignal } from '@preact/signals';
+import { canDockPanels } from '@/platform';
 import type { PanelTab } from '../store';
 import * as store from '../store';
-import { ActionsTab } from './ActionsTab';
-import { CommandsTab } from './CommandsTab';
+import { BuildingsTab } from './BuildingsTab';
+import { ForcesTab } from './ForcesTab';
 import { MapTab } from './MapTab';
 import { MenuTab } from './MenuTab';
 
 const TABS: { id: PanelTab; icon: string; label: string }[] = [
   { id: 'map', icon: '\uD83D\uDDFA', label: 'Map' },
-  { id: 'actions', icon: '\u2694', label: 'Act' },
-  { id: 'commands', icon: '\uD83D\uDEE1', label: 'Cmd' },
+  { id: 'forces', icon: '\u2694', label: 'Forces' },
+  { id: 'buildings', icon: '\uD83C\uDFD7', label: 'Build' },
   { id: 'menu', icon: '\u2699', label: 'Menu' },
 ];
 
@@ -25,21 +29,46 @@ export interface CommandPanelProps {
 }
 
 export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelProps) {
-  const open = store.mobilePanelOpen.value;
+  const docked = canDockPanels.value;
+  const open = docked || store.mobilePanelOpen.value;
   const tab = store.activePanelTab.value;
+  const collapsed = useSignal(false);
+
+  const panelWidth = docked ? '300px' : 'min(280px, 50vw)';
+  const showOverlay = !docked && store.mobilePanelOpen.value;
 
   return (
     <>
       {/* Panel */}
       <div
-        class={`absolute top-0 right-0 h-full z-40 flex flex-col transition-transform duration-200 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        class={`absolute top-0 right-0 h-full z-40 flex flex-col ${docked ? '' : 'transition-transform duration-200 ease-out'} ${open && !collapsed.value ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
-          width: 'min(280px, 50vw)',
+          width: panelWidth,
           background: 'linear-gradient(180deg, var(--pw-wood-mid), var(--pw-wood-dark))',
           borderLeft: '3px solid var(--pw-border)',
-          boxShadow: open ? '-4px 0 20px rgba(0,0,0,0.5)' : 'none',
+          boxShadow: open && !docked ? '-4px 0 20px rgba(0,0,0,0.5)' : 'none',
         }}
       >
+        {/* Collapse toggle (docked only) */}
+        {docked && (
+          <button
+            type="button"
+            class="absolute -left-6 top-2 z-50 w-6 h-10 flex items-center justify-center rounded-l text-xs font-bold cursor-pointer"
+            style={{
+              background: 'var(--pw-wood-dark)',
+              color: 'var(--pw-accent)',
+              border: '1px solid var(--pw-border)',
+              borderRight: 'none',
+            }}
+            title={collapsed.value ? 'Expand panel' : 'Collapse panel'}
+            onClick={() => {
+              collapsed.value = !collapsed.value;
+            }}
+          >
+            {collapsed.value ? '\u25C0' : '\u25B6'}
+          </button>
+        )}
+
         {/* Tab bar */}
         <div class="flex flex-shrink-0" style={{ borderBottom: '2px solid var(--pw-border)' }}>
           {TABS.map((t) => (
@@ -70,14 +99,14 @@ export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelPr
           {tab === 'map' && (
             <MapTab minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
           )}
-          {tab === 'actions' && <ActionsTab />}
-          {tab === 'commands' && <CommandsTab />}
+          {tab === 'forces' && <ForcesTab />}
+          {tab === 'buildings' && <BuildingsTab />}
           {tab === 'menu' && <MenuTab />}
         </div>
       </div>
 
-      {/* Dim overlay */}
-      {open && (
+      {/* Dim overlay (mobile slide-out only) */}
+      {showOverlay && (
         <div
           class="absolute inset-0"
           style={{ background: 'rgba(0,0,0,0.3)', zIndex: 35 }}

@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { isMobile, isTablet } from '@/platform';
+import { screenClass } from '@/platform';
 import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
 import { MenuOtter } from './menu-otter';
@@ -72,7 +72,7 @@ function MenuButton({
 
 export function MainMenu() {
   const [rank, setRank] = useState<RankInfo | null>(null);
-  const compact = isMobile.value || isTablet.value;
+  const compact = screenClass.value !== 'large';
   const otterRef = useRef<HTMLImageElement>(null);
   const otterAI = useRef<MenuOtter | null>(null);
   const padsSystem = useRef<MenuPads | null>(null);

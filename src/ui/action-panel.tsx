@@ -10,6 +10,7 @@
  */
 
 import { signal } from '@preact/signals';
+import { screenClass } from '@/platform';
 import * as store from './store';
 
 /** Action button category for tab filtering. */
@@ -185,7 +186,7 @@ function TabButton({
       disabled={count === 0}
     >
       <span class="mr-0.5">{TAB_ICONS[tab]}</span>
-      <span class="hidden md:inline">{TAB_LABELS[tab]}</span>
+      {screenClass.value !== 'compact' && <span>{TAB_LABELS[tab]}</span>}
       {count > 0 && (
         <span class="ml-0.5 text-[8px] md:text-[9px]" style={{ color: 'var(--pw-text-muted)' }}>
           ({count})

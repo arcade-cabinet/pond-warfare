@@ -1,13 +1,22 @@
+// Native Capacitor integration (init, haptics, preferences)
+
+// Device classification types
+export type { DeviceInfo, FormFactor, ScreenInfo } from './device';
 export {
   hapticImpact,
   initNativePlatform,
-  isCompactHeight,
-  isDesktop,
-  isMobile,
   isNative,
-  isTablet,
-  isTouchDevice,
   loadPreference,
   platformType,
   savePreference,
 } from './native';
+
+// Reactive device signals
+export {
+  canDockPanels,
+  formFactor,
+  initDeviceSignals,
+  inputMode,
+  isCompactHeight,
+  screenClass,
+} from './signals';

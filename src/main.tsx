@@ -12,7 +12,7 @@ import { render } from 'preact';
 import { loadKeymapFromStorage } from '@/config/keymap';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
 import { game } from '@/game';
-import { initNativePlatform } from '@/platform';
+import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { loadGame } from '@/save-system';
 import { getLatestSave, initDatabase } from '@/storage';
 
@@ -62,6 +62,9 @@ function startGame(isContinue: boolean) {
 (async () => {
   // Initialize native platform features (orientation lock, StatusBar, back button)
   await initNativePlatform();
+
+  // Initialize device detection signals (form factor, input mode, screen class)
+  await initDeviceSignals();
 
   // Initialize SQLite — REQUIRED
   try {

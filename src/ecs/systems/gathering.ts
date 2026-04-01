@@ -59,9 +59,9 @@ export function gatheringSystem(world: GameWorld): void {
     const faction = FactionTag.faction[eid] as Faction;
 
     // --- Idle auto-gather ---
-    // Player gatherers only auto-gather when autoBehaviors.gather is enabled
+    // Player gatherers only auto-gather when autoBehaviors.gatherer is enabled
     // Enemy gatherers always auto-gather (AI economy)
-    const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.gather;
+    const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.gatherer;
     if (
       state === UnitState.Idle &&
       kind === EntityKind.Gatherer &&

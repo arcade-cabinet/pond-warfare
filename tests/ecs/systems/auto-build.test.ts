@@ -85,7 +85,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should not build when autoBehaviors.build is false', () => {
-    world.autoBehaviors.build = false;
+    world.autoBehaviors.gatherer = false;
     world.resources.clams = 10000;
     world.resources.twigs = 10000;
     world.resources.food = world.resources.maxFood; // Pop cap trigger
@@ -102,7 +102,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should not build when player cannot afford any candidate', () => {
-    world.autoBehaviors.build = true;
+    world.autoBehaviors.gatherer = true;
     world.resources.clams = 0;
     world.resources.twigs = 0;
     world.resources.food = world.resources.maxFood;
@@ -118,7 +118,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should not build when no idle gatherer is available', () => {
-    world.autoBehaviors.build = true;
+    world.autoBehaviors.gatherer = true;
     world.resources.clams = 10000;
     world.resources.twigs = 10000;
     world.resources.food = world.resources.maxFood;
@@ -136,7 +136,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should only run every 300 frames', () => {
-    world.autoBehaviors.build = true;
+    world.autoBehaviors.gatherer = true;
     world.resources.clams = 10000;
     world.resources.twigs = 10000;
     world.resources.food = world.resources.maxFood;
@@ -154,7 +154,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should successfully auto-build when conditions are met', () => {
-    world.autoBehaviors.build = true;
+    world.autoBehaviors.gatherer = true;
     world.resources.clams = 10000;
     world.resources.twigs = 10000;
     // Pop cap reached triggers Burrow build pressure (score 100)

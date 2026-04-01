@@ -1,15 +1,16 @@
 /**
  * Tech Tree Panel
  *
- * Full-screen overlay showing all techs. Viewport-aware:
- * - Desktop (≥768px): side-by-side branch graphs with SVG dependency lines
- * - Mobile (<768px): branch tabs (Lodge/Nature | Armory) + scrollable card grid
+ * Full-screen overlay showing all techs. Layout chosen by screenClass signal:
+ * - compact (phones, landscape phones): branch tabs + scrollable card grid
+ * - medium/large (tablets, foldables, laptops, desktops): side-by-side SVG graphs
  *
  * Decomposed into submodules under src/ui/tech-tree/.
  */
 
 import { useState } from 'preact/hooks';
 import type { TechId, TechState } from '@/config/tech-tree';
+import { screenClass } from '@/platform';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { BranchGrid } from './tech-tree/BranchGrid';
 import { BranchPanel } from './tech-tree/BranchPanel';
@@ -130,52 +131,56 @@ export function TechTreePanel({
           </span>
         </div>
 
-        {/* Mobile: branch tabs + card grid (visible <768px) */}
-        <div class="md:hidden w-full flex-1 flex flex-col">
-          <BranchTabs active={branch} onSelect={setBranch} />
-          <div class="px-4 pb-8">
-            {branch === 'lodge' && (
-              <BranchGrid
-                nodes={LODGE_NODES}
-                techState={techState}
-                clams={clams}
-                twigs={twigs}
-                onResearch={onResearch}
-              />
-            )}
-            {branch === 'armory' && (
-              <BranchGrid
-                nodes={ARMORY_NODES}
-                techState={techState}
-                clams={clams}
-                twigs={twigs}
-                onResearch={onResearch}
-              />
-            )}
+        {/* Compact: branch tabs + card grid (phones, landscape phones) */}
+        {screenClass.value === 'compact' && (
+          <div class="w-full flex-1 flex flex-col">
+            <BranchTabs active={branch} onSelect={setBranch} />
+            <div class="px-4 pb-8">
+              {branch === 'lodge' && (
+                <BranchGrid
+                  nodes={LODGE_NODES}
+                  techState={techState}
+                  clams={clams}
+                  twigs={twigs}
+                  onResearch={onResearch}
+                />
+              )}
+              {branch === 'armory' && (
+                <BranchGrid
+                  nodes={ARMORY_NODES}
+                  techState={techState}
+                  clams={clams}
+                  twigs={twigs}
+                  onResearch={onResearch}
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Desktop: side-by-side graphs (visible ≥768px) */}
-        <div class="hidden md:flex gap-16 px-4 pb-8 items-start justify-center">
-          <BranchPanel
-            title="Lodge / Nature"
-            nodes={LODGE_NODES}
-            edges={LODGE_EDGES}
-            techState={techState}
-            clams={clams}
-            twigs={twigs}
-            onResearch={onResearch}
-          />
-          <BranchPanel
-            title="Armory"
-            nodes={ARMORY_NODES}
-            edges={ARMORY_EDGES}
-            techState={techState}
-            clams={clams}
-            twigs={twigs}
-            onResearch={onResearch}
-          />
-        </div>
+        {/* Medium/Large: side-by-side SVG graphs (tablets, foldables, desktops) */}
+        {screenClass.value !== 'compact' && (
+          <div class="flex gap-16 px-4 pb-8 items-start justify-center">
+            <BranchPanel
+              title="Lodge / Nature"
+              nodes={LODGE_NODES}
+              edges={LODGE_EDGES}
+              techState={techState}
+              clams={clams}
+              twigs={twigs}
+              onResearch={onResearch}
+            />
+            <BranchPanel
+              title="Armory"
+              nodes={ARMORY_NODES}
+              edges={ARMORY_EDGES}
+              techState={techState}
+              clams={clams}
+              twigs={twigs}
+              onResearch={onResearch}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

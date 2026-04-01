@@ -4,15 +4,13 @@
  */
 
 import { useState } from 'preact/hooks';
-import { isMobile } from '@/platform';
+import { screenClass } from '@/platform';
 import {
   armyCount,
   attackMoveActive,
-  autoAttackEnabled,
-  autoBuildEnabled,
-  autoDefendEnabled,
-  autoGatherEnabled,
-  autoHealEnabled,
+  autoCombatEnabled,
+  autoGathererEnabled,
+  autoHealerEnabled,
   autoMenuExpanded,
   autoScoutEnabled,
   hasPlayerUnits,
@@ -84,7 +82,7 @@ export function UnitCommands(props: UnitCommandsProps) {
   const hasIdleHealers = idleHealerCount.value > 0;
   const hasIdleScouts = idleScoutCount.value > 0;
 
-  const mobile = isMobile.value;
+  const mobile = screenClass.value === 'compact';
 
   return (
     <>
@@ -114,68 +112,46 @@ export function UnitCommands(props: UnitCommandsProps) {
           {/* Contextual auto-behavior toggle buttons */}
           {expanded && (
             <>
-              {/* Gatherer behaviors: Gather + Build */}
+              {/* Gatherer role: gather + build */}
               {hasIdleGatherers && (
-                <>
-                  <AutoToggleButton
-                    label="Gather"
-                    enabled={autoGatherEnabled.value}
-                    onToggle={() => {
-                      autoGatherEnabled.value = !autoGatherEnabled.value;
-                    }}
-                    color="var(--pw-warning)"
-                    activeBackground="rgba(232, 160, 48, 0.3)"
-                  />
-                  <AutoToggleButton
-                    label="Build"
-                    enabled={autoBuildEnabled.value}
-                    onToggle={() => {
-                      autoBuildEnabled.value = !autoBuildEnabled.value;
-                    }}
-                    color="var(--pw-twig)"
-                    activeBackground="rgba(160, 120, 60, 0.3)"
-                  />
-                </>
+                <AutoToggleButton
+                  label="Gatherer"
+                  enabled={autoGathererEnabled.value}
+                  onToggle={() => {
+                    autoGathererEnabled.value = !autoGathererEnabled.value;
+                  }}
+                  color="var(--pw-warning)"
+                  activeBackground="rgba(232, 160, 48, 0.3)"
+                />
               )}
 
-              {/* Combat unit behaviors: Attack + Defend */}
+              {/* Combat role: attack + defend */}
               {hasIdleCombat && (
-                <>
-                  <AutoToggleButton
-                    label="Attack"
-                    enabled={autoAttackEnabled.value}
-                    onToggle={() => {
-                      autoAttackEnabled.value = !autoAttackEnabled.value;
-                    }}
-                    color="var(--pw-enemy-light)"
-                    activeBackground="rgba(224, 96, 96, 0.3)"
-                  />
-                  <AutoToggleButton
-                    label="Defend"
-                    enabled={autoDefendEnabled.value}
-                    onToggle={() => {
-                      autoDefendEnabled.value = !autoDefendEnabled.value;
-                    }}
-                    color="var(--pw-accent)"
-                    activeBackground="rgba(64, 200, 208, 0.3)"
-                  />
-                </>
+                <AutoToggleButton
+                  label="Combat"
+                  enabled={autoCombatEnabled.value}
+                  onToggle={() => {
+                    autoCombatEnabled.value = !autoCombatEnabled.value;
+                  }}
+                  color="var(--pw-enemy-light)"
+                  activeBackground="rgba(224, 96, 96, 0.3)"
+                />
               )}
 
-              {/* Healer behavior: Heal */}
+              {/* Healer role */}
               {hasIdleHealers && (
                 <AutoToggleButton
-                  label="Heal"
-                  enabled={autoHealEnabled.value}
+                  label="Healer"
+                  enabled={autoHealerEnabled.value}
                   onToggle={() => {
-                    autoHealEnabled.value = !autoHealEnabled.value;
+                    autoHealerEnabled.value = !autoHealerEnabled.value;
                   }}
                   color="var(--pw-success)"
                   activeBackground="rgba(64, 184, 104, 0.3)"
                 />
               )}
 
-              {/* Scout behavior: Scout */}
+              {/* Scout role */}
               {hasIdleScouts && (
                 <AutoToggleButton
                   label="Scout"

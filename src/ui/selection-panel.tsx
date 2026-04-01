@@ -8,15 +8,13 @@
  * No selection: compact overview with idle workers, army count, population.
  */
 
-import { isMobile } from '@/platform';
+import { screenClass } from '@/platform';
 import {
   armyCount,
   attackMoveActive,
-  autoAttackEnabled,
-  autoBuildEnabled,
-  autoDefendEnabled,
-  autoGatherEnabled,
-  autoHealEnabled,
+  autoCombatEnabled,
+  autoGathererEnabled,
+  autoHealerEnabled,
   autoScoutEnabled,
   food,
   hasPlayerUnits,
@@ -143,56 +141,36 @@ function CommandCenterOverview({
         )}
       </div>
 
-      {/* Auto-behavior toggles (contextual per idle unit type) */}
+      {/* Auto-behavior toggles (per role, contextual per idle unit type) */}
       {totalIdle > 0 && (
         <div class="flex gap-1 flex-wrap">
           {hasGatherers && (
-            <>
-              <AutoToggle
-                label="Gather"
-                enabled={autoGatherEnabled.value}
-                color="var(--pw-warning)"
-                onToggle={() => {
-                  autoGatherEnabled.value = !autoGatherEnabled.value;
-                }}
-              />
-              <AutoToggle
-                label="Build"
-                enabled={autoBuildEnabled.value}
-                color="var(--pw-twig)"
-                onToggle={() => {
-                  autoBuildEnabled.value = !autoBuildEnabled.value;
-                }}
-              />
-            </>
+            <AutoToggle
+              label="Gatherer"
+              enabled={autoGathererEnabled.value}
+              color="var(--pw-warning)"
+              onToggle={() => {
+                autoGathererEnabled.value = !autoGathererEnabled.value;
+              }}
+            />
           )}
           {hasCombat && (
-            <>
-              <AutoToggle
-                label="Attack"
-                enabled={autoAttackEnabled.value}
-                color="var(--pw-enemy-light)"
-                onToggle={() => {
-                  autoAttackEnabled.value = !autoAttackEnabled.value;
-                }}
-              />
-              <AutoToggle
-                label="Defend"
-                enabled={autoDefendEnabled.value}
-                color="var(--pw-accent)"
-                onToggle={() => {
-                  autoDefendEnabled.value = !autoDefendEnabled.value;
-                }}
-              />
-            </>
+            <AutoToggle
+              label="Combat"
+              enabled={autoCombatEnabled.value}
+              color="var(--pw-enemy-light)"
+              onToggle={() => {
+                autoCombatEnabled.value = !autoCombatEnabled.value;
+              }}
+            />
           )}
           {hasHealers && (
             <AutoToggle
-              label="Heal"
-              enabled={autoHealEnabled.value}
+              label="Healer"
+              enabled={autoHealerEnabled.value}
               color="var(--pw-success)"
               onToggle={() => {
-                autoHealEnabled.value = !autoHealEnabled.value;
+                autoHealerEnabled.value = !autoHealerEnabled.value;
               }}
             />
           )}
@@ -221,7 +199,7 @@ export function SelectionPanel({
 }: SelectionPanelProps) {
   const count = selectionCount.value;
   const showHp = selectionShowHpBar.value;
-  const mobile = isMobile.value;
+  const mobile = screenClass.value === 'compact';
 
   return (
     <div

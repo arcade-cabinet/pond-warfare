@@ -296,7 +296,7 @@ describe('Full player journey', () => {
     it('resources increase over time with auto-gather', async () => {
       const startClams = game.world.resources.clams;
       const startTwigs = game.world.resources.twigs;
-      game.world.autoBehaviors.gather = true;
+      game.world.autoBehaviors.gatherer = true;
       await waitFrames(600);
       const gained = (game.world.resources.clams - startClams) + (game.world.resources.twigs - startTwigs);
       expect(gained).toBeGreaterThan(0);
@@ -307,18 +307,17 @@ describe('Full player journey', () => {
   // ── Phase 5: Building ──────────────────────────────────────────────────
 
   describe('5. Building', () => {
-    it('select gatherer shows Build actions', async () => {
+    it('select gatherer and open Buildings tab', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
       await selectEntity(gid);
       await delay(200);
-      // Open panel to Actions tab
+      // Open panel to Buildings tab
       clickButton('☰');
       await delay(200);
-      clickButton('Act');
+      clickButton('Build');
       await delay(200);
-      // Should see build buttons
-      const panel = document.getElementById('action-panel');
-      expect(panel).toBeTruthy();
+      // Buildings tab should be active
+      expect(store.activePanelTab.value).toBe('buildings');
       clickButton('☰'); // close
       await delay(100);
     });
@@ -337,10 +336,10 @@ describe('Full player journey', () => {
       await selectEntity(gid);
       await delay(100);
 
-      // Open panel, click Build tab, click Burrow
+      // Open panel, click Buildings tab, try to find Burrow action
       clickButton('☰');
       await delay(200);
-      clickButton('Act');
+      clickButton('Build');
       await delay(200);
 
       const placed = clickActionBtn('Burrow');
@@ -361,7 +360,7 @@ describe('Full player journey', () => {
       if (burrows.length === 0) return;
 
       // Assign a gatherer to build
-      game.world.autoBehaviors.build = true;
+      game.world.autoBehaviors.gatherer = true;
       await waitFrames(600);
 
       const completed = burrows.some((eid) => Building.progress[eid] >= 100);
@@ -384,9 +383,10 @@ describe('Full player journey', () => {
 
       await selectEntity(lodge);
       await delay(100);
+      // Open panel to Forces tab and try Train action
       clickButton('☰');
       await delay(200);
-      clickButton('Act');
+      clickButton('Forces');
       await delay(200);
       clickActionBtn('Gatherer');
       await delay(100);
@@ -455,7 +455,7 @@ describe('Full player journey', () => {
 
   describe('8. Auto-behaviors', () => {
     it('toggling auto-gather makes idle gatherers work', async () => {
-      game.world.autoBehaviors.gather = false;
+      game.world.autoBehaviors.gatherer = false;
       await waitFrames(60);
 
       // Count idle gatherers
@@ -463,7 +463,7 @@ describe('Full player journey', () => {
         (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
       ).length;
 
-      game.world.autoBehaviors.gather = true;
+      game.world.autoBehaviors.gatherer = true;
       await waitFrames(300); // 5 auto-behavior ticks (runs every 60 frames)
 
       const idleAfter = getUnits(EntityKind.Gatherer).filter(
@@ -483,7 +483,7 @@ describe('Full player journey', () => {
       );
       if (enemies.length === 0) return;
 
-      game.world.autoBehaviors.attack = true;
+      game.world.autoBehaviors.combat = true;
       await waitFrames(120);
 
       const combat = getUnits(EntityKind.Brawler)
@@ -498,7 +498,7 @@ describe('Full player journey', () => {
       if (combat.length > 0) {
         expect(attacking.length).toBeGreaterThan(0);
       }
-      game.world.autoBehaviors.attack = false;
+      game.world.autoBehaviors.combat = false;
     });
   });
 
@@ -520,13 +520,13 @@ describe('Full player journey', () => {
       expect(text).toMatch(/\d+/);
     });
 
-    it('Cmd tab shows Deselect/Stop/Select All', async () => {
-      clickButton('Cmd');
+    it('Forces tab shows unit roster header', async () => {
+      clickButton('Forces');
       await delay(200);
-      const btns = Array.from(document.querySelectorAll('button')).map((b) => b.textContent?.trim());
-      expect(btns).toContain('Deselect');
-      expect(btns).toContain('Stop');
-      expect(btns).toContain('Select All');
+      expect(store.activePanelTab.value).toBe('forces');
+      // Forces tab should contain a "Forces" header or roster content
+      const text = document.body.innerText;
+      expect(text).toMatch(/Forces|No units/);
     });
 
     it('Menu tab shows Save/Settings', async () => {

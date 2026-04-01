@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'preact/hooks';
+import { AdvisorSettings } from './components/AdvisorSettings';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import {
   autoSaveEnabled,
@@ -37,7 +38,7 @@ export interface SettingsPanelProps {
   onClose: () => void;
 }
 
-type SettingsTab = 'audio' | 'game' | 'options' | 'access';
+type SettingsTab = 'audio' | 'game' | 'options' | 'access' | 'advisors';
 
 function VolumeSlider({
   label,
@@ -105,6 +106,7 @@ const TAB_DEFS: { id: SettingsTab; icon: string; label: string }[] = [
   { id: 'game', icon: '\u23F1', label: 'Game' },
   { id: 'options', icon: '\u2699', label: 'Options' },
   { id: 'access', icon: '\u267F', label: 'Access' },
+  { id: 'advisors', icon: '\uD83D\uDCAC', label: 'Advisors' },
 ];
 
 export function SettingsPanel(props: SettingsPanelProps) {
@@ -261,6 +263,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
             />
           </div>
         )}
+
+        {tab === 'advisors' && <AdvisorSettings />}
       </div>
     </div>
   );

@@ -52,11 +52,9 @@ export interface GovernorSnapshot {
   evolutionTier: number;
   champions: number;
   autoBehaviors: {
-    gather: boolean;
-    build: boolean;
-    defend: boolean;
-    attack: boolean;
-    heal: boolean;
+    gatherer: boolean;
+    combat: boolean;
+    healer: boolean;
     scout: boolean;
   };
 }
@@ -541,14 +539,9 @@ async function attackPhase(): Promise<void> {
   const w = game.world;
   const armyUnits = getPlayerArmyUnits();
 
-  // Enable auto-attack toggle instead of manual attack-move
-  if (!store.autoAttackEnabled.value) {
-    store.autoAttackEnabled.value = true;
-  }
-
-  // Also enable auto-defend for safety
-  if (!store.autoDefendEnabled.value) {
-    store.autoDefendEnabled.value = true;
+  // Enable auto-combat toggle (covers attack + defend)
+  if (!store.autoCombatEnabled.value) {
+    store.autoCombatEnabled.value = true;
   }
 
   // If army is large enough, also manually direct them at the nearest nest
@@ -610,12 +603,10 @@ async function attackPhase(): Promise<void> {
 async function lateGamePhase(): Promise<void> {
   const w = game.world;
 
-  // Enable all auto-behaviors
-  if (!store.autoGatherEnabled.value) store.autoGatherEnabled.value = true;
-  if (!store.autoBuildEnabled.value) store.autoBuildEnabled.value = true;
-  if (!store.autoDefendEnabled.value) store.autoDefendEnabled.value = true;
-  if (!store.autoAttackEnabled.value) store.autoAttackEnabled.value = true;
-  if (!store.autoHealEnabled.value) store.autoHealEnabled.value = true;
+  // Enable all auto-behaviors (per-role)
+  if (!store.autoGathererEnabled.value) store.autoGathererEnabled.value = true;
+  if (!store.autoCombatEnabled.value) store.autoCombatEnabled.value = true;
+  if (!store.autoHealerEnabled.value) store.autoHealerEnabled.value = true;
   if (!store.autoScoutEnabled.value) store.autoScoutEnabled.value = true;
 
   // Research advanced techs in priority order
@@ -834,11 +825,9 @@ export function takeSnapshot(): GovernorSnapshot {
     evolutionTier: w.enemyEvolution.tier,
     champions: w.championEnemies.size,
     autoBehaviors: {
-      gather: store.autoGatherEnabled.value,
-      build: store.autoBuildEnabled.value,
-      defend: store.autoDefendEnabled.value,
-      attack: store.autoAttackEnabled.value,
-      heal: store.autoHealEnabled.value,
+      gatherer: store.autoGathererEnabled.value,
+      combat: store.autoCombatEnabled.value,
+      healer: store.autoHealerEnabled.value,
       scout: store.autoScoutEnabled.value,
     },
   };

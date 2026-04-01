@@ -103,9 +103,9 @@ function tryTrain(world: GameWorld, buildingEid: number, unitKind: EntityKind): 
 }
 
 export function autoTrainSystem(world: GameWorld): void {
-  // Only run when attack or defend auto-behavior is enabled
-  const { defend, attack } = world.autoBehaviors;
-  if (!defend && !attack) return;
+  // Only run when combat auto-behavior is enabled
+  const { combat } = world.autoBehaviors;
+  if (!combat) return;
 
   // Throttle to every 120 frames (~2 seconds)
   if (world.frameCount % AUTO_TRAIN_INTERVAL !== 0) return;

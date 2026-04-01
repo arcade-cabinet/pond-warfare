@@ -51,9 +51,15 @@ interface SaveData {
   resources: { clams: number; twigs: number; pearls?: number; food: number; maxFood: number };
   enemyResources: { clams: number; twigs: number };
   autoBehaviors: {
-    gather: boolean;
-    defend: boolean;
-    attack: boolean;
+    // New per-role format (v3+)
+    gatherer?: boolean;
+    combat?: boolean;
+    healer?: boolean;
+    scout?: boolean;
+    // Legacy per-action format (v2, migrated on load)
+    gather?: boolean;
+    defend?: boolean;
+    attack?: boolean;
     build?: boolean;
     heal?: boolean;
   };
@@ -172,13 +178,23 @@ export function loadGame(world: GameWorld, json: string): boolean {
     world.enemyResources.twigs = data.enemyResources.twigs;
   }
 
-  // Restore auto-behaviors (v2+)
+  // Restore auto-behaviors with migration from old per-action to new per-role format
   if (data.autoBehaviors) {
-    world.autoBehaviors.gather = data.autoBehaviors.gather;
-    world.autoBehaviors.defend = data.autoBehaviors.defend;
-    world.autoBehaviors.attack = data.autoBehaviors.attack;
-    world.autoBehaviors.build = data.autoBehaviors.build ?? false;
-    world.autoBehaviors.heal = data.autoBehaviors.heal ?? false;
+    if (typeof data.autoBehaviors.gatherer === 'boolean') {
+      // New per-role format
+      world.autoBehaviors.gatherer = data.autoBehaviors.gatherer;
+      world.autoBehaviors.combat = data.autoBehaviors.combat ?? false;
+      world.autoBehaviors.healer = data.autoBehaviors.healer ?? false;
+      world.autoBehaviors.scout = data.autoBehaviors.scout ?? false;
+    } else if (typeof data.autoBehaviors.gather === 'boolean') {
+      // Legacy per-action format: migrate to per-role
+      world.autoBehaviors.gatherer =
+        data.autoBehaviors.gather || (data.autoBehaviors.build ?? false);
+      world.autoBehaviors.combat =
+        (data.autoBehaviors.attack ?? false) || (data.autoBehaviors.defend ?? false);
+      world.autoBehaviors.healer = data.autoBehaviors.heal ?? false;
+      world.autoBehaviors.scout = false; // old format didn't persist scout
+    }
   }
 
   // Restore peace timer (v2+)

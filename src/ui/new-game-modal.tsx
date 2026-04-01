@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { useScrollDrag } from './hooks/useScrollDrag';
+import { CommanderPicker } from './new-game/CommanderPicker';
 import { TAB_LABELS, type TabKey } from './new-game/controls';
 import {
   generateName,
@@ -87,7 +88,7 @@ export function NewGameModal() {
     menuState.value = 'main';
   }, []);
 
-  const tabKeys: TabKey[] = ['map', 'economy', 'enemies', 'rules'];
+  const tabKeys: TabKey[] = ['map', 'economy', 'enemies', 'rules', 'commander'];
   const presetKeys: PresetKey[] = [
     'easy',
     'normal',
@@ -214,6 +215,7 @@ export function NewGameModal() {
           {activeTab === 'economy' && <EconomyTab settings={settings} onUpdate={handleUpdate} />}
           {activeTab === 'enemies' && <EnemiesTab settings={settings} onUpdate={handleUpdate} />}
           {activeTab === 'rules' && <RulesTab settings={settings} onUpdate={handleUpdate} />}
+          {activeTab === 'commander' && <CommanderPicker />}
         </div>
 
         {/* Presets row */}

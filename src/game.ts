@@ -7,6 +7,8 @@
 
 import { animate } from 'animejs';
 import { hasComponent, query } from 'bitecs';
+import { initAdvisorState } from '@/advisors/advisor-state';
+import { advisorSystem } from '@/advisors/advisor-system';
 // Audio
 import { audio } from '@/audio/audio-system';
 // Campaign
@@ -55,13 +57,13 @@ import { healthSystem, takeDamage } from '@/ecs/systems/health';
 import { movementSystem } from '@/ecs/systems/movement';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import { trainingSystem } from '@/ecs/systems/training';
-import { tutorialSystem } from '@/ecs/systems/tutorial';
 import { veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 // Extracted sub-modules
 import { buildActionPanel } from '@/game/action-panel-builder';
 import { spawnInitialEntities } from '@/game/init-entities';
 import { syncPopulationAndTimers } from '@/game/population-sync';
+import { syncRosters } from '@/game/roster-sync';
 import { syncSelectionInfo } from '@/game/selection-sync';
 // Input
 import { type KeyboardCallbacks, KeyboardHandler } from '@/input/keyboard';
@@ -77,7 +79,7 @@ import {
   selectIdleWorker,
 } from '@/input/selection';
 import { PhysicsManager } from '@/physics/physics-world';
-import { isNative } from '@/platform';
+import { canDockPanels, isNative } from '@/platform';
 import { cleanupEntityAnimation, triggerCommandPulse } from '@/rendering/animations';
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import { clampCamera, computeShakeOffset } from '@/rendering/camera';
@@ -166,6 +168,7 @@ export class Game {
   private initAudioHandler: ((e: Event) => void) | null = null;
   private wasPeaceful = true;
   private colorBlindUnsubscribe: (() => void) | null = null;
+  private dockPanelUnsubscribe: (() => void) | null = null;
   private wasGameOver = false;
 
   // Checkpoint event tracking
@@ -224,6 +227,10 @@ export class Game {
       /* best-effort */
     });
     loadUnlocks().catch(() => {
+      /* best-effort */
+    });
+    // Load advisor settings and dismissed tips from persistent storage
+    initAdvisorState(this.world).catch(() => {
       /* best-effort */
     });
     // Reset match-scoped audio/game flags for clean session
@@ -295,6 +302,12 @@ export class Game {
     this.resize();
     this.boundResize = () => this.resize();
     window.addEventListener('resize', this.boundResize);
+
+    // Re-layout when panel docking state changes (CSS --pw-panel-width updates
+    // the container width, but PixiJS/fog/light canvases need an explicit resize)
+    this.dockPanelUnsubscribe = canDockPanels.subscribe(() => {
+      requestAnimationFrame(() => this.resize());
+    });
 
     // Input
     const keyboardCallbacks: KeyboardCallbacks = {
@@ -847,7 +860,7 @@ export class Game {
     }
     store.campaignObjectiveStatuses.value = statuses;
 
-    // Disable the normal tutorial for campaign missions (campaign has its own dialogues)
+    // Disable advisor first-game tips for campaign missions (campaign has its own dialogues)
     this.world.isFirstGame = false;
   }
 
@@ -1083,7 +1096,7 @@ export class Game {
     autoTrainSystem(this.world);
     autoBehaviorSystem(this.world);
     healthSystem(this.world);
-    tutorialSystem(this.world);
+    advisorSystem(this.world);
     campaignSystem(this.world);
     veterancySystem(this.world);
     fogOfWarSystem(this.world);
@@ -1128,6 +1141,7 @@ export class Game {
     // Sync UI store periodically
     if (this.world.frameCount % 30 === 0) {
       this.syncUIStore();
+      syncRosters(this.world);
     }
 
     // Auto-save every 60 seconds (3600 frames at 60fps) when enabled
@@ -1705,6 +1719,8 @@ export class Game {
     // Unsubscribe color blind mode listener
     this.colorBlindUnsubscribe?.();
     this.colorBlindUnsubscribe = null;
+    this.dockPanelUnsubscribe?.();
+    this.dockPanelUnsubscribe = null;
     window.removeEventListener('resize', this.boundResize);
     // Remove WebGL context loss and visibility handlers
     if (this.boundContextLost) {

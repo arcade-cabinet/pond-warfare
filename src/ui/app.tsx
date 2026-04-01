@@ -19,6 +19,7 @@ import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
+import { AdvisorToast } from './hud/AdvisorToast';
 import { AbilityBar } from './hud/ability-bar';
 import { AirdropButton } from './hud/airdrop-button';
 import { CtrlGroups } from './hud/ctrl-groups';
@@ -133,11 +134,12 @@ export function App({ onMount }: AppProps) {
 
       <ErrorOverlay />
 
-      {/* Fullscreen game container */}
+      {/* Fullscreen game container — shrinks when panel is docked via --pw-panel-width */}
       <div
         ref={containerRef}
         id="game-container"
         class="absolute inset-0 cursor-crosshair overflow-hidden bg-black"
+        style={{ right: 'var(--pw-panel-width, 0px)' }}
       >
         <Overlays />
         <AirdropButton
@@ -211,6 +213,9 @@ export function App({ onMount }: AppProps) {
 
       {/* Hamburger button — sole floating DOM element */}
       <HamburgerButton />
+
+      {/* Advisor toast — bottom-left HUD, above safe area */}
+      <AdvisorToast />
 
       {/*
         Modal overlays — rendered as SIBLINGS of #game-container so they are

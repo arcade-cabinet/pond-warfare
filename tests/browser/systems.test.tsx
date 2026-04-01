@@ -128,11 +128,9 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     await delay(4500); // intro fade
     game.world.gameSpeed = 3;
     // Ensure all auto-behaviors start OFF for a clean slate
-    game.world.autoBehaviors.gather = false;
-    game.world.autoBehaviors.build = false;
-    game.world.autoBehaviors.defend = false;
-    game.world.autoBehaviors.attack = false;
-    game.world.autoBehaviors.heal = false;
+    game.world.autoBehaviors.gatherer = false;
+    game.world.autoBehaviors.combat = false;
+    game.world.autoBehaviors.healer = false;
     game.world.autoBehaviors.scout = false;
   }, 30_000);
 
@@ -142,12 +140,12 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
 
   describe('Auto-behaviors', () => {
 
-    // 1. Toggle auto-gather ON -> idle gatherers enter GatherMove state
-    it('auto-gather toggle sets world.autoBehaviors.gather flag', async () => {
-      game.world.autoBehaviors.gather = false;
-      expect(game.world.autoBehaviors.gather).toBe(false);
-      game.world.autoBehaviors.gather = true;
-      expect(game.world.autoBehaviors.gather).toBe(true);
+    // 1. Toggle auto-gatherer ON -> idle gatherers enter GatherMove state
+    it('auto-gatherer toggle sets world.autoBehaviors.gatherer flag', async () => {
+      game.world.autoBehaviors.gatherer = false;
+      expect(game.world.autoBehaviors.gatherer).toBe(false);
+      game.world.autoBehaviors.gatherer = true;
+      expect(game.world.autoBehaviors.gatherer).toBe(true);
       // Verify the system reads this flag (it checks every 60 frames)
       await waitFrames(120);
       // Gatherers should be working if resources exist
@@ -155,12 +153,12 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
         (eid) => UnitStateMachine.state[eid] !== UnitState.Idle,
       );
       expect(working.length).toBeGreaterThanOrEqual(0); // may be 0 if no resources nearby
-      game.world.autoBehaviors.gather = false;
+      game.world.autoBehaviors.gatherer = false;
     });
 
-    // 2. Toggle auto-gather OFF -> new idle gatherers stay idle
-    it('toggle auto-gather OFF -> new idle gatherers stay idle', async () => {
-      game.world.autoBehaviors.gather = false;
+    // 2. Toggle auto-gatherer OFF -> new idle gatherers stay idle
+    it('toggle auto-gatherer OFF -> new idle gatherers stay idle', async () => {
+      game.world.autoBehaviors.gatherer = false;
       await waitFrames(60);
 
       // Force a gatherer to idle
@@ -177,8 +175,8 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       expect(UnitStateMachine.state[gid]).toBe(UnitState.Idle);
     });
 
-    // 3. Toggle auto-build ON -> idle gatherers assigned to incomplete buildings
-    it('toggle auto-build ON -> idle gatherers assigned to incomplete buildings', async () => {
+    // 3. Toggle auto-gatherer ON -> idle gatherers assigned to auto-build
+    it('toggle auto-gatherer ON -> idle gatherers assigned to auto-build', async () => {
       // Give resources for auto-build to work
       game.world.resources.clams = 500;
       game.world.resources.twigs = 500;
@@ -193,8 +191,8 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       UnitStateMachine.state[gid] = UnitState.Idle;
       UnitStateMachine.targetEntity[gid] = -1;
 
-      // Enable auto-build
-      game.world.autoBehaviors.build = true;
+      // Enable auto-gatherer (covers both gather + build)
+      game.world.autoBehaviors.gatherer = true;
 
       // Align the frame count so auto-build runs on the next multiple of 300
       const remainder = 300 - (game.world.frameCount % 300);
@@ -213,38 +211,29 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
         expect(wasAssigned).toBe(true);
       }
 
-      game.world.autoBehaviors.build = false;
+      game.world.autoBehaviors.gatherer = false;
       await page.screenshot({ path: 'tests/browser/screenshots/sys-03-auto-build.png' });
     });
 
-    // 4. Toggle auto-attack ON -> idle combat units enter AttackMove toward enemies
-    it('auto-attack toggle sets world.autoBehaviors.attack flag', async () => {
-      game.world.autoBehaviors.attack = false;
-      expect(game.world.autoBehaviors.attack).toBe(false);
-      game.world.autoBehaviors.attack = true;
-      expect(game.world.autoBehaviors.attack).toBe(true);
-      game.world.autoBehaviors.attack = false;
+    // 4. Toggle auto-combat ON -> idle combat units enter AttackMove toward enemies
+    it('auto-combat toggle sets world.autoBehaviors.combat flag', async () => {
+      game.world.autoBehaviors.combat = false;
+      expect(game.world.autoBehaviors.combat).toBe(false);
+      game.world.autoBehaviors.combat = true;
+      expect(game.world.autoBehaviors.combat).toBe(true);
+      game.world.autoBehaviors.combat = false;
     });
 
-    // 5. Toggle auto-defend ON -> idle combat units patrol near Lodge
-    it('auto-defend toggle sets world.autoBehaviors.defend flag', async () => {
-      game.world.autoBehaviors.defend = false;
-      expect(game.world.autoBehaviors.defend).toBe(false);
-      game.world.autoBehaviors.defend = true;
-      expect(game.world.autoBehaviors.defend).toBe(true);
-      game.world.autoBehaviors.defend = false;
+    // 5. Toggle auto-healer ON -> idle healers seek wounded allies
+    it('auto-healer toggle sets world.autoBehaviors.healer flag', async () => {
+      game.world.autoBehaviors.healer = false;
+      expect(game.world.autoBehaviors.healer).toBe(false);
+      game.world.autoBehaviors.healer = true;
+      expect(game.world.autoBehaviors.healer).toBe(true);
+      game.world.autoBehaviors.healer = false;
     });
 
-    // 6. Toggle auto-heal ON -> idle healers seek wounded allies
-    it('auto-heal toggle sets world.autoBehaviors.heal flag', async () => {
-      game.world.autoBehaviors.heal = false;
-      expect(game.world.autoBehaviors.heal).toBe(false);
-      game.world.autoBehaviors.heal = true;
-      expect(game.world.autoBehaviors.heal).toBe(true);
-      game.world.autoBehaviors.heal = false;
-    });
-
-    // 7. Toggle auto-scout ON -> idle scouts move to unexplored areas
+    // 6. Toggle auto-scout ON -> idle scouts move to unexplored areas
     it('auto-scout toggle sets world.autoBehaviors.scout flag', async () => {
       game.world.autoBehaviors.scout = false;
       expect(game.world.autoBehaviors.scout).toBe(false);

@@ -22,6 +22,7 @@ import {
   IsResource,
   Position,
   Resource,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
@@ -38,8 +39,13 @@ export function autoBehaviorSystem(world: GameWorld): void {
   // Wildlife always wanders regardless of toggle state
   neutralWildlifeWander(world);
 
-  const { gather, defend, attack, heal, scout } = world.autoBehaviors;
-  if (!gather && !defend && !attack && !heal && !scout) return;
+  const {
+    gatherer: autoGatherer,
+    combat: autoCombat,
+    healer: autoHealer,
+    scout: autoScout,
+  } = world.autoBehaviors;
+  if (!autoGatherer && !autoCombat && !autoHealer && !autoScout) return;
 
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
 
@@ -51,6 +57,9 @@ export function autoBehaviorSystem(world: GameWorld): void {
     // Never auto-assign the Commander — the player always controls it manually
     // and it must stay near the Lodge to protect it and provide its aura.
     if ((EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Commander) continue;
+
+    // Skip units with manual task overrides from the Forces tab
+    if (TaskOverride.active[eid] === 1) continue;
 
     const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
 
@@ -76,7 +85,7 @@ export function autoBehaviorSystem(world: GameWorld): void {
     const kind = EntityTypeTag.kind[eid] as EntityKind;
 
     // Auto-Gather: idle gatherers go to nearest resource
-    if (gather && kind === EntityKind.Gatherer) {
+    if (autoGatherer && kind === EntityKind.Gatherer) {
       const resources = query(world.ecs, [Position, Health, IsResource, Resource]);
       let bestRes = -1;
       let bestDist = Infinity;
@@ -101,7 +110,7 @@ export function autoBehaviorSystem(world: GameWorld): void {
     }
 
     // Auto-Heal: idle healers seek the nearest wounded player unit (map-wide)
-    if (heal && kind === EntityKind.Healer) {
+    if (autoHealer && kind === EntityKind.Healer) {
       const allUnits = query(world.ecs, [Position, Health, FactionTag]);
       let bestAlly = -1;
       let bestDist = Infinity;
@@ -132,7 +141,7 @@ export function autoBehaviorSystem(world: GameWorld): void {
     if (kind === EntityKind.Gatherer || kind === EntityKind.Healer) continue;
 
     // Auto-Attack takes priority over defend (seek and destroy vs. patrol)
-    if (attack) {
+    if (autoCombat) {
       const enemies = query(world.ecs, [Position, Health, FactionTag]);
       let bestEnemy = -1;
       let bestDist = Infinity;
@@ -158,7 +167,7 @@ export function autoBehaviorSystem(world: GameWorld): void {
     }
 
     // Auto-Scout: fast idle combat units move to random unexplored map areas
-    if (scout && Velocity.speed[eid] >= 2.0) {
+    if (autoScout && Velocity.speed[eid] >= 2.0) {
       // Pick a random point on the map edges or quadrants to explore
       const margin = 200;
       const targetX = margin + Math.random() * (WORLD_WIDTH - margin * 2);
@@ -173,7 +182,7 @@ export function autoBehaviorSystem(world: GameWorld): void {
     }
 
     // Auto-Defend: idle combat units patrol near Lodge (only if auto-attack didn't find a target)
-    if (defend) {
+    if (autoCombat) {
       const buildings = query(world.ecs, [Position, Health, IsBuilding, FactionTag, EntityTypeTag]);
       for (let j = 0; j < buildings.length; j++) {
         const bid = buildings[j];

@@ -9,13 +9,14 @@ import type { CustomGameSettings } from '@/ui/store';
 
 // ---- Tab definition ----
 
-export type TabKey = 'map' | 'economy' | 'enemies' | 'rules';
+export type TabKey = 'map' | 'economy' | 'enemies' | 'rules' | 'commander';
 
 export const TAB_LABELS: Record<TabKey, string> = {
   map: 'MAP',
   economy: 'ECON',
   enemies: 'FOES',
   rules: 'RULES',
+  commander: 'CMDR',
 };
 
 export interface TabContentProps {

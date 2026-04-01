@@ -159,7 +159,7 @@ describe('Training & Building', () => {
     await delay(300);
 
     // Enable auto-build so gatherer finishes it
-    game.world.autoBehaviors.build = true;
+    game.world.autoBehaviors.gatherer = true;
     await waitFrames(600);
 
     const burrowsAfter = getUnits(EntityKind.Burrow).length;

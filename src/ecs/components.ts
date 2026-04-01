@@ -111,6 +111,13 @@ export const Veterancy = soa({
   appliedRank: [] as number[], // last rank whose bonuses were applied
 });
 
+// Task override: when set, auto-behavior system skips this unit
+export const TaskOverride = soa({
+  active: [] as number[], // 0 = no override, 1 = has override
+  task: [] as number[], // UnitState value for the assigned task
+  targetEntity: [] as number[], // target entity for the task (0 = none)
+});
+
 // Tag components - empty objects used purely as markers
 export const TowerAI = {};
 export const IsBuilding = {};

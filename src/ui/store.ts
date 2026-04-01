@@ -7,6 +7,7 @@
 
 import { computed, signal } from '@preact/signals';
 import type { GameState, TooltipData } from '@/types';
+import type { RosterBuilding, RosterGroup } from './roster-types';
 
 // ---- Resources ----
 export const clams = signal(200);
@@ -88,13 +89,20 @@ export const radialMenuOpen = signal(false);
 export const radialMenuX = signal(0);
 export const radialMenuY = signal(0);
 
-// Auto-behavior toggle states (persist across menu opens)
-export const autoGatherEnabled = signal(false);
-export const autoBuildEnabled = signal(false);
-export const autoDefendEnabled = signal(false);
-export const autoAttackEnabled = signal(false);
-export const autoHealEnabled = signal(false);
+// Auto-behavior toggle states grouped by role (persist across menu opens)
+export const autoGathererEnabled = signal(false); // covers gather + build
+export const autoCombatEnabled = signal(false); // covers attack + defend
+export const autoHealerEnabled = signal(false);
 export const autoScoutEnabled = signal(false);
+
+// --- Legacy aliases (deprecated, will be removed after full UI migration) ---
+// These computed signals map old per-action names to the new per-role signals
+// so existing UI code compiles during the transition.
+export const autoGatherEnabled = autoGathererEnabled;
+export const autoBuildEnabled = autoGathererEnabled;
+export const autoDefendEnabled = autoCombatEnabled;
+export const autoAttackEnabled = autoCombatEnabled;
+export const autoHealEnabled = autoHealerEnabled;
 
 // ---- Game over stats ----
 export const goTitle = signal('Victory');
@@ -132,6 +140,10 @@ export interface QueueItem {
   entityId?: number; // Optional stable identifier for the building producing this item
 }
 export const globalProductionQueue = signal<QueueItem[]>([]);
+
+// ---- Roster (Forces + Buildings tabs) ----
+export const unitRoster = signal<RosterGroup[]>([]);
+export const buildingRoster = signal<RosterBuilding[]>([]);
 
 // ---- Derived ----
 export const foodDisplay = computed(() => `${food.value}/${maxFood.value}`);
@@ -246,8 +258,8 @@ export const keyboardRefOpen = signal(false);
 export const mobilePanelOpen = signal(false);
 
 /** Active tab in the slide-out command panel. */
-export type PanelTab = 'map' | 'actions' | 'commands' | 'menu';
-export const activePanelTab = signal<PanelTab>('map');
+export type PanelTab = 'map' | 'forces' | 'buildings' | 'menu';
+export const activePanelTab = signal<PanelTab>('forces');
 export const masterVolume = signal(80);
 export const musicVolume = signal(50);
 export const sfxVolume = signal(80);

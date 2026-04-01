@@ -1,8 +1,11 @@
-/** Floating hamburger button — sole DOM element over the game canvas. */
+/** Floating hamburger button -- hidden when panels are docked. */
 
+import { canDockPanels } from '@/platform';
 import { togglePanel } from '../game-actions';
 
 export function HamburgerButton() {
+  if (canDockPanels.value) return null;
+
   return (
     <button
       type="button"
