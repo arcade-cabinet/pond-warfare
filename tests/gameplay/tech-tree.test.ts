@@ -76,7 +76,25 @@ describe('Tech Tree Effects', () => {
     const siegeWorks = TECH_UPGRADES.siegeWorks;
 
     expect(siegeWorks.description).toContain('Catapult');
+    // Cross-branch: siegeWorks (fortifications) requires eagleEye (warfare)
     expect(siegeWorks.requires).toBe('eagleEye');
+  });
+
+  it('regeneration tech should heal all units every 300 frames', () => {
+    world.tech.regeneration = true;
+
+    const brawler = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    // Wound and put in combat state (regen heals ALL units, not just idle)
+    Health.current[brawler] = 10;
+    UnitStateMachine.state[brawler] = UnitState.Attacking;
+
+    // Regeneration runs every 300 frames via healthSystem
+    world.frameCount = 300;
+    healthSystem(world);
+
+    // Passive healing does NOT heal attacking units, but regeneration does +1
+    // processPassiveHealing skips Attacking state, processRegeneration heals all
+    expect(Health.current[brawler]).toBe(11);
   });
 
   it('cartography should increase fog reveal radius', () => {

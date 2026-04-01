@@ -17,6 +17,7 @@ import {
   processHealerAura,
   processHerbalistHutHeal,
   processPassiveHealing,
+  processRegeneration,
 } from './health/healing';
 
 // Re-export takeDamage for external consumers
@@ -43,6 +44,9 @@ export function healthSystem(world: GameWorld): void {
 
   // Passive healing (every 300 frames)
   if (world.frameCount % 300 === 0) processPassiveHealing(world);
+
+  // Regeneration tech (every 300 frames, all units)
+  if (world.frameCount % 300 === 0 && world.tech.regeneration) processRegeneration(world);
 
   // Healer aura (every 60 frames)
   if (world.frameCount % 60 === 0) processHealerAura(world);

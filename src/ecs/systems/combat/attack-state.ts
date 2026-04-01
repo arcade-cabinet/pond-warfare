@@ -121,7 +121,7 @@ function executeAttack(
   if (faction === Faction.Player && world.tech.battleRoar) {
     cooldown = Math.round(cooldown * 0.9);
   }
-  if (kind === EntityKind.Catapult && world.tech.siegeEngineering) {
+  if (kind === EntityKind.Catapult && world.tech.siegeWorks) {
     cooldown = Math.round(cooldown * 0.75);
   }
   Combat.attackCooldown[eid] = cooldown;

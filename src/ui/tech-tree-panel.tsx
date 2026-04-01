@@ -1,21 +1,31 @@
 /**
  * Tech Tree Panel
  *
- * Full-screen overlay showing all techs. Layout chosen by screenClass signal:
- * - compact (phones, landscape phones): SwipeableTabView with card grids
- * - medium/large (tablets, foldables, laptops, desktops): side-by-side SVG graphs
- *
- * Decomposed into submodules under src/ui/tech-tree/.
+ * Full-screen overlay showing all techs across 5 branches.
+ * Layout chosen by screenClass signal:
+ * - compact: collapsible accordion sections with card grids
+ * - medium/large: side-by-side SVG graphs (row of 3 + row of 2)
  */
 
 import { useState } from 'preact/hooks';
 import type { TechId, TechState } from '@/config/tech-tree';
 import { screenClass } from '@/platform';
-import { PondTabButton } from './components/PondTabButton';
+import { PondAccordionSection } from './components/PondAccordionSection';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { BranchGrid } from './tech-tree/BranchGrid';
 import { BranchPanel } from './tech-tree/BranchPanel';
-import { ARMORY_EDGES, ARMORY_NODES, LODGE_EDGES, LODGE_NODES } from './tech-tree/tree-data';
+import {
+  FORTIFICATION_EDGES,
+  FORTIFICATION_NODES,
+  LODGE_EDGES,
+  LODGE_NODES,
+  NATURE_EDGES,
+  NATURE_NODES,
+  SHADOW_EDGES,
+  SHADOW_NODES,
+  WARFARE_EDGES,
+  WARFARE_NODES,
+} from './tech-tree/tree-data';
 
 export interface TechTreePanelProps {
   techState: TechState;
@@ -26,12 +36,59 @@ export interface TechTreePanelProps {
   onClose: () => void;
 }
 
-type BranchTab = 'lodge' | 'armory';
+interface BranchDef {
+  key: string;
+  label: string;
+  subtitle: string;
+  nodes: typeof LODGE_NODES;
+  edges: typeof LODGE_EDGES;
+}
 
-const BRANCH_TABS: { key: BranchTab; label: string }[] = [
-  { key: 'lodge', label: 'Lodge' },
-  { key: 'armory', label: 'Armory' },
+const BRANCHES: BranchDef[] = [
+  {
+    key: 'lodge',
+    label: 'Lodge',
+    subtitle: 'Economy & Expansion',
+    nodes: LODGE_NODES,
+    edges: LODGE_EDGES,
+  },
+  {
+    key: 'nature',
+    label: 'Nature',
+    subtitle: 'Support & Healing',
+    nodes: NATURE_NODES,
+    edges: NATURE_EDGES,
+  },
+  {
+    key: 'warfare',
+    label: 'Warfare',
+    subtitle: 'Offense & Damage',
+    nodes: WARFARE_NODES,
+    edges: WARFARE_EDGES,
+  },
+  {
+    key: 'fortifications',
+    label: 'Fortifications',
+    subtitle: 'Defense & Siege',
+    nodes: FORTIFICATION_NODES,
+    edges: FORTIFICATION_EDGES,
+  },
+  {
+    key: 'shadow',
+    label: 'Shadow',
+    subtitle: 'Subterfuge & Control',
+    nodes: SHADOW_NODES,
+    edges: SHADOW_EDGES,
+  },
 ];
+
+function branchSummary(nodes: typeof LODGE_NODES, techState: TechState): string {
+  let count = 0;
+  for (const n of nodes) {
+    if (techState[n.id]) count++;
+  }
+  return `${count}/${nodes.length} researched`;
+}
 
 export function TechTreePanel({
   techState,
@@ -42,7 +99,16 @@ export function TechTreePanel({
   onClose,
 }: TechTreePanelProps) {
   const scrollRef = useScrollDrag<HTMLDivElement>();
-  const [branch, setBranch] = useState<BranchTab>('lodge');
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['lodge']));
+
+  const toggleSection = (key: string) => {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   return (
     <div
@@ -52,7 +118,6 @@ export function TechTreePanel({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* Inner scroll container — has max-height constraint, centered */}
       <div
         ref={scrollRef}
         class="absolute inset-0 flex flex-col items-center modal-scroll-both parchment-panel"
@@ -93,55 +158,64 @@ export function TechTreePanel({
           </span>
         </div>
 
-        {/* Compact: branch tabs + card grid (phones, landscape phones) */}
+        {/* Compact: accordion sections with card grids */}
         {screenClass.value === 'compact' && (
-          <div class="w-full flex-1 flex flex-col">
-            <div class="flex gap-2 justify-center py-2">
-              {BRANCH_TABS.map((t) => (
-                <PondTabButton
-                  key={t.key}
-                  label={t.label}
-                  active={branch === t.key}
-                  onClick={() => setBranch(t.key)}
+          <div class="w-full flex-1 flex flex-col px-2 pb-8 gap-1">
+            {BRANCHES.map((b) => (
+              <PondAccordionSection
+                key={b.key}
+                sectionKey={b.key}
+                title={`${b.label} -- ${b.subtitle}`}
+                summary={branchSummary(b.nodes, techState)}
+                open={openSections.has(b.key)}
+                onToggle={toggleSection}
+              >
+                <BranchGrid
+                  nodes={b.nodes}
+                  techState={techState}
+                  clams={clams}
+                  twigs={twigs}
+                  researchDiscount={researchDiscount}
+                  onResearch={onResearch}
                 />
-              ))}
-            </div>
-            <div class="px-4 pb-8">
-              <BranchGrid
-                nodes={branch === 'lodge' ? LODGE_NODES : ARMORY_NODES}
-                techState={techState}
-                clams={clams}
-                twigs={twigs}
-                researchDiscount={researchDiscount}
-                onResearch={onResearch}
-              />
-            </div>
+              </PondAccordionSection>
+            ))}
           </div>
         )}
 
-        {/* Medium/Large: side-by-side SVG graphs (tablets, foldables, desktops) */}
+        {/* Medium/Large: side-by-side SVG graphs (3+2 rows) */}
         {screenClass.value !== 'compact' && (
-          <div class="flex gap-16 px-4 pb-8 items-start justify-center">
-            <BranchPanel
-              title="Lodge / Nature"
-              nodes={LODGE_NODES}
-              edges={LODGE_EDGES}
-              techState={techState}
-              clams={clams}
-              twigs={twigs}
-              researchDiscount={researchDiscount}
-              onResearch={onResearch}
-            />
-            <BranchPanel
-              title="Armory"
-              nodes={ARMORY_NODES}
-              edges={ARMORY_EDGES}
-              techState={techState}
-              clams={clams}
-              twigs={twigs}
-              researchDiscount={researchDiscount}
-              onResearch={onResearch}
-            />
+          <div class="flex flex-col gap-10 px-4 pb-8 items-center">
+            <div class="flex gap-10 items-start justify-center flex-wrap">
+              {BRANCHES.slice(0, 3).map((b) => (
+                <BranchPanel
+                  key={b.key}
+                  title={`${b.label} -- ${b.subtitle}`}
+                  nodes={b.nodes}
+                  edges={b.edges}
+                  techState={techState}
+                  clams={clams}
+                  twigs={twigs}
+                  researchDiscount={researchDiscount}
+                  onResearch={onResearch}
+                />
+              ))}
+            </div>
+            <div class="flex gap-10 items-start justify-center flex-wrap">
+              {BRANCHES.slice(3).map((b) => (
+                <BranchPanel
+                  key={b.key}
+                  title={`${b.label} -- ${b.subtitle}`}
+                  nodes={b.nodes}
+                  edges={b.edges}
+                  techState={techState}
+                  clams={clams}
+                  twigs={twigs}
+                  researchDiscount={researchDiscount}
+                  onResearch={onResearch}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

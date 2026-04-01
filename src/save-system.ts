@@ -144,7 +144,16 @@ export function loadGame(world: GameWorld, json: string): boolean {
 
   // Restore tech
   for (const key of Object.keys(data.tech)) {
-    (world.tech as Record<string, boolean>)[key] = data.tech[key];
+    // Migrate removed siegeEngineering -> siegeWorks
+    if (key === 'siegeEngineering') {
+      if (data.tech[key]) {
+        (world.tech as Record<string, boolean>).siegeWorks = true;
+      }
+      continue;
+    }
+    if (key in world.tech) {
+      (world.tech as Record<string, boolean>)[key] = data.tech[key];
+    }
   }
 
   // Restore stats

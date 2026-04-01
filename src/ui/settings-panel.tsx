@@ -10,9 +10,9 @@
  * Accessible from the gear icon button in the HUD top bar.
  */
 
-import { useState } from 'preact/hooks';
+import { useMemo } from 'preact/hooks';
 import { AdvisorSettings } from './components/AdvisorSettings';
-import { PondTabButton } from './components/PondTabButton';
+import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import {
   autoSaveEnabled,
@@ -38,14 +38,6 @@ export interface SettingsPanelProps {
   onReduceVisualNoiseToggle?: () => void;
   onClose: () => void;
 }
-
-const SETTINGS_TABS = [
-  { key: 'audio', label: 'Audio' },
-  { key: 'game', label: 'Game' },
-  { key: 'options', label: 'Options' },
-  { key: 'access', label: 'Access' },
-  { key: 'advisors', label: 'Advisors' },
-] as const;
 
 function VolumeSlider({
   label,
@@ -110,8 +102,21 @@ function Toggle({
 
 export function SettingsPanel(props: SettingsPanelProps) {
   const currentSpeed = gameSpeed.value;
-  const [tab, setTab] = useState('audio');
   const scrollRef = useScrollDrag<HTMLDivElement>();
+
+  const sections: AccordionSection[] = useMemo(
+    () => [
+      { key: 'audio', title: 'Audio', summary: `Master ${masterVolume.value}%`, defaultOpen: true },
+      {
+        key: 'gameplay',
+        title: 'Gameplay',
+        summary: `Speed ${currentSpeed}x${autoSaveEnabled.value ? ', Auto-save ON' : ''}`,
+      },
+      { key: 'accessibility', title: 'Accessibility' },
+      { key: 'advisors', title: 'Advisors' },
+    ],
+    [currentSpeed],
+  );
 
   return (
     <div
@@ -126,7 +131,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
       {/* Panel card */}
       <div
         ref={scrollRef}
-        class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel"
+        class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel pond-panel-bg"
         style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}
@@ -144,20 +149,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </button>
         </div>
 
-        {/* Tab bar */}
-        <div class="flex flex-wrap gap-1 mb-3 justify-center">
-          {SETTINGS_TABS.map((t) => (
-            <PondTabButton
-              key={t.key}
-              label={t.label}
-              active={tab === t.key}
-              onClick={() => setTab(t.key)}
-            />
-          ))}
-        </div>
-
-        {/* Tab content */}
-        {tab === 'audio' && (
+        {/* Accordion sections */}
+        <PondAccordion sections={sections}>
+          {/* Audio */}
           <div class="space-y-3">
             <VolumeSlider
               label="Master Volume"
@@ -175,10 +169,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onChange={props.onSfxVolumeChange}
             />
           </div>
-        )}
 
-        {tab === 'game' && (
-          <div>
+          {/* Gameplay (merged Game + Options) */}
+          <div class="space-y-3">
             <div class="section-header mb-2">Game Speed</div>
             <div class="flex gap-2">
               {[1, 2, 3].map((s) => (
@@ -200,11 +193,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 </button>
               ))}
             </div>
-          </div>
-        )}
-
-        {tab === 'options' && (
-          <div class="space-y-3">
             <Toggle
               label="Color Blind Mode"
               active={colorBlindMode.value}
@@ -216,9 +204,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onToggle={props.onAutoSaveToggle}
             />
           </div>
-        )}
 
-        {tab === 'access' && (
+          {/* Accessibility */}
           <div class="space-y-3">
             <div class="flex items-center justify-between min-h-[44px]">
               <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
@@ -256,9 +243,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onToggle={() => props.onReduceVisualNoiseToggle?.()}
             />
           </div>
-        )}
 
-        {tab === 'advisors' && <AdvisorSettings />}
+          {/* Advisors */}
+          <AdvisorSettings />
+        </PondAccordion>
       </div>
     </div>
   );

@@ -117,6 +117,20 @@ export function processHealerAura(world: GameWorld): void {
   }
 }
 
+/** Regeneration tech: every 300 frames, all living player units regen 1 HP. */
+export function processRegeneration(world: GameWorld): void {
+  const units = query(world.ecs, [Health, FactionTag, EntityTypeTag]);
+  for (let i = 0; i < units.length; i++) {
+    const eid = units[i];
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+    if (hasComponent(world.ecs, eid, IsResource)) continue;
+    if (Health.current[eid] <= 0) continue;
+    if (Health.current[eid] >= Health.max[eid]) continue;
+    Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + 1);
+  }
+}
+
 /** Herbalist Hut area heal: every 120 frames, heals all player units within 150px by 2 HP. */
 export function processHerbalistHutHeal(world: GameWorld): void {
   const huts = query(world.ecs, [Position, Health, IsBuilding, EntityTypeTag, FactionTag]);
