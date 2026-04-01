@@ -1,9 +1,8 @@
 /**
- * Tech Tree — Layout data and constants
+ * Tech Tree -- Layout data and constants
  *
- * Contains the tree graph definitions (nodes, edges) for each branch,
- * cell sizing constants, and the shared interfaces used by all tech-tree
- * sub-components.
+ * Contains the tree graph definitions (nodes, edges) for each of the
+ * 5 branches, cell sizing constants, and shared interfaces.
  */
 
 import type { TechId } from '@/config/tech-tree';
@@ -28,7 +27,7 @@ export interface TreeEdge {
 }
 
 // -------------------------------------------------------------------
-// Cell sizing constants — used by desktop graph layout only (BranchPanel,
+// Cell sizing constants -- used by desktop graph layout only (BranchPanel,
 // TechNode, EdgeLines). Mobile card layout uses CSS grid instead.
 // -------------------------------------------------------------------
 
@@ -40,66 +39,99 @@ export const CELL_W = NODE_W + GAP_X;
 export const CELL_H = NODE_H + GAP_Y;
 
 // -------------------------------------------------------------------
-// Lodge / Nature branch
+// Lodge (Economy & Expansion) -- 5 techs
 // -------------------------------------------------------------------
 
 export const LODGE_NODES: TreeNode[] = [
   { id: 'cartography', col: 0, row: 0, unlocks: 'Scout Post' },
   { id: 'tidalHarvest', col: 1, row: 0 },
-  { id: 'herbalMedicine', col: 2, row: 0, unlocks: 'Herbalist Hut' },
   { id: 'tradeRoutes', col: 0, row: 1 },
-  { id: 'aquaticTraining', col: 2, row: 1, unlocks: 'Swimmer' },
-  { id: 'pondBlessing', col: 1, row: 1 },
-  { id: 'deepDiving', col: 2, row: 2 },
+  { id: 'deepDiving', col: 1, row: 1 },
   { id: 'rootNetwork', col: 1, row: 2 },
-  { id: 'tidalSurge', col: 0, row: 2 },
 ];
 
 export const LODGE_EDGES: TreeEdge[] = [
+  { from: 'cartography', to: 'tradeRoutes' },
+  { from: 'tidalHarvest', to: 'deepDiving' },
+  { from: 'deepDiving', to: 'rootNetwork' },
+];
+
+// -------------------------------------------------------------------
+// Nature (Support & Healing) -- 5 techs
+// -------------------------------------------------------------------
+
+export const NATURE_NODES: TreeNode[] = [
+  { id: 'herbalMedicine', col: 0, row: 0, unlocks: 'Herbalist Hut' },
+  { id: 'aquaticTraining', col: 0, row: 1, unlocks: 'Swimmer' },
+  { id: 'pondBlessing', col: 1, row: 1 },
+  { id: 'regeneration', col: 0, row: 2 },
+  { id: 'tidalSurge', col: 1, row: 2 },
+];
+
+export const NATURE_EDGES: TreeEdge[] = [
   { from: 'herbalMedicine', to: 'aquaticTraining' },
   { from: 'herbalMedicine', to: 'pondBlessing' },
-  { from: 'aquaticTraining', to: 'deepDiving' },
-  { from: 'cartography', to: 'tradeRoutes' },
-  { from: 'deepDiving', to: 'rootNetwork' },
+  { from: 'aquaticTraining', to: 'regeneration' },
+  // Cross-branch: tidalSurge requires deepDiving (Lodge)
   { from: 'deepDiving', to: 'tidalSurge' },
 ];
 
 // -------------------------------------------------------------------
-// Armory branch
+// Warfare (Offense & Damage) -- 5 techs
 // -------------------------------------------------------------------
 
-export const ARMORY_NODES: TreeNode[] = [
-  { id: 'sturdyMud', col: 0, row: 0 },
-  { id: 'swiftPaws', col: 1, row: 0 },
-  { id: 'sharpSticks', col: 0, row: 1 },
-  { id: 'ironShell', col: 1, row: 1, unlocks: 'Shieldbearer' },
-  { id: 'battleRoar', col: 2, row: 1 },
-  { id: 'eagleEye', col: 0, row: 2 },
-  { id: 'siegeWorks', col: 1, row: 2, unlocks: 'Catapult' },
-  { id: 'cunningTraps', col: 2, row: 2, unlocks: 'Trapper' },
-  { id: 'hardenedShells', col: 0, row: 3 },
-  { id: 'piercingShot', col: 1, row: 3 },
-  { id: 'camouflage', col: 2, row: 3 },
-  { id: 'fortifiedWalls', col: 0, row: 4 },
-  { id: 'rallyCry', col: 1, row: 4 },
-  { id: 'warDrums', col: 2, row: 4 },
-  { id: 'venomCoating', col: 0, row: 5 },
-  { id: 'siegeEngineering', col: 1, row: 5 },
+export const WARFARE_NODES: TreeNode[] = [
+  { id: 'sharpSticks', col: 0, row: 0 },
+  { id: 'eagleEye', col: 0, row: 1 },
+  { id: 'battleRoar', col: 1, row: 1 },
+  { id: 'piercingShot', col: 0, row: 2 },
+  { id: 'warDrums', col: 1, row: 2 },
 ];
 
-export const ARMORY_EDGES: TreeEdge[] = [
-  { from: 'sturdyMud', to: 'swiftPaws' },
-  { from: 'sturdyMud', to: 'fortifiedWalls' },
-  { from: 'sharpSticks', to: 'ironShell' },
-  { from: 'sharpSticks', to: 'battleRoar' },
+export const WARFARE_EDGES: TreeEdge[] = [
   { from: 'sharpSticks', to: 'eagleEye' },
-  { from: 'sharpSticks', to: 'cunningTraps' },
-  { from: 'eagleEye', to: 'siegeWorks' },
-  { from: 'eagleEye', to: 'hardenedShells' },
+  { from: 'sharpSticks', to: 'battleRoar' },
   { from: 'eagleEye', to: 'piercingShot' },
+  { from: 'battleRoar', to: 'warDrums' },
+];
+
+// -------------------------------------------------------------------
+// Fortifications (Defense & Siege) -- 5 techs
+// -------------------------------------------------------------------
+
+export const FORTIFICATION_NODES: TreeNode[] = [
+  { id: 'sturdyMud', col: 0, row: 0 },
+  { id: 'fortifiedWalls', col: 0, row: 1 },
+  { id: 'ironShell', col: 1, row: 1, unlocks: 'Shieldbearer' },
+  { id: 'siegeWorks', col: 0, row: 2, unlocks: 'Catapult' },
+  { id: 'hardenedShells', col: 1, row: 2 },
+];
+
+export const FORTIFICATION_EDGES: TreeEdge[] = [
+  { from: 'sturdyMud', to: 'fortifiedWalls' },
+  // Cross-branch: ironShell requires sharpSticks (Warfare)
+  { from: 'sharpSticks', to: 'ironShell' },
+  // Cross-branch: siegeWorks requires eagleEye (Warfare)
+  { from: 'eagleEye', to: 'siegeWorks' },
+  // Cross-branch: hardenedShells requires eagleEye (Warfare)
+  { from: 'eagleEye', to: 'hardenedShells' },
+];
+
+// -------------------------------------------------------------------
+// Shadow (Subterfuge & Control) -- 5 techs
+// -------------------------------------------------------------------
+
+export const SHADOW_NODES: TreeNode[] = [
+  { id: 'swiftPaws', col: 0, row: 0 },
+  { id: 'cunningTraps', col: 0, row: 1, unlocks: 'Trapper' },
+  { id: 'rallyCry', col: 1, row: 1 },
+  { id: 'camouflage', col: 0, row: 2 },
+  { id: 'venomCoating', col: 1, row: 2 },
+];
+
+export const SHADOW_EDGES: TreeEdge[] = [
+  { from: 'swiftPaws', to: 'cunningTraps' },
+  { from: 'swiftPaws', to: 'rallyCry' },
   { from: 'cunningTraps', to: 'camouflage' },
   { from: 'cunningTraps', to: 'venomCoating' },
-  { from: 'swiftPaws', to: 'rallyCry' },
-  { from: 'battleRoar', to: 'warDrums' },
-  { from: 'siegeWorks', to: 'siegeEngineering' },
 ];

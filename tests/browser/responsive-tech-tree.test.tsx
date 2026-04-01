@@ -3,8 +3,8 @@
  *
  * Validates that the TechTreePanel renders different layouts based on
  * the screenClass signal:
- * - compact: branch tabs + card grid (BranchTabs + BranchGrid)
- * - medium/large: side-by-side SVG graphs (BranchPanel)
+ * - compact: accordion sections with card grids (PondAccordionSection + BranchGrid)
+ * - medium/large: side-by-side SVG graphs (BranchPanel, 3+2 rows)
  *
  * Runs in browser mode via vitest + Playwright.
  */
@@ -35,6 +35,8 @@ function renderPanel(container: HTMLElement) {
   );
 }
 
+const BRANCH_NAMES = ['Lodge', 'Nature', 'Warfare', 'Fortifications', 'Shadow'];
+
 describe('Responsive tech tree layout', () => {
   let container: HTMLDivElement;
 
@@ -44,7 +46,7 @@ describe('Responsive tech tree layout', () => {
     resizeTo(1280, 720);
   });
 
-  it('compact screenClass renders branch tabs and card grid', async () => {
+  it('compact screenClass renders 5 accordion sections with card grid', async () => {
     _testReset();
     await initDeviceSignals();
     resizeTo(400, 800);
@@ -54,13 +56,11 @@ describe('Responsive tech tree layout', () => {
     document.body.appendChild(container);
     renderPanel(container);
 
-    // Branch tabs should be rendered (Lodge / Nature and Armory buttons)
-    const buttons = Array.from(container.querySelectorAll('button'));
-    const tabLabels = buttons.map((b) => b.textContent?.trim());
-    expect(tabLabels).toContain('Lodge / Nature');
-    expect(tabLabels).toContain('Armory');
+    // Accordion sections should be rendered for all 5 branches
+    const sections = container.querySelectorAll('[data-testid^="accordion-section-"]');
+    expect(sections.length).toBe(5);
 
-    // Card grid should be present
+    // Card grid should be present (at least in the default open section)
     expect(container.querySelector('.tech-card-grid')).toBeTruthy();
   });
 
@@ -74,16 +74,17 @@ describe('Responsive tech tree layout', () => {
     document.body.appendChild(container);
     renderPanel(container);
 
-    // Branch tabs should NOT be rendered at large
-    const buttons = Array.from(container.querySelectorAll('button'));
-    const tabLabels = buttons.map((b) => b.textContent?.trim());
-    expect(tabLabels).not.toContain('Lodge / Nature');
+    // No accordion sections at large
+    const sections = container.querySelectorAll('[data-testid^="accordion-section-"]');
+    expect(sections.length).toBe(0);
 
     // SVG graph headers should be present (BranchPanel renders h3 titles)
     const headings = Array.from(container.querySelectorAll('h3'));
     const headingText = headings.map((h) => h.textContent?.trim());
-    expect(headingText).toContain('Lodge / Nature');
-    expect(headingText).toContain('Armory');
+    for (const name of BRANCH_NAMES) {
+      const found = headingText.some((t) => t?.includes(name));
+      expect(found).toBe(true);
+    }
 
     // No card grid at large
     expect(container.querySelector('.tech-card-grid')).toBeNull();

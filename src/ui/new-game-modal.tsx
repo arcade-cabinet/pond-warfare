@@ -9,11 +9,10 @@
  * Decomposed into submodules under src/ui/new-game/.
  */
 
-import { useCallback, useEffect, useState } from 'preact/hooks';
-import { PondTabButton } from './components/PondTabButton';
+import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
+import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { CommanderPicker } from './new-game/CommanderPicker';
-import type { TabKey } from './new-game/controls';
 import {
   generateName,
   generateSeed,
@@ -43,7 +42,6 @@ export function NewGameModal() {
   const [settings, setSettings] = useState<CustomGameSettings>(() => ({
     ...DEFAULT_CUSTOM_SETTINGS,
   }));
-  const [activeTab, setActiveTab] = useState<TabKey>('map');
   const [activePreset, setActivePreset] = useState<PresetKey | null>('normal');
   const [editingSeed, setEditingSeed] = useState(false);
   const [seedText, setSeedText] = useState('');
@@ -89,13 +87,34 @@ export function NewGameModal() {
     menuState.value = 'main';
   }, []);
 
-  const TABS: { key: TabKey; label: string }[] = [
-    { key: 'map', label: 'Map' },
-    { key: 'economy', label: 'Econ' },
-    { key: 'enemies', label: 'Foes' },
-    { key: 'rules', label: 'Rules' },
-    { key: 'commander', label: 'Cmdr' },
-  ];
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const accordionSections: AccordionSection[] = useMemo(
+    () => [
+      { key: 'commander', title: 'Commander', defaultOpen: true },
+      {
+        key: 'map',
+        title: 'Map Settings',
+        summary: `${cap(settings.scenario)}, ${cap(settings.resourceDensity)} density`,
+      },
+      {
+        key: 'economy',
+        title: 'Economy',
+        summary: `${Math.round(settings.startingResourcesMult * 100)}% starting resources`,
+      },
+      {
+        key: 'enemies',
+        title: 'Enemies',
+        summary: `${settings.enemyNests} nests, ${cap(settings.enemyEconomy)}`,
+      },
+      {
+        key: 'rules',
+        title: 'Rules',
+        summary: settings.permadeath ? 'Permadeath ON' : 'Normal difficulty',
+      },
+    ],
+    [settings],
+  );
+
   const presetKeys: PresetKey[] = [
     'easy',
     'normal',
@@ -118,7 +137,7 @@ export function NewGameModal() {
 
       <div
         ref={scrollRef}
-        class="relative rounded-lg shadow-2xl w-[480px] max-w-[95vw] modal-scroll-lg p-5 md:p-6 font-game text-sm z-10 parchment-panel"
+        class="relative rounded-lg shadow-2xl w-[480px] max-w-[95vw] modal-scroll-lg p-5 md:p-6 font-game text-sm z-10 parchment-panel pond-panel-bg"
         style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}
@@ -185,25 +204,15 @@ export function NewGameModal() {
           />
         </div>
 
-        {/* Tab bar */}
-        <div class="flex flex-wrap gap-1 mb-3 justify-center">
-          {TABS.map((t) => (
-            <PondTabButton
-              key={t.key}
-              label={t.label}
-              active={activeTab === t.key}
-              onClick={() => setActiveTab(t.key)}
-            />
-          ))}
-        </div>
-
-        {/* Tab content */}
+        {/* Accordion sections */}
         <div class="mb-4">
-          {activeTab === 'map' && <MapTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'economy' && <EconomyTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'enemies' && <EnemiesTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'rules' && <RulesTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'commander' && <CommanderPicker />}
+          <PondAccordion sections={accordionSections}>
+            <CommanderPicker />
+            <MapTab settings={settings} onUpdate={handleUpdate} />
+            <EconomyTab settings={settings} onUpdate={handleUpdate} />
+            <EnemiesTab settings={settings} onUpdate={handleUpdate} />
+            <RulesTab settings={settings} onUpdate={handleUpdate} />
+          </PondAccordion>
         </div>
 
         {/* Presets row */}
