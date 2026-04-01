@@ -128,15 +128,18 @@ function onOrientationChange(): void {
   updateSignals();
 }
 
+let pointerQueryRef: MediaQueryList | null = null;
+let hoverQueryRef: MediaQueryList | null = null;
+
 function setupMediaQueryListeners(): void {
-  const pointerQuery = matchMedia('(pointer: coarse)');
-  if (pointerQuery.addEventListener) {
-    pointerQuery.addEventListener('change', updateSignals);
+  pointerQueryRef = matchMedia('(pointer: coarse)');
+  if (pointerQueryRef.addEventListener) {
+    pointerQueryRef.addEventListener('change', updateSignals);
   }
 
-  const hoverQuery = matchMedia('(hover: hover)');
-  if (hoverQuery.addEventListener) {
-    hoverQuery.addEventListener('change', updateSignals);
+  hoverQueryRef = matchMedia('(hover: hover)');
+  if (hoverQueryRef.addEventListener) {
+    hoverQueryRef.addEventListener('change', updateSignals);
   }
 }
 
@@ -159,6 +162,18 @@ export async function initDeviceSignals(): Promise<void> {
 
   // CSS media query change listeners
   setupMediaQueryListeners();
+}
+
+/** Cleanup device signal listeners. Call on app teardown. */
+export function cleanupDeviceSignals(): void {
+  window.removeEventListener('resize', debouncedResize);
+  window.removeEventListener('orientationchange', onOrientationChange);
+  if (pointerQueryRef?.removeEventListener) {
+    pointerQueryRef.removeEventListener('change', updateSignals);
+  }
+  if (hoverQueryRef?.removeEventListener) {
+    hoverQueryRef.removeEventListener('change', updateSignals);
+  }
 }
 
 /** Exposed for testing — trigger a signal update without waiting for events. */

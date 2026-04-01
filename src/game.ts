@@ -80,7 +80,7 @@ import {
   selectIdleWorker,
 } from '@/input/selection';
 import { PhysicsManager } from '@/physics/physics-world';
-import { canDockPanels, isNative } from '@/platform';
+import { canDockPanels, cleanupDeviceSignals, isNative } from '@/platform';
 import { cleanupEntityAnimation, triggerCommandPulse } from '@/rendering/animations';
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import { clampCamera, computeShakeOffset } from '@/rendering/camera';
@@ -1730,6 +1730,7 @@ export class Game {
     this.colorBlindUnsubscribe = null;
     this.dockPanelUnsubscribe?.();
     this.dockPanelUnsubscribe = null;
+    cleanupDeviceSignals();
     window.removeEventListener('resize', this.boundResize);
     // Remove WebGL context loss and visibility handlers
     if (this.boundContextLost) {

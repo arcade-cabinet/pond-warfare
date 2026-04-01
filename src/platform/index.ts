@@ -14,6 +14,7 @@ export {
 // Reactive device signals
 export {
   canDockPanels,
+  cleanupDeviceSignals,
   formFactor,
   initDeviceSignals,
   inputMode,
