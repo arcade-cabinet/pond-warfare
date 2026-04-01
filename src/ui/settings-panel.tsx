@@ -12,7 +12,8 @@
 
 import { useState } from 'preact/hooks';
 import { AdvisorSettings } from './components/AdvisorSettings';
-import { SwipeableTabView, type Tab } from './components/SwipeableTabView';
+import { PondTabButton } from './components/PondTabButton';
+import { useScrollDrag } from './hooks/useScrollDrag';
 import {
   autoSaveEnabled,
   colorBlindMode,
@@ -38,13 +39,13 @@ export interface SettingsPanelProps {
   onClose: () => void;
 }
 
-const SETTINGS_TABS: Tab[] = [
+const SETTINGS_TABS = [
   { key: 'audio', label: 'Audio' },
   { key: 'game', label: 'Game' },
   { key: 'options', label: 'Options' },
   { key: 'access', label: 'Access' },
   { key: 'advisors', label: 'Advisors' },
-];
+] as const;
 
 function VolumeSlider({
   label,
@@ -110,6 +111,7 @@ function Toggle({
 export function SettingsPanel(props: SettingsPanelProps) {
   const currentSpeed = gameSpeed.value;
   const [tab, setTab] = useState('audio');
+  const scrollRef = useScrollDrag<HTMLDivElement>();
 
   return (
     <div
@@ -123,6 +125,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       {/* Panel card */}
       <div
+        ref={scrollRef}
         class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel"
         style={{ color: 'var(--pw-text-primary)' }}
       >
@@ -141,9 +144,20 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </button>
         </div>
 
-        {/* Swipeable tab navigation + content */}
-        <SwipeableTabView tabs={SETTINGS_TABS} activeTab={tab} onTabChange={setTab} variant="modal">
-          {/* Audio tab */}
+        {/* Tab bar */}
+        <div class="flex flex-wrap gap-1 mb-3 justify-center">
+          {SETTINGS_TABS.map((t) => (
+            <PondTabButton
+              key={t.key}
+              label={t.label}
+              active={tab === t.key}
+              onClick={() => setTab(t.key)}
+            />
+          ))}
+        </div>
+
+        {/* Tab content */}
+        {tab === 'audio' && (
           <div class="space-y-3">
             <VolumeSlider
               label="Master Volume"
@@ -161,8 +175,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onChange={props.onSfxVolumeChange}
             />
           </div>
+        )}
 
-          {/* Game tab */}
+        {tab === 'game' && (
           <div>
             <div class="section-header mb-2">Game Speed</div>
             <div class="flex gap-2">
@@ -186,8 +201,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
               ))}
             </div>
           </div>
+        )}
 
-          {/* Options tab */}
+        {tab === 'options' && (
           <div class="space-y-3">
             <Toggle
               label="Color Blind Mode"
@@ -200,8 +216,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onToggle={props.onAutoSaveToggle}
             />
           </div>
+        )}
 
-          {/* Access tab */}
+        {tab === 'access' && (
           <div class="space-y-3">
             <div class="flex items-center justify-between min-h-[44px]">
               <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
@@ -239,10 +256,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onToggle={() => props.onReduceVisualNoiseToggle?.()}
             />
           </div>
+        )}
 
-          {/* Advisors tab */}
-          <AdvisorSettings />
-        </SwipeableTabView>
+        {tab === 'advisors' && <AdvisorSettings />}
       </div>
     </div>
   );

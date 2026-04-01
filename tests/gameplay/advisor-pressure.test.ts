@@ -37,6 +37,15 @@ function addIdleGatherer(w: GameWorld): void {
   UnitStateMachine.state[eid] = UnitState.Idle;
 }
 
+function addEnemy(w: GameWorld, kind: EntityKind): void {
+  const eid = addEntity(w.ecs);
+  for (const c of [Health, FactionTag, EntityTypeTag]) addComponent(w.ecs, eid, c);
+  Health.current[eid] = 50;
+  Health.max[eid] = 50;
+  FactionTag.faction[eid] = Faction.Enemy;
+  EntityTypeTag.kind[eid] = kind;
+}
+
 function addBuilding(w: GameWorld, kind: EntityKind): void {
   const eid = addEntity(w.ecs);
   for (const c of [Health, FactionTag, EntityTypeTag, IsBuilding, Building])
@@ -73,15 +82,15 @@ describe('Advisor Pressure', () => {
     expect(tip('pop_cap').priority).toBe(100);
   });
 
-  it('war advisor fires when no armory after frame 1200', () => {
-    w.frameCount = 1500;
+  it('war advisor fires when enemies present and no armory', () => {
+    addEnemy(w, EntityKind.Gator);
 
     expect(tip('no_armory').condition(w)).toBe(true);
     expect(tip('no_armory').advisor).toBe('war');
   });
 
   it('war advisor silent when armory exists', () => {
-    w.frameCount = 1500;
+    addEnemy(w, EntityKind.Gator);
     addBuilding(w, EntityKind.Armory);
 
     expect(tip('no_armory').condition(w)).toBe(false);

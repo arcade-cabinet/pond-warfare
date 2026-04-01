@@ -11,7 +11,7 @@
 import { useState } from 'preact/hooks';
 import type { TechId, TechState } from '@/config/tech-tree';
 import { screenClass } from '@/platform';
-import { SwipeableTabView, type Tab } from './components/SwipeableTabView';
+import { PondTabButton } from './components/PondTabButton';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { BranchGrid } from './tech-tree/BranchGrid';
 import { BranchPanel } from './tech-tree/BranchPanel';
@@ -28,8 +28,8 @@ export interface TechTreePanelProps {
 
 type BranchTab = 'lodge' | 'armory';
 
-const BRANCH_TABS: Tab[] = [
-  { key: 'lodge', label: 'Lodge / Nature' },
+const BRANCH_TABS: { key: BranchTab; label: string }[] = [
+  { key: 'lodge', label: 'Lodge' },
   { key: 'armory', label: 'Armory' },
 ];
 
@@ -93,36 +93,29 @@ export function TechTreePanel({
           </span>
         </div>
 
-        {/* Compact: swipeable branch tabs + card grid (phones, landscape phones) */}
+        {/* Compact: branch tabs + card grid (phones, landscape phones) */}
         {screenClass.value === 'compact' && (
           <div class="w-full flex-1 flex flex-col">
-            <SwipeableTabView
-              tabs={BRANCH_TABS}
-              activeTab={branch}
-              onTabChange={(key) => setBranch(key as BranchTab)}
-              variant="overlay"
-            >
-              <div class="px-4 pb-8">
-                <BranchGrid
-                  nodes={LODGE_NODES}
-                  techState={techState}
-                  clams={clams}
-                  twigs={twigs}
-                  researchDiscount={researchDiscount}
-                  onResearch={onResearch}
+            <div class="flex gap-2 justify-center py-2">
+              {BRANCH_TABS.map((t) => (
+                <PondTabButton
+                  key={t.key}
+                  label={t.label}
+                  active={branch === t.key}
+                  onClick={() => setBranch(t.key)}
                 />
-              </div>
-              <div class="px-4 pb-8">
-                <BranchGrid
-                  nodes={ARMORY_NODES}
-                  techState={techState}
-                  clams={clams}
-                  twigs={twigs}
-                  researchDiscount={researchDiscount}
-                  onResearch={onResearch}
-                />
-              </div>
-            </SwipeableTabView>
+              ))}
+            </div>
+            <div class="px-4 pb-8">
+              <BranchGrid
+                nodes={branch === 'lodge' ? LODGE_NODES : ARMORY_NODES}
+                techState={techState}
+                clams={clams}
+                twigs={twigs}
+                researchDiscount={researchDiscount}
+                onResearch={onResearch}
+              />
+            </div>
           </div>
         )}
 

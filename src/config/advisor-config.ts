@@ -22,8 +22,11 @@ export const ADVISOR_PERSONAS: Record<AdvisorRole, AdvisorPersona> = {
   builder: { role: 'builder', name: 'Architect Pebble', color: '#60a5fa', initial: 'B' },
 };
 
-/** Evaluation interval in frames (~1 second at 60fps). */
-export const ADVISOR_EVAL_INTERVAL = 60;
+/** Evaluation interval in frames (~2 seconds at 60fps). */
+export const ADVISOR_EVAL_INTERVAL = 120;
 
-/** Auto-dismiss timeout in frames (15 seconds at 60fps). */
-export const ADVISOR_TOAST_DURATION = 900;
+/** Auto-dismiss timeout in frames (8 seconds at 60fps). */
+export const ADVISOR_TOAST_DURATION = 480;
+
+/** Minimum frames between consecutive tips (10 seconds at 60fps). */
+export const ADVISOR_TIP_GAP = 600;

@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'preact/hooks';
-import { SwipeableTabView, type Tab } from './components/SwipeableTabView';
+import { PondTabButton } from './components/PondTabButton';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { CommanderPicker } from './new-game/CommanderPicker';
 import type { TabKey } from './new-game/controls';
@@ -89,12 +89,12 @@ export function NewGameModal() {
     menuState.value = 'main';
   }, []);
 
-  const TABS: Tab[] = [
-    { key: 'map', label: 'Map', icon: '\uD83D\uDDFA' },
-    { key: 'economy', label: 'Economy', icon: '\uD83D\uDCB0' },
-    { key: 'enemies', label: 'Foes', icon: '\u2694' },
-    { key: 'rules', label: 'Rules', icon: '\uD83D\uDCDC' },
-    { key: 'commander', label: 'Commander', icon: '\uD83D\uDC51' },
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: 'map', label: 'Map' },
+    { key: 'economy', label: 'Econ' },
+    { key: 'enemies', label: 'Foes' },
+    { key: 'rules', label: 'Rules' },
+    { key: 'commander', label: 'Cmdr' },
   ];
   const presetKeys: PresetKey[] = [
     'easy',
@@ -185,19 +185,26 @@ export function NewGameModal() {
           />
         </div>
 
-        {/* Swipeable tab content */}
-        <SwipeableTabView
-          tabs={TABS}
-          activeTab={activeTab}
-          onTabChange={(key) => setActiveTab(key as TabKey)}
-          variant="modal"
-        >
-          <MapTab settings={settings} onUpdate={handleUpdate} />
-          <EconomyTab settings={settings} onUpdate={handleUpdate} />
-          <EnemiesTab settings={settings} onUpdate={handleUpdate} />
-          <RulesTab settings={settings} onUpdate={handleUpdate} />
-          <CommanderPicker />
-        </SwipeableTabView>
+        {/* Tab bar */}
+        <div class="flex flex-wrap gap-1 mb-3 justify-center">
+          {TABS.map((t) => (
+            <PondTabButton
+              key={t.key}
+              label={t.label}
+              active={activeTab === t.key}
+              onClick={() => setActiveTab(t.key)}
+            />
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <div class="mb-4">
+          {activeTab === 'map' && <MapTab settings={settings} onUpdate={handleUpdate} />}
+          {activeTab === 'economy' && <EconomyTab settings={settings} onUpdate={handleUpdate} />}
+          {activeTab === 'enemies' && <EnemiesTab settings={settings} onUpdate={handleUpdate} />}
+          {activeTab === 'rules' && <RulesTab settings={settings} onUpdate={handleUpdate} />}
+          {activeTab === 'commander' && <CommanderPicker />}
+        </div>
 
         {/* Presets row */}
         <div class="mb-4">
