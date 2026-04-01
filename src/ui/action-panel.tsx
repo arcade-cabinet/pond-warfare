@@ -173,14 +173,15 @@ function TabButton({
       class={`flex-1 py-1 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[44px] md:min-h-0 font-heading`}
       style={{
         background: active
-          ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
-          : 'var(--pw-wood-dark)',
+          ? 'rgba(64, 200, 208, 0.08)'
+          : 'transparent',
         color: active
           ? 'var(--pw-accent)'
           : count > 0
             ? 'var(--pw-text-secondary)'
             : 'var(--pw-text-muted)',
         borderBottom: active ? '2px solid var(--pw-accent)' : '2px solid transparent',
+        borderRadius: active ? '6px 6px 0 0' : '0',
       }}
       onClick={onClick}
       disabled={count === 0}
@@ -230,12 +231,12 @@ export function ActionPanel() {
       id="action-panel"
       class="w-full flex-1 flex flex-col overflow-hidden"
       style={{
-        background: 'linear-gradient(180deg, var(--pw-wood-mid) 0%, var(--pw-wood-dark) 100%)',
+        background: 'rgba(13, 33, 40, 0.6)',
       }}
     >
       {/* Tab bar */}
       {buttons.length > 0 && (
-        <div class="flex flex-shrink-0" style={{ borderBottom: '2px solid var(--pw-border)' }}>
+        <div class="flex flex-shrink-0" style={{ borderBottom: '1px solid rgba(64, 200, 208, 0.12)' }}>
           <TabButton
             tab="train"
             active={effectiveTab === 'train'}

@@ -26,10 +26,12 @@ export function TopBar(props: TopBarProps) {
 
   return (
     <div
-      class={`absolute top-0 left-0 w-full wood-panel border-0 border-b-2 md:border-b-3 flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm ${compact ? 'h-10' : 'h-10 md:h-12'}`}
+      class={`absolute top-0 left-0 w-full wood-panel border-0 border-b flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm ${compact ? 'h-10' : 'h-10 md:h-12'}`}
       style={{
-        borderBottomColor: 'var(--pw-border)',
+        borderBottomColor: 'rgba(64, 200, 208, 0.12)',
         paddingTop: 'env(safe-area-inset-top, 0px)',
+        background: 'linear-gradient(180deg, rgba(13, 33, 40, 0.85) 0%, rgba(19, 45, 54, 0.8) 100%)',
+        backdropFilter: 'blur(8px)',
       }}
     >
       <TopBarResources compact={compact} />

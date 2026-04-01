@@ -182,7 +182,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   style={{
                     background:
                       currentSpeed === s
-                        ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
+                        ? 'rgba(64, 200, 208, 0.1)'
                         : undefined,
                     borderColor: currentSpeed === s ? 'var(--pw-accent)' : undefined,
                     color: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
@@ -220,7 +220,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     style={{
                       background:
                         uiScale.value === s
-                          ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
+                          ? 'rgba(64, 200, 208, 0.1)'
                           : undefined,
                       borderColor: uiScale.value === s ? 'var(--pw-accent)' : undefined,
                       color: uiScale.value === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',

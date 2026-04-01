@@ -68,9 +68,10 @@ export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelPr
         class={`absolute top-0 right-0 h-full z-40 flex flex-col pond-panel-bg ${docked ? '' : 'transition-transform duration-200 ease-out'} ${open && !collapsed.value ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
           width: panelWidth,
-          background: 'linear-gradient(180deg, var(--pw-wood-mid), var(--pw-wood-dark))',
-          borderLeft: '3px solid var(--pw-border)',
-          boxShadow: open && !docked ? '-4px 0 20px rgba(0,0,0,0.5)' : 'none',
+          background: 'linear-gradient(180deg, rgba(19, 45, 54, 0.88), rgba(13, 33, 40, 0.92))',
+          borderLeft: '1px solid rgba(64, 200, 208, 0.12)',
+          boxShadow: open && !docked ? '-4px 0 20px rgba(0,0,0,0.3)' : 'none',
+          backdropFilter: 'blur(8px)',
         }}
       >
         {/* Collapse toggle (docked only) */}
