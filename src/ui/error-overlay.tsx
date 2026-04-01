@@ -22,7 +22,7 @@ import {
 function FatalErrorModal({ error, onDismiss }: { error: Error; onDismiss: () => void }) {
   return (
     <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80">
-      <div class="parchment-panel max-w-lg w-full mx-4 p-6 rounded-lg">
+      <div class="parchment-panel pond-panel-bg max-w-lg w-full mx-4 p-6 rounded-lg">
         <h2 class="font-title text-2xl text-[var(--pw-enemy)] mb-4">Fatal Error</h2>
         <p class="font-game text-[var(--pw-text-primary)] mb-2">{error.message}</p>
         {error.stack && (

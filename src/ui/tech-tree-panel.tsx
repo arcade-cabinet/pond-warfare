@@ -120,7 +120,7 @@ export function TechTreePanel({
     >
       <div
         ref={scrollRef}
-        class="absolute inset-0 flex flex-col items-center modal-scroll-both parchment-panel"
+        class="absolute inset-0 flex flex-col items-center modal-scroll-both parchment-panel pond-panel-bg"
       >
         {/* Header */}
         <div class="w-full flex items-center justify-between px-6 pt-4 pb-2 max-w-4xl mx-auto">

@@ -56,7 +56,7 @@ export function LeaderboardPanel() {
       {/* Panel card */}
       <div
         ref={scrollRef}
-        class="relative rounded-lg shadow-2xl w-[420px] max-w-[95vw] modal-scroll p-5 md:p-6 font-game text-sm z-10 parchment-panel"
+        class="relative rounded-lg shadow-2xl w-[420px] max-w-[95vw] modal-scroll p-5 md:p-6 font-game text-sm z-10 parchment-panel pond-panel-bg"
         style={{ color: 'var(--pw-text-primary)' }}
       >
         {/* Header */}

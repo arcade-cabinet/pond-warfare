@@ -130,7 +130,7 @@ export function GameOverBanner(props: GameOverProps) {
       {/* Parchment stat card */}
       <div
         ref={statsContainerRef}
-        class="parchment-panel mt-5 px-6 py-4 rounded-lg flex flex-col items-center gap-1.5 min-w-[240px]"
+        class="parchment-panel pond-panel-bg mt-5 px-6 py-4 rounded-lg flex flex-col items-center gap-1.5 min-w-[240px]"
       >
         <span
           class="section-header w-full text-center mb-1"
