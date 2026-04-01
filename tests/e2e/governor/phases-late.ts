@@ -130,98 +130,105 @@ export async function lateGamePhase(): Promise<void> {
 /** Research advanced techs across all 5 branches. */
 async function researchTechs(lodge: number | null): Promise<void> {
   const w = game.world;
-  if (!lodge) return;
+  const armory = getPlayerArmory();
 
-  // Warfare branch: Sharp Sticks -> Eagle Eye -> Siege Works -> Hardened Shells
-  if (
-    !w.tech.eagleEye &&
-    w.tech.sharpSticks &&
-    w.resources.clams >= 200 &&
-    w.resources.twigs >= 150
-  ) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Eagle Eye');
-    await delay(100);
+  // --- Lodge branch (researched at Lodge) ---
+  if (lodge) {
+    if (!w.tech.cartography && w.resources.clams >= 100 && w.resources.twigs >= 50) {
+      await selectEntity(lodge);
+      await delay(100);
+      clickActionButton('Cartography');
+      await delay(100);
+    }
+    if (!w.tech.tidalHarvest && w.resources.clams >= 100 && w.resources.twigs >= 75) {
+      await selectEntity(lodge);
+      await delay(100);
+      clickActionButton('Tidal Harvest');
+      await delay(100);
+    }
   }
 
-  if (
-    w.tech.eagleEye &&
-    !w.tech.siegeWorks &&
-    w.resources.clams >= 300 &&
-    w.resources.twigs >= 250
-  ) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Siege Works');
-    await delay(100);
+  // --- Nature branch (researched at Lodge) ---
+  if (lodge) {
+    if (!w.tech.herbalMedicine && w.resources.clams >= 100 && w.resources.twigs >= 75) {
+      await selectEntity(lodge);
+      await delay(100);
+      clickActionButton('Herbal Medicine');
+      await delay(100);
+    }
+    if (
+      w.tech.herbalMedicine &&
+      !w.tech.aquaticTraining &&
+      w.resources.clams >= 150 &&
+      w.resources.twigs >= 100
+    ) {
+      await selectEntity(lodge);
+      await delay(100);
+      clickActionButton('Aquatic Training');
+      await delay(100);
+    }
   }
 
-  if (
-    w.tech.eagleEye &&
-    !w.tech.hardenedShells &&
-    w.resources.clams >= 400 &&
-    w.resources.twigs >= 300
-  ) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Hardened Shells');
-    await delay(100);
+  // --- Warfare branch (researched at Armory) ---
+  if (armory) {
+    if (
+      w.tech.sharpSticks &&
+      !w.tech.eagleEye &&
+      w.resources.clams >= 200 &&
+      w.resources.twigs >= 150
+    ) {
+      await selectEntity(armory);
+      await delay(100);
+      clickActionButton('Eagle Eye');
+      await delay(100);
+    }
+    if (
+      w.tech.eagleEye &&
+      !w.tech.siegeWorks &&
+      w.resources.clams >= 300 &&
+      w.resources.twigs >= 250
+    ) {
+      await selectEntity(armory);
+      await delay(100);
+      clickActionButton('Siege Works');
+      await delay(100);
+    }
   }
 
-  // Nature branch: Herbal Medicine -> Aquatic Training
-  if (!w.tech.herbalMedicine && w.resources.clams >= 100 && w.resources.twigs >= 75) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Herbal Medicine');
-    await delay(100);
+  // --- Fortifications branch (researched at Armory) ---
+  if (armory) {
+    if (
+      w.tech.eagleEye &&
+      !w.tech.hardenedShells &&
+      w.resources.clams >= 400 &&
+      w.resources.twigs >= 300
+    ) {
+      await selectEntity(armory);
+      await delay(100);
+      clickActionButton('Hardened Shells');
+      await delay(100);
+    }
   }
 
-  if (
-    w.tech.herbalMedicine &&
-    !w.tech.aquaticTraining &&
-    w.resources.clams >= 150 &&
-    w.resources.twigs >= 100
-  ) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Aquatic Training');
-    await delay(100);
-  }
-
-  // Lodge branch: Cartography, Tidal Harvest
-  if (!w.tech.cartography && w.resources.clams >= 100 && w.resources.twigs >= 50) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Cartography');
-    await delay(100);
-  }
-
-  if (!w.tech.tidalHarvest && w.resources.clams >= 100 && w.resources.twigs >= 75) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Tidal Harvest');
-    await delay(100);
-  }
-
-  // Shadow branch: Swift Paws -> Cunning Traps
-  if (!w.tech.swiftPaws && w.resources.clams >= 100 && w.resources.twigs >= 50) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Swift Paws');
-    await delay(100);
-  }
-
-  if (
-    w.tech.swiftPaws &&
-    !w.tech.cunningTraps &&
-    w.resources.clams >= 150 &&
-    w.resources.twigs >= 100
-  ) {
-    await selectEntity(lodge);
-    await delay(100);
-    clickActionButton('Cunning Traps');
-    await delay(100);
+  // --- Shadow branch (researched at Armory) ---
+  if (armory) {
+    if (!w.tech.swiftPaws && w.resources.clams >= 100 && w.resources.twigs >= 50) {
+      await selectEntity(armory);
+      await delay(100);
+      clickActionButton('Swift Paws');
+      await delay(100);
+    }
+    if (
+      w.tech.swiftPaws &&
+      !w.tech.cunningTraps &&
+      w.resources.clams >= 150 &&
+      w.resources.twigs >= 100
+    ) {
+      await selectEntity(armory);
+      await delay(100);
+      clickActionButton('Cunning Traps');
+      await delay(100);
+    }
   }
 }
 

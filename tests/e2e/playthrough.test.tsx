@@ -177,9 +177,25 @@ describe('E2E Playthrough', () => {
       `## Snapshots: ${snapshots.length} total`,
     ].join('\n');
 
-    console.log(report);
+    // Write report and JSONL to DOM elements for extraction
+    const reportEl = document.createElement('pre');
+    reportEl.id = 'playthrough-report';
+    reportEl.style.display = 'none';
+    reportEl.textContent = report;
+    document.body.appendChild(reportEl);
+
+    const jsonlEl = document.createElement('pre');
+    jsonlEl.id = 'playthrough-jsonl';
+    jsonlEl.style.display = 'none';
+    jsonlEl.textContent = snapshots.map((s) => JSON.stringify(s)).join('\n');
+    document.body.appendChild(jsonlEl);
+
+    // Also store on window for programmatic access
     (window as any).__PLAYTHROUGH_REPORT__ = report;
-    (window as any).__PLAYTHROUGH_JSONL__ = snapshots.map((s) => JSON.stringify(s)).join('\n');
+    (window as any).__PLAYTHROUGH_JSONL__ = jsonlEl.textContent;
+
+    // Print report to stdout via console (shows in vitest --reporter=verbose)
+    console.log(report);
   });
 
   it(

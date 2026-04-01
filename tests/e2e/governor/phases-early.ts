@@ -187,20 +187,49 @@ export async function armyPhase(): Promise<void> {
       }
     }
 
-    // Research Sharp Sticks if affordable
-    if (w.resources.clams >= 300 && w.resources.twigs >= 200 && !w.tech.sharpSticks) {
+    // Research Sharp Sticks if affordable (Warfare branch, at Armory)
+    if (!w.tech.sharpSticks && w.resources.clams >= 100 && w.resources.twigs >= 50) {
       clickActionButton('Sharp Sticks');
       await delay(100);
     }
 
-    // Research Iron Shell for Shieldbearers
+    // Research Iron Shell for Shieldbearers (Fortifications, requires Sharp Sticks)
     if (
       w.tech.sharpSticks &&
       !w.tech.ironShell &&
-      w.resources.clams >= 300 &&
-      w.resources.twigs >= 200
+      w.resources.clams >= 200 &&
+      w.resources.twigs >= 150
     ) {
       clickActionButton('Iron Shell');
+      await delay(100);
+    }
+
+    // Research Sturdy Mud for building HP (Fortifications, at Armory)
+    if (!w.tech.sturdyMud && w.resources.clams >= 100 && w.resources.twigs >= 75) {
+      clickActionButton('Sturdy Mud');
+      await delay(100);
+    }
+
+    // Research Swift Paws for speed (Shadow branch, at Armory)
+    if (!w.tech.swiftPaws && w.resources.clams >= 100 && w.resources.twigs >= 50) {
+      clickActionButton('Swift Paws');
+      await delay(100);
+    }
+  }
+
+  // Research cheap Lodge-branch techs during army phase
+  const lodge = getPlayerLodge();
+  if (lodge) {
+    if (!w.tech.cartography && w.resources.clams >= 100 && w.resources.twigs >= 50) {
+      await selectEntity(lodge);
+      await delay(100);
+      clickActionButton('Cartography');
+      await delay(100);
+    }
+    if (!w.tech.tidalHarvest && w.resources.clams >= 100 && w.resources.twigs >= 75) {
+      await selectEntity(lodge);
+      await delay(100);
+      clickActionButton('Tidal Harvest');
       await delay(100);
     }
   }
