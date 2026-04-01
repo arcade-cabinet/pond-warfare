@@ -2,7 +2,7 @@
  * Advisor Tip Definitions
  *
  * All economy, war, and builder tips with pure condition functions.
- * Conditions must be lightweight -- they run every eval cycle (~60 frames).
+ * Conditions fire based on game state pressure — NOT time-based gates.
  * ECS query helpers live in tip-helpers.ts.
  */
 
@@ -19,7 +19,7 @@ import {
 import type { AdvisorTip } from './types';
 
 // ---------------------------------------------------------------------------
-// Economy Tips
+// Economy Tips — triggered by resource/population pressure
 // ---------------------------------------------------------------------------
 
 const economyTips: AdvisorTip[] = [
@@ -28,8 +28,8 @@ const economyTips: AdvisorTip[] = [
     advisor: 'economy',
     message:
       'You have idle gatherers! Select them and right-click a Clam deposit to start collecting resources.',
-    condition: (w) => countIdleGatherers(w) > 0 && w.frameCount > 180,
-    cooldown: 2400,
+    condition: (w) => countIdleGatherers(w) > 0,
+    cooldown: 3600,
     priority: 85,
     oncePerGame: true,
     action: 'open-forces',
@@ -38,8 +38,8 @@ const economyTips: AdvisorTip[] = [
     id: 'idle_gatherers',
     advisor: 'economy',
     message: 'Some gatherers are standing around idle. Open Forces and assign them to resources.',
-    condition: (w) => countIdleGatherers(w) > 0 && w.frameCount > 300,
-    cooldown: 1800,
+    condition: (w) => countIdleGatherers(w) >= 2,
+    cooldown: 3600,
     priority: 80,
     action: 'open-forces',
   },
@@ -47,8 +47,8 @@ const economyTips: AdvisorTip[] = [
     id: 'low_clams',
     advisor: 'economy',
     message: 'Clam deposits are running low. Explore to find new resource patches.',
-    condition: (w) => totalClamResources(w) < 200 && w.frameCount > 600,
-    cooldown: 3600,
+    condition: (w) => totalClamResources(w) < 200 && totalClamResources(w) > 0,
+    cooldown: 5400,
     priority: 60,
   },
   {
@@ -57,7 +57,7 @@ const economyTips: AdvisorTip[] = [
     message:
       'You have reached your population cap! Build a Lodge or upgrade to increase food supply.',
     condition: (w) => w.resources.food >= w.resources.maxFood && w.resources.maxFood > 0,
-    cooldown: 1200,
+    cooldown: 2400,
     priority: 100,
     action: 'open-buildings',
   },
@@ -66,17 +66,15 @@ const economyTips: AdvisorTip[] = [
     advisor: 'economy',
     message: 'You need food buildings to grow your population. Build a Lodge!',
     condition: (w) =>
-      countPlayerBuildings(w, EntityKind.Lodge) === 0 &&
-      w.resources.food >= w.resources.maxFood &&
-      w.frameCount > 600,
-    cooldown: 2400,
+      countPlayerBuildings(w, EntityKind.Lodge) === 0 && w.resources.food >= w.resources.maxFood,
+    cooldown: 3600,
     priority: 90,
     action: 'open-buildings',
   },
 ];
 
 // ---------------------------------------------------------------------------
-// War Tips
+// War Tips — triggered by combat/threat pressure
 // ---------------------------------------------------------------------------
 
 const warTips: AdvisorTip[] = [
@@ -85,7 +83,7 @@ const warTips: AdvisorTip[] = [
     advisor: 'war',
     message: 'Enemies spotted nearby! Train some Brawlers at the Armory to defend.',
     condition: (w) => countEnemyUnits(w) > 0 && countPlayerCombatUnits(w) < 3,
-    cooldown: 2400,
+    cooldown: 3600,
     priority: 90,
     action: 'open-buildings',
   },
@@ -94,7 +92,7 @@ const warTips: AdvisorTip[] = [
     advisor: 'war',
     message: 'Your Lodge is under attack! Rally all defenders immediately!',
     condition: (w) => lodgeUnderPressure(w),
-    cooldown: 600,
+    cooldown: 1200,
     priority: 120,
     action: 'open-forces',
   },
@@ -102,8 +100,8 @@ const warTips: AdvisorTip[] = [
     id: 'no_armory',
     advisor: 'war',
     message: 'Build an Armory to unlock combat units. You will need defenders soon!',
-    condition: (w) => w.frameCount > 1200 && countPlayerBuildings(w, EntityKind.Armory) === 0,
-    cooldown: 3600,
+    condition: (w) => countPlayerBuildings(w, EntityKind.Armory) === 0 && countEnemyUnits(w) > 0,
+    cooldown: 5400,
     priority: 70,
     oncePerGame: true,
     action: 'open-buildings',
@@ -113,7 +111,7 @@ const warTips: AdvisorTip[] = [
     advisor: 'war',
     message: 'The enemy force outnumbers you significantly. Train more combat units!',
     condition: (w) => countEnemyUnits(w) > countPlayerCombatUnits(w) * 2 + 3,
-    cooldown: 3000,
+    cooldown: 4800,
     priority: 80,
   },
   {
@@ -124,14 +122,14 @@ const warTips: AdvisorTip[] = [
       const remaining = w.peaceTimer - w.frameCount;
       return remaining > 0 && remaining < 1800;
     },
-    cooldown: 1800,
+    cooldown: 3600,
     priority: 100,
     oncePerGame: true,
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Builder Tips
+// Builder Tips — triggered by construction/tech pressure
 // ---------------------------------------------------------------------------
 
 const builderTips: AdvisorTip[] = [
@@ -140,8 +138,10 @@ const builderTips: AdvisorTip[] = [
     advisor: 'builder',
     message: 'Research techs at the Lodge to unlock new capabilities and stronger units.',
     condition: (w) =>
-      countPlayerBuildings(w, EntityKind.Lodge) > 0 && !anyTechResearched(w) && w.frameCount > 900,
-    cooldown: 3600,
+      countPlayerBuildings(w, EntityKind.Lodge) > 0 &&
+      !anyTechResearched(w) &&
+      w.resources.clams >= 100,
+    cooldown: 5400,
     priority: 50,
     oncePerGame: true,
     action: 'open-tech-tree',
@@ -152,14 +152,9 @@ const builderTips: AdvisorTip[] = [
     message: 'Your training queues are empty. Keep producing units to grow your force!',
     condition: (w) => {
       const armories = countPlayerBuildings(w, EntityKind.Armory);
-      return (
-        armories > 0 &&
-        w.resources.clams >= 80 &&
-        countPlayerCombatUnits(w) < 4 &&
-        w.frameCount > 1800
-      );
+      return armories > 0 && w.resources.clams >= 80 && countPlayerCombatUnits(w) < 4;
     },
-    cooldown: 2400,
+    cooldown: 3600,
     priority: 40,
     action: 'open-buildings',
   },
@@ -168,7 +163,7 @@ const builderTips: AdvisorTip[] = [
     advisor: 'builder',
     message: 'You have a growing army! Open the Forces tab to manage unit behaviors.',
     condition: (w) => countPlayerCombatUnits(w) >= 3,
-    cooldown: 3600,
+    cooldown: 5400,
     priority: 60,
     oncePerGame: true,
     action: 'open-forces',
@@ -178,7 +173,7 @@ const builderTips: AdvisorTip[] = [
     advisor: 'builder',
     message: 'Build a Tower near your Lodge to help defend against attacks!',
     condition: (w) => lodgeUnderPressure(w) && countPlayerBuildings(w, EntityKind.Tower) === 0,
-    cooldown: 3000,
+    cooldown: 4800,
     priority: 75,
     action: 'open-buildings',
   },
@@ -190,9 +185,8 @@ const builderTips: AdvisorTip[] = [
       countPlayerBuildings(w, EntityKind.Lodge) > 0 &&
       !w.tech.sturdyMud &&
       w.resources.clams >= 200 &&
-      w.resources.twigs >= 300 &&
-      w.frameCount > 1800,
-    cooldown: 4800,
+      w.resources.twigs >= 300,
+    cooldown: 7200,
     priority: 45,
     action: 'open-tech-tree',
   },

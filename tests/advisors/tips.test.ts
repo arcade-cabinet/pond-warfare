@@ -59,11 +59,10 @@ describe('Advisor Tips', () => {
     w = createGameWorld();
   });
 
-  it('idle_gatherers: fires when idle + frame > 300, not before or when busy', () => {
+  it('idle_gatherers: fires when 2+ idle gatherers, not with fewer', () => {
     addUnit(w, EntityKind.Gatherer, UnitState.Idle);
-    w.frameCount = 100;
     expect(tip('idle_gatherers').condition(w)).toBe(false);
-    w.frameCount = 301;
+    addUnit(w, EntityKind.Gatherer, UnitState.Idle);
     expect(tip('idle_gatherers').condition(w)).toBe(true);
   });
 
@@ -103,8 +102,8 @@ describe('Advisor Tips', () => {
     expect(tip('low_clams').condition(w)).toBe(true);
   });
 
-  it('no_armory: fires after frame 1200, not when armory exists', () => {
-    w.frameCount = 1500;
+  it('no_armory: fires when enemies present and no armory, not when armory exists', () => {
+    addEnemy(w, EntityKind.Gator);
     expect(tip('no_armory').condition(w)).toBe(true);
     addBuilding(w, EntityKind.Armory);
     expect(tip('no_armory').condition(w)).toBe(false);

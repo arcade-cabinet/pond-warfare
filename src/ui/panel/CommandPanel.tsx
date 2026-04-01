@@ -2,15 +2,14 @@
  * CommandPanel -- Slide-out (mobile) or docked (desktop) panel with
  * four tabs: Map, Forces, Buildings, Menu.
  *
- * Uses SwipeableTabView for gesture-driven tab navigation with
- * lilypad dot indicators. Collapse toggle and dim overlay are
- * handled outside the tab view.
+ * Uses PondTabButton for styled tab navigation with the painted
+ * Button.png asset. Collapse toggle and dim overlay are handled
+ * outside the tab view.
  */
 
 import { useSignal } from '@preact/signals';
 import { canDockPanels } from '@/platform';
-import type { Tab } from '../components/SwipeableTabView';
-import { SwipeableTabView } from '../components/SwipeableTabView';
+import { PondTabButton } from '../components/PondTabButton';
 import type { PanelTab } from '../store';
 import * as store from '../store';
 import { BuildingsTab } from './BuildingsTab';
@@ -18,11 +17,11 @@ import { ForcesTab } from './ForcesTab';
 import { MapTab } from './MapTab';
 import { MenuTab } from './MenuTab';
 
-const TABS: Tab[] = [
-  { key: 'map', label: 'Map', icon: '\uD83D\uDDFA' },
-  { key: 'forces', label: 'Forces', icon: '\u2694' },
-  { key: 'buildings', label: 'Build', icon: '\uD83C\uDFD7' },
-  { key: 'menu', label: 'Menu', icon: '\u2699' },
+const TABS: { id: PanelTab; label: string }[] = [
+  { id: 'map', label: 'Map' },
+  { id: 'forces', label: 'Forces' },
+  { id: 'buildings', label: 'Build' },
+  { id: 'menu', label: 'Menu' },
 ];
 
 export interface CommandPanelProps {
@@ -71,20 +70,32 @@ export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelPr
           </button>
         )}
 
-        {/* Swipeable tab view */}
-        <SwipeableTabView
-          tabs={TABS}
-          activeTab={tab}
-          onTabChange={(key) => {
-            store.activePanelTab.value = key as PanelTab;
-          }}
-          variant="panel"
+        {/* Tab bar */}
+        <div
+          class="flex flex-shrink-0 gap-1 px-1 py-1 justify-center"
+          style={{ borderBottom: '2px solid var(--pw-border)' }}
         >
-          <MapTab minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
-          <ForcesTab />
-          <BuildingsTab />
-          <MenuTab />
-        </SwipeableTabView>
+          {TABS.map((t) => (
+            <PondTabButton
+              key={t.id}
+              label={t.label}
+              active={tab === t.id}
+              onClick={() => {
+                store.activePanelTab.value = t.id;
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <div class="flex-1 overflow-y-auto min-h-0">
+          {tab === 'map' && (
+            <MapTab minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
+          )}
+          {tab === 'forces' && <ForcesTab />}
+          {tab === 'buildings' && <BuildingsTab />}
+          {tab === 'menu' && <MenuTab />}
+        </div>
       </div>
 
       {/* Dim overlay (mobile slide-out only) */}

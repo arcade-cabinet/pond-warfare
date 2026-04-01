@@ -11,7 +11,11 @@
 
 import { signal } from '@preact/signals';
 
-import { ADVISOR_EVAL_INTERVAL, ADVISOR_TOAST_DURATION } from '@/config/advisor-config';
+import {
+  ADVISOR_EVAL_INTERVAL,
+  ADVISOR_TIP_GAP,
+  ADVISOR_TOAST_DURATION,
+} from '@/config/advisor-config';
 import type { GameWorld } from '@/ecs/world';
 
 import { saveDismissedTips } from './advisor-state';
@@ -49,6 +53,9 @@ export function advisorSystem(world: GameWorld): void {
 
   // Don't push a new tip while one is already visible
   if (currentAdvisorTip.value) return;
+
+  // Enforce a gap between consecutive tips so the player isn't spammed
+  if (tipShownFrame > 0 && frame - tipShownFrame < ADVISOR_TIP_GAP) return;
 
   const candidates: AdvisorTip[] = [];
 
