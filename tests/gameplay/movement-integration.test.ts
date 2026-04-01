@@ -74,6 +74,7 @@ function createTestWorld(): GameWorld {
     commanderEnemyDebuff: new Set<number>(),
     commanderArmorBuff: new Set<number>(),
     commanderHpBuffApplied: new Set<number>(),
+    commanderUnitHpBuff: new Set<number>(),
     commanderArmor: 0,
     rallyBuff: new Set<number>(),
     blessingHealBuff: new Set<number>(),

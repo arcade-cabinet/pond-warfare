@@ -171,6 +171,48 @@ export const UNLOCKS: UnlockDef[] = [
     requirement: 'Kill 200 enemies total',
     check: (p) => p.total_kills >= 200,
   },
+
+  // --- Tech Branch Specialization Unlocks ---
+  {
+    id: 'cosmetic_tidal_map',
+    category: 'cosmetic',
+    name: 'Tidal Map Variant',
+    description: 'Water shimmer cosmetic on all maps',
+    requirement: 'Win 5 games and build 20+ buildings total',
+    check: (p) => p.total_wins >= 5 && p.total_buildings_built >= 20,
+  },
+  {
+    id: 'modifier_night_raid',
+    category: 'modifier',
+    name: 'Night Raid',
+    description: 'Start at nightfall, enemies 20% faster',
+    requirement: 'Win with zero losses on Normal+',
+    check: (p) => p.wins_zero_losses >= 1,
+  },
+  {
+    id: 'cosmetic_berserker',
+    category: 'cosmetic',
+    name: 'Berserker Brawler',
+    description: 'Red war-paint on all Brawlers',
+    requirement: 'Kill 500 enemies total',
+    check: (p) => p.total_kills >= 500,
+  },
+  {
+    id: 'cosmetic_healer_aura',
+    category: 'cosmetic',
+    name: "Healer's Aura",
+    description: 'Green glow effect on healed units',
+    requirement: 'Earn 50 pearls total and win 3 games',
+    check: (p) => p.total_pearls >= 50 && p.total_wins >= 3,
+  },
+  {
+    id: 'cosmetic_veteran_title',
+    category: 'cosmetic',
+    name: 'Veteran Title',
+    description: 'Commander shows Veteran rank badge',
+    requirement: 'Win 15 games total',
+    check: (p) => p.total_wins >= 15,
+  },
 ];
 
 /** Category display order and labels. */

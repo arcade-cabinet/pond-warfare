@@ -41,6 +41,9 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     if (faction === Faction.Player && !isBuilding && !isResource) {
       world.stats.unitsLost++;
     }
+    if (faction === Faction.Player && isBuilding) {
+      world.stats.buildingsLost++;
+    }
     if (faction === Faction.Enemy) {
       if (!isBuilding) {
         world.stats.unitsKilled++;

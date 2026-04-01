@@ -4,6 +4,7 @@
 
 import { audio } from '@/audio/audio-system';
 import type { GameWorld } from '@/ecs/world';
+import { loadCheckpoint } from '@/game/checkpoint';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
@@ -140,6 +141,29 @@ export function setupWebGLRecovery(
   document.addEventListener('visibilitychange', visibilityChange);
 
   return { contextLost, contextRestored, visibilityChange };
+}
+
+/** Handle evacuation choice: checkpoint, restart, or quit. */
+export function handleEvacuationChoice(
+  world: GameWorld,
+  choice: 'checkpoint' | 'restart' | 'quit',
+  restartInit: () => Promise<void>,
+): void {
+  world.evacuationTriggered = false;
+  store.evacuationActive.value = false;
+  world.paused = false;
+  store.paused.value = false;
+  if (choice === 'checkpoint') {
+    loadCheckpoint(world);
+  } else if (choice === 'restart') {
+    restartInit().catch(() => {
+      window.location.reload();
+    });
+  } else {
+    store.menuState.value = 'main';
+    store.mobilePanelOpen.value = false;
+    store.gameState.value = 'playing';
+  }
 }
 
 /** Install once-only Capacitor/browser lifecycle listeners. */

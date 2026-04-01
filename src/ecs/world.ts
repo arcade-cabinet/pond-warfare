@@ -168,6 +168,7 @@ export interface GameWorld {
   commanderDamageBuff: Set<number>;
   commanderSpeedBuff: Set<number>;
   commanderHpBuffApplied: Set<number>;
+  commanderUnitHpBuff: Set<number>;
   commanderEnemyDebuff: Set<number>;
 
   // Commander selection

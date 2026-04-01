@@ -19,6 +19,18 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 
+/** Remove Ironpaw HP buff from all currently-buffed units. */
+function removeUnitHpBuffs(world: GameWorld): void {
+  const mods = world.commanderModifiers;
+  if (mods.auraUnitHpBonus <= 0) return;
+  for (const eid of world.commanderUnitHpBuff) {
+    const bonus = Math.round((Health.max[eid] / (1 + mods.auraUnitHpBonus)) * mods.auraUnitHpBonus);
+    Health.max[eid] -= bonus;
+    Health.current[eid] = Math.min(Health.current[eid], Health.max[eid]);
+  }
+  world.commanderUnitHpBuff.clear();
+}
+
 export function commanderAura(world: GameWorld): void {
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
   const shouldRefresh = world.frameCount % 60 === 0;
@@ -36,6 +48,7 @@ export function commanderAura(world: GameWorld): void {
     world.commanderDamageBuff.clear();
     world.commanderSpeedBuff.clear();
     world.commanderEnemyDebuff.clear();
+    removeUnitHpBuffs(world);
     return;
   }
 
@@ -43,6 +56,10 @@ export function commanderAura(world: GameWorld): void {
   world.commanderDamageBuff.clear();
   world.commanderSpeedBuff.clear();
   world.commanderEnemyDebuff.clear();
+
+  // Track which units are in range this tick for dynamic HP buff
+  const prevUnitHpBuff = new Set(world.commanderUnitHpBuff);
+  world.commanderUnitHpBuff.clear();
 
   const mods = world.commanderModifiers;
 
@@ -88,12 +105,27 @@ export function commanderAura(world: GameWorld): void {
           world.commanderSpeedBuff.add(t);
         }
 
-        // Ironpaw: +20% HP to all units (apply once)
-        if (mods.auraUnitHpBonus > 0 && !world.commanderHpBuffApplied.has(t)) {
-          const bonus = Math.round(Health.max[t] * mods.auraUnitHpBonus);
-          Health.max[t] += bonus;
-          Health.current[t] += bonus;
-          world.commanderHpBuffApplied.add(t);
+        // Ironpaw: +20% HP to units in range (dynamic — add on enter, remove on leave)
+        if (mods.auraUnitHpBonus > 0) {
+          world.commanderUnitHpBuff.add(t);
+          if (!prevUnitHpBuff.has(t)) {
+            const bonus = Math.round(Health.max[t] * mods.auraUnitHpBonus);
+            Health.max[t] += bonus;
+            Health.current[t] = Math.min(Health.current[t] + bonus, Health.max[t]);
+          }
+        }
+      }
+    }
+
+    // Remove HP buff from units that left the aura
+    if (mods.auraUnitHpBonus > 0) {
+      for (const leftEid of prevUnitHpBuff) {
+        if (!world.commanderUnitHpBuff.has(leftEid) && Health.max[leftEid] > 0) {
+          const bonus = Math.round(
+            (Health.max[leftEid] / (1 + mods.auraUnitHpBonus)) * mods.auraUnitHpBonus,
+          );
+          Health.max[leftEid] -= bonus;
+          Health.current[leftEid] = Math.min(Health.current[leftEid], Health.max[leftEid]);
         }
       }
     }

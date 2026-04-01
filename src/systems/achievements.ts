@@ -7,7 +7,7 @@
  */
 
 import { query } from 'bitecs';
-import type { TechState } from '@/config/tech-tree';
+import { TECH_UPGRADES, type TechBranch, type TechState } from '@/config/tech-tree';
 import { EntityTypeTag, FactionTag, Health, Veterancy } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { getSetting, isDatabaseReady, setSetting } from '@/storage';
@@ -85,11 +85,19 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     peakKillStreak = world.killStreak.count;
   }
 
-  // Count researched techs
+  // Count researched techs and branch stats
   let techCount = 0;
-  for (const val of Object.values(world.tech as TechState)) {
-    if (val) techCount++;
+  const branchCounts: Record<string, number> = {};
+  let hasNonShadowTech = false;
+  for (const [key, val] of Object.entries(world.tech as TechState)) {
+    if (val) {
+      techCount++;
+      const branch: TechBranch = TECH_UPGRADES[key as keyof typeof TECH_UPGRADES].branch;
+      branchCounts[branch] = (branchCounts[branch] ?? 0) + 1;
+      if (branch !== 'shadow') hasNonShadowTech = true;
+    }
   }
+  const maxBranchTechCount = Math.max(0, ...Object.values(branchCounts));
 
   // Find max veterancy rank among player units
   let maxVetRank = 0;
@@ -103,8 +111,9 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     }
   }
 
-  // Check if Commander is alive
+  // Check if Commander is alive and at full HP
   let commanderAlive = false;
+  let commanderFullHp = false;
   const allUnits = query(world.ecs, [EntityTypeTag, FactionTag, Health]);
   for (let i = 0; i < allUnits.length; i++) {
     const eid = allUnits[i];
@@ -114,6 +123,7 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
       Health.current[eid] > 0
     ) {
       commanderAlive = true;
+      commanderFullHp = Health.current[eid] >= Health.max[eid];
       break;
     }
   }
@@ -154,11 +164,16 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     difficulty: world.difficulty,
     maxVetRank,
     commanderAlive: !commanderDied,
+    commanderFullHp: !commanderDied && commanderFullHp,
     gameMinutes: world.frameCount / 3600, // real minutes at 60fps
     peakArmy: world.stats.peakArmy,
     techCount,
+    maxBranchTechCount,
     totalPearls: totalPearlsThisMatch,
+    totalClams: world.stats.totalClamsEarned,
     buildingsBuilt: world.stats.buildingsBuilt,
+    buildingsLost: world.stats.buildingsLost,
+    onlyShadowTechs: techCount > 0 && !hasNonShadowTech,
   };
 }
 

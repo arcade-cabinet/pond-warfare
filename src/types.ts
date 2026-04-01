@@ -137,8 +137,10 @@ export interface GameStats {
   unitsLost: number;
   resourcesGathered: number;
   buildingsBuilt: number;
+  buildingsLost: number;
   peakArmy: number;
   pearlsEarned: number;
+  totalClamsEarned: number;
 }
 
 export interface Vec2 {

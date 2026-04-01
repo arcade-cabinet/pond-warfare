@@ -25,6 +25,7 @@ export function applyPassiveIncome(world: GameWorld): void {
       if (FactionTag.faction[bid] !== Faction.Player) continue;
       if (Health.current[bid] <= 0 || Building.progress[bid] < 100) continue;
       world.resources.clams += 6;
+      world.stats.totalClamsEarned += 6;
       world.particles.push({
         x: Position.x[bid] + (Math.random() - 0.5) * 16,
         y: Position.y[bid] - 8,
@@ -45,6 +46,7 @@ export function applyPassiveIncome(world: GameWorld): void {
     if (FactionTag.faction[bid] !== Faction.Player) continue;
     if (Health.current[bid] <= 0 || Building.progress[bid] < 100) continue;
     world.resources.clams += 5;
+    world.stats.totalClamsEarned += 5;
     world.particles.push({
       x: Position.x[bid] + (Math.random() - 0.5) * 20,
       y: Position.y[bid] - 5,

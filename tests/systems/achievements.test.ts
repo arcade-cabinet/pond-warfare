@@ -27,11 +27,16 @@ describe('achievements', () => {
       difficulty: 'normal',
       maxVetRank: 0,
       commanderAlive: true,
+      commanderFullHp: false,
       gameMinutes: 10,
       peakArmy: 5,
       techCount: 0,
+      maxBranchTechCount: 0,
       totalPearls: 0,
+      totalClams: 0,
       buildingsBuilt: 0,
+      buildingsLost: 0,
+      onlyShadowTechs: false,
       ...overrides,
     };
   }
