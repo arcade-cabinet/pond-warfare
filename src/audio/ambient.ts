@@ -93,9 +93,12 @@ export class AmbientManager {
     }
   }
 
-  /** Handle mute toggle for the continuous ambient bed. */
+  /** Handle mute toggle for the continuous ambient bed and active one-shots. */
   onMuteToggle(muted: boolean): void {
     this.setAmbientBedRunning(!muted);
+    if (muted) {
+      this.accentPlayer.stopAll();
+    }
   }
 
   /** Schedule the next ambient event with day/night-specific color. */

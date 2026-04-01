@@ -12,7 +12,7 @@
  */
 
 import { addComponent, addEntity, createWorld } from 'bitecs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { YukaManager } from '@/ai/yuka-manager';
 import {
   Carrying,
@@ -39,8 +39,6 @@ import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 vi.mock('@/audio/audio-system', () => ({
   audio: new Proxy({}, { get: () => vi.fn() }),
 }));
-
-import { vi } from 'vitest';
 
 /** Create a test world with all fields the systems need. */
 function createTestWorld(): GameWorld {
@@ -243,13 +241,13 @@ describe('Movement pipeline', () => {
   });
 
   it('multiple units all change position', () => {
-    const units = [
-      spawnUnit(world, 100, 100, 2.0),
-      spawnUnit(world, 120, 100, 2.0),
-      spawnUnit(world, 100, 120, 2.0),
-    ];
+    const spawns: Array<{ eid: number; sx: number; sy: number }> = [
+      { sx: 100, sy: 100 },
+      { sx: 120, sy: 100 },
+      { sx: 100, sy: 120 },
+    ].map(({ sx, sy }) => ({ eid: spawnUnit(world, sx, sy, 2.0), sx, sy }));
 
-    for (const eid of units) {
+    for (const { eid } of spawns) {
       UnitStateMachine.state[eid] = UnitState.Move;
       UnitStateMachine.targetX[eid] = 400;
       UnitStateMachine.targetY[eid] = 400;
@@ -257,8 +255,8 @@ describe('Movement pipeline', () => {
 
     runFrames(world, 300);
 
-    for (const eid of units) {
-      const d = Math.sqrt((Position.x[eid] - 100) ** 2 + (Position.y[eid] - 100) ** 2);
+    for (const { eid, sx, sy } of spawns) {
+      const d = Math.sqrt((Position.x[eid] - sx) ** 2 + (Position.y[eid] - sy) ** 2);
       expect(d).toBeGreaterThan(1);
     }
   });

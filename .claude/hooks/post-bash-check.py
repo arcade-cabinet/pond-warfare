@@ -8,7 +8,6 @@ import sys
 
 try:
     tool_input = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
-    tool_output = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}
 except (json.JSONDecodeError, IndexError):
     sys.exit(0)
 
@@ -16,7 +15,7 @@ command = tool_input.get("command", "")
 
 # After git push — remind about test gate
 if "git push" in command:
-    print("REMINDER: Verify pnpm typecheck && pnpm test && pnpm build all pass before creating a PR. If browser integration tests exist, run those too.", file=sys.stderr)
+    print("REMINDER: Verify pnpm typecheck && pnpm test && pnpm build pass before creating a PR. If browser integration tests exist, run those too.", file=sys.stderr)
 
 # After git commit — check if tests were run recently
 if "git commit" in command:

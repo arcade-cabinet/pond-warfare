@@ -208,7 +208,7 @@ describe('Full player journey', () => {
       await selectEntity(gid);
       expect(game.world.selection.length).toBeGreaterThan(0);
       await deselectAll();
-      // May select a nearby unit instead, so just verify state changed
+      expect(game.world.selection.length).toBe(0);
     });
 
     it('drag-select captures multiple units', async () => {
@@ -281,10 +281,11 @@ describe('Full player journey', () => {
       const res = getResources()[0];
       await selectEntity(gid);
       const sx = Position.x[gid];
+      const sy = Position.y[gid];
       clickWorld(Position.x[res], Position.y[res], 2);
       await waitFrames(180);
       // Should have moved from start
-      const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - Position.y[gid]) ** 2);
+      const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - sy) ** 2);
       // State should progress
       const state = UnitStateMachine.state[gid];
       expect(
@@ -352,6 +353,9 @@ describe('Full player journey', () => {
 
       clickButton('☰'); // close panel
       await delay(100);
+
+      const buildingsAfter = getUnits(EntityKind.Burrow).length;
+      expect(buildingsAfter).toBeGreaterThan(buildingsBefore);
       await page.screenshot({ path: 'tests/browser/screenshots/05-building-placed.png' });
     });
 
@@ -438,10 +442,11 @@ describe('Full player journey', () => {
       const eid = enemies[0];
       await selectEntity(bid);
       const sx = Position.x[bid];
+      const sy = Position.y[bid];
       clickWorld(Position.x[eid], Position.y[eid], 2);
       await waitFrames(180);
 
-      const dist = Math.sqrt((Position.x[bid] - sx) ** 2 + (Position.y[bid] - Position.y[bid]) ** 2);
+      const dist = Math.sqrt((Position.x[bid] - sx) ** 2 + (Position.y[bid] - sy) ** 2);
       // Unit should have moved or be attacking (if already in range)
       const state = UnitStateMachine.state[bid];
       expect(
