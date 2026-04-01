@@ -157,7 +157,7 @@ describe('tech-tree-panel uses signal-based layout switching', () => {
     expect(src).toContain("screenClass.value !== 'compact'");
     expect(src).toContain('BranchGrid');
     expect(src).toContain('BranchPanel');
-    expect(src).toContain('BranchTabs');
+    expect(src).toContain('SwipeableTabView');
     // No CSS breakpoint switching for layout
     expect(src).not.toContain('md:hidden');
     expect(src).not.toContain('hidden md:flex');

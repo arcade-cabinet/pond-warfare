@@ -10,9 +10,10 @@
  */
 
 import { useCallback, useEffect, useState } from 'preact/hooks';
+import { SwipeableTabView, type Tab } from './components/SwipeableTabView';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { CommanderPicker } from './new-game/CommanderPicker';
-import { TAB_LABELS, type TabKey } from './new-game/controls';
+import type { TabKey } from './new-game/controls';
 import {
   generateName,
   generateSeed,
@@ -88,7 +89,13 @@ export function NewGameModal() {
     menuState.value = 'main';
   }, []);
 
-  const tabKeys: TabKey[] = ['map', 'economy', 'enemies', 'rules', 'commander'];
+  const TABS: Tab[] = [
+    { key: 'map', label: 'Map', icon: '\uD83D\uDDFA' },
+    { key: 'economy', label: 'Economy', icon: '\uD83D\uDCB0' },
+    { key: 'enemies', label: 'Foes', icon: '\u2694' },
+    { key: 'rules', label: 'Rules', icon: '\uD83D\uDCDC' },
+    { key: 'commander', label: 'Commander', icon: '\uD83D\uDC51' },
+  ];
   const presetKeys: PresetKey[] = [
     'easy',
     'normal',
@@ -178,45 +185,19 @@ export function NewGameModal() {
           />
         </div>
 
-        {/* Tab bar */}
-        <div class="flex gap-1 mb-3">
-          {tabKeys.map((key) => {
-            const isActive = activeTab === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                class="hud-btn rounded px-3 py-1.5 font-heading font-bold text-[10px] md:text-xs tracking-wider flex-1"
-                style={{
-                  minHeight: '44px',
-                  background: isActive ? 'rgba(64, 200, 208, 0.15)' : undefined,
-                  borderColor: isActive ? 'var(--pw-accent)' : undefined,
-                  color: isActive ? 'var(--pw-accent-bright)' : 'var(--pw-text-muted)',
-                  boxShadow: isActive ? '0 0 8px rgba(64, 200, 208, 0.15)' : undefined,
-                }}
-                onClick={() => setActiveTab(key)}
-              >
-                {TAB_LABELS[key]}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Tab content */}
-        <div
-          class="rounded-lg p-3 mb-4"
-          style={{
-            background: 'rgba(20, 30, 35, 0.6)',
-            border: '1px solid var(--pw-border)',
-            minHeight: '180px',
-          }}
+        {/* Swipeable tab content */}
+        <SwipeableTabView
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabChange={(key) => setActiveTab(key as TabKey)}
+          variant="modal"
         >
-          {activeTab === 'map' && <MapTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'economy' && <EconomyTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'enemies' && <EnemiesTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'rules' && <RulesTab settings={settings} onUpdate={handleUpdate} />}
-          {activeTab === 'commander' && <CommanderPicker />}
-        </div>
+          <MapTab settings={settings} onUpdate={handleUpdate} />
+          <EconomyTab settings={settings} onUpdate={handleUpdate} />
+          <EnemiesTab settings={settings} onUpdate={handleUpdate} />
+          <RulesTab settings={settings} onUpdate={handleUpdate} />
+          <CommanderPicker />
+        </SwipeableTabView>
 
         {/* Presets row */}
         <div class="mb-4">

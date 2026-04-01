@@ -62,7 +62,14 @@ describe('train dispatch', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
     const def = ENTITY_DEFS[EntityKind.Gatherer];
 
-    train(world, lodge, EntityKind.Gatherer, def.clamCost ?? 0, def.twigCost ?? 0, def.foodCost ?? 1);
+    train(
+      world,
+      lodge,
+      EntityKind.Gatherer,
+      def.clamCost ?? 0,
+      def.twigCost ?? 0,
+      def.foodCost ?? 1,
+    );
 
     expect(world.resources.clams).toBe(500 - (def.clamCost ?? 0));
     expect(TrainingQueue.count[lodge]).toBe(1);

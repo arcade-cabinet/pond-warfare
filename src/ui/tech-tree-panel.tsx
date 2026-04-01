@@ -2,7 +2,7 @@
  * Tech Tree Panel
  *
  * Full-screen overlay showing all techs. Layout chosen by screenClass signal:
- * - compact (phones, landscape phones): branch tabs + scrollable card grid
+ * - compact (phones, landscape phones): SwipeableTabView with card grids
  * - medium/large (tablets, foldables, laptops, desktops): side-by-side SVG graphs
  *
  * Decomposed into submodules under src/ui/tech-tree/.
@@ -11,14 +11,11 @@
 import { useState } from 'preact/hooks';
 import type { TechId, TechState } from '@/config/tech-tree';
 import { screenClass } from '@/platform';
+import { SwipeableTabView, type Tab } from './components/SwipeableTabView';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { BranchGrid } from './tech-tree/BranchGrid';
 import { BranchPanel } from './tech-tree/BranchPanel';
 import { ARMORY_EDGES, ARMORY_NODES, LODGE_EDGES, LODGE_NODES } from './tech-tree/tree-data';
-
-// -------------------------------------------------------------------
-// Types
-// -------------------------------------------------------------------
 
 export interface TechTreePanelProps {
   techState: TechState;
@@ -30,47 +27,10 @@ export interface TechTreePanelProps {
 
 type BranchTab = 'lodge' | 'armory';
 
-// -------------------------------------------------------------------
-// Mobile branch tab bar
-// -------------------------------------------------------------------
-
-function BranchTabs({ active, onSelect }: { active: BranchTab; onSelect: (t: BranchTab) => void }) {
-  const tabs: { id: BranchTab; label: string }[] = [
-    { id: 'lodge', label: 'Lodge / Nature' },
-    { id: 'armory', label: 'Armory' },
-  ];
-  return (
-    <div class="flex gap-1 w-full max-w-md mx-auto px-4 mb-3">
-      {tabs.map((t) => {
-        const isActive = active === t.id;
-        return (
-          <button
-            key={t.id}
-            type="button"
-            class="hud-btn rounded px-3 py-1.5 font-heading font-bold text-[10px] tracking-wider flex-1"
-            style={{
-              minHeight: '44px',
-              background: isActive ? 'rgba(64, 200, 208, 0.15)' : undefined,
-              borderColor: isActive ? 'var(--pw-accent)' : undefined,
-              color: isActive ? 'var(--pw-accent-bright)' : 'var(--pw-text-muted)',
-              boxShadow: isActive ? '0 0 8px rgba(64, 200, 208, 0.15)' : undefined,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(t.id);
-            }}
-          >
-            {t.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// -------------------------------------------------------------------
-// Main component
-// -------------------------------------------------------------------
+const BRANCH_TABS: Tab[] = [
+  { key: 'lodge', label: 'Lodge / Nature' },
+  { key: 'armory', label: 'Armory' },
+];
 
 export function TechTreePanel({
   techState,
@@ -131,12 +91,16 @@ export function TechTreePanel({
           </span>
         </div>
 
-        {/* Compact: branch tabs + card grid (phones, landscape phones) */}
+        {/* Compact: swipeable branch tabs + card grid (phones, landscape phones) */}
         {screenClass.value === 'compact' && (
           <div class="w-full flex-1 flex flex-col">
-            <BranchTabs active={branch} onSelect={setBranch} />
-            <div class="px-4 pb-8">
-              {branch === 'lodge' && (
+            <SwipeableTabView
+              tabs={BRANCH_TABS}
+              activeTab={branch}
+              onTabChange={(key) => setBranch(key as BranchTab)}
+              variant="overlay"
+            >
+              <div class="px-4 pb-8">
                 <BranchGrid
                   nodes={LODGE_NODES}
                   techState={techState}
@@ -144,8 +108,8 @@ export function TechTreePanel({
                   twigs={twigs}
                   onResearch={onResearch}
                 />
-              )}
-              {branch === 'armory' && (
+              </div>
+              <div class="px-4 pb-8">
                 <BranchGrid
                   nodes={ARMORY_NODES}
                   techState={techState}
@@ -153,8 +117,8 @@ export function TechTreePanel({
                   twigs={twigs}
                   onResearch={onResearch}
                 />
-              )}
-            </div>
+              </div>
+            </SwipeableTabView>
           </div>
         )}
 

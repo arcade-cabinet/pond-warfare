@@ -2,13 +2,15 @@
  * CommandPanel -- Slide-out (mobile) or docked (desktop) panel with
  * four tabs: Map, Forces, Buildings, Menu.
  *
- * When `canDockPanels` is true the panel is always visible as a fixed
- * sidebar on the right edge with a collapse/expand toggle. Otherwise it
- * uses the hamburger-driven slide-out with a dim overlay.
+ * Uses SwipeableTabView for gesture-driven tab navigation with
+ * lilypad dot indicators. Collapse toggle and dim overlay are
+ * handled outside the tab view.
  */
 
 import { useSignal } from '@preact/signals';
 import { canDockPanels } from '@/platform';
+import type { Tab } from '../components/SwipeableTabView';
+import { SwipeableTabView } from '../components/SwipeableTabView';
 import type { PanelTab } from '../store';
 import * as store from '../store';
 import { BuildingsTab } from './BuildingsTab';
@@ -16,11 +18,11 @@ import { ForcesTab } from './ForcesTab';
 import { MapTab } from './MapTab';
 import { MenuTab } from './MenuTab';
 
-const TABS: { id: PanelTab; icon: string; label: string }[] = [
-  { id: 'map', icon: '\uD83D\uDDFA', label: 'Map' },
-  { id: 'forces', icon: '\u2694', label: 'Forces' },
-  { id: 'buildings', icon: '\uD83C\uDFD7', label: 'Build' },
-  { id: 'menu', icon: '\u2699', label: 'Menu' },
+const TABS: Tab[] = [
+  { key: 'map', label: 'Map', icon: '\uD83D\uDDFA' },
+  { key: 'forces', label: 'Forces', icon: '\u2694' },
+  { key: 'buildings', label: 'Build', icon: '\uD83C\uDFD7' },
+  { key: 'menu', label: 'Menu', icon: '\u2699' },
 ];
 
 export interface CommandPanelProps {
@@ -69,40 +71,20 @@ export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelPr
           </button>
         )}
 
-        {/* Tab bar */}
-        <div class="flex flex-shrink-0" style={{ borderBottom: '2px solid var(--pw-border)' }}>
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              class="flex-1 py-1.5 text-center text-[10px] font-heading font-bold cursor-pointer transition-colors min-h-[44px]"
-              style={{
-                background:
-                  tab === t.id
-                    ? 'linear-gradient(180deg, var(--pw-wood-light), var(--pw-wood-mid))'
-                    : 'var(--pw-wood-dark)',
-                color: tab === t.id ? 'var(--pw-accent)' : 'var(--pw-text-secondary)',
-                borderBottom: tab === t.id ? '2px solid var(--pw-accent)' : '2px solid transparent',
-              }}
-              onClick={() => {
-                store.activePanelTab.value = t.id;
-              }}
-            >
-              <span class="block text-sm">{t.icon}</span>
-              <span class="block">{t.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        <div class="flex-1 overflow-y-auto min-h-0">
-          {tab === 'map' && (
-            <MapTab minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
-          )}
-          {tab === 'forces' && <ForcesTab />}
-          {tab === 'buildings' && <BuildingsTab />}
-          {tab === 'menu' && <MenuTab />}
-        </div>
+        {/* Swipeable tab view */}
+        <SwipeableTabView
+          tabs={TABS}
+          activeTab={tab}
+          onTabChange={(key) => {
+            store.activePanelTab.value = key as PanelTab;
+          }}
+          variant="panel"
+        >
+          <MapTab minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
+          <ForcesTab />
+          <BuildingsTab />
+          <MenuTab />
+        </SwipeableTabView>
       </div>
 
       {/* Dim overlay (mobile slide-out only) */}
