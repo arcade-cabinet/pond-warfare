@@ -11,6 +11,8 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { screenClass } from '@/platform';
 import { getPlayerProfile } from '@/storage';
 import { getRank, type RankInfo } from '@/systems/leaderboard';
+import { MenuBackground } from './menu-background';
+import { MenuButton } from './menu-button';
 import { MenuOtter } from './menu-otter';
 import { MenuPads } from './menu-pads';
 import {
@@ -26,49 +28,6 @@ import {
 } from './store';
 
 const UI = '/pond-warfare/assets/ui';
-
-/** Teal bar button using the painted Button.png asset. */
-function MenuButton({
-  label,
-  onClick,
-  disabled,
-  wide,
-}: {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  wide?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      class={`menu-pond-btn relative flex items-center justify-center cursor-pointer min-h-[44px] transition-transform ${disabled ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
-      style={{ width: wide ? '170px' : '140px', height: wide ? '48px' : '42px' }}
-      disabled={disabled}
-      onClick={disabled ? undefined : onClick}
-    >
-      <img
-        src={`${UI}/Button.png`}
-        alt=""
-        class="absolute inset-0 w-full h-full object-fill pointer-events-none"
-        draggable={false}
-        style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))' }}
-      />
-      <span
-        class="relative z-10 font-heading font-bold tracking-wider uppercase"
-        style={{
-          color: '#1a3a3a',
-          fontSize: wide ? '14px' : '11px',
-          textShadow: '0 1px 1px rgba(180,220,220,0.4)',
-        }}
-      >
-        {label}
-      </span>
-    </button>
-  );
-}
-
-/* FloatingPad removed — lily pads are now dynamically positioned by MenuPads */
 
 export function MainMenu() {
   const [rank, setRank] = useState<RankInfo | null>(null);
@@ -92,21 +51,14 @@ export function MainMenu() {
 
     const w = el.clientWidth;
     const h = el.clientHeight;
-    const otter = new MenuOtter(
-      { width: w, height: h },
-      w * 0.75, // start right of center
-      h * 0.7, // start in lower area
-    );
+    const otter = new MenuOtter({ width: w, height: h }, w * 0.75, h * 0.7);
     otterAI.current = otter;
 
-    // Create lily pad system
     const pads = new MenuPads({ width: w, height: h }, 10);
     padsSystem.current = pads;
 
-    // Sync otter + pads position to DOM each frame
     let rafId = 0;
     const syncDOM = () => {
-      // Otter
       const img = otterRef.current;
       if (img && otter) {
         img.style.left = `${otter.x - 50}px`;
@@ -114,7 +66,6 @@ export function MainMenu() {
         const deg = (otter.rotation * 180) / Math.PI - 90;
         img.style.transform = `rotate(${deg}deg)`;
       }
-      // Pads
       for (let i = 0; i < pads.pads.length; i++) {
         const padEl = padRefs.current[i];
         const p = pads.pads[i];
@@ -167,6 +118,7 @@ export function MainMenu() {
     const rect = el.getBoundingClientRect();
     otterAI.current.poke(e.clientX - rect.left, e.clientY - rect.top);
   }, []);
+
   return (
     <div
       ref={containerRef}
@@ -175,48 +127,9 @@ export function MainMenu() {
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
-      {/* ---- Painted pond background ---- */}
-      <div
-        class="absolute inset-0"
-        style={{
-          backgroundImage: `url(${UI}/Background.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      />
+      <MenuBackground />
 
-      {/* ---- Water ripple overlays ---- */}
-      <div
-        class="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url(${UI}/Flowing_Serenity_Water Ripples 1.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.3,
-          animation: 'ripple-drift-1 12s ease-in-out infinite',
-        }}
-      />
-      <div
-        class="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url(${UI}/Flowing_Serenity_Water ripples 2.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.2,
-          animation: 'ripple-drift-2 16s ease-in-out infinite',
-        }}
-      />
-
-      {/* Vignette */}
-      <div
-        class="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 85% 75% at 50% 45%, transparent 25%, rgba(0,0,0,0.35) 65%, rgba(0,0,0,0.7) 100%)',
-        }}
-      />
-
-      {/* ---- Dynamic floating lily pads (JS-driven positions + mutual repulsion) ---- */}
+      {/* ---- Dynamic floating lily pads ---- */}
       {padsSystem.current?.pads.map((p, i) => {
         const src =
           p.variant === 'tiny' ? `${UI}/Lillypad-tiny.png` : `${UI}/Lillypad-${p.variant}.png`;
@@ -251,13 +164,11 @@ export function MainMenu() {
       })}
 
       {/* ---- Swimming otter (Yuka-steered, clickable) ---- */}
-      {/* Shadow layer — stays flat beneath the otter */}
       <img
         src={`${UI}/Otter shadow_goes above background but below ripples.png`}
         alt=""
         class="absolute z-[5] pointer-events-none"
         ref={(el) => {
-          // Shadow tracks otter position but doesn't rotate
           if (el && otterRef.current) {
             const sync = () => {
               if (otterAI.current) {
@@ -272,29 +183,15 @@ export function MainMenu() {
         style={{ width: compact ? '80px' : '130px', opacity: 0.6 }}
         draggable={false}
       />
-      {/* Otter sprite — rotates to face heading */}
       <img
         ref={otterRef}
         src={`${UI}/Otter.png`}
         alt="otter"
         class="absolute z-10 cursor-pointer"
-        style={{
-          width: compact ? '80px' : '130px',
-          opacity: 0.95,
-        }}
+        style={{ width: compact ? '80px' : '130px', opacity: 0.95 }}
         draggable={false}
         onClick={handleOtterClick}
       />
-
-      {/* ---- Fireflies ---- */}
-      <div class="absolute inset-0 pointer-events-none overflow-hidden">
-        <div class="firefly" style={{ top: '20%', left: '15%' }} />
-        <div class="firefly" style={{ top: '35%', right: '20%' }} />
-        <div class="firefly" style={{ top: '60%', left: '25%' }} />
-        <div class="firefly" style={{ bottom: '25%', right: '30%' }} />
-        <div class="firefly" style={{ top: '15%', right: '35%' }} />
-        <div class="firefly" style={{ bottom: '35%', left: '10%' }} />
-      </div>
 
       {/* ==== CONTENT ==== */}
 
@@ -341,7 +238,6 @@ export function MainMenu() {
 
       {/* ---- Menu buttons (teal bars) ---- */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-        {/* Primary row */}
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
           <MenuButton
             label="New Game"
@@ -362,8 +258,6 @@ export function MainMenu() {
             }}
           />
         </div>
-
-        {/* Secondary row */}
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
           <MenuButton
             label="Campaign"
@@ -378,8 +272,6 @@ export function MainMenu() {
             }}
           />
         </div>
-
-        {/* Tertiary row */}
         <div class={`flex items-center ${compact ? 'gap-1' : 'gap-2'} flex-wrap justify-center`}>
           <MenuButton
             label="Leaderboard"

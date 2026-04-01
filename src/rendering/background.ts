@@ -8,18 +8,7 @@
  */
 
 import { FOG_TEXTURE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
-
-// --- Biome palette ---
-const BIOME_COLORS = {
-  deepWater: { r: 10, g: 29, b: 34 }, // #0a1d22
-  shallowWater: { r: 17, g: 82, b: 92 }, // #11525c
-  shoreMud: { r: 69, g: 26, b: 3 }, // #451a03
-  lightMud: { r: 113, g: 63, b: 18 }, // #713f12
-  reedGreen: { r: 45, g: 106, b: 79 }, // #2d6a4f
-  denseMud: { r: 61, g: 32, b: 0 }, // #3d2000
-} as const;
-
-type RGB = { r: number; g: number; b: number };
+import { biomeColor, fbm, valueNoise } from './background-noise';
 
 function require2DContext(
   canvas: HTMLCanvasElement,
@@ -30,90 +19,6 @@ function require2DContext(
     throw new Error('2D canvas context is unavailable');
   }
   return ctx;
-}
-
-/** Simple hash-based value noise. */
-function valueNoise(x: number, y: number, seed: number): number {
-  const n = Math.sin(x * 127.1 + y * 311.7 + seed * 113.5) * 43758.5453;
-  return n - Math.floor(n);
-}
-
-/** Smoothed value noise using bilinear interpolation. */
-function smoothNoise(x: number, y: number, seed: number): number {
-  const ix = Math.floor(x);
-  const iy = Math.floor(y);
-  const fx = x - ix;
-  const fy = y - iy;
-
-  // Smooth interpolation (smoothstep)
-  const sx = fx * fx * (3 - 2 * fx);
-  const sy = fy * fy * (3 - 2 * fy);
-
-  const n00 = valueNoise(ix, iy, seed);
-  const n10 = valueNoise(ix + 1, iy, seed);
-  const n01 = valueNoise(ix, iy + 1, seed);
-  const n11 = valueNoise(ix + 1, iy + 1, seed);
-
-  const nx0 = n00 + sx * (n10 - n00);
-  const nx1 = n01 + sx * (n11 - n01);
-  return nx0 + sy * (nx1 - nx0);
-}
-
-/** Fractal Brownian Motion - multiple octaves of noise layered together. */
-function fbm(x: number, y: number, octaves: number, seed: number): number {
-  let value = 0;
-  let amplitude = 1;
-  let frequency = 1;
-  let maxValue = 0;
-  for (let i = 0; i < octaves; i++) {
-    value += smoothNoise(x * frequency, y * frequency, seed + i * 37) * amplitude;
-    maxValue += amplitude;
-    amplitude *= 0.5;
-    frequency *= 2;
-  }
-  return value / maxValue;
-}
-
-/** Linear interpolation between two colors. */
-function lerpColor(a: RGB, b: RGB, t: number): RGB {
-  const ct = Math.max(0, Math.min(1, t));
-  return {
-    r: Math.round(a.r + (b.r - a.r) * ct),
-    g: Math.round(a.g + (b.g - a.g) * ct),
-    b: Math.round(a.b + (b.b - a.b) * ct),
-  };
-}
-
-/**
- * Get the blended biome color for a given noise value.
- * Uses smooth lerp between adjacent biome thresholds.
- */
-function biomeColor(noiseVal: number): RGB {
-  const { deepWater, shallowWater, shoreMud, lightMud, reedGreen, denseMud } = BIOME_COLORS;
-
-  if (noiseVal < 0.3) {
-    // Deep water -> Shallow water
-    const t = noiseVal / 0.3;
-    return lerpColor(deepWater, shallowWater, t);
-  }
-  if (noiseVal < 0.45) {
-    // Shallow water -> Shore mud
-    const t = (noiseVal - 0.3) / 0.15;
-    return lerpColor(shallowWater, shoreMud, t);
-  }
-  if (noiseVal < 0.55) {
-    // Shore mud -> Reed green
-    const t = (noiseVal - 0.45) / 0.1;
-    return lerpColor(shoreMud, reedGreen, t);
-  }
-  if (noiseVal < 0.7) {
-    // Reed green -> Light mud
-    const t = (noiseVal - 0.55) / 0.15;
-    return lerpColor(reedGreen, lightMud, t);
-  }
-  // Light mud -> Dense mud
-  const t = (noiseVal - 0.7) / 0.3;
-  return lerpColor(lightMud, denseMud, t);
 }
 
 /**

@@ -61,8 +61,8 @@ import { trainingSystem } from '@/ecs/systems/training';
 import { veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 // Extracted sub-modules
-import { buildActionPanel } from '@/game/action-panel-builder';
-import { spawnInitialEntities } from '@/game/init-entities';
+import { buildActionPanel } from '@/game/action-panel';
+import { spawnInitialEntities } from '@/game/init-entities/index';
 import { syncPopulationAndTimers } from '@/game/population-sync';
 import { syncRosters } from '@/game/roster-sync';
 import { syncSelectionInfo } from '@/game/selection-sync';

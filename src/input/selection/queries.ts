@@ -1,0 +1,228 @@
+/**
+ * Selection Queries & Building Operations
+ *
+ * Entity lookup, building placement, training queue management.
+ */
+
+import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
+import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
+import { TILE_SIZE, TRAIN_TIMER, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { spawnEntity } from '@/ecs/archetypes';
+import {
+  Collider,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  IsResource,
+  Position,
+  Sprite,
+  TrainingQueue,
+  trainingQueueSlots,
+  UnitStateMachine,
+} from '@/ecs/components';
+import type { GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, UnitState } from '@/types';
+
+/**
+ * Find the entity closest to (x, y) within click tolerance.
+ * Prioritizes non-resource entities and sorts by y descending.
+ */
+export function getEntityAt(world: GameWorld, x: number, y: number): number | null {
+  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+
+  const sorted = [...ents]
+    .filter((eid) => Health.current[eid] > 0 || hasComponent(world.ecs, eid, IsResource))
+    .sort((a, b) => {
+      const aRes = hasComponent(world.ecs, a, IsResource) ? 1 : 0;
+      const bRes = hasComponent(world.ecs, b, IsResource) ? 1 : 0;
+      if (aRes !== bRes) return aRes - bRes;
+      return Position.y[b] - Position.y[a];
+    });
+
+  for (const eid of sorted) {
+    const radius = hasComponent(world.ecs, eid, Collider) ? Collider.radius[eid] : 16;
+    const height = hasComponent(world.ecs, eid, Sprite) ? Sprite.height[eid] : 32;
+    const hitW = Math.max(25, radius + 15);
+    const hitH = Math.max(25, height / 2 + 15);
+
+    if (Math.abs(Position.x[eid] - x) < hitW && Math.abs(Position.y[eid] - y) < hitH) {
+      return eid;
+    }
+  }
+  return null;
+}
+
+/** Check if any selected entity is a player-owned non-building unit. */
+export function hasPlayerUnitsSelected(world: GameWorld): boolean {
+  return (
+    world.selection.length > 0 &&
+    world.selection.some(
+      (eid) =>
+        hasComponent(world.ecs, eid, FactionTag) &&
+        FactionTag.faction[eid] === Faction.Player &&
+        !hasComponent(world.ecs, eid, IsBuilding),
+    )
+  );
+}
+
+/** Check if a building can be placed at the given world coordinates. */
+export function canPlaceBuilding(
+  world: GameWorld,
+  bx: number,
+  by: number,
+  spriteW: number,
+  spriteH: number,
+): boolean {
+  const hw = spriteW / 2;
+  const hh = spriteH / 2;
+
+  const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+  for (const eid of ents) {
+    if (!hasComponent(world.ecs, eid, IsBuilding)) continue;
+    const ehw = hasComponent(world.ecs, eid, Sprite) ? Sprite.width[eid] / 2 : 48;
+    const ehh = hasComponent(world.ecs, eid, Sprite) ? Sprite.height[eid] / 2 : 48;
+    if (
+      Math.abs(bx - Position.x[eid]) < hw + ehw - 10 &&
+      Math.abs(by - Position.y[eid]) < hh + ehh - 10
+    ) {
+      return false;
+    }
+  }
+
+  if (bx - hw < 0 || bx + hw > WORLD_WIDTH || by - hh < 0 || by + hh > WORLD_HEIGHT) {
+    return false;
+  }
+
+  return true;
+}
+
+/** Place a building at the current mouse position. */
+export function placeBuilding(world: GameWorld, worldX: number, worldY: number): void {
+  const type = world.placingBuilding;
+  if (!type) return;
+
+  let kind: EntityKind;
+  try {
+    kind = entityKindFromString(type);
+  } catch {
+    return;
+  }
+
+  const def = ENTITY_DEFS[kind];
+  const clamCost = def.clamCost ?? 0;
+  const twigCost = def.twigCost ?? 0;
+
+  const bx = Math.round(worldX / TILE_SIZE) * TILE_SIZE;
+  const by = Math.round(worldY / TILE_SIZE) * TILE_SIZE;
+
+  const spriteW = def.spriteSize * def.spriteScale;
+  const spriteH = def.spriteSize * def.spriteScale;
+
+  if (!canPlaceBuilding(world, bx, by, spriteW, spriteH)) {
+    audio.error();
+    world.floatingTexts.push({
+      x: bx,
+      y: by - 30,
+      text: "Can't build here!",
+      color: '#ef4444',
+      life: 60,
+    });
+    return;
+  }
+
+  if (world.resources.clams >= clamCost && world.resources.twigs >= twigCost) {
+    world.resources.clams -= clamCost;
+    world.resources.twigs -= twigCost;
+    const eid = spawnEntity(world, kind, bx, by, Faction.Player);
+
+    for (const selEid of world.selection) {
+      if (
+        hasComponent(world.ecs, selEid, EntityTypeTag) &&
+        EntityTypeTag.kind[selEid] === EntityKind.Gatherer &&
+        FactionTag.faction[selEid] === Faction.Player
+      ) {
+        UnitStateMachine.targetEntity[selEid] = eid;
+        UnitStateMachine.targetX[selEid] = bx;
+        UnitStateMachine.targetY[selEid] = by;
+        UnitStateMachine.state[selEid] = UnitState.BuildMove;
+      }
+    }
+
+    world.placingBuilding = null;
+  }
+}
+
+/** Queue a unit for training at a building. */
+export function train(
+  world: GameWorld,
+  buildingEid: number,
+  kind: EntityKind,
+  clamCost: number,
+  twigCost: number,
+  foodCost: number,
+): void {
+  const count = TrainingQueue.count[buildingEid];
+  if (count >= 8) return;
+
+  let queuedFood = 0;
+  const allTrainingBldgs = query(world.ecs, [TrainingQueue, FactionTag, IsBuilding]);
+  for (let i = 0; i < allTrainingBldgs.length; i++) {
+    const bEid = allTrainingBldgs[i];
+    if (FactionTag.faction[bEid] !== Faction.Player) continue;
+    const slots = trainingQueueSlots.get(bEid);
+    if (!slots) continue;
+    for (let qi = 0; qi < slots.length; qi++) {
+      const def = ENTITY_DEFS[slots[qi] as EntityKind];
+      queuedFood += def.foodCost ?? 1;
+    }
+  }
+  world.resources.food = Math.max(world.resources.food, queuedFood);
+
+  if (
+    world.resources.clams >= clamCost &&
+    world.resources.twigs >= twigCost &&
+    world.resources.food + foodCost <= world.resources.maxFood
+  ) {
+    world.resources.clams -= clamCost;
+    world.resources.twigs -= twigCost;
+    world.resources.food += foodCost;
+
+    {
+      const slots = trainingQueueSlots.get(buildingEid) ?? [];
+      slots[count] = kind;
+      trainingQueueSlots.set(buildingEid, slots);
+      TrainingQueue.count[buildingEid] = count + 1;
+      if (count === 0) {
+        TrainingQueue.timer[buildingEid] = TRAIN_TIMER;
+      }
+    }
+  }
+}
+
+/** Cancel a training queue item and refund costs. */
+export function cancelTrain(world: GameWorld, buildingEid: number, index: number): void {
+  const count = TrainingQueue.count[buildingEid];
+  if (!Number.isInteger(index) || index < 0 || index >= count) return;
+
+  const slots = trainingQueueSlots.get(buildingEid) ?? [];
+  const kind = slots[index] as EntityKind | undefined;
+  if (kind == null) return;
+
+  const def = ENTITY_DEFS[kind];
+  world.resources.clams += def.clamCost ?? 0;
+  world.resources.twigs += def.twigCost ?? 0;
+  world.resources.food = Math.max(0, world.resources.food - (def.foodCost ?? 1));
+
+  slots.splice(index, 1);
+  trainingQueueSlots.set(buildingEid, slots);
+  TrainingQueue.count[buildingEid] = count - 1;
+
+  if (index === 0 && count - 1 > 0) {
+    TrainingQueue.timer[buildingEid] = TRAIN_TIMER;
+  }
+  if (count - 1 === 0) {
+    TrainingQueue.timer[buildingEid] = 0;
+  }
+}

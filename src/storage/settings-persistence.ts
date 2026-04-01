@@ -34,11 +34,19 @@ export async function loadPersistedSettings(): Promise<void> {
     if (raw === null) continue;
 
     switch (key) {
-      case 'masterVolume':
-      case 'musicVolume':
+      case 'masterVolume': {
+        const mv = Number(raw);
+        if (!Number.isNaN(mv)) store.masterVolume.value = mv;
+        break;
+      }
+      case 'musicVolume': {
+        const muv = Number(raw);
+        if (!Number.isNaN(muv)) store.musicVolume.value = muv;
+        break;
+      }
       case 'sfxVolume': {
-        const n = Number(raw);
-        if (!Number.isNaN(n)) store[key].value = n;
+        const sv = Number(raw);
+        if (!Number.isNaN(sv)) store.sfxVolume.value = sv;
         break;
       }
       case 'gameSpeed': {
@@ -55,10 +63,16 @@ export async function loadPersistedSettings(): Promise<void> {
         break;
       }
       case 'autoSaveEnabled':
+        store.autoSaveEnabled.value = raw === 'true';
+        break;
       case 'colorBlindMode':
+        store.colorBlindMode.value = raw === 'true';
+        break;
       case 'screenShakeEnabled':
+        store.screenShakeEnabled.value = raw === 'true';
+        break;
       case 'reduceVisualNoise':
-        store[key].value = raw === 'true';
+        store.reduceVisualNoise.value = raw === 'true';
         break;
       case 'selectedCommander':
         store.selectedCommander.value = raw;

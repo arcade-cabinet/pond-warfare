@@ -1,0 +1,269 @@
+/**
+ * Selection Commands
+ *
+ * Context command dispatch, formation positioning, and idle/army selection.
+ */
+
+import { hasComponent } from 'bitecs';
+import { audio } from '@/audio/audio-system';
+import { showBark } from '@/config/barks';
+import {
+  Building,
+  Carrying,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  IsResource,
+  Position,
+  UnitStateMachine,
+  Velocity,
+} from '@/ecs/components';
+import type { GameWorld } from '@/ecs/world';
+import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+
+/**
+ * Issue a context command (right-click or ground click) to selected units.
+ * Returns `true` when at least one movable unit was dispatched.
+ */
+export function issueContextCommand(
+  world: GameWorld,
+  target: number | null,
+  worldX: number,
+  worldY: number,
+): boolean {
+  if (world.placingBuilding) {
+    world.placingBuilding = null;
+    return false;
+  }
+
+  // Rally point for single selected building
+  if (
+    world.selection.length === 1 &&
+    hasComponent(world.ecs, world.selection[0], IsBuilding) &&
+    FactionTag.faction[world.selection[0]] === Faction.Player
+  ) {
+    audio.click();
+    Building.rallyX[world.selection[0]] = worldX;
+    Building.rallyY[world.selection[0]] = worldY;
+    Building.hasRally[world.selection[0]] = 1;
+    return false;
+  }
+
+  if (world.selection.length === 0) return false;
+
+  audio.click();
+
+  // Ground pings
+  if (target == null) {
+    world.groundPings.push({
+      x: worldX,
+      y: worldY,
+      life: 20,
+      maxLife: 20,
+      color: 'rgba(34, 197, 94, 0.8)',
+    });
+  } else if (
+    hasComponent(world.ecs, target, FactionTag) &&
+    FactionTag.faction[target] === Faction.Enemy
+  ) {
+    world.groundPings.push({
+      x: Position.x[target],
+      y: Position.y[target],
+      life: 20,
+      maxLife: 20,
+      color: 'rgba(239, 68, 68, 0.8)',
+    });
+  } else if (hasComponent(world.ecs, target, IsResource)) {
+    world.groundPings.push({
+      x: Position.x[target],
+      y: Position.y[target],
+      life: 20,
+      maxLife: 20,
+      color: 'rgba(250, 204, 21, 0.8)',
+    });
+  }
+
+  // Count movable player units for formation
+  const movableUnits = world.selection.filter(
+    (eid) =>
+      hasComponent(world.ecs, eid, FactionTag) &&
+      FactionTag.faction[eid] === Faction.Player &&
+      !hasComponent(world.ecs, eid, IsBuilding),
+  );
+
+  let barkShown = false;
+
+  for (let idx = 0; idx < world.selection.length; idx++) {
+    const eid = world.selection[idx];
+    if (!hasComponent(world.ecs, eid, FactionTag)) continue;
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+
+    // Clear stale state before applying any new order
+    UnitStateMachine.hasAttackMoveTarget[eid] = 0;
+    UnitStateMachine.attackMoveTargetX[eid] = 0;
+    UnitStateMachine.attackMoveTargetY[eid] = 0;
+    UnitStateMachine.targetEntity[eid] = -1;
+    UnitStateMachine.returnEntity[eid] = -1;
+
+    if (target != null) {
+      barkShown = dispatchTargetCommand(world, eid, target, kind, worldX, worldY, barkShown);
+    } else {
+      UnitStateMachine.state[eid] = UnitState.Move;
+      UnitStateMachine.targetEntity[eid] = -1;
+      if (!barkShown) {
+        barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'move');
+      }
+    }
+  }
+
+  // Formation positioning for ground-move commands
+  if (target == null && movableUnits.length > 0) {
+    const positions = calculateFormationPositions(movableUnits, worldX, worldY);
+    for (const pos of positions) {
+      UnitStateMachine.targetX[pos.eid] = pos.x;
+      UnitStateMachine.targetY[pos.eid] = pos.y;
+    }
+
+    if (movableUnits.length > 1) {
+      for (const eid of movableUnits) {
+        const speed = Velocity.speed[eid];
+        if (!world.yukaManager.has(eid)) {
+          world.yukaManager.addUnit(
+            eid,
+            Position.x[eid],
+            Position.y[eid],
+            speed,
+            UnitStateMachine.targetX[eid],
+            UnitStateMachine.targetY[eid],
+          );
+        }
+      }
+      world.yukaManager.setFormation(movableUnits, worldX, worldY);
+    }
+  }
+
+  return movableUnits.length > 0;
+}
+
+/** Dispatch a command when a specific target entity is clicked. */
+function dispatchTargetCommand(
+  world: GameWorld,
+  eid: number,
+  target: number,
+  kind: EntityKind,
+  worldX: number,
+  worldY: number,
+  barkShown: boolean,
+): boolean {
+  const tFaction = FactionTag.faction[target] as Faction;
+  const isTargetBuilding = hasComponent(world.ecs, target, IsBuilding);
+  const isTargetResource = hasComponent(world.ecs, target, IsResource);
+
+  if (tFaction === Faction.Enemy) {
+    UnitStateMachine.targetEntity[eid] = target;
+    UnitStateMachine.targetX[eid] = Position.x[target];
+    UnitStateMachine.targetY[eid] = Position.y[target];
+    UnitStateMachine.state[eid] = UnitState.AttackMove;
+    if (!barkShown) {
+      barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'attack');
+    }
+  } else if (isTargetResource && kind === EntityKind.Gatherer) {
+    UnitStateMachine.targetEntity[eid] = target;
+    UnitStateMachine.targetX[eid] = Position.x[target];
+    UnitStateMachine.targetY[eid] = Position.y[target];
+    UnitStateMachine.state[eid] = UnitState.GatherMove;
+    if (!barkShown) {
+      barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'gather');
+    }
+  } else if (
+    isTargetBuilding &&
+    tFaction === Faction.Player &&
+    Building.progress[target] < 100 &&
+    kind === EntityKind.Gatherer
+  ) {
+    UnitStateMachine.targetEntity[eid] = target;
+    UnitStateMachine.targetX[eid] = Position.x[target];
+    UnitStateMachine.targetY[eid] = Position.y[target];
+    UnitStateMachine.state[eid] = UnitState.BuildMove;
+    if (!barkShown) {
+      barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'build');
+    }
+  } else if (
+    EntityTypeTag.kind[target] === EntityKind.Lodge &&
+    kind === EntityKind.Gatherer &&
+    Carrying.resourceType[eid] !== ResourceType.None
+  ) {
+    UnitStateMachine.returnEntity[eid] = target;
+    UnitStateMachine.targetX[eid] = Position.x[target];
+    UnitStateMachine.targetY[eid] = Position.y[target];
+    UnitStateMachine.state[eid] = UnitState.ReturnMove;
+  } else if (
+    isTargetBuilding &&
+    tFaction === Faction.Player &&
+    Building.progress[target] >= 100 &&
+    Health.current[target] < Health.max[target] &&
+    kind === EntityKind.Gatherer
+  ) {
+    UnitStateMachine.targetEntity[eid] = target;
+    UnitStateMachine.targetX[eid] = Position.x[target];
+    UnitStateMachine.targetY[eid] = Position.y[target];
+    UnitStateMachine.state[eid] = UnitState.RepairMove;
+  } else {
+    UnitStateMachine.targetX[eid] = worldX + (Math.random() - 0.5) * 20;
+    UnitStateMachine.targetY[eid] = worldY + (Math.random() - 0.5) * 20;
+    UnitStateMachine.state[eid] = UnitState.Move;
+  }
+
+  return barkShown;
+}
+
+// ---- Formation Helpers ----
+
+const FORMATION_SPACING = 60;
+
+function calculateFormationPositions(
+  units: number[],
+  targetX: number,
+  targetY: number,
+): { eid: number; x: number; y: number }[] {
+  const melee: number[] = [];
+  const ranged: number[] = [];
+  const support: number[] = [];
+
+  for (const eid of units) {
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    if (kind === EntityKind.Brawler || kind === EntityKind.Gator) {
+      melee.push(eid);
+    } else if (kind === EntityKind.Sniper) {
+      ranged.push(eid);
+    } else {
+      support.push(eid);
+    }
+  }
+
+  const positions: { eid: number; x: number; y: number }[] = [];
+
+  layoutRow(melee, targetX, targetY, FORMATION_SPACING, positions);
+  layoutRow(ranged, targetX, targetY + FORMATION_SPACING, FORMATION_SPACING, positions);
+  layoutRow(support, targetX, targetY + FORMATION_SPACING * 2, FORMATION_SPACING, positions);
+
+  return positions;
+}
+
+function layoutRow(
+  eids: number[],
+  cx: number,
+  cy: number,
+  spacing: number,
+  out: { eid: number; x: number; y: number }[],
+): void {
+  const count = eids.length;
+  for (let i = 0; i < count; i++) {
+    const offsetX = (i - (count - 1) / 2) * spacing;
+    out.push({ eid: eids[i], x: cx + offsetX, y: cy });
+  }
+}
