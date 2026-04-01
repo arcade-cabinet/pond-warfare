@@ -7,12 +7,11 @@
  */
 
 import { Goal } from 'yuka';
-import { ENTITY_DEFS } from '@/config/entity-defs';
-import { TILE_SIZE } from '@/constants';
-import { spawnEntity } from '@/ecs/archetypes';
+import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import { Position } from '@/ecs/components';
 import { game } from '@/game';
-import { EntityKind, Faction } from '@/types';
+import { placeBuilding } from '@/input/selection';
+import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 
 /** Building priorities: what to build and when. */
@@ -71,16 +70,25 @@ export class BuildGoal extends Goal {
       return;
     }
 
+    // Use the proper building placement system (collision detection, construction
+    // progress, gatherer assignment) — same path the UI uses
+    const w = game.world;
+    const kindName = entityKindName(need.kind).toLowerCase().replace(/\s+/g, '_');
+    w.placingBuilding = kindName;
+
+    // Select a gatherer to be the builder (placeBuilding assigns them)
+    const gatherers = store.unitRoster.value
+      .flatMap((g) => g.units)
+      .filter((u) => u.kind === EntityKind.Gatherer);
+    if (gatherers.length > 0) {
+      w.selection = [gatherers[0].eid];
+    }
+
     // Place near lodge with a random offset
     const ox = (Math.random() - 0.5) * 200;
     const oy = (Math.random() - 0.5) * 200;
-    const bx = Math.round((lodge.x + ox) / TILE_SIZE) * TILE_SIZE;
-    const by = Math.round((lodge.y + oy) / TILE_SIZE) * TILE_SIZE;
-
-    const w = game.world;
-    w.resources.clams -= clamCost;
-    w.resources.twigs -= twigCost;
-    spawnEntity(w, need.kind, bx, by, Faction.Player);
+    placeBuilding(w, lodge.x + ox, lodge.y + oy);
+    w.placingBuilding = null;
 
     this.status = Goal.STATUS.COMPLETED;
   }
