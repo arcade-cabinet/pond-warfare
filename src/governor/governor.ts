@@ -84,6 +84,7 @@ export class Governor extends GameEntity {
     if (this.frameCounter < THINK_INTERVAL) return;
     this.frameCounter = 0;
 
+    this.brain.arbitrate();
     this.brain.execute();
   }
 

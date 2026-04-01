@@ -38,7 +38,7 @@ export class TrainGoal extends Goal {
 
     for (const b of buildings) {
       const trainable = BUILDING_TRAINS[b.kind];
-      if (!trainable || b.queueItems.length >= 3) continue;
+      if (!trainable || b.queueItems.length >= 5) continue;
 
       const unitKind = this.pickUnit(b.kind);
       if (unitKind === null) continue;
