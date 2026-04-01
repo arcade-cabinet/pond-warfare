@@ -61,7 +61,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
   }
 
   it('should buff unit HP when entering aura range', () => {
-    const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
     const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
 
     runAura();
@@ -73,7 +73,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
   });
 
   it('should remove HP buff when unit leaves aura range', () => {
-    const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
     const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
 
     // First tick: unit enters aura
@@ -92,7 +92,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
   });
 
   it('should not stack buff on consecutive ticks in range', () => {
-    const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
     const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
 
     // Tick 1
@@ -106,7 +106,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
   });
 
   it('should re-apply buff when unit re-enters aura', () => {
-    const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
     const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
 
     // Enter range
@@ -147,7 +147,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
   });
 
   it('should buff newly spawned units that enter aura', () => {
-    const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
 
     // First tick with no units nearby
     runAura();
