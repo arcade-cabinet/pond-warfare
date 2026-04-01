@@ -71,6 +71,7 @@ function createTestWorld(): GameWorld {
     attackMoveMode: false,
     alphaDamageBuff: new Set<number>(),
     commanderDamageBuff: new Set<number>(),
+    commanderEnemyDebuff: new Set<number>(),
     commanderArmorBuff: new Set<number>(),
     commanderHpBuffApplied: new Set<number>(),
     commanderArmor: 0,

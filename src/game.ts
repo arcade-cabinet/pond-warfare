@@ -736,6 +736,7 @@ export class Game {
       auraDamageBonus: cmdDef.auraDamageBonus,
       auraSpeedBonus: cmdDef.auraSpeedBonus,
       auraHpBonus: cmdDef.auraHpBonus,
+      auraEnemyDamageReduction: cmdDef.auraEnemyDamageReduction,
       passiveGatherBonus: cmdDef.passiveGatherBonus,
       passiveResearchSpeed: cmdDef.passiveResearchSpeed,
       passiveTowerAttackSpeed: cmdDef.passiveTowerAttackSpeed,

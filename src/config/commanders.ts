@@ -16,6 +16,7 @@ export interface CommanderDef {
   auraDamageBonus: number;
   auraSpeedBonus: number;
   auraHpBonus: number;
+  auraEnemyDamageReduction: number;
   passiveGatherBonus: number;
   passiveResearchSpeed: number;
   passiveTowerAttackSpeed: number;
@@ -48,6 +49,7 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0.1,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
@@ -63,6 +65,7 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0.15,
     passiveResearchSpeed: 0.25,
     passiveTowerAttackSpeed: 0,
@@ -78,6 +81,7 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 200,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0.2,
@@ -96,6 +100,7 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0.4,
     auraHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
@@ -114,6 +119,7 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraEnemyDamageReduction: 0.2,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
@@ -132,6 +138,7 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
@@ -150,6 +157,7 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,

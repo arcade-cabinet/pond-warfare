@@ -25,6 +25,7 @@ export interface CommanderModifiers {
   auraDamageBonus: number;
   auraSpeedBonus: number;
   auraHpBonus: number;
+  auraEnemyDamageReduction: number;
   passiveGatherBonus: number;
   passiveResearchSpeed: number;
   passiveTowerAttackSpeed: number;
@@ -134,11 +135,13 @@ export function createGameWorld(): GameWorld {
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),
     commanderHpBuffApplied: new Set(),
+    commanderEnemyDebuff: new Set(),
     commanderId: 'marshal',
     commanderModifiers: {
       auraDamageBonus: 0.1,
       auraSpeedBonus: 0,
       auraHpBonus: 0,
+      auraEnemyDamageReduction: 0,
       passiveGatherBonus: 0,
       passiveResearchSpeed: 0,
       passiveTowerAttackSpeed: 0,

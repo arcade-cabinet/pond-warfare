@@ -62,12 +62,14 @@ function commanderAura(world: GameWorld): void {
 
     world.commanderDamageBuff.clear();
     world.commanderSpeedBuff.clear();
+    world.commanderEnemyDebuff.clear();
     return;
   }
 
   // Clear previous buff sets; we rebuild each tick
   world.commanderDamageBuff.clear();
   world.commanderSpeedBuff.clear();
+  world.commanderEnemyDebuff.clear();
 
   const mods = world.commanderModifiers;
 
@@ -113,6 +115,22 @@ function commanderAura(world: GameWorld): void {
         // Speed buff: mark for movement system
         if (mods.auraSpeedBonus > 0) {
           world.commanderSpeedBuff.add(t);
+        }
+      }
+    }
+
+    // Shadowfang-style debuff: mark enemy units in aura range for damage reduction
+    if (mods.auraEnemyDamageReduction > 0) {
+      const enemies = world.spatialHash ? world.spatialHash.query(cx, cy, auraRadius) : allUnits;
+      for (let j = 0; j < enemies.length; j++) {
+        const e = enemies[j];
+        if (!hasComponent(world.ecs, e, FactionTag) || FactionTag.faction[e] !== Faction.Enemy)
+          continue;
+        if (!hasComponent(world.ecs, e, Health) || Health.current[e] <= 0) continue;
+        const edx = Position.x[e] - cx;
+        const edy = Position.y[e] - cy;
+        if (Math.sqrt(edx * edx + edy * edy) <= auraRadius) {
+          world.commanderEnemyDebuff.add(e);
         }
       }
     }
@@ -417,6 +435,10 @@ export function combatSystem(world: GameWorld): void {
               mult = mult + (1.0 - mult) * 0.5;
             }
             let sniperDmg = Math.round(dmg * mult);
+            // Commander enemy debuff (Shadowfang): reduce ranged damage
+            if (world.commanderEnemyDebuff.has(eid)) {
+              sniperDmg = Math.round(sniperDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
+            }
             // War Drums aura: +15% damage
             if (world.warDrumsBuff.has(eid)) {
               sniperDmg = Math.round(sniperDmg * 1.15);
@@ -536,6 +558,11 @@ export function combatSystem(world: GameWorld): void {
               world.commanderModifiers.auraDamageBonus > 0
             ) {
               meleeDmg = Math.round(meleeDmg * (1 + world.commanderModifiers.auraDamageBonus));
+            }
+
+            // Commander enemy debuff (Shadowfang): reduce damage from debuffed enemies
+            if (world.commanderEnemyDebuff.has(eid)) {
+              meleeDmg = Math.round(meleeDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
             }
 
             // War Drums aura: +15% damage for melee
