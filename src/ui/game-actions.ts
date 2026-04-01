@@ -195,3 +195,16 @@ export function openKeyboardRef(): void {
   store.keyboardRefOpen.value = true;
   store.mobilePanelOpen.value = false;
 }
+
+/** Toggle an auto-behavior by role, updating both the store signal and the world. */
+export function toggleAutoBehavior(role: 'gatherer' | 'combat' | 'healer' | 'scout'): void {
+  const signalMap = {
+    gatherer: store.autoGathererEnabled,
+    combat: store.autoCombatEnabled,
+    healer: store.autoHealerEnabled,
+    scout: store.autoScoutEnabled,
+  } as const;
+  const sig = signalMap[role];
+  sig.value = !sig.value;
+  game.world.autoBehaviors[role] = sig.value;
+}

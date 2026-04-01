@@ -200,7 +200,7 @@ function findIdleGatherer(world: GameWorld): number {
  * construct the highest-priority affordable structure.
  */
 export function autoBuildSystem(world: GameWorld): void {
-  if (!world.autoBehaviors.build) return;
+  if (!world.autoBehaviors.gatherer) return;
   if (world.frameCount % 300 !== 0) return;
 
   const candidates = evaluateBuildPressures(world);

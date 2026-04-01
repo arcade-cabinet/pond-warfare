@@ -16,12 +16,14 @@ export function BranchGrid({
   techState,
   clams,
   twigs,
+  researchDiscount = 0,
   onResearch,
 }: {
   nodes: TreeNode[];
   techState: TechState;
   clams: number;
   twigs: number;
+  researchDiscount?: number;
   onResearch: (id: TechId) => void;
 }) {
   const activeNodes = nodes.filter(
@@ -35,9 +37,15 @@ export function BranchGrid({
   return (
     <div class="tech-card-grid">
       {sorted.map((node) => {
-        const state = getNodeState(node.id, techState, clams, twigs);
+        const state = getNodeState(node.id, techState, clams, twigs, researchDiscount);
         return (
-          <TechCard key={node.id} node={node} state={state} onClick={() => onResearch(node.id)} />
+          <TechCard
+            key={node.id}
+            node={node}
+            state={state}
+            researchDiscount={researchDiscount}
+            onClick={() => onResearch(node.id)}
+          />
         );
       })}
     </div>

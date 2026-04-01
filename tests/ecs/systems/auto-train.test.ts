@@ -99,8 +99,7 @@ describe('autoTrainSystem', () => {
   });
 
   it('should do nothing when auto-behaviors are disabled', () => {
-    world.autoBehaviors.defend = false;
-    world.autoBehaviors.attack = false;
+    world.autoBehaviors.combat = false;
 
     const armory = createPlayerBuilding(world, EntityKind.Armory, 500, 500);
 
@@ -110,7 +109,7 @@ describe('autoTrainSystem', () => {
   });
 
   it('should queue Brawler at Armory when combat units < gatherers', () => {
-    world.autoBehaviors.attack = true;
+    world.autoBehaviors.combat = true;
 
     const armory = createPlayerBuilding(world, EntityKind.Armory, 500, 500);
 
@@ -128,7 +127,7 @@ describe('autoTrainSystem', () => {
   });
 
   it('should not overfill queue (max 8)', () => {
-    world.autoBehaviors.attack = true;
+    world.autoBehaviors.combat = true;
 
     const armory = createPlayerBuilding(world, EntityKind.Armory, 500, 500);
 

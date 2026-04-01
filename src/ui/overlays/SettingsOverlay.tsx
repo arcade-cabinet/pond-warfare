@@ -6,6 +6,7 @@
 
 import { audio } from '@/audio/audio-system';
 import { setColorBlindMode } from '@/rendering/pixi-app';
+import { persistSetting } from '@/storage/settings-persistence';
 import { setSpeed } from '../game-actions';
 import { SettingsPanel } from '../settings-panel';
 import * as store from '../store';
@@ -18,32 +19,43 @@ export function SettingsOverlay() {
       onMasterVolumeChange={(v) => {
         store.masterVolume.value = v;
         audio.setMasterVolume(v);
+        persistSetting('masterVolume', v);
       }}
       onMusicVolumeChange={(v) => {
         store.musicVolume.value = v;
         audio.setMusicVolume(v);
+        persistSetting('musicVolume', v);
       }}
       onSfxVolumeChange={(v) => {
         store.sfxVolume.value = v;
         audio.setSfxVolume(v);
+        persistSetting('sfxVolume', v);
       }}
-      onSpeedSet={setSpeed}
+      onSpeedSet={(speed) => {
+        setSpeed(speed);
+        persistSetting('gameSpeed', speed);
+      }}
       onColorBlindToggle={() => {
         store.colorBlindMode.value = !store.colorBlindMode.value;
         setColorBlindMode(store.colorBlindMode.value);
+        persistSetting('colorBlindMode', store.colorBlindMode.value);
       }}
       onAutoSaveToggle={() => {
         store.autoSaveEnabled.value = !store.autoSaveEnabled.value;
+        persistSetting('autoSaveEnabled', store.autoSaveEnabled.value);
       }}
       onUiScaleChange={(scale) => {
         store.uiScale.value = scale;
         document.documentElement.style.fontSize = `${16 * scale}px`;
+        persistSetting('uiScale', scale);
       }}
       onScreenShakeToggle={() => {
         store.screenShakeEnabled.value = !store.screenShakeEnabled.value;
+        persistSetting('screenShakeEnabled', store.screenShakeEnabled.value);
       }}
       onReduceVisualNoiseToggle={() => {
         store.reduceVisualNoise.value = !store.reduceVisualNoise.value;
+        persistSetting('reduceVisualNoise', store.reduceVisualNoise.value);
       }}
       onClose={() => {
         store.settingsOpen.value = false;

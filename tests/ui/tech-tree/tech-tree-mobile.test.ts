@@ -148,16 +148,19 @@ describe('BranchGrid', () => {
 
 // ---- File structure ----
 
-describe('tech-tree-panel uses both desktop and mobile layouts', () => {
-  it('contains md:hidden for mobile and hidden md:flex for desktop', async () => {
+describe('tech-tree-panel uses signal-based layout switching', () => {
+  it('uses screenClass signal for compact vs graph layout', async () => {
     const src = await import('@/ui/tech-tree-panel?raw').then(
       (m: { default: string }) => m.default,
     );
-    expect(src).toContain('md:hidden');
-    expect(src).toContain('hidden md:flex');
+    expect(src).toContain("screenClass.value === 'compact'");
+    expect(src).toContain("screenClass.value !== 'compact'");
     expect(src).toContain('BranchGrid');
     expect(src).toContain('BranchPanel');
-    expect(src).toContain('BranchTabs');
+    expect(src).toContain('SwipeableTabView');
+    // No CSS breakpoint switching for layout
+    expect(src).not.toContain('md:hidden');
+    expect(src).not.toContain('hidden md:flex');
   });
 
   it('has modal-scroll-both class for two-axis scroll', async () => {

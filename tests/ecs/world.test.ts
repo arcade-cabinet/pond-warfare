@@ -27,9 +27,9 @@ describe('createGameWorld', () => {
   it('should have all auto-behaviors disabled by default', () => {
     const world = createGameWorld();
 
-    expect(world.autoBehaviors.gather).toBe(false);
-    expect(world.autoBehaviors.defend).toBe(false);
-    expect(world.autoBehaviors.attack).toBe(false);
+    expect(world.autoBehaviors.gatherer).toBe(false);
+    expect(world.autoBehaviors.combat).toBe(false);
+    expect(world.autoBehaviors.healer).toBe(false);
     expect(world.autoBehaviors.scout).toBe(false);
   });
 });

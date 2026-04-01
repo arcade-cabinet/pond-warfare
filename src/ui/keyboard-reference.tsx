@@ -6,6 +6,7 @@
  * Styled with parchment-panel and font-game classes.
  */
 
+import { screenClass } from '@/platform';
 import { useScrollDrag } from './hooks/useScrollDrag';
 
 interface ShortcutEntry {
@@ -133,7 +134,9 @@ export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
         </div>
 
         {/* 3-column grid of shortcut groups */}
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div
+          class={`grid gap-4 ${screenClass.value === 'compact' ? 'grid-cols-2' : 'grid-cols-3'}`}
+        >
           {SHORTCUT_GROUPS.map((group) => (
             <ShortcutColumn key={group.title} group={group} />
           ))}

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Pre-push hook: enforce test gate before pushing
+# Install: git config core.hooksPath .githooks
 echo "Running pre-push checks..."
 
 echo "→ typecheck"

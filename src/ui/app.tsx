@@ -15,10 +15,12 @@ import { game } from '@/game';
 import { AchievementsPanel } from './achievements-panel';
 import { CampaignPanel, ObjectiveTracker } from './campaign-panel';
 import { HamburgerButton } from './components/HamburgerButton';
+import { Tooltip } from './components/Tooltip';
 import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
+import { AdvisorToast } from './hud/AdvisorToast';
 import { AbilityBar } from './hud/ability-bar';
 import { AirdropButton } from './hud/airdrop-button';
 import { CtrlGroups } from './hud/ctrl-groups';
@@ -133,11 +135,12 @@ export function App({ onMount }: AppProps) {
 
       <ErrorOverlay />
 
-      {/* Fullscreen game container */}
+      {/* Fullscreen game container — shrinks when panel is docked via --pw-panel-width */}
       <div
         ref={containerRef}
         id="game-container"
         class="absolute inset-0 cursor-crosshair overflow-hidden bg-black"
+        style={{ right: 'var(--pw-panel-width, 0px)' }}
       >
         <Overlays />
         <AirdropButton
@@ -212,6 +215,9 @@ export function App({ onMount }: AppProps) {
       {/* Hamburger button — sole floating DOM element */}
       <HamburgerButton />
 
+      {/* Advisor toast — bottom-left HUD, above safe area */}
+      <AdvisorToast />
+
       {/*
         Modal overlays — rendered as SIBLINGS of #game-container so they are
         NOT affected by its `touch-action: none`. Per the W3C Pointer Events
@@ -226,17 +232,18 @@ export function App({ onMount }: AppProps) {
           techState={{ ...game.world.tech }}
           clams={store.clams.value}
           twigs={store.twigs.value}
+          researchDiscount={game.world.commanderModifiers.passiveResearchSpeed}
           onResearch={(id: TechId) => {
             const w = game.world;
             const upgrade = TECH_UPGRADES[id as keyof typeof TECH_UPGRADES];
-            if (
-              upgrade &&
-              canResearch(id, w.tech) &&
-              w.resources.clams >= upgrade.clamCost &&
-              w.resources.twigs >= upgrade.twigCost
-            ) {
-              w.resources.clams -= upgrade.clamCost;
-              w.resources.twigs -= upgrade.twigCost;
+            if (!upgrade || !canResearch(id, w.tech)) return;
+            // Sage passive: reduce research cost by passiveResearchSpeed %
+            const discount = 1 - w.commanderModifiers.passiveResearchSpeed;
+            const clamCost = Math.round(upgrade.clamCost * discount);
+            const twigCost = Math.round(upgrade.twigCost * discount);
+            if (w.resources.clams >= clamCost && w.resources.twigs >= twigCost) {
+              w.resources.clams -= clamCost;
+              w.resources.twigs -= twigCost;
               w.tech[id] = true;
               game.syncUIStore();
             }
@@ -263,61 +270,7 @@ export function App({ onMount }: AppProps) {
       <CommandPanel minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
 
       {/* Tooltip */}
-      {store.tooltipVisible.value && store.tooltipData.value && (
-        <div
-          class="tooltip"
-          style={{ left: `${store.tooltipX.value}px`, top: `${store.tooltipY.value}px` }}
-        >
-          <div class="font-heading font-bold">{store.tooltipData.value.title}</div>
-          {store.tooltipData.value.costBreakdown ? (
-            <div class="flex gap-2 font-numbers text-[10px]">
-              {store.tooltipData.value.costBreakdown.clams != null &&
-                store.tooltipData.value.costBreakdown.clams > 0 && (
-                  <span style={{ color: 'var(--pw-clam)' }}>
-                    {store.tooltipData.value.costBreakdown.clams} Clams
-                  </span>
-                )}
-              {store.tooltipData.value.costBreakdown.twigs != null &&
-                store.tooltipData.value.costBreakdown.twigs > 0 && (
-                  <span style={{ color: 'var(--pw-twig)' }}>
-                    {store.tooltipData.value.costBreakdown.twigs} Twigs
-                  </span>
-                )}
-              {store.tooltipData.value.costBreakdown.food != null &&
-                store.tooltipData.value.costBreakdown.food > 0 && (
-                  <span style={{ color: 'var(--pw-food)' }}>
-                    {store.tooltipData.value.costBreakdown.food} Food
-                  </span>
-                )}
-              {store.tooltipData.value.costBreakdown.pearls != null &&
-                store.tooltipData.value.costBreakdown.pearls > 0 && (
-                  <span style={{ color: 'var(--pw-pearl, #e0b0ff)' }}>
-                    {store.tooltipData.value.costBreakdown.pearls} Pearls
-                  </span>
-                )}
-            </div>
-          ) : (
-            store.tooltipData.value.cost && (
-              <div class="font-numbers" style={{ color: 'var(--pw-accent)' }}>
-                {store.tooltipData.value.cost}
-              </div>
-            )
-          )}
-          {store.tooltipData.value.description && (
-            <div class="text-xs font-game" style={{ color: 'var(--pw-text-muted)' }}>
-              {store.tooltipData.value.description}
-            </div>
-          )}
-          {store.tooltipData.value.requires && (
-            <div class="text-[10px] font-game italic" style={{ color: 'var(--pw-warning)' }}>
-              {store.tooltipData.value.requires}
-            </div>
-          )}
-          <div class="text-xs font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
-            [{store.tooltipData.value.hotkey}]
-          </div>
-        </div>
-      )}
+      <Tooltip />
     </div>
   );
 }

@@ -92,7 +92,7 @@ describe('autoBehaviorSystem', () => {
   });
 
   it('should send idle gatherers to nearest resource when auto-gather is on', () => {
-    world.autoBehaviors.gather = true;
+    world.autoBehaviors.gatherer = true;
     const gatherer = createPlayerUnit(world, EntityKind.Gatherer);
     createResource(world, 120, 100);
 
@@ -102,7 +102,7 @@ describe('autoBehaviorSystem', () => {
   });
 
   it('should not auto-gather non-gatherer units', () => {
-    world.autoBehaviors.gather = true;
+    world.autoBehaviors.gatherer = true;
     const brawler = createPlayerUnit(world, EntityKind.Brawler);
     createResource(world, 120, 100);
 
@@ -112,11 +112,10 @@ describe('autoBehaviorSystem', () => {
   });
 
   it('should never auto-assign the Commander regardless of which behaviors are enabled', () => {
-    world.autoBehaviors.gather = true;
-    world.autoBehaviors.attack = true;
-    world.autoBehaviors.defend = true;
+    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.combat = true;
     world.autoBehaviors.scout = true;
-    world.autoBehaviors.heal = true;
+    world.autoBehaviors.healer = true;
     const commander = createPlayerUnit(world, EntityKind.Commander);
     createResource(world, 120, 100);
 

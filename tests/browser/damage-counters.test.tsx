@@ -151,7 +151,7 @@ describe('Damage counter system', () => {
   it('Sniper deals damage from range', async () => {
     const baseX = 500, baseY = 500;
     const defender = spawnTestUnit(EntityKind.Gator, Faction.Enemy, baseX, baseY);
-    const attacker = spawnTestUnit(EntityKind.Sniper, Faction.Player, baseX + 80, baseY, defender);
+    spawnTestUnit(EntityKind.Sniper, Faction.Player, baseX + 80, baseY, defender);
     // Sniper has 150px range, 80px away = in range
 
     const hpBefore = Health.current[defender];

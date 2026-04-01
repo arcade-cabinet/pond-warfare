@@ -19,12 +19,15 @@ export function getNodeState(
   techState: TechState,
   clams: number,
   twigs: number,
+  researchDiscount = 0,
 ): NodeState {
   const upgrade = TECH_UPGRADES[id];
   if (!upgrade) return 'locked';
   if (techState[id]) return 'researched';
   if (!canResearch(id, techState)) return 'locked';
-  if (clams >= upgrade.clamCost && twigs >= upgrade.twigCost) return 'available';
+  const mult = 1 - researchDiscount;
+  if (clams >= Math.round(upgrade.clamCost * mult) && twigs >= Math.round(upgrade.twigCost * mult))
+    return 'available';
   return 'unaffordable';
 }
 

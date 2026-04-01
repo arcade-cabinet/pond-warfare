@@ -82,12 +82,10 @@ export function syncPopulationAndTimers(
   store.paused.value = w.paused;
   store.attackMoveActive.value = w.attackMoveMode;
 
-  // Sync auto-behavior toggles from UI store into game world
-  w.autoBehaviors.gather = store.autoGatherEnabled.value;
-  w.autoBehaviors.build = store.autoBuildEnabled.value;
-  w.autoBehaviors.defend = store.autoDefendEnabled.value;
-  w.autoBehaviors.attack = store.autoAttackEnabled.value;
-  w.autoBehaviors.heal = store.autoHealEnabled.value;
+  // Sync auto-behavior toggles from UI store into game world (per-role)
+  w.autoBehaviors.gatherer = store.autoGathererEnabled.value;
+  w.autoBehaviors.combat = store.autoCombatEnabled.value;
+  w.autoBehaviors.healer = store.autoHealerEnabled.value;
   w.autoBehaviors.scout = store.autoScoutEnabled.value;
 
   const nowLowClams = w.resources.clams < 100;

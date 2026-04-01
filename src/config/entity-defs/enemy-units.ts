@@ -54,7 +54,7 @@ export const ENEMY_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     spriteScale: 2.5,
   },
   [EntityKind.SiegeTurtle]: {
-    hp: 300,
+    hp: 250,
     speed: 0.5,
     damage: 25,
     attackRange: 50,

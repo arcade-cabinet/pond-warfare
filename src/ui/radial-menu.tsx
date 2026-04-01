@@ -7,10 +7,10 @@
  */
 
 import { useEffect, useRef } from 'preact/hooks';
+import { toggleAutoBehavior } from './game-actions';
 import {
-  autoAttackEnabled,
-  autoDefendEnabled,
-  autoGatherEnabled,
+  autoCombatEnabled,
+  autoGathererEnabled,
   autoScoutEnabled,
   idleWorkerCount,
   radialMenuOpen,
@@ -29,7 +29,10 @@ interface RadialOption {
   color: string;
   borderColor: string;
   activeBackground: string;
-  toggleSignal?: typeof autoGatherEnabled;
+  /** Role key for auto-behavior toggle (updates both store + world). */
+  behaviorRole?: 'gatherer' | 'combat' | 'healer' | 'scout';
+  /** Signal used to read the current toggle state for display only. */
+  toggleSignal?: typeof autoGathererEnabled;
   action?: () => void;
 }
 
@@ -42,35 +45,30 @@ const OPTIONS: RadialOption[] = [
     color: 'var(--pw-warning)',
     borderColor: 'var(--pw-warning)',
     activeBackground: 'rgba(232, 160, 48, 0.3)',
-    toggleSignal: autoGatherEnabled,
+    behaviorRole: 'gatherer',
+    toggleSignal: autoGathererEnabled,
   },
   {
-    label: 'Defend',
-    angle: 0,
-    color: 'var(--pw-accent)',
-    borderColor: 'var(--pw-accent)',
-    activeBackground: 'rgba(64, 200, 208, 0.3)',
-    toggleSignal: autoDefendEnabled,
-  },
-  {
-    label: 'Attack',
-    angle: 72,
+    label: 'Combat',
+    angle: 36,
     color: 'var(--pw-enemy-light)',
     borderColor: 'var(--pw-enemy-light)',
     activeBackground: 'rgba(224, 96, 96, 0.3)',
-    toggleSignal: autoAttackEnabled,
+    behaviorRole: 'combat',
+    toggleSignal: autoCombatEnabled,
   },
   {
     label: 'Scout',
-    angle: 144,
+    angle: 108,
     color: '#b090d8',
     borderColor: '#8a6ab8',
     activeBackground: 'rgba(138, 106, 184, 0.3)',
+    behaviorRole: 'scout',
     toggleSignal: autoScoutEnabled,
   },
   {
     label: 'Select',
-    angle: 216,
+    angle: 180,
     color: 'var(--pw-success)',
     borderColor: 'var(--pw-success)',
     activeBackground: 'rgba(64, 184, 104, 0.3)',
@@ -111,8 +109,8 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
   }
 
   function handleOptionClick(opt: RadialOption) {
-    if (opt.toggleSignal) {
-      opt.toggleSignal.value = !opt.toggleSignal.value;
+    if (opt.behaviorRole) {
+      toggleAutoBehavior(opt.behaviorRole);
     } else if (opt.label === 'Select') {
       onSelectAll();
       closeMenu();

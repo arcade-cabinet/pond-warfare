@@ -176,11 +176,9 @@ describe('Game state & modes', () => {
 
     it('auto-behaviors object exists with all fields', () => {
       const ab = game.world.autoBehaviors;
-      expect(typeof ab.gather).toBe('boolean');
-      expect(typeof ab.build).toBe('boolean');
-      expect(typeof ab.defend).toBe('boolean');
-      expect(typeof ab.attack).toBe('boolean');
-      expect(typeof ab.heal).toBe('boolean');
+      expect(typeof ab.gatherer).toBe('boolean');
+      expect(typeof ab.combat).toBe('boolean');
+      expect(typeof ab.healer).toBe('boolean');
       expect(typeof ab.scout).toBe('boolean');
     });
   });

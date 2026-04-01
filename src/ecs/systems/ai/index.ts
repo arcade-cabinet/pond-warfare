@@ -26,13 +26,9 @@
 import type { GameWorld } from '@/ecs/world';
 import { enemyBuildingTick } from './enemy-building';
 import { enemyCombatTick } from './enemy-combat';
+import { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 import { enemyEconomyTick } from './enemy-economy';
-import {
-  bossWaveLogic,
-  enemyTrainingQueueProcess,
-  enemyTrainingTick,
-  nestDefenseReinforcement,
-} from './enemy-training';
+import { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';
 
 export function aiSystem(world: GameWorld): void {
   enemyEconomyTick(world);
@@ -46,14 +42,10 @@ export function aiSystem(world: GameWorld): void {
 
 export { enemyBuildingTick } from './enemy-building';
 export { enemyCombatTick } from './enemy-combat';
+export { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 // Re-export sub-module functions for direct access if needed
 export { enemyEconomyTick } from './enemy-economy';
-export {
-  bossWaveLogic,
-  enemyTrainingQueueProcess,
-  enemyTrainingTick,
-  nestDefenseReinforcement,
-} from './enemy-training';
+export { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';
 export {
   countEnemyArmy,
   countPlayerUnitsOfKind,

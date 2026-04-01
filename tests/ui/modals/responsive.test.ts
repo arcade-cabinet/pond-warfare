@@ -272,7 +272,7 @@ describe('Modal responsive CSS classes', () => {
     ).toBeGreaterThanOrEqual(2);
   });
 
-  it('useScrollDrag hook is imported in all nine modal components', async () => {
+  it('drag/swipe behavior is available in all nine modal components', async () => {
     const modules = [
       '@/ui/settings-panel',
       '@/ui/new-game-modal',
@@ -287,7 +287,8 @@ describe('Modal responsive CSS classes', () => {
 
     for (const mod of modules) {
       const src = await import(`${mod}?raw`).then((m: { default: string }) => m.default);
-      expect(src, `${mod} must import useScrollDrag`).toContain('useScrollDrag');
+      const hasDragBehavior = src.includes('useScrollDrag') || src.includes('SwipeableTabView');
+      expect(hasDragBehavior, `${mod} must import useScrollDrag or SwipeableTabView`).toBe(true);
     }
   });
 });

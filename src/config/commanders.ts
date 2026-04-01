@@ -16,9 +16,16 @@ export interface CommanderDef {
   auraDamageBonus: number;
   auraSpeedBonus: number;
   auraHpBonus: number;
+  auraUnitHpBonus: number;
+  auraEnemyDamageReduction: number;
   passiveGatherBonus: number;
   passiveResearchSpeed: number;
   passiveTowerAttackSpeed: number;
+  passiveSwimmerCostReduction: number;
+  passiveTrapDurationMult: number;
+  passiveShieldbearerTrainSpeed: number;
+  passiveCatapultRangeBonus: number;
+  passiveLightningDamage: number;
   spriteVariant: string;
   unlock: { requirement: string; check: (profile: PlayerProfile) => boolean } | null;
 }
@@ -48,9 +55,16 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0.1,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraUnitHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
+    passiveSwimmerCostReduction: 0,
+    passiveTrapDurationMult: 1,
+    passiveShieldbearerTrainSpeed: 0,
+    passiveCatapultRangeBonus: 0,
+    passiveLightningDamage: 0,
     spriteVariant: 'blue',
     unlock: null,
   },
@@ -63,9 +77,16 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraUnitHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0.15,
     passiveResearchSpeed: 0.25,
     passiveTowerAttackSpeed: 0,
+    passiveSwimmerCostReduction: 0,
+    passiveTrapDurationMult: 1,
+    passiveShieldbearerTrainSpeed: 0,
+    passiveCatapultRangeBonus: 0,
+    passiveLightningDamage: 0,
     spriteVariant: 'green',
     unlock: { requirement: 'Win 3 games', check: (p) => p.total_wins >= 3 },
   },
@@ -78,9 +99,16 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 200,
+    auraUnitHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0.2,
+    passiveSwimmerCostReduction: 0,
+    passiveTrapDurationMult: 1,
+    passiveShieldbearerTrainSpeed: 0,
+    passiveCatapultRangeBonus: 0,
+    passiveLightningDamage: 0,
     spriteVariant: 'gold',
     unlock: {
       requirement: 'Win on Hard',
@@ -91,14 +119,21 @@ export const COMMANDERS: CommanderDef[] = [
     id: 'tidekeeper',
     name: 'Otter Tidekeeper',
     title: 'The Tidekeeper',
-    auraDesc: '+0.3 speed to all units',
+    auraDesc: '+0.4 speed to all units',
     passiveDesc: 'Swimmers cost 50% less',
     auraDamageBonus: 0,
-    auraSpeedBonus: 0.3,
+    auraSpeedBonus: 0.4,
     auraHpBonus: 0,
+    auraUnitHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
+    passiveSwimmerCostReduction: 0.5,
+    passiveTrapDurationMult: 1,
+    passiveShieldbearerTrainSpeed: 0,
+    passiveCatapultRangeBonus: 0,
+    passiveLightningDamage: 0,
     spriteVariant: 'cyan',
     unlock: {
       requirement: 'Collect 200 pearls total',
@@ -109,14 +144,21 @@ export const COMMANDERS: CommanderDef[] = [
     id: 'shadowfang',
     name: 'Otter Shadowfang',
     title: 'The Shadowfang',
-    auraDesc: 'Enemies in range -15% damage',
+    auraDesc: 'Enemies in range -20% damage',
     passiveDesc: 'Trapper traps last 2x longer',
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraUnitHpBonus: 0,
+    auraEnemyDamageReduction: 0.2,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
+    passiveSwimmerCostReduction: 0,
+    passiveTrapDurationMult: 2,
+    passiveShieldbearerTrainSpeed: 0.5,
+    passiveCatapultRangeBonus: 0,
+    passiveLightningDamage: 0,
     spriteVariant: 'purple',
     unlock: {
       requirement: 'Win with 0 unit losses',
@@ -132,9 +174,16 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraUnitHpBonus: 0.2,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
+    passiveSwimmerCostReduction: 0,
+    passiveTrapDurationMult: 1,
+    passiveShieldbearerTrainSpeed: 0.5,
+    passiveCatapultRangeBonus: 0,
+    passiveLightningDamage: 0,
     spriteVariant: 'red',
     unlock: {
       requirement: 'Promote 5 Hero units',
@@ -150,9 +199,16 @@ export const COMMANDERS: CommanderDef[] = [
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
+    auraUnitHpBonus: 0,
+    auraEnemyDamageReduction: 0,
     passiveGatherBonus: 0,
     passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
+    passiveSwimmerCostReduction: 0,
+    passiveTrapDurationMult: 1,
+    passiveShieldbearerTrainSpeed: 0,
+    passiveCatapultRangeBonus: 0.5,
+    passiveLightningDamage: 10,
     spriteVariant: 'yellow',
     unlock: {
       requirement: 'Win on Nightmare',

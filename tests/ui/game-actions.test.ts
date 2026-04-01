@@ -24,6 +24,7 @@ vi.mock('@/game', () => ({
       camY: 0,
       viewWidth: 800,
       viewHeight: 600,
+      autoBehaviors: { gatherer: false, combat: false, healer: false, scout: false },
     },
     syncUIStore: vi.fn(),
     cycleSpeed: vi.fn(),
@@ -89,6 +90,7 @@ import {
   haltSelection,
   selectAllUnits,
   selectArmyUnits,
+  toggleAutoBehavior,
   toggleColorBlind,
   toggleMute,
   togglePanel,
@@ -101,9 +103,14 @@ beforeEach(() => {
   game.world.attackMoveMode = false;
   game.world.paused = false;
   game.world.floatingTexts = [];
+  game.world.autoBehaviors = { gatherer: false, combat: false, healer: false, scout: false };
   store.mobilePanelOpen.value = false;
   store.colorBlindMode.value = false;
   store.muted.value = false;
+  store.autoGathererEnabled.value = false;
+  store.autoCombatEnabled.value = false;
+  store.autoHealerEnabled.value = false;
+  store.autoScoutEnabled.value = false;
   vi.clearAllMocks();
 });
 
@@ -186,5 +193,34 @@ describe('game-actions', () => {
   it('toggleMute calls audio.toggleMute', () => {
     toggleMute();
     expect(audio.toggleMute).toHaveBeenCalled();
+  });
+
+  describe('toggleAutoBehavior', () => {
+    it('toggles gatherer in both store and world', () => {
+      toggleAutoBehavior('gatherer');
+      expect(store.autoGathererEnabled.value).toBe(true);
+      expect(game.world.autoBehaviors.gatherer).toBe(true);
+      toggleAutoBehavior('gatherer');
+      expect(store.autoGathererEnabled.value).toBe(false);
+      expect(game.world.autoBehaviors.gatherer).toBe(false);
+    });
+
+    it('toggles combat in both store and world', () => {
+      toggleAutoBehavior('combat');
+      expect(store.autoCombatEnabled.value).toBe(true);
+      expect(game.world.autoBehaviors.combat).toBe(true);
+    });
+
+    it('toggles healer in both store and world', () => {
+      toggleAutoBehavior('healer');
+      expect(store.autoHealerEnabled.value).toBe(true);
+      expect(game.world.autoBehaviors.healer).toBe(true);
+    });
+
+    it('toggles scout in both store and world', () => {
+      toggleAutoBehavior('scout');
+      expect(store.autoScoutEnabled.value).toBe(true);
+      expect(game.world.autoBehaviors.scout).toBe(true);
+    });
   });
 });

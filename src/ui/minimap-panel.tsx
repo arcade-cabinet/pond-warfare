@@ -8,7 +8,7 @@
 
 import type { Ref } from 'preact';
 import { MINIMAP_SIZE } from '@/constants';
-import { isMobile } from '@/platform';
+import { screenClass } from '@/platform';
 import { baseUnderAttack, mapScenario } from '@/ui/store';
 
 export interface MinimapPanelProps {
@@ -19,16 +19,16 @@ export interface MinimapPanelProps {
 export function MinimapPanel({ canvasRef, camRef }: MinimapPanelProps) {
   const scenario = mapScenario.value;
   const label = scenario ? scenario.charAt(0).toUpperCase() + scenario.slice(1) : '';
-  const mobile = isMobile.value;
+  const mobile = screenClass.value === 'compact';
 
   return (
     <div
-      class={`${mobile ? 'w-1/4' : 'w-1/3'} md:w-full flex-shrink-0 p-1 md:p-2 flex flex-col justify-center items-center border-r-2 md:border-r-0 md:border-b-2 md:max-h-[190px]`}
+      class={`flex-shrink-0 flex flex-col justify-center items-center ${mobile ? 'w-1/4 border-r-2 p-1' : 'w-full border-b-2 max-h-[190px] p-2'}`}
       style={{ background: 'var(--pw-bg-deep)', borderColor: 'var(--pw-border)' }}
     >
       <div
         id="minimap-container"
-        class={`relative w-full h-full max-w-[100px] max-h-[100px] md:max-w-[150px] md:max-h-[150px] cursor-crosshair${baseUnderAttack.value ? ' animate-pulse' : ''}`}
+        class={`relative w-full h-full cursor-crosshair ${mobile ? 'max-w-[100px] max-h-[100px]' : 'max-w-[150px] max-h-[150px]'}${baseUnderAttack.value ? ' animate-pulse' : ''}`}
         style={{
           border: baseUnderAttack.value
             ? '2px solid rgb(239, 68, 68)'
@@ -51,7 +51,7 @@ export function MinimapPanel({ canvasRef, camRef }: MinimapPanelProps) {
       </div>
       {label && (
         <span
-          class="mt-1 text-[9px] md:text-[10px] font-heading tracking-wide uppercase"
+          class={`mt-1 font-heading tracking-wide uppercase ${mobile ? 'text-[9px]' : 'text-[10px]'}`}
           style={{ color: 'var(--pw-text-muted)' }}
         >
           {label}

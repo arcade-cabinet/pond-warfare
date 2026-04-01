@@ -1,16 +1,15 @@
 /**
  * PixiJS Entity Renderer
  *
- * Handles renderEntity() function, sprite management, health bars,
- * selection brackets, veteran stars, carried resource indicators,
- * construction progress overlays, veterancy recoloring, and status
- * effect tints (champion, poison, enrage).
+ * Handles renderEntity(), sprite management, veterancy recoloring, and
+ * status effect tints. Overlay drawing (brackets, health, labels, progress)
+ * is in entity-overlays.ts. Status tints are in entity-tints.ts.
  */
 
-import { Sprite, Text, Texture } from 'pixi.js';
+import { Sprite, Texture } from 'pixi.js';
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { CB_PALETTE, PALETTE } from '@/constants';
+import { PALETTE } from '@/constants';
 import {
   Building,
   Carrying,
@@ -23,14 +22,16 @@ import {
   Veterancy,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import {
-  EntityKind,
-  type EntityKind as EntityKindType,
-  ResourceType,
-  type SpriteId,
-} from '@/types';
+import { type EntityKind as EntityKindType, ResourceType, type SpriteId } from '@/types';
 import { entityScales } from '../animations';
 import { getRecoloredSprite, type RecolorPreset, veterancyPreset } from '../recolor';
+import {
+  drawHealthBar,
+  drawSelectionBrackets,
+  renderBuildingProgress,
+  renderUnitLabel,
+} from './entity-overlays';
+import { getStatusTint } from './entity-tints';
 import {
   colorToHex,
   drawStar,
@@ -40,19 +41,15 @@ import {
   getEntityOverlayGfx,
   getEntitySprites,
   getTexture,
-  getUnitLabelTexts,
-  LABEL_STYLE,
   lerpTint,
-  PROGRESS_STYLE,
   setDestroyRecoloredTexturesCallback,
 } from './init';
 
 // ---------------------------------------------------------------------------
-// Recolored texture cache: cacheKey -> PixiJS Texture
+// Recolored texture cache
 // ---------------------------------------------------------------------------
 const recoloredTextureCache = new Map<string, Texture>();
 
-/** Get or create a PixiJS Texture for a recolored sprite. */
 function getRecoloredTexture(
   spriteId: number,
   preset: RecolorPreset,
@@ -69,11 +66,10 @@ function getRecoloredTexture(
 }
 
 // ---------------------------------------------------------------------------
-// Sprite pool: reuse Sprite objects instead of create/destroy per entity
+// Sprite pool
 // ---------------------------------------------------------------------------
 const spritePool: Sprite[] = [];
 
-/** Acquire a sprite from the pool or create a new one. */
 export function acquireSprite(tex: Texture): Sprite {
   const spr = spritePool.pop();
   if (spr) {
@@ -89,19 +85,17 @@ export function acquireSprite(tex: Texture): Sprite {
   return newSpr;
 }
 
-/** Return a sprite to the pool instead of destroying it. */
 export function releaseSprite(spr: Sprite): void {
   spr.visible = false;
   spritePool.push(spr);
 }
 
 // ---------------------------------------------------------------------------
-// World reference (set each frame from renderEntity caller)
+// World reference
 // ---------------------------------------------------------------------------
 let _world: GameWorld | null = null;
 let _spriteCanvases: Map<SpriteId, HTMLCanvasElement> | null = null;
 
-/** Set world reference for status-effect queries during rendering. */
 export function setEntityRendererContext(
   world: GameWorld,
   spriteCanvases: Map<SpriteId, HTMLCanvasElement>,
@@ -110,15 +104,11 @@ export function setEntityRendererContext(
   _spriteCanvases = spriteCanvases;
 }
 
-/** Clear the recolored texture cache (call on game restart). */
 export function clearRecoloredTextureCache(): void {
-  for (const tex of recoloredTextureCache.values()) {
-    tex.destroy(true);
-  }
+  for (const tex of recoloredTextureCache.values()) tex.destroy(true);
   recoloredTextureCache.clear();
 }
 
-// Register cleanup callback so destroyPixiApp can clear our cache
 setDestroyRecoloredTexturesCallback(clearRecoloredTextureCache);
 
 /** Render a single entity: sprite, health bar, selection brackets, etc. */
@@ -130,13 +120,11 @@ export function renderEntity(eid: number, frameCount: number): void {
   const entityLayer = getEntityLayer();
   const entityOverlayGfx = getEntityOverlayGfx();
   const entitySprites = getEntitySprites();
-  const buildingProgressTexts = getBuildingProgressTexts();
   const cbMode = getCbMode();
 
   const ex = Position.x[eid];
   const ey = Position.y[eid];
 
-  // Viewport culling: skip rendering for off-screen entities
   if (_world) {
     const margin = 64;
     if (
@@ -165,38 +153,29 @@ export function renderEntity(eid: number, frameCount: number): void {
   const flashTimer = Health.flashTimer[eid];
   const progress = isBuilding ? Building.progress[eid] : 100;
 
-  // --- Determine effective texture (may be recolored for veterans) ---
   let effectiveTex = tex;
   const vetRank = !isBuilding && !isResource ? (Veterancy.rank[eid] ?? 0) : 0;
   if (vetRank > 0 && _spriteCanvases) {
     const preset = veterancyPreset(vetRank);
     if (preset) {
       const sourceCanvas = _spriteCanvases.get(spriteId);
-      if (sourceCanvas) {
-        effectiveTex = getRecoloredTexture(spriteId, preset, sourceCanvas);
-      }
+      if (sourceCanvas) effectiveTex = getRecoloredTexture(spriteId, preset, sourceCanvas);
     }
   }
 
-  // --- Get or create sprite (pooled) ---
   let spr = entitySprites.get(eid);
   if (!spr) {
     spr = acquireSprite(effectiveTex);
     entitySprites.set(eid, spr);
     entityLayer.addChild(spr);
   } else {
-    if (spr.texture !== effectiveTex) {
-      spr.texture = effectiveTex;
-    }
-    // Re-show sprite that may have been hidden by viewport culling
+    if (spr.texture !== effectiveTex) spr.texture = effectiveTex;
     spr.visible = true;
   }
 
-  // --- Position and Y-sort ---
   spr.position.set(ex, ey + yOff);
   spr.zIndex = ey;
 
-  // --- Facing direction ---
   const animScale = entityScales.get(eid);
   let scaleX = 1;
   let scaleY = 1;
@@ -204,76 +183,29 @@ export function renderEntity(eid: number, frameCount: number): void {
     scaleX = animScale.scaleX;
     scaleY = animScale.scaleY;
   }
-  if (facingLeft && !isBuilding) {
-    scaleX = -scaleX;
-  }
+  if (facingLeft && !isBuilding) scaleX = -scaleX;
   spr.scale.set(scaleX, scaleY);
 
-  // --- Alpha / flash / status effect tints ---
   if (flashTimer > 0) {
     spr.alpha = 0.7;
     spr.tint = lerpTint(0xffffff, 0xff3c3c, Math.min(1, flashTimer / 12));
   } else {
     spr.alpha = 1;
-    // Determine tint from status effects
-    const statusTint = getStatusTint(eid, kind);
-    spr.tint = statusTint;
+    spr.tint = getStatusTint(eid, kind, _world);
   }
 
-  // --- Construction reveal ---
-  if (isBuilding && progress < 100) {
-    spr.alpha = 0.5 + progress / 200;
-  }
-
-  // --- Resource depletion fade ---
+  if (isBuilding && progress < 100) spr.alpha = 0.5 + progress / 200;
   if (isResource) {
     const maxAmount = def.resourceAmount ?? 1;
-    const curAmount = Resource.amount[eid];
-    const ratio = Math.max(0, curAmount / maxAmount);
-    // Fade from full alpha to 0.3 as resource depletes
-    spr.alpha = 0.3 + 0.7 * ratio;
+    spr.alpha = 0.3 + 0.7 * Math.max(0, Resource.amount[eid] / maxAmount);
   }
 
-  // --- Shadow (drawn into entityOverlayGfx) ---
-  const radius = sw / 2.5;
-  entityOverlayGfx.ellipse(ex, ey + sh / 2 - 2, radius, radius / 2);
+  // Shadow
+  entityOverlayGfx.ellipse(ex, ey + sh / 2 - 2, sw / 2.5, sw / 2.5 / 2);
   entityOverlayGfx.fill({ color: 0x000000, alpha: 0.4 });
 
-  // --- Selection brackets ---
-  if (selected) {
-    const dx = ex - sw / 2;
-    const dy = ey - sh / 2 + yOff;
-    const pad = 2;
-    const bx = dx - pad;
-    const by = dy - pad;
-    const bw = sw + pad * 2;
-    const bh = sh + pad * 2;
-    const l = 6;
+  if (selected) drawSelectionBrackets(entityOverlayGfx, ex, ey, sw, sh, yOff);
 
-    entityOverlayGfx.setStrokeStyle({ width: 2, color: 0x38bdf8 });
-    // Top-left
-    entityOverlayGfx.moveTo(bx, by + l);
-    entityOverlayGfx.lineTo(bx, by);
-    entityOverlayGfx.lineTo(bx + l, by);
-    entityOverlayGfx.stroke();
-    // Top-right
-    entityOverlayGfx.moveTo(bx + bw - l, by);
-    entityOverlayGfx.lineTo(bx + bw, by);
-    entityOverlayGfx.lineTo(bx + bw, by + l);
-    entityOverlayGfx.stroke();
-    // Bottom-left
-    entityOverlayGfx.moveTo(bx, by + bh - l);
-    entityOverlayGfx.lineTo(bx, by + bh);
-    entityOverlayGfx.lineTo(bx + l, by + bh);
-    entityOverlayGfx.stroke();
-    // Bottom-right
-    entityOverlayGfx.moveTo(bx + bw - l, by + bh);
-    entityOverlayGfx.lineTo(bx + bw, by + bh);
-    entityOverlayGfx.lineTo(bx + bw, by + bh - l);
-    entityOverlayGfx.stroke();
-  }
-
-  // --- Carried resource indicator ---
   const carriedRes = Carrying.resourceType[eid] as ResourceType;
   if (carriedRes !== ResourceType.None) {
     const color = carriedRes === ResourceType.Clams ? PALETTE.clamShell : PALETTE.reedBrown;
@@ -285,133 +217,30 @@ export function renderEntity(eid: number, frameCount: number): void {
     }
   }
 
-  // --- Health bar ---
-  if (selected || (hp < maxHp && !isResource)) {
-    const dy = ey - sh / 2 + yOff;
-    const bw = sw * 0.8;
-    const bh = 4;
-    // Background
-    entityOverlayGfx.rect(ex - bw / 2, dy - 8, bw, bh);
-    entityOverlayGfx.fill(0x7f1d1d);
-    // Fill
-    const hpPct = hp / maxHp;
-    let barColor: number;
-    if (cbMode) {
-      barColor =
-        hpPct > 0.6
-          ? colorToHex(CB_PALETTE.healthHigh)
-          : hpPct > 0.3
-            ? colorToHex(CB_PALETTE.healthMid)
-            : colorToHex(CB_PALETTE.healthLow);
-    } else {
-      barColor = hpPct > 0.6 ? 0x22c55e : hpPct > 0.3 ? 0xeab308 : 0xef4444;
-    }
-    entityOverlayGfx.rect(ex - bw / 2, dy - 8, bw * hpPct, bh);
-    entityOverlayGfx.fill(barColor);
-  }
+  if (selected || (hp < maxHp && !isResource))
+    drawHealthBar(entityOverlayGfx, ex, ey, sw, sh, yOff, hp, maxHp, cbMode);
 
-  // --- Veterancy stars (read from Veterancy component) ---
   if (!isBuilding && !isResource) {
     const rank = Veterancy.rank[eid] ?? 0;
     if (rank > 0) {
-      const stars = rank; // 1=Veteran, 2=Elite, 3=Hero
       const dy = ey - sh / 2 + yOff;
-      for (let s = 0; s < stars; s++) {
-        const sx = ex - (stars * 6) / 2 + s * 6 + 3;
-        const sy = dy - 14;
-        drawStar(entityOverlayGfx, sx, sy, 3, 0xfbbf24);
-      }
+      for (let s = 0; s < rank; s++)
+        drawStar(entityOverlayGfx, ex - (rank * 6) / 2 + s * 6 + 3, dy - 14, 3, 0xfbbf24);
     }
   }
 
-  // --- Selected unit name label ---
-  const unitLabelTexts = getUnitLabelTexts();
-  if (selected && !isResource) {
-    let label = unitLabelTexts.get(eid);
-    if (!label) {
-      label = new Text({ text: '', style: LABEL_STYLE });
-      label.anchor.set(0.5, 1);
-      entityLayer.addChild(label);
-      unitLabelTexts.set(eid, label);
-    }
-    label.text = EntityKind[kind] ?? '';
-    const labelY = ey - sh / 2 + yOff - 16;
-    label.position.set(ex, labelY);
-    label.zIndex = ey + 1;
-    label.visible = true;
-  } else {
-    const label = unitLabelTexts.get(eid);
-    if (label) {
-      entityLayer.removeChild(label);
-      label.destroy();
-      unitLabelTexts.delete(eid);
-    }
-  }
-
-  // --- Construction frame outline & percentage ---
-  if (isBuilding && progress < 100) {
-    const dx = ex - sw / 2;
-    const dy = ey - sh / 2 + yOff;
-    entityOverlayGfx.rect(dx, dy, sw, sh);
-    entityOverlayGfx.stroke({ width: 1, color: 0xb45309 });
-
-    // Progress percentage text centered on building
-    let progText = buildingProgressTexts.get(eid);
-    if (!progText) {
-      progText = new Text({ text: '', style: PROGRESS_STYLE });
-      progText.anchor.set(0.5, 0.5);
-      entityLayer.addChild(progText);
-      buildingProgressTexts.set(eid, progText);
-    }
-    progText.text = `${Math.floor(progress)}%`;
-    progText.position.set(ex, ey);
-    progText.zIndex = ey + 1;
-    progText.visible = true;
-  } else {
-    // Remove progress text if building is complete or not a building
-    const progText = buildingProgressTexts.get(eid);
-    if (progText) {
-      entityLayer.removeChild(progText);
-      progText.destroy();
-      buildingProgressTexts.delete(eid);
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Status-effect tint helper
-// ---------------------------------------------------------------------------
-
-// Tint constants for status effects (PixiJS multiply-style tints)
-const TINT_CHAMPION = 0xcc88ff; // Purple tint for champion enemies
-const TINT_POISONED = 0x66ee66; // Green tint for poisoned units
-const TINT_ENRAGED = 0xff6644; // Red-orange tint for enraged BossCroc
-const TINT_NORMAL = 0xffffff; // No tint
-
-/**
- * Determine the PixiJS tint color for an entity based on active status effects.
- * Priority: enraged > poisoned > champion > normal.
- */
-function getStatusTint(eid: number, kind: EntityKindType): number {
-  if (!_world) return TINT_NORMAL;
-
-  // Enraged BossCroc (below 30% HP)
-  if (kind === EntityKind.BossCroc) {
-    const maxHp = Health.max[eid];
-    if (maxHp > 0 && Health.current[eid] < maxHp * 0.3) {
-      return TINT_ENRAGED;
-    }
-  }
-
-  // Poisoned (VenomSnake poison)
-  if (_world.poisonTimers.has(eid)) {
-    return TINT_POISONED;
-  }
-
-  // Champion enemy
-  if (_world.championEnemies.has(eid)) {
-    return TINT_CHAMPION;
-  }
-
-  return TINT_NORMAL;
+  renderUnitLabel(eid, kind, isResource, selected, ex, ey, sh, yOff, entityLayer);
+  renderBuildingProgress(
+    eid,
+    isBuilding,
+    progress,
+    ex,
+    ey,
+    sw,
+    sh,
+    yOff,
+    entityOverlayGfx,
+    getBuildingProgressTexts(),
+    entityLayer,
+  );
 }

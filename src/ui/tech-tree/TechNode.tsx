@@ -14,14 +14,19 @@ import { type NodeState, stateStyles } from './tree-helpers';
 export function TechNode({
   node,
   state,
+  researchDiscount = 0,
   onClick,
 }: {
   node: TreeNode;
   state: NodeState;
+  researchDiscount?: number;
   onClick: () => void;
 }) {
   const upgrade = TECH_UPGRADES[node.id as keyof typeof TECH_UPGRADES];
   if (!upgrade) return null;
+  const mult = 1 - researchDiscount;
+  const clamCost = Math.round(upgrade.clamCost * mult);
+  const twigCost = Math.round(upgrade.twigCost * mult);
 
   const x = node.col * CELL_W;
   const y = node.row * CELL_H;
@@ -58,7 +63,7 @@ export function TechNode({
           color: state === 'unaffordable' ? 'var(--pw-enemy-light)' : 'var(--pw-accent)',
         }}
       >
-        {upgrade.clamCost}C {upgrade.twigCost}T
+        {clamCost}C {twigCost}T
       </span>
       <span class="font-game text-[9px] leading-tight mt-0.5 opacity-80">
         {upgrade.description}

@@ -1,80 +1,43 @@
 /**
  * Tech Tree Panel
  *
- * Full-screen overlay showing all techs. Viewport-aware:
- * - Desktop (≥768px): side-by-side branch graphs with SVG dependency lines
- * - Mobile (<768px): branch tabs (Lodge/Nature | Armory) + scrollable card grid
+ * Full-screen overlay showing all techs. Layout chosen by screenClass signal:
+ * - compact (phones, landscape phones): SwipeableTabView with card grids
+ * - medium/large (tablets, foldables, laptops, desktops): side-by-side SVG graphs
  *
  * Decomposed into submodules under src/ui/tech-tree/.
  */
 
 import { useState } from 'preact/hooks';
 import type { TechId, TechState } from '@/config/tech-tree';
+import { screenClass } from '@/platform';
+import { SwipeableTabView, type Tab } from './components/SwipeableTabView';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { BranchGrid } from './tech-tree/BranchGrid';
 import { BranchPanel } from './tech-tree/BranchPanel';
 import { ARMORY_EDGES, ARMORY_NODES, LODGE_EDGES, LODGE_NODES } from './tech-tree/tree-data';
 
-// -------------------------------------------------------------------
-// Types
-// -------------------------------------------------------------------
-
 export interface TechTreePanelProps {
   techState: TechState;
   clams: number;
   twigs: number;
+  researchDiscount?: number;
   onResearch: (id: TechId) => void;
   onClose: () => void;
 }
 
 type BranchTab = 'lodge' | 'armory';
 
-// -------------------------------------------------------------------
-// Mobile branch tab bar
-// -------------------------------------------------------------------
-
-function BranchTabs({ active, onSelect }: { active: BranchTab; onSelect: (t: BranchTab) => void }) {
-  const tabs: { id: BranchTab; label: string }[] = [
-    { id: 'lodge', label: 'Lodge / Nature' },
-    { id: 'armory', label: 'Armory' },
-  ];
-  return (
-    <div class="flex gap-1 w-full max-w-md mx-auto px-4 mb-3">
-      {tabs.map((t) => {
-        const isActive = active === t.id;
-        return (
-          <button
-            key={t.id}
-            type="button"
-            class="hud-btn rounded px-3 py-1.5 font-heading font-bold text-[10px] tracking-wider flex-1"
-            style={{
-              minHeight: '44px',
-              background: isActive ? 'rgba(64, 200, 208, 0.15)' : undefined,
-              borderColor: isActive ? 'var(--pw-accent)' : undefined,
-              color: isActive ? 'var(--pw-accent-bright)' : 'var(--pw-text-muted)',
-              boxShadow: isActive ? '0 0 8px rgba(64, 200, 208, 0.15)' : undefined,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(t.id);
-            }}
-          >
-            {t.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// -------------------------------------------------------------------
-// Main component
-// -------------------------------------------------------------------
+const BRANCH_TABS: Tab[] = [
+  { key: 'lodge', label: 'Lodge / Nature' },
+  { key: 'armory', label: 'Armory' },
+];
 
 export function TechTreePanel({
   techState,
   clams,
   twigs,
+  researchDiscount = 0,
   onResearch,
   onClose,
 }: TechTreePanelProps) {
@@ -130,52 +93,64 @@ export function TechTreePanel({
           </span>
         </div>
 
-        {/* Mobile: branch tabs + card grid (visible <768px) */}
-        <div class="md:hidden w-full flex-1 flex flex-col">
-          <BranchTabs active={branch} onSelect={setBranch} />
-          <div class="px-4 pb-8">
-            {branch === 'lodge' && (
-              <BranchGrid
-                nodes={LODGE_NODES}
-                techState={techState}
-                clams={clams}
-                twigs={twigs}
-                onResearch={onResearch}
-              />
-            )}
-            {branch === 'armory' && (
-              <BranchGrid
-                nodes={ARMORY_NODES}
-                techState={techState}
-                clams={clams}
-                twigs={twigs}
-                onResearch={onResearch}
-              />
-            )}
+        {/* Compact: swipeable branch tabs + card grid (phones, landscape phones) */}
+        {screenClass.value === 'compact' && (
+          <div class="w-full flex-1 flex flex-col">
+            <SwipeableTabView
+              tabs={BRANCH_TABS}
+              activeTab={branch}
+              onTabChange={(key) => setBranch(key as BranchTab)}
+              variant="overlay"
+            >
+              <div class="px-4 pb-8">
+                <BranchGrid
+                  nodes={LODGE_NODES}
+                  techState={techState}
+                  clams={clams}
+                  twigs={twigs}
+                  researchDiscount={researchDiscount}
+                  onResearch={onResearch}
+                />
+              </div>
+              <div class="px-4 pb-8">
+                <BranchGrid
+                  nodes={ARMORY_NODES}
+                  techState={techState}
+                  clams={clams}
+                  twigs={twigs}
+                  researchDiscount={researchDiscount}
+                  onResearch={onResearch}
+                />
+              </div>
+            </SwipeableTabView>
           </div>
-        </div>
+        )}
 
-        {/* Desktop: side-by-side graphs (visible ≥768px) */}
-        <div class="hidden md:flex gap-16 px-4 pb-8 items-start justify-center">
-          <BranchPanel
-            title="Lodge / Nature"
-            nodes={LODGE_NODES}
-            edges={LODGE_EDGES}
-            techState={techState}
-            clams={clams}
-            twigs={twigs}
-            onResearch={onResearch}
-          />
-          <BranchPanel
-            title="Armory"
-            nodes={ARMORY_NODES}
-            edges={ARMORY_EDGES}
-            techState={techState}
-            clams={clams}
-            twigs={twigs}
-            onResearch={onResearch}
-          />
-        </div>
+        {/* Medium/Large: side-by-side SVG graphs (tablets, foldables, desktops) */}
+        {screenClass.value !== 'compact' && (
+          <div class="flex gap-16 px-4 pb-8 items-start justify-center">
+            <BranchPanel
+              title="Lodge / Nature"
+              nodes={LODGE_NODES}
+              edges={LODGE_EDGES}
+              techState={techState}
+              clams={clams}
+              twigs={twigs}
+              researchDiscount={researchDiscount}
+              onResearch={onResearch}
+            />
+            <BranchPanel
+              title="Armory"
+              nodes={ARMORY_NODES}
+              edges={ARMORY_EDGES}
+              techState={techState}
+              clams={clams}
+              twigs={twigs}
+              researchDiscount={researchDiscount}
+              onResearch={onResearch}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

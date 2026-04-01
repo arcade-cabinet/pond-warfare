@@ -12,9 +12,10 @@ import { render } from 'preact';
 import { loadKeymapFromStorage } from '@/config/keymap';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
 import { game } from '@/game';
-import { initNativePlatform } from '@/platform';
+import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { loadGame } from '@/save-system';
 import { getLatestSave, initDatabase } from '@/storage';
+import { loadPersistedSettings } from '@/storage/settings-persistence';
 
 // Install global error handlers FIRST — before anything else can fail
 installGlobalErrorHandlers();
@@ -63,6 +64,9 @@ function startGame(isContinue: boolean) {
   // Initialize native platform features (orientation lock, StatusBar, back button)
   await initNativePlatform();
 
+  // Initialize device detection signals (form factor, input mode, screen class)
+  await initDeviceSignals();
+
   // Initialize SQLite — REQUIRED
   try {
     await initDatabase();
@@ -70,6 +74,9 @@ function startGame(isContinue: boolean) {
     reportFatalError(err);
     // Still render the app so the ErrorOverlay can show the fatal error
   }
+
+  // Load persisted user settings (volume, speed, accessibility, commander)
+  await loadPersistedSettings();
 
   // Load keymap from Capacitor Preferences
   await loadKeymapFromStorage();

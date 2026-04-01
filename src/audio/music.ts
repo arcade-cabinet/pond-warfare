@@ -153,7 +153,8 @@ export class MusicManager {
       transport.start();
       this.musicPlaying = true;
     } catch {
-      /* ignore music start errors */
+      // Clean up any partially created nodes so we don't leak audio resources.
+      this.stopMusic();
     }
   }
 

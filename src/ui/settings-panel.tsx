@@ -11,7 +11,8 @@
  */
 
 import { useState } from 'preact/hooks';
-import { useScrollDrag } from './hooks/useScrollDrag';
+import { AdvisorSettings } from './components/AdvisorSettings';
+import { SwipeableTabView, type Tab } from './components/SwipeableTabView';
 import {
   autoSaveEnabled,
   colorBlindMode,
@@ -37,7 +38,13 @@ export interface SettingsPanelProps {
   onClose: () => void;
 }
 
-type SettingsTab = 'audio' | 'game' | 'options' | 'access';
+const SETTINGS_TABS: Tab[] = [
+  { key: 'audio', label: 'Audio' },
+  { key: 'game', label: 'Game' },
+  { key: 'options', label: 'Options' },
+  { key: 'access', label: 'Access' },
+  { key: 'advisors', label: 'Advisors' },
+];
 
 function VolumeSlider({
   label,
@@ -100,17 +107,9 @@ function Toggle({
   );
 }
 
-const TAB_DEFS: { id: SettingsTab; icon: string; label: string }[] = [
-  { id: 'audio', icon: '\uD83D\uDD0A', label: 'Audio' },
-  { id: 'game', icon: '\u23F1', label: 'Game' },
-  { id: 'options', icon: '\u2699', label: 'Options' },
-  { id: 'access', icon: '\u267F', label: 'Access' },
-];
-
 export function SettingsPanel(props: SettingsPanelProps) {
   const currentSpeed = gameSpeed.value;
-  const scrollRef = useScrollDrag<HTMLDivElement>();
-  const [tab, setTab] = useState<SettingsTab>('audio');
+  const [tab, setTab] = useState('audio');
 
   return (
     <div
@@ -124,7 +123,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       {/* Panel card */}
       <div
-        ref={scrollRef}
         class="relative rounded-lg shadow-2xl w-80 max-w-[90vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel"
         style={{ color: 'var(--pw-text-primary)' }}
       >
@@ -143,24 +141,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </button>
         </div>
 
-        {/* Tab bar */}
-        <div class="settings-tab-bar">
-          {TAB_DEFS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              class="settings-tab-btn font-heading"
-              data-active={tab === t.id ? 'true' : 'false'}
-              onClick={() => setTab(t.id)}
-            >
-              <span class="block text-sm">{t.icon}</span>
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        {tab === 'audio' && (
+        {/* Swipeable tab navigation + content */}
+        <SwipeableTabView tabs={SETTINGS_TABS} activeTab={tab} onTabChange={setTab} variant="modal">
+          {/* Audio tab */}
           <div class="space-y-3">
             <VolumeSlider
               label="Master Volume"
@@ -178,9 +161,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onChange={props.onSfxVolumeChange}
             />
           </div>
-        )}
 
-        {tab === 'game' && (
+          {/* Game tab */}
           <div>
             <div class="section-header mb-2">Game Speed</div>
             <div class="flex gap-2">
@@ -204,9 +186,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
               ))}
             </div>
           </div>
-        )}
 
-        {tab === 'options' && (
+          {/* Options tab */}
           <div class="space-y-3">
             <Toggle
               label="Color Blind Mode"
@@ -219,11 +200,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onToggle={props.onAutoSaveToggle}
             />
           </div>
-        )}
 
-        {tab === 'access' && (
+          {/* Access tab */}
           <div class="space-y-3">
-            {/* UI Scale */}
             <div class="flex items-center justify-between min-h-[44px]">
               <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
                 UI Scale
@@ -260,7 +239,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
               onToggle={() => props.onReduceVisualNoiseToggle?.()}
             />
           </div>
-        )}
+
+          {/* Advisors tab */}
+          <AdvisorSettings />
+        </SwipeableTabView>
       </div>
     </div>
   );

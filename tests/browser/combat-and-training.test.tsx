@@ -10,14 +10,14 @@ import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
 import {
-  Building, EntityTypeTag, FactionTag, Health, IsBuilding,
-  Position, Selectable, UnitStateMachine,
+  EntityTypeTag, FactionTag, Health, IsBuilding,
+  Position,
 } from '@/ecs/components';
 import { game } from '@/game';
 import { App } from '@/ui/app';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { EntityKind, Faction } from '@/types';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -159,7 +159,7 @@ describe('Training & Building', () => {
     await delay(300);
 
     // Enable auto-build so gatherer finishes it
-    game.world.autoBehaviors.build = true;
+    game.world.autoBehaviors.gatherer = true;
     await waitFrames(600);
 
     const burrowsAfter = getUnits(EntityKind.Burrow).length;

@@ -20,9 +20,11 @@ except (json.JSONDecodeError, IndexError):
 
 file_path = tool_input.get("file_path", "")
 content = tool_input.get("content", "")
-new_string = tool_input.get("new_string", "")
 
-# Only check Write tool (full file writes), not Edit (patches)
+# Only checks Write tool (full file content). Edit operations supply patches,
+# not the final file content, so we cannot reliably check the resulting line
+# count from this hook. A post-edit size check would require reading the file
+# after the edit is applied, which is outside the PreToolUse hook lifecycle.
 if not content:
     sys.exit(0)
 
@@ -31,7 +33,7 @@ basename = os.path.basename(file_path)
 if basename in EXEMPT:
     sys.exit(0)
 
-line_count = content.count("\n") + 1
+line_count = len(content.splitlines())
 if line_count > MAX_LINES:
     print(f"BLOCKED: Writing {line_count} lines to {basename} exceeds the {MAX_LINES}-line limit. Break this into smaller modules.", file=sys.stderr)
     sys.exit(1)

@@ -13,15 +13,20 @@ import { type NodeState, stateStyles } from './tree-helpers';
 export function TechCard({
   node,
   state,
+  researchDiscount = 0,
   onClick,
 }: {
   node: TreeNode;
   state: NodeState;
+  researchDiscount?: number;
   onClick: () => void;
 }) {
   const upgrade = TECH_UPGRADES[node.id as keyof typeof TECH_UPGRADES];
   if (!upgrade) return null;
   const styles = stateStyles(state);
+  const mult = 1 - researchDiscount;
+  const clamCost = Math.round(upgrade.clamCost * mult);
+  const twigCost = Math.round(upgrade.twigCost * mult);
 
   return (
     <button
@@ -56,7 +61,7 @@ export function TechCard({
           color: state === 'unaffordable' ? 'var(--pw-enemy-light)' : 'var(--pw-accent)',
         }}
       >
-        {upgrade.clamCost}C {upgrade.twigCost}T
+        {clamCost}C {twigCost}T
         {'pearlCost' in upgrade && (upgrade as { pearlCost: number }).pearlCost > 0 && (
           <span style={{ color: 'var(--pw-pearl, #e0b0ff)' }}>
             {' '}

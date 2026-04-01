@@ -24,7 +24,7 @@ pnpm lint:fix   # Biome auto-fix
 - **Every PR must include tests** for the code it changes.
 - **Integration tests required** for gameplay systems (movement, combat, gathering, selection).
 - **Browser tests required** for UI interactions (pointer events reach game, buttons dispatch actions).
-- Run `pnpm test` before EVERY commit. Run `pnpm typecheck && pnpm build` before every push.
+- Run `pnpm test` before EVERY commit. Run `pnpm typecheck && pnpm test && pnpm lint` before every push (enforced by `.githooks/pre-push`).
 - If you can't write an automated test for it, don't ship it.
 
 ### 3. Commit Everything
@@ -57,7 +57,7 @@ Before any PR merge, ALL must pass:
 
 ## File Organization
 
-```
+```text
 src/
   ai/           — Yuka manager, steering behaviors
   audio/        — Tone.js sound system

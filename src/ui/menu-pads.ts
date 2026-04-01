@@ -9,7 +9,7 @@
 const PAD_VARIANTS = [1, 2, 3, 'tiny'] as const;
 type PadVariant = (typeof PAD_VARIANTS)[number];
 
-interface Pad {
+export interface Pad {
   x: number;
   y: number;
   vx: number;

@@ -14,7 +14,6 @@ import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
 import { KeyboardReference } from '@/ui/keyboard-reference';
 import { NewGameModal } from '@/ui/new-game-modal';
-import { CommandsTab } from '@/ui/panel/CommandsTab';
 import { SelectionPanel } from '@/ui/selection-panel';
 import { SettingsPanel } from '@/ui/settings-panel';
 import * as store from '@/ui/store';
@@ -229,21 +228,6 @@ describe('HUD button interactions', () => {
     expect(onColorBlindToggle).toHaveBeenCalledTimes(1);
   });
 
-  it('idle worker button in CommandsTab cycles idle workers', async () => {
-    store.idleWorkerCount.value = 3;
-    store.idleGathererCount.value = 3;
-
-    render(
-      h('div', { style: 'width:300px;height:300px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-
-    // The idle button shows "3 Idle" text
-    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    const idleBtn = Array.from(allBtns).find((btn) => btn.textContent?.includes('Idle'));
-    expect(idleBtn).toBeTruthy();
-    expect(must(idleBtn, 'Missing idle button').textContent).toContain('3');
-  });
-
   it('army select button click calls onArmyClick', async () => {
     const onArmyClick = vi.fn();
     store.armyCount.value = 5;
@@ -329,106 +313,6 @@ describe('HUD button interactions', () => {
     // Click the second control group badge (group 3)
     (badges[1] as HTMLButtonElement).click();
     expect(onCtrlGroupClick).toHaveBeenCalledWith(3);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// CommandsTab Auto-Behavior Toggle Interactions
-// ---------------------------------------------------------------------------
-describe('CommandsTab auto-behavior toggle interactions', () => {
-  function renderCommandsTabWithIdleUnits(opts?: {
-    gatherers?: number;
-    combat?: number;
-    healers?: number;
-    scouts?: number;
-  }) {
-    const g = opts?.gatherers ?? 0;
-    const c = opts?.combat ?? 0;
-    const hl = opts?.healers ?? 0;
-    const s = opts?.scouts ?? 0;
-    store.idleWorkerCount.value = g + c + hl + s;
-    store.idleGathererCount.value = g;
-    store.idleCombatCount.value = c;
-    store.idleHealerCount.value = hl;
-    store.idleScoutCount.value = s;
-
-    return render(
-      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-  }
-
-  /** Find a button whose text content includes the given label. */
-  function findBtnByText(label: string): HTMLButtonElement | undefined {
-    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    return Array.from(allBtns).find((btn) => btn.textContent?.includes(label));
-  }
-
-  it('auto-gather toggle click toggles store signal', async () => {
-    renderCommandsTabWithIdleUnits({ gatherers: 3 });
-
-    expect(store.autoGatherEnabled.value).toBe(false);
-
-    const gatherBtn = must(findBtnByText('Gather'), 'Missing Gather button');
-    expect(gatherBtn).toBeTruthy();
-    gatherBtn.click();
-
-    expect(store.autoGatherEnabled.value).toBe(true);
-
-    // Click again to toggle off
-    gatherBtn.click();
-    expect(store.autoGatherEnabled.value).toBe(false);
-  });
-
-  it('auto-defend toggle click toggles store signal', async () => {
-    renderCommandsTabWithIdleUnits({ combat: 4 });
-
-    expect(store.autoDefendEnabled.value).toBe(false);
-
-    const defendBtn = must(findBtnByText('Defend'), 'Missing Defend button');
-    expect(defendBtn).toBeTruthy();
-    defendBtn.click();
-
-    expect(store.autoDefendEnabled.value).toBe(true);
-  });
-
-  it('auto-attack toggle click toggles store signal', async () => {
-    renderCommandsTabWithIdleUnits({ combat: 4 });
-
-    expect(store.autoAttackEnabled.value).toBe(false);
-
-    const attackBtn = must(findBtnByText('Attack'), 'Missing Attack button');
-    expect(attackBtn).toBeTruthy();
-    attackBtn.click();
-
-    expect(store.autoAttackEnabled.value).toBe(true);
-  });
-
-  it('auto-scout toggle click toggles store signal', async () => {
-    renderCommandsTabWithIdleUnits({ scouts: 2 });
-
-    expect(store.autoScoutEnabled.value).toBe(false);
-
-    const scoutBtn = must(findBtnByText('Scout'), 'Missing Scout button');
-    expect(scoutBtn).toBeTruthy();
-    scoutBtn.click();
-
-    expect(store.autoScoutEnabled.value).toBe(true);
-  });
-
-  it('Select All button is always present in CommandsTab', async () => {
-    renderCommandsTabWithIdleUnits({ gatherers: 3 });
-
-    const selectAllBtn = must(findBtnByText('Select All'), 'Missing Select All button');
-    expect(selectAllBtn).toBeTruthy();
-  });
-
-  it('Deselect button is disabled when selectionCount is 0', async () => {
-    store.selectionCount.value = 0;
-    renderCommandsTabWithIdleUnits({ gatherers: 2 });
-
-    const deselectBtn = must(findBtnByText('Deselect'), 'Missing Deselect button');
-    expect(deselectBtn).toBeTruthy();
-    expect(deselectBtn.disabled).toBe(true);
   });
 });
 
@@ -725,59 +609,6 @@ describe('Game Over interactions', () => {
     const restartBtn = must(document.getElementById('restart-btn'), 'Missing restart button');
     restartBtn.click();
     expect(onRestart).toHaveBeenCalledTimes(1);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// CommandsTab Idle Worker Flow
-// ---------------------------------------------------------------------------
-describe('CommandsTab idle worker flow', () => {
-  /** Find a button whose text content includes the given label. */
-  function findBtnByText(label: string): HTMLButtonElement | undefined {
-    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    return Array.from(allBtns).find((btn) => btn.textContent?.includes(label));
-  }
-
-  it('CommandsTab shows idle button and Select All together', async () => {
-    store.idleWorkerCount.value = 4;
-    store.idleGathererCount.value = 4;
-
-    render(
-      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-
-    // Both idle button and Select All should be present
-    const idleBtn = findBtnByText('Idle');
-    const selectAllBtn = findBtnByText('Select All');
-    expect(idleBtn).toBeTruthy();
-    expect(selectAllBtn).toBeTruthy();
-    expect(must(idleBtn, 'Missing idle button').textContent).toContain('4');
-  });
-
-  it('toggle auto-gather and auto-defend in CommandsTab and signals persist', async () => {
-    store.idleWorkerCount.value = 6;
-    store.idleGathererCount.value = 3;
-    store.idleCombatCount.value = 3;
-
-    render(
-      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-
-    // Toggle gather on
-    const gatherBtn = must(findBtnByText('Gather'), 'Missing Gather button');
-    expect(gatherBtn).toBeTruthy();
-    gatherBtn.click();
-    expect(store.autoGatherEnabled.value).toBe(true);
-
-    // Toggle defend on
-    const defendBtn = must(findBtnByText('Defend'), 'Missing Defend button');
-    expect(defendBtn).toBeTruthy();
-    defendBtn.click();
-    expect(store.autoDefendEnabled.value).toBe(true);
-
-    // Both signals remain true (persist)
-    expect(store.autoGatherEnabled.value).toBe(true);
-    expect(store.autoDefendEnabled.value).toBe(true);
   });
 });
 
@@ -1277,95 +1108,6 @@ describe('Pearl resource display', () => {
     const pearlLabels = document.querySelectorAll('span');
     const hasPearlLabel = Array.from(pearlLabels).some((el) => el.textContent?.includes('Pearls'));
     expect(hasPearlLabel).toBe(true);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Contextual Idle Menu Interactions
-// ---------------------------------------------------------------------------
-describe('CommandsTab contextual auto-behavior visibility', () => {
-  /** Find a button whose text content includes the given label. */
-  function findBtnByText(label: string): HTMLButtonElement | undefined {
-    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    return Array.from(allBtns).find((btn) => btn.textContent?.includes(label));
-  }
-
-  it('CommandsTab shows Gather/Build toggles when gatherers idle, hides Attack/Defend', async () => {
-    store.idleWorkerCount.value = 3;
-    store.idleGathererCount.value = 3;
-    store.idleCombatCount.value = 0;
-
-    render(
-      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-
-    // Gather and Build buttons should be visible
-    expect(findBtnByText('Gather')).toBeTruthy();
-    expect(findBtnByText('Build')).toBeTruthy();
-
-    // Attack/Defend should NOT be visible (no idle combat)
-    expect(findBtnByText('Attack')).toBeUndefined();
-    expect(findBtnByText('Defend')).toBeUndefined();
-  });
-
-  it('CommandsTab shows Attack/Defend when combat units idle, hides Gather/Build', async () => {
-    store.idleWorkerCount.value = 4;
-    store.idleGathererCount.value = 0;
-    store.idleCombatCount.value = 4;
-
-    render(
-      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-
-    // Attack and Defend buttons should be visible
-    expect(findBtnByText('Attack')).toBeTruthy();
-    expect(findBtnByText('Defend')).toBeTruthy();
-
-    // Gather/Build should NOT be visible (no idle gatherers)
-    expect(findBtnByText('Gather')).toBeUndefined();
-    expect(findBtnByText('Build')).toBeUndefined();
-  });
-
-  it('auto-build toggle click toggles store signal', async () => {
-    store.idleWorkerCount.value = 2;
-    store.idleGathererCount.value = 2;
-
-    render(
-      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-
-    expect(store.autoBuildEnabled.value).toBe(false);
-
-    const buildBtn = must(findBtnByText('Build'), 'Missing Build button');
-    expect(buildBtn).toBeTruthy();
-    buildBtn.click();
-
-    expect(store.autoBuildEnabled.value).toBe(true);
-
-    // Toggle off
-    buildBtn.click();
-    expect(store.autoBuildEnabled.value).toBe(false);
-  });
-
-  it('auto-behavior section hidden when no idle workers', async () => {
-    store.idleWorkerCount.value = 0;
-    store.idleGathererCount.value = 0;
-    store.idleCombatCount.value = 0;
-
-    render(
-      h('div', { style: 'width:300px;height:400px;background:#0f172a' }, h(CommandsTab, null)),
-    );
-
-    // No auto-behavior toggles visible
-    expect(findBtnByText('Gather')).toBeUndefined();
-    expect(findBtnByText('Build')).toBeUndefined();
-    expect(findBtnByText('Attack')).toBeUndefined();
-    expect(findBtnByText('Defend')).toBeUndefined();
-    expect(findBtnByText('Heal')).toBeUndefined();
-    expect(findBtnByText('Scout')).toBeUndefined();
-
-    // Idle button should not be shown either
-    expect(findBtnByText('Idle')).toBeUndefined();
   });
 });
 
