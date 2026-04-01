@@ -47,8 +47,10 @@ export interface SaveData {
     unitsLost: number;
     resourcesGathered: number;
     buildingsBuilt: number;
+    buildingsLost?: number;
     peakArmy: number;
     pearlsEarned?: number;
+    totalClamsEarned?: number;
   };
   frameCount: number;
   timeOfDay: number;

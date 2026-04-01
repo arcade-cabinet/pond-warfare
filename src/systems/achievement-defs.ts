@@ -15,11 +15,16 @@ export interface AchievementSnapshot {
   difficulty: string;
   maxVetRank: number;
   commanderAlive: boolean;
+  commanderFullHp: boolean;
   gameMinutes: number;
   peakArmy: number;
   techCount: number;
+  maxBranchTechCount: number;
   totalPearls: number;
+  totalClams: number;
   buildingsBuilt: number;
+  buildingsLost: number;
+  onlyShadowTechs: boolean;
 }
 
 export interface AchievementDef {
@@ -99,7 +104,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'full_tech',
     name: 'Scholar',
-    desc: 'Research all 15 technologies',
+    desc: 'Research 15 technologies',
     check: (s) => s.techCount >= 15,
   },
   {
@@ -119,5 +124,72 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     name: 'Endurance',
     desc: 'Survive 30+ minutes',
     check: (s) => s.gameMinutes >= 30,
+  },
+
+  // ── New Achievements ───────────────────────────────────────────────
+  {
+    id: 'branch_master',
+    name: 'Branch Master',
+    desc: 'Research all techs in one branch',
+    check: (s) => s.maxBranchTechCount >= 5,
+  },
+  {
+    id: 'full_scholar',
+    name: 'Full Scholar',
+    desc: 'Research all 25 techs in a single game',
+    check: (s) => s.techCount >= 25,
+  },
+  {
+    id: 'commander_guard',
+    name: "Commander's Guard",
+    desc: 'Win with Commander at full HP',
+    check: (s) => s.won && s.commanderFullHp,
+  },
+  {
+    id: 'shadow_strike',
+    name: 'Shadow Strike',
+    desc: 'Win using only Shadow branch techs',
+    check: (s) => s.won && s.onlyShadowTechs && s.techCount >= 1,
+  },
+  {
+    id: 'eco_boom',
+    name: 'Eco Boom',
+    desc: 'Accumulate 5000 total clams in a single game',
+    check: (s) => s.totalClams >= 5000,
+  },
+  {
+    id: 'speedrun_10',
+    name: 'Speed Runner',
+    desc: 'Win in under 10 minutes',
+    check: (s) => s.won && s.gameMinutes < 10,
+  },
+  {
+    id: 'turtle_shell',
+    name: 'Turtle Shell',
+    desc: 'Win without losing any buildings',
+    check: (s) => s.won && s.buildingsLost === 0,
+  },
+  {
+    id: 'massive_army',
+    name: 'Grand Army',
+    desc: 'Have 30+ combat units at once',
+    check: (s) => s.peakArmy >= 30,
+  },
+  {
+    id: 'pearl_hoarder',
+    name: 'Pearl Hoarder',
+    desc: 'Collect 100 pearls in a single game',
+    check: (s) => s.totalPearls >= 100,
+  },
+  {
+    id: 'flawless_victory',
+    name: 'Flawless Victory',
+    desc: 'Win on Hard+ with zero unit losses',
+    check: (s) =>
+      s.won &&
+      s.unitsLost === 0 &&
+      (s.difficulty === 'hard' ||
+        s.difficulty === 'nightmare' ||
+        s.difficulty === 'ultraNightmare'),
   },
 ];

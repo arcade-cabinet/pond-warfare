@@ -163,6 +163,8 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.stats.buildingsBuilt = data.stats.buildingsBuilt;
   world.stats.peakArmy = data.stats.peakArmy;
   world.stats.pearlsEarned = data.stats.pearlsEarned ?? 0;
+  world.stats.buildingsLost = data.stats.buildingsLost ?? 0;
+  world.stats.totalClamsEarned = data.stats.totalClamsEarned ?? 0;
 
   // Restore enemy evolution state
   if (data.enemyEvolution) {

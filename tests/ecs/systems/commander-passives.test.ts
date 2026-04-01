@@ -216,7 +216,7 @@ describe('commander passives', () => {
     // Brawler should have gained 20% HP (60 * 0.2 = 12)
     expect(Health.max[brawler]).toBe(72);
     expect(Health.current[brawler]).toBe(72);
-    expect(world.commanderHpBuffApplied.has(brawler)).toBe(true);
+    expect(world.commanderUnitHpBuff.has(brawler)).toBe(true);
   });
 
   it('Ironpaw: HP aura not applied twice', () => {

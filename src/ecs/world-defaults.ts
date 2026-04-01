@@ -64,8 +64,10 @@ export function createGameWorld(): GameWorld {
       unitsLost: 0,
       resourcesGathered: 0,
       buildingsBuilt: 0,
+      buildingsLost: 0,
       peakArmy: 0,
       pearlsEarned: 0,
+      totalClamsEarned: 0,
     },
     state: 'playing',
     frameCount: 0,
@@ -141,6 +143,7 @@ export function createGameWorld(): GameWorld {
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),
     commanderHpBuffApplied: new Set(),
+    commanderUnitHpBuff: new Set(),
     commanderEnemyDebuff: new Set(),
     commanderId: 'marshal',
     commanderModifiers: {

@@ -127,6 +127,7 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
         } else {
           if (heldRes === ResourceType.Clams) {
             world.resources.clams += depositAmt;
+            world.stats.totalClamsEarned += depositAmt;
           } else if (heldRes === ResourceType.Pearls) {
             world.resources.pearls += depositAmt;
             world.stats.pearlsEarned += depositAmt;

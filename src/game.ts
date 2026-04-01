@@ -1,13 +1,10 @@
-/**
- * Game Orchestrator – thin shell that delegates to focused sub-modules.
- */
+/** Game Orchestrator – thin shell that delegates to focused sub-modules. */
 
 import { audio } from '@/audio/audio-system';
 import { EntityTypeTag } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { useAirdrop, usePondBlessing, useRallyCry, useTidalSurge } from '@/game/abilities';
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
-import { loadCheckpoint } from '@/game/checkpoint';
 import {
   applyCampaignMission,
   applyDifficultyModifiers,
@@ -26,7 +23,11 @@ import {
   startGameLoop,
   wireWebGLHandlers,
 } from '@/game/game-init';
-import { type DestroyRefs, destroyGame } from '@/game/game-lifecycle';
+import {
+  type DestroyRefs,
+  destroyGame,
+  handleEvacuationChoice as handleEvacChoice,
+} from '@/game/game-lifecycle';
 import type { GameLoopState } from '@/game/game-loop';
 import { cycleSpeed as cycleSpeedFn } from '@/game/game-loop';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
@@ -44,7 +45,6 @@ export class Game {
   spriteCanvases: Map<SpriteId, HTMLCanvasElement> = new Map();
   recorder = new ReplayRecorder();
   physicsManager!: PhysicsManager;
-
   private container!: HTMLElement;
   private gameCanvas!: HTMLCanvasElement;
   private fogCanvas!: HTMLCanvasElement;
@@ -71,11 +71,9 @@ export class Game {
   private boundContextRestored: (() => void) | null = null;
   private boundVisibilityChange: (() => void) | null = null;
   private initAudioHandler: ((e: Event) => void) | null = null;
-
   constructor() {
     this.world = createGameWorld();
   }
-
   async init(
     container: HTMLElement,
     gameCanvas: HTMLCanvasElement,
@@ -249,13 +247,7 @@ export class Game {
   }
 
   handleEvacuationChoice(choice: 'checkpoint' | 'restart' | 'quit'): void {
-    this.world.evacuationTriggered = false;
-    store.evacuationActive.value = false;
-    this.world.paused = false;
-    store.paused.value = false;
-    if (choice === 'checkpoint') {
-      loadCheckpoint(this.world);
-    } else if (choice === 'restart') {
+    handleEvacChoice(this.world, choice, () =>
       this.init(
         this.container,
         this.gameCanvas,
@@ -263,14 +255,8 @@ export class Game {
         this.lightCanvas,
         this.minimapCanvas,
         this.minimapCamElement,
-      ).catch(() => {
-        window.location.reload();
-      });
-    } else {
-      store.menuState.value = 'main';
-      store.mobilePanelOpen.value = false;
-      store.gameState.value = 'playing';
-    }
+      ),
+    );
   }
 
   private playUnitSelectSound(): void {
@@ -304,16 +290,11 @@ export class Game {
       physicsManager: this.physicsManager,
     };
     destroyGame(refs);
-    this.colorBlindUnsubscribe = null;
-    this.dockPanelUnsubscribe = null;
-    this.boundContextLost = null;
-    this.boundContextRestored = null;
-    this.boundVisibilityChange = null;
-    this.initAudioHandler = null;
+    this.colorBlindUnsubscribe = this.dockPanelUnsubscribe = this.boundContextLost = null;
+    this.boundContextRestored = this.boundVisibilityChange = this.initAudioHandler = null;
     this.loopState = null;
     this.initializing = false;
   }
 }
-
 /** Singleton game instance */
 export const game = new Game();

@@ -287,8 +287,8 @@ describe('Modal responsive CSS classes', () => {
 
     for (const mod of modules) {
       const src = await import(`${mod}?raw`).then((m: { default: string }) => m.default);
-      const hasDragBehavior = src.includes('useScrollDrag') || src.includes('SwipeableTabView');
-      expect(hasDragBehavior, `${mod} must import useScrollDrag or SwipeableTabView`).toBe(true);
+      const hasDragBehavior = src.includes('useScrollDrag');
+      expect(hasDragBehavior, `${mod} must import useScrollDrag`).toBe(true);
     }
   });
 });
