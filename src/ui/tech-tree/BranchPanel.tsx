@@ -19,6 +19,7 @@ export function BranchPanel({
   techState,
   clams,
   twigs,
+  researchDiscount = 0,
   onResearch,
 }: {
   title: string;
@@ -27,6 +28,7 @@ export function BranchPanel({
   techState: TechState;
   clams: number;
   twigs: number;
+  researchDiscount?: number;
   onResearch: (id: TechId) => void;
 }) {
   const activeNodes = nodes.filter(
@@ -54,9 +56,15 @@ export function BranchPanel({
       <div class="relative" style={{ width: `${gridW}px`, height: `${gridH}px` }}>
         <EdgeLines edges={edges} nodes={activeNodes} techState={techState} />
         {activeNodes.map((node) => {
-          const state = getNodeState(node.id, techState, clams, twigs);
+          const state = getNodeState(node.id, techState, clams, twigs, researchDiscount);
           return (
-            <TechNode key={node.id} node={node} state={state} onClick={() => onResearch(node.id)} />
+            <TechNode
+              key={node.id}
+              node={node}
+              state={state}
+              researchDiscount={researchDiscount}
+              onClick={() => onResearch(node.id)}
+            />
           );
         })}
       </div>

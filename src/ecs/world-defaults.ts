@@ -25,10 +25,16 @@ export interface CommanderModifiers {
   auraDamageBonus: number;
   auraSpeedBonus: number;
   auraHpBonus: number;
+  auraUnitHpBonus: number;
   auraEnemyDamageReduction: number;
   passiveGatherBonus: number;
   passiveResearchSpeed: number;
   passiveTowerAttackSpeed: number;
+  passiveSwimmerCostReduction: number;
+  passiveTrapDurationMult: number;
+  passiveShieldbearerTrainSpeed: number;
+  passiveCatapultRangeBonus: number;
+  passiveLightningDamage: number;
 }
 
 /** Create a fresh GameWorld with all default values. */
@@ -141,10 +147,16 @@ export function createGameWorld(): GameWorld {
       auraDamageBonus: 0.1,
       auraSpeedBonus: 0,
       auraHpBonus: 0,
+      auraUnitHpBonus: 0,
       auraEnemyDamageReduction: 0,
       passiveGatherBonus: 0,
       passiveResearchSpeed: 0,
       passiveTowerAttackSpeed: 0,
+      passiveSwimmerCostReduction: 0,
+      passiveTrapDurationMult: 1,
+      passiveShieldbearerTrainSpeed: 0,
+      passiveCatapultRangeBonus: 0,
+      passiveLightningDamage: 0,
     },
     airdropsRemaining: 2,
     airdropCooldownUntil: 0,

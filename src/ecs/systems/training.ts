@@ -29,7 +29,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
-import { type EntityKind, Faction, UnitState } from '@/types';
+import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
 
 export function trainingSystem(world: GameWorld): void {
@@ -56,7 +56,14 @@ export function trainingSystem(world: GameWorld): void {
     if (count === 0) continue;
 
     // Count down timer
-    TrainingQueue.timer[eid]--;
+    // Ironpaw passive: Shieldbearers train 2x faster (tick 2 per frame)
+    const frontKind = slots[0] as EntityKind;
+    const trainTick =
+      frontKind === EntityKind.Shieldbearer &&
+      world.commanderModifiers.passiveShieldbearerTrainSpeed > 0
+        ? 2
+        : 1;
+    TrainingQueue.timer[eid] -= trainTick;
     if (TrainingQueue.timer[eid] <= 0) {
       // Get the first queued unit type from the slots map
       const unitKind = slots[0] as EntityKind;

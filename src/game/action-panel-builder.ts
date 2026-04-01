@@ -34,6 +34,48 @@ import {
 } from '@/ui/action-panel';
 import * as store from '@/ui/store';
 
+/** Apply Sage passive research discount to a tech cost. */
+function discountedTechCost(
+  w: GameWorld,
+  clamCost: number,
+  twigCost: number,
+): { clams: number; twigs: number } {
+  const d = 1 - w.commanderModifiers.passiveResearchSpeed;
+  return { clams: Math.round(clamCost * d), twigs: Math.round(twigCost * d) };
+}
+
+/** Check affordability for a tech upgrade with Sage discount applied. */
+function canAffordTech(w: GameWorld, techId: TechId): boolean {
+  const upgrade = TECH_UPGRADES[techId];
+  const { clams, twigs } = discountedTechCost(w, upgrade.clamCost, upgrade.twigCost);
+  const pearlCost = (upgrade as { pearlCost?: number }).pearlCost ?? 0;
+  return (
+    canResearch(techId, w.tech) &&
+    w.resources.clams >= clams &&
+    w.resources.twigs >= twigs &&
+    w.resources.pearls >= pearlCost
+  );
+}
+
+/** Purchase a tech upgrade, applying Sage discount. Returns true if successful. */
+function purchaseTech(w: GameWorld, techId: TechId): boolean {
+  const upgrade = TECH_UPGRADES[techId];
+  const { clams, twigs } = discountedTechCost(w, upgrade.clamCost, upgrade.twigCost);
+  const pearlCost = (upgrade as { pearlCost?: number }).pearlCost ?? 0;
+  if (
+    !canResearch(techId, w.tech) ||
+    w.resources.clams < clams ||
+    w.resources.twigs < twigs ||
+    w.resources.pearls < pearlCost
+  )
+    return false;
+  w.resources.clams -= clams;
+  w.resources.twigs -= twigs;
+  w.resources.pearls -= pearlCost;
+  w.tech[techId] = true;
+  return true;
+}
+
 /** Return a human-readable "Requires: <Tech Name>" string for a tech upgrade, or undefined. */
 function techRequiresLabel(techId: TechId): string | undefined {
   const upgrade = TECH_UPGRADES[techId];
@@ -115,53 +157,35 @@ function buildLodgeButtons(
     },
   });
   const smTech = TECH_UPGRADES.sturdyMud;
+  const smCost = discountedTechCost(w, smTech.clamCost, smTech.twigCost);
   btns.push({
     title: smTech.name,
-    cost: `${smTech.clamCost}C ${smTech.twigCost}T`,
+    cost: `${smCost.clams}C ${smCost.twigs}T`,
     hotkey: 'W',
-    affordable:
-      canResearch('sturdyMud', w.tech) &&
-      w.resources.clams >= smTech.clamCost &&
-      w.resources.twigs >= smTech.twigCost,
+    affordable: canAffordTech(w, 'sturdyMud'),
     description: smTech.description,
     category: 'tech',
-    costBreakdown: { clams: smTech.clamCost, twigs: smTech.twigCost },
+    costBreakdown: { clams: smCost.clams, twigs: smCost.twigs },
     requires: techRequiresLabel('sturdyMud'),
     onClick: () => {
-      if (
-        canResearch('sturdyMud', w.tech) &&
-        w.resources.clams >= smTech.clamCost &&
-        w.resources.twigs >= smTech.twigCost
-      ) {
-        w.resources.clams -= smTech.clamCost;
-        w.resources.twigs -= smTech.twigCost;
-        w.tech.sturdyMud = true;
+      if (purchaseTech(w, 'sturdyMud')) {
         recorder?.record(w.frameCount, 'research', { tech: 'sturdyMud' });
       }
     },
   });
   const spTech = TECH_UPGRADES.swiftPaws;
+  const spCost = discountedTechCost(w, spTech.clamCost, spTech.twigCost);
   btns.push({
     title: spTech.name,
-    cost: `${spTech.clamCost}C ${spTech.twigCost}T`,
+    cost: `${spCost.clams}C ${spCost.twigs}T`,
     hotkey: 'E',
-    affordable:
-      canResearch('swiftPaws', w.tech) &&
-      w.resources.clams >= spTech.clamCost &&
-      w.resources.twigs >= spTech.twigCost,
+    affordable: canAffordTech(w, 'swiftPaws'),
     description: spTech.description,
     category: 'tech',
-    costBreakdown: { clams: spTech.clamCost, twigs: spTech.twigCost },
+    costBreakdown: { clams: spCost.clams, twigs: spCost.twigs },
     requires: techRequiresLabel('swiftPaws'),
     onClick: () => {
-      if (
-        canResearch('swiftPaws', w.tech) &&
-        w.resources.clams >= spTech.clamCost &&
-        w.resources.twigs >= spTech.twigCost
-      ) {
-        w.resources.clams -= spTech.clamCost;
-        w.resources.twigs -= spTech.twigCost;
-        w.tech.swiftPaws = true;
+      if (purchaseTech(w, 'swiftPaws')) {
         recorder?.record(w.frameCount, 'research', { tech: 'swiftPaws' });
       }
     },
@@ -194,27 +218,23 @@ function buildLodgeButtons(
   });
   if (w.tech.aquaticTraining) {
     const swimDef = ENTITY_DEFS[EntityKind.Swimmer];
+    const swimDiscount = 1 - w.commanderModifiers.passiveSwimmerCostReduction;
+    const swimClam = Math.round((swimDef.clamCost ?? 0) * swimDiscount);
+    const swimTwig = Math.round((swimDef.twigCost ?? 0) * swimDiscount);
     btns.push({
       title: 'Swimmer',
-      cost: `${swimDef.clamCost}C ${swimDef.twigCost}T ${swimDef.foodCost}F`,
+      cost: `${swimClam}C ${swimTwig}T ${swimDef.foodCost}F`,
       hotkey: 'F',
       affordable:
-        w.resources.clams >= (swimDef.clamCost ?? 0) &&
-        w.resources.twigs >= (swimDef.twigCost ?? 0) &&
+        w.resources.clams >= swimClam &&
+        w.resources.twigs >= swimTwig &&
         w.resources.food + (swimDef.foodCost ?? 1) <= w.resources.maxFood,
       description: 'Amphibious fast unit. Great for scouting and harassing.',
       category: 'train',
-      costBreakdown: { clams: swimDef.clamCost, twigs: swimDef.twigCost, food: swimDef.foodCost },
+      costBreakdown: { clams: swimClam, twigs: swimTwig, food: swimDef.foodCost },
       requires: 'Requires: Aquatic Training',
       onClick: () => {
-        train(
-          w,
-          lodgeEid,
-          EntityKind.Swimmer,
-          swimDef.clamCost ?? 0,
-          swimDef.twigCost ?? 0,
-          swimDef.foodCost ?? 1,
-        );
+        train(w, lodgeEid, EntityKind.Swimmer, swimClam, swimTwig, swimDef.foodCost ?? 1);
         recorder?.record(w.frameCount, 'train', {
           buildingEid: lodgeEid,
           unitKind: EntityKind.Swimmer,
@@ -418,128 +438,78 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
       if (selKind === EntityKind.Lodge && Building.progress[selEid] >= 100) {
         btns.push(...buildLodgeButtons(w, selEid));
         const cartoTech = TECH_UPGRADES.cartography;
+        const cartoCost = discountedTechCost(w, cartoTech.clamCost, cartoTech.twigCost);
         btns.push({
           title: cartoTech.name,
-          cost: `${cartoTech.clamCost}C ${cartoTech.twigCost}T`,
+          cost: `${cartoCost.clams}C ${cartoCost.twigs}T`,
           hotkey: 'Y',
-          affordable:
-            canResearch('cartography', w.tech) &&
-            w.resources.clams >= cartoTech.clamCost &&
-            w.resources.twigs >= cartoTech.twigCost,
+          affordable: canAffordTech(w, 'cartography'),
           description: cartoTech.description,
           category: 'tech',
-          costBreakdown: { clams: cartoTech.clamCost, twigs: cartoTech.twigCost },
+          costBreakdown: { clams: cartoCost.clams, twigs: cartoCost.twigs },
           requires: techRequiresLabel('cartography'),
           onClick: () => {
-            if (
-              canResearch('cartography', w.tech) &&
-              w.resources.clams >= cartoTech.clamCost &&
-              w.resources.twigs >= cartoTech.twigCost
-            ) {
-              w.resources.clams -= cartoTech.clamCost;
-              w.resources.twigs -= cartoTech.twigCost;
-              w.tech.cartography = true;
-            }
+            purchaseTech(w, 'cartography');
           },
         });
         const thTech = TECH_UPGRADES.tidalHarvest;
+        const thCost = discountedTechCost(w, thTech.clamCost, thTech.twigCost);
         btns.push({
           title: thTech.name,
-          cost: `${thTech.clamCost}C ${thTech.twigCost}T`,
+          cost: `${thCost.clams}C ${thCost.twigs}T`,
           hotkey: 'U',
-          affordable:
-            canResearch('tidalHarvest', w.tech) &&
-            w.resources.clams >= thTech.clamCost &&
-            w.resources.twigs >= thTech.twigCost,
+          affordable: canAffordTech(w, 'tidalHarvest'),
           description: thTech.description,
           category: 'tech',
-          costBreakdown: { clams: thTech.clamCost, twigs: thTech.twigCost },
+          costBreakdown: { clams: thCost.clams, twigs: thCost.twigs },
           requires: techRequiresLabel('tidalHarvest'),
           onClick: () => {
-            if (
-              canResearch('tidalHarvest', w.tech) &&
-              w.resources.clams >= thTech.clamCost &&
-              w.resources.twigs >= thTech.twigCost
-            ) {
-              w.resources.clams -= thTech.clamCost;
-              w.resources.twigs -= thTech.twigCost;
-              w.tech.tidalHarvest = true;
-            }
+            purchaseTech(w, 'tidalHarvest');
           },
         });
         const hmTech = TECH_UPGRADES.herbalMedicine;
+        const hmCost = discountedTechCost(w, hmTech.clamCost, hmTech.twigCost);
         btns.push({
           title: hmTech.name,
-          cost: `${hmTech.clamCost}C ${hmTech.twigCost}T`,
+          cost: `${hmCost.clams}C ${hmCost.twigs}T`,
           hotkey: 'I',
-          affordable:
-            canResearch('herbalMedicine', w.tech) &&
-            w.resources.clams >= hmTech.clamCost &&
-            w.resources.twigs >= hmTech.twigCost,
+          affordable: canAffordTech(w, 'herbalMedicine'),
           description: hmTech.description,
           category: 'tech',
-          costBreakdown: { clams: hmTech.clamCost, twigs: hmTech.twigCost },
+          costBreakdown: { clams: hmCost.clams, twigs: hmCost.twigs },
           requires: techRequiresLabel('herbalMedicine'),
           onClick: () => {
-            if (
-              canResearch('herbalMedicine', w.tech) &&
-              w.resources.clams >= hmTech.clamCost &&
-              w.resources.twigs >= hmTech.twigCost
-            ) {
-              w.resources.clams -= hmTech.clamCost;
-              w.resources.twigs -= hmTech.twigCost;
-              w.tech.herbalMedicine = true;
-            }
+            purchaseTech(w, 'herbalMedicine');
           },
         });
         const atTech = TECH_UPGRADES.aquaticTraining;
+        const atCost = discountedTechCost(w, atTech.clamCost, atTech.twigCost);
         btns.push({
           title: atTech.name,
-          cost: `${atTech.clamCost}C ${atTech.twigCost}T`,
+          cost: `${atCost.clams}C ${atCost.twigs}T`,
           hotkey: 'O',
-          affordable:
-            canResearch('aquaticTraining', w.tech) &&
-            w.resources.clams >= atTech.clamCost &&
-            w.resources.twigs >= atTech.twigCost,
+          affordable: canAffordTech(w, 'aquaticTraining'),
           description: atTech.description,
           category: 'tech',
-          costBreakdown: { clams: atTech.clamCost, twigs: atTech.twigCost },
+          costBreakdown: { clams: atCost.clams, twigs: atCost.twigs },
           requires: techRequiresLabel('aquaticTraining'),
           onClick: () => {
-            if (
-              canResearch('aquaticTraining', w.tech) &&
-              w.resources.clams >= atTech.clamCost &&
-              w.resources.twigs >= atTech.twigCost
-            ) {
-              w.resources.clams -= atTech.clamCost;
-              w.resources.twigs -= atTech.twigCost;
-              w.tech.aquaticTraining = true;
-            }
+            purchaseTech(w, 'aquaticTraining');
           },
         });
         const ddTech = TECH_UPGRADES.deepDiving;
+        const ddCost = discountedTechCost(w, ddTech.clamCost, ddTech.twigCost);
         btns.push({
           title: ddTech.name,
-          cost: `${ddTech.clamCost}C ${ddTech.twigCost}T`,
+          cost: `${ddCost.clams}C ${ddCost.twigs}T`,
           hotkey: 'P',
-          affordable:
-            canResearch('deepDiving', w.tech) &&
-            w.resources.clams >= ddTech.clamCost &&
-            w.resources.twigs >= ddTech.twigCost,
+          affordable: canAffordTech(w, 'deepDiving'),
           description: ddTech.description,
           category: 'tech',
-          costBreakdown: { clams: ddTech.clamCost, twigs: ddTech.twigCost },
+          costBreakdown: { clams: ddCost.clams, twigs: ddCost.twigs },
           requires: techRequiresLabel('deepDiving'),
           onClick: () => {
-            if (
-              canResearch('deepDiving', w.tech) &&
-              w.resources.clams >= ddTech.clamCost &&
-              w.resources.twigs >= ddTech.twigCost
-            ) {
-              w.resources.clams -= ddTech.clamCost;
-              w.resources.twigs -= ddTech.twigCost;
-              w.tech.deepDiving = true;
-            }
+            purchaseTech(w, 'deepDiving');
           },
         });
       }
@@ -616,82 +586,49 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
           },
         });
         const ssTech = TECH_UPGRADES.sharpSticks;
+        const ssCost = discountedTechCost(w, ssTech.clamCost, ssTech.twigCost);
         btns.push({
           title: ssTech.name,
-          cost: `${ssTech.clamCost}C ${ssTech.twigCost}T`,
+          cost: `${ssCost.clams}C ${ssCost.twigs}T`,
           hotkey: 'R',
-          affordable:
-            canResearch('sharpSticks', w.tech) &&
-            w.resources.clams >= ssTech.clamCost &&
-            w.resources.twigs >= ssTech.twigCost,
+          affordable: canAffordTech(w, 'sharpSticks'),
           description: ssTech.description,
           category: 'tech',
-          costBreakdown: { clams: ssTech.clamCost, twigs: ssTech.twigCost },
+          costBreakdown: { clams: ssCost.clams, twigs: ssCost.twigs },
           requires: techRequiresLabel('sharpSticks'),
           onClick: () => {
-            if (
-              canResearch('sharpSticks', w.tech) &&
-              w.resources.clams >= ssTech.clamCost &&
-              w.resources.twigs >= ssTech.twigCost
-            ) {
-              w.resources.clams -= ssTech.clamCost;
-              w.resources.twigs -= ssTech.twigCost;
-              w.tech.sharpSticks = true;
-            }
+            purchaseTech(w, 'sharpSticks');
           },
         });
         const eeTech = TECH_UPGRADES.eagleEye;
+        const eeCost = discountedTechCost(w, eeTech.clamCost, eeTech.twigCost);
         btns.push({
           title: eeTech.name,
-          cost: `${eeTech.clamCost}C ${eeTech.twigCost}T`,
+          cost: `${eeCost.clams}C ${eeCost.twigs}T`,
           hotkey: 'T',
-          affordable:
-            canResearch('eagleEye', w.tech) &&
-            w.resources.clams >= eeTech.clamCost &&
-            w.resources.twigs >= eeTech.twigCost,
+          affordable: canAffordTech(w, 'eagleEye'),
           description: eeTech.description,
           category: 'tech',
-          costBreakdown: { clams: eeTech.clamCost, twigs: eeTech.twigCost },
+          costBreakdown: { clams: eeCost.clams, twigs: eeCost.twigs },
           requires: techRequiresLabel('eagleEye'),
           onClick: () => {
-            if (
-              canResearch('eagleEye', w.tech) &&
-              w.resources.clams >= eeTech.clamCost &&
-              w.resources.twigs >= eeTech.twigCost
-            ) {
-              w.resources.clams -= eeTech.clamCost;
-              w.resources.twigs -= eeTech.twigCost;
-              w.tech.eagleEye = true;
-            }
+            purchaseTech(w, 'eagleEye');
           },
         });
         const hsTech = TECH_UPGRADES.hardenedShells;
         const hsPearlCost = hsTech.pearlCost ?? 0;
+        const hsCost = discountedTechCost(w, hsTech.clamCost, hsTech.twigCost);
         btns.push({
           title: hsTech.name,
-          cost: `${hsTech.clamCost}C ${hsTech.twigCost}T${hsPearlCost > 0 ? ` ${hsPearlCost}P` : ''}`,
+          cost: `${hsCost.clams}C ${hsCost.twigs}T${hsPearlCost > 0 ? ` ${hsPearlCost}P` : ''}`,
           hotkey: 'Y',
-          affordable:
-            canResearch('hardenedShells', w.tech) &&
-            w.resources.clams >= hsTech.clamCost &&
-            w.resources.twigs >= hsTech.twigCost &&
-            w.resources.pearls >= hsPearlCost,
+          affordable: canAffordTech(w, 'hardenedShells') && w.resources.pearls >= hsPearlCost,
           description: hsTech.description,
           category: 'tech',
-          costBreakdown: { clams: hsTech.clamCost, twigs: hsTech.twigCost, pearls: hsPearlCost },
+          costBreakdown: { clams: hsCost.clams, twigs: hsCost.twigs, pearls: hsPearlCost },
           requires: techRequiresLabel('hardenedShells'),
           onClick: () => {
-            if (
-              canResearch('hardenedShells', w.tech) &&
-              w.resources.clams >= hsTech.clamCost &&
-              w.resources.twigs >= hsTech.twigCost &&
-              w.resources.pearls >= hsPearlCost
-            ) {
-              w.resources.clams -= hsTech.clamCost;
-              w.resources.twigs -= hsTech.twigCost;
-              w.resources.pearls -= hsPearlCost;
-              w.tech.hardenedShells = true;
-            }
+            purchaseTech(w, 'hardenedShells');
           },
         });
         if (w.tech.ironShell) {
@@ -751,132 +688,79 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
           });
         }
         const isTech = TECH_UPGRADES.ironShell;
+        const isCost = discountedTechCost(w, isTech.clamCost, isTech.twigCost);
         btns.push({
           title: isTech.name,
-          cost: `${isTech.clamCost}C ${isTech.twigCost}T`,
+          cost: `${isCost.clams}C ${isCost.twigs}T`,
           hotkey: 'Z',
-          affordable:
-            canResearch('ironShell', w.tech) &&
-            w.resources.clams >= isTech.clamCost &&
-            w.resources.twigs >= isTech.twigCost,
+          affordable: canAffordTech(w, 'ironShell'),
           description: isTech.description,
           category: 'tech',
-          costBreakdown: { clams: isTech.clamCost, twigs: isTech.twigCost },
+          costBreakdown: { clams: isCost.clams, twigs: isCost.twigs },
           requires: techRequiresLabel('ironShell'),
           onClick: () => {
-            if (
-              canResearch('ironShell', w.tech) &&
-              w.resources.clams >= isTech.clamCost &&
-              w.resources.twigs >= isTech.twigCost
-            ) {
-              w.resources.clams -= isTech.clamCost;
-              w.resources.twigs -= isTech.twigCost;
-              w.tech.ironShell = true;
-            }
+            purchaseTech(w, 'ironShell');
           },
         });
         const swTech = TECH_UPGRADES.siegeWorks;
         const swPearlCost = swTech.pearlCost ?? 0;
+        const swCost = discountedTechCost(w, swTech.clamCost, swTech.twigCost);
         btns.push({
           title: swTech.name,
-          cost: `${swTech.clamCost}C ${swTech.twigCost}T${swPearlCost > 0 ? ` ${swPearlCost}P` : ''}`,
+          cost: `${swCost.clams}C ${swCost.twigs}T${swPearlCost > 0 ? ` ${swPearlCost}P` : ''}`,
           hotkey: 'X',
-          affordable:
-            canResearch('siegeWorks', w.tech) &&
-            w.resources.clams >= swTech.clamCost &&
-            w.resources.twigs >= swTech.twigCost &&
-            w.resources.pearls >= swPearlCost,
+          affordable: canAffordTech(w, 'siegeWorks'),
           description: swTech.description,
           category: 'tech',
-          costBreakdown: { clams: swTech.clamCost, twigs: swTech.twigCost, pearls: swPearlCost },
+          costBreakdown: { clams: swCost.clams, twigs: swCost.twigs, pearls: swPearlCost },
           requires: techRequiresLabel('siegeWorks'),
           onClick: () => {
-            if (
-              canResearch('siegeWorks', w.tech) &&
-              w.resources.clams >= swTech.clamCost &&
-              w.resources.twigs >= swTech.twigCost &&
-              w.resources.pearls >= swPearlCost
-            ) {
-              w.resources.clams -= swTech.clamCost;
-              w.resources.twigs -= swTech.twigCost;
-              w.resources.pearls -= swPearlCost;
-              w.tech.siegeWorks = true;
-            }
+            purchaseTech(w, 'siegeWorks');
           },
         });
         const brTech = TECH_UPGRADES.battleRoar;
+        const brCost = discountedTechCost(w, brTech.clamCost, brTech.twigCost);
         btns.push({
           title: brTech.name,
-          cost: `${brTech.clamCost}C ${brTech.twigCost}T`,
+          cost: `${brCost.clams}C ${brCost.twigs}T`,
           hotkey: 'C',
-          affordable:
-            canResearch('battleRoar', w.tech) &&
-            w.resources.clams >= brTech.clamCost &&
-            w.resources.twigs >= brTech.twigCost,
+          affordable: canAffordTech(w, 'battleRoar'),
           description: brTech.description,
           category: 'tech',
-          costBreakdown: { clams: brTech.clamCost, twigs: brTech.twigCost },
+          costBreakdown: { clams: brCost.clams, twigs: brCost.twigs },
           requires: techRequiresLabel('battleRoar'),
           onClick: () => {
-            if (
-              canResearch('battleRoar', w.tech) &&
-              w.resources.clams >= brTech.clamCost &&
-              w.resources.twigs >= brTech.twigCost
-            ) {
-              w.resources.clams -= brTech.clamCost;
-              w.resources.twigs -= brTech.twigCost;
-              w.tech.battleRoar = true;
-            }
+            purchaseTech(w, 'battleRoar');
           },
         });
         const ctTech = TECH_UPGRADES.cunningTraps;
+        const ctCost = discountedTechCost(w, ctTech.clamCost, ctTech.twigCost);
         btns.push({
           title: ctTech.name,
-          cost: `${ctTech.clamCost}C ${ctTech.twigCost}T`,
+          cost: `${ctCost.clams}C ${ctCost.twigs}T`,
           hotkey: 'V',
-          affordable:
-            canResearch('cunningTraps', w.tech) &&
-            w.resources.clams >= ctTech.clamCost &&
-            w.resources.twigs >= ctTech.twigCost,
+          affordable: canAffordTech(w, 'cunningTraps'),
           description: ctTech.description,
           category: 'tech',
-          costBreakdown: { clams: ctTech.clamCost, twigs: ctTech.twigCost },
+          costBreakdown: { clams: ctCost.clams, twigs: ctCost.twigs },
           requires: techRequiresLabel('cunningTraps'),
           onClick: () => {
-            if (
-              canResearch('cunningTraps', w.tech) &&
-              w.resources.clams >= ctTech.clamCost &&
-              w.resources.twigs >= ctTech.twigCost
-            ) {
-              w.resources.clams -= ctTech.clamCost;
-              w.resources.twigs -= ctTech.twigCost;
-              w.tech.cunningTraps = true;
-            }
+            purchaseTech(w, 'cunningTraps');
           },
         });
         const camoTech = TECH_UPGRADES.camouflage;
+        const camoCost = discountedTechCost(w, camoTech.clamCost, camoTech.twigCost);
         btns.push({
           title: camoTech.name,
-          cost: `${camoTech.clamCost}C ${camoTech.twigCost}T`,
+          cost: `${camoCost.clams}C ${camoCost.twigs}T`,
           hotkey: 'B',
-          affordable:
-            canResearch('camouflage', w.tech) &&
-            w.resources.clams >= camoTech.clamCost &&
-            w.resources.twigs >= camoTech.twigCost,
+          affordable: canAffordTech(w, 'camouflage'),
           description: camoTech.description,
           category: 'tech',
-          costBreakdown: { clams: camoTech.clamCost, twigs: camoTech.twigCost },
+          costBreakdown: { clams: camoCost.clams, twigs: camoCost.twigs },
           requires: techRequiresLabel('camouflage'),
           onClick: () => {
-            if (
-              canResearch('camouflage', w.tech) &&
-              w.resources.clams >= camoTech.clamCost &&
-              w.resources.twigs >= camoTech.twigCost
-            ) {
-              w.resources.clams -= camoTech.clamCost;
-              w.resources.twigs -= camoTech.twigCost;
-              w.tech.camouflage = true;
-            }
+            purchaseTech(w, 'camouflage');
           },
         });
         if (w.tech.cunningTraps) {

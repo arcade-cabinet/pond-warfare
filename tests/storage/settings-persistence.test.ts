@@ -10,15 +10,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock platform preferences before importing the module under test
 const mockLoad = vi.fn<(key: string) => Promise<string | null>>().mockResolvedValue(null);
-const mockSave = vi.fn<(key: string, value: string) => Promise<void>>().mockResolvedValue(undefined);
+const mockSave = vi
+  .fn<(key: string, value: string) => Promise<void>>()
+  .mockResolvedValue(undefined);
 
 vi.mock('@/platform', () => ({
   loadPreference: (...args: [string]) => mockLoad(...args),
   savePreference: (...args: [string, string]) => mockSave(...args),
 }));
 
-import * as store from '@/ui/store';
 import { loadPersistedSettings, persistSetting } from '@/storage/settings-persistence';
+import * as store from '@/ui/store';
 
 describe('Settings Persistence', () => {
   beforeEach(() => {

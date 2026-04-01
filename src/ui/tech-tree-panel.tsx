@@ -21,6 +21,7 @@ export interface TechTreePanelProps {
   techState: TechState;
   clams: number;
   twigs: number;
+  researchDiscount?: number;
   onResearch: (id: TechId) => void;
   onClose: () => void;
 }
@@ -36,6 +37,7 @@ export function TechTreePanel({
   techState,
   clams,
   twigs,
+  researchDiscount = 0,
   onResearch,
   onClose,
 }: TechTreePanelProps) {
@@ -106,6 +108,7 @@ export function TechTreePanel({
                   techState={techState}
                   clams={clams}
                   twigs={twigs}
+                  researchDiscount={researchDiscount}
                   onResearch={onResearch}
                 />
               </div>
@@ -115,6 +118,7 @@ export function TechTreePanel({
                   techState={techState}
                   clams={clams}
                   twigs={twigs}
+                  researchDiscount={researchDiscount}
                   onResearch={onResearch}
                 />
               </div>
@@ -132,6 +136,7 @@ export function TechTreePanel({
               techState={techState}
               clams={clams}
               twigs={twigs}
+              researchDiscount={researchDiscount}
               onResearch={onResearch}
             />
             <BranchPanel
@@ -141,6 +146,7 @@ export function TechTreePanel({
               techState={techState}
               clams={clams}
               twigs={twigs}
+              researchDiscount={researchDiscount}
               onResearch={onResearch}
             />
           </div>

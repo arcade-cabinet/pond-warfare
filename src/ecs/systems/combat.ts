@@ -116,6 +116,14 @@ function commanderAura(world: GameWorld): void {
         if (mods.auraSpeedBonus > 0) {
           world.commanderSpeedBuff.add(t);
         }
+
+        // Ironpaw: +20% HP to all units (apply once)
+        if (mods.auraUnitHpBonus > 0 && !world.commanderHpBuffApplied.has(t)) {
+          const bonus = Math.round(Health.max[t] * mods.auraUnitHpBonus);
+          Health.max[t] += bonus;
+          Health.current[t] += bonus;
+          world.commanderHpBuffApplied.add(t);
+        }
       }
     }
 
@@ -437,7 +445,9 @@ export function combatSystem(world: GameWorld): void {
             let sniperDmg = Math.round(dmg * mult);
             // Commander enemy debuff (Shadowfang): reduce ranged damage
             if (world.commanderEnemyDebuff.has(eid)) {
-              sniperDmg = Math.round(sniperDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
+              sniperDmg = Math.round(
+                sniperDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction),
+              );
             }
             // War Drums aura: +15% damage
             if (world.warDrumsBuff.has(eid)) {
@@ -530,8 +540,12 @@ export function combatSystem(world: GameWorld): void {
             }
           } else if (kind === EntityKind.Trapper) {
             // Trapper: apply speed debuff (50% slow for 180 frames) instead of damage
+            // Shadowfang passive: traps last 2x longer
             if (hasComponent(world.ecs, tEnt, Velocity)) {
-              Velocity.speedDebuffTimer[tEnt] = 180;
+              const baseDuration = 180;
+              const trapMult =
+                faction === Faction.Player ? world.commanderModifiers.passiveTrapDurationMult : 1;
+              Velocity.speedDebuffTimer[tEnt] = Math.round(baseDuration * trapMult);
             }
             // Visual feedback
             world.floatingTexts.push({
@@ -562,7 +576,9 @@ export function combatSystem(world: GameWorld): void {
 
             // Commander enemy debuff (Shadowfang): reduce damage from debuffed enemies
             if (world.commanderEnemyDebuff.has(eid)) {
-              meleeDmg = Math.round(meleeDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
+              meleeDmg = Math.round(
+                meleeDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction),
+              );
             }
 
             // War Drums aura: +15% damage for melee

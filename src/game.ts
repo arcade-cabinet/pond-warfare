@@ -48,6 +48,7 @@ import { buildingSystem } from '@/ecs/systems/building';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { collisionSystem } from '@/ecs/systems/collision';
 import { combatSystem } from '@/ecs/systems/combat';
+import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { dayNightSystem } from '@/ecs/systems/day-night';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem, initFogOfWar } from '@/ecs/systems/fog-of-war';
@@ -736,10 +737,16 @@ export class Game {
       auraDamageBonus: cmdDef.auraDamageBonus,
       auraSpeedBonus: cmdDef.auraSpeedBonus,
       auraHpBonus: cmdDef.auraHpBonus,
+      auraUnitHpBonus: cmdDef.auraUnitHpBonus,
       auraEnemyDamageReduction: cmdDef.auraEnemyDamageReduction,
       passiveGatherBonus: cmdDef.passiveGatherBonus,
       passiveResearchSpeed: cmdDef.passiveResearchSpeed,
       passiveTowerAttackSpeed: cmdDef.passiveTowerAttackSpeed,
+      passiveSwimmerCostReduction: cmdDef.passiveSwimmerCostReduction,
+      passiveTrapDurationMult: cmdDef.passiveTrapDurationMult,
+      passiveShieldbearerTrainSpeed: cmdDef.passiveShieldbearerTrainSpeed,
+      passiveCatapultRangeBonus: cmdDef.passiveCatapultRangeBonus,
+      passiveLightningDamage: cmdDef.passiveLightningDamage,
     };
 
     // ---- Airdrops safety net ----
@@ -1089,6 +1096,7 @@ export class Game {
     gatheringSystem(this.world);
     buildingSystem(this.world);
     combatSystem(this.world);
+    commanderPassivesSystem(this.world);
     projectileSystem(this.world);
     trainingSystem(this.world);
     if (!throttleAI) aiSystem(this.world);

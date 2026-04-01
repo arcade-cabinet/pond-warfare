@@ -68,6 +68,9 @@ export async function loadPersistedSettings(): Promise<void> {
 }
 
 /** Save a single setting to persistent storage. */
-export async function persistSetting(key: SettingKey, value: string | number | boolean): Promise<void> {
+export async function persistSetting(
+  key: SettingKey,
+  value: string | number | boolean,
+): Promise<void> {
   await savePreference(SETTINGS_KEYS[key], String(value));
 }

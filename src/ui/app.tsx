@@ -231,17 +231,18 @@ export function App({ onMount }: AppProps) {
           techState={{ ...game.world.tech }}
           clams={store.clams.value}
           twigs={store.twigs.value}
+          researchDiscount={game.world.commanderModifiers.passiveResearchSpeed}
           onResearch={(id: TechId) => {
             const w = game.world;
             const upgrade = TECH_UPGRADES[id as keyof typeof TECH_UPGRADES];
-            if (
-              upgrade &&
-              canResearch(id, w.tech) &&
-              w.resources.clams >= upgrade.clamCost &&
-              w.resources.twigs >= upgrade.twigCost
-            ) {
-              w.resources.clams -= upgrade.clamCost;
-              w.resources.twigs -= upgrade.twigCost;
+            if (!upgrade || !canResearch(id, w.tech)) return;
+            // Sage passive: reduce research cost by passiveResearchSpeed %
+            const discount = 1 - w.commanderModifiers.passiveResearchSpeed;
+            const clamCost = Math.round(upgrade.clamCost * discount);
+            const twigCost = Math.round(upgrade.twigCost * discount);
+            if (w.resources.clams >= clamCost && w.resources.twigs >= twigCost) {
+              w.resources.clams -= clamCost;
+              w.resources.twigs -= twigCost;
               w.tech[id] = true;
               game.syncUIStore();
             }
