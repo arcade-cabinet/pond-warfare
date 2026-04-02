@@ -269,4 +269,27 @@ export interface GameWorld {
 
   /** Wall gate ownership: maps gate entity ID to faction for pass-through logic. */
   wallGateFaction: Map<number, number>;
+
+  // --- v2.1.0 ---
+
+  /** Extended stats for new achievements (incrementally tracked per match). */
+  extendedStats?: Partial<ExtendedStats>;
+}
+
+/** Extended game stats tracked per match for v2.1.0 achievements. */
+export interface ExtendedStats {
+  weatherTypesExperienced: number;
+  warshipKills: number;
+  bridgesBuilt: number;
+  diverAmbushKills: number;
+  marketTrades: number;
+  maxBerserkerKills: number;
+  shrineAbilitiesUsed: number;
+  coopMode: boolean;
+  dailyChallengesCompleted: number;
+  playerLevel: number;
+  perfectPuzzleCount: number;
+  randomEventsExperienced: number;
+  wallsBuilt: number;
+  enemiesBlockedByGates: number;
 }

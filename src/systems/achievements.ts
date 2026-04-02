@@ -155,6 +155,9 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     if (Health.current[eid] > 0) aliveNests++;
   }
 
+  // Extended stats — read from world.extendedStats if available, else 0
+  const ext = world.extendedStats ?? {};
+
   return {
     unitsKilled: world.stats.unitsKilled,
     unitsLost: world.stats.unitsLost,
@@ -175,6 +178,21 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     buildingsBuilt: world.stats.buildingsBuilt,
     buildingsLost: world.stats.buildingsLost,
     onlyShadowTechs: techCount > 0 && !hasNonShadowTech,
+    // v2.1.0 — extended stats
+    weatherTypesExperienced: ext.weatherTypesExperienced ?? 0,
+    warshipKills: ext.warshipKills ?? 0,
+    bridgesBuilt: ext.bridgesBuilt ?? 0,
+    diverAmbushKills: ext.diverAmbushKills ?? 0,
+    marketTrades: ext.marketTrades ?? 0,
+    maxBerserkerKills: ext.maxBerserkerKills ?? 0,
+    shrineAbilitiesUsed: ext.shrineAbilitiesUsed ?? 0,
+    coopMode: ext.coopMode ?? false,
+    dailyChallengesCompleted: ext.dailyChallengesCompleted ?? 0,
+    playerLevel: ext.playerLevel ?? 1,
+    perfectPuzzleCount: ext.perfectPuzzleCount ?? 0,
+    randomEventsExperienced: ext.randomEventsExperienced ?? 0,
+    wallsBuilt: ext.wallsBuilt ?? 0,
+    enemiesBlockedByGates: ext.enemiesBlockedByGates ?? 0,
   };
 }
 
