@@ -4,12 +4,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-} from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';

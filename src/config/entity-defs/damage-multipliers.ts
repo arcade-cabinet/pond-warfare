@@ -12,6 +12,7 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [EntityKind.Sniper]: 1.5,
       [EntityKind.Healer]: 1.5,
       [EntityKind.Gator]: 0.75,
+      [EntityKind.FlyingHeron]: 0.5, // Melee weak vs flying
     },
     [EntityKind.Sniper]: {
       [EntityKind.Healer]: 1.5,
@@ -61,6 +62,9 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
     [EntityKind.FlyingHeron]: {
       [EntityKind.Gatherer]: 1.5, // Harasses workers
       [EntityKind.Shieldbearer]: 0.5, // Terrible vs tanks
+    },
+    [EntityKind.Tower]: {
+      [EntityKind.FlyingHeron]: 1.5, // Towers counter flying
     },
   };
 

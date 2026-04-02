@@ -9,10 +9,16 @@ import { query } from 'bitecs';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
+import { campaignChoiceOpen } from '@/ui/store';
 import { saveMissionCompleted } from './campaign-db';
 import { CAMPAIGN_MISSIONS, type MissionDef, type MissionObjective } from './missions';
 
-export { loadCampaignProgress, saveMissionCompleted } from './campaign-db';
+export {
+  loadBranchChoice,
+  loadCampaignProgress,
+  saveBranchChoice,
+  saveMissionCompleted,
+} from './campaign-db';
 
 // ---------------------------------------------------------------------------
 // Runtime campaign state (lives on the world during gameplay)
@@ -35,9 +41,14 @@ export interface CampaignState {
   trainedCounts: Map<number, number>;
   /** Count of killed enemies per EntityKind (for kill objectives). */
   killedCounts: Map<number, number>;
+  /** Campaign branch choice after Mission 3: 'A' | 'B' | null. */
+  path: 'A' | 'B' | null;
 }
 
-export function createCampaignState(mission: MissionDef | null): CampaignState {
+export function createCampaignState(
+  mission: MissionDef | null,
+  path?: 'A' | 'B' | null,
+): CampaignState {
   return {
     mission,
     objectiveStatus: new Map((mission?.objectives ?? []).map((o) => [o.id, false])),
@@ -47,6 +58,7 @@ export function createCampaignState(mission: MissionDef | null): CampaignState {
     shownDialogues: new Set(),
     trainedCounts: new Map(),
     killedCounts: new Map(),
+    path: path ?? null,
   };
 }
 
@@ -187,6 +199,11 @@ export function campaignSystem(world: GameWorld): void {
   ) {
     campaign.celebrationShown = true;
     world.state = 'win';
+
+    // After Mission 3, show the branch choice screen
+    if (mission.id === 'the-nest-must-fall') {
+      campaignChoiceOpen.value = true;
+    }
 
     // Persist completion
     saveMissionCompleted(mission.id, world.frameCount).catch(() => {

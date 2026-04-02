@@ -194,6 +194,10 @@ export class SfxManager {
   deposit(worldX?: number): void {
     this.playAt(500, 'sine', 0.08, 0.04, 800, worldX);
   }
+  /** Cash register sound for Market trades (deposit at lower pitch). */
+  trade(worldX?: number): void {
+    this.playAt(350, 'sine', 0.1, 0.06, 550, worldX);
+  }
   /** Subtle pickup sound when a gatherer finishes collecting a resource. */
   pickup(worldX?: number): void {
     this.playAt(700, 'triangle', 0.06, 0.03, 900, worldX);

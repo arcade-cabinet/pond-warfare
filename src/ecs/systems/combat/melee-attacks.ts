@@ -23,6 +23,7 @@ import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
 import { triggerAttackLunge } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
+import { AMBUSH_DAMAGE_MULT, consumeAmbushBonus } from '../diver-stealth';
 import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
 export function executeBossCrocAttack(
@@ -78,6 +79,18 @@ export function executeMeleeAttack(
   const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
   const mult = getDamageMultiplier(kind, targetKind);
   let meleeDmg = Math.round(dmg * mult);
+
+  // Diver ambush bonus: +50% damage on first attack from stealth
+  if (kind === EntityKind.Diver && consumeAmbushBonus(world, eid)) {
+    meleeDmg = Math.round(meleeDmg * AMBUSH_DAMAGE_MULT);
+    world.floatingTexts.push({
+      x: Position.x[tEnt],
+      y: Position.y[tEnt] - 25,
+      text: 'AMBUSH!',
+      color: '#60a5fa',
+      life: 60,
+    });
+  }
 
   // Positional bonuses (flanking + elevation)
   const positional = calculatePositionalBonuses(world, eid, tEnt);

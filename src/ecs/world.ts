@@ -237,4 +237,17 @@ export interface GameWorld {
   gameEndSpectacleActive: boolean;
   /** Pre-spectacle game speed to restore if needed. */
   gameEndPrevSpeed: number;
+
+  // Diver stealth: set of entity IDs currently in stealth
+  stealthEntities: Set<number>;
+  /** Tracks whether an entity's stealth ambush bonus is available (first attack from stealth). */
+  stealthAmbushReady: Set<number>;
+
+  // Burrowing Worm: entity ID -> remaining burrow frames before emergence
+  wormBurrowTimers: Map<number, number>;
+  /** Frame of last worm spawn (used for spawn rate). */
+  lastWormSpawnFrame: number;
+
+  // Engineer temporary bridges: { col, row, revertFrame, originalTerrain }[]
+  engineerBridges: { col: number; row: number; revertFrame: number; original: number }[];
 }

@@ -138,8 +138,7 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     audio.deathBuilding();
 
     // Trigger morale demoralization for all player units (10 seconds)
-    world.commanderDeathDemoralizeUntil =
-      world.frameCount + COMMANDER_DEATH_DEMORALIZE_FRAMES;
+    world.commanderDeathDemoralizeUntil = world.frameCount + COMMANDER_DEATH_DEMORALIZE_FRAMES;
   }
 
   // Boss croc loot

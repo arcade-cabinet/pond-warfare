@@ -117,6 +117,21 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
       },
     });
   }
+  const marketDef = ENTITY_DEFS[EntityKind.Market];
+  btns.push({
+    title: 'Market',
+    cost: `${marketDef.clamCost}C ${marketDef.twigCost}T`,
+    hotkey: 'P',
+    affordable:
+      w.resources.clams >= (marketDef.clamCost ?? 0) &&
+      w.resources.twigs >= (marketDef.twigCost ?? 0),
+    description: 'Trade building. Convert resources at favorable rates.',
+    category: 'build',
+    costBreakdown: { clams: marketDef.clamCost, twigs: marketDef.twigCost },
+    onClick: () => {
+      w.placingBuilding = 'market';
+    },
+  });
   const fhDef = ENTITY_DEFS[EntityKind.FishingHut];
   btns.push({
     title: 'Fishing Hut',

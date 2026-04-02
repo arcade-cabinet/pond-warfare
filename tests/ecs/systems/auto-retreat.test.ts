@@ -99,7 +99,7 @@ describe('autoRetreatSystem', () => {
   });
 
   it('should retreat to nearest building', () => {
-    const farLodge = createBuilding(world, 800, 800, Faction.Player);
+    const _farLodge = createBuilding(world, 800, 800, Faction.Player);
     const nearBurrow = createBuilding(world, 200, 200, Faction.Player);
     const unit = createUnit(world, 100, 100, Faction.Player, EntityKind.Brawler, 5, 60);
 
@@ -152,7 +152,7 @@ describe('autoRetreatSystem', () => {
   });
 
   it('should trigger retreat from attacking state', () => {
-    const lodge = createBuilding(world, 400, 400, Faction.Player);
+    const _lodge = createBuilding(world, 400, 400, Faction.Player);
     const unit = createUnit(world, 100, 100, Faction.Player, EntityKind.Brawler, 5, 60);
     UnitStateMachine.state[unit] = UnitState.Attacking;
 

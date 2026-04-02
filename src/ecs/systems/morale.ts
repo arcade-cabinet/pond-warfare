@@ -22,7 +22,7 @@ import {
   Position,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction } from '@/types';
+import { Faction } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
 /** Radius to count nearby allies and enemies for outnumbered check. */
@@ -40,7 +40,10 @@ export const COMMANDER_DEATH_DEMORALIZE_FRAMES = 600;
  */
 export function moraleSystem(world: GameWorld): void {
   // Commander death demoralization timer
-  if (world.commanderDeathDemoralizeUntil > 0 && world.frameCount >= world.commanderDeathDemoralizeUntil) {
+  if (
+    world.commanderDeathDemoralizeUntil > 0 &&
+    world.frameCount >= world.commanderDeathDemoralizeUntil
+  ) {
     world.commanderDeathDemoralizeUntil = 0;
   }
 
@@ -58,12 +61,16 @@ export function moraleSystem(world: GameWorld): void {
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
 
   // If commander death demoralization is active, mark ALL player combat units
-  if (world.commanderDeathDemoralizeUntil > 0 && world.frameCount < world.commanderDeathDemoralizeUntil) {
+  if (
+    world.commanderDeathDemoralizeUntil > 0 &&
+    world.frameCount < world.commanderDeathDemoralizeUntil
+  ) {
     for (let i = 0; i < allUnits.length; i++) {
       const eid = allUnits[i];
       if (FactionTag.faction[eid] !== Faction.Player) continue;
       if (Health.current[eid] <= 0) continue;
-      if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource)) continue;
+      if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource))
+        continue;
       world.demoralizedUnits.add(eid);
     }
     spawnDemoralizeClouds(world);
@@ -74,7 +81,8 @@ export function moraleSystem(world: GameWorld): void {
   for (let i = 0; i < allUnits.length; i++) {
     const eid = allUnits[i];
     if (Health.current[eid] <= 0) continue;
-    if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource)) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource))
+      continue;
 
     const faction = FactionTag.faction[eid] as Faction;
     // Only apply to player units for now
@@ -94,7 +102,8 @@ export function moraleSystem(world: GameWorld): void {
       const t = candidates[j];
       if (t === eid) continue;
       if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
-      if (hasComponent(world.ecs, t, IsBuilding) || hasComponent(world.ecs, t, IsResource)) continue;
+      if (hasComponent(world.ecs, t, IsBuilding) || hasComponent(world.ecs, t, IsResource))
+        continue;
       if (!hasComponent(world.ecs, t, FactionTag)) continue;
 
       const tFaction = FactionTag.faction[t] as Faction;

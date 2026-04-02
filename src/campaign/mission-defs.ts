@@ -7,7 +7,7 @@
  *   3-5 in mission-defs-late.ts
  */
 
-import { mission3, mission4, mission5 } from './mission-defs-late';
+import { mission3, mission4, mission4A, mission4B, mission5 } from './mission-defs-late';
 import { EK, type MissionDef } from './mission-types';
 
 const mission1: MissionDef = {
@@ -147,3 +147,6 @@ const mission2: MissionDef = {
 };
 
 export const CAMPAIGN_MISSIONS: MissionDef[] = [mission1, mission2, mission3, mission4, mission5];
+
+/** Branching missions available after Mission 3. */
+export const BRANCH_MISSIONS = { A: mission4A, B: mission4B } as const;

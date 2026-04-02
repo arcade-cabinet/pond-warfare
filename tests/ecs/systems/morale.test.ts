@@ -6,13 +6,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  Combat,
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-} from '@/ecs/components';
+import { Combat, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES, moraleSystem } from '@/ecs/systems/morale';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
@@ -93,7 +87,7 @@ describe('moraleSystem', () => {
       const player = createUnit(world, 100, 100, Faction.Player);
       const enemy1 = createUnit(world, 110, 100, Faction.Enemy);
       const enemy2 = createUnit(world, 120, 100, Faction.Enemy);
-      const enemy3 = createUnit(world, 130, 100, Faction.Enemy);
+      const _enemy3 = createUnit(world, 130, 100, Faction.Enemy);
 
       // Kill two enemies
       Health.current[enemy1] = 0;

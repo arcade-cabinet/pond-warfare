@@ -14,6 +14,7 @@
 
 import { Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { updateWaterRipples } from '@/rendering/water-ripple';
 import type { Corpse, FloatingText, GroundPing, Particle, SpriteId } from '@/types';
 import type { CameraShake } from '../camera';
 import type { ProjectileRenderData } from '../particles';
@@ -127,6 +128,9 @@ export function renderPixiFrame(
   effectGfx.clear();
   uiGfx.clear();
   screenGfx.clear();
+
+  // --- Water ripple frame cycling ---
+  updateWaterRipples(frameCount);
 
   // --- Track which entity sprites are still alive this frame ---
   const aliveEids = new Set<number>();

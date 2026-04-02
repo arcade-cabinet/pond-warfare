@@ -13,8 +13,10 @@ import { entityKindName } from '@/config/entity-defs';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind } from '@/types';
 import { processAlphaAura } from './evolution/alpha-aura';
+import { heronSpawnerSystem } from './evolution/heron-spawner';
 import { processPoisonTicks, processVenomCoatingTicks } from './evolution/poison';
 import { threatEscalationSystem } from './evolution/threat-escalation';
+import { wormSpawnerSystem } from './evolution/worm-spawner';
 
 /** Minutes after peace ends at which each evolution tier triggers. */
 const THRESHOLDS = [5, 10, 15, 25, 40];
@@ -67,4 +69,8 @@ export function evolutionSystem(world: GameWorld): void {
 
   // Threat escalation (long-game systems)
   threatEscalationSystem(world);
+
+  // v1.5 spawners: Burrowing Worms and Flying Herons
+  wormSpawnerSystem(world);
+  heronSpawnerSystem(world);
 }

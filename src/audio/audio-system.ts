@@ -217,6 +217,9 @@ export class AudioSystem {
   deposit(worldX?: number): void {
     this.sfxMgr.deposit(worldX);
   }
+  trade(worldX?: number): void {
+    this.sfxMgr.trade(worldX);
+  }
   pickup(worldX?: number): void {
     this.sfxMgr.pickup(worldX);
   }

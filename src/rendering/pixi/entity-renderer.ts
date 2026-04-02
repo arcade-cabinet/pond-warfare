@@ -22,7 +22,12 @@ import {
   Veterancy,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { type EntityKind as EntityKindType, ResourceType, type SpriteId } from '@/types';
+import {
+  EntityKind,
+  type EntityKind as EntityKindType,
+  ResourceType,
+  type SpriteId,
+} from '@/types';
 import { entityScales } from '../animations';
 import { getRecoloredSprite, type RecolorPreset, veterancyPreset } from '../recolor';
 import { getAnimVisuals, tickAnimation } from '../sprite-animation';
@@ -46,9 +51,22 @@ import {
   setDestroyRecoloredTexturesCallback,
 } from './init';
 
-// ---------------------------------------------------------------------------
+// Building construction stages
+const FOUNDATION_TINT = 0xb08050;
+
+export interface BuildingStage {
+  alpha: number;
+  tint: number;
+}
+
+/** Map building progress (0-99) to a discrete visual stage. */
+export function getBuildingStage(progress: number): BuildingStage {
+  if (progress <= 33) return { alpha: 0.4, tint: FOUNDATION_TINT };
+  if (progress <= 66) return { alpha: 0.7, tint: 0xffffff };
+  return { alpha: 0.9, tint: 0xffffff };
+}
+
 // Recolored texture cache
-// ---------------------------------------------------------------------------
 const recoloredTextureCache = new Map<string, Texture>();
 
 function getRecoloredTexture(
@@ -66,9 +84,7 @@ function getRecoloredTexture(
   return tex;
 }
 
-// ---------------------------------------------------------------------------
 // Sprite pool
-// ---------------------------------------------------------------------------
 const spritePool: Sprite[] = [];
 
 export function acquireSprite(tex: Texture): Sprite {
@@ -91,9 +107,7 @@ export function releaseSprite(spr: Sprite): void {
   spritePool.push(spr);
 }
 
-// ---------------------------------------------------------------------------
 // World reference
-// ---------------------------------------------------------------------------
 let _world: GameWorld | null = null;
 let _spriteCanvases: Map<SpriteId, HTMLCanvasElement> | null = null;
 
@@ -196,7 +210,9 @@ export function renderEntity(eid: number, frameCount: number): void {
     animRotation = anim.rotation;
   }
 
-  spr.position.set(ex, ey + yOff + animYOff);
+  // Flying Heron: render slightly above ground (-10px)
+  const heronYOff = kind === EntityKind.FlyingHeron ? -10 : 0;
+  spr.position.set(ex, ey + yOff + animYOff + heronYOff);
   if (facingLeft && !isBuilding) scaleX = -scaleX;
   spr.scale.set(scaleX, scaleY);
   spr.rotation = animRotation;
@@ -209,7 +225,23 @@ export function renderEntity(eid: number, frameCount: number): void {
     spr.tint = getStatusTint(eid, kind, _world);
   }
 
-  if (isBuilding && progress < 100) spr.alpha = 0.5 + progress / 200;
+  // Stealthed Diver: render at 20% opacity for the owning player
+  if (_world?.stealthEntities.has(eid)) {
+    spr.alpha = 0.2;
+    spr.tint = lerpTint(0xffffff, 0x60a5fa, 0.3);
+  }
+
+  // Burrowing Worm underground phase: invisible
+  if (_world?.wormBurrowTimers.has(eid)) {
+    spr.alpha = 0.15;
+    spr.tint = 0x92400e;
+  }
+
+  if (isBuilding && progress < 100) {
+    const stage = getBuildingStage(progress);
+    spr.alpha = stage.alpha;
+    spr.tint = stage.tint;
+  }
   if (isResource) {
     const maxAmount = def.resourceAmount ?? 1;
     const resRatio = Math.max(0, Resource.amount[eid] / maxAmount);

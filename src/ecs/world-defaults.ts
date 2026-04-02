@@ -193,5 +193,10 @@ export function createGameWorld(): GameWorld {
     gameEndFocusY: 0,
     gameEndSpectacleActive: false,
     gameEndPrevSpeed: 1,
+    stealthEntities: new Set(),
+    stealthAmbushReady: new Set(),
+    wormBurrowTimers: new Map(),
+    lastWormSpawnFrame: 0,
+    engineerBridges: [],
   };
 }

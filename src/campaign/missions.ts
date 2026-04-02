@@ -4,7 +4,7 @@
  * Types live in mission-types.ts, mission data in mission-defs.ts.
  */
 
-export { CAMPAIGN_MISSIONS } from './mission-defs';
+export { BRANCH_MISSIONS, CAMPAIGN_MISSIONS } from './mission-defs';
 export type { MissionDef, MissionDialogue, MissionObjective, ObjectiveType } from './mission-types';
 export { EK } from './mission-types';
 

@@ -15,6 +15,8 @@ import { collisionSystem } from '@/ecs/systems/collision';
 import { combatSystem } from '@/ecs/systems/combat';
 import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { dayNightSystem } from '@/ecs/systems/day-night';
+import { diverStealthSystem } from '@/ecs/systems/diver-stealth';
+import { engineerSystem } from '@/ecs/systems/engineer';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem } from '@/ecs/systems/fog-of-war';
 import { gatheringSystem } from '@/ecs/systems/gathering';
@@ -35,10 +37,12 @@ export function runSystems(
   throttleAI: boolean,
 ): void {
   dayNightSystem(world);
+  diverStealthSystem(world);
   movementSystem(world);
   collisionSystem(world, physicsManager);
   gatheringSystem(world);
   buildingSystem(world);
+  engineerSystem(world);
   combatSystem(world);
   commanderPassivesSystem(world);
   projectileSystem(world);
