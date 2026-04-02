@@ -3,7 +3,6 @@ import type { GameWorld } from '@/ecs/world';
 import { useAirdrop, usePondBlessing, useRallyCry, useTidalSurge } from '@/game/abilities';
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
 import { useCommanderAbility } from '@/game/commander-abilities';
-import { playUnitSelectSound } from '@/game/unit-select-sound';
 import {
   applyCampaignMission,
   applyDifficultyModifiers,
@@ -29,6 +28,7 @@ import {
 } from '@/game/game-lifecycle';
 import { cycleSpeed as cycleSpeedFn, type GameLoopState } from '@/game/game-loop';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
+import { playUnitSelectSound } from '@/game/unit-select-sound';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
