@@ -4,6 +4,28 @@
 
 import type { MapScenario } from './store';
 
+/** Directional resource change tracking for HUD flash animations.
+ *  delta > 0 = increase (green/gold), delta < 0 = decrease (red). */
+export interface ResourceChange {
+  clams: number;
+  twigs: number;
+  pearls: number;
+  frame: number;
+}
+
+/** Food/population change tracking: delta > 0 = unit trained, delta < 0 = unit died. */
+export interface FoodChange {
+  delta: number;
+  frame: number;
+}
+
+/** Game event feed entry. */
+export interface GameEvent {
+  text: string;
+  color: string;
+  frame: number;
+}
+
 export interface CustomGameSettings {
   // Map
   scenario: MapScenario;

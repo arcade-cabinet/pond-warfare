@@ -7,6 +7,7 @@
  * resets when the module reloads (new game session).
  */
 
+import { audio } from '@/audio/audio-system';
 import { type DialogueTrigger, pickDialogue, selectTriggerForClickCount } from '@/config/dialogue';
 import type { GameWorld } from '@/ecs/world';
 import type { EntityKind } from '@/types';
@@ -78,7 +79,10 @@ export function showBark(
 
 /**
  * Handle a selection click on an entity: track click count
- * and show the appropriate escalating bark.
+ * and show the appropriate escalating bark with voice audio.
+ *
+ * Click counting uses a 60-frame (1s) window to detect rapid re-clicks.
+ * Escalation: select (1st) -> select_repeat (2-4) -> select_spam (5+).
  */
 export function showSelectBark(
   world: GameWorld,
@@ -91,7 +95,7 @@ export function showSelectBark(
   const state = clickState.get(eid);
   let count: number;
 
-  if (state && frame - state.lastClickFrame <= 60) {
+  if (state && frame - state.lastClickFrame <= 120) {
     count = state.count + 1;
   } else {
     count = 1;
@@ -99,7 +103,10 @@ export function showSelectBark(
   clickState.set(eid, { count, lastClickFrame: frame });
 
   const trigger = selectTriggerForClickCount(count);
-  showBark(world, eid, x, y, kind, trigger, { force: true });
+  const barked = showBark(world, eid, x, y, kind, trigger, { force: true });
+  if (barked) {
+    audio.playSelectionVoice(kind, world.playerFaction);
+  }
 }
 
 /**

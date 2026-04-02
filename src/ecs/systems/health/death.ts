@@ -10,7 +10,7 @@ import { hasComponent, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { campaignNotifyKilled } from '@/campaign';
 import { showBark } from '@/config/barks';
-import { PALETTE } from '@/constants';
+import { entityKindName } from '@/config/entity-defs';
 import {
   Combat,
   EntityTypeTag,
@@ -23,8 +23,16 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { createCorpseId, EntityKind, Faction, SpriteId } from '@/types';
+import { pushGameEvent } from '@/ui/game-events';
 import { reduceVisualNoise } from '@/ui/store';
-import { spawnParticle } from '@/utils/particles';
+import { spawnDeathParticles } from './death-particles';
+
+/** Ranged unit kinds that get a "cry" death sound instead of a grunt. */
+const RANGED_KINDS: ReadonlySet<EntityKind> = new Set([
+  EntityKind.Sniper,
+  EntityKind.Catapult,
+  EntityKind.Scout,
+]);
 
 export function processDeath(world: GameWorld, eid: number, attackerEid?: number): void {
   if (Health.current[eid] === -1) return;
@@ -40,9 +48,17 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     const faction = FactionTag.faction[eid] as Faction;
     if (faction === Faction.Player && !isBuilding && !isResource) {
       world.stats.unitsLost++;
+      const name = hasComponent(world.ecs, eid, EntityTypeTag)
+        ? entityKindName(EntityTypeTag.kind[eid] as EntityKind)
+        : 'Unit';
+      pushGameEvent(`${name} killed`, '#ef4444', world.frameCount);
     }
     if (faction === Faction.Player && isBuilding) {
       world.stats.buildingsLost++;
+      const bName = hasComponent(world.ecs, eid, EntityTypeTag)
+        ? entityKindName(EntityTypeTag.kind[eid] as EntityKind)
+        : 'Building';
+      pushGameEvent(`${bName} destroyed`, '#ef4444', world.frameCount);
     }
     if (faction === Faction.Enemy) {
       if (!isBuilding) {
@@ -52,17 +68,36 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     }
   }
 
-  // Screen shake for building destruction
+  // Differentiated death sounds
+  const deathKind = hasComponent(world.ecs, eid, EntityTypeTag)
+    ? (EntityTypeTag.kind[eid] as EntityKind)
+    : -1;
   if (isBuilding) {
-    world.shakeTimer = 20;
-    audio.deathBuilding();
+    world.shakeTimer = Math.max(world.shakeTimer, 20);
+    audio.deathBuilding(ex);
   } else if (!isResource) {
-    audio.deathUnit();
+    if (RANGED_KINDS.has(deathKind as EntityKind)) {
+      audio.deathRanged(ex);
+    } else {
+      audio.deathMelee(ex);
+    }
   }
 
-  // Death particle burst
+  // Death particle burst (enhanced)
   if (!reduceVisualNoise.value) {
     spawnDeathParticles(world, ex, ey, isBuilding, isResource);
+  }
+
+  // Death floating text showing unit name
+  if (!isResource && !isBuilding && deathKind !== -1) {
+    const name = entityKindName(deathKind as EntityKind);
+    world.floatingTexts.push({
+      x: ex,
+      y: ey - 35,
+      text: name,
+      color: '#ef4444',
+      life: 50,
+    });
   }
 
   // Battlefield corpses/ruins
@@ -121,12 +156,15 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
   if (
     !isBuilding &&
     !isResource &&
+    deathKind !== -1 &&
     hasComponent(world.ecs, eid, FactionTag) &&
-    FactionTag.faction[eid] === Faction.Player &&
-    hasComponent(world.ecs, eid, EntityTypeTag)
+    FactionTag.faction[eid] === Faction.Player
   ) {
-    const deathKind = EntityTypeTag.kind[eid] as EntityKind;
-    showBark(world, eid, ex, ey, deathKind, 'death', { color: '#ef4444', life: 120, force: true });
+    showBark(world, eid, ex, ey, deathKind as EntityKind, 'death', {
+      color: '#ef4444',
+      life: 120,
+      force: true,
+    });
   }
 
   // Credit kill to attacker
@@ -198,72 +236,32 @@ function processKillCredit(
       world.floatingTexts.push({
         x: ex,
         y: ey - 40,
-        text: 'TRIPLE KILL',
+        text: 'TRIPLE KILL!',
         color: '#facc15',
         life: 100,
       });
       world.shakeTimer = Math.max(world.shakeTimer, 8);
+      audio.tripleKill();
     } else if (world.killStreak.count === 5) {
       world.floatingTexts.push({
         x: ex,
         y: ey - 40,
-        text: 'RAMPAGE',
+        text: 'RAMPAGE!',
         color: '#ef4444',
         life: 120,
       });
       world.shakeTimer = Math.max(world.shakeTimer, 15);
-    }
-  }
-}
-
-function spawnDeathParticles(
-  world: GameWorld,
-  ex: number,
-  ey: number,
-  isBuilding: boolean,
-  isResource: boolean,
-): void {
-  if (isBuilding) {
-    for (let j = 0; j < 35; j++) {
-      const angle = (j / 35) * Math.PI * 2;
-      const spread = 2 + Math.random() * 3;
-      spawnParticle(
-        world,
-        ex,
-        ey,
-        Math.cos(angle) * spread,
-        Math.sin(angle) * spread + 2,
-        30,
-        PALETTE.mudLight,
-        4,
-      );
-    }
-  } else {
-    for (let j = 0; j < 20; j++) {
-      spawnParticle(
-        world,
-        ex,
-        ey,
-        (Math.random() - 0.5) * 4,
-        (Math.random() - 0.5) * 4 + 2,
-        30,
-        PALETTE.clamMeat,
-        4,
-      );
-    }
-    if (!isResource) {
-      for (let j = 0; j < 5; j++) {
-        spawnParticle(
-          world,
-          ex + (Math.random() - 0.5) * 10,
-          ey + (Math.random() - 0.5) * 10,
-          (Math.random() - 0.5) * 2,
-          Math.random() * 2 + 1,
-          15,
-          PALETTE.clamMeat,
-          6,
-        );
-      }
+      audio.rampage();
+    } else if (world.killStreak.count === 10) {
+      world.floatingTexts.push({
+        x: ex,
+        y: ey - 40,
+        text: 'UNSTOPPABLE!',
+        color: '#f97316',
+        life: 150,
+      });
+      world.shakeTimer = Math.max(world.shakeTimer, 20);
+      audio.unstoppable();
     }
   }
 }

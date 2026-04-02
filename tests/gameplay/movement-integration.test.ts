@@ -102,6 +102,7 @@ function createTestWorld(): GameWorld {
     },
     activeParticles: [],
     terrainGrid: new TerrainGrid(2560, 2560, 32),
+    combatZones: [],
   } as unknown as GameWorld;
 }
 

@@ -206,4 +206,21 @@ export interface GameWorld {
 
   // Terrain grid (tile-based terrain types affecting movement/combat)
   terrainGrid: TerrainGrid;
+
+  // Combat zone tracking for minimap indicators
+  combatZones: { x: number; y: number; life: number }[];
+
+  // Wave counter (incremented each mega-wave spawn)
+  waveNumber: number;
+
+  // Game-end spectacle state
+  /** Frame at which the game entered 'win' or 'lose' (0 = not ended). */
+  gameEndFrame: number;
+  /** World position to pan the camera to during the game-end spectacle. */
+  gameEndFocusX: number;
+  gameEndFocusY: number;
+  /** True while slow-mo spectacle is playing before game-over UI appears. */
+  gameEndSpectacleActive: boolean;
+  /** Pre-spectacle game speed to restore if needed. */
+  gameEndPrevSpeed: number;
 }

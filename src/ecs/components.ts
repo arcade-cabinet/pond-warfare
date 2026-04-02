@@ -134,4 +134,5 @@ export const ProjectileData = soa({
   ownerEntity: [] as number[],
   speed: [] as number[],
   damageMultiplier: [] as number[],
+  sourceKind: [] as number[], // EntityKind of the unit that fired this projectile
 });

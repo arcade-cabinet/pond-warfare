@@ -91,11 +91,24 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
           life: 75,
         });
 
-        // Particle burst at the return building (lodge/nest) to celebrate deposit
+        // Floating "+N" at the return building (lodge/nest) — visible economic drip
         const returnBld = UnitStateMachine.returnEntity[eid];
         if (returnBld !== -1) {
           const bx = Position.x[returnBld];
           const by = Position.y[returnBld];
+
+          // Small deposit text at the Lodge (shorter than combat floaters)
+          if (faction === Faction.Player) {
+            world.floatingTexts.push({
+              x: bx + (Math.random() - 0.5) * 16,
+              y: by - 30,
+              text: `+${depositAmt}`,
+              color,
+              life: 45,
+            });
+          }
+
+          // Particle burst to celebrate deposit
           const pColor =
             heldRes === ResourceType.Clams
               ? '#fde047'

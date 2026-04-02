@@ -20,7 +20,6 @@ import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
-import { cleanupEntityAnimation } from '@/rendering/animations';
 import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import type { ReplayRecorder } from '@/replay';
@@ -28,9 +27,12 @@ import { saveGame } from '@/save-system';
 import { saveGameToDb } from '@/storage';
 import { checkAchievements } from '@/systems/achievements';
 import { type EntityKind, Faction } from '@/types';
+import { pruneGameEvents } from '@/ui/game-events';
 import * as store from '@/ui/store';
 import { checkEvacuation, createCheckpoint } from './checkpoint';
+import { beginSpectacle, tickSpectacle } from './game-end-spectacle';
 import { type DrawState, draw } from './game-renderer';
+import { syncPhysicsBodies } from './physics-sync';
 import { runSystems } from './systems-runner';
 
 /** Mutable state needed by the game loop. */
@@ -58,6 +60,10 @@ export interface GameLoopState extends DrawState {
   recorder: ReplayRecorder;
   syncUIStore: () => void;
   governor: Governor | null;
+  /** Real frame count since game-end was detected (for spectacle timing). */
+  spectacleFrames: number;
+  /** Whether spectacle has been initiated (prevents re-triggering). */
+  spectacleStarted: boolean;
 }
 
 /** Cycle game speed (1x -> 2x -> 3x -> 1x). */
@@ -90,15 +96,29 @@ export function gameLoop(state: GameLoopState, timestamp: number): void {
 
   state.accumulator += Math.min(dt, 200);
   while (state.accumulator >= FIXED_DT) {
-    if (state.world.state === 'playing' && !state.world.paused) {
-      for (
-        let i = 0;
-        i < state.world.gameSpeed && state.world.state === 'playing' && !state.world.paused;
-        i++
-      ) {
+    const w = state.world;
+    const isPlaying = w.state === 'playing' && !w.paused;
+    const isSpectacle = w.gameEndSpectacleActive && !w.paused;
+
+    if (isPlaying) {
+      for (let i = 0; i < w.gameSpeed && w.state === 'playing' && !w.paused; i++) {
         updateLogic(state);
       }
     }
+
+    // Spectacle phase: continue updating at slow speed for visual continuity
+    if (isSpectacle) {
+      if (!state.spectacleStarted) {
+        state.spectacleStarted = true;
+        state.spectacleFrames = 0;
+        beginSpectacle(w);
+      }
+      state.spectacleFrames++;
+      // Run one logic tick per frame at reduced speed for visual continuity
+      updateLogic(state);
+      tickSpectacle(w, state.spectacleFrames);
+    }
+
     state.accumulator -= FIXED_DT;
   }
 
@@ -198,6 +218,27 @@ function updateLogic(state: GameLoopState): void {
     syncRosters(w);
   }
 
+  // Prune stale game events every 60 frames (~1 second)
+  if (w.frameCount % 60 === 0) {
+    pruneGameEvents(w.frameCount, 480);
+  }
+
+  // Ambient off-screen combat sound (every 90 frames)
+  if (w.frameCount % 90 === 0 && w.combatZones.length > 0) {
+    const margin = 500;
+    let closest = margin;
+    for (const z of w.combatZones) {
+      // Distance from viewport edge (0 if on-screen)
+      const dx = Math.max(0, w.camX - z.x, z.x - (w.camX + w.viewWidth));
+      const dy = Math.max(0, w.camY - z.y, z.y - (w.camY + w.viewHeight));
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 0 && dist < closest) closest = dist;
+    }
+    if (closest < margin) {
+      audio.offscreenCombat(1 - closest / margin);
+    }
+  }
+
   if (
     store.autoSaveEnabled.value &&
     w.frameCount > 0 &&
@@ -248,28 +289,4 @@ function updateLogic(state: GameLoopState): void {
 
   if (w.frameCount % 60 === 0 && w.state === 'playing') checkEvacuation(w);
   if (w.frameCount % 1800 === 0) checkAchievements(w).catch(() => {});
-}
-
-function syncPhysicsBodies(state: GameLoopState): void {
-  const allEnts = query(state.world.ecs, [Position, Collider, Health]);
-  const current = new Set<number>();
-  for (let i = 0; i < allEnts.length; i++) {
-    const eid = allEnts[i];
-    current.add(eid);
-    if (Health.current[eid] <= 0) {
-      if (state.physicsManager.hasBody(eid)) {
-        state.physicsManager.removeBody(eid);
-        cleanupEntityAnimation(eid);
-      }
-      continue;
-    }
-    if (!state.physicsManager.hasBody(eid)) state.physicsManager.createBody(state.world.ecs, eid);
-  }
-  for (const eid of state.lastKnownEntities) {
-    if (!current.has(eid)) {
-      state.physicsManager.removeBody(eid);
-      cleanupEntityAnimation(eid);
-    }
-  }
-  state.lastKnownEntities = current;
 }

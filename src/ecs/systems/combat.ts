@@ -74,7 +74,7 @@ export function combatSystem(world: GameWorld): void {
     }
 
     if (closest !== -1) {
-      audio.shoot();
+      audio.towerShoot(ex);
       spawnProjectile(
         world,
         ex,
@@ -84,6 +84,8 @@ export function combatSystem(world: GameWorld): void {
         closest,
         Combat.damage[eid],
         eid,
+        1.0,
+        EntityKind.Tower,
       );
       const towerSpeedBonus =
         faction === Faction.Player ? world.commanderModifiers.passiveTowerAttackSpeed : 0;

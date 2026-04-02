@@ -180,5 +180,12 @@ export function createGameWorld(): GameWorld {
     venomCoatingTimers: new Map(),
     exploredPercent: 0,
     terrainGrid: new TerrainGrid(WORLD_WIDTH, WORLD_HEIGHT, TILE_SIZE),
+    combatZones: [],
+    waveNumber: 0,
+    gameEndFrame: 0,
+    gameEndFocusX: 0,
+    gameEndFocusY: 0,
+    gameEndSpectacleActive: false,
+    gameEndPrevSpeed: 1,
   };
 }

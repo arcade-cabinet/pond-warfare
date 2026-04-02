@@ -12,6 +12,7 @@
  */
 
 import { query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { showBark } from '@/config/barks';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import {
@@ -71,12 +72,15 @@ export function autoBehaviorSystem(world: GameWorld): void {
       idleFrameCount.delete(eid);
     }
 
-    // Idle bark: >1800 frames idle (30 seconds), 5% chance per check
+    // Idle bark: >900 frames idle (15s min), 3% chance per check, with voice
     if (isIdle) {
       const idleFrames = idleFrameCount.get(eid) ?? 0;
-      if (idleFrames > 1800 && Math.random() < 0.05) {
+      if (idleFrames > 900 && Math.random() < 0.03) {
         const idleKind = EntityTypeTag.kind[eid] as EntityKind;
-        showBark(world, eid, Position.x[eid], Position.y[eid], idleKind, 'idle');
+        const barked = showBark(world, eid, Position.x[eid], Position.y[eid], idleKind, 'idle');
+        if (barked) {
+          audio.playSelectionVoice(idleKind, world.playerFaction);
+        }
       }
     }
 

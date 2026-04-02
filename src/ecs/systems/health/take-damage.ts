@@ -22,6 +22,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { triggerHitRecoil } from '@/rendering/animations';
 import { checkAttackAlert } from '@/systems/attack-alerts';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { reduceVisualNoise } from '@/ui/store';
@@ -46,8 +47,43 @@ export function takeDamage(
 
   Health.flashTimer[targetEid] = 8;
 
+  // Recoil: briefly push target away from attacker
+  if (
+    hasComponent(world.ecs, targetEid, Sprite) &&
+    hasComponent(world.ecs, attackerEid, Position) &&
+    !hasComponent(world.ecs, targetEid, IsBuilding)
+  ) {
+    const ax = Position.x[attackerEid];
+    const ay = Position.y[attackerEid];
+    triggerHitRecoil(targetEid, ax, ay, Position.x[targetEid], Position.y[targetEid]);
+  }
+
   // Check if this warrants an under-attack alert
   checkAttackAlert(world, targetEid);
+
+  // Track combat zone for minimap (only cross-faction combat, throttled)
+  if (
+    hasComponent(world.ecs, targetEid, FactionTag) &&
+    hasComponent(world.ecs, attackerEid, FactionTag) &&
+    FactionTag.faction[targetEid] !== FactionTag.faction[attackerEid]
+  ) {
+    const cx = Position.x[targetEid];
+    const cy = Position.y[targetEid];
+    // Merge with nearby existing zone or create new one
+    let merged = false;
+    for (const z of world.combatZones) {
+      const dx = z.x - cx;
+      const dy = z.y - cy;
+      if (dx * dx + dy * dy < 100 * 100) {
+        z.life = 120;
+        merged = true;
+        break;
+      }
+    }
+    if (!merged && world.combatZones.length < 20) {
+      world.combatZones.push({ x: cx, y: cy, life: 120 });
+    }
+  }
 
   const tx = Position.x[targetEid];
   const ty = Position.y[targetEid];

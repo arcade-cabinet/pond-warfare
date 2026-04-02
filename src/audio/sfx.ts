@@ -1,6 +1,19 @@
 /** SFX module - All sound effect methods and synth pool management. */
 import * as Tone from 'tone';
 import {
+  catapultImpactEffect,
+  catapultShootEffect,
+  deathMeleeEffect,
+  deathRangedEffect,
+  rampageEffect,
+  sniperHitEffect,
+  sniperShootEffect,
+  towerHitEffect,
+  towerShootEffect,
+  tripleKillEffect,
+  unstoppableEffect,
+} from './sfx-combat';
+import {
   advisorTipEffect,
   buildCompleteEffect,
   deathBuildingEffect,
@@ -228,5 +241,46 @@ export class SfxManager {
   }
   advisorTip(): void {
     advisorTipEffect(this, this._getMuted, this._getStarted);
+  }
+
+  /** Muffled off-screen combat rumble. Volume 0-1 scales with proximity. */
+  offscreenCombat(volume: number): void {
+    if (volume <= 0) return;
+    this.playAt(60, 'sawtooth', 0.3, 0.04 * volume, 40);
+  }
+
+  // ---- Differentiated combat sounds ----
+  sniperShoot(worldX?: number): void {
+    sniperShootEffect(this, worldX);
+  }
+  sniperHit(worldX?: number): void {
+    sniperHitEffect(this, worldX);
+  }
+  catapultShoot(worldX?: number): void {
+    catapultShootEffect(this, worldX);
+  }
+  catapultImpact(worldX?: number): void {
+    catapultImpactEffect(this, this._getMuted, this._getStarted, worldX);
+  }
+  towerShoot(worldX?: number): void {
+    towerShootEffect(this, worldX);
+  }
+  towerHit(worldX?: number): void {
+    towerHitEffect(this, worldX);
+  }
+  deathMelee(worldX?: number): void {
+    deathMeleeEffect(this, worldX);
+  }
+  deathRanged(worldX?: number): void {
+    deathRangedEffect(this, this._getMuted, this._getStarted, worldX);
+  }
+  tripleKill(): void {
+    tripleKillEffect(this, this._getMuted, this._getStarted);
+  }
+  rampage(): void {
+    rampageEffect(this, this._getMuted, this._getStarted);
+  }
+  unstoppable(): void {
+    unstoppableEffect(this, this._getMuted, this._getStarted);
   }
 }
