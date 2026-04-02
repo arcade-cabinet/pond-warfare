@@ -25,6 +25,7 @@ import { spawnParticle } from '@/utils/particles';
 /**
  * Set of states that involve movement toward a target position.
  * Matches original: ['move', 'g_move', 'r_move', 'a_move', 'b_move', 'atk_move', 'rep_move']
+ * Plus Retreat state (auto-retreat to building).
  */
 export const MOVE_STATES = new Set<number>([
   UnitState.Move,
@@ -34,6 +35,7 @@ export const MOVE_STATES = new Set<number>([
   UnitState.BuildMove,
   UnitState.AttackMovePatrol,
   UnitState.RepairMove,
+  UnitState.Retreat,
 ]);
 
 /** Handles state transitions when a unit reaches its target position. */
@@ -60,6 +62,11 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
     case UnitState.RepairMove:
       UnitStateMachine.state[eid] = UnitState.Repairing;
       UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
+      break;
+    case UnitState.Retreat:
+      // Arrived at building safely; go idle
+      UnitStateMachine.state[eid] = UnitState.Idle;
+      UnitStateMachine.targetEntity[eid] = -1;
       break;
 
     // Original lines 1781-1790: return move - deposit resources, then resume gathering or idle
@@ -91,7 +98,7 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
           life: 75,
         });
 
-        // Floating "+N" at the return building (lodge/nest) — visible economic drip
+        // Floating "+N" at the return building (lodge/nest) -- visible economic drip
         const returnBld = UnitStateMachine.returnEntity[eid];
         if (returnBld !== -1) {
           const bx = Position.x[returnBld];

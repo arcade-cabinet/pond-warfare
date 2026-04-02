@@ -17,7 +17,7 @@ export enum TerrainType {
 /** Speed multiplier for each terrain type. 0 = impassable. */
 const SPEED_MULTIPLIERS: Record<TerrainType, number> = {
   [TerrainType.Grass]: 1.0,
-  [TerrainType.Water]: 0, // impassable (Swimmers bypass)
+  [TerrainType.Water]: 0, // impassable (Swimmers/Divers bypass)
   [TerrainType.Shallows]: 0.5,
   [TerrainType.Mud]: 0.75,
   [TerrainType.Rocks]: 0, // impassable
@@ -28,6 +28,12 @@ const SPEED_MULTIPLIERS: Record<TerrainType, number> = {
 const WATER_TRAVERSABLE_KINDS = new Set([
   28, // EntityKind.Swimmer
   32, // EntityKind.Fish
+  33, // EntityKind.Diver
+]);
+
+/** Entity kinds that ignore ALL terrain speed modifiers (fly over everything). */
+const FLYING_KINDS = new Set([
+  37, // EntityKind.FlyingHeron
 ]);
 
 export class TerrainGrid {
@@ -101,12 +107,15 @@ export class TerrainGrid {
 
   /**
    * Get effective speed multiplier for an entity at a world position.
-   * Swimmers can traverse water at shallows speed.
+   * Flying units ignore terrain. Swimmers/Divers can traverse water.
    */
   getSpeedMultiplier(worldX: number, worldY: number, entityKind: number): number {
+    // Flying units ignore all terrain penalties
+    if (FLYING_KINDS.has(entityKind)) return 1.0;
+
     const type = this.getAt(worldX, worldY);
     if (type === TerrainType.Water && WATER_TRAVERSABLE_KINDS.has(entityKind)) {
-      return 0.5; // Swimmers cross water at shallows speed
+      return 0.5; // Swimmers/Divers cross water at shallows speed
     }
     return SPEED_MULTIPLIERS[type];
   }

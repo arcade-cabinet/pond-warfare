@@ -127,6 +127,90 @@ export const mission4: MissionDef = {
   },
 };
 
+export const mission4A: MissionDef = {
+  id: 'predators-lair',
+  number: 4,
+  title: "Predator's Lair",
+  subtitle: 'Assault the enemy nests with limited forces',
+  briefing: [
+    'Commander, our scouts have located three predator nests deeper in',
+    'the swamp. This is a surgical strike -- no time for a full buildup.',
+    '',
+    'You start with a small strike force and limited resources.',
+    'Sharp Sticks and Swift Paws are already researched.',
+    'Use aggression and speed to destroy all 3 nests before',
+    'they can overwhelm you with reinforcements.',
+  ].join('\n'),
+  objectives: [
+    { id: 'destroy-3-nests', type: 'destroyNest', label: 'Destroy 3 Enemy Nests', count: 3 },
+  ],
+  dialogues: [
+    {
+      frame: 60,
+      text: 'Strike fast, Commander. We have limited troops but sharp weapons.',
+      duration: 210,
+    },
+    {
+      frame: 1200,
+      text: 'Use Swift Paws to outmaneuver their patrols. Hit and run!',
+      duration: 180,
+    },
+    { frame: 3600, text: 'Two nests down. One more to go -- stay focused!', duration: 150 },
+  ],
+  settingsOverrides: {
+    scenario: 'contested',
+    enemyNests: 3,
+    enemyAggression: 'aggressive',
+    peaceMinutes: 0,
+    fogOfWar: 'full',
+    resourceDensity: 'sparse',
+  },
+  worldOverrides: {
+    startingTech: ['sharpSticks', 'swiftPaws'],
+    startingResourcesMult: 0.5,
+  },
+};
+
+export const mission4B: MissionDef = {
+  id: 'siege-of-the-lodge',
+  number: 4,
+  title: 'Siege of the Lodge',
+  subtitle: 'Survive 10 mega-waves of predators',
+  briefing: [
+    'The predators are massing for an all-out assault on our Lodge.',
+    'We have 10 mega-waves incoming. Survive them all.',
+    '',
+    'Sturdy Mud and Herbal Medicine are already researched.',
+    'Build walls, towers, and healing huts. Fortify everything.',
+    'Nature will be your shield.',
+  ].join('\n'),
+  objectives: [
+    { id: 'survive-10-waves', type: 'survive', label: 'Survive 10 Mega-Waves', tier: 5 },
+  ],
+  dialogues: [
+    { frame: 60, text: 'Fortify the Lodge, Commander. The swarm is coming.', duration: 210 },
+    {
+      frame: 1800,
+      text: 'Herbal Medicine keeps our troops alive. Build Herbalist Huts!',
+      duration: 180,
+    },
+    { frame: 5400, text: 'Wave after wave... hold the line, Commander!', duration: 150 },
+  ],
+  settingsOverrides: {
+    scenario: 'island',
+    enemyNests: 2,
+    enemyAggression: 'relentless',
+    peaceMinutes: 1,
+    evolutionSpeed: 'fast',
+    fogOfWar: 'explored',
+    resourceDensity: 'rich',
+  },
+  worldOverrides: {
+    startingTech: ['sturdyMud', 'herbalMedicine'],
+    evolutionSpeedMod: 0.5,
+  },
+};
+
 export const mission5: MissionDef = {
   id: 'alpha-strike',
   number: 5,

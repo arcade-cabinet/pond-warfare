@@ -21,6 +21,7 @@ import {
   Position,
   trainingQueueSlots,
 } from '@/ecs/components';
+import { COMMANDER_DEATH_DEMORALIZE_FRAMES } from '@/ecs/systems/morale';
 import type { GameWorld } from '@/ecs/world';
 import { createCorpseId, EntityKind, Faction, SpriteId } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
@@ -112,7 +113,7 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     });
   }
 
-  // Commander death announcement
+  // Commander death announcement + morale demoralization
   if (
     hasComponent(world.ecs, eid, EntityTypeTag) &&
     (EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Commander &&
@@ -135,6 +136,9 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     });
     world.shakeTimer = Math.max(world.shakeTimer, 20);
     audio.deathBuilding();
+
+    // Trigger morale demoralization for all player units (10 seconds)
+    world.commanderDeathDemoralizeUntil = world.frameCount + COMMANDER_DEATH_DEMORALIZE_FRAMES;
   }
 
   // Boss croc loot

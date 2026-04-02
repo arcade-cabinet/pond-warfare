@@ -145,16 +145,16 @@ describe('getDamageMultiplier', () => {
     expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Sniper)).toBe(0.75);
   });
 
-  it('should only contain multipliers for combat unit types', () => {
-    // Derive combat kinds from ENTITY_DEFS: non-building, non-resource, non-gatherer entities
-    const combatKinds = Object.keys(ENTITY_DEFS)
+  it('should only contain multipliers for entities with damage', () => {
+    // Damage multiplier keys should be entities that deal damage (units or towers)
+    const damageDealers = Object.keys(ENTITY_DEFS)
       .map(Number)
       .filter((k) => {
         const def = ENTITY_DEFS[k as EntityKind];
-        return def && !def.isBuilding && !def.isResource && k !== EntityKind.Gatherer;
+        return def && !def.isResource && def.damage > 0;
       });
     for (const kind of Object.keys(DAMAGE_MULTIPLIERS)) {
-      expect(combatKinds).toContain(Number(kind));
+      expect(damageDealers).toContain(Number(kind));
     }
   });
 });

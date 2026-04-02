@@ -304,6 +304,8 @@ export const fpsCounterVisible = signal(false);
 export const campaignOpen = signal(false);
 export const campaignMissionId = signal('');
 export const campaignObjectiveStatuses = signal<Record<string, boolean>>({});
+export const campaignChoiceOpen = signal(false);
+export const campaignBranchPath = signal<'A' | 'B' | null>(null);
 
 export const speedLabel = computed(() => `${gameSpeed.value}x`);
 export const muteLabel = computed(() => (muted.value ? '\u{1F507}' : '\u{1F50A}'));

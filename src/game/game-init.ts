@@ -18,8 +18,10 @@ import { PointerHandler } from '@/input/pointer';
 import { canDockPanels } from '@/platform';
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import type { FogRendererState } from '@/rendering/fog-renderer';
+import { getBgLayer } from '@/rendering/pixi/init';
 import { initPixiApp, setBackground, setColorBlindMode } from '@/rendering/pixi-app';
 import { generateAllSprites } from '@/rendering/sprites';
+import { attachRippleSprites, initWaterRipples } from '@/rendering/water-ripple';
 import type { ReplayRecorder } from '@/replay';
 import { loadAchievements, resetAchievementMatchState } from '@/systems/achievements';
 import { loadUnlocks, resetMatchUpdateGuard } from '@/systems/unlock-tracker';
@@ -73,6 +75,13 @@ export async function initCanvases(
 
   await initPixiApp(gameCanvas, w, h);
   setBackground(bgCanvas);
+
+  // Water ripple overlays (non-blocking: init in background)
+  if (world.terrainGrid) {
+    initWaterRipples(world.terrainGrid)
+      .then(() => attachRippleSprites(getBgLayer()))
+      .catch(() => {});
+  }
 
   const { fogPattern } = buildFogTexture(fogCtx);
   const fogState: FogRendererState = { fogCtx, fogPattern };

@@ -185,10 +185,18 @@ export function createGameWorld(): GameWorld {
     waveNumber: 0,
     commanderAbilityCooldownUntil: 0,
     commanderAbilityActiveUntil: 0,
+    demoralizedUnits: new Set(),
+    commanderDeathDemoralizeUntil: 0,
+    autoRetreatEnabled: true,
     gameEndFrame: 0,
     gameEndFocusX: 0,
     gameEndFocusY: 0,
     gameEndSpectacleActive: false,
     gameEndPrevSpeed: 1,
+    stealthEntities: new Set(),
+    stealthAmbushReady: new Set(),
+    wormBurrowTimers: new Map(),
+    lastWormSpawnFrame: 0,
+    engineerBridges: [],
   };
 }

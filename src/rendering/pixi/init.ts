@@ -16,6 +16,7 @@ import {
   Texture,
 } from 'pixi.js';
 
+import { resetWaterRipples } from '@/rendering/water-ripple';
 import type { SpriteId } from '@/types';
 
 // Color blind mode flag
@@ -228,6 +229,7 @@ export function destroyPixiApp(): void {
   for (const t of floatingTextPool) t.destroy();
   floatingTextPool.length = 0;
   _destroyRecoloredTextures?.();
+  resetWaterRipples();
   bgSprite = null;
   app.destroy(false, { children: true, texture: false });
   initialised = false;

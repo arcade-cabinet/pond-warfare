@@ -21,10 +21,9 @@ jobs:
         github.actor == 'github-actions[bot]'
       )
     steps:
-      - name: Approve PR with PAT
-        if: ${{ secrets.AUTO_MERGE_TOKEN != '' }}
+      - name: Approve PR
         env:
-          GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN }}
+          GH_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
@@ -32,7 +31,7 @@ jobs:
 
       - name: Enable auto-merge (squash)
         env:
-          GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
