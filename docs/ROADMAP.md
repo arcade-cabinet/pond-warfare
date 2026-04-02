@@ -1,6 +1,6 @@
 # Pond Warfare — Feature Roadmap
 
-Current state: v1.3.0 — 962 tests, 9/10 polish rating.
+Current state: v1.2.0 (v1.3.0 pending release) — 962 tests, 9/10 polish rating.
 Strong foundation: 5 tech branches, 7 commanders, 6 scenarios, terrain system, advisor system, classic RTS game feel.
 
 ---
@@ -8,7 +8,7 @@ Strong foundation: 5 tech branches, 7 commanders, 6 scenarios, terrain system, a
 ## HORIZONTAL EXPANSION (Breadth — more things to do)
 
 ### H1. More Unit Types
-The game has 8 player unit types. Classic RTS games have 12-15. Ideas:
+The game has 9 player unit types. Classic RTS games have 12-15. Ideas:
 - **Otter Diver** — stealth unit that can hide underwater (only on Water/Shallows tiles), ambush enemies
 - **Otter Engineer** — faster building construction, can repair buildings, can build temporary bridges over Water tiles
 - **Otter Shaman** — area heal over time (aura), requires Nature branch Deep Diving tech
@@ -16,7 +16,7 @@ The game has 8 player unit types. Classic RTS games have 12-15. Ideas:
 - **Otter Siege Tower** — slow mobile structure that provides high-ground range bonus to units nearby
 
 ### H2. More Enemy Types
-Currently 6 enemy types (Gator, Snake, Armored Gator, Venom Snake, Swamp Drake, Siege Turtle, Alpha Predator). Add:
+Currently 7 enemy types (Gator, Snake, Armored Gator, Venom Snake, Swamp Drake, Siege Turtle, Alpha Predator). Add:
 - **Burrowing Worm** — appears from underground, bypasses walls, anti-gathering (attacks resource nodes)
 - **Flying Heron** — ignores terrain, fast, weak, scouts for the enemy AI
 - **River Croc** — only spawns on Water tiles, fast in water, slow on land
@@ -157,15 +157,15 @@ Not implementing multiplayer yet, but design for it:
 7. **H7: Commander active abilities** (each commander becomes a strategic choice, not just passives)
 
 ### Following Sprint (v1.5.0) — Depth
-6. **V4: Flanking + elevation damage bonuses** (combat becomes more tactical)
-7. **H1: 2-3 new player units** (Diver, Engineer, Shaman)
-8. **V3: Resource trading via Market** (economy gets a new dimension)
-9. **H2: 2 new enemy types** (Burrowing Worm, Flying Heron)
-10. **V5: Campaign branching** (replay value for campaign)
+1. **V4: Flanking + elevation damage bonuses** (combat becomes more tactical)
+2. **H1: 2-3 new player units** (Diver, Engineer, Shaman)
+3. **V3: Resource trading via Market** (economy gets a new dimension)
+4. **H2: 2 new enemy types** (Burrowing Worm, Flying Heron)
+5. **V5: Campaign branching** (replay value for campaign)
 
 ### Future (v2.0.0) — Expansion
-11. **V1: Weather effects** (changes gameplay each match)
-12. **H3: Dock + water units** (opens water combat as a strategic layer)
-13. **V6: Replay system** (competitive foundation)
-14. **H5: Puzzle Missions** (different gameplay mode entirely)
-15. **H6: Branch-themed cosmetics** (visual reward for tech specialization)
+1. **V1: Weather effects** (changes gameplay each match)
+2. **H3: Dock + water units** (opens water combat as a strategic layer)
+3. **V6: Replay system** (competitive foundation)
+4. **H5: Puzzle Missions** (different gameplay mode entirely)
+5. **H6: Branch-themed cosmetics** (visual reward for tech specialization)
