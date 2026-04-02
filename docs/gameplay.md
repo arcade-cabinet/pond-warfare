@@ -8,9 +8,9 @@ Pond Warfare is a Warcraft II-style real-time strategy game set in a pond ecosys
 
 | Faction | Units | Role |
 |---------|-------|------|
-| **Player** (Otters) | Gatherer, Brawler, Sniper, Healer, Shieldbearer, Scout, Catapult, Swimmer, Trapper | Build, gather, fight |
-| **Enemy** (Predators) | Gator, Snake, ArmoredGator, VenomSnake, SwampDrake, SiegeTurtle, AlphaPredator, BossCroc | Gather, build, fight |
-| **Neutral** | Cattail, Clambed, PearlBed | Harvestable resources (shared) |
+| **Player** (Otters) | Gatherer, Brawler, Sniper, Healer, Shieldbearer, Scout, Catapult, Swimmer, Trapper, Commander, Diver, Engineer, Shaman, OtterWarship, Berserker | Build, gather, fight |
+| **Enemy** (Predators) | Gator, Snake, ArmoredGator, VenomSnake, SwampDrake, SiegeTurtle, AlphaPredator, BossCroc, BurrowingWorm, FlyingHeron | Gather, build, fight |
+| **Neutral** | Cattail, Clambed, PearlBed, Frog, Fish | Resources + ambient critters |
 
 Both factions harvest from the same neutral resource nodes. The enemy AI spawns its own gatherers from Predator Nests and collects resources into its own stockpile (`enemyResources` in GameWorld).
 
@@ -23,7 +23,7 @@ Both factions harvest from the same neutral resource nodes. The enemy AI spawns 
 | **Pearls** | PearlBed nodes (500 each) | Elite techs (Hardened Shells, Siege Works, etc.) |
 | **Food** | Population count vs housing cap | Limits unit count |
 
-Food works as a population system: each non-building player entity counts as 1 food. Max food comes from completed Lodges (+8), Burrows (+6), and Fishing Huts (+2).
+Food works as a population system: each non-building player entity counts as 1 food. Max food comes from completed Lodges (+8), Burrows (+6), Fishing Huts (+2), and Docks (+2).
 
 ### Resource Scarcity
 
@@ -51,6 +51,10 @@ Expanding to new Lodges near fresh resource nodes is essential as nearby deposit
 | **Scout Post** | 100C 75T | Reveals fog of war in large radius |
 | **Fishing Hut** | 100C 75T | Passive food income, +2 food cap |
 | **Herbalist Hut** | 150C 100T | Area heal for nearby friendly units |
+| **Market** | 200C 150T | Resource trading (convert excess twigs/clams) |
+| **Dock** | 150C 100T | Trains water units (Warship), +2 food cap |
+| **Wall Gate** | 50T | Allows allied passage, blocks enemies (80 HP) |
+| **Shrine** | 300C 200T 25P | One-time powerful ability activation (60 HP) |
 
 Buildings start at 1 HP and must be constructed by Gatherers. Progress shown as percentage.
 
@@ -69,8 +73,14 @@ Buildings start at 1 HP and must be constructed by Gatherers. Progress shown as 
 | **Catapult** | 50 | 0.8 | 20 | 250 | 300C 200T 1F |
 | **Swimmer** | 35 | 2.8 | 4 | 40 | 60C 30T 1F |
 | **Trapper** | 30 | 1.6 | 0 | 100 | 80C 60T 1F |
+| **Commander** | 80 | 2.0 | 5 | 60 | -- (unique hero) |
+| **Diver** | 25 | 2.5 | 8 | 40 | 60C 40T 1F |
+| **Engineer** | 40 | 1.5 | 1 | 40 | 80C 60T 1F |
+| **Shaman** | 30 | 1.6 | 0 | - | 70C 50T 1F |
+| **Otter Warship** | 80 | 1.5 | 12 | 200 | 200C 150T 1F |
+| **Berserker** | 60 | 2.0 | 15 | 40 | 120C 80T 1F |
 
-**Swimmer** is a fast amphibious unit ideal for flanking and raiding. **Trapper** places speed debuff traps that slow enemies passing through them. **Shieldbearer** is a high-HP tank that absorbs damage for squishier units. **Catapult** deals devastating siege damage from extreme range but is slow and fragile.
+**Swimmer** is a fast amphibious unit ideal for flanking and raiding. **Trapper** places speed debuff traps that slow enemies passing through them. **Shieldbearer** is a high-HP tank that absorbs damage for squishier units. **Catapult** deals devastating siege damage from extreme range but is slow and fragile. **Diver** is a stealth assassin, invisible in water tiles with a first-strike bonus. **Engineer** builds temporary bridges over water. **Shaman** provides area-of-effect healing to nearby units. **Otter Warship** is a naval ranged unit trained at Docks. **Berserker** deals increasing damage as its HP decreases (rage mechanic).
 
 ### Enemy Units
 
@@ -84,6 +94,8 @@ Buildings start at 1 HP and must be constructed by Gatherers. Progress shown as 
 | **Siege Turtle** | 300 | 0.5 | 25 | 50 | Anti-building (3x vs buildings), evolution tier 4 |
 | **Alpha Predator** | 500 | 1.0 | 12 | 50 | Damage aura (+20% to nearby enemies), evolution tier 5 |
 | **Boss Croc** | 200 | 1.2 | 15 | 50 | AoE stomp, enrage at 30% HP |
+| **Burrowing Worm** | 60 | 1.0 | 10 | 40 | Underground ambusher (event spawn) |
+| **Flying Heron** | 20 | 3.5 | 4 | 40 | Ignores terrain (event spawn) |
 
 ### Enemy Evolution System
 
@@ -417,7 +429,7 @@ Tracked stats: total wins/losses/games, total kills, fastest win, longest surviv
 
 ## Map Scenarios
 
-6 map types providing strategic variety:
+9 map types providing strategic variety:
 
 | Scenario | Description |
 |----------|-------------|
@@ -427,6 +439,9 @@ Tracked stats: total wins/losses/games, total kills, fastest win, longest surviv
 | Labyrinth | Maze walls, dead-end resources, favors Trappers |
 | River | Vertical divide with bridge choke points, favors Swimmers |
 | Peninsula | Narrow walled land, single entry, ultimate turtle map |
+| Archipelago | Multiple small islands connected by shallow bridges, water combat matters |
+| Ravine | Deep canyon with high ground on both sides, bridge chokepoints |
+| Swamp | Mostly Mud/Shallows terrain, movement slow everywhere, favors defense |
 
 ## Cosmetic System
 
@@ -464,3 +479,55 @@ Additional effects: building placement, research complete, airdrop incoming, tra
 - **Economy**: Starting resources multiplier, gather speed, starting unit count
 - **Enemies**: Nest count, enemy economy strength, aggression level, evolution speed
 - **Rules**: Peace timer, permadeath, fog of war mode, hero mode
+
+## P2P Co-op Multiplayer
+
+2-player cooperative play via Trystero/WebRTC with Nostr relay signaling:
+
+- **Host creates room**: generates a 6-character room code, configures scenario/difficulty/seed
+- **Guest joins room**: enters room code, connects via WebRTC DataChannel
+- **Lockstep sync**: Both players buffer commands 3 frames ahead; frames only execute when both players' inputs are received
+- **Deterministic ordering**: Host commands apply before guest commands each frame
+- **Checksum validation**: Frame-level checksums detect desyncs
+- **Connection quality**: HUD indicator shows connected/degraded/disconnected status
+- **Disconnect handling**: Overlay appears on peer disconnect with reconnect/quit options
+
+## Daily Challenges
+
+A pool of 15 challenge templates rotates daily (one per UTC day, deterministic):
+
+| Challenge | Objective | XP Reward |
+|-----------|-----------|-----------|
+| Back to Basics | Win with only Gatherers and Brawlers | 250 |
+| Nest Breaker | Destroy 3 enemy nests | 200 |
+| Speed Run | Win in under 8 minutes | 300 |
+| Scholar Rush | Research 5+ techs | 200 |
+| Fortress | Win without losing a building | 250 |
+| ...and 10 more | Various combat, economy, and commander objectives | 150-300 |
+
+## XP & Level System
+
+XP earned from every game: base (100) + win bonus (200) + difficulty (0-300) + kill/building/tech bonuses + daily challenge completion. Level = totalXP / 500. Stored in SQLite player_profile table.
+
+## Match History
+
+Last 50 matches stored with: result, difficulty, scenario, commander, duration, kills, units lost, buildings built, techs researched, and XP earned. Auto-pruned beyond 50 records.
+
+## Random In-Game Events
+
+8 event types fire every 3-5 minutes after peace ends (seeded from map seed):
+
+| Event | Duration | Effect |
+|-------|----------|--------|
+| Resource Surge | Instant | Random resource node doubles remaining amount |
+| Migrating Fish | Permanent | 5-8 neutral fish spawn |
+| Predator Frenzy | 30 seconds | All enemies +20% speed |
+| Healing Spring | 30 seconds | Healing zone heals nearby units |
+| Fog Bank | 60 seconds | Fog of war closes in by 30% |
+| Supply Drop | Instant | +100 clams, +50 twigs |
+| Earthquake | Instant | All buildings take 10% damage |
+| Blessing of the Pond | 60 seconds | All player units +10% speed |
+
+## Unlock Progression
+
+26 unlockable items across 6 categories (Scenarios, Presets, Units, Modifiers, Cosmetics, Branch-themed). Progress tracked persistently. A next-unlock hint system shows the closest unearned unlock and its completion percentage.
