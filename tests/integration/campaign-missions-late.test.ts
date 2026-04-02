@@ -69,7 +69,7 @@ describe('Mission 4 — Evolution', () => {
     campaignSystem(world);
     expect(world.campaign?.allObjectivesComplete).toBe(true);
 
-    world.frameCount = world.campaign?.completedAtFrame + 91;
+    world.frameCount = (world.campaign?.completedAtFrame ?? 0) + 91;
     campaignSystem(world);
     expect(world.state).toBe('win');
   });
@@ -131,7 +131,7 @@ describe('Mission 5 — Alpha Strike', () => {
     campaignSystem(world);
     expect(world.campaign?.allObjectivesComplete).toBe(true);
 
-    world.frameCount = world.campaign?.completedAtFrame + 91;
+    world.frameCount = (world.campaign?.completedAtFrame ?? 0) + 91;
     campaignSystem(world);
     expect(world.state).toBe('win');
   });

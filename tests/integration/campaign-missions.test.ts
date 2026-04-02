@@ -102,7 +102,7 @@ describe('Mission 1 — First Dawn', () => {
     campaignSystem(world);
     expect(world.campaign?.allObjectivesComplete).toBe(true);
 
-    world.frameCount = world.campaign?.completedAtFrame + 91;
+    world.frameCount = (world.campaign?.completedAtFrame ?? 0) + 91;
     campaignSystem(world);
     expect(world.state).toBe('win');
   });
@@ -203,7 +203,7 @@ describe('Mission 3 — The Nest Must Fall', () => {
     campaignSystem(world);
     expect(world.campaign?.allObjectivesComplete).toBe(true);
 
-    world.frameCount = world.campaign?.completedAtFrame + 91;
+    world.frameCount = (world.campaign?.completedAtFrame ?? 0) + 91;
     campaignSystem(world);
     expect(world.state).toBe('win');
   });
