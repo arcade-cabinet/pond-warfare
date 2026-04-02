@@ -190,12 +190,13 @@ export function centerCameraOnLodge(world: GameWorld): void {
 
 /** Spawn fireflies on the world. */
 export function spawnFireflies(world: GameWorld): void {
+  const rng = world.gameRng;
   world.fireflies = Array.from({ length: 150 }, () => ({
-    x: Math.random() * WORLD_WIDTH,
-    y: Math.random() * WORLD_HEIGHT,
-    vx: Math.random() - 0.5,
-    vy: (Math.random() - 0.5) * 0.5 - 0.2,
-    phase: Math.random() * Math.PI * 2,
+    x: rng.next() * WORLD_WIDTH,
+    y: rng.next() * WORLD_HEIGHT,
+    vx: rng.next() - 0.5,
+    vy: (rng.next() - 0.5) * 0.5 - 0.2,
+    phase: rng.next() * Math.PI * 2,
   }));
 }
 

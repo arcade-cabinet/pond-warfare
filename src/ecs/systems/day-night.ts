@@ -61,7 +61,7 @@ export function dayNightSystem(world: GameWorld): void {
     f.phase += 0.05;
 
     // Random drift on x velocity
-    f.vx += (Math.random() - 0.5) * 0.1;
+    f.vx += (world.gameRng.next() - 0.5) * 0.1;
 
     // Clamp velocity
     if (f.vx > 1) f.vx = 1;

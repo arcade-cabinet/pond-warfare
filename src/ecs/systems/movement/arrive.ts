@@ -107,7 +107,7 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
           // Small deposit text at the Lodge (shorter than combat floaters)
           if (faction === Faction.Player) {
             world.floatingTexts.push({
-              x: bx + (Math.random() - 0.5) * 16,
+              x: bx + (world.gameRng.next() - 0.5) * 16,
               y: by - 30,
               text: `+${depositAmt}`,
               color,

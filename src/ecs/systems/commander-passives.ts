@@ -36,12 +36,12 @@ function stormcallerLightning(world: GameWorld): void {
   if (enemies.length === 0) return;
 
   // Pick a random enemy
-  const target = enemies[Math.floor(Math.random() * enemies.length)];
+  const target = enemies[Math.floor(world.gameRng.next() * enemies.length)];
   const tx = Position.x[target];
   const ty = Position.y[target];
 
   // Deal lightning damage (8-12 range centered on configured damage)
-  const actualDmg = dmg + Math.round((Math.random() - 0.5) * 4);
+  const actualDmg = dmg + Math.round((world.gameRng.next() - 0.5) * 4);
   takeDamage(world, target, Math.max(1, actualDmg), -1);
 
   // Visual: white flash particles
@@ -49,8 +49,8 @@ function stormcallerLightning(world: GameWorld): void {
     world.particles.push({
       x: tx,
       y: ty - 10,
-      vx: (Math.random() - 0.5) * 4,
-      vy: -Math.random() * 3,
+      vx: (world.gameRng.next() - 0.5) * 4,
+      vy: -world.gameRng.next() * 3,
       life: 15,
       color: '#ffffff',
       size: 4,

@@ -120,8 +120,8 @@ export function findBuildPosition(
 
   // Try random positions near the nest, snapping to tile grid
   for (let attempt = 0; attempt < 12; attempt++) {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 80 + Math.random() * ENEMY_BUILD_RADIUS;
+    const angle = world.gameRng.next() * Math.PI * 2;
+    const dist = 80 + world.gameRng.next() * ENEMY_BUILD_RADIUS;
     const bx = Math.round((nx + Math.cos(angle) * dist) / TILE_SIZE) * TILE_SIZE;
     const by = Math.round((ny + Math.sin(angle) * dist) / TILE_SIZE) * TILE_SIZE;
 

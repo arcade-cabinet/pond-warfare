@@ -142,7 +142,7 @@ export function emitPositionalBonusText(
 
   if (bonuses.flanking) {
     world.floatingTexts.push({
-      x: tx + (Math.random() * 8 - 4),
+      x: tx + (world.gameRng.next() * 8 - 4),
       y: ty - spriteH / 2 - 15,
       text: 'FLANKED!',
       color: '#f59e0b',
@@ -152,7 +152,7 @@ export function emitPositionalBonusText(
 
   if (bonuses.elevationUp) {
     world.floatingTexts.push({
-      x: tx + (Math.random() * 8 - 4),
+      x: tx + (world.gameRng.next() * 8 - 4),
       y: ty - spriteH / 2 - 25,
       text: 'HIGH GROUND!',
       color: '#3b82f6',

@@ -76,7 +76,7 @@ export function threatEscalationSystem(world: GameWorld): void {
   if (world.frameCount % RANDOM_EVENT_CHECK_INTERVAL === 0 && framesSincePeace >= 10800) {
     const sinceLastEvent = world.frameCount - evo.lastRandomEventFrame;
     const gap =
-      RANDOM_EVENT_MIN_GAP + Math.random() * (RANDOM_EVENT_MAX_GAP - RANDOM_EVENT_MIN_GAP);
+      RANDOM_EVENT_MIN_GAP + world.gameRng.next() * (RANDOM_EVENT_MAX_GAP - RANDOM_EVENT_MIN_GAP);
     if (sinceLastEvent >= gap) {
       evo.lastRandomEventFrame = world.frameCount;
       triggerRandomEvent(world);

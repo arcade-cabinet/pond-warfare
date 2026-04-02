@@ -42,17 +42,18 @@ export function resetHeronSpawner(): void {
 }
 
 /** Pick a random spawn position along a map edge. */
-function edgeSpawnPosition(): { sx: number; sy: number } {
-  const edge = Math.floor(Math.random() * 4);
+function edgeSpawnPosition(world: GameWorld): { sx: number; sy: number } {
+  const rng = world.gameRng;
+  const edge = Math.floor(rng.next() * 4);
   switch (edge) {
     case 0:
-      return { sx: 100 + Math.random() * (WORLD_WIDTH - 200), sy: 30 };
+      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: 30 };
     case 1:
-      return { sx: WORLD_WIDTH - 30, sy: 100 + Math.random() * (WORLD_HEIGHT - 200) };
+      return { sx: WORLD_WIDTH - 30, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
     case 2:
-      return { sx: 100 + Math.random() * (WORLD_WIDTH - 200), sy: WORLD_HEIGHT - 30 };
+      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: WORLD_HEIGHT - 30 };
     default:
-      return { sx: 30, sy: 100 + Math.random() * (WORLD_HEIGHT - 200) };
+      return { sx: 30, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
   }
 }
 
@@ -117,7 +118,7 @@ export function heronSpawnerSystem(world: GameWorld): void {
 
   lastHeronSpawnFrame = world.frameCount;
 
-  const { sx, sy } = edgeSpawnPosition();
+  const { sx, sy } = edgeSpawnPosition(world);
   const eid = spawnEntity(world, EntityKind.FlyingHeron, sx, sy, Faction.Enemy);
   if (eid < 0) return;
 

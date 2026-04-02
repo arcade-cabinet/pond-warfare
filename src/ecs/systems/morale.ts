@@ -142,10 +142,10 @@ function spawnDemoralizeClouds(world: GameWorld): void {
     // Small grey cloud particle above unit
     spawnParticle(
       world,
-      x + (Math.random() * 16 - 8),
-      y - 25 - Math.random() * 5,
-      (Math.random() - 0.5) * 0.5,
-      -Math.random() * 0.3,
+      x + (world.gameRng.next() * 16 - 8),
+      y - 25 - world.gameRng.next() * 5,
+      (world.gameRng.next() - 0.5) * 0.5,
+      -world.gameRng.next() * 0.3,
       20,
       '#9ca3af',
       4,

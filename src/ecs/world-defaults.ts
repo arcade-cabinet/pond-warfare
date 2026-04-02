@@ -22,6 +22,7 @@ import {
 import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, type Particle } from '@/types';
 import { ObjectPool } from '@/utils/pool';
+import { SeededRandom } from '@/utils/random';
 import { SpatialHash } from '@/utils/spatial-hash';
 import type { GameWorld } from './world';
 
@@ -116,6 +117,7 @@ export function createGameWorld(): GameWorld {
     enemyEconomyMod: 1.0,
     enemyAggressionLevel: 'normal',
     mapSeed: defaultSeed,
+    gameRng: new SeededRandom(defaultSeed ^ 0x9e3779b9),
     placingBuilding: null,
     attackMoveMode: false,
     idleWorkerIdx: 0,

@@ -107,8 +107,8 @@ export function buildMarketButtons(w: GameWorld, marketEid: number): ActionButto
             w.particles.push({
               x: mx,
               y: my - 10,
-              vx: (Math.random() - 0.5) * 3,
-              vy: -Math.random() * 2 - 1,
+              vx: (w.gameRng.next() - 0.5) * 3,
+              vy: -w.gameRng.next() * 2 - 1,
               life: 40,
               color: '#ffd700',
               size: 3,

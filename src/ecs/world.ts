@@ -28,6 +28,7 @@ import type {
   Particle,
 } from '@/types';
 import type { ObjectPool } from '@/utils/pool';
+import type { SeededRandom } from '@/utils/random';
 import type { SpatialHash } from '@/utils/spatial-hash';
 import type { CommanderModifiers } from './world-defaults';
 
@@ -125,6 +126,9 @@ export interface GameWorld {
 
   // Map seed for reproducible random generation
   mapSeed: number;
+
+  // Seeded PRNG for deterministic gameplay (all gameplay-affecting randomness)
+  gameRng: SeededRandom;
 
   // Resource tracking
   resTracker: {

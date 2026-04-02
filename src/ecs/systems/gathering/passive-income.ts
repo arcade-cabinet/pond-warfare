@@ -27,10 +27,10 @@ export function applyPassiveIncome(world: GameWorld): void {
       world.resources.clams += 6;
       world.stats.totalClamsEarned += 6;
       world.particles.push({
-        x: Position.x[bid] + (Math.random() - 0.5) * 16,
+        x: Position.x[bid] + (world.gameRng.next() - 0.5) * 16,
         y: Position.y[bid] - 8,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: -Math.random() * 0.8,
+        vx: (world.gameRng.next() - 0.5) * 0.5,
+        vy: -world.gameRng.next() * 0.8,
         life: 12,
         color: '#fde047',
         size: 2,
@@ -48,10 +48,10 @@ export function applyPassiveIncome(world: GameWorld): void {
     world.resources.clams += 5;
     world.stats.totalClamsEarned += 5;
     world.particles.push({
-      x: Position.x[bid] + (Math.random() - 0.5) * 20,
+      x: Position.x[bid] + (world.gameRng.next() - 0.5) * 20,
       y: Position.y[bid] - 5,
-      vx: (Math.random() - 0.5) * 1,
-      vy: -Math.random() * 1,
+      vx: (world.gameRng.next() - 0.5) * 1,
+      vy: -world.gameRng.next() * 1,
       life: 15,
       color: '#38bdf8',
       size: 2,

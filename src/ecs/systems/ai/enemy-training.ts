@@ -33,6 +33,7 @@ import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
+import type { SeededRandom } from '@/utils/random';
 import { countPlayerUnitsOfKind, getEnemyNests } from './helpers';
 
 /** Resource costs for all enemy-trainable unit types. */
@@ -65,6 +66,7 @@ const SIEGE_KINDS = new Set([EntityKind.SiegeTurtle]);
  * The trainingPreference param biases selection toward a unit category.
  */
 function pickEnemyUnit(
+  rng: SeededRandom,
   unlockedUnits: EntityKind[],
   trainingPreference: 'melee' | 'ranged' | 'balanced' | 'siege' = 'balanced',
 ): EntityKind {
@@ -79,7 +81,7 @@ function pickEnemyUnit(
   }
   if (totalWeight === 0) return EntityKind.Gator;
 
-  let roll = Math.random() * totalWeight;
+  let roll = rng.next() * totalWeight;
   for (const kind of unlockedUnits) {
     let w = ENEMY_UNIT_COSTS[kind]?.weight ?? 0;
     if (trainingPreference === 'melee' && MELEE_KINDS.has(kind)) w *= 2;
@@ -155,6 +157,7 @@ export function enemyTrainingTick(world: GameWorld): void {
     // Decide what to train from unlocked units (evolution system + personality bias)
     const personality = resolvePersonality(world.aiPersonality, world.frameCount);
     const unitKind = pickEnemyUnit(
+      world.gameRng,
       world.enemyEvolution.unlockedUnits,
       personality.trainingPreference,
     );
@@ -222,7 +225,7 @@ export function enemyTrainingQueueProcess(world: GameWorld): void {
       const spawnCount = Math.min(prodMult, slots.length);
       for (let s = 0; s < spawnCount; s++) {
         const kind = s === 0 ? unitKind : (slots[s] as EntityKind);
-        const sx = bx + (Math.random() > 0.5 ? 1 : -1) * (30 + s * 10);
+        const sx = bx + (world.gameRng.next() > 0.5 ? 1 : -1) * (30 + s * 10);
         const sy = by + spriteH / 2 + 20 + s * 5;
 
         const newEid = spawnEntity(world, kind, sx, sy, Faction.Enemy);

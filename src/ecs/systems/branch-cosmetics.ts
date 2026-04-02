@@ -32,8 +32,8 @@ const COSMETIC_INTERVAL = 30;
 /** Particle configs per branch theme. */
 interface CosmeticParticle {
   color: string;
-  vx: () => number;
-  vy: () => number;
+  vx: (r: () => number) => number;
+  vy: (r: () => number) => number;
   life: number;
   size: number;
 }
@@ -41,36 +41,36 @@ interface CosmeticParticle {
 const BRANCH_PARTICLES: Record<TechBranch, CosmeticParticle> = {
   lodge: {
     color: '#92400e',
-    vx: () => (Math.random() - 0.5) * 0.8,
-    vy: () => -0.3 - Math.random() * 0.5,
+    vx: (r) => (r() - 0.5) * 0.8,
+    vy: (r) => -0.3 - r() * 0.5,
     life: 25,
     size: 1.5,
   },
   nature: {
     color: '#4ade80',
-    vx: () => (Math.random() - 0.5) * 0.4,
-    vy: () => -0.5 - Math.random() * 0.3,
+    vx: (r) => (r() - 0.5) * 0.4,
+    vy: (r) => -0.5 - r() * 0.3,
     life: 20,
     size: 2,
   },
   warfare: {
     color: '#ef4444',
-    vx: () => (Math.random() - 0.5) * 1.2,
-    vy: () => -0.8 - Math.random() * 0.5,
+    vx: (r) => (r() - 0.5) * 1.2,
+    vy: (r) => -0.8 - r() * 0.5,
     life: 15,
     size: 1,
   },
   fortifications: {
     color: '#cbd5e1',
-    vx: () => (Math.random() - 0.5) * 0.3,
-    vy: () => -0.2 - Math.random() * 0.3,
+    vx: (r) => (r() - 0.5) * 0.3,
+    vy: (r) => -0.2 - r() * 0.3,
     life: 30,
     size: 2,
   },
   shadow: {
     color: '#4c1d95',
-    vx: () => (Math.random() - 0.5) * 0.6,
-    vy: () => 0.2 + Math.random() * 0.3,
+    vx: (r) => (r() - 0.5) * 0.6,
+    vy: (r) => 0.2 + r() * 0.3,
     life: 35,
     size: 2,
   },
@@ -100,16 +100,17 @@ export function branchCosmeticsSystem(world: GameWorld): void {
     const y = Position.y[eid];
 
     // Spawn one particle per active branch (subtle, not overwhelming)
+    const r = () => world.gameRng.next();
     for (const branch of activeBranches) {
       const config = BRANCH_PARTICLES[branch];
       // Only spawn with 50% probability per unit to keep it subtle
-      if (Math.random() > 0.5) continue;
+      if (r() > 0.5) continue;
       spawnParticle(
         world,
-        x + (Math.random() - 0.5) * 16,
-        y + (Math.random() - 0.5) * 8,
-        config.vx(),
-        config.vy(),
+        x + (r() - 0.5) * 16,
+        y + (r() - 0.5) * 8,
+        config.vx(r),
+        config.vy(r),
         config.life,
         config.color,
         config.size,

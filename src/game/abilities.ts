@@ -79,8 +79,8 @@ export function useTidalSurge(world: GameWorld): boolean {
     world.particles.push({
       x: Position.x[eid],
       y: Position.y[eid],
-      vx: (Math.random() - 0.5) * 2,
-      vy: -Math.random() * 2,
+      vx: (world.gameRng.next() - 0.5) * 2,
+      vy: -world.gameRng.next() * 2,
       life: 25,
       color: '#38bdf8',
       size: 4,
@@ -173,10 +173,10 @@ export function useAirdrop(world: GameWorld): boolean {
 
   for (let p = 0; p < 20; p++) {
     world.particles.push({
-      x: lodgeX + (Math.random() - 0.5) * 60,
-      y: lodgeY + (Math.random() - 0.5) * 60,
-      vx: (Math.random() - 0.5) * 3,
-      vy: -Math.random() * 3 - 1,
+      x: lodgeX + (world.gameRng.next() - 0.5) * 60,
+      y: lodgeY + (world.gameRng.next() - 0.5) * 60,
+      vx: (world.gameRng.next() - 0.5) * 3,
+      vy: -world.gameRng.next() * 3 - 1,
       life: 40,
       color: '#facc15',
       size: 4,

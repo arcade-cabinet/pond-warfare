@@ -49,18 +49,19 @@ function getWaveTier(waveNumber: number): EntityKind[] {
 }
 
 /** Pick a random spawn position along the map edge. */
-function randomEdgePosition(): { x: number; y: number } {
-  const edge = Math.floor(Math.random() * 4);
+function randomEdgePosition(world: GameWorld): { x: number; y: number } {
+  const rng = world.gameRng;
+  const edge = Math.floor(rng.next() * 4);
   const margin = 60;
   switch (edge) {
     case 0: // Top
-      return { x: margin + Math.random() * (WORLD_WIDTH - margin * 2), y: margin };
+      return { x: margin + rng.next() * (WORLD_WIDTH - margin * 2), y: margin };
     case 1: // Bottom
-      return { x: margin + Math.random() * (WORLD_WIDTH - margin * 2), y: WORLD_HEIGHT - margin };
+      return { x: margin + rng.next() * (WORLD_WIDTH - margin * 2), y: WORLD_HEIGHT - margin };
     case 2: // Left
-      return { x: margin, y: margin + Math.random() * (WORLD_HEIGHT - margin * 2) };
+      return { x: margin, y: margin + rng.next() * (WORLD_HEIGHT - margin * 2) };
     default: // Right
-      return { x: WORLD_WIDTH - margin, y: margin + Math.random() * (WORLD_HEIGHT - margin * 2) };
+      return { x: WORLD_WIDTH - margin, y: margin + rng.next() * (WORLD_HEIGHT - margin * 2) };
   }
 }
 
@@ -104,8 +105,8 @@ export function spawnSurvivalWave(world: GameWorld): number {
 
   // Regular wave units
   for (let i = 0; i < unitCount; i++) {
-    const pos = randomEdgePosition();
-    const kind = availableUnits[Math.floor(Math.random() * availableUnits.length)];
+    const pos = randomEdgePosition(world);
+    const kind = availableUnits[Math.floor(world.gameRng.next() * availableUnits.length)];
 
     const eid = spawnEntity(world, kind, pos.x, pos.y, Faction.Enemy);
     if (eid < 0) continue;
@@ -120,7 +121,7 @@ export function spawnSurvivalWave(world: GameWorld): number {
   if (isBossWave) {
     const bossCount = Math.max(1, Math.floor(wave / BOSS_WAVE_EVERY));
     for (let i = 0; i < bossCount; i++) {
-      const pos = randomEdgePosition();
+      const pos = randomEdgePosition(world);
       const bossKind = wave >= 20 ? EntityKind.AlphaPredator : EntityKind.BossCroc;
       const eid = spawnEntity(world, bossKind, pos.x, pos.y, Faction.Enemy);
       if (eid < 0) continue;

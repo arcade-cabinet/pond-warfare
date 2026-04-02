@@ -125,8 +125,8 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   // Send them as a group
   for (const eid of idleUnits) {
     UnitStateMachine.targetEntity[eid] = target;
-    UnitStateMachine.targetX[eid] = targetX + (Math.random() - 0.5) * ENEMY_RALLY_RADIUS;
-    UnitStateMachine.targetY[eid] = targetY + (Math.random() - 0.5) * ENEMY_RALLY_RADIUS;
+    UnitStateMachine.targetX[eid] = targetX + (world.gameRng.next() - 0.5) * ENEMY_RALLY_RADIUS;
+    UnitStateMachine.targetY[eid] = targetY + (world.gameRng.next() - 0.5) * ENEMY_RALLY_RADIUS;
     UnitStateMachine.state[eid] = UnitState.AttackMove;
 
     const speed = Velocity.speed[eid] || 1.5;
@@ -189,11 +189,11 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
   if (res.clams < ENEMY_SNAKE_COST_CLAMS || res.twigs < ENEMY_SNAKE_COST_TWIGS) return;
 
   // Pick a random nest to spawn from
-  const sourceNest = nestEids[Math.floor(Math.random() * nestEids.length)];
+  const sourceNest = nestEids[Math.floor(world.gameRng.next() * nestEids.length)];
   const nx = Position.x[sourceNest];
   const ny = Position.y[sourceNest];
 
-  const sx = nx + (Math.random() - 0.5) * 60;
+  const sx = nx + (world.gameRng.next() - 0.5) * 60;
   const sy = ny + 30;
 
   const scoutEid = spawnEntity(world, EntityKind.Snake, sx, sy, Faction.Enemy);
@@ -221,14 +221,14 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
   const lodgeEid = findPlayerLodge(world);
   let scoutX: number;
   let scoutY: number;
-  if (lodgeEid !== -1 && Math.random() > 0.3) {
+  if (lodgeEid !== -1 && world.gameRng.next() > 0.3) {
     // 70% chance to scout toward the lodge area
-    scoutX = Position.x[lodgeEid] + (Math.random() - 0.5) * 600;
-    scoutY = Position.y[lodgeEid] + (Math.random() - 0.5) * 600;
+    scoutX = Position.x[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
+    scoutY = Position.y[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
   } else {
     // Random map exploration
-    scoutX = 200 + Math.random() * (WORLD_WIDTH - 400);
-    scoutY = 200 + Math.random() * (WORLD_HEIGHT - 400);
+    scoutX = 200 + world.gameRng.next() * (WORLD_WIDTH - 400);
+    scoutY = 200 + world.gameRng.next() * (WORLD_HEIGHT - 400);
   }
 
   UnitStateMachine.targetX[scoutEid] = scoutX;

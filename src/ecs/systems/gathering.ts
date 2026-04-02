@@ -158,7 +158,7 @@ export function gatheringSystem(world: GameWorld): void {
         audio.chop();
         // part(PALETTE.reedBrown) - spawns particle at target entity
         world.particles.push({
-          x: Position.x[tEnt] + (Math.random() - 0.5) * 20,
+          x: Position.x[tEnt] + (world.gameRng.next() - 0.5) * 20,
           y: Position.y[tEnt] - 10,
           vx: 0,
           vy: 1,
@@ -169,10 +169,10 @@ export function gatheringSystem(world: GameWorld): void {
       } else if (resKind === EntityKind.PearlBed) {
         audio.mine();
         world.particles.push({
-          x: Position.x[tEnt] + (Math.random() - 0.5) * 20,
+          x: Position.x[tEnt] + (world.gameRng.next() - 0.5) * 20,
           y: Position.y[tEnt] - 10,
-          vx: (Math.random() - 0.5) * 1,
-          vy: -Math.random() * 1.5,
+          vx: (world.gameRng.next() - 0.5) * 1,
+          vy: -world.gameRng.next() * 1.5,
           life: 15,
           color: '#a5b4fc', // Pearl blue shimmer
           size: 2,
@@ -180,7 +180,7 @@ export function gatheringSystem(world: GameWorld): void {
       } else {
         audio.mine();
         world.particles.push({
-          x: Position.x[tEnt] + (Math.random() - 0.5) * 20,
+          x: Position.x[tEnt] + (world.gameRng.next() - 0.5) * 20,
           y: Position.y[tEnt] - 10,
           vx: 0,
           vy: 1,

@@ -85,8 +85,8 @@ export class BuildGoal extends Goal {
     }
 
     // Place near lodge with a random offset
-    const ox = (Math.random() - 0.5) * 200;
-    const oy = (Math.random() - 0.5) * 200;
+    const ox = (w.gameRng.next() - 0.5) * 200;
+    const oy = (w.gameRng.next() - 0.5) * 200;
     placeBuilding(w, lodge.x + ox, lodge.y + oy);
     w.placingBuilding = null;
 

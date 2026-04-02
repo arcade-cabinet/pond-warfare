@@ -212,8 +212,8 @@ function activateFlood(world: GameWorld, shrineEid: number): void {
   for (let i = 0; i < 15; i++) {
     spawnParticle(
       world,
-      Position.x[shrineEid] + (Math.random() - 0.5) * 200,
-      Position.y[shrineEid] + (Math.random() - 0.5) * 200,
+      Position.x[shrineEid] + (world.gameRng.next() - 0.5) * 200,
+      Position.y[shrineEid] + (world.gameRng.next() - 0.5) * 200,
       0,
       1,
       60,

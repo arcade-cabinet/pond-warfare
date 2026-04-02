@@ -203,7 +203,7 @@ function processKillCredit(
       hasComponent(world.ecs, attackerEid, FactionTag) &&
       FactionTag.faction[attackerEid] === Faction.Player &&
       hasComponent(world.ecs, attackerEid, EntityTypeTag) &&
-      Math.random() < 0.3
+      world.gameRng.next() < 0.3
     ) {
       const killKind = EntityTypeTag.kind[attackerEid] as EntityKind;
       showBark(
