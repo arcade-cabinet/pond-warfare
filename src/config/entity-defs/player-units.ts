@@ -170,6 +170,33 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     twigCost: 50,
     foodCost: 1,
   },
+  // --- v2.0.0 new player units ---
+  [EntityKind.OtterWarship]: {
+    hp: 80,
+    speed: 1.5,
+    damage: 12,
+    attackRange: 200,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 200,
+    twigCost: 150,
+    foodCost: 1,
+  },
+  [EntityKind.Berserker]: {
+    hp: 60,
+    speed: 2.0,
+    damage: 15,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 120,
+    twigCost: 80,
+    foodCost: 1,
+  },
   // Ambient critters (no cost, no combat role)
   [EntityKind.Frog]: {
     hp: 5,

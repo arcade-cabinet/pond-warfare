@@ -41,6 +41,12 @@ export function entityKindFromString(name: string): EntityKind {
     burrowing_worm: EntityKind.BurrowingWorm,
     flying_heron: EntityKind.FlyingHeron,
     market: EntityKind.Market,
+    // v2.0.0
+    dock: EntityKind.Dock,
+    otter_warship: EntityKind.OtterWarship,
+    berserker: EntityKind.Berserker,
+    wall_gate: EntityKind.WallGate,
+    shrine: EntityKind.Shrine,
   };
   const kind = map[name];
   if (kind === undefined) {
@@ -90,6 +96,12 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.BurrowingWorm]: 'Burrowing Worm',
     [EntityKind.FlyingHeron]: 'Flying Heron',
     [EntityKind.Market]: 'Market',
+    // v2.0.0
+    [EntityKind.Dock]: 'Dock',
+    [EntityKind.OtterWarship]: 'Otter Warship',
+    [EntityKind.Berserker]: 'Berserker',
+    [EntityKind.WallGate]: 'Wall Gate',
+    [EntityKind.Shrine]: 'Shrine',
   };
   return names[kind];
 }

@@ -66,6 +66,15 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
     [EntityKind.Tower]: {
       [EntityKind.FlyingHeron]: 1.5, // Towers counter flying
     },
+    // v2.0.0 new units
+    [EntityKind.OtterWarship]: {
+      [EntityKind.Gatherer]: 1.5, // Splash damage vs clusters
+      [EntityKind.Shieldbearer]: 0.75, // Armor resists splash
+    },
+    [EntityKind.Berserker]: {
+      [EntityKind.Sniper]: 1.5, // Fast melee closes on ranged
+      [EntityKind.Shieldbearer]: 0.75, // Armor absorbs reckless attacks
+    },
   };
 
 /** SiegeTurtle's bonus multiplier when attacking any building. */

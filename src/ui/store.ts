@@ -6,6 +6,7 @@
  */
 
 import { computed, signal } from '@preact/signals';
+import type { WeatherType } from '@/config/weather';
 import type { GameState, TooltipData } from '@/types';
 import type { RosterBuilding, RosterGroup } from './roster-types';
 import type { GameEvent as _GameEvent, FoodChange, ResourceChange } from './store-types';
@@ -127,7 +128,7 @@ export const goFrameCount = signal(0);
 export const goMapSeed = signal(0);
 
 // ---- Game mode ----
-export type GameMode = 'skirmish' | 'survival' | 'campaign';
+export type GameMode = 'skirmish' | 'survival' | 'campaign' | 'puzzle';
 export const gameMode = signal<GameMode>('skirmish');
 export const survivalScore = signal(0);
 export const survivalWave = signal(0);
@@ -307,6 +308,26 @@ export const campaignObjectiveStatuses = signal<Record<string, boolean>>({});
 export const campaignChoiceOpen = signal(false);
 export const campaignBranchPath = signal<'A' | 'B' | null>(null);
 
+// ---- v2.0.0: Weather ----
+export const currentWeather = signal<WeatherType>('clear');
+export const nextWeather = signal<WeatherType>('clear');
+/** Seconds until next weather transition. */
+export const weatherCountdown = signal(0);
+
+// ---- v2.0.0: Puzzle mode ----
+export const puzzleId = signal('');
+export const puzzleStars = signal(0);
+export const puzzleObjectiveText = signal('');
+export const puzzleTimerDisplay = signal('');
+
+// ---- v2.0.0: Replay ----
+export const replayMode = signal(false);
+export const replayProgress = signal(0);
+export const replayTimeDisplay = signal('00:00');
+export const replaySpeedLabel = signal('1x');
+export const replayPaused = signal(false);
+
+// ---- Derived ----
 export const speedLabel = computed(() => `${gameSpeed.value}x`);
 export const muteLabel = computed(() => (muted.value ? '\u{1F507}' : '\u{1F50A}'));
 
@@ -326,3 +347,9 @@ export const peaceStatusColor = computed(() =>
 export const peaceStatusStyle = computed(() => ({
   color: isPeaceful.value ? 'var(--pw-success)' : 'var(--pw-enemy-light)',
 }));
+
+/** Weather display label for HUD. */
+export const weatherLabel = computed(() => {
+  const w = currentWeather.value;
+  return w.charAt(0).toUpperCase() + w.slice(1);
+});
