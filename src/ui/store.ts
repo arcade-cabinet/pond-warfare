@@ -7,7 +7,6 @@
 
 import { computed, signal } from '@preact/signals';
 import type { GameState, TooltipData } from '@/types';
-import type { RosterBuilding, RosterGroup } from './roster-types';
 import type { FoodChange, ResourceChange } from './store-types';
 
 export type { FoodChange, GameEvent, ResourceChange } from './store-types';
@@ -139,18 +138,13 @@ export const tooltipY = signal(0);
 /** Mapping of group number (1-9) to entity count. Empty groups are omitted. */
 export const ctrlGroupCounts = signal<Record<number, number>>({});
 
-// ---- Production queue ----
-export interface QueueItem {
-  buildingKind: number;
-  unitLabel: string;
-  progress: number;
-  entityId?: number; // Optional stable identifier for the building producing this item
-}
-export const globalProductionQueue = signal<QueueItem[]>([]);
-
-// ---- Roster (Forces + Buildings tabs) ----
-export const unitRoster = signal<RosterGroup[]>([]);
-export const buildingRoster = signal<RosterBuilding[]>([]);
+// ---- Production queue & roster: re-exported from store-gameplay ----
+export {
+  buildingRoster,
+  globalProductionQueue,
+  type QueueItem,
+  unitRoster,
+} from './store-gameplay';
 
 // ---- Derived ----
 export const foodDisplay = computed(() => `${food.value}/${maxFood.value}`);
@@ -188,17 +182,14 @@ export const reduceVisualNoise = signal(false);
 
 // ---- Difficulty ----
 export type DifficultyLevel = 'easy' | 'normal' | 'hard' | 'nightmare' | 'ultraNightmare';
-/** @deprecated Use DifficultyLevel instead */
-export type Difficulty = DifficultyLevel;
 export const selectedDifficulty = signal<DifficultyLevel>('normal');
 
 // ---- Custom game settings ----
 export type { CustomGameSettings } from './store-types';
 export { DEFAULT_CUSTOM_SETTINGS } from './store-types';
 
-import { DEFAULT_CUSTOM_SETTINGS as _defaults, type CustomGameSettings } from './store-types';
-
-export const customGameSettings = signal<CustomGameSettings>({ ..._defaults });
+import { DEFAULT_CUSTOM_SETTINGS as _defaults } from './store-types';
+export const customGameSettings = signal<typeof _defaults>({ ..._defaults });
 
 // ---- Menu state ----
 export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
@@ -296,19 +287,4 @@ export {
   unlocksOpen,
   waveNumber,
 } from './store-gameplay';
-export {
-  connectionQuality,
-  multiplayerAllReady,
-  multiplayerConnected,
-  multiplayerDisconnected,
-  multiplayerHostSettings,
-  multiplayerIsHost,
-  multiplayerLobbyPlayers,
-  multiplayerMenuOpen,
-  multiplayerMode,
-  multiplayerPeerId,
-  multiplayerPing,
-  multiplayerRoomCode,
-  multiplayerView,
-} from './store-multiplayer';
 export { currentWeather, nextWeather, weatherCountdown, weatherLabel } from './store-weather';
