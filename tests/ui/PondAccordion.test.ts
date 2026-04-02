@@ -1,5 +1,6 @@
 /**
  * PondAccordion Tests -- rendering, toggle, summary, chevron, allowMultiple.
+ * US13: Accordion uses CSS max-height transition (class-based) instead of display toggle.
  */
 import { cleanup, fireEvent, render } from '@testing-library/preact';
 import { h } from 'preact';
@@ -17,6 +18,11 @@ const header = (k: string) => q(`[data-testid="accordion-header-${k}"]`);
 const content = (k: string) => q(`[data-testid="accordion-content-${k}"]`);
 const chevron = (k: string) => q(`[data-testid="accordion-chevron-${k}"]`);
 const summary = (k: string) => document.querySelector(`[data-testid="accordion-summary-${k}"]`);
+
+/** Check if an accordion section is visually open (has the open CSS class). */
+function isOpen(key: string): boolean {
+  return content(key).classList.contains('pond-accordion-content-open');
+}
 
 function renderAccordion(props: Partial<{ allowMultiple: boolean }> = {}) {
   return render(
@@ -41,11 +47,11 @@ describe('PondAccordion', () => {
 
   it('click header toggles content visibility', () => {
     renderAccordion();
-    expect(content('alpha').style.display).toBe('none');
+    expect(isOpen('alpha')).toBe(false);
     fireEvent.click(header('alpha'));
-    expect(content('alpha').style.display).toBe('block');
+    expect(isOpen('alpha')).toBe(true);
     fireEvent.click(header('alpha'));
-    expect(content('alpha').style.display).toBe('none');
+    expect(isOpen('alpha')).toBe(false);
   });
 
   it('summary text shows when collapsed, hidden when expanded', () => {
@@ -59,16 +65,16 @@ describe('PondAccordion', () => {
   it('multiple sections can be open when allowMultiple=true', () => {
     renderAccordion({ allowMultiple: true });
     fireEvent.click(header('alpha'));
-    expect(content('alpha').style.display).toBe('block');
-    expect(content('beta').style.display).toBe('block');
+    expect(isOpen('alpha')).toBe(true);
+    expect(isOpen('beta')).toBe(true);
   });
 
   it('only one section open when allowMultiple=false', () => {
     renderAccordion({ allowMultiple: false });
-    expect(content('beta').style.display).toBe('block');
+    expect(isOpen('beta')).toBe(true);
     fireEvent.click(header('alpha'));
-    expect(content('alpha').style.display).toBe('block');
-    expect(content('beta').style.display).toBe('none');
+    expect(isOpen('alpha')).toBe(true);
+    expect(isOpen('beta')).toBe(false);
   });
 
   it('chevron has open class when section is expanded', () => {
@@ -79,8 +85,8 @@ describe('PondAccordion', () => {
 
   it('default open sections start expanded', () => {
     renderAccordion();
-    expect(content('beta').style.display).toBe('block');
-    expect(content('alpha').style.display).toBe('none');
-    expect(content('gamma').style.display).toBe('none');
+    expect(isOpen('beta')).toBe(true);
+    expect(isOpen('alpha')).toBe(false);
+    expect(isOpen('gamma')).toBe(false);
   });
 });

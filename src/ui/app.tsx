@@ -21,6 +21,7 @@ import { AirdropButton } from './hud/airdrop-button';
 import { ConnectionStatus } from './hud/ConnectionStatus';
 import { CtrlGroups } from './hud/ctrl-groups';
 import { Overlays } from './hud/overlays';
+import { WeatherEffects } from './hud/WeatherEffects';
 import { KeyboardReference } from './keyboard-reference';
 import { LoadingScreen } from './LoadingScreen';
 import { LeaderboardPanel } from './leaderboard-panel';
@@ -47,6 +48,14 @@ export interface AppProps {
     minimapCam: HTMLDivElement;
     dayNightOverlay: HTMLDivElement;
   }) => void | Promise<void>;
+}
+
+/** Helper: call a game action and sync UI. */
+function act(fn: () => void) {
+  return () => {
+    fn();
+    game.syncUIStore();
+  };
 }
 
 export function App({ onMount }: AppProps) {
@@ -82,10 +91,9 @@ export function App({ onMount }: AppProps) {
       (async () => {
         try {
           await onMount(refs);
-        } catch (err) {
-          // biome-ignore lint/suspicious/noConsole: surface init failures
-          console.error('Failed to initialize game', err);
+        } catch (_err) {
         } finally {
+          // biome-ignore lint/suspicious/noConsole: surface init failures
           store.gameLoading.value = false;
         }
       })();
@@ -128,7 +136,7 @@ export function App({ onMount }: AppProps) {
     );
   }
 
-  // ---------- Game screen: pure canvas + hamburger + panel ----------
+  // ---------- Game screen ----------
   return (
     <div
       class="relative h-screen w-screen text-sm font-game safe-area-pad overflow-hidden"
@@ -140,10 +148,9 @@ export function App({ onMount }: AppProps) {
           <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
         </div>
       </div>
-
       <ErrorOverlay />
 
-      {/* Fullscreen game container — shrinks when panel is docked via --pw-panel-width */}
+      {/* Fullscreen game container */}
       <div
         ref={containerRef}
         id="game-container"
@@ -151,61 +158,39 @@ export function App({ onMount }: AppProps) {
         style={{ right: 'var(--pw-panel-width, 0px)' }}
       >
         <Overlays />
-        <AirdropButton
-          onAirdrop={() => {
-            game.useAirdrop();
-            game.syncUIStore();
-          }}
-        />
+        <AirdropButton onAirdrop={act(() => game.useAirdrop())} />
         <AbilityBar
-          onRallyCry={() => {
-            game.useRallyCry();
-            game.syncUIStore();
-          }}
-          onPondBlessing={() => {
-            game.usePondBlessing();
-            game.syncUIStore();
-          }}
-          onTidalSurge={() => {
-            game.useTidalSurge();
-            game.syncUIStore();
-          }}
-          onCommanderAbility={() => {
-            game.useCommanderAbility();
-            game.syncUIStore();
-          }}
+          onRallyCry={act(() => game.useRallyCry())}
+          onPondBlessing={act(() => game.usePondBlessing())}
+          onTidalSurge={act(() => game.useTidalSurge())}
+          onCommanderAbility={act(() => game.useCommanderAbility())}
         />
         <CtrlGroups
           onCtrlGroupClick={(group) => {
             const w = game.world;
             const g = w.ctrlGroups[group];
-            if (g && g.length > 0) {
-              const alive = g.filter((eid) => entityExists(w.ecs, eid) && Health.current[eid] > 0);
-              w.ctrlGroups[group] = alive;
-              if (alive.length > 0) {
-                for (const s of w.selection) {
-                  if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 0;
-                }
-                w.selection = [...alive];
-                for (const s of w.selection) {
-                  if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 1;
-                }
-                let cx = 0;
-                let cy = 0;
-                for (const eid of alive) {
-                  cx += Position.x[eid];
-                  cy += Position.y[eid];
-                }
-                cx /= alive.length;
-                cy /= alive.length;
-                game.smoothPanTo(cx, cy);
-                audio.selectUnit();
-                game.syncUIStore();
-              }
+            if (!g || g.length === 0) return;
+            const alive = g.filter((eid) => entityExists(w.ecs, eid) && Health.current[eid] > 0);
+            w.ctrlGroups[group] = alive;
+            if (alive.length === 0) return;
+            for (const s of w.selection) {
+              if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 0;
             }
+            w.selection = [...alive];
+            for (const s of w.selection) {
+              if (hasComponent(w.ecs, s, Selectable)) Selectable.selected[s] = 1;
+            }
+            let cx = 0;
+            let cy = 0;
+            for (const eid of alive) {
+              cx += Position.x[eid];
+              cy += Position.y[eid];
+            }
+            game.smoothPanTo(cx / alive.length, cy / alive.length);
+            audio.selectUnit();
+            game.syncUIStore();
           }}
         />
-
         <canvas ref={gameCanvasRef} id="game-canvas" />
         <canvas ref={fogCanvasRef} id="fog-canvas" />
         <div
@@ -214,7 +199,7 @@ export function App({ onMount }: AppProps) {
           class="absolute inset-0 pointer-events-none z-10"
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
-
+        <WeatherEffects />
         {store.campaignMissionId.value && <ObjectiveTracker />}
         <GameOverBanner onRestart={() => window.location.reload()} />
         <EvacuationOverlay
@@ -224,27 +209,12 @@ export function App({ onMount }: AppProps) {
         />
       </div>
 
-      {/* Hamburger button — sole floating DOM element */}
       <HamburgerButton />
-
-      {/* Connection status — top-right, multiplayer only */}
       <ConnectionStatus />
-
-      {/* Advisor toast — bottom-left HUD, above safe area */}
       <AdvisorToast />
-
-      {/* Achievement toast — top-center, shown for 3 seconds */}
       <AchievementToast />
 
-      {/*
-        Modal overlays — rendered as SIBLINGS of #game-container so they are
-        NOT affected by its `touch-action: none`. Per the W3C Pointer Events
-        spec, touch-action is computed by intersecting an element's value with
-        each ancestor's value, so any overlay inside #game-container would
-        inherit `touch-action: none` and lose native touch-scroll even if it
-        set its own touch-action. Moving them here keeps game input isolated
-        while restoring proper touch behaviour in all modal scroll areas.
-      */}
+      {/* Modal overlays — siblings of #game-container for proper touch-action */}
       {store.techTreeOpen.value && (
         <TechTreePanel
           techState={{ ...game.world.tech }}
@@ -255,7 +225,6 @@ export function App({ onMount }: AppProps) {
             const w = game.world;
             const upgrade = TECH_UPGRADES[id as keyof typeof TECH_UPGRADES];
             if (!upgrade || !canResearch(id, w.tech)) return;
-            // Sage passive: reduce research cost by passiveResearchSpeed %
             const discount = 1 - w.commanderModifiers.passiveResearchSpeed;
             const clamCost = Math.round(upgrade.clamCost * discount);
             const twigCost = Math.round(upgrade.twigCost * discount);
@@ -284,14 +253,8 @@ export function App({ onMount }: AppProps) {
       {store.unlocksOpen.value && <UnlocksPanel />}
       {store.cosmeticsOpen.value && <CosmeticsPanel />}
       <DisconnectOverlay />
-
-      {/* Tabbed command panel */}
       <CommandPanel minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
-
-      {/* Tooltip */}
       <Tooltip />
-
-      {/* Loading screen overlay — covers everything during game init */}
       {store.gameLoading.value && <LoadingScreen />}
     </div>
   );

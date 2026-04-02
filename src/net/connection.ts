@@ -32,11 +32,20 @@ export interface PeerConnection {
   getLatency: () => number;
 }
 
-/** Generate a human-friendly 6-char room code. */
+/** Generate a human-friendly 6-char room code using crypto.getRandomValues. */
 export function generateRoomCode(): string {
   let code = '';
-  for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
-    code += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
+  if (typeof globalThis.crypto?.getRandomValues === 'function') {
+    const bytes = new Uint8Array(ROOM_CODE_LENGTH);
+    globalThis.crypto.getRandomValues(bytes);
+    for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
+      code += ROOM_CODE_CHARS[bytes[i] % ROOM_CODE_CHARS.length];
+    }
+  } else {
+    // Fallback for environments without Web Crypto API
+    for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
+      code += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
+    }
   }
   return code;
 }

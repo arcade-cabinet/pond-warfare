@@ -41,7 +41,7 @@ describe('Command Panel docking behavior', () => {
     expect(canDockPanels.value).toBe(false);
   });
 
-  it('docking threshold is at 1101px', async () => {
+  it('non-touch docking threshold is at 1101px', async () => {
     _testReset();
     await initDeviceSignals();
 

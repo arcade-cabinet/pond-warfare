@@ -9,7 +9,7 @@
 import { useSignal } from '@preact/signals';
 import { useMemo } from 'preact/hooks';
 import { entityKindName } from '@/config/entity-defs';
-import { canDockPanels } from '@/platform';
+import { canDockPanels, screenClass } from '@/platform';
 import { type AccordionSection, PondAccordion } from '../components/PondAccordion';
 import * as store from '../store';
 import { buildingRoster, idleWorkerCount, unitRoster } from '../store';
@@ -44,8 +44,10 @@ export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelPr
   const docked = canDockPanels.value;
   const open = docked || store.mobilePanelOpen.value;
   const collapsed = useSignal(false);
+  const sc = screenClass.value;
 
-  const panelWidth = docked ? '300px' : 'min(280px, 50vw)';
+  // Responsive panel width: compact=50vw slide-out, medium=250px docked, large=300px docked
+  const panelWidth = !docked ? 'min(280px, 50vw)' : sc === 'large' ? '300px' : '250px';
   const showOverlay = !docked && store.mobilePanelOpen.value;
 
   const forcesSummary = useForcesSummary();

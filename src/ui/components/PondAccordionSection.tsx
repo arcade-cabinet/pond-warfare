@@ -1,9 +1,11 @@
 /**
  * PondAccordionSection -- Single collapsible section within PondAccordion.
  * Uses Button.png as header background, matching the landing-page MenuButton style.
+ * US13: Smooth CSS max-height transition instead of display:none toggle.
  */
 
 import type { ComponentChildren } from 'preact';
+import { useEffect, useRef } from 'preact/hooks';
 
 const UI = '/pond-warfare/assets/ui';
 
@@ -26,6 +28,18 @@ export function PondAccordionSection({
   onToggle,
   children,
 }: AccordionSectionProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll opened section into view
+  useEffect(() => {
+    if (open && contentRef.current) {
+      const timer = setTimeout(() => {
+        contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 260); // after animation completes
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
   return (
     <div class="pond-accordion-section" data-testid={`accordion-section-${sectionKey}`}>
       <button
@@ -57,9 +71,9 @@ export function PondAccordionSection({
       </button>
 
       <div
+        ref={contentRef}
         class={`pond-accordion-content ${open ? 'pond-accordion-content-open' : ''}`}
         data-testid={`accordion-content-${sectionKey}`}
-        style={{ display: open ? 'block' : 'none' }}
       >
         <div class="pond-accordion-watermark" aria-hidden="true">
           <img src={`${UI}/Lillypad-tiny.png`} alt="" draggable={false} />

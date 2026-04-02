@@ -82,6 +82,10 @@ export const cosmeticsOpen = signal(false);
 export const keyboardRefOpen = signal(false);
 export const mobilePanelOpen = signal(false);
 
+// ---- Puzzle & Survival selection screens (US1, US2) ----
+export const puzzleSelectOpen = signal(false);
+export const survivalSelectOpen = signal(false);
+
 /** Active achievement toast: name + description shown for 3 seconds. */
 export interface AchievementToast {
   name: string;

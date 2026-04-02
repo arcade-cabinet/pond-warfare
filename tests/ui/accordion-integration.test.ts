@@ -5,6 +5,9 @@
  * main UI surfaces: NewGameModal, CommandPanel, and SettingsPanel.
  * Tests section rendering, expand/collapse, summaries, and that
  * content is accessible within accordion sections.
+ *
+ * US13: Accordion uses CSS class-based animation (pond-accordion-content-open)
+ * instead of inline display:block/none.
  */
 
 import { cleanup, fireEvent, render } from '@testing-library/preact';
@@ -45,6 +48,11 @@ const content = (k: string) =>
 const summaryEl = (k: string) =>
   document.querySelector(`[data-testid="accordion-summary-${k}"]`) as HTMLElement | null;
 
+/** Check if an accordion section is visually open (has the open CSS class). */
+function isOpen(key: string): boolean {
+  return content(key).classList.contains('pond-accordion-content-open');
+}
+
 beforeEach(() => {
   store.unitRoster.value = [];
   store.buildingRoster.value = [];
@@ -79,7 +87,7 @@ describe('NewGameModal accordion integration', () => {
 
   it('commander section is open by default', async () => {
     await renderNewGame();
-    expect(content('commander').style.display).toBe('block');
+    expect(isOpen('commander')).toBe(true);
   });
 
   it('map section shows scenario + density summary when collapsed', async () => {
@@ -99,9 +107,9 @@ describe('NewGameModal accordion integration', () => {
 
   it('clicking a section header expands it', async () => {
     await renderNewGame();
-    expect(content('economy').style.display).toBe('none');
+    expect(isOpen('economy')).toBe(false);
     fireEvent.click(header('economy'));
-    expect(content('economy').style.display).toBe('block');
+    expect(isOpen('economy')).toBe(true);
   });
 
   it('presets row is visible outside accordion', async () => {
@@ -142,7 +150,7 @@ describe('CommandPanel accordion integration', () => {
 
   it('minimap section is open by default', async () => {
     await renderPanel();
-    expect(content('map').style.display).toBe('block');
+    expect(isOpen('map')).toBe(true);
   });
 
   it('forces summary shows "No units" when roster is empty', async () => {
@@ -194,7 +202,7 @@ describe('SettingsPanel accordion integration', () => {
 
   it('audio section is open by default', async () => {
     await renderSettings();
-    expect(content('audio').style.display).toBe('block');
+    expect(isOpen('audio')).toBe(true);
   });
 
   it('audio summary shows master volume percentage', async () => {
@@ -222,7 +230,7 @@ describe('SettingsPanel accordion integration', () => {
   it('clicking gameplay section expands and shows speed buttons', async () => {
     await renderSettings();
     fireEvent.click(header('gameplay'));
-    expect(content('gameplay').style.display).toBe('block');
+    expect(isOpen('gameplay')).toBe(true);
     const speedBtns = content('gameplay').querySelectorAll('.font-numbers');
     expect(speedBtns.length).toBeGreaterThanOrEqual(3);
   });
