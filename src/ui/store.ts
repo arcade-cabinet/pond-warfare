@@ -6,10 +6,9 @@
  */
 
 import { computed, signal } from '@preact/signals';
-import type { WeatherType } from '@/config/weather';
 import type { GameState, TooltipData } from '@/types';
 import type { RosterBuilding, RosterGroup } from './roster-types';
-import type { GameEvent as _GameEvent, FoodChange, ResourceChange } from './store-types';
+import type { FoodChange, ResourceChange } from './store-types';
 
 export type { FoodChange, GameEvent, ResourceChange } from './store-types';
 
@@ -116,29 +115,6 @@ export const autoDefendEnabled = autoCombatEnabled;
 export const autoAttackEnabled = autoCombatEnabled;
 export const autoHealEnabled = autoHealerEnabled;
 
-// ---- Game over stats ----
-export const goTitle = signal('Victory');
-export const goTitleColor = signal('text-amber-400');
-export const goDesc = signal('');
-export const goStatsText = signal('');
-export const goStatLines = signal<string[]>([]);
-export const goRating = signal(0);
-export const goTimeSurvived = signal('');
-export const goFrameCount = signal(0);
-export const goMapSeed = signal(0);
-
-// ---- Game mode ----
-export type GameMode = 'skirmish' | 'survival' | 'campaign' | 'puzzle';
-export const gameMode = signal<GameMode>('skirmish');
-export const survivalScore = signal(0);
-export const survivalWave = signal(0);
-
-// ---- Commander ability ----
-export const commanderAbilityReady = signal(false);
-export const commanderAbilityCooldown = signal(0);
-export const commanderAbilityActive = signal(false);
-export const commanderAbilityName = signal('');
-
 // ---- Map scenario ----
 export type MapScenario =
   | 'standard'
@@ -235,42 +211,6 @@ export const gameName = signal('');
 export const gameSeed = signal(0);
 export const permadeathEnabled = signal(false);
 
-// ---- Settings panel ----
-export const settingsOpen = signal(false);
-
-// ---- Achievements panel ----
-export const achievementsOpen = signal(false);
-
-/** Active achievement toast: name + description shown for 3 seconds. */
-export interface AchievementToast {
-  name: string;
-  desc: string;
-}
-export const activeAchievementToast = signal<AchievementToast | null>(null);
-
-// ---- Leaderboard panel ----
-export const leaderboardOpen = signal(false);
-
-// ---- Unlocks panel ----
-export const unlocksOpen = signal(false);
-
-// ---- Cosmetics panel ----
-export const cosmeticsOpen = signal(false);
-
-// ---- Keyboard reference overlay ----
-export const keyboardRefOpen = signal(false);
-
-// ---- Mobile slide-out panel ----
-export const mobilePanelOpen = signal(false);
-
-/** Active tab in the slide-out command panel. */
-export type PanelTab = 'map' | 'forces' | 'buildings' | 'menu';
-export const activePanelTab = signal<PanelTab>('forces');
-export const masterVolume = signal(80);
-export const musicVolume = signal(50);
-export const sfxVolume = signal(80);
-export const autoSaveEnabled = signal(false);
-
 // ---- Commander selection ----
 export const selectedCommander = signal('marshal');
 
@@ -280,76 +220,75 @@ export type { PlayableFaction } from '@/config/factions';
 export const playerFaction = signal<import('@/config/factions').PlayableFaction>('otter');
 export const aiPersonality = signal<import('@/config/ai-personalities').AIPersonality>('balanced');
 
-// ---- Airdrop system ----
-export const airdropsRemaining = signal(0);
-export const airdropCooldown = signal(0);
-
-// ---- Checkpoint/Evacuation ----
-export const evacuationActive = signal(false);
-export const checkpointCount = signal(0);
-
-// ---- Active abilities (tech tree) ----
-export const rallyCryAvailable = signal(false);
-export const rallyCryCooldown = signal(0);
-export const rallyCryActive = signal(false);
-export const pondBlessingAvailable = signal(false);
-export const tidalSurgeAvailable = signal(false);
-
-// ---- Game event feed / wave tracking ----
-export const gameEvents = signal<_GameEvent[]>([]);
-export const waveNumber = signal(0);
-
-// ---- FPS / Campaign ----
-export const fpsDisplay = signal(0);
-export const fpsCounterVisible = signal(false);
-export const campaignOpen = signal(false);
-export const campaignMissionId = signal('');
-export const campaignObjectiveStatuses = signal<Record<string, boolean>>({});
-export const campaignChoiceOpen = signal(false);
-export const campaignBranchPath = signal<'A' | 'B' | null>(null);
-
-// ---- v2.0.0: Weather ----
-export const currentWeather = signal<WeatherType>('clear');
-export const nextWeather = signal<WeatherType>('clear');
-/** Seconds until next weather transition. */
-export const weatherCountdown = signal(0);
-
-// ---- v2.0.0: Puzzle mode ----
-export const puzzleId = signal('');
-export const puzzleStars = signal(0);
-export const puzzleObjectiveText = signal('');
-export const puzzleTimerDisplay = signal('');
-
-// ---- v2.0.0: Replay ----
-export const replayMode = signal(false);
-export const replayProgress = signal(0);
-export const replayTimeDisplay = signal('00:00');
-export const replaySpeedLabel = signal('1x');
-export const replayPaused = signal(false);
-
-// ---- Derived ----
-export const speedLabel = computed(() => `${gameSpeed.value}x`);
-export const muteLabel = computed(() => (muted.value ? '\u{1F507}' : '\u{1F50A}'));
-
-export const peaceStatusText = computed(() => {
-  if (isPeaceful.value) {
-    return `Peaceful (${peaceCountdown.value}s)`;
-  }
-  return 'Hunting!';
-});
-
-export const peaceStatusColor = computed(() =>
-  isPeaceful.value
-    ? 'font-bold uppercase tracking-widest hidden sm:block'
-    : 'font-bold uppercase tracking-widest animate-pulse hidden sm:block',
-);
-
-export const peaceStatusStyle = computed(() => ({
-  color: isPeaceful.value ? 'var(--pw-success)' : 'var(--pw-enemy-light)',
-}));
-
-/** Weather display label for HUD. */
-export const weatherLabel = computed(() => {
-  const w = currentWeather.value;
-  return w.charAt(0).toUpperCase() + w.slice(1);
-});
+// ---- Derived (extracted to store-derived) ----
+export {
+  muteLabel,
+  peaceStatusColor,
+  peaceStatusStyle,
+  peaceStatusText,
+  speedLabel,
+} from './store-derived';
+// ---- Gameplay & UI panel signals (extracted to store-gameplay) ----
+export {
+  type AchievementToast,
+  achievementsOpen,
+  activeAchievementToast,
+  activePanelTab,
+  airdropCooldown,
+  airdropsRemaining,
+  autoSaveEnabled,
+  campaignBranchPath,
+  campaignChoiceOpen,
+  campaignMissionId,
+  campaignObjectiveStatuses,
+  campaignOpen,
+  checkpointCount,
+  commanderAbilityActive,
+  commanderAbilityCooldown,
+  commanderAbilityName,
+  commanderAbilityReady,
+  cosmeticsOpen,
+  evacuationActive,
+  fpsCounterVisible,
+  fpsDisplay,
+  type GameMode,
+  gameEvents,
+  gameMode,
+  goDesc,
+  goFrameCount,
+  goMapSeed,
+  goRating,
+  goStatLines,
+  goStatsText,
+  goTimeSurvived,
+  goTitle,
+  goTitleColor,
+  keyboardRefOpen,
+  leaderboardOpen,
+  masterVolume,
+  mobilePanelOpen,
+  musicVolume,
+  type PanelTab,
+  pondBlessingAvailable,
+  puzzleId,
+  puzzleObjectiveText,
+  puzzleStars,
+  puzzleTimerDisplay,
+  rallyCryActive,
+  rallyCryAvailable,
+  rallyCryCooldown,
+  replayMode,
+  replayPaused,
+  replayProgress,
+  replaySpeedLabel,
+  replayTimeDisplay,
+  settingsOpen,
+  sfxVolume,
+  survivalScore,
+  survivalWave,
+  tidalSurgeAvailable,
+  unlocksOpen,
+  waveNumber,
+} from './store-gameplay';
+// ---- Weather (extracted to store-weather) ----
+export { currentWeather, nextWeather, weatherCountdown, weatherLabel } from './store-weather';
