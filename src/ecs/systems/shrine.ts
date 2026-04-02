@@ -16,6 +16,7 @@
  */
 
 import { query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import type { TechBranch, TechState } from '@/config/tech-tree';
 import { TECH_UPGRADES } from '@/config/tech-tree';
 import { FactionTag, Health, Position, UnitStateMachine } from '@/ecs/components';
@@ -104,6 +105,9 @@ export function activateShrine(
   if (!ability) return false;
 
   world.shrineUsed.add(shrineEid);
+
+  // Play dramatic activation sound
+  audio.shrineActivation(ability, Position.x[shrineEid]);
 
   switch (ability) {
     case 'bloom':

@@ -4,9 +4,12 @@
  * Replaces the desktop absolute-positioned TechNode on small screens.
  * Uses a flowing CSS grid layout. Shows a text-based "Requires: X"
  * dependency badge instead of SVG lines, making it fully touch-friendly.
+ * Hover shows a detailed tooltip with branch, cost, requirements, status.
  */
 
 import { TECH_UPGRADES } from '@/config/tech-tree';
+import { hideTooltip, showTooltip } from '../tooltip-helpers';
+import { techTooltipData } from './tech-tooltip';
 import type { TreeNode } from './tree-data';
 import { type NodeState, stateStyles } from './tree-helpers';
 
@@ -28,6 +31,10 @@ export function TechCard({
   const clamCost = Math.round(upgrade.clamCost * mult);
   const twigCost = Math.round(upgrade.twigCost * mult);
 
+  const onMouseEnter = (e: MouseEvent) => {
+    showTooltip(e, techTooltipData(node.id, upgrade, state, researchDiscount));
+  };
+
   return (
     <button
       type="button"
@@ -42,6 +49,8 @@ export function TechCard({
         e.stopPropagation();
         if (state === 'available') onClick();
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={hideTooltip}
       disabled={state === 'locked'}
     >
       {/* Top row: name + check */}

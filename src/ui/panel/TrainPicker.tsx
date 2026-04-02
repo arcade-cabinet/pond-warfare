@@ -7,6 +7,7 @@
  */
 
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
+import { getKeymap } from '@/config/keymap';
 import type { EntityKind } from '@/types';
 
 export interface TrainPickerProps {
@@ -30,7 +31,7 @@ interface TrainOptionProps {
   onTrain: (kind: EntityKind) => void;
 }
 
-function TrainOption({ kind, onTrain }: TrainOptionProps) {
+function TrainOption({ kind, onTrain, hotkey }: TrainOptionProps & { hotkey?: string }) {
   const name = entityKindName(kind) ?? 'Unit';
   const def = ENTITY_DEFS[kind];
 
@@ -52,7 +53,14 @@ function TrainOption({ kind, onTrain }: TrainOptionProps) {
         onTrain(kind);
       }}
     >
-      <span class="font-heading">{name}</span>
+      <span class="font-heading">
+        {name}
+        {hotkey && (
+          <span class="ml-1 font-numbers text-[8px]" style={{ color: 'var(--pw-text-muted)' }}>
+            ({hotkey.toUpperCase()})
+          </span>
+        )}
+      </span>
       {costs.length > 0 && (
         <span class="flex gap-1.5 flex-shrink-0">
           {costs.map((c) => (
@@ -100,8 +108,8 @@ export function TrainPicker({ canTrain, onTrain, onClose }: TrainPickerProps) {
           X
         </button>
       </div>
-      {canTrain.map((kind) => (
-        <TrainOption key={kind} kind={kind} onTrain={onTrain} />
+      {canTrain.map((kind, i) => (
+        <TrainOption key={kind} kind={kind} onTrain={onTrain} hotkey={getKeymap().actionSlots[i]} />
       ))}
     </div>
   );

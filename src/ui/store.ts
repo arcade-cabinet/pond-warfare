@@ -204,6 +204,8 @@ export const customGameSettings = signal<CustomGameSettings>({ ..._defaults });
 
 // ---- Menu state ----
 export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
+/** True while PixiJS initialises and entities spawn (shows loading screen). */
+export const gameLoading = signal(false);
 /** True when the player chose "Continue" from the main menu (load save on init). */
 export const continueRequested = signal(false);
 export const hasSaveGame = signal(false);

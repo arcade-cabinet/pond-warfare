@@ -196,7 +196,7 @@ export function UnitCommands(props: UnitCommandsProps) {
           title="Select all army (,)"
           onClick={props.onArmyClick}
         >
-          <span class="font-heading text-xs md:text-sm">Army ({armyCount})</span>
+          <span class="font-heading text-xs md:text-sm">Army ({armyCount}) (,)</span>
         </button>
       )}
 
@@ -210,7 +210,7 @@ export function UnitCommands(props: UnitCommandsProps) {
           title="Attack-Move (A)"
           onClick={props.onAttackMoveClick}
         >
-          <span class="font-heading text-sm">A-Move</span>
+          <span class="font-heading text-sm">A-Move (A)</span>
         </button>
       )}
 
@@ -224,7 +224,7 @@ export function UnitCommands(props: UnitCommandsProps) {
           title="Stop/Halt (H)"
           onClick={props.onHaltClick}
         >
-          <span class="font-heading text-sm">Stop</span>
+          <span class="font-heading text-sm">Stop (H)</span>
         </button>
       )}
 

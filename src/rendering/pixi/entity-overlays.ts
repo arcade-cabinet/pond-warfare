@@ -4,10 +4,125 @@
  * Selection brackets, health bars, unit name labels, and building progress.
  */
 
-import { type Container, type Graphics, Text } from 'pixi.js';
+import { type Container, type Graphics, Text, type TextStyleOptions } from 'pixi.js';
 import { CB_PALETTE } from '@/constants';
 import { EntityKind, type EntityKind as EntityKindType } from '@/types';
-import { colorToHex, getUnitLabelTexts, LABEL_STYLE, PROGRESS_STYLE } from './init';
+import {
+  colorToHex,
+  getUnitLabelTexts,
+  LABEL_STYLE,
+  PROGRESS_STYLE,
+  setDestroyOverlayTextsCallback,
+} from './init';
+
+// Idle indicator "Z" text style (amber/warning color)
+const IDLE_Z_STYLE: TextStyleOptions = {
+  fontFamily: 'Courier New',
+  fontSize: 12,
+  fontWeight: 'bold',
+  fill: 0xe8a030, // --pw-warning
+  stroke: { color: 0x000000, width: 2 },
+};
+
+// Ctrl group badge text style
+const CTRL_GROUP_STYLE: TextStyleOptions = {
+  fontFamily: 'Courier New',
+  fontSize: 9,
+  fontWeight: 'bold',
+  fill: 0x38bdf8, // --pw-accent
+  stroke: { color: 0x000000, width: 2 },
+};
+
+// Idle indicator text cache
+const idleZTexts = new Map<number, Text>();
+
+// Ctrl group badge text cache
+const ctrlGroupTexts = new Map<number, Text>();
+
+/** Render a pulsing "Z" indicator above idle player units (idle > 180 frames). */
+export function renderIdleIndicator(
+  eid: number,
+  idleFrames: number,
+  ex: number,
+  ey: number,
+  sh: number,
+  yOff: number,
+  frameCount: number,
+  entityLayer: Container,
+): void {
+  if (idleFrames < 180) {
+    removeIdleIndicator(eid, entityLayer);
+    return;
+  }
+
+  let label = idleZTexts.get(eid);
+  if (!label) {
+    label = new Text({ text: 'z', style: IDLE_Z_STYLE });
+    label.anchor.set(0.5, 1);
+    entityLayer.addChild(label);
+    idleZTexts.set(eid, label);
+  }
+
+  // Pulsing fade in/out animation
+  const pulse = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(frameCount * 0.08));
+  label.alpha = pulse;
+  label.position.set(ex + 8, ey - sh / 2 + yOff - 18);
+  label.zIndex = ey + 2;
+  label.visible = true;
+}
+
+/** Remove idle indicator for an entity. */
+export function removeIdleIndicator(eid: number, entityLayer: Container): void {
+  const label = idleZTexts.get(eid);
+  if (label) {
+    entityLayer.removeChild(label);
+    label.destroy();
+    idleZTexts.delete(eid);
+  }
+}
+
+/** Render a ctrl group number badge above a unit. */
+export function renderCtrlGroupBadge(
+  eid: number,
+  groupNum: number,
+  ex: number,
+  ey: number,
+  sh: number,
+  yOff: number,
+  entityLayer: Container,
+): void {
+  let label = ctrlGroupTexts.get(eid);
+  if (!label) {
+    label = new Text({ text: '', style: CTRL_GROUP_STYLE });
+    label.anchor.set(0.5, 1);
+    entityLayer.addChild(label);
+    ctrlGroupTexts.set(eid, label);
+  }
+  label.text = String(groupNum);
+  label.position.set(ex - 8, ey - sh / 2 + yOff - 18);
+  label.zIndex = ey + 2;
+  label.visible = true;
+}
+
+/** Remove ctrl group badge for an entity. */
+export function removeCtrlGroupBadge(eid: number, entityLayer: Container): void {
+  const label = ctrlGroupTexts.get(eid);
+  if (label) {
+    entityLayer.removeChild(label);
+    label.destroy();
+    ctrlGroupTexts.delete(eid);
+  }
+}
+
+/** Clean up all cached overlay texts (call on destroy). */
+export function cleanupOverlayTexts(): void {
+  for (const t of idleZTexts.values()) t.destroy();
+  idleZTexts.clear();
+  for (const t of ctrlGroupTexts.values()) t.destroy();
+  ctrlGroupTexts.clear();
+}
+
+setDestroyOverlayTextsCallback(cleanupOverlayTexts);
 
 export function drawSelectionBrackets(
   gfx: Graphics,

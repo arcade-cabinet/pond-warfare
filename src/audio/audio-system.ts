@@ -71,6 +71,14 @@ export class AudioSystem {
     return this._muted;
   }
 
+  get isStarted(): boolean {
+    return this._started;
+  }
+
+  get isMuted(): boolean {
+    return this._muted;
+  }
+
   async init(): Promise<void> {
     if (this._started) return;
     await Tone.start();

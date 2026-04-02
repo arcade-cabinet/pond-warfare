@@ -38,7 +38,12 @@ import {
   getUiGfx,
   isInitialised,
 } from './init';
-import { renderPlacementPreview, renderRallyAndRange, renderSelectionRect } from './ui-renderer';
+import {
+  hidePlacementGhost,
+  renderPlacementPreview,
+  renderRallyAndRange,
+  renderSelectionRect,
+} from './ui-renderer';
 
 // Re-export entity renderer utilities
 export { clearRecoloredTextureCache } from './entity-renderer';
@@ -201,6 +206,8 @@ export function renderPixiFrame(
   // --- Building placement preview ---
   if (data.placement) {
     renderPlacementPreview(data.placement, spriteCanvases);
+  } else {
+    hidePlacementGhost();
   }
 
   // --- Tell PixiJS to render ---

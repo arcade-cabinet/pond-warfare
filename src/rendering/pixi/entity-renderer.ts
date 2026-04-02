@@ -4,6 +4,7 @@
  * Handles renderEntity(), sprite management, veterancy recoloring, and
  * status effect tints. Overlay drawing (brackets, health, labels, progress)
  * is in entity-overlays.ts. Status tints are in entity-tints.ts.
+ * Idle indicators and ctrl group badges are in entity-status-overlays.ts.
  */
 
 import { Sprite, Texture } from 'pixi.js';
@@ -37,6 +38,7 @@ import {
   renderBuildingProgress,
   renderUnitLabel,
 } from './entity-overlays';
+import { updateCtrlGroupOverlay, updateIdleOverlay } from './entity-status-overlays';
 import { getStatusTint } from './entity-tints';
 import {
   colorToHex,
@@ -139,21 +141,6 @@ export function renderEntity(eid: number, frameCount: number): void {
 
   const ex = Position.x[eid];
   const ey = Position.y[eid];
-
-  if (_world) {
-    const margin = 64;
-    if (
-      ex < _world.camX - margin ||
-      ex > _world.camX + _world.viewWidth + margin ||
-      ey < _world.camY - margin ||
-      ey > _world.camY + _world.viewHeight + margin
-    ) {
-      const spr = getEntitySprites().get(eid);
-      if (spr) spr.visible = false;
-      return;
-    }
-  }
-
   const sw = SpriteComp.width[eid];
   const sh = SpriteComp.height[eid];
   const yOff = SpriteComp.yOffset[eid];
@@ -282,6 +269,10 @@ export function renderEntity(eid: number, frameCount: number): void {
         drawStar(entityOverlayGfx, ex - (rank * 6) / 2 + s * 6 + 3, dy - 14, 3, 0xfbbf24);
     }
   }
+
+  // Idle indicator + ctrl group badge (delegated to entity-status-overlays)
+  updateIdleOverlay(eid, isBuilding, isResource, ex, ey, sh, yOff, frameCount, entityLayer);
+  updateCtrlGroupOverlay(eid, isResource, ex, ey, sh, yOff, entityLayer, _world);
 
   renderUnitLabel(eid, kind, isResource, selected, ex, ey, sh, yOff, entityLayer);
   renderBuildingProgress(

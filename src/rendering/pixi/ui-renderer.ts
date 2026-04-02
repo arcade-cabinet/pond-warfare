@@ -4,12 +4,21 @@
  * Selection rectangle, building placement preview, rally points, and range rings.
  */
 
+import { Sprite } from 'pixi.js';
+
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { TILE_SIZE } from '@/constants';
 import { Building, Combat, EntityTypeTag, Position, Selectable } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { type EntityKind, SpriteId, type SpriteId as SpriteIdType } from '@/types';
-import { drawDashedCircle, drawDashedLine, getScreenGfx, getTexture, getUiGfx } from './init';
+import {
+  drawDashedCircle,
+  drawDashedLine,
+  getScreenGfx,
+  getTexture,
+  getUiGfx,
+  getUiLayer,
+} from './init';
 
 // ---------------------------------------------------------------------------
 // Rally points & range rings
@@ -100,8 +109,22 @@ export function renderSelectionRect(
 }
 
 // ---------------------------------------------------------------------------
-// Building placement preview
+// Building placement preview — ghost sprite with validity tinting
 // ---------------------------------------------------------------------------
+
+let ghostSprite: Sprite | null = null;
+let ghostSpriteId: SpriteIdType | null = null;
+
+function resolvePlacementSpriteId(buildingType: string): SpriteIdType | null {
+  if (buildingType === 'burrow') return SpriteId.Burrow;
+  if (buildingType === 'armory') return SpriteId.Armory;
+  if (buildingType === 'tower') return SpriteId.Tower;
+  if (buildingType === 'watchtower') return SpriteId.Watchtower;
+  if (buildingType === 'lodge') return SpriteId.Lodge;
+  if (buildingType === 'wall') return SpriteId.Wall;
+  if (buildingType === 'scout_post') return SpriteId.ScoutPost;
+  return null;
+}
 
 export function renderPlacementPreview(
   placement: {
@@ -110,36 +133,39 @@ export function renderPlacementPreview(
     buildingType: string;
     canPlace: boolean;
   },
-  spriteCanvases: Map<SpriteIdType, HTMLCanvasElement>,
+  _spriteCanvases: Map<SpriteIdType, HTMLCanvasElement>,
 ): void {
-  const uiGfx = getUiGfx();
-
   const { worldX, worldY, buildingType, canPlace } = placement;
   const bx = Math.round(worldX / TILE_SIZE) * TILE_SIZE;
   const by = Math.round(worldY / TILE_SIZE) * TILE_SIZE;
 
-  let placeSpriteId: SpriteIdType | null = null;
-  if (buildingType === 'burrow') placeSpriteId = SpriteId.Burrow;
-  else if (buildingType === 'armory') placeSpriteId = SpriteId.Armory;
-  else if (buildingType === 'tower') placeSpriteId = SpriteId.Tower;
-  else if (buildingType === 'watchtower') placeSpriteId = SpriteId.Watchtower;
-  else if (buildingType === 'lodge') placeSpriteId = SpriteId.Lodge;
-  else if (buildingType === 'wall') placeSpriteId = SpriteId.Wall;
-  else if (buildingType === 'scout_post') placeSpriteId = SpriteId.ScoutPost;
-
-  if (placeSpriteId !== null) {
-    const sprCanvas = spriteCanvases.get(placeSpriteId);
-    const tex = getTexture(placeSpriteId);
-    if (sprCanvas && tex) {
-      const sw = sprCanvas.width;
-      const sh = sprCanvas.height;
-
-      // Ghost sprite
-      uiGfx.rect(bx - sw / 2, by - sh / 2, sw, sh);
-      uiGfx.fill({
-        color: canPlace ? 0x00ff00 : 0xff0000,
-        alpha: canPlace ? 0.3 : 0.5,
-      });
-    }
+  const placeSpriteId = resolvePlacementSpriteId(buildingType);
+  if (placeSpriteId === null) {
+    hidePlacementGhost();
+    return;
   }
+
+  const tex = getTexture(placeSpriteId);
+  if (!tex) {
+    hidePlacementGhost();
+    return;
+  }
+
+  // Create or update the ghost sprite
+  if (!ghostSprite || ghostSpriteId !== placeSpriteId) {
+    if (ghostSprite) getUiLayer().removeChild(ghostSprite);
+    ghostSprite = new Sprite(tex);
+    ghostSprite.anchor.set(0.5, 0.5);
+    getUiLayer().addChild(ghostSprite);
+    ghostSpriteId = placeSpriteId;
+  }
+
+  ghostSprite.visible = true;
+  ghostSprite.position.set(bx, by);
+  ghostSprite.alpha = canPlace ? 0.35 : 0.45;
+  ghostSprite.tint = canPlace ? 0x44ff44 : 0xff4444;
+}
+
+export function hidePlacementGhost(): void {
+  if (ghostSprite) ghostSprite.visible = false;
 }

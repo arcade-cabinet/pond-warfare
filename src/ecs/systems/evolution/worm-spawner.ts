@@ -135,7 +135,7 @@ function tickBurrowTimers(world: GameWorld): void {
   for (const eid of toEmerge) {
     triggerSpawnPop(eid);
     spawnDustParticles(world, Position.x[eid], Position.y[eid]);
-    audio.alert();
+    audio.wormEmergence(Position.x[eid]);
 
     world.floatingTexts.push({
       x: Position.x[eid],

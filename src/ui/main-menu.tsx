@@ -1,11 +1,4 @@
-/**
- * Main Menu — Diegetic Pond Interface
- *
- * Hand-painted watercolor pond with floating lily pads as scenery, a swimming
- * otter (Yuka.js steered), and teal bar buttons for all menu actions. The lily
- * pads drift organically — all 3 variants plus tiny pads — while the otter
- * navigates between them, aware of pads, buttons, and the logo.
- */
+/** Main Menu — Diegetic Pond Interface with floating lily pads and Yuka-steered otter. */
 
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { screenClass } from '@/platform';
@@ -16,14 +9,22 @@ import { MenuButton } from './menu-button';
 import { MenuLilyPads } from './menu-lily-pads';
 import { MenuOtter } from './menu-otter';
 import { MenuPads } from './menu-pads';
+import { generateName, generateSeed } from './new-game/presets';
 import {
   achievementsOpen,
   campaignOpen,
   continueRequested,
   cosmeticsOpen,
+  customGameSettings,
+  customMapSeed,
+  DEFAULT_CUSTOM_SETTINGS,
+  gameName,
+  gameSeed,
   hasSaveGame,
   leaderboardOpen,
   menuState,
+  permadeathEnabled,
+  selectedDifficulty,
   settingsOpen,
   unlocksOpen,
 } from './store';
@@ -120,6 +121,17 @@ export function MainMenu() {
     otterAI.current.poke(e.clientX - rect.left, e.clientY - rect.top);
   }, []);
 
+  const handleQuickPlay = useCallback(() => {
+    selectedDifficulty.value = 'normal';
+    permadeathEnabled.value = false;
+    customGameSettings.value = { ...DEFAULT_CUSTOM_SETTINGS };
+    gameName.value = generateName();
+    const seed = generateSeed();
+    gameSeed.value = seed;
+    customMapSeed.value = String(seed);
+    menuState.value = 'playing';
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -208,6 +220,7 @@ export function MainMenu() {
 
       {/* ---- Menu buttons (teal bars) ---- */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+        <MenuButton label="Quick Play" wide onClick={handleQuickPlay} />
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
           <MenuButton
             label="New Game"

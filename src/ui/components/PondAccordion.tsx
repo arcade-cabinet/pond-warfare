@@ -9,6 +9,7 @@
 import type { ComponentChildren, VNode } from 'preact';
 import { toChildArray } from 'preact';
 import { useCallback, useState } from 'preact/hooks';
+import { audio } from '@/audio/audio-system';
 import { PondAccordionSection } from './PondAccordionSection';
 
 export interface AccordionSection {
@@ -40,9 +41,11 @@ export function PondAccordion({ sections, children, allowMultiple = true }: Pond
         const next = new Set(prev);
         if (next.has(key)) {
           next.delete(key);
+          audio.accordionClose();
         } else {
           if (!allowMultiple) next.clear();
           next.add(key);
+          audio.accordionOpen();
         }
         return next;
       });

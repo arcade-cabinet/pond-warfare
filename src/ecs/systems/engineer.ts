@@ -111,7 +111,7 @@ export function placeEngineerBridge(world: GameWorld, eid: number): boolean {
   });
 
   // Visual feedback
-  audio.build();
+  audio.engineerBridge(x);
   spawnParticle(world, x, y, 0, -1, 20, '#a78bfa', 3);
   world.floatingTexts.push({
     x,

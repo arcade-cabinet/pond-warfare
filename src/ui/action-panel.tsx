@@ -10,6 +10,7 @@
  */
 
 import { signal } from '@preact/signals';
+import { audio } from '@/audio/audio-system';
 import { screenClass } from '@/platform';
 import * as store from './store';
 
@@ -244,6 +245,7 @@ export function ActionPanel() {
             count={trainButtons.length}
             onClick={() => {
               store.activeActionTab.value = 'train';
+              audio.tabSwitch();
             }}
           />
           <TabButton
@@ -252,6 +254,7 @@ export function ActionPanel() {
             count={buildButtons.length}
             onClick={() => {
               store.activeActionTab.value = 'build';
+              audio.tabSwitch();
             }}
           />
           <TabButton
@@ -260,6 +263,7 @@ export function ActionPanel() {
             count={techButtons.length}
             onClick={() => {
               store.activeActionTab.value = 'tech';
+              audio.tabSwitch();
             }}
           />
         </div>

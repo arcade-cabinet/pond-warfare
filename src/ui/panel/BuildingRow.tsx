@@ -1,9 +1,10 @@
 /** BuildingRow -- Single building card with HP, training progress, and train picker. */
 
 import { useState } from 'preact/hooks';
-import { entityKindName } from '@/config/entity-defs';
+import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import type { EntityKind } from '@/types';
 import type { RosterBuilding } from '../roster-types';
+import { hideTooltip, showTooltip } from '../tooltip-helpers';
 import { QueueManager } from './QueueManager';
 import { TrainPicker } from './TrainPicker';
 
@@ -45,12 +46,34 @@ export function BuildingRow({ building, onSelect, onTrain, onCancelTrain }: Buil
   const [pickerOpen, setPickerOpen] = useState(false);
   const name = entityKindName(building.kind) ?? 'Building';
   const hpPct = building.maxHp > 0 ? building.hp / building.maxHp : 0;
+  const def = ENTITY_DEFS[building.kind];
+
+  const onMouseEnter = (e: MouseEvent) => {
+    const statLines = [{ label: 'HP', value: `${building.hp}/${building.maxHp}` }];
+    if (building.canTrain.length > 0) {
+      const trainNames = building.canTrain.map((k) => entityKindName(k) ?? '?').join(', ');
+      statLines.push({ label: 'Trains', value: trainNames });
+    }
+    if (building.queueItems.length > 0) {
+      statLines.push({ label: 'Queue', value: building.queueItems.join(', ') });
+    }
+    if (def?.foodProvided) {
+      statLines.push({ label: 'Food Cap', value: `+${def.foodProvided}` });
+    }
+    if (def?.damage) {
+      statLines.push({ label: 'Damage', value: `${def.damage}` });
+      statLines.push({ label: 'Range', value: `${def.attackRange}` });
+    }
+    showTooltip(e, { title: name, cost: '', description: '', hotkey: '', statLines });
+  };
 
   return (
     <div
       class="rounded p-2"
       style={{ background: 'var(--pw-wood-dark)', border: '1px solid var(--pw-border)' }}
       data-testid="building-row"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={hideTooltip}
     >
       <div class="flex items-center justify-between">
         <button

@@ -10,6 +10,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -122,6 +123,7 @@ export function heronSpawnerSystem(world: GameWorld): void {
 
   triggerSpawnPop(eid);
   spawnDustParticles(world, sx, sy);
+  audio.heronScreech(sx);
 
   // Target nearest gatherer, fall back to any player unit
   let target = findNearestGatherer(world, sx, sy);

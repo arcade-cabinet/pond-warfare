@@ -4,9 +4,12 @@
  * Positioned using pixel offsets derived from the node's grid col/row and
  * the cell sizing constants. Shows tech name, cost, description, and
  * prerequisite/unlock badges.
+ * Hover shows a detailed tooltip with branch, cost, requirements, status.
  */
 
 import { TECH_UPGRADES } from '@/config/tech-tree';
+import { hideTooltip, showTooltip } from '../tooltip-helpers';
+import { techTooltipData } from './tech-tooltip';
 import type { TreeNode } from './tree-data';
 import { CELL_H, CELL_W, NODE_H, NODE_W } from './tree-data';
 import { type NodeState, stateStyles } from './tree-helpers';
@@ -32,6 +35,10 @@ export function TechNode({
   const y = node.row * CELL_H;
   const styles = stateStyles(state);
 
+  const onMouseEnter = (e: MouseEvent) => {
+    showTooltip(e, techTooltipData(node.id, upgrade, state, researchDiscount));
+  };
+
   return (
     <div
       class={`absolute rounded-lg stone-node flex flex-col items-center justify-center text-center p-1 select-none transition-colors duration-200 ${styles.extra}`}
@@ -50,6 +57,8 @@ export function TechNode({
         e.stopPropagation();
         if (state === 'available') onClick();
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={hideTooltip}
     >
       {state === 'researched' && (
         <span class="absolute top-1 right-1 text-xs" style={{ color: 'var(--pw-success)' }}>

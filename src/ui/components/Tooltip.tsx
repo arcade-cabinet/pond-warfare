@@ -13,6 +13,14 @@ export function Tooltip() {
       style={{ left: `${store.tooltipX.value}px`, top: `${store.tooltipY.value}px` }}
     >
       <div class="font-heading font-bold">{d.title}</div>
+      {d.status && (
+        <div
+          class="text-[10px] font-heading font-bold"
+          style={{ color: d.statusColor ?? 'var(--pw-text-muted)' }}
+        >
+          {d.status}
+        </div>
+      )}
       {d.costBreakdown ? (
         <div class="flex gap-2 font-numbers text-[10px]">
           {d.costBreakdown.clams != null && d.costBreakdown.clams > 0 && (
@@ -37,6 +45,20 @@ export function Tooltip() {
           </div>
         )
       )}
+      {d.statLines && d.statLines.length > 0 && (
+        <div class="flex flex-col gap-0.5 mt-0.5">
+          {d.statLines.map((s) => (
+            <div key={s.label} class="flex justify-between gap-3 text-[10px]">
+              <span class="font-game" style={{ color: 'var(--pw-text-muted)' }}>
+                {s.label}
+              </span>
+              <span class="font-numbers" style={{ color: 'var(--pw-text-primary)' }}>
+                {s.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
       {d.description && (
         <div class="text-xs font-game" style={{ color: 'var(--pw-text-muted)' }}>
           {d.description}
@@ -47,9 +69,11 @@ export function Tooltip() {
           {d.requires}
         </div>
       )}
-      <div class="text-xs font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
-        [{d.hotkey}]
-      </div>
+      {d.hotkey && (
+        <div class="text-xs font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
+          [{d.hotkey}]
+        </div>
+      )}
     </div>
   );
 }

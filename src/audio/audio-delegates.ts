@@ -6,8 +6,22 @@
  */
 
 import type { PlayableFaction } from '@/config/factions';
+import type { WeatherType } from '@/config/weather';
+import type { ShrineAbility } from '@/ecs/systems/shrine';
 import type { EntityKind } from '@/types';
 import type { AudioManagers } from './audio-delegate-types';
+import {
+  berserkerFuryEffect,
+  berserkerRageEffect,
+  diverEmergeEffect,
+  diverSubmergeEffect,
+  engineerBridgeEffect,
+  heronScreechEffect,
+  shrineActivationEffect,
+  weatherTransitionEffect,
+  wormEmergenceEffect,
+} from './sfx-environment';
+import { accordionCloseEffect, accordionOpenEffect, tabSwitchEffect } from './sfx-ui';
 
 export type { AudioDelegateMethods } from './audio-delegate-types';
 
@@ -218,5 +232,79 @@ export function installDelegates(proto: any): void {
   });
   def(proto, 'updateAmbient', function (this: Self, darkness: number) {
     this.ambientMgr.updateAmbient(darkness);
+  });
+  // Environment & unit-specific sounds
+  def(proto, 'weatherTransition', function (this: Self, wt: WeatherType) {
+    weatherTransitionEffect(
+      this.sfxMgr,
+      () => this.isMuted,
+      () => this.isStarted,
+      wt,
+    );
+  });
+  def(proto, 'shrineActivation', function (this: Self, a: ShrineAbility, wx?: number) {
+    shrineActivationEffect(
+      this.sfxMgr,
+      () => this.isMuted,
+      () => this.isStarted,
+      a,
+      wx,
+    );
+  });
+  def(proto, 'berserkerRage', function (this: Self, wx?: number) {
+    berserkerRageEffect(this.sfxMgr, wx);
+  });
+  def(proto, 'berserkerFury', function (this: Self, wx?: number) {
+    berserkerFuryEffect(
+      this.sfxMgr,
+      () => this.isMuted,
+      () => this.isStarted,
+      wx,
+    );
+  });
+  def(proto, 'diverSubmerge', function (this: Self, wx?: number) {
+    diverSubmergeEffect(this.sfxMgr, wx);
+  });
+  def(proto, 'diverEmerge', function (this: Self, wx?: number) {
+    diverEmergeEffect(
+      this.sfxMgr,
+      () => this.isMuted,
+      () => this.isStarted,
+      wx,
+    );
+  });
+  def(proto, 'engineerBridge', function (this: Self, wx?: number) {
+    engineerBridgeEffect(
+      this.sfxMgr,
+      () => this.isMuted,
+      () => this.isStarted,
+      wx,
+    );
+  });
+  def(proto, 'wormEmergence', function (this: Self, wx?: number) {
+    wormEmergenceEffect(
+      this.sfxMgr,
+      () => this.isMuted,
+      () => this.isStarted,
+      wx,
+    );
+  });
+  def(proto, 'heronScreech', function (this: Self, wx?: number) {
+    heronScreechEffect(
+      this.sfxMgr,
+      () => this.isMuted,
+      () => this.isStarted,
+      wx,
+    );
+  });
+  // UI navigation sounds
+  def(proto, 'accordionOpen', function (this: Self) {
+    accordionOpenEffect(this.sfxMgr);
+  });
+  def(proto, 'accordionClose', function (this: Self) {
+    accordionCloseEffect(this.sfxMgr);
+  });
+  def(proto, 'tabSwitch', function (this: Self) {
+    tabSwitchEffect(this.sfxMgr);
   });
 }
