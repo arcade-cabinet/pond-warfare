@@ -4,7 +4,7 @@
 
 Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Two playable factions gather resources, build bases, train armies, and fight for map control.
 
-**Feature summary:** 44 entity types (16 player units, 10 enemy units, 15 buildings, 3 resources), 25 techs across 5 branches (Lodge, Nature, Warfare, Fortifications, Shadow) with 3 active abilities, 5 campaign missions with branching after Mission 3, 5 puzzle missions, 2 playable factions, 5 AI personalities, 7 commanders with passives + active abilities, 4 ranked tiers, 9 map scenarios, 4 weather types, 4 game modes (Skirmish, Campaign, Survival, Puzzles), 26 achievements, 22 unlockables, unit-specific SFX with spatial panning, an enemy evolution system with 5 tiers + threat escalation, pressure-based auto-building, Yuka governor AI player, advisor system (3 advisors), replay system, permadeath mode, 5 difficulty levels, custom game settings, cosmetic system, kill streaks, terrain system (6 types), morale and flanking mechanics, event feed, enhanced minimap, wave announcements, settings persistence, commander selection persistence, accordion UI with pond watercolor aesthetic, Maestro mobile testing, Android APK builds.
+**Feature summary:** 44 entity types (12 player units, 9 enemy units, ~15 buildings, 3 resources), 25 techs across 5 branches (Lodge, Nature, Warfare, Fortifications, Shadow) with 3 active abilities, 5 campaign missions with branching after Mission 3 and campaign briefing screen, 10 puzzle missions, 2 playable factions, 5 AI personalities, 7 commanders with passives + active abilities, 4 ranked tiers, 9 map scenarios, 4 weather types, 5 game modes (Skirmish, Campaign, Survival, Puzzles, Co-op), 40 achievements, 26 unlockables, P2P co-op multiplayer (Trystero/WebRTC lockstep), daily challenges with XP/level system, match history, 8 random in-game event types, deterministic dual-layer PRNG (zero Math.random in gameplay), unit-specific SFX with spatial panning, an enemy evolution system with 5 tiers + threat escalation, pressure-based auto-building, Yuka governor AI player, advisor system (3 advisors), replay system, permadeath mode, 5 difficulty levels, custom game settings, cosmetic system, kill streaks, terrain system (6 types), morale and flanking mechanics, event feed, enhanced minimap with legend, idle unit indicators, ctrl group badges, tooltips, hotkeys, build placement preview, Quick Play, loading screen, unlock progression display with next-unlock hint, wave announcements, settings persistence, commander selection persistence, accordion UI with pond watercolor aesthetic, Maestro mobile testing, Android APK builds.
 
 Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
 
@@ -149,12 +149,13 @@ Changes every 3-5 minutes, seeded from map seed for determinism:
 - **Fog**: -40% vision range
 - **Wind**: +-15px projectile drift
 
-### Game Modes (4)
+### Game Modes (5)
 
 - **Skirmish**: Standard mode, destroy all enemy nests to win
-- **Campaign**: 5 story missions with objectives and dialogue, branching after Mission 3 (path A/B)
+- **Campaign**: 5 story missions with objectives and dialogue, branching after Mission 3 (path A/B), campaign briefing screen with recommended tech branches
 - **Survival**: Endless waves, no nests, score-based
-- **Puzzles**: 5 fixed-unit tactical puzzles with star ratings (First Strike, Stealth Run, Hold the Bridge, Economy Race, Commander Down)
+- **Puzzles**: 10 fixed-unit tactical puzzles with star ratings (First Strike, Stealth Run, Hold the Bridge, Economy Race, Commander Down, plus 5 advanced puzzles)
+- **Co-op**: P2P 2-player cooperative via Trystero/WebRTC with deterministic lockstep synchronization
 
 ### Tactical Combat
 
@@ -168,9 +169,9 @@ Changes every 3-5 minutes, seeded from map seed for determinism:
 - **Berserker Rage**: Damage increases as HP decreases
 - **Counter System**: Damage multipliers in `DAMAGE_MULTIPLIERS` (entity-defs)
 
-### Achievements (26)
+### Achievements (40)
 
-Defined in `src/systems/achievement-defs.ts`. Examples: First Blood, Triple Kill, Rampage, Victory, Hard Won, Nightmare Survivor, Hero of the Pond, Untouchable, Speed Demon, War Machine, Scholar, Pearl Diver, Master Builder, Endurance, Branch Master, Full Scholar, Commander's Guard, Shadow Strike, Eco Boom, Speed Runner, Turtle Shell, Grand Army, Pearl Hoarder, Flawless Victory.
+Defined in `src/systems/achievement-defs.ts`. 40 achievements spanning combat, economy, campaign, co-op, daily challenges, and new systems. Examples include: First Blood, Triple Kill, Rampage, Victory, Hard Won, Nightmare Survivor, Hero of the Pond, Untouchable, Speed Demon, War Machine, Scholar, Pearl Diver, Master Builder, Endurance, Branch Master, Full Scholar, Commander's Guard, Shadow Strike, Eco Boom, Speed Runner, Turtle Shell, Grand Army, Pearl Hoarder, Flawless Victory, plus achievements for weather survival, warship kills, bridge building, diver ambushes, market trades, berserker streaks, shrine abilities, co-op victories, daily challenge completion, player levels, perfect puzzles, and random event encounters.
 
 ### Unlocks (22)
 
@@ -187,6 +188,51 @@ A goal-based AI player in `src/governor/`. Uses Yuka.js Think/Goal architecture 
 ### Replay System
 
 Records game state snapshots in `src/replay/recorder.ts`. Playback via `src/replay/replay-viewer.ts` with speed control (1x, 2x, 4x, 8x) and pause. Stored in SQLite via `src/replay/replay-storage.ts`.
+
+### P2P Co-op Multiplayer (Trystero/WebRTC)
+
+2-player cooperative multiplayer using Trystero for WebRTC signaling via Nostr relays. Architecture in `src/net/`:
+- `connection.ts` -- Room management, peer join/leave, typed message channels
+- `lockstep.ts` -- Deterministic lockstep synchronizer with input delay buffering
+- `multiplayer-controller.ts` -- High-level controller bridging net layer to game world
+- `command-serializer.ts` -- Serializes game commands for network transmission
+- `checksum.ts` -- Frame-level checksum for desync detection
+- `types.ts` -- Protocol message types, lobby state, connection quality
+
+The lockstep model buffers commands 3 frames ahead; a frame only executes when both players' inputs are received. Host commands apply before guest commands for deterministic ordering. Checksum validation detects desyncs. UI components: `MultiplayerMenu` (host/join), `MultiplayerLobby` (ready-up), `ConnectionStatus` HUD indicator, `DisconnectOverlay`.
+
+### Daily Challenges & XP/Level System
+
+Defined in `src/systems/daily-challenges.ts` and `src/systems/player-xp.ts`. A pool of 15 challenge templates rotates daily (deterministic from UTC date). Each challenge has an objective function evaluated at game end, awarding bonus XP on completion. Persisted in the SQLite settings table.
+
+XP is earned from every game based on: base (100), win bonus (200), difficulty bonus (0-300), kill/building/tech bonuses, and daily challenge completion. Player level = totalXP / 500. Stored in the player_profile table.
+
+### Match History
+
+Stored in `src/storage/match-history.ts`. Saves match summaries (result, difficulty, scenario, commander, duration, kills, XP earned) to SQLite. Auto-prunes to the last 50 records. Displayed in `src/ui/match-history-panel.tsx`.
+
+### Random In-Game Events (8 types)
+
+Defined in `src/ecs/systems/random-events.ts`. Fire every 3-5 minutes (seeded from map seed for determinism). Each event lasts 30-60 seconds:
+
+| Event | Effect |
+|-------|--------|
+| Resource Surge | Random resource node doubles remaining amount |
+| Migrating Fish | 5-8 neutral fish spawn and wander |
+| Predator Frenzy | All enemies +20% speed for 30 seconds |
+| Healing Spring | Temporary healing zone heals nearby units |
+| Fog Bank | Fog of war closes in by 30% for 60 seconds |
+| Supply Drop | +100 clams, +50 twigs at random location |
+| Earthquake | All buildings take 10% damage, screen shake |
+| Blessing of the Pond | All player units +10% speed for 60 seconds |
+
+### Deterministic PRNG
+
+`src/utils/random.ts` provides a `SeededRandom` class (Mulberry32 variant) used for map generation, weather transitions, and random events. Zero `Math.random()` calls in gameplay code; all randomness is seeded from the map seed for replay determinism.
+
+### Unlock Progression & Next-Unlock Hint
+
+`src/systems/unlock-tracker.ts` tracks unlock progress. `src/systems/next-unlock-hint.ts` calculates the closest unearned unlock and its progress percentage, displayed in `src/ui/unlock-progress.tsx`. 26 unlockable items across 6 categories.
 
 ### Auto-Build System
 
@@ -266,7 +312,7 @@ All units use Yuka.js for movement (not just enemies). The `YukaManager`:
 | File | Purpose | Lines |
 |------|---------|-------|
 | `src/game.ts` | Game orchestrator entry point | ~300 |
-| `src/game/*.ts` | Decomposed game modules (40 files, ~3800 LOC total) | ~20-300 each |
+| `src/game/*.ts` | Decomposed game modules (47 files) | ~20-300 each |
 | `src/game/systems-runner.ts` | ECS system execution order | |
 | `src/game/game-loop.ts` | Main update loop | |
 | `src/game/game-init.ts` | World initialization | |
@@ -274,7 +320,7 @@ All units use Yuka.js for movement (not just enemies). The `YukaManager`:
 | `src/game/action-panel/*.ts` | Lodge/Armory/Gatherer/Market button defs + tech helpers | |
 | `src/rendering/pixi/entity-renderer.ts` | PixiJS entity rendering, recoloring, health bars | ~300 |
 | `src/rendering/recolor.ts` | Sprite recoloring: 14 presets for cosmetics/veterancy/champions | ~224 |
-| `src/ecs/systems/**/*.ts` | 52 ECS system files across 7 subdirs | ~40-250 each |
+| `src/ecs/systems/**/*.ts` | 57 ECS system files across 7 subdirs | ~40-250 each |
 | `src/ecs/systems/ai/*.ts` | Enemy AI: economy, training, combat, defense, building | ~1200 total |
 | `src/ecs/systems/evolution/*.ts` | Enemy evolution: tiers, poison, alpha aura, mega-waves, spawners | ~931 total |
 | `src/ecs/systems/combat/*.ts` | Combat: melee, positional damage, commander aura, war drums, attack state | |
@@ -290,6 +336,7 @@ All units use Yuka.js for movement (not just enemies). The `YukaManager`:
 | `src/ecs/systems/weather.ts` | Weather transitions and effects | |
 | `src/ecs/systems/wall-gate.ts` | Wall gate open/close | |
 | `src/ecs/systems/shrine.ts` | Shrine building effects | |
+| `src/ecs/systems/random-events.ts` | 8 random in-game event types | ~292 |
 | `src/ecs/systems/branch-cosmetics.ts` | Tech branch cosmetic effects | |
 | `src/ecs/systems/auto-retreat.ts` | Low-HP auto-retreat logic | |
 | `src/ecs/systems/auto-build.ts` | Pressure-based auto-building | ~254 |
@@ -322,22 +369,31 @@ All units use Yuka.js for movement (not just enemies). The `YukaManager`:
 | `src/config/weather.ts` | 4 weather types with gameplay modifiers | ~104 |
 | `src/config/cosmetics.ts` | Branch-themed cosmetic definitions | ~172 |
 | `src/config/barks.ts` | Unit bark text definitions | ~120 |
-| `src/config/puzzles.ts` | 5 puzzle mission definitions | ~212 |
+| `src/config/puzzles.ts` | 10 puzzle mission definitions (barrel + types) | ~70 |
+| `src/config/puzzles-core.ts` | Puzzle missions 1-5 definitions | ~200 |
+| `src/config/puzzles-advanced.ts` | Puzzle missions 6-10 definitions | ~200 |
 | `src/campaign/missions.ts` | Campaign barrel re-export | ~17 |
 | `src/campaign/mission-defs.ts` | Missions 1-2 definitions | ~152 |
 | `src/campaign/mission-defs-late.ts` | Missions 3-5 with branch paths | ~272 |
-| `src/systems/achievement-defs.ts` | 26 achievement definitions | ~195 |
+| `src/systems/achievement-defs.ts` | 40 achievement definitions | ~298 |
 | `src/systems/achievements.ts` | Achievement checker + SQLite persistence | ~220 |
+| `src/systems/daily-challenges.ts` | Daily challenge pool, selection, persistence | ~191 |
+| `src/systems/player-xp.ts` | XP calculation, level progression | ~102 |
+| `src/systems/unlock-tracker.ts` | Unlock progression tracking | |
+| `src/systems/next-unlock-hint.ts` | Next-unlock hint calculation | |
 | `src/systems/leaderboard.ts` | Ranked progression + win streak tracking | ~154 |
 | `src/advisors/*.ts` | Advisor system: tips, state, actions, helpers | ~6 files |
 | `src/governor/*.ts` | Yuka governor AI: evaluators + 6 goal types | ~619 total |
 | `src/replay/*.ts` | Replay recorder, player, viewer, storage | ~362 total |
+| `src/net/*.ts` | P2P multiplayer: connection, lockstep, controller, serializer, checksum | ~638 total |
+| `src/storage/match-history.ts` | Match history SQLite storage (last 50 records) | |
 | `src/terrain/terrain-grid.ts` | TerrainGrid: 6 types, speed mults, pathability | |
 | `src/terrain/terrain-painters*.ts` | Terrain painting for map generation | |
 | `src/input/selection/*.ts` | Selection, commands, formation positioning | ~596 total |
 | `src/input/pointer*.ts` | Pointer handling (click, minimap, types) | |
 | `src/input/keyboard.ts` | Keyboard shortcuts | |
 | `src/storage/*.ts` | SQLite: saves, settings, game_history, unlocks, player_profile | ~487 total |
+| `src/utils/random.ts` | SeededRandom PRNG (Mulberry32) for deterministic gameplay | ~44 |
 | `src/utils/spatial-hash.ts` | SpatialHash grid for O(n) proximity queries | ~62 |
 | `src/utils/particles.ts` | Particle spawning with pool + throttling | ~67 |
 | `src/constants.ts` | Tuning constants (vet thresholds, enemy economy, AI timers) | ~136 |
@@ -351,7 +407,7 @@ src/
   audio/          -- Tone.js sound system (audio-system, sfx, music, ambient, cues, voices, combat)
   campaign/       -- Campaign mission definitions + types
   config/         -- Entity defs, tech tree, commanders, factions, barks, unlocks, cosmetics, weather, puzzles, AI personalities
-  ecs/            -- Components, systems (52 system files across 7 subdirs)
+  ecs/            -- Components, systems (57 system files across 7 subdirs)
     systems/
       ai/         -- Enemy AI (economy, training, combat, defense, building)
       combat/     -- Melee, positional damage, commander aura, war drums
@@ -360,24 +416,25 @@ src/
       health/     -- Damage, death, healing, particles
       movement/   -- Arrive, speed modifiers
       *.ts        -- Top-level systems (auto-build, berserker, diver-stealth, engineer, etc.)
-  game/           -- Game orchestrator modules (40 files)
+  game/           -- Game orchestrator modules (47 files)
     action-panel/ -- Train/Build/Tech button definitions
     init-entities/ -- 9 scenario map generators + helpers
   governor/       -- Yuka governor AI player (6 goal types)
   input/          -- Pointer, keyboard, selection handlers
+  net/            -- P2P multiplayer (Trystero/WebRTC lockstep, connection, serializer)
     selection/    -- Commands, group select, queries
   platform/       -- Capacitor native detection
   rendering/      -- PixiJS renderers (entity, effects, ui, background, water-ripple)
   replay/         -- Replay recorder, player, viewer, storage
   storage/        -- SQLite persistence (schema, queries, settings)
-  systems/        -- Achievement system + leaderboard
+  systems/        -- Achievements (40), daily challenges, player XP/levels, leaderboard, unlock tracker
   terrain/        -- Terrain grid, painters
   ui/
     components/   -- Small reusable UI primitives (<100 LOC each)
     panel/        -- Command panel tabs
     overlays/     -- Modal overlays (settings, tech tree, etc.)
-    hud/          -- HUD elements (overlays, ctrl-groups, abilities)
-    screens/      -- Full-screen views
+    hud/          -- HUD elements (overlays, ctrl-groups, abilities, minimap legend, connection status)
+    screens/      -- Full-screen views (multiplayer lobby, multiplayer menu)
   styles/         -- CSS
 tests/
   ecs/systems/    -- System integration tests
@@ -412,5 +469,8 @@ Tests mirror the `src/` structure under `tests/`. Use `createGameWorld()` and ma
 - **Pearls are the rare resource**: Only found at PearlBed nodes (500 each), required for elite techs like Hardened Shells (30P) and Siege Works (50P).
 - **Terrain affects movement**: Speed multipliers per terrain type, water units bypass water tiles, flying units ignore all terrain.
 - **Weather changes gameplay**: Rain floods shallows, fog reduces vision, wind drifts projectiles. Seeded from map seed for determinism.
-- **Store is split into 3 files**: Core signals in `store.ts`, weather in `store-weather.ts`, gameplay session state (game over, campaign, puzzle, replay, abilities) in `store-gameplay.ts`. All re-exported from `store.ts` for backward compatibility.
+- **Store is split into 4 files**: Core signals in `store.ts`, weather in `store-weather.ts`, gameplay session state (game over, campaign, puzzle, replay, abilities) in `store-gameplay.ts`, multiplayer state in `store-multiplayer.ts`. All re-exported from `store.ts` for backward compatibility.
 - **Governor can play autonomously**: The Yuka governor AI in `src/governor/` uses goal-based planning to play the player side. Used for AI vs AI testing and spectating.
+- **Multiplayer is lockstep P2P**: Both players must process the same commands in the same order. All gameplay randomness must go through `SeededRandom`, never `Math.random()`. Desyncs are detected via frame checksums.
+- **Daily challenges rotate by UTC date**: Deterministic selection from a pool of 15 challenges. Completion tracked per calendar day in SQLite.
+- **Random events are seeded**: Event timing and selection use the map seed + frame count, ensuring replays and multiplayer stay synchronized.
