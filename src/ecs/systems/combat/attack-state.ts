@@ -3,7 +3,8 @@
  *
  * Handles the Attacking state for all unit types: melee direct damage,
  * sniper projectiles, catapult AoE, boss croc stomp, siege turtle,
- * trapper slow, plus damage modifiers from auras and tech.
+ * trapper slow, plus damage modifiers from auras, tech, and positional
+ * bonuses (flanking + elevation).
  */
 
 import { hasComponent } from 'bitecs';
@@ -29,6 +30,7 @@ import type { GameWorld } from '@/ecs/world';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { executeBossCrocAttack, executeMeleeAttack } from './melee-attacks';
+import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
 /**
  * Process one unit in the Attacking state. Returns true if the unit was
@@ -157,6 +159,11 @@ function executeSniperAttack(
     mult = mult + (1.0 - mult) * 0.5;
   }
   let sniperDmg = Math.round(dmg * mult);
+
+  // Positional bonuses for ranged attacks
+  const positional = calculatePositionalBonuses(world, eid, tEnt);
+  sniperDmg = Math.round(sniperDmg * positional.multiplier);
+
   if (world.commanderEnemyDebuff.has(eid)) {
     sniperDmg = Math.round(sniperDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
   }
@@ -176,6 +183,11 @@ function executeSniperAttack(
     mult,
     EntityKind.Sniper,
   );
+
+  // Emit positional bonus text
+  if (positional.flanking || positional.elevationUp) {
+    emitPositionalBonusText(world, tEnt, positional);
+  }
 }
 
 function executeCatapultAttack(
@@ -189,6 +201,10 @@ function executeCatapultAttack(
   hasSpatial: boolean,
   allTargetable: ArrayLike<number>,
 ): void {
+  // Positional bonus for catapult primary target
+  const positional = calculatePositionalBonuses(world, eid, tEnt);
+  const adjustedDmg = Math.round(dmg * positional.multiplier);
+
   audio.catapultShoot(ex);
   spawnProjectile(
     world,
@@ -197,7 +213,7 @@ function executeCatapultAttack(
     Position.x[tEnt],
     Position.y[tEnt],
     tEnt,
-    dmg,
+    adjustedDmg,
     eid,
     1.0,
     EntityKind.Catapult,
@@ -215,8 +231,12 @@ function executeCatapultAttack(
     const adx = Position.x[t] - tx;
     const ady = Position.y[t] - ty;
     if (Math.sqrt(adx * adx + ady * ady) <= aoeRadius) {
-      takeDamage(world, t, Math.round(dmg * 0.5), eid);
+      takeDamage(world, t, Math.round(adjustedDmg * 0.5), eid);
     }
   }
   world.shakeTimer = Math.max(world.shakeTimer, 3);
+
+  if (positional.flanking || positional.elevationUp) {
+    emitPositionalBonusText(world, tEnt, positional);
+  }
 }

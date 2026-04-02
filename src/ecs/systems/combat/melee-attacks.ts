@@ -2,7 +2,8 @@
  * Melee & Boss Croc Attack Execution
  *
  * Handles direct-damage melee attacks with damage modifiers (alpha buff,
- * commander aura, war drums, venom) and boss croc stomp AoE with enrage.
+ * commander aura, war drums, venom, flanking, elevation, morale) and
+ * boss croc stomp AoE with enrage.
  *
  * Extracted from attack-state.ts to stay under 300 LOC.
  */
@@ -22,6 +23,7 @@ import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
 import { triggerAttackLunge } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
+import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
 export function executeBossCrocAttack(
   world: GameWorld,
@@ -77,6 +79,15 @@ export function executeMeleeAttack(
   const mult = getDamageMultiplier(kind, targetKind);
   let meleeDmg = Math.round(dmg * mult);
 
+  // Positional bonuses (flanking + elevation)
+  const positional = calculatePositionalBonuses(world, eid, tEnt);
+  meleeDmg = Math.round(meleeDmg * positional.multiplier);
+
+  // Morale: demoralized units deal -20% damage
+  if (world.demoralizedUnits.has(eid)) {
+    meleeDmg = Math.round(meleeDmg * 0.8);
+  }
+
   if (world.alphaDamageBuff.has(eid)) {
     meleeDmg = Math.round(meleeDmg * 1.2);
   }
@@ -95,6 +106,11 @@ export function executeMeleeAttack(
 
   takeDamage(world, tEnt, meleeDmg, eid, mult);
   triggerAttackLunge(eid, tEnt);
+
+  // Emit floating text for positional bonuses
+  if (positional.flanking || positional.elevationUp) {
+    emitPositionalBonusText(world, tEnt, positional);
+  }
 
   if (kind === EntityKind.VenomSnake) {
     world.poisonTimers.set(tEnt, 5);

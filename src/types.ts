@@ -17,6 +17,7 @@ export enum UnitState {
   AttackMove = 9,
   Attacking = 10,
   AttackMovePatrol = 11,
+  Retreat = 12,
 }
 
 export enum EntityKind {
@@ -53,6 +54,12 @@ export enum EntityKind {
   Commander = 30,
   Frog = 31,
   Fish = 32,
+  Diver = 33,
+  Engineer = 34,
+  Shaman = 35,
+  BurrowingWorm = 36,
+  FlyingHeron = 37,
+  Market = 38,
 }
 
 /** Entity kinds that represent buildings (get larger vision radius, etc.). */
@@ -67,6 +74,7 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
   EntityKind.ScoutPost,
   EntityKind.FishingHut,
   EntityKind.HerbalistHut,
+  EntityKind.Market,
 ]);
 
 export enum ResourceType {
@@ -79,7 +87,7 @@ export enum ResourceType {
 /**
  * Sprite identifiers for all procedurally-generated sprites.
  *
- * IMPORTANT: Values 0–32 intentionally mirror EntityKind values for entity
+ * IMPORTANT: Values 0–38 intentionally mirror EntityKind values for entity
  * sprites so entity kinds can be directly used as sprite IDs.
  *
  * Bones and Rubble are non-entity visual sprites (corpse/ruin overlays) and
@@ -119,6 +127,12 @@ export enum SpriteId {
   Commander = 30,
   Frog = 31,
   Fish = 32,
+  Diver = 33,
+  Engineer = 34,
+  Shaman = 35,
+  BurrowingWorm = 36,
+  FlyingHeron = 37,
+  Market = 38,
   // Non-entity visual sprites
   Bones = 40,
   Rubble = 41,

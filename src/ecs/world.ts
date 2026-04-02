@@ -220,6 +220,13 @@ export interface GameWorld {
   commanderAbilityCooldownUntil: number;
   commanderAbilityActiveUntil: number;
 
+  // Morale system: demoralized units get -20% dmg, -10% speed
+  demoralizedUnits: Set<number>;
+  /** Frame until which all player units are demoralized (commander death). 0 = inactive. */
+  commanderDeathDemoralizeUntil: number;
+  /** Whether auto-retreat is enabled (player can toggle in settings). */
+  autoRetreatEnabled: boolean;
+
   // Game-end spectacle state
   /** Frame at which the game entered 'win' or 'lose' (0 = not ended). */
   gameEndFrame: number;

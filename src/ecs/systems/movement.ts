@@ -84,6 +84,11 @@ export function movementSystem(world: GameWorld): void {
       speed *= 1.3;
     }
 
+    // Morale: demoralized units move 10% slower
+    if (world.demoralizedUnits.has(eid)) {
+      speed *= 0.9;
+    }
+
     // Fortified Walls: enemies near player walls are slowed by 30%
     if (world.tech.fortifiedWalls && FactionTag.faction[eid] === Faction.Enemy) {
       const ex = Position.x[eid];

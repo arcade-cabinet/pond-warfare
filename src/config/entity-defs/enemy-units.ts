@@ -83,4 +83,25 @@ export const ENEMY_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     spriteSize: 32,
     spriteScale: 3,
   },
+  // --- v1.5.0 new enemy units ---
+  [EntityKind.BurrowingWorm]: {
+    hp: 60,
+    speed: 1.0,
+    damage: 10,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
+  [EntityKind.FlyingHeron]: {
+    hp: 20,
+    speed: 3.5,
+    damage: 4,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+  },
 };

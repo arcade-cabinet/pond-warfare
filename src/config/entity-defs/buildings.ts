@@ -124,4 +124,17 @@ export const BUILDING_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     clamCost: 150,
     twigCost: 100,
   },
+  // --- v1.5.0 ---
+  [EntityKind.Market]: {
+    hp: 100,
+    speed: 0,
+    damage: 0,
+    attackRange: 0,
+    isBuilding: true,
+    isResource: false,
+    spriteSize: 32,
+    spriteScale: 3,
+    clamCost: 150,
+    twigCost: 100,
+  },
 };

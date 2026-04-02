@@ -17,6 +17,7 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [EntityKind.Healer]: 1.5,
       [EntityKind.Snake]: 1.5,
       [EntityKind.Brawler]: 0.75,
+      [EntityKind.FlyingHeron]: 1.5, // Ranged counters flying
     },
     [EntityKind.Gator]: {
       [EntityKind.Brawler]: 1.5,
@@ -48,6 +49,18 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
     [EntityKind.AlphaPredator]: {
       [EntityKind.Brawler]: 1.25,
       [EntityKind.Sniper]: 1.25,
+    },
+    // v1.5.0 new units
+    [EntityKind.Diver]: {
+      [EntityKind.Sniper]: 1.5, // Ambush flanker vs fragile ranged
+      [EntityKind.Shieldbearer]: 0.75, // Weak vs heavy armor
+    },
+    [EntityKind.BurrowingWorm]: {
+      [EntityKind.Gatherer]: 1.5, // Targets economy
+    },
+    [EntityKind.FlyingHeron]: {
+      [EntityKind.Gatherer]: 1.5, // Harasses workers
+      [EntityKind.Shieldbearer]: 0.5, // Terrible vs tanks
     },
   };
 

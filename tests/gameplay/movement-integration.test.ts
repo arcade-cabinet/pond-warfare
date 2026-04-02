@@ -86,6 +86,9 @@ function createTestWorld(): GameWorld {
     recorder: { record: () => {} },
     activeCommander: null,
     commanderId: null,
+    demoralizedUnits: new Set<number>(),
+    commanderDeathDemoralizeUntil: 0,
+    autoRetreatEnabled: true,
     particlePool: {
       acquire: () => ({
         x: 0,
@@ -286,7 +289,7 @@ describe('Movement pipeline', () => {
   });
 });
 
-describe('issueContextCommand → movement', () => {
+describe('issueContextCommand -> movement', () => {
   let world: GameWorld;
 
   beforeEach(() => {
@@ -306,7 +309,7 @@ describe('issueContextCommand → movement', () => {
     expect(UnitStateMachine.targetY[eid]).toBeGreaterThan(350);
   });
 
-  it('right-click ground → unit actually moves over frames', () => {
+  it('right-click ground -> unit actually moves over frames', () => {
     const eid = spawnUnit(world, 100, 100, 2.0);
     world.selection = [eid];
     Selectable.selected[eid] = 1;
@@ -330,7 +333,7 @@ describe('issueContextCommand → movement', () => {
     expect(UnitStateMachine.targetEntity[gatherer]).toBe(resource);
   });
 
-  it('right-click resource → gatherer walks toward it', () => {
+  it('right-click resource -> gatherer walks toward it', () => {
     const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
     const resource = spawnResource(world, 300, 300, ResourceType.Clams);
     world.selection = [gatherer];
@@ -355,7 +358,7 @@ describe('issueContextCommand → movement', () => {
     expect(UnitStateMachine.targetEntity[brawler]).toBe(enemy);
   });
 
-  it('right-click enemy → unit walks toward enemy', () => {
+  it('right-click enemy -> unit walks toward enemy', () => {
     const brawler = spawnUnit(world, 100, 100, 1.8, EntityKind.Brawler);
     const enemy = spawnEnemy(world, 300, 300);
     world.selection = [brawler];
@@ -368,7 +371,7 @@ describe('issueContextCommand → movement', () => {
     expect(d).toBeGreaterThan(1);
   });
 
-  it('group right-click ground → all units get Move state', () => {
+  it('group right-click ground -> all units get Move state', () => {
     const units = [
       spawnUnit(world, 100, 100, 2.0),
       spawnUnit(world, 120, 100, 2.0, EntityKind.Brawler),
@@ -384,7 +387,7 @@ describe('issueContextCommand → movement', () => {
     }
   });
 
-  it('group right-click ground → all units change position', () => {
+  it('group right-click ground -> all units change position', () => {
     const units = [
       spawnUnit(world, 100, 100, 2.0),
       spawnUnit(world, 120, 100, 2.0, EntityKind.Brawler),
@@ -410,7 +413,7 @@ describe('Gather loop', () => {
     world = createTestWorld();
   });
 
-  it('gatherer transitions from GatherMove → Gathering on arrival', () => {
+  it('gatherer transitions from GatherMove -> Gathering on arrival', () => {
     const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
     const resource = spawnResource(world, 130, 100, ResourceType.Clams);
 
