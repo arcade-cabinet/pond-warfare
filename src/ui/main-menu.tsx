@@ -28,6 +28,7 @@ import {
   settingsOpen,
   unlocksOpen,
 } from './store';
+import { multiplayerMenuOpen } from './store-multiplayer';
 import { NextUnlockHint, UnlockProgress } from './unlock-progress';
 
 const UI = '/pond-warfare/assets/ui';
@@ -232,6 +233,12 @@ export function MainMenu() {
           />
         </div>
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+          <MenuButton
+            label="Co-op"
+            onClick={() => {
+              multiplayerMenuOpen.value = true;
+            }}
+          />
           <MenuButton
             label="Campaign"
             onClick={() => {

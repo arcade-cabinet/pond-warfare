@@ -296,4 +296,19 @@ export {
   unlocksOpen,
   waveNumber,
 } from './store-gameplay';
+export {
+  connectionQuality,
+  multiplayerAllReady,
+  multiplayerConnected,
+  multiplayerDisconnected,
+  multiplayerHostSettings,
+  multiplayerIsHost,
+  multiplayerLobbyPlayers,
+  multiplayerMenuOpen,
+  multiplayerMode,
+  multiplayerPeerId,
+  multiplayerPing,
+  multiplayerRoomCode,
+  multiplayerView,
+} from './store-multiplayer';
 export { currentWeather, nextWeather, weatherCountdown, weatherLabel } from './store-weather';
