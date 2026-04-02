@@ -2,7 +2,11 @@
 
 ## Project Overview
 
-Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Two playable factions gather resources, build bases, train armies, and fight for map control. Features 33 entity types, 25 techs across 3 branches (with 3 active abilities), 5 campaign missions, 2 playable factions, 5 AI personalities, 7 commanders, 4 ranked tiers, 6 map scenarios, 15 achievements, 18 unlockables, unit-specific SFX, an enemy evolution system with 5 tiers + threat escalation, pressure-based auto-building, permadeath mode, 5 difficulty levels, custom game settings, cosmetic system, and kill streaks. Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
+Pond Warfare is a Warcraft II-style real-time strategy game where otters and predators compete for territory and resources in a pond ecosystem. Two playable factions gather resources, build bases, train armies, and fight for map control.
+
+**Feature summary:** 44 entity types (16 player units, 10 enemy units, 15 buildings, 3 resources), 25 techs across 5 branches (Lodge, Nature, Warfare, Fortifications, Shadow) with 3 active abilities, 5 campaign missions with branching after Mission 3, 5 puzzle missions, 2 playable factions, 5 AI personalities, 7 commanders with passives + active abilities, 4 ranked tiers, 9 map scenarios, 4 weather types, 4 game modes (Skirmish, Campaign, Survival, Puzzles), 26 achievements, 22 unlockables, unit-specific SFX with spatial panning, an enemy evolution system with 5 tiers + threat escalation, pressure-based auto-building, Yuka governor AI player, advisor system (3 advisors), replay system, permadeath mode, 5 difficulty levels, custom game settings, cosmetic system, kill streaks, terrain system (6 types), morale and flanking mechanics, event feed, enhanced minimap, wave announcements, settings persistence, commander selection persistence, accordion UI with pond watercolor aesthetic, Maestro mobile testing, Android APK builds.
+
+Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
 
 ## Quick Start
 
@@ -19,7 +23,7 @@ pnpm lint:fix   # Biome auto-fix
 
 See [docs/architecture.md](docs/architecture.md) for the full system overview.
 
-**Key pattern:** ECS game state lives in `GameWorld` (src/ecs/world.ts). UI reads from reactive `signal()` values in `src/ui/store.ts`. The game orchestrator (`src/game.ts`) syncs world -> store every 30 frames via `syncUIStore()`.
+**Key pattern:** ECS game state lives in `GameWorld` (src/ecs/world.ts). UI reads from reactive `signal()` values in `src/ui/store.ts` (core signals) + `src/ui/store-weather.ts` (weather) + `src/ui/store-gameplay.ts` (game over, campaign, puzzle, replay, abilities). The game orchestrator (`src/game.ts` + `src/game/`) syncs world -> store every 30 frames via `syncUIStore()`.
 
 ## Core Conventions
 
@@ -40,7 +44,49 @@ Three resource types plus food (population):
 - **Clams** (from Clambed nodes) -- primary currency for units, buildings, tech
 - **Twigs** (from Cattail nodes) -- building and tech costs
 - **Pearls** (from PearlBed nodes) -- rare resource for elite technologies (Hardened Shells, Siege Works)
-- **Food** -- population cap from Lodges (+8), Burrows (+6), Fishing Huts (+2)
+- **Food** -- population cap from Lodges (+8), Burrows (+6), Fishing Huts (+2), Docks (+2)
+
+### Player Units (16 types)
+
+| Unit | HP | Speed | Damage | Range | Cost (C/T) | Role |
+|------|----|-------|--------|-------|-------------|------|
+| Gatherer | 30 | 2.0 | 2 | 40 | 50/0 | Economy worker |
+| Brawler | 60 | 1.8 | 6 | 40 | 100/50 | Melee DPS |
+| Sniper | 40 | 1.6 | 8 | 180 | 80/80 | Ranged DPS |
+| Healer | 35 | 1.8 | 0 | 0 | 50/30 | Support healer |
+| Shieldbearer | 100 | 1.4 | 3 | 35 | 150/100 | Heavy tank |
+| Scout | 20 | 3.0 | 1 | 30 | 35/0 | Fast recon |
+| Catapult | 50 | 0.8 | 20 | 250 | 300/200 | Siege weapon |
+| Swimmer | 35 | 2.8 | 4 | 40 | 60/30 | Amphibious unit |
+| Trapper | 30 | 1.6 | 0 | 100 | 80/60 | Slow trap specialist |
+| Commander | 80 | 2.0 | 5 | 60 | -- | Hero unit (unique) |
+| Diver | 25 | 2.5 | 8 | 40 | 60/40 | Stealth assassin (invisible in water) |
+| Engineer | 40 | 1.5 | 1 | 40 | 80/60 | Bridge builder |
+| Shaman | 30 | 1.6 | 0 | 0 | 70/50 | AoE healer |
+| Otter Warship | 80 | 1.5 | 12 | 200 | 200/150 | Naval ranged |
+| Berserker | 60 | 2.0 | 15 | 40 | 120/80 | Rage melee (damage increases at low HP) |
+| Frog/Fish | 5 | 0.5-1.0 | 0 | 0 | -- | Ambient critters |
+
+### Enemy Units (10 types)
+
+| Unit | HP | Speed | Damage | Range | Tier | Role |
+|------|----|-------|--------|-------|------|------|
+| Gator | 60 | 1.8 | 6 | 40 | 0 | Melee fighter |
+| Snake | 60 | 2.0 | 4 | 40 | 0 | Fast melee |
+| Armored Gator | 120 | 1.0 | 8 | 40 | 1 | Tanky melee |
+| Venom Snake | 40 | 2.2 | 3 | 40 | 2 | Poison DoT |
+| Swamp Drake | 50 | 2.0 | 6 | 60 | 3 | Fast flanker |
+| Siege Turtle | 250 | 0.5 | 25 | 50 | 4 | Anti-building (3x vs buildings) |
+| Alpha Predator | 500 | 1.0 | 12 | 50 | 5 | Hero with +20% damage aura |
+| Boss Croc | 200 | 1.2 | 15 | 50 | Boss | Boss wave unit |
+| Burrowing Worm | 60 | 1.0 | 10 | 40 | Event | Underground ambusher |
+| Flying Heron | 20 | 3.5 | 4 | 40 | Event | Ignores terrain |
+
+### Buildings (15 types)
+
+**Player:** Lodge (1500 HP, +8 food), Burrow (300 HP, +6 food), Armory (500 HP), Tower (500 HP, 10 dmg), Watchtower (800 HP, 15 dmg), Wall (400 HP), Wall Gate (80 HP), ScoutPost (200 HP), FishingHut (250 HP, +2 food), HerbalistHut (300 HP), Market (100 HP, resource trading), Dock (120 HP, +2 food), Shrine (60 HP, 300C/200T/25P)
+**Enemy:** PredatorNest (1000 HP)
+**Resource:** Clambed, Cattail, PearlBed
 
 ### Enemy Evolution
 
@@ -52,7 +98,95 @@ The enemy faction progressively unlocks stronger unit types after peace ends:
 - Tier 4 (25 min): Siege Turtle -- anti-building (3x vs buildings)
 - Tier 5 (40 min): Alpha Predator -- hero with +20% damage aura
 
-Evolution state is tracked in `world.enemyEvolution`. The `evolutionSystem` also handles poison ticks and alpha damage aura.
+Random events spawn Burrowing Worms and Flying Herons. Boss Crocs appear in boss wave intervals. Evolution state is tracked in `world.enemyEvolution`. Sub-systems: alpha-aura, heron-spawner, mega-wave, poison, threat-escalation, worm-spawner, random-events.
+
+### Tech Tree (25 techs, 5 branches)
+
+**Lodge (Economy & Expansion):** Cartography -> Trade Routes, Tidal Harvest -> Deep Diving -> Root Network
+**Nature (Support & Healing):** Herbal Medicine -> Aquatic Training -> Regeneration, Herbal Medicine -> Pond Blessing, Deep Diving -> Tidal Surge
+**Warfare (Offense & Damage):** Sharp Sticks -> Eagle Eye -> Piercing Shot, Sharp Sticks -> Battle Roar -> War Drums
+**Fortifications (Defense & Siege):** Sturdy Mud -> Fortified Walls, Sharp Sticks -> Iron Shell, Eagle Eye -> Siege Works, Eagle Eye -> Hardened Shells
+**Shadow (Subterfuge & Control):** Swift Paws -> Cunning Traps -> Camouflage, Swift Paws -> Rally Cry, Cunning Traps -> Venom Coating
+
+Active abilities: **Pond Blessing** (heal all 20% HP), **Tidal Surge** (push + slow enemies), **Rally Cry** (all units +30% speed 10s)
+
+### Commanders (7)
+
+Each commander has a passive aura, a passive bonus, and an active ability (Q hotkey):
+
+| Commander | Aura | Passive | Active (Cooldown) |
+|-----------|------|---------|-------------------|
+| Marshal (default) | +10% damage | None | Charge! 2x speed 5s (90s) |
+| Sage (3 wins) | +25% research speed | +15% gather rate | Eureka! instant research (180s) |
+| Warden (win Hard) | +200 building HP | Towers +20% atk speed | Fortify! buildings invuln 10s (120s) |
+| Tidekeeper (200 pearls) | +0.4 speed | Swimmers -50% cost | Tidal Wave push (90s) |
+| Shadowfang (win 0 losses) | -20% enemy damage | Traps last 2x | Vanish all invis 8s (120s) |
+| Ironpaw (5 heroes) | +20% unit HP | Shieldbearers 2x train | Iron Will invuln 5s (150s) |
+| Stormcaller (win Nightmare) | Catapults +50% range | Random lightning | Thunder Strike AoE (120s) |
+
+### Map Scenarios (9)
+
+Standard, Island, Contested, Labyrinth, River, Peninsula, Archipelago, Ravine, Swamp. Each has a dedicated init file in `src/game/init-entities/scenario-*.ts`.
+
+### Terrain System (6 types)
+
+| Terrain | Speed Mult | Notes |
+|---------|-----------|-------|
+| Grass | 1.0 | Standard |
+| Water | 0 (impassable) | Swimmers, Divers, Warships bypass |
+| Shallows | 0.5 | Blocked during rain |
+| Mud | 0.75 | Slow terrain |
+| Rocks | 0 (impassable) | |
+| HighGround | 1.0 | Elevation bonus for combat |
+
+Defined in `src/terrain/terrain-grid.ts`. Flying units (Heron) ignore all terrain modifiers. Warships prefer water (1.5x speed) over land (0.5x).
+
+### Weather System (4 types)
+
+Changes every 3-5 minutes, seeded from map seed for determinism:
+- **Clear**: No modifiers
+- **Rain**: -15% speed on grass, shallows become impassable (flooding)
+- **Fog**: -40% vision range
+- **Wind**: +-15px projectile drift
+
+### Game Modes (4)
+
+- **Skirmish**: Standard mode, destroy all enemy nests to win
+- **Campaign**: 5 story missions with objectives and dialogue, branching after Mission 3 (path A/B)
+- **Survival**: Endless waves, no nests, score-based
+- **Puzzles**: 5 fixed-unit tactical puzzles with star ratings (First Strike, Stealth Run, Hold the Bridge, Economy Race, Commander Down)
+
+### Tactical Combat
+
+- **Flanking**: Positional damage bonuses based on attack angle
+- **Elevation**: HighGround terrain provides combat advantage
+- **Morale**: Unit morale system affects combat effectiveness
+- **Auto-Retreat**: Units below 20% HP retreat to nearest friendly building
+- **Diver Stealth**: Invisible in water tiles, first-strike bonus
+- **Engineer Bridges**: Can build temporary bridges over water
+- **Shaman AoE Heal**: Area-of-effect healing for nearby units
+- **Berserker Rage**: Damage increases as HP decreases
+- **Counter System**: Damage multipliers in `DAMAGE_MULTIPLIERS` (entity-defs)
+
+### Achievements (26)
+
+Defined in `src/systems/achievement-defs.ts`. Examples: First Blood, Triple Kill, Rampage, Victory, Hard Won, Nightmare Survivor, Hero of the Pond, Untouchable, Speed Demon, War Machine, Scholar, Pearl Diver, Master Builder, Endurance, Branch Master, Full Scholar, Commander's Guard, Shadow Strike, Eco Boom, Speed Runner, Turtle Shell, Grand Army, Pearl Hoarder, Flawless Victory.
+
+### Unlocks (22)
+
+Defined in `src/config/unlocks.ts`. Categories: Scenarios (2), Presets (5), Units (4), Modifiers (4), Cosmetics (5 + 2 branch-themed).
+
+### Advisor System
+
+3 advisor roles (Economy, War, Builder) in `src/advisors/`. Pressure-based tips fire when game state conditions are met (not timed tutorials). Tips have priority, cooldowns, and per-game-once options. Players can dismiss tips permanently.
+
+### Governor AI (Yuka-based)
+
+A goal-based AI player in `src/governor/`. Uses Yuka.js Think/Goal architecture with 6 goal types: Gather, Build, Train, Research, Attack, Defend. Evaluators score each goal based on game state (resource levels, army size, threat level). The governor can play the player side autonomously.
+
+### Replay System
+
+Records game state snapshots in `src/replay/recorder.ts`. Playback via `src/replay/replay-viewer.ts` with speed control (1x, 2x, 4x, 8x) and pause. Stored in SQLite via `src/replay/replay-storage.ts`.
 
 ### Auto-Build System
 
@@ -61,21 +195,21 @@ When `world.autoBehaviors.build` is true, the `autoBuildSystem` evaluates build 
 ### Adding a New Entity Type
 
 1. Add to `EntityKind` enum in `src/types.ts`
-2. Add stats to `ENTITY_DEFS` in `src/config/entity-defs.ts`
-3. Add damage multipliers to `DAMAGE_MULTIPLIERS` if the unit has counter relationships
+2. Add stats to the appropriate sub-module in `src/config/entity-defs/` (player-units.ts, enemy-units.ts, or buildings.ts)
+3. Add damage multipliers to `DAMAGE_MULTIPLIERS` in `src/config/entity-defs/damage-multipliers.ts`
 4. Add sprite to `SpriteId` enum and `generateSprites()` in `src/rendering/sprites.ts`
 5. Add spawn mapping in `src/ecs/archetypes.ts` (`KIND_TO_SPRITE`)
-6. Add string mapping in `entityKindFromString()` and `entityKindName()`
+6. Add string mapping in `entityKindFromString()` and `entityKindName()` in `src/config/entity-defs/kind-helpers.ts`
 
 ### Adding a New ECS System
 
 1. Create `src/ecs/systems/my-system.ts` exporting `function mySystem(world: GameWorld): void`
-2. Import and add to the system execution chain in `src/game.ts` `updateLogic()` (order matters)
+2. Import and add to the system execution chain in `src/game/systems-runner.ts` (order matters)
 3. Add tests in `tests/ecs/my-system.test.ts`
 
 ### Unit Counter System
 
-Damage multipliers are defined in `DAMAGE_MULTIPLIERS` (src/config/entity-defs.ts). Use `getDamageMultiplier(attackerKind, defenderKind)` in combat calculations. Returns 1.0 for unlisted matchups. Both melee and projectile damage apply the multiplier.
+Damage multipliers are defined in `DAMAGE_MULTIPLIERS` (src/config/entity-defs/damage-multipliers.ts). Use `getDamageMultiplier(attackerKind, defenderKind)` in combat calculations. Returns 1.0 for unlisted matchups. Both melee and projectile damage apply the multiplier.
 
 ### Veterancy System
 
@@ -83,21 +217,19 @@ Units track kills in `Combat.kills[eid]`. The `Veterancy` component stores `rank
 
 ### Formation Movement
 
-Group move commands trigger role-based formation positioning in `issueContextCommand()` (src/input/selection.ts). Units are sorted into melee/ranged/support rows via `calculateFormationPositions()`. The `YukaManager.setFormation()` method adds AlignmentBehavior and CohesionBehavior for flocking. Formation behaviors are cleared on arrival.
+Group move commands trigger role-based formation positioning in `issueContextCommand()` (src/input/selection/commands.ts). Units are sorted into melee/ranged/support rows via `calculateFormationPositions()`. The `YukaManager.setFormation()` method adds AlignmentBehavior and CohesionBehavior for flocking. Formation behaviors are cleared on arrival.
 
 ### Enemy AI
 
-The enemy runs a full parallel economy and strategic AI tracked in `world.enemyResources`. The `aiSystem` (src/ecs/systems/ai.ts) is decomposed into sub-functions:
-- `enemyGathererSpawning` - spawns gatherers from nests (50C, max 3/nest, every 1200 frames)
-- `enemyBuildingConstruction` - builds Towers, Burrows, expansion Nests (every 1800 frames)
-- `enemyArmyTraining` - queues Gators/Snakes at nests via TrainingQueue, adapts composition to counter player army
-- `enemyAttackDecision` - attacks when army >= 5 idle units, targets weakest player building
-- `enemyRetreatLogic` - retreats units below 20% HP to nearest nest
-- `enemyScoutLogic` - sends Snake scouts every 3600 frames, 70% biased toward player Lodge
-- `nestDefenseReinforcement` - spawns defenders when nest HP < 50%
-- `bossWaveLogic` - Boss Crocs spawn every 3 wave intervals after wave 10
+The enemy runs a full parallel economy and strategic AI tracked in `world.enemyResources`. The AI system is decomposed into sub-files in `src/ecs/systems/ai/`:
+- `enemy-economy.ts` - gatherer spawning, resource tracking (~138 LOC)
+- `enemy-building.ts` - builds Towers, Burrows, expansion Nests (~150 LOC)
+- `enemy-training.ts` - queues units at nests via TrainingQueue, adapts composition (~248 LOC)
+- `enemy-combat.ts` - attack decisions, retreat, scouting, boss waves (~243 LOC)
+- `enemy-defense.ts` - nest defense reinforcement (~166 LOC)
+- `helpers.ts` - shared utility functions (~199 LOC)
 
-All costs/intervals are in `src/constants.ts` (`ENEMY_*` constants).
+AI personality multipliers modify behavior: Balanced, Turtle (2x towers), Rush (early attacks), Economic (3 nests, huge late army), Random (cycles every 3 min).
 
 ### UI Components (Preact + Signals)
 
@@ -105,6 +237,8 @@ All costs/intervals are in `src/constants.ts` (`ENEMY_*` constants).
 - State flows: `GameWorld` -> `syncUIStore()` -> `store.ts` signals -> UI components
 - User actions flow back: UI `onClick` -> modify `world` state directly (via game instance)
 - All UI must be mouse/touch accessible - no keyboard-only actions
+- Accordion UI with pond watercolor aesthetic
+- Mobile slide-out panel with Forces/Buildings/Map/Menu tabs
 
 ### Steering Behaviors (Yuka.js)
 
@@ -119,41 +253,138 @@ All units use Yuka.js for movement (not just enemies). The `YukaManager`:
 
 ### Audio (Tone.js)
 
-- SFX: Call `audio.hit()`, `audio.shoot()`, etc. (see AudioSystem class)
+- SFX: Call `audio.hit()`, `audio.shoot()`, etc. (see AudioSystem class in `src/audio/audio-system.ts`)
+- Spatial SFX delegates in `src/audio/audio-spatial-sfx.ts` for worldX-panned sounds
 - Music: `audio.startMusic(peaceful)` / `audio.stopMusic()`
-- Ambient: `audio.updateAmbient(darkness)` syncs day/night sounds
-- All audio respects `audio.muted` toggle
+- Ambient: `audio.updateAmbient(darkness)` syncs day/night sounds, scenario biomes
+- Voices: Unit selection/command voice barks per faction
+- Cues: Combat stinger, victory/defeat motifs, stat tick/total
+- All audio respects `audio.muted` toggle + master/music/sfx volume
 
 ## File Map
 
 | File | Purpose | Lines |
 |------|---------|-------|
-| `src/game.ts` | Game orchestrator, loop, UI sync | ~1200 |
-| `src/rendering/pixi/entity-renderer.ts` | PixiJS entity rendering, recoloring, health bars | ~371 |
+| `src/game.ts` | Game orchestrator entry point | ~300 |
+| `src/game/*.ts` | Decomposed game modules (40 files, ~3800 LOC total) | ~20-300 each |
+| `src/game/systems-runner.ts` | ECS system execution order | |
+| `src/game/game-loop.ts` | Main update loop | |
+| `src/game/game-init.ts` | World initialization | |
+| `src/game/init-entities/scenario-*.ts` | 9 map scenario generators | |
+| `src/game/action-panel/*.ts` | Lodge/Armory/Gatherer/Market button defs + tech helpers | |
+| `src/rendering/pixi/entity-renderer.ts` | PixiJS entity rendering, recoloring, health bars | ~300 |
 | `src/rendering/recolor.ts` | Sprite recoloring: 14 presets for cosmetics/veterancy/champions | ~224 |
-| `src/ecs/systems/*.ts` | 18 ECS game systems | ~50-800 each |
-| `src/ecs/systems/ai.ts` | Enemy AI economy, training, attack decisions | ~800 |
+| `src/ecs/systems/**/*.ts` | 52 ECS system files across 7 subdirs | ~40-250 each |
+| `src/ecs/systems/ai/*.ts` | Enemy AI: economy, training, combat, defense, building | ~1200 total |
+| `src/ecs/systems/evolution/*.ts` | Enemy evolution: tiers, poison, alpha aura, mega-waves, spawners | ~931 total |
+| `src/ecs/systems/combat/*.ts` | Combat: melee, positional damage, commander aura, war drums, attack state | |
+| `src/ecs/systems/health/*.ts` | Health: damage, death, healing, death particles | |
+| `src/ecs/systems/movement/*.ts` | Movement: arrive, speed modifiers | |
+| `src/ecs/systems/gathering/*.ts` | Gathering: depletion warning, passive income | |
 | `src/ecs/systems/veterancy.ts` | Veterancy rank-up system | ~130 |
-| `src/ui/store.ts` | 60+ reactive signals | ~308 |
-| `src/audio/audio-system.ts` | SFX orchestrator + music + ambient | ~350 |
-| `src/audio/sfx.ts` | SfxManager: 25+ synth SFX with spatial panning | ~318 |
-| `src/ai/yuka-manager.ts` | Steering + formation flocking manager | ~380 |
-| `src/config/entity-defs.ts` | 33 entity types, stats, damage multipliers | ~510 |
-| `src/config/tech-tree.ts` | 25 technologies with prerequisite chains + active abilities | ~263 |
-| `src/config/ai-personalities.ts` | 5 AI personalities with multiplier configs | ~88 |
-| `src/config/commanders.ts` | 7 commander definitions with aura/passive bonuses | ~168 |
-| `src/config/factions.ts` | 2 playable factions with unit mappings | ~88 |
-| `src/config/unlocks.ts` | 18 unlockable items across 5 categories | ~184 |
-| `src/campaign/missions.ts` | 5 campaign missions with objectives + dialogue | ~445 |
-| `src/systems/achievements.ts` | 15 achievements with SQLite persistence | ~326 |
-| `src/systems/leaderboard.ts` | Ranked progression + win streak tracking | ~159 |
-| `src/ecs/systems/evolution.ts` | Enemy evolution (5 tiers) + threat escalation | ~160 |
-| `src/ecs/systems/auto-build.ts` | Pressure-based auto-building | ~260 |
-| `src/input/selection.ts` | Selection, commands, formation positioning | ~550 |
-| `src/storage/database.ts` | SQLite: saves, settings, game_history, unlocks, player_profile | ~100 |
-| `src/utils/spatial-hash.ts` | SpatialHash grid for O(n) proximity queries | ~80 |
-| `src/utils/particles.ts` | Particle spawning with pool + throttling | ~68 |
-| `src/constants.ts` | Tuning constants (vet thresholds, enemy economy, AI timers) | ~140 |
+| `src/ecs/systems/morale.ts` | Unit morale system | |
+| `src/ecs/systems/diver-stealth.ts` | Diver water stealth mechanic | |
+| `src/ecs/systems/berserker.ts` | Berserker rage: damage scales with low HP | |
+| `src/ecs/systems/engineer.ts` | Engineer bridge building | |
+| `src/ecs/systems/shaman-heal.ts` | Shaman AoE healing | |
+| `src/ecs/systems/weather.ts` | Weather transitions and effects | |
+| `src/ecs/systems/wall-gate.ts` | Wall gate open/close | |
+| `src/ecs/systems/shrine.ts` | Shrine building effects | |
+| `src/ecs/systems/branch-cosmetics.ts` | Tech branch cosmetic effects | |
+| `src/ecs/systems/auto-retreat.ts` | Low-HP auto-retreat logic | |
+| `src/ecs/systems/auto-build.ts` | Pressure-based auto-building | ~254 |
+| `src/ecs/systems/auto-behavior.ts` | Auto-behavior dispatching | |
+| `src/ecs/systems/fog-of-war.ts` | Fog of war visibility | |
+| `src/ecs/systems/day-night.ts` | Day/night cycle | |
+| `src/ui/store.ts` | Core reactive signals (resources, selection, menu, settings) | ~300 |
+| `src/ui/store-weather.ts` | Weather signals | ~20 |
+| `src/ui/store-gameplay.ts` | Game over, campaign, FPS, puzzle, replay, ability signals | ~73 |
+| `src/ui/store-types.ts` | Shared interfaces (ResourceChange, FoodChange, CustomGameSettings) | ~67 |
+| `src/audio/audio-system.ts` | AudioSystem class: volume, init, delegates | ~230 |
+| `src/audio/audio-spatial-sfx.ts` | Spatial SFX delegate functions (worldX panning) | ~34 |
+| `src/audio/audio-combat.ts` | Combat SFX with stinger integration | |
+| `src/audio/sfx.ts` | SfxManager: 25+ synth SFX with spatial panning | ~290 |
+| `src/audio/music.ts` | MusicManager: procedural music | |
+| `src/audio/ambient.ts` | AmbientManager: scenario biome sounds | |
+| `src/audio/cues.ts` | CueManager: combat/victory/defeat motifs | |
+| `src/audio/voices.ts` | VoiceManager: faction voice barks | |
+| `src/ai/yuka-manager.ts` | Steering + formation flocking manager | ~282 |
+| `src/config/entity-defs.ts` | Entity defs barrel (re-exports sub-modules) | ~45 |
+| `src/config/entity-defs/player-units.ts` | 16 player unit stat definitions | ~221 |
+| `src/config/entity-defs/enemy-units.ts` | 10 enemy unit stat definitions | ~107 |
+| `src/config/entity-defs/buildings.ts` | 15 building stat definitions | ~179 |
+| `src/config/entity-defs/damage-multipliers.ts` | Counter table + getDamageMultiplier | |
+| `src/config/tech-tree.ts` | 25 technologies with prerequisite chains + active abilities | ~296 |
+| `src/config/ai-personalities.ts` | 5 AI personalities with multiplier configs | ~124 |
+| `src/config/commanders.ts` | 7 commander definitions + 7 active abilities | ~287 |
+| `src/config/factions.ts` | 2 playable factions with unit mappings | ~87 |
+| `src/config/unlocks.ts` | 22 unlockable items across 6 categories | ~225 |
+| `src/config/weather.ts` | 4 weather types with gameplay modifiers | ~104 |
+| `src/config/cosmetics.ts` | Branch-themed cosmetic definitions | ~172 |
+| `src/config/barks.ts` | Unit bark text definitions | ~120 |
+| `src/config/puzzles.ts` | 5 puzzle mission definitions | ~212 |
+| `src/campaign/missions.ts` | Campaign barrel re-export | ~17 |
+| `src/campaign/mission-defs.ts` | Missions 1-2 definitions | ~152 |
+| `src/campaign/mission-defs-late.ts` | Missions 3-5 with branch paths | ~272 |
+| `src/systems/achievement-defs.ts` | 26 achievement definitions | ~195 |
+| `src/systems/achievements.ts` | Achievement checker + SQLite persistence | ~220 |
+| `src/systems/leaderboard.ts` | Ranked progression + win streak tracking | ~154 |
+| `src/advisors/*.ts` | Advisor system: tips, state, actions, helpers | ~6 files |
+| `src/governor/*.ts` | Yuka governor AI: evaluators + 6 goal types | ~619 total |
+| `src/replay/*.ts` | Replay recorder, player, viewer, storage | ~362 total |
+| `src/terrain/terrain-grid.ts` | TerrainGrid: 6 types, speed mults, pathability | |
+| `src/terrain/terrain-painters*.ts` | Terrain painting for map generation | |
+| `src/input/selection/*.ts` | Selection, commands, formation positioning | ~596 total |
+| `src/input/pointer*.ts` | Pointer handling (click, minimap, types) | |
+| `src/input/keyboard.ts` | Keyboard shortcuts | |
+| `src/storage/*.ts` | SQLite: saves, settings, game_history, unlocks, player_profile | ~487 total |
+| `src/utils/spatial-hash.ts` | SpatialHash grid for O(n) proximity queries | ~62 |
+| `src/utils/particles.ts` | Particle spawning with pool + throttling | ~67 |
+| `src/constants.ts` | Tuning constants (vet thresholds, enemy economy, AI timers) | ~136 |
+
+## File Organization
+
+```
+src/
+  ai/             -- Yuka manager, steering behaviors
+  advisors/       -- Advisor system (economy/war/builder tips)
+  audio/          -- Tone.js sound system (audio-system, sfx, music, ambient, cues, voices, combat)
+  campaign/       -- Campaign mission definitions + types
+  config/         -- Entity defs, tech tree, commanders, factions, barks, unlocks, cosmetics, weather, puzzles, AI personalities
+  ecs/            -- Components, systems (52 system files across 7 subdirs)
+    systems/
+      ai/         -- Enemy AI (economy, training, combat, defense, building)
+      combat/     -- Melee, positional damage, commander aura, war drums
+      evolution/  -- Evolution tiers, poison, alpha aura, mega-waves, spawners
+      gathering/  -- Depletion warning, passive income
+      health/     -- Damage, death, healing, particles
+      movement/   -- Arrive, speed modifiers
+      *.ts        -- Top-level systems (auto-build, berserker, diver-stealth, engineer, etc.)
+  game/           -- Game orchestrator modules (40 files)
+    action-panel/ -- Train/Build/Tech button definitions
+    init-entities/ -- 9 scenario map generators + helpers
+  governor/       -- Yuka governor AI player (6 goal types)
+  input/          -- Pointer, keyboard, selection handlers
+    selection/    -- Commands, group select, queries
+  platform/       -- Capacitor native detection
+  rendering/      -- PixiJS renderers (entity, effects, ui, background, water-ripple)
+  replay/         -- Replay recorder, player, viewer, storage
+  storage/        -- SQLite persistence (schema, queries, settings)
+  systems/        -- Achievement system + leaderboard
+  terrain/        -- Terrain grid, painters
+  ui/
+    components/   -- Small reusable UI primitives (<100 LOC each)
+    panel/        -- Command panel tabs
+    overlays/     -- Modal overlays (settings, tech tree, etc.)
+    hud/          -- HUD elements (overlays, ctrl-groups, abilities)
+    screens/      -- Full-screen views
+  styles/         -- CSS
+tests/
+  ecs/systems/    -- System integration tests
+  ui/             -- Component tests
+  browser/        -- Browser interaction + screenshot tests
+  gameplay/       -- Gameplay loop integration tests
+```
 
 ## Testing
 
@@ -169,12 +400,17 @@ Tests mirror the `src/` structure under `tests/`. Use `createGameWorld()` and ma
 ## Important Notes
 
 - **Mouse/touch first**: Every game action must have a clickable UI element. Mobile (Capacitor/Android) is a first-class target.
+- **Max 300 LOC per file**: Enforced by `.claude/hooks/file-size-guard.py`. Decompose before adding features.
 - **Auto-behaviors are optional**: Auto-gather/build/defend/attack/heal/scout are toggled via the idle radial menu, not hardcoded.
 - **Buildings unlock through gameplay**: Watchtower requires Eagle Eye tech, Shieldbearer requires Iron Shell, etc. Don't show locked buildings/units.
 - **Player units use Yuka too**: Not just enemies. All moving entities register with YukaManager for smooth steering.
 - **Both factions use the same systems**: Gathering, movement, and combat work identically for player and enemy units. The enemy just gets its orders from the AI system instead of user input.
-- **Damage multipliers are centralized**: All counter relationships live in `DAMAGE_MULTIPLIERS` in entity-defs.ts. Don't hardcode damage modifiers elsewhere.
+- **Damage multipliers are centralized**: All counter relationships live in `DAMAGE_MULTIPLIERS` in entity-defs/damage-multipliers.ts. Don't hardcode damage modifiers elsewhere.
 - **Veterancy bonuses are incremental**: The system applies the delta between old and new rank bonuses, not the full bonus, to prevent double-counting.
 - **SQLite is required**: Persistence uses capacitor-sqlite + jeep-sqlite. There is no localStorage fallback. If SQLite init fails, the app cannot start.
 - **Enemy evolution is time-based**: Evolution tiers unlock based on minutes since peace ended, not player actions. The system also manages poison ticks and alpha damage aura.
 - **Pearls are the rare resource**: Only found at PearlBed nodes (500 each), required for elite techs like Hardened Shells (30P) and Siege Works (50P).
+- **Terrain affects movement**: Speed multipliers per terrain type, water units bypass water tiles, flying units ignore all terrain.
+- **Weather changes gameplay**: Rain floods shallows, fog reduces vision, wind drifts projectiles. Seeded from map seed for determinism.
+- **Store is split into 3 files**: Core signals in `store.ts`, weather in `store-weather.ts`, gameplay session state (game over, campaign, puzzle, replay, abilities) in `store-gameplay.ts`. All re-exported from `store.ts` for backward compatibility.
+- **Governor can play autonomously**: The Yuka governor AI in `src/governor/` uses goal-based planning to play the player side. Used for AI vs AI testing and spectating.
