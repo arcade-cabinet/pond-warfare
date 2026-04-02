@@ -7,6 +7,8 @@
  */
 
 import type { PlayableFaction } from '@/config/factions';
+import type { WeatherType } from '@/config/weather';
+import type { ShrineAbility } from '@/ecs/systems/shrine';
 import type { EntityKind } from '@/types';
 import type { AmbientManager } from './ambient';
 import type { CueManager } from './cues';
@@ -21,6 +23,10 @@ export interface AudioManagers {
   voiceMgr: VoiceManager;
   musicMgr: MusicManager;
   ambientMgr: AmbientManager;
+  /** Whether audio has been initialized (Tone.start() called). */
+  readonly isStarted: boolean;
+  /** Whether audio is currently muted. */
+  readonly isMuted: boolean;
 }
 
 /** All delegate methods mixed into AudioSystem.prototype. */
@@ -85,4 +91,18 @@ export interface AudioDelegateMethods {
   stopMusic(): void;
   startAmbient(): void;
   updateAmbient(darkness: number): void;
+  // Environment & unit-specific sounds
+  weatherTransition(weatherType: WeatherType): void;
+  shrineActivation(ability: ShrineAbility, worldX?: number): void;
+  berserkerRage(worldX?: number): void;
+  berserkerFury(worldX?: number): void;
+  diverSubmerge(worldX?: number): void;
+  diverEmerge(worldX?: number): void;
+  engineerBridge(worldX?: number): void;
+  wormEmergence(worldX?: number): void;
+  heronScreech(worldX?: number): void;
+  // UI navigation sounds
+  accordionOpen(): void;
+  accordionClose(): void;
+  tabSwitch(): void;
 }

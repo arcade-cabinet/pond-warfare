@@ -7,6 +7,7 @@
  */
 
 import { cycleSpeed, toggleMute, togglePause } from '../game-actions';
+import { MinimapLegend } from '../hud/MinimapLegend';
 import {
   clams,
   foodAtCap,
@@ -59,6 +60,9 @@ export function MapTab({ minimapCanvasRef, minimapCamRef }: MapTabProps) {
           class="absolute border border-white pointer-events-none hidden box-border"
           style={{ left: 0, top: 0 }}
         />
+        <div class="absolute bottom-1 left-1">
+          <MinimapLegend />
+        </div>
       </div>
 
       {/* Resources */}

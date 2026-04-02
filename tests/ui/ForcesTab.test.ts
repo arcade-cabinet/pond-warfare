@@ -24,6 +24,12 @@ vi.mock('@/config/entity-defs', () => ({
     };
     return names[kind] ?? 'Unit';
   },
+  ENTITY_DEFS: {},
+}));
+
+vi.mock('@/ui/tooltip-helpers', () => ({
+  showTooltip: vi.fn(),
+  hideTooltip: vi.fn(),
 }));
 
 vi.mock('@/rendering/animations', () => ({

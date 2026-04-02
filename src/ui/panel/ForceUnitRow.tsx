@@ -4,12 +4,14 @@
  * Shows unit kind name, a TaskPicker pill, a thin HP bar, and an optional
  * pin icon when the unit has a manual task override. Tapping the unit name
  * fires onSelect so the camera can pan to it.
+ * Hovering the row shows a stat tooltip with HP, damage, range, speed, task.
  */
 
-import { entityKindName } from '@/config/entity-defs';
+import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import { clearTaskOverride } from '@/game/resource-finder';
 import type { EntityKind } from '@/types';
 import type { RosterUnit, UnitTask } from '../roster-types';
+import { hideTooltip, showTooltip } from '../tooltip-helpers';
 import { TaskPicker } from './TaskPicker';
 
 export interface ForceUnitRowProps {
@@ -24,10 +26,40 @@ function hpBarColor(pct: number): string {
   return 'var(--pw-enemy-light)';
 }
 
+function taskLabel(task: UnitTask): string {
+  const labels: Record<UnitTask, string> = {
+    idle: 'Idle',
+    'gathering-clams': 'Gathering Clams',
+    'gathering-twigs': 'Gathering Twigs',
+    'gathering-pearls': 'Gathering Pearls',
+    building: 'Building',
+    moving: 'Moving',
+    attacking: 'Attacking',
+    defending: 'Defending',
+    patrolling: 'Patrolling',
+    healing: 'Healing',
+    scouting: 'Scouting',
+    dead: 'Dead',
+  };
+  return labels[task] ?? task;
+}
+
 export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps) {
   const isIdle = unit.task === 'idle';
   const hpPct = unit.maxHp > 0 ? unit.hp / unit.maxHp : 0;
   const name = entityKindName(unit.kind as EntityKind) ?? 'Unit';
+  const def = ENTITY_DEFS[unit.kind as EntityKind];
+
+  const onMouseEnter = (e: MouseEvent) => {
+    const statLines = [
+      { label: 'HP', value: `${unit.hp}/${unit.maxHp}` },
+      { label: 'Damage', value: `${def?.damage ?? 0}` },
+      { label: 'Range', value: `${def?.attackRange ?? 0}` },
+      { label: 'Speed', value: `${def?.speed ?? 0}` },
+      { label: 'Task', value: taskLabel(unit.task) },
+    ];
+    showTooltip(e, { title: name, cost: '', description: '', hotkey: '', statLines });
+  };
 
   return (
     <div
@@ -39,6 +71,8 @@ export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps
         minHeight: 'var(--pw-touch-target, 44px)',
       }}
       data-testid="force-unit-row"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={hideTooltip}
     >
       {/* Name + Task picker row */}
       <div class="flex items-center justify-between gap-1">

@@ -27,6 +27,7 @@ import { AirdropButton } from './hud/airdrop-button';
 import { CtrlGroups } from './hud/ctrl-groups';
 import { Overlays } from './hud/overlays';
 import { KeyboardReference } from './keyboard-reference';
+import { LoadingScreen } from './LoadingScreen';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { MainMenu } from './main-menu';
 import { NewGameModal } from './new-game-modal';
@@ -77,12 +78,15 @@ export function App({ onMount }: AppProps) {
         minimapCam: minimapCamRef.current,
         dayNightOverlay: dayNightRef.current,
       };
+      store.gameLoading.value = true;
       (async () => {
         try {
           await onMount(refs);
         } catch (err) {
           // biome-ignore lint/suspicious/noConsole: surface init failures
           console.error('Failed to initialize game', err);
+        } finally {
+          store.gameLoading.value = false;
         }
       })();
     }
@@ -161,6 +165,10 @@ export function App({ onMount }: AppProps) {
           }}
           onTidalSurge={() => {
             game.useTidalSurge();
+            game.syncUIStore();
+          }}
+          onCommanderAbility={() => {
+            game.useCommanderAbility();
             game.syncUIStore();
           }}
         />
@@ -275,6 +283,9 @@ export function App({ onMount }: AppProps) {
 
       {/* Tooltip */}
       <Tooltip />
+
+      {/* Loading screen overlay — covers everything during game init */}
+      {store.gameLoading.value && <LoadingScreen />}
     </div>
   );
 }

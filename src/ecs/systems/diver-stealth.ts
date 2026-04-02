@@ -9,6 +9,7 @@
  */
 
 import { query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { EntityTypeTag, FactionTag, Health, Position, UnitStateMachine } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { TerrainType } from '@/terrain/terrain-grid';
@@ -34,6 +35,7 @@ export function consumeAmbushBonus(world: GameWorld, eid: number): boolean {
   if (world.stealthAmbushReady.has(eid)) {
     world.stealthAmbushReady.delete(eid);
     world.stealthEntities.delete(eid);
+    audio.diverEmerge(Position.x[eid]);
     return true;
   }
   return false;
@@ -64,8 +66,9 @@ export function diverStealthSystem(world: GameWorld): void {
       if (!world.stealthEntities.has(eid)) {
         world.stealthEntities.add(eid);
         world.stealthAmbushReady.add(eid);
-        // Ripple particle for stealth entry
+        // Ripple particle and splash sound for stealth entry
         if (FactionTag.faction[eid] === Faction.Player) {
+          audio.diverSubmerge(Position.x[eid]);
           world.floatingTexts.push({
             x: Position.x[eid],
             y: Position.y[eid] - 20,

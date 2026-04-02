@@ -14,6 +14,7 @@
  * and rendered by the existing particle/effects pipeline.
  */
 
+import { audio } from '@/audio/audio-system';
 import {
   createWeatherRng,
   WEATHER_CONFIGS,
@@ -65,6 +66,9 @@ function advanceWeather(world: GameWorld): void {
 
   // New wind direction for wind weather
   weather.windDirection = rng() * Math.PI * 2;
+
+  // Play weather transition sound
+  audio.weatherTransition(weather.current);
 
   // Announce weather change
   world.floatingTexts.push({

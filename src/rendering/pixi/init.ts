@@ -229,6 +229,7 @@ export function destroyPixiApp(): void {
   for (const t of floatingTextPool) t.destroy();
   floatingTextPool.length = 0;
   _destroyRecoloredTextures?.();
+  _destroyOverlayTexts?.();
   resetWaterRipples();
   bgSprite = null;
   app.destroy(false, { children: true, texture: false });
@@ -238,6 +239,11 @@ export function destroyPixiApp(): void {
 let _destroyRecoloredTextures: (() => void) | null = null;
 export function setDestroyRecoloredTexturesCallback(cb: () => void): void {
   _destroyRecoloredTextures = cb;
+}
+
+let _destroyOverlayTexts: (() => void) | null = null;
+export function setDestroyOverlayTextsCallback(cb: () => void): void {
+  _destroyOverlayTexts = cb;
 }
 
 // Utility helpers - re-exported from draw-utils.ts

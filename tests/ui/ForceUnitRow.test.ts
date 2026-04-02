@@ -20,6 +20,23 @@ vi.mock('@/config/entity-defs', () => ({
     };
     return names[kind] ?? 'Unit';
   },
+  ENTITY_DEFS: {
+    1: {
+      hp: 60,
+      speed: 1.8,
+      damage: 6,
+      attackRange: 40,
+      isBuilding: false,
+      isResource: false,
+      spriteSize: 16,
+      spriteScale: 2.5,
+    },
+  },
+}));
+
+vi.mock('@/ui/tooltip-helpers', () => ({
+  showTooltip: vi.fn(),
+  hideTooltip: vi.fn(),
 }));
 
 vi.mock('@/rendering/animations', () => ({

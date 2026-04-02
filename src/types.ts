@@ -254,4 +254,10 @@ export interface TooltipData {
   costBreakdown?: { clams?: number; twigs?: number; pearls?: number; food?: number };
   /** Tech requirement label, e.g. "Requires: Eagle Eye" */
   requires?: string;
+  /** Stat lines displayed as label: value pairs (e.g. unit/building stats) */
+  statLines?: { label: string; value: string }[];
+  /** Status badge text, e.g. "Researched", "Available", "Locked" */
+  status?: string;
+  /** CSS color for the status badge */
+  statusColor?: string;
 }

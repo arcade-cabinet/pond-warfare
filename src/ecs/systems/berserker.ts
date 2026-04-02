@@ -10,11 +10,16 @@
  */
 
 import { query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { Combat, EntityTypeTag, Health, Position, UnitStateMachine } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
+
+/** Cooldown between rage sound plays per entity (in frames). */
+const RAGE_SOUND_COOLDOWN = 300;
+const rageSoundTimers = new Map<number, number>();
 
 /** Frames between HP drain ticks. */
 const DRAIN_INTERVAL = 60;
@@ -55,7 +60,7 @@ export function berserkerSystem(world: GameWorld): void {
     const baseDamage = ENTITY_DEFS[EntityKind.Berserker].damage;
     Combat.damage[eid] = Math.round(baseDamage * (1 + bonusMult));
 
-    // Red rage particles below 50% HP
+    // Red rage particles and sound below 50% HP
     if (hpPercent < 0.5) {
       const x = Position.x[eid];
       const y = Position.y[eid];
@@ -69,6 +74,17 @@ export function berserkerSystem(world: GameWorld): void {
         '#ef4444',
         2,
       );
+
+      // Rage sound with cooldown to prevent spam
+      const lastPlayed = rageSoundTimers.get(eid) ?? 0;
+      if (world.frameCount - lastPlayed >= RAGE_SOUND_COOLDOWN) {
+        rageSoundTimers.set(eid, world.frameCount);
+        if (hpPercent < 0.25) {
+          audio.berserkerFury(x);
+        } else {
+          audio.berserkerRage(x);
+        }
+      }
     }
   }
 }

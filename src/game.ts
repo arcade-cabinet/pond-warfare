@@ -4,6 +4,7 @@ import { EntityTypeTag } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { useAirdrop, usePondBlessing, useRallyCry, useTidalSurge } from '@/game/abilities';
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
+import { useCommanderAbility } from '@/game/commander-abilities';
 import {
   applyCampaignMission,
   applyDifficultyModifiers,
@@ -244,6 +245,9 @@ export class Game {
   }
   useAirdrop(): boolean {
     return useAirdrop(this.world);
+  }
+  useCommanderAbility(): boolean {
+    return useCommanderAbility(this.world);
   }
 
   handleEvacuationChoice(choice: 'checkpoint' | 'restart' | 'quit'): void {
