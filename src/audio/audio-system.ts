@@ -3,6 +3,13 @@ import * as Tone from 'tone';
 import type { PlayableFaction } from '@/config/factions';
 import type { EntityKind } from '@/types';
 import { AmbientManager } from './ambient';
+import {
+  combatCatapultShoot,
+  combatHit,
+  combatShoot,
+  combatSniperShoot,
+  combatTowerShoot,
+} from './audio-combat';
 import { CueManager } from './cues';
 import { MusicManager } from './music';
 import { SfxManager } from './sfx';
@@ -258,24 +265,19 @@ export class AudioSystem {
 
   // ─── Combat SFX (with stinger) ────────────────────────────────
   hit(worldX?: number): void {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.hit(worldX);
+    combatHit(this.sfxMgr, this.cueMgr, worldX);
   }
   shoot(worldX?: number): void {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.shoot(worldX);
+    combatShoot(this.sfxMgr, this.cueMgr, worldX);
   }
   sniperShoot(worldX?: number): void {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.sniperShoot(worldX);
+    combatSniperShoot(this.sfxMgr, this.cueMgr, worldX);
   }
   catapultShoot(worldX?: number): void {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.catapultShoot(worldX);
+    combatCatapultShoot(this.sfxMgr, this.cueMgr, worldX);
   }
   towerShoot(worldX?: number): void {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.towerShoot(worldX);
+    combatTowerShoot(this.sfxMgr, this.cueMgr, worldX);
   }
   win(): void {
     this.cueMgr.victoryMotif();

@@ -24,7 +24,7 @@ const DIFFICULTY_OPTIONS: {
     label: 'EASY',
     desc: 'Relaxed pace, weaker enemies',
     tint: 'rgba(34, 197, 94, 0.15)',
-    borderColor: '#22c55e',
+    borderColor: 'var(--pw-difficulty-easy)',
   },
   {
     key: 'normal',
@@ -38,7 +38,7 @@ const DIFFICULTY_OPTIONS: {
     label: 'HARD',
     desc: 'Aggressive AI, scarce resources',
     tint: 'rgba(239, 68, 68, 0.15)',
-    borderColor: '#ef4444',
+    borderColor: 'var(--pw-difficulty-hard)',
   },
 ];
 

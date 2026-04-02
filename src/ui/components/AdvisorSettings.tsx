@@ -65,7 +65,7 @@ export function AdvisorSettings() {
             <div class="flex items-center gap-2">
               <span
                 class="advisor-icon w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                style={{ background: p.color, color: '#1a1a2e' }}
+                style={{ background: p.color, color: 'var(--pw-advisor-text)' }}
               >
                 {p.initial}
               </span>

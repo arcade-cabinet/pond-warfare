@@ -21,6 +21,7 @@ import {
   updatePlayerProfile,
 } from '@/storage';
 import { getTotalPearlsThisMatch } from '@/systems/achievements';
+import { updateWinStreak } from '@/systems/leaderboard';
 import { EntityKind, Faction } from '@/types';
 
 /** Difficulty ranking for highest_difficulty_won comparisons. */
@@ -189,6 +190,9 @@ export async function updateProfileAndCheckUnlocks(world: GameWorld): Promise<st
 
   // Write profile updates
   await updatePlayerProfile(updates);
+
+  // Update win streak for leaderboard
+  await updateWinStreak(won);
 
   // Re-read updated profile for unlock checks
   const newProfile = await getPlayerProfile();

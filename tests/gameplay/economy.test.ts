@@ -183,10 +183,8 @@ describe('Economy', () => {
     // Base gather is GATHER_AMOUNT (15), tidal harvest does not change the base
     // amount but in the code: tidalHarvest sets gatherAmt = 15 when true (same
     // base). Looking at the code: `let gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;`
-    // GATHER_AMOUNT is also 15, so the tidal harvest bonus is applied via the
-    // actual logic: the gather amount stays at 15 but the intent is +50% per trip.
-    // The carry amount should reflect the tech bonus.
-    expect(Carrying.resourceAmount[gatherer]).toBe(15);
+    // Tidal Harvest: +25% gather amount (15 * 1.25 = 18.75 → 19)
+    expect(Carrying.resourceAmount[gatherer]).toBe(19);
   });
 
   it('pearl beds should yield pearl resource type', () => {

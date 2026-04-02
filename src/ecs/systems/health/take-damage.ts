@@ -39,7 +39,18 @@ export function takeDamage(
   if (!hasComponent(world.ecs, targetEid, Health)) return;
   if (Health.current[targetEid] <= 0) return;
 
-  const effectiveAmount = Math.max(0, Math.round(amount * multiplier));
+  let effectiveAmount = Math.max(0, Math.round(amount * multiplier));
+
+  // Hardened Shells: player units take 15% less damage
+  if (
+    effectiveAmount > 0 &&
+    hasComponent(world.ecs, targetEid, FactionTag) &&
+    FactionTag.faction[targetEid] === Faction.Player &&
+    world.tech.hardenedShells
+  ) {
+    effectiveAmount = Math.max(1, Math.round(effectiveAmount * 0.85));
+  }
+
   if (effectiveAmount === 0) return;
 
   Health.current[targetEid] -= effectiveAmount;

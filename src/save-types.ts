@@ -45,6 +45,7 @@ export interface SaveData {
   stats: {
     unitsKilled: number;
     unitsLost: number;
+    unitsTrained?: number;
     resourcesGathered: number;
     buildingsBuilt: number;
     buildingsLost?: number;

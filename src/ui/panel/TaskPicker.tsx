@@ -45,7 +45,7 @@ function pillColor(task: UnitTask): string {
   if (task.startsWith('gathering') || task === 'building') return 'var(--pw-clam)';
   if (task === 'attacking') return 'var(--pw-enemy-light)';
   if (task === 'healing') return 'var(--pw-success)';
-  if (task === 'scouting') return '#b090d8';
+  if (task === 'scouting') return 'var(--pw-scout)';
   return 'var(--pw-accent)';
 }
 

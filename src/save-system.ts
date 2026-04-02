@@ -159,6 +159,7 @@ export function loadGame(world: GameWorld, json: string): boolean {
   // Restore stats
   world.stats.unitsKilled = data.stats.unitsKilled;
   world.stats.unitsLost = data.stats.unitsLost;
+  world.stats.unitsTrained = data.stats.unitsTrained ?? 0;
   world.stats.resourcesGathered = data.stats.resourcesGathered;
   world.stats.buildingsBuilt = data.stats.buildingsBuilt;
   world.stats.peakArmy = data.stats.peakArmy;

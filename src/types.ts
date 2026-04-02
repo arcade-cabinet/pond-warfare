@@ -135,6 +135,7 @@ export interface GameResources {
 export interface GameStats {
   unitsKilled: number;
   unitsLost: number;
+  unitsTrained: number;
   resourcesGathered: number;
   buildingsBuilt: number;
   buildingsLost: number;

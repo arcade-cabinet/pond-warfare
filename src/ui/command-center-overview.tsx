@@ -149,7 +149,7 @@ export function CommandCenterOverview({
             <AutoToggle
               label="Scout"
               enabled={autoScoutEnabled.value}
-              color="#b090d8"
+              color="var(--pw-scout)"
               onToggle={() => {
                 autoScoutEnabled.value = !autoScoutEnabled.value;
               }}

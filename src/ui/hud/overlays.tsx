@@ -126,7 +126,11 @@ export function Overlays() {
           style={{
             background: 'rgba(0, 0, 0, 0.6)',
             color:
-              fpsDisplay.value >= 50 ? '#4ade80' : fpsDisplay.value >= 30 ? '#eab308' : '#ef4444',
+              fpsDisplay.value >= 50
+                ? 'var(--pw-fps-good)'
+                : fpsDisplay.value >= 30
+                  ? 'var(--pw-hp-mid)'
+                  : 'var(--pw-hp-low)',
           }}
         >
           {fpsDisplay.value} FPS

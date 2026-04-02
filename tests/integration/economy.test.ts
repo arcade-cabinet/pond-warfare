@@ -153,8 +153,8 @@ describe('Economy Integration', () => {
 
     gatheringSystem(world);
 
-    // tidalHarvest sets gatherAmt = 15 (same base, verified by code)
-    expect(Carrying.resourceAmount[gatherer]).toBe(15);
+    // tidalHarvest: +25% gather amount (15 * 1.25 = 18.75 → 19)
+    expect(Carrying.resourceAmount[gatherer]).toBe(19);
   });
 
   it('idle gatherers are detected by query helper', () => {

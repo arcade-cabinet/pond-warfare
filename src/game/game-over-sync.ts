@@ -5,6 +5,7 @@
  * permadeath save-deletion when a game is lost.
  */
 
+import { TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { DAY_FRAMES } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
 import { deleteSave, getLatestSave } from '@/storage';
@@ -36,12 +37,50 @@ export function syncGameOverStats(world: GameWorld): void {
   store.goFrameCount.value = w.frameCount;
   store.goMapSeed.value = w.mapSeed;
 
+  // Compute researched tech names
+  const researchedTechs: string[] = [];
+  for (const [key, val] of Object.entries(w.tech)) {
+    if (val && key in TECH_UPGRADES) {
+      researchedTechs.push(TECH_UPGRADES[key as TechId].name);
+    }
+  }
+  const techSummary =
+    researchedTechs.length > 0 ? `${researchedTechs.length} (${researchedTechs.join(', ')})` : '0';
+
+  // Difficulty display label
+  const diffLabels: Record<string, string> = {
+    easy: 'Easy',
+    normal: 'Normal',
+    hard: 'Hard',
+    nightmare: 'Nightmare',
+    ultraNightmare: 'Ultra Nightmare',
+  };
+  const diffLabel = diffLabels[w.difficulty] ?? w.difficulty;
+
+  // Commander display label
+  const cmdLabels: Record<string, string> = {
+    marshal: 'Marshal',
+    sage: 'Sage',
+    ironpaw: 'Ironpaw',
+    warden: 'Warden',
+    governor: 'Governor',
+  };
+  const cmdLabel = cmdLabels[w.commanderId] ?? w.commanderId;
+
+  const nestsDestroyed = store.destroyedEnemyNests.value;
+
   const statLines = [
     `Time: ${store.goTimeSurvived.value}`,
+    `Difficulty: ${diffLabel}`,
+    `Commander: ${cmdLabel}`,
     `Kills: ${w.stats.unitsKilled}`,
-    `Losses: ${w.stats.unitsLost}`,
-    `Resources gathered: ${w.stats.resourcesGathered}`,
+    `Units trained: ${w.stats.unitsTrained}`,
+    `Units lost: ${w.stats.unitsLost}`,
     `Buildings built: ${w.stats.buildingsBuilt}`,
+    `Buildings lost: ${w.stats.buildingsLost}`,
+    `Nests destroyed: ${nestsDestroyed}`,
+    `Resources gathered: ${w.stats.resourcesGathered}`,
+    `Techs researched: ${techSummary}`,
     `Peak army: ${w.stats.peakArmy}`,
   ];
   store.goStatLines.value = statLines;

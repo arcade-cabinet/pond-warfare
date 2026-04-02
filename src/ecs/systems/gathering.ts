@@ -74,16 +74,30 @@ export function gatheringSystem(world: GameWorld): void {
         const ex = Position.x[eid];
         const ey = Position.y[eid];
         let closest = -1;
-        let minDist = AUTO_GATHER_RADIUS;
-        for (let j = 0; j < resources.length; j++) {
-          const r = resources[j];
-          if (Resource.amount[r] <= 0) continue;
-          const dx = Position.x[r] - ex;
-          const dy = Position.y[r] - ey;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < minDist) {
-            minDist = d;
-            closest = r;
+
+        // Root Network: player gatherers auto-path to the richest resource node
+        if (faction === Faction.Player && world.tech.rootNetwork) {
+          let bestAmount = 0;
+          for (let j = 0; j < resources.length; j++) {
+            const r = resources[j];
+            if (Resource.amount[r] <= 0) continue;
+            if (Resource.amount[r] > bestAmount) {
+              bestAmount = Resource.amount[r];
+              closest = r;
+            }
+          }
+        } else {
+          let minDist = AUTO_GATHER_RADIUS;
+          for (let j = 0; j < resources.length; j++) {
+            const r = resources[j];
+            if (Resource.amount[r] <= 0) continue;
+            const dx = Position.x[r] - ex;
+            const dy = Position.y[r] - ey;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < minDist) {
+              minDist = d;
+              closest = r;
+            }
           }
         }
 
@@ -190,8 +204,11 @@ export function gatheringSystem(world: GameWorld): void {
             ? ResourceType.Pearls
             : ResourceType.Clams;
 
-      // Deplete resource (Tidal Harvest: +50%)
-      let gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;
+      // Deplete resource (Tidal Harvest: +25% gathering)
+      let gatherAmt = GATHER_AMOUNT;
+      if (faction === Faction.Player && world.tech.tidalHarvest) {
+        gatherAmt = Math.round(GATHER_AMOUNT * 1.25);
+      }
       // Commander passive: gather bonus for player gatherers
       if (faction === Faction.Player && world.commanderModifiers.passiveGatherBonus > 0) {
         gatherAmt = Math.round(gatherAmt * (1 + world.commanderModifiers.passiveGatherBonus));

@@ -51,6 +51,48 @@
   --pw-stone-light: #344848;
   --pw-stone-dark: #1c2828;
   --pw-stone-highlight: #3c5858;
+
+  /* Role colors */
+  --pw-scout: #b090d8;
+  --pw-scout-dark: #8a6ab8;
+
+  /* Resource - pearls */
+  --pw-pearl: #a5b4fc;
+
+  /* Panel accent colors */
+  --pw-unlock: #a78bfa;
+  --pw-achievement: #fbbf24;
+
+  /* HP bar states */
+  --pw-hp-good: #22c55e;
+  --pw-hp-mid: #eab308;
+  --pw-hp-low: #ef4444;
+
+  /* FPS / status feedback */
+  --pw-fps-good: #4ade80;
+
+  /* Button text on teal backgrounds */
+  --pw-btn-dark-text: #1a3a3a;
+
+  /* Advisor icon text on colored backgrounds */
+  --pw-advisor-text: #0c1a1f;
+
+  /* Difficulty preset colors */
+  --pw-difficulty-easy: #22c55e;
+  --pw-difficulty-hard: #ef4444;
+  --pw-difficulty-nightmare: #a855f7;
+  --pw-difficulty-ultra: #dc2626;
+  --pw-difficulty-sandbox: #60a5fa;
+  --pw-difficulty-speedrun: #f59e0b;
+  --pw-difficulty-survival: #ec4899;
+
+  /* Commander palette */
+  --pw-commander-blue: #4488cc;
+  --pw-commander-green: #44aa66;
+  --pw-commander-gold: #ccaa44;
+  --pw-commander-purple: #9966cc;
+  --pw-commander-red: #cc4444;
+  --pw-commander-yellow: #cccc44;
 }
 
 /* ====================================================================
@@ -687,6 +729,18 @@ body {
   100% {
     transform: translateY(100vh) rotate(720deg);
     opacity: 0;
+  }
+}
+
+/* Achievement toast slide-in */
+@keyframes achievement-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
