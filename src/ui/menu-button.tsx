@@ -28,14 +28,14 @@ export function MenuButton({
         alt=""
         class="absolute inset-0 w-full h-full object-fill pointer-events-none"
         draggable={false}
-        style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))' }}
+        style={{ filter: 'var(--pw-drop-shadow)' }}
       />
       <span
         class="relative z-10 font-heading font-bold tracking-wider uppercase"
         style={{
           color: 'var(--pw-btn-dark-text)',
           fontSize: wide ? '14px' : '11px',
-          textShadow: '0 1px 1px rgba(180,220,220,0.4)',
+          textShadow: `0 1px 1px var(--pw-text-shadow-decorative)`,
         }}
       >
         {label}

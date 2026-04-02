@@ -45,7 +45,7 @@ export function MatchHistoryPanel() {
         if (e.target === e.currentTarget) handleClose();
       }}
     >
-      <div class="absolute inset-0" style={{ background: 'rgba(12, 26, 31, 0.85)' }} />
+      <div class="absolute inset-0" style={{ background: 'var(--pw-overlay-dark)' }} />
 
       <div
         ref={scrollRef}
@@ -94,8 +94,8 @@ function MatchRow({ record }: { record: MatchRecord }) {
     <div
       class="rounded px-3 py-2"
       style={{
-        background: isWin ? 'rgba(240, 208, 96, 0.06)' : 'rgba(192, 48, 48, 0.06)',
-        border: `1px solid ${isWin ? 'rgba(240, 208, 96, 0.15)' : 'rgba(192, 48, 48, 0.15)'}`,
+        background: isWin ? 'var(--pw-victory-glow-06)' : 'var(--pw-defeat-glow-06)',
+        border: `1px solid ${isWin ? 'var(--pw-victory-glow-15)' : 'var(--pw-defeat-glow-15)'}`,
       }}
     >
       <div class="flex items-center justify-between mb-1">

@@ -82,7 +82,7 @@ export function TaskPicker({ currentTask, unitKind, onChange }: TaskPickerProps)
           style={{
             background: 'var(--pw-wood-dark)',
             border: '1px solid var(--pw-border)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+            boxShadow: `0 4px 12px var(--pw-shadow-medium)`,
             minWidth: '120px',
             bottom: 'auto',
           }}

@@ -27,9 +27,9 @@ export function AchievementToast() {
         gap: '12px',
         padding: '12px 20px',
         borderRadius: '8px',
-        background: 'linear-gradient(135deg, rgba(12, 26, 31, 0.95), rgba(30, 50, 55, 0.95))',
-        border: '1px solid rgba(251, 191, 36, 0.4)',
-        boxShadow: '0 4px 20px rgba(251, 191, 36, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3)',
+        background: `linear-gradient(135deg, var(--pw-toast-bg-start), var(--pw-toast-bg-end))`,
+        border: `1px solid var(--pw-achieve-glow-40)`,
+        boxShadow: `0 4px 20px var(--pw-achieve-glow-15), 0 2px 8px var(--pw-shadow-soft)`,
         animation: 'achievement-slide-in 0.4s ease-out',
         maxWidth: '400px',
         minWidth: '280px',
@@ -41,7 +41,7 @@ export function AchievementToast() {
           fontSize: '28px',
           lineHeight: '1',
           flexShrink: '0',
-          filter: 'drop-shadow(0 0 6px rgba(251, 191, 36, 0.4))',
+          filter: `drop-shadow(0 0 6px var(--pw-achieve-glow-40))`,
         }}
       >
         {'\uD83C\uDFC6'}

@@ -126,7 +126,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
       }}
     >
       {/* Backdrop */}
-      <div class="absolute inset-0" style={{ background: 'rgba(12, 26, 31, 0.8)' }} />
+      <div class="absolute inset-0" style={{ background: 'var(--pw-overlay-medium)' }} />
 
       {/* Panel card */}
       <div
@@ -180,7 +180,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   key={`speed-${s}`}
                   class="flex-1 py-1.5 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
                   style={{
-                    background: currentSpeed === s ? 'rgba(64, 200, 208, 0.1)' : undefined,
+                    background: currentSpeed === s ? 'var(--pw-glow-accent-10)' : undefined,
                     borderColor: currentSpeed === s ? 'var(--pw-accent)' : undefined,
                     color: currentSpeed === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
                   }}
@@ -215,7 +215,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     key={`scale-${s}`}
                     class="px-2 py-1 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
                     style={{
-                      background: uiScale.value === s ? 'rgba(64, 200, 208, 0.1)' : undefined,
+                      background: uiScale.value === s ? 'var(--pw-glow-accent-10)' : undefined,
                       borderColor: uiScale.value === s ? 'var(--pw-accent)' : undefined,
                       color: uiScale.value === s ? 'var(--pw-accent)' : 'var(--pw-text-muted)',
                     }}

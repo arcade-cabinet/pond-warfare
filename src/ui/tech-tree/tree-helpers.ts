@@ -47,7 +47,7 @@ export function stateStyles(state: NodeState): StateStyle {
     case 'researched':
       return {
         border: 'var(--pw-success)',
-        background: 'rgba(64, 184, 104, 0.15)',
+        background: 'var(--pw-tech-researched-bg)',
         color: 'var(--pw-text-primary)',
         extra: '',
       };
@@ -60,15 +60,15 @@ export function stateStyles(state: NodeState): StateStyle {
       };
     case 'unaffordable':
       return {
-        border: 'rgba(232, 160, 48, 0.4)',
-        background: 'rgba(26, 53, 64, 0.8)',
+        border: 'var(--pw-tech-unaffordable-border)',
+        background: 'var(--pw-surface-unaffordable)',
         color: 'var(--pw-text-secondary)',
         extra: 'cursor-not-allowed',
       };
     case 'locked':
       return {
         border: 'var(--pw-border)',
-        background: 'rgba(19, 40, 48, 0.6)',
+        background: 'var(--pw-surface-locked)',
         color: 'var(--pw-text-muted)',
         extra: 'cursor-not-allowed opacity-60',
       };

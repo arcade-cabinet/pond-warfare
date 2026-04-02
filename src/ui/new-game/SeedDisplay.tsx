@@ -58,7 +58,7 @@ export function SeedDisplay({
           style={{
             width: '140px',
             minHeight: '32px',
-            background: 'rgba(20, 30, 35, 0.8)',
+            background: 'var(--pw-surface-card)',
             border: '1px solid var(--pw-accent-dim)',
             color: 'var(--pw-text-secondary)',
             outline: 'none',

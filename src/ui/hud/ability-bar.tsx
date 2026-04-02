@@ -24,7 +24,7 @@ function KeyBadge({ label }: { label: string }) {
     <span
       class="absolute top-1 right-1 font-numbers text-[8px] px-1 rounded"
       style={{
-        background: 'rgba(0,0,0,0.5)',
+        background: 'var(--pw-shadow-medium)',
         color: 'var(--pw-text-muted)',
         lineHeight: '1.3',
       }}

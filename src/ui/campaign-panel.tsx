@@ -75,7 +75,7 @@ export function CampaignPanel() {
     <div
       ref={missionScrollRef}
       class="absolute inset-0 z-50 overflow-y-auto modal-overlay"
-      style={{ background: 'rgba(6, 14, 18, 0.95)' }}
+      style={{ background: 'var(--pw-surface-campaign)' }}
     >
       <div class="min-h-full flex flex-col items-center justify-center py-8 px-4">
         <h2

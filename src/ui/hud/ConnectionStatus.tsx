@@ -30,7 +30,7 @@ export function ConnectionStatus() {
     <div
       class="absolute top-12 right-2 z-30 flex items-center gap-2 px-2 py-1 rounded"
       style={{
-        background: 'rgba(13, 33, 40, 0.8)',
+        background: 'var(--pw-surface-panel-light)',
         backdropFilter: 'blur(4px)',
         border: '1px solid var(--pw-border)',
       }}

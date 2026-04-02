@@ -57,7 +57,7 @@ export function MenuPlayerStatus({ compact }: { compact: boolean }) {
     <>
       <p
         class="font-heading text-xs md:text-sm mt-1 tracking-wider text-center"
-        style={{ color: 'rgba(180,220,210,0.8)' }}
+        style={{ color: 'var(--pw-text-decorative)' }}
       >
         Defend the Pond. Conquer the Wild.
         {rank && (
@@ -78,7 +78,7 @@ export function MenuPlayerStatus({ compact }: { compact: boolean }) {
         style={{
           width: compact ? '120px' : '160px',
           height: '4px',
-          background: 'rgba(64, 200, 208, 0.15)',
+          background: 'var(--pw-glow-accent)',
         }}
       >
         <div
@@ -95,13 +95,13 @@ export function MenuPlayerStatus({ compact }: { compact: boolean }) {
       <div
         class="mt-1 text-center"
         style={{
-          color: dailyDone ? 'var(--pw-accent)' : 'rgba(180,220,210,0.6)',
+          color: dailyDone ? 'var(--pw-accent)' : 'var(--pw-text-decorative-60)',
           fontSize: '10px',
         }}
       >
         {dailyDone ? '\u2713 ' : ''}Daily: {dailyTitle}
         {!dailyDone && (
-          <span style={{ color: 'rgba(180,220,210,0.4)' }}>
+          <span style={{ color: 'var(--pw-text-decorative-40)' }}>
             {' '}
             {'\u2014'} {dailyDesc}
           </span>

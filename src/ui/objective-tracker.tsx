@@ -22,7 +22,7 @@ export function ObjectiveTracker() {
     <div
       class="absolute top-10 md:top-11 left-1/2 -translate-x-1/2 z-15 flex flex-col items-center gap-1 rounded px-3 py-2"
       style={{
-        background: 'rgba(12, 26, 31, 0.8)',
+        background: 'var(--pw-overlay-medium)',
         border: '1px solid var(--pw-border)',
         minWidth: '200px',
       }}

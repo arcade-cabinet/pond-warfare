@@ -23,21 +23,21 @@ const DIFFICULTY_OPTIONS: {
     key: 'easy',
     label: 'EASY',
     desc: 'Relaxed pace, weaker enemies',
-    tint: 'rgba(34, 197, 94, 0.15)',
+    tint: 'var(--pw-diff-easy-tint)',
     borderColor: 'var(--pw-difficulty-easy)',
   },
   {
     key: 'normal',
     label: 'NORMAL',
     desc: 'Balanced challenge',
-    tint: 'rgba(64, 200, 208, 0.15)',
+    tint: 'var(--pw-diff-normal-tint)',
     borderColor: 'var(--pw-accent)',
   },
   {
     key: 'hard',
     label: 'HARD',
     desc: 'Aggressive AI, scarce resources',
-    tint: 'rgba(239, 68, 68, 0.15)',
+    tint: 'var(--pw-diff-hard-tint)',
     borderColor: 'var(--pw-difficulty-hard)',
   },
 ];
@@ -93,7 +93,7 @@ export function IntroOverlay() {
       <div
         class="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.6) 100%)',
+          background: `radial-gradient(ellipse at center, transparent 30%, var(--pw-shadow-heavy) 100%)`,
         }}
       />
 
@@ -138,7 +138,7 @@ export function IntroOverlay() {
                 minHeight: '44px',
                 minWidth: '90px',
                 padding: '8px 12px',
-                background: isSelected ? opt.tint : 'rgba(20, 30, 35, 0.8)',
+                background: isSelected ? opt.tint : 'var(--pw-surface-card)',
                 border: isSelected
                   ? `2px solid ${opt.borderColor}`
                   : '2px solid var(--pw-stone-dark, #3a3a3a)',
@@ -150,8 +150,8 @@ export function IntroOverlay() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: isSelected
-                  ? `0 0 12px ${opt.borderColor}40, inset 0 1px 0 rgba(255,255,255,0.05)`
-                  : 'inset 0 1px 0 rgba(255,255,255,0.03)',
+                  ? `0 0 12px ${opt.borderColor}40, inset 0 1px 0 var(--pw-white-05)`
+                  : `inset 0 1px 0 var(--pw-white-03)`,
               }}
             >
               <span
@@ -199,7 +199,7 @@ export function IntroOverlay() {
           class="font-numbers text-xs px-2 py-1 rounded"
           style={{
             width: '140px',
-            background: 'rgba(20, 30, 35, 0.8)',
+            background: 'var(--pw-surface-card)',
             border: '1px solid var(--pw-stone-dark, #3a3a3a)',
             color: 'var(--pw-text-secondary)',
             outline: 'none',

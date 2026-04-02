@@ -28,8 +28,7 @@ export function EvacuationOverlay(props: EvacuationOverlayProps) {
     <div
       class="absolute inset-0 flex flex-col items-center justify-center z-50"
       style={{
-        background:
-          'radial-gradient(ellipse at 50% 40%, rgba(192, 48, 48, 0.15), rgba(12, 26, 31, 0.92) 60%)',
+        background: `radial-gradient(ellipse at 50% 40%, var(--pw-defeat-glow-15), var(--pw-overlay-92) 60%)`,
         backdropFilter: 'blur(4px)',
       }}
     >
@@ -37,7 +36,7 @@ export function EvacuationOverlay(props: EvacuationOverlayProps) {
         class="font-title text-3xl md:text-5xl mb-2 tracking-widest uppercase"
         style={{
           color: 'var(--pw-warning)',
-          textShadow: '0 0 30px rgba(250, 204, 21, 0.4), 2px 2px 0 #000, -1px -1px 0 #000',
+          textShadow: `0 0 30px var(--pw-achieve-glow-40), 2px 2px 0 #000, -1px -1px 0 #000`,
         }}
       >
         COMMANDER EVACUATED

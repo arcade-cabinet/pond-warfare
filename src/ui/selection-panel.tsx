@@ -118,7 +118,7 @@ export function SelectionPanel({
                 style={{
                   background: 'var(--pw-bg-surface)',
                   border: '2px solid var(--pw-border)',
-                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.5), 0 0 4px rgba(64, 200, 208, 0.1)',
+                  boxShadow: `inset 0 0 8px var(--pw-shadow-medium), 0 0 4px var(--pw-glow-accent-10)`,
                 }}
                 title="Click to track unit"
               />

@@ -22,15 +22,15 @@ function PathCard({
       type="button"
       class="flex-1 flex flex-col gap-2 p-4 rounded-lg cursor-pointer transition-all min-h-[200px] text-left"
       style={{
-        background: 'rgba(13, 33, 40, 0.85)',
-        border: '2px solid rgba(64, 200, 208, 0.3)',
+        background: 'var(--pw-surface-panel-mid)',
+        border: `2px solid var(--pw-glow-accent-30)`,
       }}
       onClick={onChoose}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor = 'var(--pw-accent)';
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(64, 200, 208, 0.3)';
+        (e.currentTarget as HTMLElement).style.borderColor = 'var(--pw-glow-accent-30)';
       }}
     >
       <span
@@ -53,7 +53,7 @@ function PathCard({
       </p>
       <span
         class="mt-auto font-heading text-xs uppercase tracking-wider self-center py-2 px-4 rounded"
-        style={{ background: 'rgba(64, 200, 208, 0.15)', color: 'var(--pw-accent)' }}
+        style={{ background: 'var(--pw-glow-accent)', color: 'var(--pw-accent)' }}
       >
         Choose This Path
       </span>
@@ -73,7 +73,7 @@ export function CampaignChoiceOverlay() {
   return (
     <div
       class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0, 0, 0, 0.8)' }}
+      style={{ background: 'var(--pw-shadow-intense)' }}
     >
       <div class="flex flex-col gap-4 max-w-2xl w-full">
         <h2

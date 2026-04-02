@@ -27,7 +27,7 @@ export function MenuTab() {
       <div
         class="flex items-center justify-between rounded px-2 py-1"
         style={{
-          background: 'rgba(20, 30, 35, 0.6)',
+          background: 'var(--pw-surface-card-60)',
           border: '1px solid var(--pw-border)',
         }}
       >

@@ -92,7 +92,7 @@ export function UnlocksPanel() {
   return (
     <div
       class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
-      style={{ background: 'rgba(0, 0, 0, 0.75)' }}
+      style={{ background: 'var(--pw-shadow-strong)' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           unlocksOpen.value = false;
@@ -104,8 +104,8 @@ export function UnlocksPanel() {
         class="relative w-[90vw] max-w-[720px] modal-scroll-lg rounded-lg p-6"
         style={{
           background: 'linear-gradient(135deg, #1a2332 0%, #0f1923 100%)',
-          border: '1px solid rgba(167, 139, 250, 0.3)',
-          boxShadow: '0 0 30px rgba(167, 139, 250, 0.1)',
+          border: `1px solid var(--pw-unlock-glow-30)`,
+          boxShadow: `0 0 30px var(--pw-unlock-glow-10)`,
         }}
       >
         {/* Header */}
@@ -138,8 +138,8 @@ export function UnlocksPanel() {
           <div
             class="rounded-lg p-3 mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2"
             style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--pw-white-03)',
+              border: `1px solid var(--pw-white-08)`,
             }}
           >
             <StatBadge label="Wins" value={p.total_wins} />
@@ -175,10 +175,10 @@ export function UnlocksPanel() {
                 key={unlock.id}
                 class="rounded-lg p-3 transition-all"
                 style={{
-                  background: earned ? 'rgba(167, 139, 250, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                  background: earned ? 'var(--pw-unlock-glow-08)' : 'var(--pw-white-03)',
                   border: earned
-                    ? '1px solid rgba(167, 139, 250, 0.5)'
-                    : '1px solid rgba(255, 255, 255, 0.08)',
+                    ? `1px solid var(--pw-unlock-glow-50)`
+                    : `1px solid var(--pw-white-08)`,
                   opacity: earned ? 1 : 0.6,
                 }}
               >
@@ -193,7 +193,7 @@ export function UnlocksPanel() {
                   <span
                     class="font-game text-[9px] px-1.5 py-0.5 rounded ml-auto"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.06)',
+                      background: 'var(--pw-white-06)',
                       color: 'var(--pw-text-muted)',
                     }}
                   >
@@ -211,7 +211,7 @@ export function UnlocksPanel() {
                 {!earned && profile && (
                   <p
                     class="font-numbers text-[10px] pl-5 mt-1"
-                    style={{ color: 'rgba(167, 139, 250, 0.6)' }}
+                    style={{ color: 'var(--pw-unlock-glow-60)' }}
                   >
                     {progressText(unlock, p)}
                   </p>
@@ -254,10 +254,8 @@ function CategoryTab({
       type="button"
       class="font-game text-[10px] px-2.5 py-1 rounded cursor-pointer transition-all"
       style={{
-        background: active ? 'rgba(167, 139, 250, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-        border: active
-          ? '1px solid rgba(167, 139, 250, 0.5)'
-          : '1px solid rgba(255, 255, 255, 0.08)',
+        background: active ? 'var(--pw-unlock-glow-15)' : 'var(--pw-white-04)',
+        border: active ? `1px solid var(--pw-unlock-glow-50)` : `1px solid var(--pw-white-08)`,
         color: active ? 'var(--pw-unlock)' : 'var(--pw-text-muted)',
       }}
       onClick={onClick}

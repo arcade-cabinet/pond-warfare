@@ -121,7 +121,7 @@ export function UnitCommands(props: UnitCommandsProps) {
                     autoGathererEnabled.value = !autoGathererEnabled.value;
                   }}
                   color="var(--pw-warning)"
-                  activeBackground="rgba(232, 160, 48, 0.3)"
+                  activeBackground="var(--pw-auto-warning-bg)"
                 />
               )}
 
@@ -134,7 +134,7 @@ export function UnitCommands(props: UnitCommandsProps) {
                     autoCombatEnabled.value = !autoCombatEnabled.value;
                   }}
                   color="var(--pw-enemy-light)"
-                  activeBackground="rgba(224, 96, 96, 0.3)"
+                  activeBackground="var(--pw-auto-enemy-bg)"
                 />
               )}
 
@@ -147,7 +147,7 @@ export function UnitCommands(props: UnitCommandsProps) {
                     autoHealerEnabled.value = !autoHealerEnabled.value;
                   }}
                   color="var(--pw-success)"
-                  activeBackground="rgba(64, 184, 104, 0.3)"
+                  activeBackground="var(--pw-auto-success-bg)"
                 />
               )}
 
@@ -160,7 +160,7 @@ export function UnitCommands(props: UnitCommandsProps) {
                     autoScoutEnabled.value = !autoScoutEnabled.value;
                   }}
                   color="var(--pw-scout)"
-                  activeBackground="rgba(138, 106, 184, 0.3)"
+                  activeBackground="var(--pw-auto-scout-bg)"
                 />
               )}
 
@@ -248,7 +248,7 @@ export function UnitCommands(props: UnitCommandsProps) {
             <div
               class="flex gap-1 items-center rounded-full px-2 py-1 shadow-lg"
               style={{
-                background: 'rgba(12, 26, 31, 0.9)',
+                background: 'var(--pw-overlay-heavy)',
                 border: '1px solid var(--pw-scout-dark)',
               }}
             >

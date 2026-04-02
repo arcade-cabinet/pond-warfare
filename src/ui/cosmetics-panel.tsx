@@ -88,7 +88,7 @@ export function CosmeticsPanel() {
       }}
     >
       {/* Backdrop */}
-      <div class="absolute inset-0" style={{ background: 'rgba(12, 26, 31, 0.85)' }} />
+      <div class="absolute inset-0" style={{ background: 'var(--pw-overlay-dark)' }} />
 
       {/* Panel card */}
       <div
@@ -172,7 +172,7 @@ function CosmeticRow({
     <div
       class="flex items-center gap-3 rounded-lg px-3 py-2"
       style={{
-        background: active ? 'rgba(64, 200, 208, 0.1)' : 'rgba(20, 30, 35, 0.6)',
+        background: active ? 'var(--pw-glow-accent-10)' : 'var(--pw-surface-card-60)',
         border: active ? '1px solid var(--pw-accent-dim)' : '1px solid var(--pw-border)',
         opacity: unlocked ? 1 : 0.5,
       }}

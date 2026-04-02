@@ -50,7 +50,7 @@ export function UnlockProgress() {
         </span>
         <div
           class="flex-1 h-1.5 rounded-full overflow-hidden"
-          style={{ background: 'rgba(167, 139, 250, 0.15)' }}
+          style={{ background: 'var(--pw-unlock-glow-15)' }}
         >
           <div
             class="h-full rounded-full transition-all"
@@ -99,10 +99,8 @@ function CategoryBadge({
     <span
       class="font-game text-[9px] px-1.5 py-0.5 rounded relative"
       style={{
-        background: complete ? 'rgba(167, 139, 250, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-        border: complete
-          ? '1px solid rgba(167, 139, 250, 0.4)'
-          : '1px solid rgba(255, 255, 255, 0.08)',
+        background: complete ? 'var(--pw-unlock-glow-15)' : 'var(--pw-white-04)',
+        border: complete ? `1px solid var(--pw-unlock-glow-40)` : `1px solid var(--pw-white-08)`,
         color: complete ? 'var(--pw-unlock)' : 'var(--pw-text-muted)',
       }}
     >
@@ -110,7 +108,7 @@ function CategoryBadge({
       {hasNew && (
         <span
           class="absolute -top-1 -right-1 font-heading text-[7px] px-0.5 rounded"
-          style={{ background: '#f59e0b', color: '#000' }}
+          style={{ background: 'var(--pw-difficulty-speedrun)', color: 'var(--pw-advisor-text)' }}
         >
           NEW
         </span>
@@ -138,7 +136,7 @@ export function NextUnlockHint() {
   return (
     <p
       class="font-game text-[10px] mt-1 text-center"
-      style={{ color: 'rgba(167, 139, 250, 0.7)', maxWidth: '280px' }}
+      style={{ color: 'var(--pw-unlock-glow-70)', maxWidth: '280px' }}
     >
       Next: {hint}
     </p>

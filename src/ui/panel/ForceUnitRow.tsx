@@ -132,7 +132,7 @@ export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps
       {/* HP bar */}
       <div
         class="mt-0.5 rounded-full overflow-hidden"
-        style={{ height: '3px', background: 'rgba(0,0,0,0.3)' }}
+        style={{ height: '3px', background: 'var(--pw-bar-track)' }}
       >
         <div
           class="h-full rounded-full transition-all"

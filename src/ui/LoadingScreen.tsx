@@ -60,7 +60,10 @@ export function LoadingScreen() {
 
         <p
           class="font-game text-xs md:text-sm max-w-md"
-          style={{ color: 'rgba(180, 220, 210, 0.8)', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
+          style={{
+            color: 'var(--pw-text-decorative)',
+            textShadow: `0 1px 4px var(--pw-shadow-medium)`,
+          }}
         >
           {tip}
         </p>
