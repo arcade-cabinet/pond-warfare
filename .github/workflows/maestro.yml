@@ -1,0 +1,83 @@
+name: Maestro Mobile Tests
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Warning-only check — does not block PR merge
+jobs:
+  maestro:
+    name: Maestro E2E (Android Emulator)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web assets
+        env:
+          CAPACITOR: 'true'
+        run: pnpm build
+
+      - name: Sync Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Enable KVM (required for Android emulator)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create AVD and start emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            # Build and install APK
+            cd android && ./gradlew assembleDebug && cd ..
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
+
+            # Install Maestro
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            export PATH="$PATH:$HOME/.maestro/bin"
+
+            # Run CI-tagged flows
+            maestro test --include-tags=ci .maestro/flows/ || true
+
+      - name: Upload Maestro screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-screenshots
+          path: ~/.maestro/tests/**/*.png
+          if-no-files-found: ignore
+          retention-days: 7

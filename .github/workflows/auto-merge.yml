@@ -12,6 +12,7 @@ jobs:
   auto-merge:
     name: Enable auto-merge for trusted PRs
     runs-on: ubuntu-latest
+    # Only run for PRs from the same repository (not forks) by trusted bots
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       (
@@ -20,9 +21,18 @@ jobs:
         github.actor == 'github-actions[bot]'
       )
     steps:
+      - name: Approve PR with PAT
+        if: ${{ secrets.AUTO_MERGE_TOKEN != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr review "$PR_NUMBER" --approve --repo "$REPO"
+
       - name: Enable auto-merge (squash)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN || secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |

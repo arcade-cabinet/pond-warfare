@@ -10,12 +10,15 @@ import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import type { GameWorld } from '@/ecs/world';
 import {
+  paintArchipelago,
   paintContested,
   paintIsland,
   paintLabyrinth,
   paintPeninsula,
+  paintRavine,
   paintRiver,
   paintStandard,
+  paintSwamp,
 } from '@/terrain/terrain-painters';
 import { EntityKind, Faction } from '@/types';
 import type { MapScenario } from '@/ui/store';
@@ -29,12 +32,15 @@ import {
   spawnPlayerResources,
   spawnWildlife,
 } from './helpers';
+import { spawnArchipelago } from './scenario-archipelago';
 import { spawnContested } from './scenario-contested';
 import { spawnIsland } from './scenario-island';
 import { spawnLabyrinth } from './scenario-labyrinth';
 import { spawnPeninsula } from './scenario-peninsula';
+import { spawnRavine } from './scenario-ravine';
 import { spawnRiver } from './scenario-river';
 import { spawnStandard } from './scenario-standard';
+import { spawnSwamp } from './scenario-swamp';
 
 /** Pick a scenario deterministically from the seeded RNG. */
 function pickScenario(rng: SeededRandom): MapScenario {
@@ -45,6 +51,9 @@ function pickScenario(rng: SeededRandom): MapScenario {
     'labyrinth',
     'river',
     'peninsula',
+    'archipelago',
+    'ravine',
+    'swamp',
   ];
   return rng.pick(scenarios);
 }
@@ -101,6 +110,22 @@ export function spawnInitialEntities(world: GameWorld): void {
     const center = quadrantCenter(playerQuad);
     sx = center.x;
     sy = center.y;
+  } else if (scenario === 'archipelago') {
+    // Player starts on a corner island
+    const playerQuad = rng.pick(QUADRANTS);
+    const center = quadrantCenter(playerQuad);
+    sx = center.x;
+    sy = center.y;
+  } else if (scenario === 'ravine') {
+    // Player starts on the west high ground
+    sx = WORLD_WIDTH * 0.25;
+    sy = WORLD_HEIGHT / 2;
+  } else if (scenario === 'swamp') {
+    // Player starts on a dry patch near the edge
+    const playerQuad = rng.pick(QUADRANTS);
+    const center = quadrantCenter(playerQuad);
+    sx = center.x;
+    sy = center.y;
   } else {
     const playerQuad = rng.pick(QUADRANTS);
     const center = quadrantCenter(playerQuad);
@@ -145,6 +170,15 @@ export function spawnInitialEntities(world: GameWorld): void {
     case 'peninsula':
       spawnPeninsula(ctx, targetNestCount);
       break;
+    case 'archipelago':
+      spawnArchipelago(ctx, targetNestCount);
+      break;
+    case 'ravine':
+      spawnRavine(ctx, targetNestCount);
+      break;
+    case 'swamp':
+      spawnSwamp(ctx, targetNestCount);
+      break;
     default:
       spawnStandard(ctx, targetNestCount);
       break;
@@ -167,6 +201,15 @@ export function spawnInitialEntities(world: GameWorld): void {
       break;
     case 'peninsula':
       paintPeninsula(tg, rng);
+      break;
+    case 'archipelago':
+      paintArchipelago(tg, rng);
+      break;
+    case 'ravine':
+      paintRavine(tg, rng);
+      break;
+    case 'swamp':
+      paintSwamp(tg, rng);
       break;
     default:
       paintStandard(tg, rng);

@@ -1,0 +1,34 @@
+appId: com.arcadecabinet.pondwarfare
+name: New Game Flow
+tags:
+  - ci
+---
+# Launch app and wait for main menu
+- launchApp
+- waitForAnimationToEnd
+
+# Tap New Game from main menu
+- tapOn: "New Game"
+- waitForAnimationToEnd
+
+# Verify New Game modal is visible
+- assertVisible: "Commander"
+- assertVisible: "Map Settings"
+
+# Select a commander (tap the Commander section, pick first available)
+- tapOn: "Commander"
+- waitForAnimationToEnd
+- tapOn: "Otter Marshal"
+
+# Start the game
+- tapOn: "START GAME"
+- waitForAnimationToEnd
+
+# Wait for game to load and render
+- extendedWaitUntil:
+    visible: "Clams"
+    timeout: 10000
+
+# Verify game HUD elements are visible
+- assertVisible: "Clams"
+- takeScreenshot: new-game-flow-complete
