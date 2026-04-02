@@ -17,10 +17,11 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { type EntityKind, UnitState } from '@/types';
+import type { SeededRandom } from '@/utils/random';
 
 /** Pick a random unit kind from the unlocked list. */
-export function pickRandomUnlocked(unlockedUnits: EntityKind[]): EntityKind {
-  return unlockedUnits[Math.floor(Math.random() * unlockedUnits.length)];
+export function pickRandomUnlocked(rng: SeededRandom, unlockedUnits: EntityKind[]): EntityKind {
+  return unlockedUnits[Math.floor(rng.next() * unlockedUnits.length)];
 }
 
 /** Send an entity to attack-move toward a target entity. */

@@ -75,7 +75,7 @@ export function autoBehaviorSystem(world: GameWorld): void {
     // Idle bark: >900 frames idle (15s min), 3% chance per check, with voice
     if (isIdle) {
       const idleFrames = idleFrameCount.get(eid) ?? 0;
-      if (idleFrames > 900 && Math.random() < 0.03) {
+      if (idleFrames > 900 && world.gameRng.next() < 0.03) {
         const idleKind = EntityTypeTag.kind[eid] as EntityKind;
         const barked = showBark(world, eid, Position.x[eid], Position.y[eid], idleKind, 'idle');
         if (barked) {
@@ -174,8 +174,8 @@ export function autoBehaviorSystem(world: GameWorld): void {
     if (autoScout && Velocity.speed[eid] >= 2.0) {
       // Pick a random point on the map edges or quadrants to explore
       const margin = 200;
-      const targetX = margin + Math.random() * (WORLD_WIDTH - margin * 2);
-      const targetY = margin + Math.random() * (WORLD_HEIGHT - margin * 2);
+      const targetX = margin + world.gameRng.next() * (WORLD_WIDTH - margin * 2);
+      const targetY = margin + world.gameRng.next() * (WORLD_HEIGHT - margin * 2);
       UnitStateMachine.targetX[eid] = targetX;
       UnitStateMachine.targetY[eid] = targetY;
       UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
@@ -209,8 +209,8 @@ export function autoBehaviorSystem(world: GameWorld): void {
           world.yukaManager.setWander(eid);
 
           // Move to a random point near the lodge as the initial direction
-          UnitStateMachine.targetX[eid] = lodgeX + (Math.random() - 0.5) * 200;
-          UnitStateMachine.targetY[eid] = lodgeY + (Math.random() - 0.5) * 200;
+          UnitStateMachine.targetX[eid] = lodgeX + (world.gameRng.next() - 0.5) * 200;
+          UnitStateMachine.targetY[eid] = lodgeY + (world.gameRng.next() - 0.5) * 200;
           UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
           break;
         }
@@ -244,11 +244,11 @@ function neutralWildlifeWander(world: GameWorld): void {
     const cy = Position.y[eid];
     const newX = Math.max(
       60,
-      Math.min(WORLD_WIDTH - 60, cx + (Math.random() - 0.5) * wanderRadius),
+      Math.min(WORLD_WIDTH - 60, cx + (world.gameRng.next() - 0.5) * wanderRadius),
     );
     const newY = Math.max(
       60,
-      Math.min(WORLD_HEIGHT - 60, cy + (Math.random() - 0.5) * wanderRadius),
+      Math.min(WORLD_HEIGHT - 60, cy + (world.gameRng.next() - 0.5) * wanderRadius),
     );
 
     UnitStateMachine.targetX[eid] = newX;

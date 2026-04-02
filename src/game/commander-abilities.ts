@@ -234,8 +234,8 @@ function activateThunderStrike(world: GameWorld): boolean {
     world.particles.push({
       x: Position.x[eid],
       y: Position.y[eid] - 10,
-      vx: (Math.random() - 0.5) * 4,
-      vy: -Math.random() * 4,
+      vx: (world.gameRng.next() - 0.5) * 4,
+      vy: -world.gameRng.next() * 4,
       life: 20,
       color: '#fbbf24',
       size: 5,
@@ -245,12 +245,12 @@ function activateThunderStrike(world: GameWorld): boolean {
   // Lightning particles at impact zone
   for (let i = 0; i < 30; i++) {
     const angle = (i / 30) * Math.PI * 2;
-    const r = Math.random() * aoeRadius;
+    const r = world.gameRng.next() * aoeRadius;
     world.particles.push({
       x: centerX + Math.cos(angle) * r,
       y: centerY + Math.sin(angle) * r,
-      vx: (Math.random() - 0.5) * 2,
-      vy: -Math.random() * 3 - 1,
+      vx: (world.gameRng.next() - 0.5) * 2,
+      vy: -world.gameRng.next() * 3 - 1,
       life: 30,
       color: '#fbbf24',
       size: 3,

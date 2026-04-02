@@ -136,7 +136,7 @@ export function enemyBuildingTick(world: GameWorld): void {
     res.twigs >= ENEMY_NEST_COST_TWIGS
   ) {
     // Build near a random existing nest
-    const sourceNest = nestEids[Math.floor(Math.random() * nestEids.length)];
+    const sourceNest = nestEids[Math.floor(world.gameRng.next() * nestEids.length)];
     const pos = findBuildPosition(world, sourceNest, EntityKind.PredatorNest);
     if (pos) {
       const bEid = spawnEntity(world, EntityKind.PredatorNest, pos.x, pos.y, Faction.Enemy);

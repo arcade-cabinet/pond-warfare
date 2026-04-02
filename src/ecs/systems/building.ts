@@ -61,7 +61,7 @@ export function buildingSystem(world: GameWorld): void {
       if (world.frameCount % 20 === 0) {
         audio.build();
         world.particles.push({
-          x: Position.x[tEnt] + (Math.random() - 0.5) * 20,
+          x: Position.x[tEnt] + (world.gameRng.next() - 0.5) * 20,
           y: Position.y[tEnt] - 10,
           vx: 0,
           vy: 1,
@@ -101,7 +101,7 @@ export function buildingSystem(world: GameWorld): void {
           const by = Position.y[tEnt];
           for (let p = 0; p < 16; p++) {
             const angle = (p / 16) * Math.PI * 2;
-            const speed = 2 + Math.random() * 1.5;
+            const speed = 2 + world.gameRng.next() * 1.5;
             spawnParticle(
               world,
               bx,
@@ -161,7 +161,7 @@ export function buildingSystem(world: GameWorld): void {
       if (world.frameCount % 20 === 0) {
         audio.build();
         world.particles.push({
-          x: Position.x[tEnt] + (Math.random() - 0.5) * 20,
+          x: Position.x[tEnt] + (world.gameRng.next() - 0.5) * 20,
           y: Position.y[tEnt] - 10,
           vx: 0,
           vy: 1,

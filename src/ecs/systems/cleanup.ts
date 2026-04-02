@@ -39,11 +39,11 @@ export function cleanupSystem(world: GameWorld): void {
           world,
           Position.x[eid] + 8,
           Position.y[eid] - 12,
-          (Math.random() - 0.5) * 0.5,
-          0.5 + Math.random() * 0.5, // Positive vy = moves up (y -= vy)
+          (world.gameRng.next() - 0.5) * 0.5,
+          0.5 + world.gameRng.next() * 0.5, // Positive vy = moves up (y -= vy)
           60,
           'rgba(156, 163, 175, 0.4)',
-          Math.random() * 3 + 2,
+          world.gameRng.next() * 3 + 2,
         );
       }
 
@@ -51,8 +51,8 @@ export function cleanupSystem(world: GameWorld): void {
       if (kind === EntityKind.Lodge && world.frameCount % 30 === 0) {
         spawnParticle(
           world,
-          Position.x[eid] + (Math.random() - 0.5) * 20,
-          Position.y[eid] + 10 + Math.random() * 10,
+          Position.x[eid] + (world.gameRng.next() - 0.5) * 20,
+          Position.y[eid] + 10 + world.gameRng.next() * 10,
           0,
           0.2, // Positive vy = bubbles float up (y -= vy)
           30,

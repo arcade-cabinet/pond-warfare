@@ -224,8 +224,8 @@ function dispatchTargetCommand(
     UnitStateMachine.targetY[eid] = Position.y[target];
     UnitStateMachine.state[eid] = UnitState.RepairMove;
   } else {
-    UnitStateMachine.targetX[eid] = worldX + (Math.random() - 0.5) * 20;
-    UnitStateMachine.targetY[eid] = worldY + (Math.random() - 0.5) * 20;
+    UnitStateMachine.targetX[eid] = worldX + (world.gameRng.next() - 0.5) * 20;
+    UnitStateMachine.targetY[eid] = worldY + (world.gameRng.next() - 0.5) * 20;
     UnitStateMachine.state[eid] = UnitState.Move;
   }
 

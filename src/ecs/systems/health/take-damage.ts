@@ -108,8 +108,8 @@ export function takeDamage(
         world,
         tx,
         ty - 10,
-        (Math.random() - 0.5) * 2,
-        Math.random() * 2,
+        (world.gameRng.next() - 0.5) * 2,
+        world.gameRng.next() * 2,
         15,
         dmgPColor,
         3,
@@ -119,7 +119,7 @@ export function takeDamage(
     const spriteH = hasComponent(world.ecs, targetEid, Sprite) ? Sprite.height[targetEid] : 32;
     const dmgColor = multiplier > 1.0 ? '#f97316' : multiplier < 1.0 ? '#9ca3af' : '#ef4444';
     world.floatingTexts.push({
-      x: tx + (Math.random() * 10 - 5),
+      x: tx + (world.gameRng.next() * 10 - 5),
       y: ty - spriteH / 2 - 5,
       text: `-${effectiveAmount}`,
       color: dmgColor,

@@ -25,10 +25,10 @@ export function processPoisonTicks(world: GameWorld): void {
       for (let i = 0; i < 3; i++) {
         spawnParticle(
           world,
-          Position.x[eid] + (Math.random() - 0.5) * 10,
+          Position.x[eid] + (world.gameRng.next() - 0.5) * 10,
           Position.y[eid] - 5,
-          (Math.random() - 0.5) * 1,
-          -Math.random() * 1.5,
+          (world.gameRng.next() - 0.5) * 1,
+          -world.gameRng.next() * 1.5,
           15,
           '#22c55e',
           2,
@@ -59,10 +59,10 @@ export function processVenomCoatingTicks(world: GameWorld): void {
       for (let i = 0; i < 2; i++) {
         spawnParticle(
           world,
-          Position.x[eid] + (Math.random() - 0.5) * 8,
+          Position.x[eid] + (world.gameRng.next() - 0.5) * 8,
           Position.y[eid] - 5,
-          (Math.random() - 0.5) * 0.8,
-          -Math.random() * 1,
+          (world.gameRng.next() - 0.5) * 0.8,
+          -world.gameRng.next() * 1,
           12,
           '#66ee66',
           2,

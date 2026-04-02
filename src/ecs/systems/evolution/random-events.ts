@@ -14,20 +14,21 @@ import { Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
+import type { SeededRandom } from '@/utils/random';
 import { findPlayerLodge, getEnemyNests } from '../ai/helpers';
 import { pickRandomUnlocked, sendToPosition, sendToTarget, spawnDustParticles } from './helpers';
 
 /** Pick a random spawn position along a map edge. */
-function edgeSpawnPosition(edge: number): { sx: number; sy: number } {
+function edgeSpawnPosition(rng: SeededRandom, edge: number): { sx: number; sy: number } {
   switch (edge) {
     case 0:
-      return { sx: 100 + Math.random() * (WORLD_WIDTH - 200), sy: 50 };
+      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: 50 };
     case 1:
-      return { sx: WORLD_WIDTH - 50, sy: 100 + Math.random() * (WORLD_HEIGHT - 200) };
+      return { sx: WORLD_WIDTH - 50, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
     case 2:
-      return { sx: 100 + Math.random() * (WORLD_WIDTH - 200), sy: WORLD_HEIGHT - 50 };
+      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: WORLD_HEIGHT - 50 };
     default:
-      return { sx: 50, sy: 100 + Math.random() * (WORLD_HEIGHT - 200) };
+      return { sx: 50, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
   }
 }
 
@@ -46,11 +47,11 @@ function nestFuryBurst(world: GameWorld, nestEid: number): void {
   world.minimapPings.push({ x: nx, y: ny, life: 180, maxLife: 180 });
   audio.alert();
 
-  const burstCount = 3 + Math.floor(Math.random() * 3);
+  const burstCount = 3 + Math.floor(world.gameRng.next() * 3);
   for (let i = 0; i < burstCount; i++) {
-    const unitKind = pickRandomUnlocked(world.enemyEvolution.unlockedUnits);
-    const sx = nx + (Math.random() - 0.5) * 60;
-    const sy = ny + 30 + Math.random() * 20;
+    const unitKind = pickRandomUnlocked(world.gameRng, world.enemyEvolution.unlockedUnits);
+    const sx = nx + (world.gameRng.next() - 0.5) * 60;
+    const sy = ny + 30 + world.gameRng.next() * 20;
     const eid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
     if (eid < 0) continue;
     triggerSpawnPop(eid);
@@ -65,13 +66,14 @@ function nestFuryBurst(world: GameWorld, nestEid: number): void {
  * - "Alpha Appearance": AlphaPredator spawns from fog, patrols toward player base
  */
 export function triggerRandomEvent(world: GameWorld): void {
-  const roll = Math.random();
+  const rng = world.gameRng;
+  const roll = rng.next();
   const lodgeEid = findPlayerLodge(world);
 
   if (roll < 0.45) {
     // --- Predator Migration ---
-    const count = 3 + Math.floor(Math.random() * 3);
-    const edge = Math.floor(Math.random() * 4);
+    const count = 3 + Math.floor(rng.next() * 3);
+    const edge = Math.floor(rng.next() * 4);
 
     world.floatingTexts.push({
       x: world.camX + world.viewWidth / 2,
@@ -84,8 +86,8 @@ export function triggerRandomEvent(world: GameWorld): void {
     audio.alert();
 
     for (let i = 0; i < count; i++) {
-      const { sx, sy } = edgeSpawnPosition(edge);
-      const unitKind = pickRandomUnlocked(world.enemyEvolution.unlockedUnits);
+      const { sx, sy } = edgeSpawnPosition(rng, edge);
+      const unitKind = pickRandomUnlocked(rng, world.enemyEvolution.unlockedUnits);
       const eid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
       if (eid < 0) continue;
 
@@ -94,8 +96,8 @@ export function triggerRandomEvent(world: GameWorld): void {
       if (lodgeEid !== -1) {
         sendToTarget(world, eid, lodgeEid);
       } else {
-        const tx = WORLD_WIDTH / 2 + (Math.random() - 0.5) * 400;
-        const ty = WORLD_HEIGHT / 2 + (Math.random() - 0.5) * 400;
+        const tx = WORLD_WIDTH / 2 + (rng.next() - 0.5) * 400;
+        const ty = WORLD_HEIGHT / 2 + (rng.next() - 0.5) * 400;
         sendToPosition(world, eid, tx, ty);
       }
     }
@@ -104,7 +106,7 @@ export function triggerRandomEvent(world: GameWorld): void {
     const nests = getEnemyNests(world);
     if (nests.length === 0) return;
 
-    const targetNest = nests[Math.floor(Math.random() * nests.length)];
+    const targetNest = nests[Math.floor(rng.next() * nests.length)];
     nestFuryBurst(world, targetNest);
   } else {
     // --- Alpha Appearance ---
@@ -112,14 +114,14 @@ export function triggerRandomEvent(world: GameWorld): void {
       // Fall back to nest fury
       const fallbackNests = getEnemyNests(world);
       if (fallbackNests.length > 0) {
-        const targetNest = fallbackNests[Math.floor(Math.random() * fallbackNests.length)];
+        const targetNest = fallbackNests[Math.floor(rng.next() * fallbackNests.length)];
         nestFuryBurst(world, targetNest);
       }
       return;
     }
 
-    const edge = Math.floor(Math.random() * 4);
-    const { sx, sy } = edgeSpawnPosition(edge);
+    const edge = Math.floor(rng.next() * 4);
+    const { sx, sy } = edgeSpawnPosition(rng, edge);
 
     const eid = spawnEntity(world, EntityKind.AlphaPredator, sx, sy, Faction.Enemy);
     if (eid < 0) return;

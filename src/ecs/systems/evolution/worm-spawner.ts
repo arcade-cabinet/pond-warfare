@@ -83,11 +83,11 @@ export function wormSpawnerSystem(world: GameWorld): void {
   if (nodes.length === 0) return;
 
   // Pick a random resource node to spawn near
-  const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
+  const targetNode = nodes[Math.floor(world.gameRng.next() * nodes.length)];
   const nx = Position.x[targetNode];
   const ny = Position.y[targetNode];
-  const sx = nx + (Math.random() - 0.5) * 80;
-  const sy = ny + (Math.random() - 0.5) * 80;
+  const sx = nx + (world.gameRng.next() - 0.5) * 80;
+  const sy = ny + (world.gameRng.next() - 0.5) * 80;
 
   const eid = spawnEntity(world, EntityKind.BurrowingWorm, sx, sy, Faction.Enemy);
   if (eid < 0) return;

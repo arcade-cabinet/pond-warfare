@@ -139,7 +139,7 @@ function executeAttack(
   Combat.attackCooldown[eid] = cooldown;
 
   // Combat bark
-  if (faction === Faction.Player && Math.random() < 0.1) {
+  if (faction === Faction.Player && world.gameRng.next() < 0.1) {
     showBark(world, eid, ex, ey, kind, 'combat', { color: '#ef4444' });
   }
 }

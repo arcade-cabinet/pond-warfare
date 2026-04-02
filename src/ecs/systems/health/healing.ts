@@ -47,8 +47,8 @@ export function processPassiveHealing(world: GameWorld): void {
           world,
           Position.x[eid],
           Position.y[eid] - 8,
-          (Math.random() - 0.5) * 0.8,
-          -Math.random() * 1,
+          (world.gameRng.next() - 0.5) * 0.8,
+          -world.gameRng.next() * 1,
           15,
           '#86efac',
           2,
@@ -103,14 +103,14 @@ export function processHealerAura(world: GameWorld): void {
         world,
         Position.x[bestEid],
         Position.y[bestEid] - 10,
-        (Math.random() - 0.5) * 1,
-        -Math.random() * 1.5,
+        (world.gameRng.next() - 0.5) * 1,
+        -world.gameRng.next() * 1.5,
         20,
         '#22c55e',
         3,
       );
 
-      if (Math.random() < 0.2) {
+      if (world.gameRng.next() < 0.2) {
         showBark(world, hEid, Position.x[hEid], Position.y[hEid], EntityKind.Healer, 'heal');
       }
     }
@@ -158,8 +158,8 @@ export function processHerbalistHutHeal(world: GameWorld): void {
         world,
         Position.x[uid],
         Position.y[uid] - 8,
-        (Math.random() - 0.5) * 0.8,
-        -Math.random() * 1,
+        (world.gameRng.next() - 0.5) * 0.8,
+        -world.gameRng.next() * 1,
         15,
         '#86efac',
         2,

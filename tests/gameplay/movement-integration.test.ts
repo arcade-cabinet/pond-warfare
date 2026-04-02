@@ -35,6 +35,7 @@ import type { GameWorld } from '@/ecs/world';
 import { issueContextCommand } from '@/input/selection';
 import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { SeededRandom } from '@/utils/random';
 
 // Mock audio to prevent errors
 vi.mock('@/audio/audio-system', () => ({
@@ -106,6 +107,7 @@ function createTestWorld(): GameWorld {
     activeParticles: [],
     terrainGrid: new TerrainGrid(2560, 2560, 32),
     combatZones: [],
+    gameRng: new SeededRandom(42),
   } as unknown as GameWorld;
 }
 

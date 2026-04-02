@@ -108,8 +108,8 @@ export function enemyEconomyTick(world: GameWorld): void {
 
     if (closestResource === -1) continue;
 
-    const sx = nx + (Math.random() - 0.5) * 60;
-    const sy = ny + 30 + (Math.random() - 0.5) * 30;
+    const sx = nx + (world.gameRng.next() - 0.5) * 60;
+    const sy = ny + 30 + (world.gameRng.next() - 0.5) * 30;
 
     const gEid = spawnEntity(world, EntityKind.Gatherer, sx, sy, Faction.Enemy);
     if (gEid < 0) continue;

@@ -74,7 +74,7 @@ export function trainingSystem(world: GameWorld): void {
       const bx = Position.x[eid];
       const by = Position.y[eid];
       const spriteH = Sprite.height[eid];
-      const sx = bx + (Math.random() > 0.5 ? 1 : -1) * 30;
+      const sx = bx + (world.gameRng.next() > 0.5 ? 1 : -1) * 30;
       const sy = by + spriteH / 2 + 20;
 
       // Spawn the unit
@@ -132,8 +132,8 @@ export function trainingSystem(world: GameWorld): void {
         world.particles.push({
           x: sx,
           y: sy,
-          vx: (Math.random() - 0.5) * 3,
-          vy: Math.random() * 2,
+          vx: (world.gameRng.next() - 0.5) * 3,
+          vy: world.gameRng.next() * 2,
           life: 20,
           color: '#38bdf8',
           size: 3,

@@ -88,24 +88,33 @@ function spawnWeatherParticles(world: GameWorld): void {
     case 'rain': {
       // Blue rain drops falling downward
       for (let i = 0; i < 4; i++) {
-        const x = camX + Math.random() * viewWidth;
-        const y = camY + Math.random() * 40;
+        const x = camX + world.gameRng.next() * viewWidth;
+        const y = camY + world.gameRng.next() * 40;
         spawnParticle(world, x, y, 0, 4, 30, '#60a5fa', 1);
       }
       break;
     }
     case 'fog': {
       // Pale gray fog wisps drifting slowly
-      const x = camX + Math.random() * viewWidth;
-      const y = camY + Math.random() * viewHeight;
-      spawnParticle(world, x, y, (Math.random() - 0.5) * 0.3, 0, 90, 'rgba(200,200,200,0.3)', 4);
+      const x = camX + world.gameRng.next() * viewWidth;
+      const y = camY + world.gameRng.next() * viewHeight;
+      spawnParticle(
+        world,
+        x,
+        y,
+        (world.gameRng.next() - 0.5) * 0.3,
+        0,
+        90,
+        'rgba(200,200,200,0.3)',
+        4,
+      );
       break;
     }
     case 'wind': {
       // Wind-blown leaf particles moving in wind direction
       const dir = weather.windDirection;
-      const x = camX + Math.random() * viewWidth;
-      const y = camY + Math.random() * viewHeight;
+      const x = camX + world.gameRng.next() * viewWidth;
+      const y = camY + world.gameRng.next() * viewHeight;
       spawnParticle(world, x, y, Math.cos(dir) * 3, Math.sin(dir) * 3, 40, '#86efac', 2);
       break;
     }

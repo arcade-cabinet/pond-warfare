@@ -64,13 +64,13 @@ export function nestDefenseReinforcement(world: GameWorld): void {
     if (defenderCount >= 4) continue;
 
     // Cost check: defenders still cost resources now
-    const trainGator = Math.random() > 0.5;
+    const trainGator = world.gameRng.next() > 0.5;
     const costClams = trainGator ? ENEMY_GATOR_COST_CLAMS : ENEMY_SNAKE_COST_CLAMS;
     const costTwigs = trainGator ? ENEMY_GATOR_COST_TWIGS : ENEMY_SNAKE_COST_TWIGS;
     if (world.enemyResources.clams < costClams || world.enemyResources.twigs < costTwigs) continue;
 
     const unitKind = trainGator ? EntityKind.Gator : EntityKind.Snake;
-    const sx = nx + (Math.random() - 0.5) * 60;
+    const sx = nx + (world.gameRng.next() - 0.5) * 60;
     const sy = ny + 30;
 
     const defEid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
@@ -134,7 +134,7 @@ export function bossWaveLogic(world: GameWorld): void {
   for (const nestEid of nestEids) {
     const nx = Position.x[nestEid];
     const ny = Position.y[nestEid];
-    const sx = nx + (Math.random() - 0.5) * 60;
+    const sx = nx + (world.gameRng.next() - 0.5) * 60;
     const sy = ny + 30;
 
     const eid = spawnEntity(world, EntityKind.BossCroc, sx, sy, Faction.Enemy);

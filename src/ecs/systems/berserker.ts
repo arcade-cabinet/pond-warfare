@@ -66,9 +66,9 @@ export function berserkerSystem(world: GameWorld): void {
       const y = Position.y[eid];
       spawnParticle(
         world,
-        x + (Math.random() - 0.5) * 20,
+        x + (world.gameRng.next() - 0.5) * 20,
         y - 10,
-        (Math.random() - 0.5) * 1.5,
+        (world.gameRng.next() - 0.5) * 1.5,
         -1.5,
         20,
         '#ef4444',

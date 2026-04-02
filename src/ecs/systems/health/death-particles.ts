@@ -19,7 +19,7 @@ export function spawnDeathParticles(
   if (isBuilding) {
     for (let j = 0; j < 35; j++) {
       const angle = (j / 35) * Math.PI * 2;
-      const spread = 2 + Math.random() * 3;
+      const spread = 2 + world.gameRng.next() * 3;
       spawnParticle(
         world,
         ex,
@@ -36,7 +36,7 @@ export function spawnDeathParticles(
     const count = isResource ? 20 : 30;
     for (let j = 0; j < count; j++) {
       const angle = (j / count) * Math.PI * 2;
-      const spread = 1.5 + Math.random() * 3;
+      const spread = 1.5 + world.gameRng.next() * 3;
       spawnParticle(
         world,
         ex,
@@ -52,10 +52,10 @@ export function spawnDeathParticles(
       for (let j = 0; j < 8; j++) {
         spawnParticle(
           world,
-          ex + (Math.random() - 0.5) * 12,
-          ey + (Math.random() - 0.5) * 12,
-          (Math.random() - 0.5) * 3,
-          Math.random() * 3 + 1,
+          ex + (world.gameRng.next() - 0.5) * 12,
+          ey + (world.gameRng.next() - 0.5) * 12,
+          (world.gameRng.next() - 0.5) * 3,
+          world.gameRng.next() * 3 + 1,
           20,
           PALETTE.clamMeat,
           6,

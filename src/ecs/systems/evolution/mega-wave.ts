@@ -96,9 +96,9 @@ export function triggerMegaWave(world: GameWorld, waveNumber: number): void {
     const ny = Position.y[nestEid];
 
     for (let i = 0; i < spawnMultiplier; i++) {
-      const unitKind = pickRandomUnlocked(world.enemyEvolution.unlockedUnits);
-      const sx = nx + (Math.random() - 0.5) * 80;
-      const sy = ny + 30 + Math.random() * 20;
+      const unitKind = pickRandomUnlocked(world.gameRng, world.enemyEvolution.unlockedUnits);
+      const sx = nx + (world.gameRng.next() - 0.5) * 80;
+      const sy = ny + 30 + world.gameRng.next() * 20;
 
       const eid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
       if (eid < 0) continue;
@@ -118,7 +118,7 @@ export function triggerMegaWave(world: GameWorld, waveNumber: number): void {
 
     // Siege wave: also spawn SiegeTurtles
     if (includesSiege && world.enemyEvolution.unlockedUnits.includes(EntityKind.SiegeTurtle)) {
-      const sx = nx + (Math.random() - 0.5) * 60;
+      const sx = nx + (world.gameRng.next() - 0.5) * 60;
       const sy = ny + 30;
       const siegeEid = spawnEntity(world, EntityKind.SiegeTurtle, sx, sy, Faction.Enemy);
       if (siegeEid >= 0) {
@@ -136,7 +136,7 @@ export function triggerMegaWave(world: GameWorld, waveNumber: number): void {
       nestEid === nests[0] &&
       world.enemyEvolution.unlockedUnits.includes(EntityKind.AlphaPredator)
     ) {
-      const sx = nx + (Math.random() - 0.5) * 60;
+      const sx = nx + (world.gameRng.next() - 0.5) * 60;
       const sy = ny + 30;
       const alphaEid = spawnEntity(world, EntityKind.AlphaPredator, sx, sy, Faction.Enemy);
       if (alphaEid >= 0) {
