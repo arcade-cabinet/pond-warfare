@@ -103,6 +103,21 @@ export function movementSystem(world: GameWorld): void {
       }
     }
 
+    // Terrain speed modifier: slow/block units based on terrain type
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    const terrainMult = world.terrainGrid.getSpeedMultiplier(
+      Position.x[eid],
+      Position.y[eid],
+      kind,
+    );
+    if (terrainMult <= 0) {
+      // Impassable terrain - stop movement, go idle
+      UnitStateMachine.state[eid] = UnitState.Idle;
+      world.yukaManager.removeUnit(eid);
+      continue;
+    }
+    speed *= terrainMult;
+
     const dx = tx - Position.x[eid];
     const dy = ty - Position.y[eid];
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -184,7 +199,6 @@ export function movementSystem(world: GameWorld): void {
       }
 
       // Bob animation (original: this.yOff = Math.sin(GAME.frameCount*(this.type==='snake'?0.6:0.3))*3)
-      const kind = EntityTypeTag.kind[eid] as EntityKind;
       const freq = kind === EntityKind.Snake ? 0.6 : 0.3;
       Sprite.yOffset[eid] = Math.sin(world.frameCount * freq) * 3;
     }

@@ -13,6 +13,7 @@ import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
 import type { TechState } from '@/config/tech-tree';
+import type { TerrainGrid } from '@/terrain/terrain-grid';
 import type {
   Corpse,
   EntityKind,
@@ -202,4 +203,7 @@ export interface GameWorld {
 
   // Map exploration
   exploredPercent: number;
+
+  // Terrain grid (tile-based terrain types affecting movement/combat)
+  terrainGrid: TerrainGrid;
 }

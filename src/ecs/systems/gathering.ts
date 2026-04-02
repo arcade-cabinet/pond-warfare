@@ -66,7 +66,7 @@ export function gatheringSystem(world: GameWorld): void {
       state === UnitState.Idle &&
       kind === EntityKind.Gatherer &&
       canAutoGather &&
-      world.frameCount % 30 === 0
+      (world.frameCount + eid * 7) % 30 === 0
     ) {
       // Only auto-gather if not holding resources
       if (Carrying.resourceType[eid] === ResourceType.None) {
@@ -136,8 +136,8 @@ export function gatheringSystem(world: GameWorld): void {
       continue;
     }
 
-    // SFX and particles every 30 frames
-    if (world.frameCount % 30 === 0) {
+    // SFX and particles every 30 frames (staggered per-entity for layered rhythm)
+    if ((world.frameCount + eid * 7) % 30 === 0) {
       const resKind = EntityTypeTag.kind[tEnt] as EntityKind;
       if (resKind === EntityKind.Cattail) {
         audio.chop();
@@ -201,6 +201,7 @@ export function gatheringSystem(world: GameWorld): void {
       }
       Carrying.resourceAmount[eid] = gatherAmt;
       Resource.amount[tEnt] -= gatherAmt;
+      audio.pickup(Position.x[eid]);
       // Track stats
       world.stats.resourcesGathered += gatherAmt;
 

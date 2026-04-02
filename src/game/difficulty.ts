@@ -202,6 +202,11 @@ export function applyCampaignMission(world: GameWorld): void {
       world.resTracker.lastClams = world.resources.clams;
       world.resTracker.lastTwigs = world.resources.twigs;
     }
+    if (wo.startingTech) {
+      for (const techId of wo.startingTech) {
+        (world.tech as Record<string, boolean>)[techId] = true;
+      }
+    }
     if (wo.fullTechTree) {
       for (const key of Object.keys(world.tech)) {
         (world.tech as Record<string, boolean>)[key] = true;

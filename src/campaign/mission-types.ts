@@ -4,6 +4,7 @@
  * Shared types for mission definitions, objectives, and dialogue.
  */
 
+import type { TechId } from '@/config/tech-tree';
 import type { CustomGameSettings } from '@/ui/store';
 
 export interface MissionDialogue {
@@ -22,7 +23,8 @@ export type ObjectiveType =
   | 'destroyNest'
   | 'survive'
   | 'kill'
-  | 'buildCount';
+  | 'buildCount'
+  | 'research';
 
 export interface MissionObjective {
   id: string;
@@ -36,6 +38,8 @@ export interface MissionObjective {
   percent?: number;
   /** Target evolution tier for survive objectives. */
   tier?: number;
+  /** Tech ID for research objectives. */
+  techId?: TechId;
 }
 
 export interface MissionDef {
@@ -66,6 +70,8 @@ export interface MissionDef {
     startingResourcesMult?: number;
     fullTechTree?: boolean;
     maxEnemyEvolution?: boolean;
+    /** Techs to pre-unlock when the mission starts. */
+    startingTech?: TechId[];
   };
 }
 

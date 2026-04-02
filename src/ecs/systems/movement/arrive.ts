@@ -8,6 +8,7 @@
  */
 
 import { hasComponent } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { BUILD_TIMER, GATHER_AMOUNT, GATHER_TIMER, REPAIR_TIMER } from '@/constants';
 import {
   Carrying,
@@ -137,6 +138,7 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
         }
         Carrying.resourceType[eid] = ResourceType.None;
         Carrying.resourceAmount[eid] = 0;
+        audio.deposit(Position.x[eid]);
 
         // If the gather target still has resources, go back to it
         const tEnt = UnitStateMachine.targetEntity[eid];

@@ -22,6 +22,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { checkAttackAlert } from '@/systems/attack-alerts';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { reduceVisualNoise } from '@/ui/store';
 import { spawnParticle } from '@/utils/particles';
@@ -44,6 +45,9 @@ export function takeDamage(
   audio.hit();
 
   Health.flashTimer[targetEid] = 8;
+
+  // Check if this warrants an under-attack alert
+  checkAttackAlert(world, targetEid);
 
   const tx = Position.x[targetEid];
   const ty = Position.y[targetEid];

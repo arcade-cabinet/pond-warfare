@@ -5,14 +5,22 @@
  * purchasing, and training queue display.
  */
 
+import { hasComponent, query } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { entityKindName } from '@/config/entity-defs';
 import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { TRAIN_TIMER } from '@/constants';
-import { TrainingQueue, trainingQueueSlots } from '@/ecs/components';
+import {
+  FactionTag,
+  Health,
+  IsBuilding,
+  TrainingQueue,
+  trainingQueueSlots,
+} from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { cancelTrain } from '@/input/selection';
 import type { ReplayRecorder } from '@/replay';
-import type { EntityKind } from '@/types';
+import { type EntityKind, Faction } from '@/types';
 import type { QueueItemDef } from '@/ui/action-panel';
 
 /** Apply Sage passive research discount to a tech cost. */
@@ -38,6 +46,16 @@ export function canAffordTech(w: GameWorld, techId: TechId): boolean {
   );
 }
 
+/** Techs that buff existing units -- flash all player units on research. */
+const UNIT_BUFF_TECHS: ReadonlySet<TechId> = new Set([
+  'sharpSticks',
+  'eagleEye',
+  'hardenedShells',
+  'swiftPaws',
+  'regeneration',
+  'venomCoating',
+]);
+
 /** Purchase a tech upgrade, applying Sage discount. Returns true if successful. */
 export function purchaseTech(w: GameWorld, techId: TechId): boolean {
   const upgrade = TECH_UPGRADES[techId];
@@ -54,6 +72,40 @@ export function purchaseTech(w: GameWorld, techId: TechId): boolean {
   w.resources.twigs -= twigs;
   w.resources.pearls -= pearlCost;
   w.tech[techId] = true;
+
+  // --- Research completion ceremony ---
+  audio.researchComplete();
+
+  // Floating announcement at camera center
+  const cx = w.camX + w.viewWidth / 2;
+  const cy = w.camY + 80;
+  w.floatingTexts.push({
+    x: cx,
+    y: cy,
+    text: `${upgrade.name} Researched!`,
+    color: '#38bdf8',
+    life: 90,
+  });
+  w.floatingTexts.push({
+    x: cx,
+    y: cy + 16,
+    text: upgrade.description,
+    color: '#94a3b8',
+    life: 70,
+  });
+
+  // Flash all player units for techs that buff existing units
+  if (UNIT_BUFF_TECHS.has(techId)) {
+    const units = query(w.ecs, [Health, FactionTag]);
+    for (let i = 0; i < units.length; i++) {
+      const eid = units[i];
+      if (FactionTag.faction[eid] !== Faction.Player) continue;
+      if (Health.current[eid] <= 0) continue;
+      if (hasComponent(w.ecs, eid, IsBuilding)) continue;
+      Health.flashTimer[eid] = 15;
+    }
+  }
+
   return true;
 }
 

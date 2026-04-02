@@ -14,6 +14,7 @@ import { setZoom } from '@/game/camera';
 import { installLifecycleListeners } from '@/game/game-lifecycle';
 import { type GameLoopState, gameLoop } from '@/game/game-loop';
 import { buildKeyboardCallbacks, buildPointerCallbacks } from '@/game/input-setup';
+import type { Governor } from '@/governor/governor';
 import { KeyboardHandler } from '@/input/keyboard';
 import { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
@@ -54,7 +55,7 @@ export async function initCanvases(
   if (!fogCtx || !lightCtx) throw new Error('Failed to acquire 2D context');
 
   const { canvases } = generateAllSprites();
-  const bgCanvas = buildBackground();
+  const bgCanvas = buildBackground(world.terrainGrid);
 
   const w = container.clientWidth;
   const h = container.clientHeight;
@@ -210,6 +211,7 @@ export function startGameLoop(deps: {
   recorder: ReplayRecorder;
   audioInitialized: boolean;
   syncUIStore: () => void;
+  governor?: Governor | null;
 }): GameLoopState {
   const ls: GameLoopState = {
     world: deps.world,
@@ -242,6 +244,7 @@ export function startGameLoop(deps: {
     keyboard: deps.keyboard,
     recorder: deps.recorder,
     syncUIStore: deps.syncUIStore,
+    governor: deps.governor ?? null,
   };
   ls.rafId = requestAnimationFrame((t) => gameLoop(ls, t));
   return ls;

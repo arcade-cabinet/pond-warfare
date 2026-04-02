@@ -130,3 +130,46 @@ export function buildCompleteEffect(
     if (!getMuted() && getStarted()) mgr.playAt(400, 'sine', 0.15, 0.06, 600);
   }, 100);
 }
+
+/** Ominous low rumble when enemy evolves to a new tier. */
+export function enemyEvolutionEffect(
+  mgr: SfxManager,
+  getMuted: () => boolean,
+  getStarted: () => boolean,
+): void {
+  mgr.playAt(60, 'sawtooth', 0.4, 0.12, 35);
+  setTimeout(() => {
+    if (!getMuted() && getStarted()) mgr.playAt(45, 'square', 0.5, 0.1, 30);
+  }, 200);
+  setTimeout(() => {
+    if (!getMuted() && getStarted()) mgr.playAt(80, 'triangle', 0.3, 0.08, 50);
+  }, 450);
+}
+
+/** Brief ascending fanfare when a unit reaches a new veterancy rank. */
+export function veteranPromotionEffect(
+  mgr: SfxManager,
+  getMuted: () => boolean,
+  getStarted: () => boolean,
+  worldX?: number,
+): void {
+  mgr.playAt(440, 'sine', 0.1, 0.06, 660, worldX);
+  setTimeout(() => {
+    if (!getMuted() && getStarted()) mgr.playAt(660, 'sine', 0.1, 0.06, 880, worldX);
+  }, 90);
+  setTimeout(() => {
+    if (!getMuted() && getStarted()) mgr.playAt(880, 'triangle', 0.14, 0.05, 1100, worldX);
+  }, 180);
+}
+
+/** Subtle notification chime when an advisor tip appears. */
+export function advisorTipEffect(
+  mgr: SfxManager,
+  getMuted: () => boolean,
+  getStarted: () => boolean,
+): void {
+  mgr.playAt(720, 'sine', 0.08, 0.03, 960);
+  setTimeout(() => {
+    if (!getMuted() && getStarted()) mgr.playAt(960, 'sine', 0.06, 0.025, 1100);
+  }, 70);
+}

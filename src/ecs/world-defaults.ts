@@ -14,7 +14,11 @@ import {
   ENEMY_STARTING_TWIGS,
   STARTING_CLAMS,
   STARTING_TWIGS,
+  TILE_SIZE,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
 } from '@/constants';
+import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, type Particle } from '@/types';
 import { ObjectPool } from '@/utils/pool';
 import { SpatialHash } from '@/utils/spatial-hash';
@@ -175,5 +179,6 @@ export function createGameWorld(): GameWorld {
     warDrumsBuff: new Set(),
     venomCoatingTimers: new Map(),
     exploredPercent: 0,
+    terrainGrid: new TerrainGrid(WORLD_WIDTH, WORLD_HEIGHT, TILE_SIZE),
   };
 }

@@ -128,6 +128,9 @@ function checkObjective(world: GameWorld, campaign: CampaignState, obj: MissionO
         (campaign.killedCounts.get(objectiveKind) ?? 0) >= (obj.count ?? 1)
       );
 
+    case 'research':
+      return obj.techId != null && !!world.tech[obj.techId];
+
     default:
       return false;
   }
