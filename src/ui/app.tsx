@@ -1,10 +1,4 @@
-/**
- * Root Preact component — thin routing shell.
- *
- * Routes between menu screen and game screen based on menuState signal.
- * All game logic handlers live in game-actions.ts, all panel UI in panel/,
- * and all overlays in overlays/.
- */
+/** Root Preact component — thin routing shell between menu and game screens. */
 
 import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
@@ -24,6 +18,7 @@ import { AchievementToast } from './hud/AchievementToast';
 import { AdvisorToast } from './hud/AdvisorToast';
 import { AbilityBar } from './hud/ability-bar';
 import { AirdropButton } from './hud/airdrop-button';
+import { ConnectionStatus } from './hud/ConnectionStatus';
 import { CtrlGroups } from './hud/ctrl-groups';
 import { Overlays } from './hud/overlays';
 import { KeyboardReference } from './keyboard-reference';
@@ -32,8 +27,11 @@ import { LeaderboardPanel } from './leaderboard-panel';
 import { MainMenu } from './main-menu';
 import { MatchHistoryPanel } from './match-history-panel';
 import { NewGameModal } from './new-game-modal';
+import { DisconnectOverlay } from './overlays/DisconnectOverlay';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
 import { CommandPanel } from './panel/CommandPanel';
+import { MultiplayerLobby } from './screens/MultiplayerLobby';
+import { MultiplayerMenu } from './screens/MultiplayerMenu';
 import * as store from './store';
 import { TechTreePanel } from './tech-tree-panel';
 import { UnlocksPanel } from './unlocks-panel';
@@ -116,6 +114,8 @@ export function App({ onMount }: AppProps) {
         {store.unlocksOpen.value && <UnlocksPanel />}
         {store.cosmeticsOpen.value && <CosmeticsPanel />}
         {store.matchHistoryOpen.value && <MatchHistoryPanel />}
+        {store.multiplayerMenuOpen.value &&
+          (store.multiplayerView.value === 'lobby' ? <MultiplayerLobby /> : <MultiplayerMenu />)}
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {
@@ -226,6 +226,9 @@ export function App({ onMount }: AppProps) {
       {/* Hamburger button — sole floating DOM element */}
       <HamburgerButton />
 
+      {/* Connection status — top-right, multiplayer only */}
+      <ConnectionStatus />
+
       {/* Advisor toast — bottom-left HUD, above safe area */}
       <AdvisorToast />
 
@@ -279,6 +282,7 @@ export function App({ onMount }: AppProps) {
       {store.leaderboardOpen.value && <LeaderboardPanel />}
       {store.unlocksOpen.value && <UnlocksPanel />}
       {store.cosmeticsOpen.value && <CosmeticsPanel />}
+      <DisconnectOverlay />
 
       {/* Tabbed command panel */}
       <CommandPanel minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />

@@ -72,6 +72,7 @@ export function startGameLoop(deps: {
     governor: deps.governor ?? null,
     spectacleFrames: 0,
     spectacleStarted: false,
+    lockstep: null,
   };
   ls.rafId = requestAnimationFrame((t) => gameLoop(ls, t));
   return ls;

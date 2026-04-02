@@ -19,6 +19,7 @@ import { syncRosters } from '@/game/roster-sync';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
+import type { LockstepSync } from '@/net/lockstep';
 import type { PhysicsManager } from '@/physics/physics-world';
 import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
@@ -29,6 +30,7 @@ import { checkAchievements } from '@/systems/achievements';
 import { type EntityKind, Faction } from '@/types';
 import { pruneGameEvents } from '@/ui/game-events';
 import * as store from '@/ui/store';
+import { multiplayerStalled } from '@/ui/store-multiplayer';
 import { checkEvacuation, createCheckpoint } from './checkpoint';
 import { beginSpectacle, tickSpectacle } from './game-end-spectacle';
 import { type DrawState, draw } from './game-renderer';
@@ -64,6 +66,8 @@ export interface GameLoopState extends DrawState {
   spectacleFrames: number;
   /** Whether spectacle has been initiated (prevents re-triggering). */
   spectacleStarted: boolean;
+  /** Multiplayer lockstep synchronizer (null in single-player). */
+  lockstep: LockstepSync | null;
 }
 
 /** Cycle game speed (1x -> 2x -> 3x -> 1x). */
@@ -101,12 +105,22 @@ export function gameLoop(state: GameLoopState, timestamp: number): void {
     const isSpectacle = w.gameEndSpectacleActive && !w.paused;
 
     if (isPlaying) {
-      for (let i = 0; i < w.gameSpeed && w.state === 'playing' && !w.paused; i++) {
-        updateLogic(state);
+      if (state.lockstep) {
+        state.lockstep.fillEmptyFrame();
+        if (state.lockstep.isFrameReady()) {
+          updateLogic(state);
+          state.lockstep.advance();
+          multiplayerStalled.value = false;
+        } else {
+          multiplayerStalled.value = state.lockstep.isStalled();
+        }
+      } else {
+        for (let i = 0; i < w.gameSpeed && w.state === 'playing' && !w.paused; i++) {
+          updateLogic(state);
+        }
       }
     }
 
-    // Spectacle phase: continue updating at slow speed for visual continuity
     if (isSpectacle) {
       if (!state.spectacleStarted) {
         state.spectacleStarted = true;
@@ -114,7 +128,6 @@ export function gameLoop(state: GameLoopState, timestamp: number): void {
         beginSpectacle(w);
       }
       state.spectacleFrames++;
-      // Run one logic tick per frame at reduced speed for visual continuity
       updateLogic(state);
       tickSpectacle(w, state.spectacleFrames);
     }
@@ -218,17 +231,12 @@ function updateLogic(state: GameLoopState): void {
     syncRosters(w);
   }
 
-  // Prune stale game events every 60 frames (~1 second)
-  if (w.frameCount % 60 === 0) {
-    pruneGameEvents(w.frameCount, 480);
-  }
+  if (w.frameCount % 60 === 0) pruneGameEvents(w.frameCount, 480);
 
-  // Ambient off-screen combat sound (every 90 frames)
   if (w.frameCount % 90 === 0 && w.combatZones.length > 0) {
     const margin = 500;
     let closest = margin;
     for (const z of w.combatZones) {
-      // Distance from viewport edge (0 if on-screen)
       const dx = Math.max(0, w.camX - z.x, z.x - (w.camX + w.viewWidth));
       const dy = Math.max(0, w.camY - z.y, z.y - (w.camY + w.viewHeight));
       const dist = Math.sqrt(dx * dx + dy * dy);
