@@ -245,6 +245,8 @@ export function startGameLoop(deps: {
     recorder: deps.recorder,
     syncUIStore: deps.syncUIStore,
     governor: deps.governor ?? null,
+    spectacleFrames: 0,
+    spectacleStarted: false,
   };
   ls.rafId = requestAnimationFrame((t) => gameLoop(ls, t));
   return ls;

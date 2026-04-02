@@ -6,12 +6,14 @@
  */
 
 import { CtrlGroups } from './ctrl-groups';
+import { EventFeed } from './EventFeed';
 import { Overlays } from './overlays';
 import { ProductionQueue } from './production-queue';
 import { TopBar } from './top-bar';
 import { UnitCommands } from './unit-commands';
 
 export { CtrlGroups, type CtrlGroupsProps } from './ctrl-groups';
+export { EventFeed } from './EventFeed';
 export { Overlays } from './overlays';
 export { ProductionQueue } from './production-queue';
 // Re-export sub-components for barrel access
@@ -69,6 +71,7 @@ export function HUD(props: HUDProps) {
       />
       <ProductionQueue />
       <Overlays />
+      <EventFeed />
       <CtrlGroups onCtrlGroupClick={props.onCtrlGroupClick} />
       <UnitCommands
         onIdleWorkerClick={props.onIdleWorkerClick}

@@ -1,51 +1,90 @@
 /**
  * TopBar Resources — Clams, twigs, pearls, and food display.
+ * Directional flash: green/gold on increase, red on decrease.
+ * Food flashes green/red on population change, orange at cap.
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   clams,
+  food,
   foodAtCap,
   foodDisplay,
+  lastFoodChange,
+  lastResourceChange,
   lowClams,
   lowTwigs,
+  maxFood,
   pearls,
   rateClams,
   rateTwigs,
   twigs,
 } from '../store';
 
+type FlashDir = '' | 'up' | 'down' | 'cap';
+
+function useDirectionalFlash(
+  currentValue: number,
+  threshold: number,
+  deltaFromSignal?: number,
+): FlashDir {
+  const prev = useRef(currentValue);
+  const [flash, setFlash] = useState<FlashDir>('');
+
+  useEffect(() => {
+    const delta = deltaFromSignal ?? currentValue - prev.current;
+    if (Math.abs(delta) >= threshold) {
+      setFlash(delta > 0 ? 'up' : 'down');
+      const timer = setTimeout(() => setFlash(''), 400);
+      prev.current = currentValue;
+      return () => clearTimeout(timer);
+    }
+    prev.current = currentValue;
+  }, [currentValue, deltaFromSignal, threshold]);
+
+  return flash;
+}
+
+function flashClass(dir: FlashDir): string {
+  if (dir === 'up') return 'animate-resource-flash-up';
+  if (dir === 'down') return 'animate-resource-flash-down';
+  if (dir === 'cap') return 'animate-food-flash-cap';
+  return '';
+}
+
 export function TopBarResources({ compact }: { compact: boolean }) {
   const clamsRate = rateClams.value;
   const twigsRate = rateTwigs.value;
 
-  const prevClams = useRef(clams.value);
-  const prevTwigs = useRef(twigs.value);
-  const [clamsFlash, setClamsFlash] = useState(false);
-  const [twigsFlash, setTwigsFlash] = useState(false);
-
   const currentClams = clams.value;
   const currentTwigs = twigs.value;
+  const currentPearls = pearls.value;
+  const currentFood = food.value;
+  const currentMaxFood = maxFood.value;
+
+  const resChange = lastResourceChange.value;
+  const foodChange = lastFoodChange.value;
+
+  const clamsFlash = useDirectionalFlash(currentClams, 5, resChange.clams);
+  const twigsFlash = useDirectionalFlash(currentTwigs, 5, resChange.twigs);
+  const pearlsFlash = useDirectionalFlash(currentPearls, 5, resChange.pearls);
+
+  // Food flash: directional + cap override
+  const foodDir = useDirectionalFlash(currentFood, 1, foodChange.delta);
+  const prevAtCap = useRef(foodAtCap.value);
+  const [foodFlash, setFoodFlash] = useState<FlashDir>('');
 
   useEffect(() => {
-    if (Math.abs(currentClams - prevClams.current) >= 20) {
-      setClamsFlash(true);
-      const timer = setTimeout(() => setClamsFlash(false), 400);
-      prevClams.current = currentClams;
+    if (foodAtCap.value && !prevAtCap.current) {
+      setFoodFlash('cap');
+      const timer = setTimeout(() => setFoodFlash(''), 400);
+      prevAtCap.current = foodAtCap.value;
       return () => clearTimeout(timer);
     }
-    prevClams.current = currentClams;
-  }, [currentClams]);
-
-  useEffect(() => {
-    if (Math.abs(currentTwigs - prevTwigs.current) >= 20) {
-      setTwigsFlash(true);
-      const timer = setTimeout(() => setTwigsFlash(false), 400);
-      prevTwigs.current = currentTwigs;
-      return () => clearTimeout(timer);
-    }
-    prevTwigs.current = currentTwigs;
-  }, [currentTwigs]);
+    prevAtCap.current = foodAtCap.value;
+    if (foodDir) setFoodFlash(foodDir);
+    else setFoodFlash('');
+  }, [foodDir, currentFood, currentMaxFood]);
 
   return (
     <div class="flex space-x-3 md:space-x-6">
@@ -65,7 +104,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${clamsFlash ? 'animate-resource-flash' : ''} ${lowClams.value ? 'animate-pulse' : ''}`}
+          class={`font-numbers font-bold ${flashClass(clamsFlash)} ${lowClams.value ? 'animate-pulse' : ''}`}
           style={{ color: lowClams.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
         >
           {clams}
@@ -104,7 +143,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${twigsFlash ? 'animate-resource-flash' : ''} ${lowTwigs.value ? 'animate-pulse' : ''}`}
+          class={`font-numbers font-bold ${flashClass(twigsFlash)} ${lowTwigs.value ? 'animate-pulse' : ''}`}
           style={{ color: lowTwigs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
         >
           {twigs}
@@ -129,7 +168,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
       </div>
 
       {/* Pearls */}
-      {pearls.value > 0 && (
+      {currentPearls > 0 && (
         <div class="flex items-center space-x-1 md:space-x-2">
           <div
             class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm"
@@ -144,7 +183,10 @@ export function TopBarResources({ compact }: { compact: boolean }) {
               Pearls:{' '}
             </span>
           )}
-          <span class="font-numbers font-bold" style={{ color: '#a5b4fc' }}>
+          <span
+            class={`font-numbers font-bold ${flashClass(pearlsFlash)}`}
+            style={{ color: '#a5b4fc' }}
+          >
             {pearls}
           </span>
         </div>
@@ -165,7 +207,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           </span>
         )}
         <span
-          class="font-numbers font-bold"
+          class={`font-numbers font-bold ${flashClass(foodFlash)}`}
           style={{ color: foodAtCap.value ? 'var(--pw-enemy)' : 'var(--pw-food)' }}
         >
           {foodDisplay}

@@ -163,7 +163,7 @@ function executeSniperAttack(
   if (world.warDrumsBuff.has(eid)) {
     sniperDmg = Math.round(sniperDmg * 1.15);
   }
-  audio.shoot();
+  audio.sniperShoot(ex);
   spawnProjectile(
     world,
     ex,
@@ -174,6 +174,7 @@ function executeSniperAttack(
     sniperDmg,
     eid,
     mult,
+    EntityKind.Sniper,
   );
 }
 
@@ -188,8 +189,19 @@ function executeCatapultAttack(
   hasSpatial: boolean,
   allTargetable: ArrayLike<number>,
 ): void {
-  audio.shoot();
-  spawnProjectile(world, ex, ey - 10, Position.x[tEnt], Position.y[tEnt], tEnt, dmg, eid);
+  audio.catapultShoot(ex);
+  spawnProjectile(
+    world,
+    ex,
+    ey - 10,
+    Position.x[tEnt],
+    Position.y[tEnt],
+    tEnt,
+    dmg,
+    eid,
+    1.0,
+    EntityKind.Catapult,
+  );
   const tx = Position.x[tEnt];
   const ty = Position.y[tEnt];
   const aoeRadius = 60;

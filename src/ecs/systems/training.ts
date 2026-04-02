@@ -31,6 +31,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { pushGameEvent } from '@/ui/game-events';
 import { spawnDustBurst } from '@/utils/particles';
 
 export function trainingSystem(world: GameWorld): void {
@@ -109,6 +110,9 @@ export function trainingSystem(world: GameWorld): void {
 
       // "{Unit Name} Ready" floating text near building
       const unitName = entityKindName(unitKind);
+
+      // Event feed
+      pushGameEvent(`${unitName} trained`, '#38bdf8', world.frameCount);
       world.floatingTexts.push({
         x: bx,
         y: by - 20,

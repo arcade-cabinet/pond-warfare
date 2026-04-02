@@ -265,7 +265,7 @@ export class Game {
       return;
     }
     const kind = EntityTypeTag.kind[this.world.selection[0]] as EntityKind;
-    audio.playSelectionVoice(kind, this.world.playerFaction);
+    audio.playGroupSelectionVoice(kind, this.world.playerFaction, this.world.selection.length);
   }
 
   getSprite(id: SpriteId): HTMLCanvasElement | undefined {

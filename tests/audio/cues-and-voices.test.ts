@@ -35,8 +35,8 @@ describe('AudioSystem – combat and outcome cues', () => {
     await vi.runAllTimersAsync();
     const defeatCalls = playAt.mock.calls.map((call) => call[0]);
 
-    expect(victoryCalls).toEqual([420, 560, 760]);
-    expect(defeatCalls).toEqual([340, 240, 160]);
+    expect(victoryCalls).toEqual([420, 560, 760, 880, 660, 880, 520, 660]);
+    expect(defeatCalls).toEqual([340, 240, 160, 120, 180, 100]);
   });
 });
 

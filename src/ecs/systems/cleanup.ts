@@ -114,4 +114,12 @@ export function cleanupSystem(world: GameWorld): void {
       world.corpses.splice(i, 1);
     }
   }
+
+  // --- Combat zone decay ---
+  for (let i = world.combatZones.length - 1; i >= 0; i--) {
+    world.combatZones[i].life--;
+    if (world.combatZones[i].life <= 0) {
+      world.combatZones.splice(i, 1);
+    }
+  }
 }

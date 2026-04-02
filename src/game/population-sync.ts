@@ -29,6 +29,12 @@ let _prevLowClams = false;
 let _prevLowTwigs = false;
 let _prevPeaceWarningPlayed = false;
 
+/** Previous resource values for detecting directional changes. */
+let _prevClams = 200;
+let _prevTwigs = 50;
+let _prevPearls = 0;
+let _prevFood = 0;
+
 /**
  * Sync population counts, timers, game-over stats, and related UI signals.
  * Returns computed values needed by other sync functions.
@@ -41,6 +47,22 @@ export function syncPopulationAndTimers(
   store.clams.value = w.resources.clams;
   store.twigs.value = w.resources.twigs;
   store.pearls.value = w.resources.pearls;
+
+  // Directional resource change tracking for HUD flash
+  const dClams = w.resources.clams - _prevClams;
+  const dTwigs = w.resources.twigs - _prevTwigs;
+  const dPearls = w.resources.pearls - _prevPearls;
+  if (dClams !== 0 || dTwigs !== 0 || dPearls !== 0) {
+    store.lastResourceChange.value = {
+      clams: dClams,
+      twigs: dTwigs,
+      pearls: dPearls,
+      frame: w.frameCount,
+    };
+  }
+  _prevClams = w.resources.clams;
+  _prevTwigs = w.resources.twigs;
+  _prevPearls = w.resources.pearls;
 
   // Resource income rate tracking: compute per-second deltas every 60 frames
   if (w.frameCount > 0 && w.frameCount % 60 === 0) {
@@ -78,7 +100,8 @@ export function syncPopulationAndTimers(
   }
 
   store.gameSpeed.value = w.gameSpeed;
-  store.gameState.value = w.state;
+  // Delay showing game-over UI until spectacle finishes
+  store.gameState.value = w.gameEndSpectacleActive ? 'playing' : w.state;
   store.paused.value = w.paused;
   store.attackMoveActive.value = w.attackMoveMode;
 
@@ -113,6 +136,13 @@ export function syncPopulationAndTimers(
 
   // --- Population, army, idle counts (delegated) ---
   const popResult = computePopulation(w);
+
+  // Food/population change tracking for HUD flash
+  const curFood = store.food.value;
+  if (curFood !== _prevFood) {
+    store.lastFoodChange.value = { delta: curFood - _prevFood, frame: w.frameCount };
+  }
+  _prevFood = curFood;
 
   // --- Peace timer display ---
   const peaceful = w.frameCount < w.peaceTimer;

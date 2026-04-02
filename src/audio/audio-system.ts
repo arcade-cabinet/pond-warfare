@@ -119,8 +119,7 @@ export class AudioSystem {
     this.musicMgr.applyMusicVolume();
   }
 
-  // ─── SFX Delegate Methods ──────────────────────────────────────
-
+  // ─── Simple SFX Delegates ──────────────────────────────────────
   chop(worldX?: number): void {
     this.sfxMgr.chop(worldX);
   }
@@ -129,14 +128,6 @@ export class AudioSystem {
   }
   build(worldX?: number): void {
     this.sfxMgr.build(worldX);
-  }
-  hit(worldX?: number): void {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.hit(worldX);
-  }
-  shoot(worldX?: number): void {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.shoot(worldX);
   }
   alert(): void {
     this.sfxMgr.alert();
@@ -189,12 +180,6 @@ export class AudioSystem {
   upgrade(): void {
     this.sfxMgr.upgrade();
   }
-  win(): void {
-    this.cueMgr.victoryMotif();
-  }
-  lose(): void {
-    this.cueMgr.defeatMotif();
-  }
   heal(worldX?: number): void {
     this.sfxMgr.heal(worldX);
   }
@@ -228,11 +213,32 @@ export class AudioSystem {
   pickup(worldX?: number): void {
     this.sfxMgr.pickup(worldX);
   }
-  playSelectionVoice(kind: EntityKind, faction: PlayableFaction): void {
-    this.voiceMgr.playSelectionVoice(kind, faction);
+  sniperHit(worldX?: number): void {
+    this.sfxMgr.sniperHit(worldX);
   }
-  playCommandVoice(kind: EntityKind, trigger: 'move' | 'attack' | 'gather'): void {
-    this.voiceMgr.playCommandVoice(kind, trigger);
+  catapultImpact(worldX?: number): void {
+    this.sfxMgr.catapultImpact(worldX);
+  }
+  towerHit(worldX?: number): void {
+    this.sfxMgr.towerHit(worldX);
+  }
+  deathMelee(worldX?: number): void {
+    this.sfxMgr.deathMelee(worldX);
+  }
+  deathRanged(worldX?: number): void {
+    this.sfxMgr.deathRanged(worldX);
+  }
+  tripleKill(): void {
+    this.sfxMgr.tripleKill();
+  }
+  rampage(): void {
+    this.sfxMgr.rampage();
+  }
+  unstoppable(): void {
+    this.sfxMgr.unstoppable();
+  }
+  offscreenCombat(volume: number): void {
+    this.sfxMgr.offscreenCombat(volume);
   }
   combatStinger(): void {
     this.cueMgr.combatStinger();
@@ -243,18 +249,57 @@ export class AudioSystem {
   defeatMotif(): void {
     this.cueMgr.defeatMotif();
   }
+  statTick(): void {
+    this.cueMgr.statTick();
+  }
+  statTotal(): void {
+    this.cueMgr.statTotal();
+  }
 
-  // ─── Music Delegate Methods ────────────────────────────────────
+  // ─── Combat SFX (with stinger) ────────────────────────────────
+  hit(worldX?: number): void {
+    this.cueMgr.combatStinger();
+    this.sfxMgr.hit(worldX);
+  }
+  shoot(worldX?: number): void {
+    this.cueMgr.combatStinger();
+    this.sfxMgr.shoot(worldX);
+  }
+  sniperShoot(worldX?: number): void {
+    this.cueMgr.combatStinger();
+    this.sfxMgr.sniperShoot(worldX);
+  }
+  catapultShoot(worldX?: number): void {
+    this.cueMgr.combatStinger();
+    this.sfxMgr.catapultShoot(worldX);
+  }
+  towerShoot(worldX?: number): void {
+    this.cueMgr.combatStinger();
+    this.sfxMgr.towerShoot(worldX);
+  }
+  win(): void {
+    this.cueMgr.victoryMotif();
+  }
+  lose(): void {
+    this.cueMgr.defeatMotif();
+  }
 
+  // ─── Voice / Music / Ambient Delegates ────────────────────────
+  playSelectionVoice(kind: EntityKind, faction: PlayableFaction): void {
+    this.voiceMgr.playSelectionVoice(kind, faction);
+  }
+  playGroupSelectionVoice(kind: EntityKind, faction: PlayableFaction, groupSize: number): void {
+    this.voiceMgr.playGroupSelectionVoice(kind, faction, groupSize);
+  }
+  playCommandVoice(kind: EntityKind, trigger: 'move' | 'attack' | 'gather'): void {
+    this.voiceMgr.playCommandVoice(kind, trigger);
+  }
   startMusic(peaceful: boolean): void {
     this.musicMgr.startMusic(peaceful);
   }
   stopMusic(): void {
     this.musicMgr.stopMusic();
   }
-
-  // ─── Ambient Delegate Methods ──────────────────────────────────
-
   startAmbient(): void {
     this.ambientMgr.startAmbient();
   }

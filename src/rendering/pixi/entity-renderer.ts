@@ -197,7 +197,14 @@ export function renderEntity(eid: number, frameCount: number): void {
   if (isBuilding && progress < 100) spr.alpha = 0.5 + progress / 200;
   if (isResource) {
     const maxAmount = def.resourceAmount ?? 1;
-    spr.alpha = 0.3 + 0.7 * Math.max(0, Resource.amount[eid] / maxAmount);
+    const resRatio = Math.max(0, Resource.amount[eid] / maxAmount);
+    spr.alpha = 0.3 + 0.7 * resRatio;
+    // Subtle pulse when resource is running low (< 20%)
+    if (resRatio > 0 && resRatio < 0.2) {
+      const pulse = 0.5 + 0.5 * Math.sin(frameCount * 0.15);
+      spr.alpha = Math.max(0.2, spr.alpha * (0.6 + 0.4 * pulse));
+      spr.tint = lerpTint(0xffffff, 0xff6600, 0.3 + 0.2 * pulse);
+    }
   }
 
   // Shadow

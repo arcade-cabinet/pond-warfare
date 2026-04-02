@@ -518,6 +518,67 @@ body {
   animation: resource-flash 0.4s ease-out;
 }
 
+/* Directional resource flash: green/gold pulse for increases */
+@keyframes resource-flash-up {
+  0% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+  30% {
+    transform: scale(1.3);
+    filter: brightness(1.6) drop-shadow(0 0 4px rgba(34, 197, 94, 0.6));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+}
+
+.animate-resource-flash-up {
+  animation: resource-flash-up 0.4s ease-out;
+}
+
+/* Directional resource flash: red pulse for decreases */
+@keyframes resource-flash-down {
+  0% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+  30% {
+    transform: scale(1.15);
+    filter: brightness(1.4) drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
+    color: #ef4444;
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+}
+
+.animate-resource-flash-down {
+  animation: resource-flash-down 0.4s ease-out;
+}
+
+/* Food counter flash: orange at cap */
+@keyframes food-flash-cap {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  30% {
+    transform: scale(1.2);
+    filter: brightness(1.4) drop-shadow(0 0 4px rgba(249, 115, 22, 0.6));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-food-flash-cap {
+  animation: food-flash-cap 0.4s ease-out;
+}
+
 /* Selection panel content transition */
 #selection-info > * {
   animation: panel-fade-in 0.15s ease-out;

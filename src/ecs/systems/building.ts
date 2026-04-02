@@ -27,6 +27,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { triggerBuildingComplete } from '@/rendering/animations';
 import { EntityKind, UnitState } from '@/types';
+import { pushGameEvent } from '@/ui/game-events';
 import { spawnParticle } from '@/utils/particles';
 
 export function buildingSystem(world: GameWorld): void {
@@ -130,6 +131,9 @@ export function buildingSystem(world: GameWorld): void {
 
           // Minimap ping on the completed building
           world.minimapPings.push({ x: bx, y: by, life: 120, maxLife: 120 });
+
+          // Event feed
+          pushGameEvent(`${buildingName} complete`, '#fbbf24', world.frameCount);
 
           world.stats.buildingsBuilt++;
           UnitStateMachine.state[eid] = UnitState.Idle;

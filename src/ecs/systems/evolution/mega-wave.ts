@@ -20,6 +20,8 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
+import { pushGameEvent } from '@/ui/game-events';
+import * as store from '@/ui/store';
 import { findPlayerLodge, getEnemyNests } from '../ai/helpers';
 import { markAsChampion, pickRandomUnlocked, sendToTarget, spawnDustParticles } from './helpers';
 
@@ -64,16 +66,28 @@ export function triggerMegaWave(world: GameWorld, waveNumber: number): void {
     spawnMultiplier = 2;
   }
 
-  // Announce
+  // Track wave number
+  world.waveNumber++;
+  store.waveNumber.value = world.waveNumber;
+
+  // Announce wave
+  const isBossWave = includesAlpha;
   world.floatingTexts.push({
     x: world.camX + world.viewWidth / 2,
     y: world.camY + 40,
-    text: `MEGA-WAVE: ${waveName}!`,
-    color: '#ef4444',
-    life: 240,
+    text: isBossWave ? `BOSS WAVE ${world.waveNumber}!` : `Wave ${world.waveNumber}: ${waveName}`,
+    color: isBossWave ? '#ef4444' : '#f59e0b',
+    life: isBossWave ? 300 : 240,
   });
-  world.shakeTimer = Math.max(world.shakeTimer, 20);
+  world.shakeTimer = Math.max(world.shakeTimer, isBossWave ? 30 : 20);
   audio.alert();
+
+  // Event feed
+  pushGameEvent(
+    isBossWave ? `BOSS WAVE ${world.waveNumber}!` : `Enemy wave ${world.waveNumber} incoming`,
+    '#ef4444',
+    world.frameCount,
+  );
 
   // Spawn units from all nests
   let championsToMark = 2;

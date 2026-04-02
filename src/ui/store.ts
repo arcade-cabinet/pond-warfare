@@ -8,6 +8,9 @@
 import { computed, signal } from '@preact/signals';
 import type { GameState, TooltipData } from '@/types';
 import type { RosterBuilding, RosterGroup } from './roster-types';
+import type { GameEvent as _GameEvent, FoodChange, ResourceChange } from './store-types';
+
+export type { FoodChange, GameEvent, ResourceChange } from './store-types';
 
 // ---- Resources ----
 export const clams = signal(200);
@@ -17,6 +20,14 @@ export const food = signal(0);
 export const maxFood = signal(0);
 export const rateClams = signal(0);
 export const rateTwigs = signal(0);
+
+export const lastResourceChange = signal<ResourceChange>({
+  clams: 0,
+  twigs: 0,
+  pearls: 0,
+  frame: -999,
+});
+export const lastFoodChange = signal<FoodChange>({ delta: 0, frame: -999 });
 
 // ---- Enemy economy ----
 export const enemyClams = signal(0);
@@ -249,26 +260,21 @@ export const evacuationActive = signal(false);
 export const checkpointCount = signal(0);
 
 // ---- Active abilities (tech tree) ----
-/** Rally Cry available (researched) */
 export const rallyCryAvailable = signal(false);
-/** Rally Cry cooldown seconds remaining (0 = ready) */
 export const rallyCryCooldown = signal(0);
-/** Rally Cry active (buff is currently applied) */
 export const rallyCryActive = signal(false);
-/** Pond Blessing available (researched and not yet used) */
 export const pondBlessingAvailable = signal(false);
-/** Tidal Surge available (researched and not yet used) */
 export const tidalSurgeAvailable = signal(false);
 
-// ---- FPS counter ----
+// ---- Game event feed / wave tracking ----
+export const gameEvents = signal<_GameEvent[]>([]);
+export const waveNumber = signal(0);
+
+// ---- FPS / Campaign ----
 export const fpsDisplay = signal(0);
 export const fpsCounterVisible = signal(false);
-
-// ---- Campaign ----
 export const campaignOpen = signal(false);
-/** Active campaign mission ID, or empty string for freeplay. */
 export const campaignMissionId = signal('');
-/** Per-objective completion statuses (objective ID -> boolean). */
 export const campaignObjectiveStatuses = signal<Record<string, boolean>>({});
 
 export const speedLabel = computed(() => `${gameSpeed.value}x`);

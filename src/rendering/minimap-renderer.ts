@@ -167,39 +167,66 @@ export function drawMinimap(
       mc.globalAlpha = alpha;
     }
 
-    // Choose color
-    if (kind === EntityKind.Cattail) {
-      mc.fillStyle = PALETTE.reedGreen;
-    } else if (kind === EntityKind.Clambed) {
-      mc.fillStyle = PALETTE.clamShell;
-    } else if (faction === Faction.Player) {
+    // --- Resource nodes: colored dots based on type ---
+    if (isResource) {
+      if (kind === EntityKind.Clambed)
+        mc.fillStyle = '#facc15'; // gold
+      else if (kind === EntityKind.Cattail)
+        mc.fillStyle = '#4ade80'; // green
+      else if (kind === EntityKind.PearlBed)
+        mc.fillStyle = '#c084fc'; // purple
+      else mc.fillStyle = PALETTE.clamShell;
+      mc.fillRect(ex * sx - 1, ey * sy - 1, 2, 2);
+      mc.globalAlpha = 1;
+      continue;
+    }
+
+    // --- Buildings: colored rectangles ---
+    const isBuilding = BUILDING_KINDS.has(kind);
+    if (isBuilding) {
+      // PredatorNest: pulsing/blinking red dots
+      if (kind === EntityKind.PredatorNest) {
+        const pulse = 0.5 + 0.5 * Math.sin(_world.frameCount * 0.1);
+        mc.globalAlpha = 0.4 + pulse * 0.6;
+        mc.fillStyle = '#7f1d1d';
+        const pSize = 4 + pulse * 2;
+        mc.fillRect(ex * sx - pSize / 2, ey * sy - pSize / 2, pSize, pSize);
+        mc.globalAlpha = 1;
+      } else {
+        mc.fillStyle = faction === Faction.Player ? '#38bdf8' : '#ef4444';
+        mc.fillRect(ex * sx - 2, ey * sy - 2, 5, 4);
+      }
+      continue;
+    }
+
+    // --- Units: colored dots ---
+    if (faction === Faction.Player) {
       mc.fillStyle = '#38bdf8';
-    } else if (kind === EntityKind.PredatorNest) {
-      mc.fillStyle = '#7f1d1d';
     } else if (faction === Faction.Enemy) {
       mc.fillStyle = '#ef4444';
     } else {
       mc.fillStyle = '#fff';
     }
-
-    const dotSize = def.isBuilding ? 4 : 2;
-
-    // PredatorNest: pulsing/blinking red dots to draw player attention
-    if (kind === EntityKind.PredatorNest) {
-      const pulse = 0.5 + 0.5 * Math.sin(_world.frameCount * 0.1);
-      mc.globalAlpha = 0.4 + pulse * 0.6;
-      const pSize = dotSize + pulse * 2;
-      mc.fillRect(ex * sx - pSize / 2, ey * sy - pSize / 2, pSize, pSize);
-      mc.globalAlpha = 1;
-    } else {
-      mc.fillRect(ex * sx - dotSize / 2, ey * sy - dotSize / 2, dotSize, dotSize);
-    }
-
-    // Reset alpha after drawing resource dots
-    if (isResource) {
-      mc.globalAlpha = 1;
-    }
+    mc.fillRect(ex * sx - 1, ey * sy - 1, 2, 2);
   }
+
+  // Draw combat zone indicators (blinking red dots)
+  for (const zone of _world.combatZones) {
+    const zAlpha = 0.4 + 0.6 * Math.abs(Math.sin(_world.frameCount * 0.15));
+    const zx = zone.x * sx;
+    const zy = zone.y * sy;
+    mc.globalAlpha = zAlpha * (zone.life / 120);
+    mc.fillStyle = '#ef4444';
+    mc.beginPath();
+    mc.arc(zx, zy, 3, 0, Math.PI * 2);
+    mc.fill();
+    mc.strokeStyle = '#ef4444';
+    mc.lineWidth = 1;
+    mc.beginPath();
+    mc.arc(zx, zy, 5 + Math.sin(_world.frameCount * 0.1) * 2, 0, Math.PI * 2);
+    mc.stroke();
+  }
+  mc.globalAlpha = 1;
 
   // Draw animated radar-style pings
   for (const p of minimapPings) {

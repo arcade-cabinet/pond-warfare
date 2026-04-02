@@ -51,6 +51,12 @@ export function movementSystem(world: GameWorld): void {
 
     const state = UnitStateMachine.state[eid] as UnitState;
 
+    // Idle bob: subtle sine wave for units not moving (alive ambient feel)
+    if (state === UnitState.Idle) {
+      Sprite.yOffset[eid] = Math.sin(world.frameCount * 0.03 + eid * 0.7) * 1.5;
+      continue;
+    }
+
     // Only process entities in a movement state with a target position
     if (!MOVE_STATES.has(state)) continue;
 

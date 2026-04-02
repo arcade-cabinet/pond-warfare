@@ -29,6 +29,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { checkResourceDepletion } from './gathering/depletion-warning';
 import { applyPassiveIncome } from './gathering/passive-income';
 
 export function gatheringSystem(world: GameWorld): void {
@@ -204,6 +205,9 @@ export function gatheringSystem(world: GameWorld): void {
       audio.pickup(Position.x[eid]);
       // Track stats
       world.stats.resourcesGathered += gatherAmt;
+
+      // Depletion warning: "Running low!" at 20%, "Depleted!" at 0%
+      checkResourceDepletion(world, tEnt, resKind);
 
       if (Resource.amount[tEnt] <= 0) {
         // Resource is depleted - will be handled by health/cleanup system.

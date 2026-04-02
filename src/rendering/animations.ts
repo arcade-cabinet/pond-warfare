@@ -141,6 +141,53 @@ export function triggerAttackLunge(eid: number, targetEid: number): void {
   void targetEid;
 }
 
+/**
+ * Trigger a hit recoil: briefly offset the target away from the attacker
+ * using a yOffset spring (3px push, spring back over ~4 frames).
+ * We piggyback on entityScales to track the recoil animation state.
+ */
+export function triggerHitRecoil(
+  eid: number,
+  attackerX: number,
+  attackerY: number,
+  targetX: number,
+  targetY: number,
+): void {
+  const dx = targetX - attackerX;
+  const dy = targetY - attackerY;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  // Recoil direction normalized, applied as scale distortion
+  const recoilX = (dx / dist) * 0.15;
+  const recoilY = (dy / dist) * 0.15;
+
+  const existing = activeAnimations.get(eid);
+  if (existing) existing.pause();
+
+  const scale: EntityScale = { scaleX: 1 + recoilX, scaleY: 1 + recoilY };
+  entityScales.set(eid, scale);
+
+  const anim = animate(scale, {
+    scaleX: [1 + recoilX, 1.0],
+    scaleY: [1 + recoilY, 1.0],
+    duration: 120,
+    ease: 'outQuad',
+    onUpdate: () => {
+      entityScales.set(eid, { scaleX: scale.scaleX, scaleY: scale.scaleY });
+    },
+    onComplete: () => {
+      activeAnimations.delete(eid);
+      entityScales.delete(eid);
+    },
+  });
+
+  activeAnimations.set(eid, anim);
+  // Suppress unused parameters — directional data used above
+  void attackerX;
+  void attackerY;
+  void targetX;
+  void targetY;
+}
+
 /** Remove animation state for a dead entity. */
 export function cleanupEntityAnimation(eid: number): void {
   const existing = activeAnimations.get(eid);
@@ -152,20 +199,65 @@ export function cleanupEntityAnimation(eid: number): void {
 }
 
 /**
- * Animate game-over stat lines with stagger.
- * Each element fades in and slides up with a delay.
+ * Animate game-over stat lines with stagger, counter-up numbers, and tick sounds.
+ * Each stat fades in, slides up, and its number counts from 0 to final value.
+ * @param onTick - called for each stat reveal (tick sound)
+ * @param onTotal - called for the final stat (total sound)
  */
-export function animateGameOverStats(container: HTMLElement): void {
+export function animateGameOverStats(
+  container: HTMLElement,
+  onTick?: () => void,
+  onTotal?: () => void,
+): void {
   const lines = container.querySelectorAll('[data-stat-line]');
   if (lines.length === 0) return;
 
-  animate(Array.from(lines), {
+  const lineArr = Array.from(lines) as HTMLElement[];
+
+  // Stagger fade-in + slide
+  animate(lineArr, {
     opacity: [0, 1],
     translateY: [20, 0],
-    delay: stagger(150, { start: 300 }),
+    delay: stagger(200, { start: 400 }),
     duration: 400,
     ease: 'outCubic',
   });
+
+  // Counter-up animation for numeric values in each stat line
+  for (let i = 0; i < lineArr.length; i++) {
+    const el = lineArr[i];
+    const text = el.textContent ?? '';
+    const isLast = i === lineArr.length - 1;
+    const revealDelay = 400 + i * 200;
+
+    // Find the numeric portion: "Kills: 42" -> "42", "Time: 3 days, 5 hours" -> skip
+    const match = text.match(/^(.+?:\s*)(\d+)(.*)$/);
+    if (match) {
+      const [, prefix, numStr, suffix] = match;
+      const finalVal = parseInt(numStr, 10);
+      const counter = { val: 0 };
+
+      setTimeout(() => {
+        if (onTick && !isLast) onTick();
+        if (onTotal && isLast) onTotal();
+
+        animate(counter, {
+          val: finalVal,
+          duration: 500,
+          ease: 'outCubic',
+          onUpdate: () => {
+            el.textContent = `${prefix}${Math.round(counter.val)}${suffix}`;
+          },
+        });
+      }, revealDelay);
+    } else {
+      // Non-numeric stat (e.g. "Time: 3 days...") — just play sound on reveal
+      setTimeout(() => {
+        if (isLast && onTotal) onTotal();
+        else if (onTick) onTick();
+      }, revealDelay);
+    }
+  }
 }
 
 /**

@@ -75,19 +75,41 @@ export function healthSystem(world: GameWorld): void {
   if (world.frameCount % 60 === 0 && world.state === 'playing') {
     let playerLodgeAlive = false;
     let nestsRemaining = false;
+    let lodgeX = 0;
+    let lodgeY = 0;
+    let lastNestX = 0;
+    let lastNestY = 0;
     for (let i = 0; i < allLiving.length; i++) {
       const eid = allLiving[i];
       if (Health.current[eid] <= 0) continue;
       const kind = EntityTypeTag.kind[eid] as EntityKind;
       const faction = FactionTag.faction[eid] as Faction;
-      if (kind === EntityKind.Lodge && faction === Faction.Player) playerLodgeAlive = true;
-      if (kind === EntityKind.PredatorNest) nestsRemaining = true;
+      if (kind === EntityKind.Lodge && faction === Faction.Player) {
+        playerLodgeAlive = true;
+        lodgeX = Position.x[eid];
+        lodgeY = Position.y[eid];
+      }
+      if (kind === EntityKind.PredatorNest) {
+        nestsRemaining = true;
+        lastNestX = Position.x[eid];
+        lastNestY = Position.y[eid];
+      }
     }
     if (!playerLodgeAlive) {
       world.state = 'lose';
+      world.gameEndFrame = world.frameCount;
+      world.gameEndFocusX = lodgeX;
+      world.gameEndFocusY = lodgeY;
+      world.gameEndPrevSpeed = world.gameSpeed;
+      world.gameEndSpectacleActive = true;
       audio.lose();
     } else if (!nestsRemaining) {
       world.state = 'win';
+      world.gameEndFrame = world.frameCount;
+      world.gameEndFocusX = lastNestX;
+      world.gameEndFocusY = lastNestY;
+      world.gameEndPrevSpeed = world.gameSpeed;
+      world.gameEndSpectacleActive = true;
       audio.win();
     }
   }

@@ -62,6 +62,40 @@ export class VoiceManager {
     this.playPalette(palette[role]);
   }
 
+  /**
+   * Group-size-aware selection voice.
+   * - 1 unit: normal selection voice
+   * - 2-5 units: leader voice at +40% volume
+   * - 6+ units: leader voice at +40% volume + formation ready stinger
+   */
+  playGroupSelectionVoice(kind: EntityKind, faction: PlayableFaction, groupSize: number): void {
+    const palette = faction === 'predator' ? PREDATOR_PALETTE : OTTER_PALETTE;
+    const role = this.roleFor(kind, faction);
+    const base = palette[role];
+
+    if (groupSize <= 1) {
+      this.playPalette(base);
+      return;
+    }
+
+    // Louder for groups
+    const volumeScale = 1.4;
+    const boosted: VoiceStep[] = base.map((s) => ({
+      ...s,
+      volume: s.volume * volumeScale,
+    }));
+    this.playPalette(boosted);
+
+    // Formation ready stinger for large groups (6+)
+    if (groupSize >= 6) {
+      const stinger: VoiceStep[] = [
+        { freq: 400, type: 'triangle', duration: 0.08, volume: 0.03, slide: 600, delay: 200 },
+        { freq: 500, type: 'sine', duration: 0.06, volume: 0.025, slide: 700, delay: 280 },
+      ];
+      this.playPalette(stinger);
+    }
+  }
+
   /** Play a command acknowledgement voice (move/attack/gather). */
   playCommandVoice(kind: EntityKind, trigger: 'move' | 'attack' | 'gather'): void {
     const role = this.roleFor(kind, 'otter');

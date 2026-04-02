@@ -2,12 +2,12 @@
  * Game Over Overlay
  *
  * Victory/Defeat overlay with animated stat reveal (anime.js stagger),
- * performance rating, confetti for victory, and Play Again button.
- * Victory: gold/amber tones with Cinzel title.
- * Defeat: crimson tones. Stats on parchment-style card.
+ * counter-up numbers with tick sounds, performance rating, confetti for
+ * victory, "Play Again" (same settings) and "Main Menu" buttons.
  */
 
 import { useEffect, useRef } from 'preact/hooks';
+import { audio } from '@/audio/audio-system';
 import { animateGameOverStats } from '@/rendering/animations';
 import {
   gameState,
@@ -17,6 +17,7 @@ import {
   goStatLines,
   goTitle,
   goTitleColor,
+  menuState,
 } from './store';
 
 export interface GameOverProps {
@@ -75,8 +76,11 @@ export function GameOverBanner(props: GameOverProps) {
 
   useEffect(() => {
     if (state !== 'playing' && statsContainerRef.current) {
-      animateGameOverStats(statsContainerRef.current);
-      // Focus the restart button when dialog opens
+      animateGameOverStats(
+        statsContainerRef.current,
+        () => audio.statTick(),
+        () => audio.statTotal(),
+      );
       if (restartButtonRef.current) {
         restartButtonRef.current.focus();
       }
@@ -88,6 +92,10 @@ export function GameOverBanner(props: GameOverProps) {
   const lines = goStatLines.value;
   const stars = goRating.value;
   const isVictory = state === 'win';
+
+  const handleMainMenu = () => {
+    menuState.value = 'main';
+  };
 
   return (
     <div
@@ -162,19 +170,33 @@ export function GameOverBanner(props: GameOverProps) {
         Map Seed: {goMapSeed.value}
       </p>
 
-      <button
-        ref={restartButtonRef}
-        type="button"
-        id="restart-btn"
-        class="action-btn mt-6 px-8 py-3 font-heading text-lg rounded-lg"
-        style={{
-          color: isVictory ? 'var(--pw-clam)' : 'var(--pw-accent-bright)',
-          borderColor: isVictory ? 'var(--pw-otter)' : 'var(--pw-accent)',
-        }}
-        onClick={props.onRestart}
-      >
-        Play Again
-      </button>
+      {/* Action buttons */}
+      <div class="flex gap-4 mt-6">
+        <button
+          ref={restartButtonRef}
+          type="button"
+          id="restart-btn"
+          class="action-btn px-8 py-3 font-heading text-lg rounded-lg"
+          style={{
+            color: isVictory ? 'var(--pw-clam)' : 'var(--pw-accent-bright)',
+            borderColor: isVictory ? 'var(--pw-otter)' : 'var(--pw-accent)',
+          }}
+          onClick={props.onRestart}
+        >
+          Play Again
+        </button>
+        <button
+          type="button"
+          class="action-btn px-8 py-3 font-heading text-lg rounded-lg"
+          style={{
+            color: 'var(--pw-text-secondary)',
+            borderColor: 'var(--pw-text-muted)',
+          }}
+          onClick={handleMainMenu}
+        >
+          Main Menu
+        </button>
+      </div>
     </div>
   );
 }

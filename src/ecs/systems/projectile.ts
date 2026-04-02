@@ -12,10 +12,12 @@
  */
 
 import { addComponent, addEntity, hasComponent, query, removeEntity } from 'bitecs';
+import { audio } from '@/audio/audio-system';
 import { PROJECTILE_SPEED } from '@/constants';
 import { Health, IsProjectile, Position, ProjectileData } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
+import { EntityKind } from '@/types';
 
 /**
  * Helper to spawn a projectile entity. Used by combat system for snipers and towers.
@@ -30,6 +32,7 @@ export function spawnProjectile(
   damage: number,
   owner: number,
   multiplier: number = 1.0,
+  sourceKind: number = -1,
 ): number {
   const eid = addEntity(world.ecs);
 
@@ -45,6 +48,7 @@ export function spawnProjectile(
   ProjectileData.ownerEntity[eid] = owner;
   ProjectileData.speed[eid] = PROJECTILE_SPEED;
   ProjectileData.damageMultiplier[eid] = multiplier;
+  ProjectileData.sourceKind[eid] = sourceKind;
 
   addComponent(world.ecs, eid, IsProjectile);
 
@@ -90,6 +94,17 @@ export function projectileSystem(world: GameWorld): void {
         const owner = ProjectileData.ownerEntity[eid];
         const mult = ProjectileData.damageMultiplier[eid] ?? 1.0;
         takeDamage(world, targetEnt, ProjectileData.damage[eid], owner, mult);
+      }
+
+      // Play differentiated impact sound based on source unit kind
+      const kind = ProjectileData.sourceKind[eid];
+      if (kind === EntityKind.Sniper) {
+        audio.sniperHit(tx);
+      } else if (kind === EntityKind.Catapult) {
+        audio.catapultImpact(tx);
+        world.shakeTimer = Math.max(world.shakeTimer, 5);
+      } else if (kind === EntityKind.Tower) {
+        audio.towerHit(tx);
       }
 
       // Remove projectile entity

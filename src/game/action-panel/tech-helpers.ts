@@ -22,6 +22,7 @@ import { cancelTrain } from '@/input/selection';
 import type { ReplayRecorder } from '@/replay';
 import { type EntityKind, Faction } from '@/types';
 import type { QueueItemDef } from '@/ui/action-panel';
+import { pushGameEvent } from '@/ui/game-events';
 
 /** Apply Sage passive research discount to a tech cost. */
 export function discountedTechCost(
@@ -75,6 +76,7 @@ export function purchaseTech(w: GameWorld, techId: TechId): boolean {
 
   // --- Research completion ceremony ---
   audio.researchComplete();
+  pushGameEvent(`${upgrade.name} researched`, '#eab308', w.frameCount);
 
   // Floating announcement at camera center
   const cx = w.camX + w.viewWidth / 2;
