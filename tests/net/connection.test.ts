@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   deserializeCommand,
   deserializeCommands,
@@ -26,6 +26,35 @@ describe('generateRoomCode', () => {
     for (let i = 0; i < 100; i++) codes.add(generateRoomCode());
     // With 32^6 possibilities, 100 codes should all be unique
     expect(codes.size).toBe(100);
+  });
+
+  it('uses crypto.getRandomValues when available', () => {
+    const spy = vi.spyOn(globalThis.crypto, 'getRandomValues');
+    generateRoomCode();
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  it('falls back to Math.random when getRandomValues is unavailable', () => {
+    const original = globalThis.crypto.getRandomValues;
+    // Temporarily remove getRandomValues to trigger fallback
+    Object.defineProperty(globalThis.crypto, 'getRandomValues', {
+      value: undefined,
+      writable: true,
+      configurable: true,
+    });
+    const mathSpy = vi.spyOn(Math, 'random');
+
+    const code = generateRoomCode();
+    expect(code).toHaveLength(6);
+    expect(mathSpy).toHaveBeenCalled();
+
+    mathSpy.mockRestore();
+    Object.defineProperty(globalThis.crypto, 'getRandomValues', {
+      value: original,
+      writable: true,
+      configurable: true,
+    });
   });
 });
 

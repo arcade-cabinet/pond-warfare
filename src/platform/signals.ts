@@ -97,8 +97,13 @@ function updateSignals(): void {
     screenClass.value = 'large';
   }
 
-  // Can dock panels: wide enough AND not phone
-  canDockPanels.value = w > 1100 && formFactor.value !== 'phone';
+  // Can dock panels:
+  // - Touch devices (tablets) dock at width >= 768
+  // - Non-touch (laptops/desktops) dock at width > 1100
+  // - Phones never dock regardless of width
+  canDockPanels.value =
+    formFactor.value !== 'phone' &&
+    ((screen.pointerCoarse && w >= 768) || (!screen.pointerCoarse && w > 1100));
 
   // Sync CSS custom properties
   syncCSSProperties();
@@ -111,7 +116,13 @@ function updateSignals(): void {
 function syncCSSProperties(): void {
   const root = document.documentElement.style;
   root.setProperty('--pw-touch-target', inputMode.value === 'touch' ? '44px' : '32px');
-  root.setProperty('--pw-panel-width', canDockPanels.value ? '300px' : '0px');
+  // Responsive panel width: 250px for medium screens (768-1100), 300px for large
+  const panelWidth = canDockPanels.value
+    ? screenClass.value === 'large'
+      ? '300px'
+      : '250px'
+    : '0px';
+  root.setProperty('--pw-panel-width', panelWidth);
   root.setProperty('--pw-screen-class', screenClass.value);
 }
 

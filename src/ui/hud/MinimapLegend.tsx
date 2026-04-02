@@ -1,8 +1,10 @@
 /**
- * MinimapLegend — "?" button that shows a minimap color legend on hover/tap.
+ * MinimapLegend — "?" button that shows a minimap color legend.
+ * US12: Works with both hover (desktop) and tap (mobile).
+ * Tap "?" to toggle, tap outside to close.
  */
 
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 
 interface LegendEntry {
   color: string;
@@ -15,20 +17,33 @@ const LEGEND_ITEMS: LegendEntry[] = [
   { color: 'var(--pw-enemy)', label: 'Enemy building' },
   { color: 'var(--pw-clam)', label: 'Clam resource' },
   { color: 'var(--pw-twig)', label: 'Twig resource' },
-  { color: '#e0b0ff', label: 'Pearl resource' },
-  { color: '#ef4444', label: 'Combat zone', blink: true },
+  { color: 'var(--pw-pearl)', label: 'Pearl resource' },
+  { color: 'var(--pw-hp-low)', label: 'Combat zone', blink: true },
 ];
 
 export function MinimapLegend() {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close legend when tapping outside
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: PointerEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handler);
+    return () => document.removeEventListener('pointerdown', handler);
+  }, [open]);
 
   return (
-    <div class="relative">
+    <div class="relative" ref={containerRef}>
       <button
         type="button"
         class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer"
         style={{
-          background: 'rgba(0,0,0,0.5)',
+          background: 'var(--pw-bar-track)',
           color: 'var(--pw-text-muted)',
           border: '1px solid var(--pw-border)',
         }}
@@ -43,7 +58,7 @@ export function MinimapLegend() {
         <div
           class="absolute bottom-6 left-0 z-50 rounded p-2 flex flex-col gap-1 whitespace-nowrap"
           style={{
-            background: 'rgba(13, 33, 40, 0.92)',
+            background: 'var(--pw-overlay-dark)',
             border: '1px solid var(--pw-border)',
           }}
         >

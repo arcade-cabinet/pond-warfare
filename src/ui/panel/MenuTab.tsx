@@ -5,6 +5,7 @@
  * tech tree button with researchable-count badge, compact toggles.
  */
 
+import { GameButton } from '../components/GameButton';
 import {
   openAchievements,
   openKeyboardRef,
@@ -47,72 +48,73 @@ export function MenuTab() {
       </div>
 
       {/* Tech Tree — prominent */}
-      <button
-        type="button"
-        class="action-btn w-full py-2 rounded font-heading font-bold text-xs tracking-wider min-h-[44px] flex items-center justify-center gap-2"
-        style={{ color: 'var(--pw-accent)' }}
+      <GameButton
+        label="TECH TREE"
         onClick={openTechTree}
-      >
-        &#x1F4DC; TECH TREE
-      </button>
+        variant="secondary"
+        class="w-full"
+        testId="menu-tech-tree-btn"
+      />
 
       {/* Save / Load row */}
       <div class="flex gap-1">
-        <button
-          type="button"
-          class="action-btn flex-1 py-2 rounded font-bold text-[10px] min-h-[44px]"
-          style={{ color: 'var(--pw-success)' }}
+        <GameButton
+          label="Save"
           onClick={quickSave}
-        >
-          &#x1F4BE; Save
-        </button>
-        <button
-          type="button"
-          class={`action-btn flex-1 py-2 rounded font-bold text-[10px] min-h-[44px] ${hasSave ? '' : 'opacity-35 cursor-not-allowed'}`}
-          style={{ color: hasSave ? 'var(--pw-warning)' : 'var(--pw-text-muted)' }}
-          disabled={!hasSave}
+          variant="secondary"
+          size="sm"
+          class="flex-1"
+          testId="menu-save-btn"
+        />
+        <GameButton
+          label="Load"
           onClick={quickLoad}
-        >
-          &#x1F4C2; Load
-        </button>
+          variant="secondary"
+          size="sm"
+          disabled={!hasSave}
+          class="flex-1"
+          testId="menu-load-btn"
+        />
       </div>
 
       {/* Settings + Keyboard Ref row */}
       <div class="flex gap-1">
-        <button
-          type="button"
-          class="action-btn flex-1 py-2 rounded font-bold text-[10px] min-h-[44px]"
+        <GameButton
+          label="Settings"
           onClick={openSettings}
-        >
-          &#x2699; Settings
-        </button>
-        <button
-          type="button"
-          class="action-btn flex-1 py-2 rounded font-bold text-[10px] min-h-[44px]"
+          variant="ghost"
+          size="sm"
+          class="flex-1"
+          testId="menu-settings-btn"
+        />
+        <GameButton
+          label="Keys"
           onClick={openKeyboardRef}
-        >
-          &#x2328; Keys
-        </button>
+          variant="ghost"
+          size="sm"
+          class="flex-1"
+          testId="menu-keys-btn"
+        />
       </div>
 
       {/* Stats row */}
       <div class="flex gap-1">
-        <button
-          type="button"
-          class="action-btn flex-1 py-1.5 rounded font-bold text-[9px] min-h-[40px]"
-          style={{ color: 'var(--pw-warning)' }}
+        <GameButton
+          label="Achieve"
           onClick={openAchievements}
-        >
-          &#x1F3C6; Achieve
-        </button>
-        <button
-          type="button"
-          class="action-btn flex-1 py-1.5 rounded font-bold text-[9px] min-h-[40px]"
-          style={{ color: 'var(--pw-accent)' }}
+          variant="ghost"
+          size="sm"
+          class="flex-1"
+          testId="menu-achieve-btn"
+        />
+        <GameButton
+          label="Ranks"
           onClick={openLeaderboard}
-        >
-          &#x1F4CA; Ranks
-        </button>
+          variant="ghost"
+          size="sm"
+          class="flex-1"
+          testId="menu-ranks-btn"
+        />
       </div>
 
       {/* Toggle */}

@@ -28,6 +28,7 @@ import {
   settingsOpen,
   unlocksOpen,
 } from './store';
+import { puzzleSelectOpen, survivalSelectOpen } from './store-gameplay';
 import { multiplayerMenuOpen } from './store-multiplayer';
 import { NextUnlockHint, UnlockProgress } from './unlock-progress';
 
@@ -41,27 +42,22 @@ export function MainMenu() {
   const padRefs = useRef<(HTMLDivElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Yuka otter on mount
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-
     const w = el.clientWidth;
     const h = el.clientHeight;
     const otter = new MenuOtter({ width: w, height: h }, w * 0.75, h * 0.7);
     otterAI.current = otter;
-
     const pads = new MenuPads({ width: w, height: h }, 10);
     padsSystem.current = pads;
-
     let rafId = 0;
     const syncDOM = () => {
       const img = otterRef.current;
       if (img && otter) {
         img.style.left = `${otter.x - 50}px`;
         img.style.top = `${otter.y - 25}px`;
-        const deg = (otter.rotation * 180) / Math.PI - 90;
-        img.style.transform = `rotate(${deg}deg)`;
+        img.style.transform = `rotate(${(otter.rotation * 180) / Math.PI - 90}deg)`;
       }
       for (let i = 0; i < pads.pads.length; i++) {
         const padEl = padRefs.current[i];
@@ -74,11 +70,9 @@ export function MainMenu() {
       }
       rafId = requestAnimationFrame(syncDOM);
     };
-
     otter.start();
     pads.start();
     rafId = requestAnimationFrame(syncDOM);
-
     const onResize = () => {
       if (el) {
         otter.resize(el.clientWidth, el.clientHeight);
@@ -86,7 +80,6 @@ export function MainMenu() {
       }
     };
     window.addEventListener('resize', onResize);
-
     return () => {
       otter.destroy();
       pads.destroy();
@@ -103,11 +96,9 @@ export function MainMenu() {
     const rect = el.getBoundingClientRect();
     otterAI.current.setPointer(e.clientX - rect.left, e.clientY - rect.top);
   }, []);
-
   const handlePointerLeave = useCallback(() => {
     otterAI.current?.clearPointer();
   }, []);
-
   const handleOtterClick = useCallback((e: MouseEvent) => {
     e.stopPropagation();
     const el = containerRef.current;
@@ -115,7 +106,6 @@ export function MainMenu() {
     const rect = el.getBoundingClientRect();
     otterAI.current.poke(e.clientX - rect.left, e.clientY - rect.top);
   }, []);
-
   const handleQuickPlay = useCallback(() => {
     selectedDifficulty.value = 'normal';
     permadeathEnabled.value = false;
@@ -127,6 +117,10 @@ export function MainMenu() {
     menuState.value = 'playing';
   }, []);
 
+  const set = (sig: { value: boolean }) => () => {
+    sig.value = true;
+  };
+
   return (
     <div
       ref={containerRef}
@@ -136,11 +130,9 @@ export function MainMenu() {
       onPointerLeave={handlePointerLeave}
     >
       <MenuBackground />
-
-      {/* ---- Dynamic floating lily pads ---- */}
       {padsSystem.current && <MenuLilyPads pads={padsSystem.current.pads} padRefs={padRefs} />}
 
-      {/* ---- Swimming otter (Yuka-steered, clickable) ---- */}
+      {/* Swimming otter */}
       <img
         src={`${UI}/Otter shadow_goes above background but below ripples.png`}
         alt=""
@@ -170,9 +162,7 @@ export function MainMenu() {
         onClick={handleOtterClick}
       />
 
-      {/* ==== CONTENT ==== */}
-
-      {/* ---- Title ---- */}
+      {/* Title */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'mb-1' : 'mb-4'}`}>
         <h1 class="mb-0 tracking-widest uppercase text-center">
           <span
@@ -204,12 +194,12 @@ export function MainMenu() {
         <NextUnlockHint />
       </div>
 
-      {/* ---- Unlock progress ---- */}
+      {/* Unlock progress */}
       <div class="relative z-10 flex justify-center mb-2">
         <UnlockProgress />
       </div>
 
-      {/* ---- Menu buttons (teal bars) ---- */}
+      {/* Menu buttons */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
         <MenuButton label="Quick Play" wide onClick={handleQuickPlay} />
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
@@ -233,63 +223,27 @@ export function MainMenu() {
           />
         </div>
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-          <MenuButton
-            label="Co-op"
-            onClick={() => {
-              multiplayerMenuOpen.value = true;
-            }}
-          />
-          <MenuButton
-            label="Campaign"
-            onClick={() => {
-              campaignOpen.value = true;
-            }}
-          />
-          <MenuButton
-            label="Settings"
-            onClick={() => {
-              settingsOpen.value = true;
-            }}
-          />
+          <MenuButton label="Puzzles" onClick={set(puzzleSelectOpen)} />
+          <MenuButton label="Survival" onClick={set(survivalSelectOpen)} />
+          <MenuButton label="Co-op" onClick={set(multiplayerMenuOpen)} />
+          <MenuButton label="Campaign" onClick={set(campaignOpen)} />
+        </div>
+        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+          <MenuButton label="Settings" onClick={set(settingsOpen)} />
+          <MenuButton label="Leaderboard" onClick={set(leaderboardOpen)} />
+          <MenuButton label="Achievements" onClick={set(achievementsOpen)} />
         </div>
         <div class={`flex items-center ${compact ? 'gap-1' : 'gap-2'} flex-wrap justify-center`}>
-          <MenuButton
-            label="Leaderboard"
-            onClick={() => {
-              leaderboardOpen.value = true;
-            }}
-          />
-          <MenuButton
-            label="Achievements"
-            onClick={() => {
-              achievementsOpen.value = true;
-            }}
-          />
-          <MenuButton
-            label="Unlocks"
-            onClick={() => {
-              unlocksOpen.value = true;
-            }}
-          />
-          <MenuButton
-            label="Cosmetics"
-            onClick={() => {
-              cosmeticsOpen.value = true;
-            }}
-          />
-          <MenuButton
-            label="History"
-            onClick={() => {
-              matchHistoryOpen.value = true;
-            }}
-          />
+          <MenuButton label="Unlocks" onClick={set(unlocksOpen)} />
+          <MenuButton label="Cosmetics" onClick={set(cosmeticsOpen)} />
+          <MenuButton label="History" onClick={set(matchHistoryOpen)} />
         </div>
       </div>
 
-      {/* ---- Version ---- */}
+      {/* Version */}
       {!compact && (
         <div class="relative z-10 mt-3 mb-4">
-          <span class="font-game text-[10px]" style={{ color: 'rgba(140, 180, 170, 0.5)' }}>
+          <span class="font-game text-[10px]" style={{ color: 'var(--pw-text-muted)' }}>
             v1.0 &middot; Defend the Pond
           </span>
         </div>

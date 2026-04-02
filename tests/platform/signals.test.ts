@@ -103,15 +103,16 @@ describe('Device Signals', () => {
     mod._testUpdateSignals();
     expect(mod.screenClass.value).toBe('large');
   });
-  it('canDockPanels true when width > 1100 and not phone', async () => {
+  it('canDockPanels true for laptop when width > 1100', async () => {
     mockClassify.mockReturnValue('laptop');
     setViewport(1200, 800);
     const mod = await loadSignals();
     mod._testUpdateSignals();
     expect(mod.canDockPanels.value).toBe(true);
   });
-  it('canDockPanels false when width <= 1100', async () => {
-    mockClassify.mockReturnValue('tablet');
+  it('canDockPanels false for non-touch when width <= 1100', async () => {
+    // Non-touch (pointerCoarse=false) requires > 1100 to dock
+    mockClassify.mockReturnValue('laptop');
     setViewport(1000, 768);
     const mod = await loadSignals();
     mod._testUpdateSignals();
@@ -120,6 +121,47 @@ describe('Device Signals', () => {
   it('canDockPanels false for phone even if wide', async () => {
     mockClassify.mockReturnValue('phone');
     setViewport(1200, 800);
+    const mod = await loadSignals();
+    mod._testUpdateSignals();
+    expect(mod.canDockPanels.value).toBe(false);
+  });
+  // --- Tablet docking (US4) ---
+  it('canDockPanels true for touch tablet at 768px (iPad Mini landscape)', async () => {
+    (globalThis as any).__pointerCoarse = true;
+    mockClassify.mockReturnValue('tablet');
+    setViewport(768, 1024);
+    const mod = await loadSignals();
+    mod._testUpdateSignals();
+    expect(mod.canDockPanels.value).toBe(true);
+  });
+  it('canDockPanels true for touch tablet at 1024px (iPad Mini)', async () => {
+    (globalThis as any).__pointerCoarse = true;
+    mockClassify.mockReturnValue('tablet');
+    setViewport(1024, 768);
+    const mod = await loadSignals();
+    mod._testUpdateSignals();
+    expect(mod.canDockPanels.value).toBe(true);
+  });
+  it('canDockPanels true for touch tablet at 1180px (iPad Air)', async () => {
+    (globalThis as any).__pointerCoarse = true;
+    mockClassify.mockReturnValue('tablet');
+    setViewport(1180, 820);
+    const mod = await loadSignals();
+    mod._testUpdateSignals();
+    expect(mod.canDockPanels.value).toBe(true);
+  });
+  it('canDockPanels false for touch phone at 375px', async () => {
+    (globalThis as any).__pointerCoarse = true;
+    mockClassify.mockReturnValue('phone');
+    setViewport(375, 812);
+    const mod = await loadSignals();
+    mod._testUpdateSignals();
+    expect(mod.canDockPanels.value).toBe(false);
+  });
+  it('canDockPanels false for touch at 600px (large phone)', async () => {
+    (globalThis as any).__pointerCoarse = true;
+    mockClassify.mockReturnValue('phone');
+    setViewport(600, 900);
     const mod = await loadSignals();
     mod._testUpdateSignals();
     expect(mod.canDockPanels.value).toBe(false);
@@ -146,13 +188,23 @@ describe('Device Signals', () => {
     mod._testUpdateSignals();
     expect(document.documentElement.style.getPropertyValue('--pw-touch-target')).toBe('32px');
   });
-  it('CSS --pw-panel-width is 300px when docked, 0px otherwise', async () => {
+  it('CSS --pw-panel-width is 300px for large docked, 250px for medium docked, 0px undocked', async () => {
+    const mod = await loadSignals();
+
+    // Large screen: 300px
     mockClassify.mockReturnValue('laptop');
     setViewport(1400, 900);
-    const mod = await loadSignals();
     mod._testUpdateSignals();
     expect(document.documentElement.style.getPropertyValue('--pw-panel-width')).toBe('300px');
 
+    // Medium screen (touch tablet at 1024px): 250px
+    (globalThis as any).__pointerCoarse = true;
+    mockClassify.mockReturnValue('tablet');
+    setViewport(1024, 768);
+    mod._testUpdateSignals();
+    expect(document.documentElement.style.getPropertyValue('--pw-panel-width')).toBe('250px');
+
+    // Undocked (phone): 0px
     mockClassify.mockReturnValue('phone');
     setViewport(600, 400);
     mod._testUpdateSignals();

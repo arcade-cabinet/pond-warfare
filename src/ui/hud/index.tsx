@@ -19,6 +19,8 @@ export { ProductionQueue } from './production-queue';
 // Re-export sub-components for barrel access
 export { TopBar, type TopBarProps } from './top-bar';
 export { UnitCommands, type UnitCommandsProps } from './unit-commands';
+export { WeatherEffects } from './WeatherEffects';
+export { WeatherIndicator } from './WeatherIndicator';
 
 /** Format time-of-day (in minutes) to HH:MM string. */
 export function formatTime(timeOfDay: number): string {

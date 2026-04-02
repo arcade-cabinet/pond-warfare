@@ -3,6 +3,7 @@
 import { useState } from 'preact/hooks';
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import type { EntityKind } from '@/types';
+import { GameButton } from '../components/GameButton';
 import type { RosterBuilding } from '../roster-types';
 import { hideTooltip, showTooltip } from '../tooltip-helpers';
 import { QueueManager } from './QueueManager';
@@ -103,17 +104,13 @@ export function BuildingRow({ building, onSelect, onTrain, onCancelTrain }: Buil
       {building.canTrain.length > 0 && (
         <div class="mt-1.5">
           {!pickerOpen ? (
-            <button
-              type="button"
-              class="action-btn text-[9px] font-bold px-2 py-1 rounded min-h-[32px]"
-              data-testid="train-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setPickerOpen(true);
-              }}
-            >
-              + Train
-            </button>
+            <GameButton
+              label="+ Train"
+              onClick={() => setPickerOpen(true)}
+              variant="secondary"
+              size="sm"
+              testId="train-btn"
+            />
           ) : (
             <TrainPicker
               canTrain={building.canTrain}
