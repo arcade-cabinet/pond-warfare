@@ -210,8 +210,6 @@ describe('Staggered Gathering Rhythm', () => {
     // unless eids are 30-apart in modular arithmetic
     let g1Ticked = false;
     let g2Ticked = false;
-    let _bothAtOnce = false;
-
     for (let frame = 0; frame < 60; frame++) {
       world.frameCount = frame;
       vi.clearAllMocks();
@@ -222,7 +220,7 @@ describe('Staggered Gathering Rhythm', () => {
 
       if (chopCalled && !mineCalled) g1Ticked = true;
       if (mineCalled && !chopCalled) g2Ticked = true;
-      if (chopCalled && mineCalled) _bothAtOnce = true;
+      // Track simultaneous ticks (both on same frame = old behavior)
     }
 
     // At least one gatherer should tick independently of the other
