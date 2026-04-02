@@ -13,8 +13,6 @@ import { multiplayerDisconnected, multiplayerMode } from '../store-multiplayer';
 const RECONNECT_SECONDS = 30;
 
 export function DisconnectOverlay() {
-  if (!multiplayerDisconnected.value) return null;
-
   const [timeLeft, setTimeLeft] = useState(RECONNECT_SECONDS);
 
   useEffect(() => {
@@ -44,6 +42,8 @@ export function DisconnectOverlay() {
     multiplayerMode.value = false;
     menuState.value = 'main';
   };
+
+  if (!multiplayerDisconnected.value) return null;
 
   return (
     <div class="modal-overlay" data-testid="disconnect-overlay">

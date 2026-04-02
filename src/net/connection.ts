@@ -18,8 +18,8 @@ export interface PeerConnection {
   room: Room;
   roomCode: string;
   selfId: string;
-  sendCmd: (msg: { frame: number; commands: SerializedCommand[] }) => Promise<undefined[]>;
-  sendMeta: (msg: NetMessage) => Promise<undefined[]>;
+  sendCmd: (msg: { frame: number; commands: SerializedCommand[] }) => void;
+  sendMeta: (msg: NetMessage) => void;
   onCmd: (
     handler: (msg: { frame: number; commands: SerializedCommand[] }, peerId: string) => void,
   ) => void;
@@ -84,14 +84,18 @@ export function createRoom(roomCode: string): PeerConnection {
     room,
     roomCode,
     selfId,
-    sendCmd: (msg) => sendCmd(msg),
-    sendMeta: (msg) => sendMeta(msg),
+    sendCmd: (msg) => {
+      sendCmd(msg);
+    },
+    sendMeta: (msg) => {
+      sendMeta(msg);
+    },
     onCmd: (handler) => receiveCmd(handler),
     onMeta: (handler) => {
       receiveMeta((msg, peerId) => {
         // Handle ping/pong internally
         if (msg.type === 'ping') {
-          sendMeta({ type: 'pong', timestamp: msg.timestamp }).catch(() => {});
+          sendMeta({ type: 'pong', timestamp: msg.timestamp });
           return;
         }
         if (msg.type === 'pong') {

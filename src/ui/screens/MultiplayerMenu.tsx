@@ -168,10 +168,15 @@ function JoinPanel(props: {
 }) {
   return (
     <div class="flex flex-col items-center gap-3">
-      <label class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
+      <label
+        htmlFor="room-code-input"
+        class="font-game text-xs"
+        style={{ color: 'var(--pw-text-secondary)' }}
+      >
         Enter room code:
       </label>
       <input
+        id="room-code-input"
         type="text"
         maxLength={6}
         value={props.joinCode}

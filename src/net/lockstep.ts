@@ -65,7 +65,7 @@ export class LockstepSync {
     const targetFrame = this.currentFrame + this.inputDelay;
     this.localBuffer.set(targetFrame, commands);
     if (this.connection) {
-      this.connection.sendCmd({ frame: targetFrame, commands }).catch(() => {});
+      this.connection.sendCmd({ frame: targetFrame, commands });
     }
   }
 
