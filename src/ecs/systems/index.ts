@@ -12,5 +12,6 @@ export { gatheringSystem } from './gathering';
 export { healthSystem, takeDamage } from './health';
 export { movementSystem } from './movement';
 export { projectileSystem, spawnProjectile } from './projectile';
+export { randomEventsSystem, resetRandomEvents } from './random-events';
 export { trainingSystem } from './training';
 export { rankFromKills, veterancySystem } from './veterancy';

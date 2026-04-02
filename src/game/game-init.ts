@@ -9,6 +9,7 @@ import { resetBarkState } from '@/config/barks';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Position, Selectable } from '@/ecs/components';
 import { initFogOfWar } from '@/ecs/systems/fog-of-war';
+import { resetRandomEvents } from '@/ecs/systems/random-events';
 import type { GameWorld } from '@/ecs/world';
 import { setZoom } from '@/game/camera';
 import { installLifecycleListeners } from '@/game/game-lifecycle';
@@ -105,6 +106,7 @@ export function resetSession(world: GameWorld): void {
   resetBarkState();
   resetAchievementMatchState();
   resetMatchUpdateGuard();
+  resetRandomEvents();
   loadAchievements().catch(() => {});
   loadUnlocks().catch(() => {});
   initAdvisorState(world).catch(() => {});

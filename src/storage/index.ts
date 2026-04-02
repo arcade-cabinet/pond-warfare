@@ -20,3 +20,8 @@ export {
   updatePlayerProfile,
   updateSave,
 } from './database';
+export {
+  getMatchHistory,
+  type MatchRecord,
+  saveMatchRecord,
+} from './match-history';

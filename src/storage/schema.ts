@@ -100,11 +100,48 @@ export async function initDatabase(): Promise<void> {
       hero_units_earned INTEGER DEFAULT 0,
       wins_commander_alive INTEGER DEFAULT 0,
       total_pearls INTEGER DEFAULT 0,
-      wins_zero_losses INTEGER DEFAULT 0
+      wins_zero_losses INTEGER DEFAULT 0,
+      total_xp INTEGER DEFAULT 0,
+      player_level INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS match_history (
+      id TEXT PRIMARY KEY,
+      date TEXT NOT NULL,
+      result TEXT NOT NULL,
+      difficulty TEXT NOT NULL,
+      scenario TEXT NOT NULL DEFAULT 'standard',
+      commander TEXT NOT NULL DEFAULT 'marshal',
+      duration INTEGER DEFAULT 0,
+      kills INTEGER DEFAULT 0,
+      units_lost INTEGER DEFAULT 0,
+      buildings_built INTEGER DEFAULT 0,
+      techs_researched INTEGER DEFAULT 0,
+      xp_earned INTEGER DEFAULT 0
     );
   `);
 
+  // Migration: add columns to existing player_profile rows
+  await safeAddColumn(db, 'player_profile', 'total_xp', 'INTEGER DEFAULT 0');
+  await safeAddColumn(db, 'player_profile', 'player_level', 'INTEGER DEFAULT 0');
+
   _initialized = true;
+}
+
+/**
+ * Safely add a column to a table. Ignores errors if the column already exists.
+ */
+async function safeAddColumn(
+  conn: SQLiteDBConnection,
+  table: string,
+  column: string,
+  typedef: string,
+): Promise<void> {
+  try {
+    await conn.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${typedef}`);
+  } catch {
+    // Column already exists — safe to ignore
+  }
 }
 
 export function isDatabaseReady(): boolean {

@@ -80,6 +80,8 @@ export function UnlocksPanel() {
     wins_commander_alive: 0,
     total_pearls: 0,
     wins_zero_losses: 0,
+    total_xp: 0,
+    player_level: 0,
   };
 
   const filteredUnlocks =

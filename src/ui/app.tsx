@@ -30,6 +30,7 @@ import { KeyboardReference } from './keyboard-reference';
 import { LoadingScreen } from './LoadingScreen';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { MainMenu } from './main-menu';
+import { MatchHistoryPanel } from './match-history-panel';
 import { NewGameModal } from './new-game-modal';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
 import { CommandPanel } from './panel/CommandPanel';
@@ -114,6 +115,7 @@ export function App({ onMount }: AppProps) {
         {store.leaderboardOpen.value && <LeaderboardPanel />}
         {store.unlocksOpen.value && <UnlocksPanel />}
         {store.cosmeticsOpen.value && <CosmeticsPanel />}
+        {store.matchHistoryOpen.value && <MatchHistoryPanel />}
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {

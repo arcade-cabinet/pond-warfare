@@ -1,14 +1,13 @@
 /** Main Menu — Diegetic Pond Interface with floating lily pads and Yuka-steered otter. */
 
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef } from 'preact/hooks';
 import { screenClass } from '@/platform';
-import { getPlayerProfile } from '@/storage';
-import { getRank, type RankInfo } from '@/systems/leaderboard';
 import { MenuBackground } from './menu-background';
 import { MenuButton } from './menu-button';
 import { MenuLilyPads } from './menu-lily-pads';
 import { MenuOtter } from './menu-otter';
 import { MenuPads } from './menu-pads';
+import { MenuPlayerStatus } from './menu-player-status';
 import { generateName, generateSeed } from './new-game/presets';
 import {
   achievementsOpen,
@@ -22,29 +21,24 @@ import {
   gameSeed,
   hasSaveGame,
   leaderboardOpen,
+  matchHistoryOpen,
   menuState,
   permadeathEnabled,
   selectedDifficulty,
   settingsOpen,
   unlocksOpen,
 } from './store';
+import { NextUnlockHint, UnlockProgress } from './unlock-progress';
 
 const UI = '/pond-warfare/assets/ui';
 
 export function MainMenu() {
-  const [rank, setRank] = useState<RankInfo | null>(null);
   const compact = screenClass.value !== 'large';
   const otterRef = useRef<HTMLImageElement>(null);
   const otterAI = useRef<MenuOtter | null>(null);
   const padsSystem = useRef<MenuPads | null>(null);
   const padRefs = useRef<(HTMLDivElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    getPlayerProfile()
-      .then((p) => setRank(getRank(p.total_wins)))
-      .catch(() => {});
-  }, []);
 
   // Initialize Yuka otter on mount
   useEffect(() => {
@@ -205,17 +199,13 @@ export function MainMenu() {
             </span>
           </div>
         )}
-        <p
-          class="font-heading text-xs md:text-sm mt-1 tracking-wider text-center"
-          style={{ color: 'rgba(180,220,210,0.8)' }}
-        >
-          Defend the Pond. Conquer the Wild.
-          {rank && (
-            <span class="ml-2" title={rank.label} style={{ color: rank.color }}>
-              {rank.icon} {rank.label}
-            </span>
-          )}
-        </p>
+        <MenuPlayerStatus compact={compact} />
+        <NextUnlockHint />
+      </div>
+
+      {/* ---- Unlock progress ---- */}
+      <div class="relative z-10 flex justify-center mb-2">
+        <UnlockProgress />
       </div>
 
       {/* ---- Menu buttons (teal bars) ---- */}
@@ -278,6 +268,12 @@ export function MainMenu() {
             label="Cosmetics"
             onClick={() => {
               cosmeticsOpen.value = true;
+            }}
+          />
+          <MenuButton
+            label="History"
+            onClick={() => {
+              matchHistoryOpen.value = true;
             }}
           />
         </div>

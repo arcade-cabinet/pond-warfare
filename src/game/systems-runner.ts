@@ -26,6 +26,7 @@ import { healthSystem } from '@/ecs/systems/health';
 import { moraleSystem } from '@/ecs/systems/morale';
 import { movementSystem } from '@/ecs/systems/movement';
 import { projectileSystem } from '@/ecs/systems/projectile';
+import { randomEventsSystem } from '@/ecs/systems/random-events';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
 import { trainingSystem } from '@/ecs/systems/training';
 import { veterancySystem } from '@/ecs/systems/veterancy';
@@ -68,5 +69,6 @@ export function runSystems(
   veterancySystem(world);
   fogOfWarSystem(world);
   branchCosmeticsSystem(world);
+  randomEventsSystem(world);
   cleanupSystem(world);
 }

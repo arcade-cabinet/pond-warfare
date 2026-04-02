@@ -10,6 +10,7 @@ import { DAY_FRAMES } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
 import { deleteSave, getLatestSave } from '@/storage';
 import * as store from '@/ui/store';
+import { processGameOverRewards, resetRewardsGuard } from './game-over-rewards';
 
 /** Module-level guard so permadeath deletion only fires once per loss. */
 let _permadeathDeleteFired = false;
@@ -17,6 +18,7 @@ let _permadeathDeleteFired = false;
 /** Reset the permadeath guard (call at the start of a new game). */
 export function resetPermadeathGuard(): void {
   _permadeathDeleteFired = false;
+  resetRewardsGuard();
 }
 
 /** Sync game-over stats to UI store; handle permadeath save deletion. */
@@ -114,4 +116,9 @@ export function syncGameOverStats(world: GameWorld): void {
         /* best-effort cleanup */
       });
   }
+
+  // Process XP, match record, and daily challenge (async, best-effort)
+  processGameOverRewards(w).catch(() => {
+    /* best-effort — don't block game-over display */
+  });
 }
