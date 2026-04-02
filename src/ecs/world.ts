@@ -13,6 +13,7 @@ import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
 import type { TechState } from '@/config/tech-tree';
+import type { WeatherState } from '@/config/weather';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import type {
   Corpse,
@@ -250,4 +251,18 @@ export interface GameWorld {
 
   // Engineer temporary bridges: { col, row, revertFrame, originalTerrain }[]
   engineerBridges: { col: number; row: number; revertFrame: number; original: number }[];
+
+  // --- v2.0.0 ---
+
+  /** Dynamic weather system state. */
+  weather: WeatherState;
+
+  /** Berserker rage: tracks entities in berserker HP drain combat state. */
+  berserkerCombatFrames: Map<number, number>;
+
+  /** Shrine abilities: tracks which shrines have been used (entity ID set). */
+  shrineUsed: Set<number>;
+
+  /** Wall gate ownership: maps gate entity ID to faction for pass-through logic. */
+  wallGateFaction: Map<number, number>;
 }

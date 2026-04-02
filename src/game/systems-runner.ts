@@ -9,6 +9,8 @@ import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
 import { autoBuildSystem } from '@/ecs/systems/auto-build';
 import { autoRetreatSystem } from '@/ecs/systems/auto-retreat';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
+import { berserkerSystem } from '@/ecs/systems/berserker';
+import { branchCosmeticsSystem } from '@/ecs/systems/branch-cosmetics';
 import { buildingSystem } from '@/ecs/systems/building';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { collisionSystem } from '@/ecs/systems/collision';
@@ -27,6 +29,8 @@ import { projectileSystem } from '@/ecs/systems/projectile';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
 import { trainingSystem } from '@/ecs/systems/training';
 import { veterancySystem } from '@/ecs/systems/veterancy';
+import { wallGateSystem } from '@/ecs/systems/wall-gate';
+import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import type { PhysicsManager } from '@/physics/physics-world';
 
@@ -36,6 +40,7 @@ export function runSystems(
   physicsManager: PhysicsManager,
   throttleAI: boolean,
 ): void {
+  weatherSystem(world);
   dayNightSystem(world);
   diverStealthSystem(world);
   movementSystem(world);
@@ -45,6 +50,7 @@ export function runSystems(
   engineerSystem(world);
   combatSystem(world);
   commanderPassivesSystem(world);
+  berserkerSystem(world);
   projectileSystem(world);
   trainingSystem(world);
   if (!throttleAI) aiSystem(world);
@@ -56,9 +62,11 @@ export function runSystems(
   moraleSystem(world);
   autoRetreatSystem(world);
   shamanHealSystem(world);
+  wallGateSystem(world);
   advisorSystem(world);
   campaignSystem(world);
   veterancySystem(world);
   fogOfWarSystem(world);
+  branchCosmeticsSystem(world);
   cleanupSystem(world);
 }

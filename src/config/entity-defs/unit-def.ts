@@ -15,5 +15,6 @@ export interface UnitDef {
   foodCost?: number;
   clamCost?: number;
   twigCost?: number;
+  pearlCost?: number;
   foodProvided?: number;
 }

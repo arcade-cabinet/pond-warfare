@@ -17,7 +17,7 @@ export enum TerrainType {
 /** Speed multiplier for each terrain type. 0 = impassable. */
 const SPEED_MULTIPLIERS: Record<TerrainType, number> = {
   [TerrainType.Grass]: 1.0,
-  [TerrainType.Water]: 0, // impassable (Swimmers/Divers bypass)
+  [TerrainType.Water]: 0, // impassable (Swimmers/Divers/Warships bypass)
   [TerrainType.Shallows]: 0.5,
   [TerrainType.Mud]: 0.75,
   [TerrainType.Rocks]: 0, // impassable
@@ -29,6 +29,12 @@ const WATER_TRAVERSABLE_KINDS = new Set([
   28, // EntityKind.Swimmer
   32, // EntityKind.Fish
   33, // EntityKind.Diver
+  40, // EntityKind.OtterWarship
+]);
+
+/** Entity kinds that move faster on water than land (Warship: 1.5 water, 0.5 land). */
+const WATER_PREFERRED_KINDS = new Set([
+  40, // EntityKind.OtterWarship
 ]);
 
 /** Entity kinds that ignore ALL terrain speed modifiers (fly over everything). */
@@ -107,13 +113,21 @@ export class TerrainGrid {
 
   /**
    * Get effective speed multiplier for an entity at a world position.
-   * Flying units ignore terrain. Swimmers/Divers can traverse water.
+   * Flying units ignore terrain. Swimmers/Divers/Warships can traverse water.
+   * Warships are faster on water (1.0) and slower on land (0.33).
    */
   getSpeedMultiplier(worldX: number, worldY: number, entityKind: number): number {
     // Flying units ignore all terrain penalties
     if (FLYING_KINDS.has(entityKind)) return 1.0;
 
     const type = this.getAt(worldX, worldY);
+
+    // Warships: faster on water, very slow on land
+    if (WATER_PREFERRED_KINDS.has(entityKind)) {
+      if (type === TerrainType.Water || type === TerrainType.Shallows) return 1.0;
+      return 0.33; // Warships on land are very slow
+    }
+
     if (type === TerrainType.Water && WATER_TRAVERSABLE_KINDS.has(entityKind)) {
       return 0.5; // Swimmers/Divers cross water at shallows speed
     }

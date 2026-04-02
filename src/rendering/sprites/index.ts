@@ -51,6 +51,7 @@ import {
   drawSwimmer,
   drawTrapper,
 } from './units';
+import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } from './v2-entities';
 
 /** Names used internally to map to SpriteId enum values. */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
@@ -89,6 +90,12 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'commander', id: SpriteId.Commander },
   { name: 'frog', id: SpriteId.Frog },
   { name: 'fish', id: SpriteId.Fish },
+  // v2.0.0
+  { name: 'dock', id: SpriteId.Dock },
+  { name: 'otter_warship', id: SpriteId.OtterWarship },
+  { name: 'berserker', id: SpriteId.Berserker },
+  { name: 'wall_gate', id: SpriteId.WallGate },
+  { name: 'shrine', id: SpriteId.Shrine },
 ];
 
 const LARGE_TYPES = new Set([
@@ -107,6 +114,11 @@ const LARGE_TYPES = new Set([
   'alpha_predator',
   'fishing_hut',
   'herbalist_hut',
+  // v2.0.0 large sprites
+  'dock',
+  'otter_warship',
+  'wall_gate',
+  'shrine',
 ]);
 
 /** Map sprite type names to their draw functions. */
@@ -146,6 +158,12 @@ const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   commander: drawCommander,
   frog: drawFrog,
   fish: drawFish,
+  // v2.0.0
+  dock: drawDock,
+  otter_warship: drawOtterWarship,
+  berserker: drawBerserker,
+  wall_gate: drawWallGate,
+  shrine: drawShrine,
 };
 
 /**

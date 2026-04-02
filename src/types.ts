@@ -60,6 +60,12 @@ export enum EntityKind {
   BurrowingWorm = 36,
   FlyingHeron = 37,
   Market = 38,
+  // v2.0.0 entities
+  Dock = 39,
+  OtterWarship = 40,
+  Berserker = 41,
+  WallGate = 42,
+  Shrine = 43,
 }
 
 /** Entity kinds that represent buildings (get larger vision radius, etc.). */
@@ -75,6 +81,9 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
   EntityKind.FishingHut,
   EntityKind.HerbalistHut,
   EntityKind.Market,
+  EntityKind.Dock,
+  EntityKind.WallGate,
+  EntityKind.Shrine,
 ]);
 
 export enum ResourceType {
@@ -87,7 +96,7 @@ export enum ResourceType {
 /**
  * Sprite identifiers for all procedurally-generated sprites.
  *
- * IMPORTANT: Values 0–38 intentionally mirror EntityKind values for entity
+ * IMPORTANT: Values 0–43 intentionally mirror EntityKind values for entity
  * sprites so entity kinds can be directly used as sprite IDs.
  *
  * Bones and Rubble are non-entity visual sprites (corpse/ruin overlays) and
@@ -133,9 +142,15 @@ export enum SpriteId {
   BurrowingWorm = 36,
   FlyingHeron = 37,
   Market = 38,
+  // v2.0.0 sprites
+  Dock = 39,
+  OtterWarship = 40,
+  Berserker = 41,
+  WallGate = 42,
+  Shrine = 43,
   // Non-entity visual sprites
-  Bones = 40,
-  Rubble = 41,
+  Bones = 50,
+  Rubble = 51,
 }
 
 export interface GameResources {

@@ -63,6 +63,12 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.BurrowingWorm]: SpriteId.BurrowingWorm,
   [EntityKind.FlyingHeron]: SpriteId.FlyingHeron,
   [EntityKind.Market]: SpriteId.Market,
+  // v2.0.0
+  [EntityKind.Dock]: SpriteId.Dock,
+  [EntityKind.OtterWarship]: SpriteId.OtterWarship,
+  [EntityKind.Berserker]: SpriteId.Berserker,
+  [EntityKind.WallGate]: SpriteId.WallGate,
+  [EntityKind.Shrine]: SpriteId.Shrine,
 };
 
 export function spawnEntity(
@@ -129,11 +135,12 @@ export function spawnEntity(
     }
     Building.hasRally[eid] = 0;
 
-    // Training queue for lodge, burrow, armory, and predator nests (enemy training)
+    // Training queue for lodge, burrow, armory, dock, and predator nests (enemy training)
     if (
       kind === EntityKind.Lodge ||
       kind === EntityKind.Burrow ||
       kind === EntityKind.Armory ||
+      kind === EntityKind.Dock ||
       kind === EntityKind.PredatorNest
     ) {
       addComponent(world.ecs, eid, TrainingQueue);

@@ -9,6 +9,7 @@ import { createWorld } from 'bitecs';
 import { createAdvisorState } from '@/advisors/types';
 import { YukaManager } from '@/ai/yuka-manager';
 import { createInitialTechState } from '@/config/tech-tree';
+import { createWeatherState } from '@/config/weather';
 import {
   ENEMY_STARTING_CLAMS,
   ENEMY_STARTING_TWIGS,
@@ -40,6 +41,8 @@ export interface CommanderModifiers {
   passiveCatapultRangeBonus: number;
   passiveLightningDamage: number;
 }
+
+const defaultSeed = Math.floor(Math.random() * 2147483647);
 
 /** Create a fresh GameWorld with all default values. */
 export function createGameWorld(): GameWorld {
@@ -112,7 +115,7 @@ export function createGameWorld(): GameWorld {
     resourceDensityMod: 1.0,
     enemyEconomyMod: 1.0,
     enemyAggressionLevel: 'normal',
-    mapSeed: Math.floor(Math.random() * 2147483647),
+    mapSeed: defaultSeed,
     placingBuilding: null,
     attackMoveMode: false,
     idleWorkerIdx: 0,
@@ -198,5 +201,10 @@ export function createGameWorld(): GameWorld {
     wormBurrowTimers: new Map(),
     lastWormSpawnFrame: 0,
     engineerBridges: [],
+    // v2.0.0
+    weather: createWeatherState(defaultSeed, 0),
+    berserkerCombatFrames: new Map(),
+    shrineUsed: new Set(),
+    wallGateFaction: new Map(),
   };
 }
