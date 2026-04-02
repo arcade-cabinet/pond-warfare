@@ -107,7 +107,7 @@ export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
       {/* Backdrop */}
       <div
         class="absolute inset-0"
-        style={{ background: 'rgba(12, 26, 31, 0.8)' }}
+        style={{ background: 'var(--pw-overlay-medium)' }}
         onClick={onClose}
         role="presentation"
       />

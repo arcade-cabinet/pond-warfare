@@ -51,7 +51,7 @@ export function LeaderboardPanel() {
       }}
     >
       {/* Backdrop */}
-      <div class="absolute inset-0" style={{ background: 'rgba(12, 26, 31, 0.85)' }} />
+      <div class="absolute inset-0" style={{ background: 'var(--pw-overlay-dark)' }} />
 
       {/* Panel card */}
       <div

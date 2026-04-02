@@ -22,7 +22,7 @@ function hpColor(pct: number): string {
   return 'var(--pw-enemy-light)';
 }
 
-const BAR_TRACK = { height: '3px', background: 'rgba(0,0,0,0.3)' } as const;
+const BAR_TRACK = { height: '3px', background: 'var(--pw-bar-track)' } as const;
 const NAME_BTN_STYLE = {
   color: 'var(--pw-text-primary)',
   background: 'none',

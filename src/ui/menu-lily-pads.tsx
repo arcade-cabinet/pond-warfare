@@ -34,7 +34,7 @@ export function MenuLilyPads({
               alt=""
               class="w-full h-full object-contain"
               draggable={false}
-              style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.3))' }}
+              style={{ filter: 'var(--pw-drop-shadow-light)' }}
             />
             {p.flower && (
               <img

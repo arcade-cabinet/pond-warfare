@@ -31,8 +31,7 @@ export function TopBar(props: TopBarProps) {
       style={{
         borderBottomColor: 'var(--pw-border)',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-        background:
-          'linear-gradient(180deg, rgba(13, 33, 40, 0.85) 0%, rgba(19, 45, 54, 0.8) 100%)',
+        background: `linear-gradient(180deg, var(--pw-surface-panel-mid) 0%, var(--pw-surface-panel-80) 100%)`,
         backdropFilter: 'blur(8px)',
       }}
     >

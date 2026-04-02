@@ -173,7 +173,7 @@ function TabButton({
       type="button"
       class={`flex-1 py-1 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[44px] md:min-h-0 font-heading`}
       style={{
-        background: active ? 'rgba(64, 200, 208, 0.08)' : 'transparent',
+        background: active ? 'var(--pw-glow-accent-08)' : 'transparent',
         color: active
           ? 'var(--pw-accent)'
           : count > 0
@@ -230,14 +230,14 @@ export function ActionPanel() {
       id="action-panel"
       class="w-full flex-1 flex flex-col overflow-hidden"
       style={{
-        background: 'rgba(13, 33, 40, 0.6)',
+        background: 'var(--pw-surface-panel-60)',
       }}
     >
       {/* Tab bar */}
       {buttons.length > 0 && (
         <div
           class="flex flex-shrink-0"
-          style={{ borderBottom: '1px solid rgba(64, 200, 208, 0.12)' }}
+          style={{ borderBottom: `1px solid var(--pw-glow-accent-12)` }}
         >
           <TabButton
             tab="train"

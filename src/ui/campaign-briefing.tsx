@@ -12,19 +12,19 @@ import { MenuButton } from './menu-button';
 
 /** Background tint per mission number. */
 const MISSION_TINTS: Record<number, string> = {
-  1: 'rgba(40, 80, 60, 0.25)',
-  2: 'rgba(30, 50, 80, 0.30)',
-  3: 'rgba(80, 40, 30, 0.25)',
-  4: 'rgba(50, 20, 60, 0.30)',
-  5: 'rgba(80, 20, 20, 0.35)',
+  1: 'var(--pw-mission-1-tint)',
+  2: 'var(--pw-mission-2-tint)',
+  3: 'var(--pw-mission-3-tint)',
+  4: 'var(--pw-mission-4-tint)',
+  5: 'var(--pw-mission-5-tint)',
 };
 
 const BRANCH_LABELS: Record<TechBranch, { label: string; color: string }> = {
-  lodge: { label: 'Lodge (Economy)', color: '#a0d2db' },
-  nature: { label: 'Nature (Healing)', color: '#7bc47f' },
-  warfare: { label: 'Warfare (Offense)', color: '#e07050' },
-  fortifications: { label: 'Fortifications (Defense)', color: '#c0a060' },
-  shadow: { label: 'Shadow (Subterfuge)', color: '#9070c0' },
+  lodge: { label: 'Lodge (Economy)', color: 'var(--pw-branch-lodge)' },
+  nature: { label: 'Nature (Healing)', color: 'var(--pw-branch-nature)' },
+  warfare: { label: 'Warfare (Offense)', color: 'var(--pw-branch-warfare)' },
+  fortifications: { label: 'Fortifications (Defense)', color: 'var(--pw-branch-fortifications)' },
+  shadow: { label: 'Shadow (Subterfuge)', color: 'var(--pw-branch-shadow)' },
 };
 
 interface Props {
@@ -34,19 +34,19 @@ interface Props {
 }
 
 export function CampaignBriefing({ mission, onBegin, onBack }: Props) {
-  const tint = MISSION_TINTS[mission.number] ?? 'rgba(20, 40, 50, 0.25)';
+  const tint = MISSION_TINTS[mission.number] ?? 'var(--pw-mission-default-tint)';
   const branch = mission.recommendedBranch ? BRANCH_LABELS[mission.recommendedBranch] : null;
 
   return (
     <div
       class="absolute inset-0 z-50 flex items-center justify-center"
-      style={{ background: `linear-gradient(${tint}, rgba(6,14,18,0.95))` }}
+      style={{ background: `linear-gradient(${tint}, var(--pw-surface-campaign))` }}
       data-testid="campaign-briefing"
     >
       <div
         class="flex flex-col items-center gap-5 max-w-md w-full px-8 py-10 rounded-lg"
         style={{
-          background: 'rgba(19, 40, 48, 0.92)',
+          background: 'var(--pw-surface-briefing)',
           border: '1px solid var(--pw-border)',
         }}
       >

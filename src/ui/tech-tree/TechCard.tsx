@@ -88,9 +88,11 @@ export function TechCard({
           class="font-game text-[8px] mt-1 rounded px-1 py-0.5 inline-block"
           style={{
             background:
-              state === 'locked' ? 'rgba(232, 160, 48, 0.15)' : 'rgba(64, 184, 104, 0.15)',
+              state === 'locked'
+                ? 'var(--pw-tech-locked-badge)'
+                : 'var(--pw-tech-researched-badge)',
             color: state === 'locked' ? 'var(--pw-warning)' : 'var(--pw-success)',
-            border: `1px solid ${state === 'locked' ? 'rgba(232, 160, 48, 0.3)' : 'rgba(64, 184, 104, 0.3)'}`,
+            border: `1px solid ${state === 'locked' ? 'var(--pw-tech-locked-border)' : 'var(--pw-tech-researched-border)'}`,
           }}
         >
           {state === 'locked' ? 'Needs' : 'From'}:{' '}

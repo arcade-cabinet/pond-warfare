@@ -114,14 +114,149 @@
      Overlay / surface alpha tokens (US6 — centralise rgba patterns)
      ================================================================ */
   --pw-overlay-dark: rgba(12, 26, 31, 0.85);
+  --pw-overlay-heavy: rgba(12, 26, 31, 0.9);
   --pw-overlay-medium: rgba(12, 26, 31, 0.8);
+  --pw-overlay-75: rgba(12, 26, 31, 0.75);
   --pw-overlay-light: rgba(12, 26, 31, 0.5);
+  --pw-overlay-60: rgba(12, 26, 31, 0.6);
+  --pw-overlay-92: rgba(12, 26, 31, 0.92);
+
+  /* Panel / card surfaces */
   --pw-surface-panel: rgba(19, 45, 54, 0.88);
+  --pw-surface-panel-80: rgba(19, 45, 54, 0.8);
   --pw-surface-panel-dark: rgba(13, 33, 40, 0.92);
+  --pw-surface-panel-mid: rgba(13, 33, 40, 0.85);
+  --pw-surface-panel-light: rgba(13, 33, 40, 0.8);
+  --pw-surface-panel-60: rgba(13, 33, 40, 0.6);
+  --pw-surface-card: rgba(20, 30, 35, 0.8);
+  --pw-surface-card-60: rgba(20, 30, 35, 0.6);
+  --pw-surface-card-70: rgba(20, 30, 35, 0.7);
+  --pw-surface-briefing: rgba(19, 40, 48, 0.92);
+  --pw-surface-locked: rgba(19, 40, 48, 0.6);
+  --pw-surface-unaffordable: rgba(26, 53, 64, 0.8);
+  --pw-surface-secondary-btn: rgba(26, 58, 68, 0.85);
+  --pw-surface-danger-btn: rgba(68, 26, 26, 0.85);
+  --pw-surface-campaign: rgba(6, 14, 18, 0.95);
+
+  /* Shadow / scrim */
   --pw-shadow-soft: rgba(0, 0, 0, 0.3);
   --pw-shadow-medium: rgba(0, 0, 0, 0.5);
+  --pw-shadow-heavy: rgba(0, 0, 0, 0.6);
+  --pw-shadow-strong: rgba(0, 0, 0, 0.75);
+  --pw-shadow-intense: rgba(0, 0, 0, 0.8);
+  --pw-scrim-40: rgba(0, 0, 0, 0.4);
+  --pw-scrim-35: rgba(0, 0, 0, 0.35);
+  --pw-scrim-70: rgba(0, 0, 0, 0.7);
+
+  /* Accent glow family */
   --pw-glow-accent: rgba(64, 200, 208, 0.15);
   --pw-glow-accent-strong: rgba(64, 200, 208, 0.4);
+  --pw-glow-accent-08: rgba(64, 200, 208, 0.08);
+  --pw-glow-accent-10: rgba(64, 200, 208, 0.1);
+  --pw-glow-accent-12: rgba(64, 200, 208, 0.12);
+  --pw-glow-accent-20: rgba(64, 200, 208, 0.2);
+  --pw-glow-accent-30: rgba(64, 200, 208, 0.3);
+
+  /* White highlights */
+  --pw-white-03: rgba(255, 255, 255, 0.03);
+  --pw-white-04: rgba(255, 255, 255, 0.04);
+  --pw-white-05: rgba(255, 255, 255, 0.05);
+  --pw-white-06: rgba(255, 255, 255, 0.06);
+  --pw-white-08: rgba(255, 255, 255, 0.08);
+  --pw-white-15: rgba(255, 255, 255, 0.15);
+
+  /* Unlock purple family */
+  --pw-unlock-glow-08: rgba(167, 139, 250, 0.08);
+  --pw-unlock-glow-10: rgba(167, 139, 250, 0.1);
+  --pw-unlock-glow-15: rgba(167, 139, 250, 0.15);
+  --pw-unlock-glow-30: rgba(167, 139, 250, 0.3);
+  --pw-unlock-glow-40: rgba(167, 139, 250, 0.4);
+  --pw-unlock-glow-50: rgba(167, 139, 250, 0.5);
+  --pw-unlock-glow-60: rgba(167, 139, 250, 0.6);
+  --pw-unlock-glow-70: rgba(167, 139, 250, 0.7);
+
+  /* Achievement gold family */
+  --pw-achieve-glow-08: rgba(251, 191, 36, 0.08);
+  --pw-achieve-glow-10: rgba(251, 191, 36, 0.1);
+  --pw-achieve-glow-15: rgba(251, 191, 36, 0.15);
+  --pw-achieve-glow-30: rgba(251, 191, 36, 0.3);
+  --pw-achieve-glow-40: rgba(251, 191, 36, 0.4);
+  --pw-achieve-glow-50: rgba(251, 191, 36, 0.5);
+
+  /* Victory gold (clam) glow */
+  --pw-victory-glow-06: rgba(240, 208, 96, 0.06);
+  --pw-victory-glow-08: rgba(240, 208, 96, 0.08);
+  --pw-victory-glow-15: rgba(240, 208, 96, 0.15);
+  --pw-victory-glow-20: rgba(240, 208, 96, 0.2);
+  --pw-victory-glow-30: rgba(240, 208, 96, 0.3);
+  --pw-victory-glow-40: rgba(240, 208, 96, 0.4);
+
+  /* Defeat red glow */
+  --pw-defeat-glow-06: rgba(192, 48, 48, 0.06);
+  --pw-defeat-glow-10: rgba(192, 48, 48, 0.1);
+  --pw-defeat-glow-15: rgba(192, 48, 48, 0.15);
+  --pw-defeat-glow-20: rgba(192, 48, 48, 0.2);
+  --pw-defeat-glow-40: rgba(192, 48, 48, 0.4);
+  --pw-defeat-glow-80: rgba(192, 48, 48, 0.8);
+
+  /* Auto-behavior active backgrounds */
+  --pw-auto-warning-bg: rgba(232, 160, 48, 0.3);
+  --pw-auto-enemy-bg: rgba(224, 96, 96, 0.3);
+  --pw-auto-success-bg: rgba(64, 184, 104, 0.3);
+  --pw-auto-scout-bg: rgba(138, 106, 184, 0.3);
+
+  /* Danger button hover */
+  --pw-danger-hover: rgba(224, 96, 96, 0.15);
+
+  /* Tech tree state backgrounds */
+  --pw-tech-researched-bg: rgba(64, 184, 104, 0.15);
+  --pw-tech-locked-badge: rgba(232, 160, 48, 0.15);
+  --pw-tech-locked-border: rgba(232, 160, 48, 0.3);
+  --pw-tech-researched-badge: rgba(64, 184, 104, 0.15);
+  --pw-tech-researched-border: rgba(64, 184, 104, 0.3);
+  --pw-tech-unaffordable-border: rgba(232, 160, 48, 0.4);
+
+  /* Wave/alert banners */
+  --pw-wave-warning-bg: rgba(180, 120, 20, 0.85);
+
+  /* Decorative text */
+  --pw-text-decorative: rgba(180, 220, 210, 0.8);
+  --pw-text-decorative-60: rgba(180, 220, 210, 0.6);
+  --pw-text-decorative-40: rgba(180, 220, 210, 0.4);
+  --pw-text-shadow-decorative: rgba(180, 220, 220, 0.4);
+
+  /* Difficulty tints */
+  --pw-diff-easy-tint: rgba(34, 197, 94, 0.15);
+  --pw-diff-normal-tint: rgba(64, 200, 208, 0.15);
+  --pw-diff-hard-tint: rgba(239, 68, 68, 0.15);
+
+  /* Pearl glow */
+  --pw-pearl-glow-40: rgba(165, 180, 252, 0.4);
+
+  /* Tech branch colors */
+  --pw-branch-lodge: #a0d2db;
+  --pw-branch-nature: #7bc47f;
+  --pw-branch-warfare: #e07050;
+  --pw-branch-fortifications: #c0a060;
+  --pw-branch-shadow: #9070c0;
+
+  /* Campaign mission tints */
+  --pw-mission-1-tint: rgba(40, 80, 60, 0.25);
+  --pw-mission-2-tint: rgba(30, 50, 80, 0.30);
+  --pw-mission-3-tint: rgba(80, 40, 30, 0.25);
+  --pw-mission-4-tint: rgba(50, 20, 60, 0.30);
+  --pw-mission-5-tint: rgba(80, 20, 20, 0.35);
+  --pw-mission-default-tint: rgba(20, 40, 50, 0.25);
+
+  /* Toast gradient */
+  --pw-toast-bg-start: rgba(12, 26, 31, 0.95);
+  --pw-toast-bg-end: rgba(30, 50, 55, 0.95);
+
+  /* Drop shadow filter */
+  --pw-drop-shadow: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+  --pw-drop-shadow-light: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
+
+  /* Bar track */
   --pw-bar-track: rgba(0, 0, 0, 0.3);
 
   /* Weather indicator colors (US3) */

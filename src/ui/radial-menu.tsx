@@ -44,7 +44,7 @@ const OPTIONS: RadialOption[] = [
     angle: 288,
     color: 'var(--pw-warning)',
     borderColor: 'var(--pw-warning)',
-    activeBackground: 'rgba(232, 160, 48, 0.3)',
+    activeBackground: 'var(--pw-auto-warning-bg)',
     behaviorRole: 'gatherer',
     toggleSignal: autoGathererEnabled,
   },
@@ -53,7 +53,7 @@ const OPTIONS: RadialOption[] = [
     angle: 36,
     color: 'var(--pw-enemy-light)',
     borderColor: 'var(--pw-enemy-light)',
-    activeBackground: 'rgba(224, 96, 96, 0.3)',
+    activeBackground: 'var(--pw-auto-enemy-bg)',
     behaviorRole: 'combat',
     toggleSignal: autoCombatEnabled,
   },
@@ -62,7 +62,7 @@ const OPTIONS: RadialOption[] = [
     angle: 108,
     color: 'var(--pw-scout)',
     borderColor: 'var(--pw-scout-dark)',
-    activeBackground: 'rgba(138, 106, 184, 0.3)',
+    activeBackground: 'var(--pw-auto-scout-bg)',
     behaviorRole: 'scout',
     toggleSignal: autoScoutEnabled,
   },
@@ -71,7 +71,7 @@ const OPTIONS: RadialOption[] = [
     angle: 180,
     color: 'var(--pw-success)',
     borderColor: 'var(--pw-success)',
-    activeBackground: 'rgba(64, 184, 104, 0.3)',
+    activeBackground: 'var(--pw-auto-success-bg)',
   },
 ];
 
@@ -124,7 +124,7 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
     <div
       ref={overlayRef}
       class="fixed inset-0 z-40"
-      style={{ background: 'rgba(12, 26, 31, 0.5)' }}
+      style={{ background: 'var(--pw-overlay-light)' }}
       onClick={handleOverlayClick}
       onTouchEnd={handleOverlayClick}
     >

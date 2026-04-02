@@ -133,7 +133,7 @@ export function NewGameModal() {
         if (e.target === e.currentTarget) handleClose();
       }}
     >
-      <div class="absolute inset-0" style={{ background: 'rgba(12, 26, 31, 0.85)' }} />
+      <div class="absolute inset-0" style={{ background: 'var(--pw-overlay-dark)' }} />
 
       <div
         ref={scrollRef}
@@ -166,7 +166,7 @@ export function NewGameModal() {
               class="font-game text-sm px-3 py-2 rounded flex-1"
               style={{
                 minHeight: '44px',
-                background: 'rgba(20, 30, 35, 0.8)',
+                background: 'var(--pw-surface-card)',
                 border: '1px solid var(--pw-border)',
                 color: 'var(--pw-text-primary)',
                 outline: 'none',
@@ -235,7 +235,7 @@ export function NewGameModal() {
                   style={{
                     minWidth: '44px',
                     minHeight: '44px',
-                    background: isActive ? `${color}25` : 'rgba(20, 30, 35, 0.8)',
+                    background: isActive ? `${color}25` : 'var(--pw-surface-card)',
                     borderColor: isActive ? color : 'var(--pw-border)',
                     color: isActive ? color : 'var(--pw-text-muted)',
                     boxShadow: isActive ? `0 0 8px ${color}30` : 'none',

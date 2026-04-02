@@ -28,7 +28,7 @@ export function EventFeed() {
             style={{
               color: ev.color,
               opacity: Math.max(0.3, fadeRatio),
-              background: 'rgba(12, 26, 31, 0.75)',
+              background: 'var(--pw-overlay-75)',
               borderLeft: `2px solid ${ev.color}`,
             }}
           >

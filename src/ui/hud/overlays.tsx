@@ -28,7 +28,7 @@ export function Overlays() {
         <div
           class={`absolute top-10 md:top-11 left-1/2 -translate-x-1/2 z-15 flex items-center gap-2 rounded px-3 py-1 text-[10px] md:text-xs whitespace-nowrap${justDestroyed ? ' animate-pulse' : ''}`}
           style={{
-            background: 'rgba(12, 26, 31, 0.75)',
+            background: 'var(--pw-overlay-75)',
             border: justDestroyed ? '2px solid var(--pw-accent)' : '1px solid var(--pw-border)',
           }}
         >
@@ -48,7 +48,7 @@ export function Overlays() {
         <div
           class="absolute top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded px-2 py-0.5 text-[10px] md:text-xs"
           style={{
-            background: 'rgba(12, 26, 31, 0.85)',
+            background: 'var(--pw-overlay-dark)',
             border: '1px solid var(--pw-enemy)',
           }}
         >
@@ -81,7 +81,7 @@ export function Overlays() {
         <div
           class="absolute top-20 md:top-22 left-1/2 -translate-x-1/2 z-25 px-4 py-1 rounded font-heading font-bold text-xs md:text-sm whitespace-nowrap animate-pulse"
           style={{
-            background: 'rgba(180, 120, 20, 0.85)',
+            background: 'var(--pw-wave-warning-bg)',
             border: '2px solid var(--pw-warning)',
             color: 'var(--pw-warning)',
           }}
@@ -95,7 +95,7 @@ export function Overlays() {
         <div
           class="absolute top-12 md:top-14 left-1/2 -translate-x-1/2 z-30 px-4 py-1 rounded font-heading font-bold text-xs md:text-sm whitespace-nowrap"
           style={{
-            background: 'rgba(192, 48, 48, 0.8)',
+            background: 'var(--pw-defeat-glow-80)',
             border: '1px solid var(--pw-enemy-light)',
             color: 'var(--pw-enemy-light)',
           }}
@@ -108,7 +108,7 @@ export function Overlays() {
       {paused.value && (
         <div
           class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
-          style={{ background: 'rgba(12, 26, 31, 0.6)' }}
+          style={{ background: 'var(--pw-overlay-60)' }}
         >
           <span
             class="font-title text-6xl font-bold tracking-widest"
@@ -124,7 +124,7 @@ export function Overlays() {
         <div
           class="absolute bottom-2 right-2 z-40 px-2 py-1 rounded font-numbers text-xs"
           style={{
-            background: 'rgba(0, 0, 0, 0.6)',
+            background: 'var(--pw-shadow-heavy)',
             color:
               fpsDisplay.value >= 50
                 ? 'var(--pw-fps-good)'

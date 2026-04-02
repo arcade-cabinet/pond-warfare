@@ -113,7 +113,7 @@ export function TechTreePanel({
   return (
     <div
       class="absolute inset-0 z-50 modal-overlay"
-      style={{ background: 'rgba(12, 26, 31, 0.9)' }}
+      style={{ background: 'var(--pw-overlay-heavy)' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

@@ -58,10 +58,10 @@ export function OptionRow<T extends string | number>({
               style={{
                 minWidth: '44px',
                 minHeight: '44px',
-                background: isSelected ? 'rgba(64, 200, 208, 0.2)' : 'rgba(20, 30, 35, 0.8)',
+                background: isSelected ? 'var(--pw-glow-accent-20)' : 'var(--pw-surface-card)',
                 borderColor: isSelected ? 'var(--pw-accent)' : 'var(--pw-border)',
                 color: isSelected ? 'var(--pw-accent-bright)' : 'var(--pw-text-muted)',
-                boxShadow: isSelected ? '0 0 8px rgba(64, 200, 208, 0.2)' : 'none',
+                boxShadow: isSelected ? `0 0 8px var(--pw-glow-accent-20)` : 'none',
               }}
               onClick={() => onChange(opt)}
             >

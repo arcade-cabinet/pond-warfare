@@ -43,8 +43,7 @@ export function MenuBackground() {
       <div
         class="absolute inset-0 pointer-events-none"
         style={{
-          background:
-            'radial-gradient(ellipse 85% 75% at 50% 45%, transparent 25%, rgba(0,0,0,0.35) 65%, rgba(0,0,0,0.7) 100%)',
+          background: `radial-gradient(ellipse 85% 75% at 50% 45%, transparent 25%, var(--pw-scrim-35) 65%, var(--pw-scrim-70) 100%)`,
         }}
       />
 

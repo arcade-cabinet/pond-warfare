@@ -33,7 +33,7 @@ export function AchievementsPanel() {
   return (
     <div
       class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
-      style={{ background: 'rgba(0, 0, 0, 0.75)' }}
+      style={{ background: 'var(--pw-shadow-strong)' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           achievementsOpen.value = false;
@@ -45,8 +45,8 @@ export function AchievementsPanel() {
         class="relative w-[90vw] max-w-[700px] modal-scroll rounded-lg p-6"
         style={{
           background: 'linear-gradient(135deg, #1a2332 0%, #0f1923 100%)',
-          border: '1px solid rgba(251, 191, 36, 0.3)',
-          boxShadow: '0 0 30px rgba(251, 191, 36, 0.1)',
+          border: `1px solid var(--pw-achieve-glow-30)`,
+          boxShadow: `0 0 30px var(--pw-achieve-glow-10)`,
         }}
       >
         {/* Header */}
@@ -83,10 +83,10 @@ export function AchievementsPanel() {
                 key={ach.id}
                 class="rounded-lg p-3 transition-all"
                 style={{
-                  background: isEarned ? 'rgba(251, 191, 36, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                  background: isEarned ? 'var(--pw-achieve-glow-08)' : 'var(--pw-white-03)',
                   border: isEarned
-                    ? '1px solid rgba(251, 191, 36, 0.5)'
-                    : '1px solid rgba(255, 255, 255, 0.08)',
+                    ? `1px solid var(--pw-achieve-glow-50)`
+                    : `1px solid var(--pw-white-08)`,
                   opacity: isEarned ? 1 : 0.5,
                 }}
               >

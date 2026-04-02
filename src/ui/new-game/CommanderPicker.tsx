@@ -31,7 +31,7 @@ function CommanderCard({ def, selected }: { def: CommanderDef; selected: boolean
       class="rounded-lg p-3 cursor-pointer transition-all duration-150 text-left w-full"
       style={{
         minHeight: '44px',
-        background: selected ? `${color}18` : 'rgba(20, 30, 35, 0.7)',
+        background: selected ? `${color}18` : 'var(--pw-surface-card-70)',
         border: selected ? `2px solid ${color}` : '2px solid var(--pw-border)',
         boxShadow: selected ? `0 0 12px ${color}30` : 'none',
       }}

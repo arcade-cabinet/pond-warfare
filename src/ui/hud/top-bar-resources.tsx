@@ -95,7 +95,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           style={{
             background: 'radial-gradient(circle at 35% 35%, var(--pw-clam), #b8a030)',
             border: '1px solid var(--pw-otter-light)',
-            boxShadow: '0 0 4px rgba(240, 208, 96, 0.3)',
+            boxShadow: `0 0 4px var(--pw-victory-glow-30)`,
           }}
         />
         {!compact && (
@@ -175,7 +175,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
             style={{
               background: 'radial-gradient(circle at 35% 35%, #e0e7ff, #a5b4fc)',
               border: '1px solid #a5b4fc',
-              boxShadow: '0 0 4px rgba(165, 180, 252, 0.4)',
+              boxShadow: `0 0 4px var(--pw-pearl-glow-40)`,
             }}
           />
           {!compact && (

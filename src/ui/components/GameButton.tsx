@@ -45,20 +45,20 @@ const VARIANT_STYLES: Record<
   secondary: {
     color: 'var(--pw-text-primary)',
     borderColor: 'var(--pw-border-accent)',
-    bg: 'rgba(26, 58, 68, 0.85)',
-    hoverBg: 'rgba(64, 200, 208, 0.12)',
+    bg: 'var(--pw-surface-secondary-btn)',
+    hoverBg: 'var(--pw-glow-accent-12)',
   },
   danger: {
     color: 'var(--pw-enemy-light)',
     borderColor: 'var(--pw-enemy)',
-    bg: 'rgba(68, 26, 26, 0.85)',
-    hoverBg: 'rgba(224, 96, 96, 0.15)',
+    bg: 'var(--pw-surface-danger-btn)',
+    hoverBg: 'var(--pw-danger-hover)',
   },
   ghost: {
     color: 'var(--pw-text-secondary)',
     borderColor: 'transparent',
     bg: 'transparent',
-    hoverBg: 'rgba(64, 200, 208, 0.08)',
+    hoverBg: 'var(--pw-glow-accent-08)',
   },
 };
 
@@ -109,7 +109,7 @@ export function GameButton({
           alt=""
           class="absolute inset-0 w-full h-full object-fill pointer-events-none"
           draggable={false}
-          style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))' }}
+          style={{ filter: 'var(--pw-drop-shadow)' }}
         />
       )}
       {/* Hotkey badge */}
@@ -117,7 +117,7 @@ export function GameButton({
         <span
           class="absolute top-1 right-1 font-numbers text-[8px] px-1 rounded"
           style={{
-            background: 'rgba(0,0,0,0.5)',
+            background: 'var(--pw-shadow-medium)',
             color: 'var(--pw-text-muted)',
             lineHeight: '1.3',
           }}
@@ -127,7 +127,7 @@ export function GameButton({
       )}
       <span
         class={`relative z-10 ${isPrimary ? 'uppercase' : ''}`}
-        style={isPrimary ? { textShadow: '0 1px 1px rgba(180,220,220,0.4)' } : undefined}
+        style={isPrimary ? { textShadow: `0 1px 1px var(--pw-text-shadow-decorative)` } : undefined}
       >
         {label}
       </span>

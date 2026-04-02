@@ -33,7 +33,14 @@ function ConfettiDots() {
     const left = Math.random() * 100;
     const delay = Math.random() * 2;
     const duration = 2 + Math.random() * 2;
-    const colors = ['#f0d060', '#40c8d0', '#e05050', '#40b868', '#e8b878', '#e8a030'];
+    const colors = [
+      'var(--pw-clam)',
+      'var(--pw-accent)',
+      'var(--pw-food)',
+      'var(--pw-success)',
+      'var(--pw-otter-light)',
+      'var(--pw-warning)',
+    ];
     const color = colors[i % colors.length];
     return (
       <span
@@ -63,7 +70,7 @@ function StarRating({ stars }: { stars: number }) {
           key={`star-${i}`}
           style={{
             color: i < stars ? 'var(--pw-clam)' : 'var(--pw-text-muted)',
-            textShadow: i < stars ? '0 0 8px rgba(240, 208, 96, 0.4)' : 'none',
+            textShadow: i < stars ? `0 0 8px var(--pw-victory-glow-40)` : 'none',
           }}
         >
           {'\u2605'}
@@ -110,8 +117,8 @@ export function GameOverBanner(props: GameOverProps) {
       class="absolute inset-0 flex flex-col items-center justify-center z-30 overflow-hidden"
       style={{
         background: isVictory
-          ? 'radial-gradient(ellipse at 50% 40%, rgba(240, 208, 96, 0.08), rgba(12, 26, 31, 0.85) 60%)'
-          : 'radial-gradient(ellipse at 50% 40%, rgba(192, 48, 48, 0.1), rgba(12, 26, 31, 0.85) 60%)',
+          ? `radial-gradient(ellipse at 50% 40%, var(--pw-victory-glow-08), var(--pw-overlay-dark) 60%)`
+          : `radial-gradient(ellipse at 50% 40%, var(--pw-defeat-glow-10), var(--pw-overlay-dark) 60%)`,
       }}
     >
       {isVictory && <ConfettiDots />}
@@ -121,8 +128,8 @@ export function GameOverBanner(props: GameOverProps) {
         class={`font-title text-4xl md:text-6xl mb-3 tracking-widest uppercase ${goTitleColor.value}`}
         style={{
           textShadow: isVictory
-            ? '0 0 40px rgba(240, 208, 96, 0.4), 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000'
-            : '0 0 40px rgba(192, 48, 48, 0.4), 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
+            ? `0 0 40px var(--pw-victory-glow-40), 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000`
+            : `0 0 40px var(--pw-defeat-glow-40), 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000`,
         }}
       >
         {goTitle}
@@ -148,7 +155,7 @@ export function GameOverBanner(props: GameOverProps) {
           class="section-header w-full text-center mb-1"
           style={{
             color: isVictory ? 'var(--pw-clam)' : 'var(--pw-enemy-light)',
-            borderColor: isVictory ? 'rgba(240, 208, 96, 0.2)' : 'rgba(192, 48, 48, 0.2)',
+            borderColor: isVictory ? 'var(--pw-victory-glow-20)' : 'var(--pw-defeat-glow-20)',
           }}
         >
           Battle Report
