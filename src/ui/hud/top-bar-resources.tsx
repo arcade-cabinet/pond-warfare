@@ -185,7 +185,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           )}
           <span
             class={`font-numbers font-bold ${flashClass(pearlsFlash)}`}
-            style={{ color: '#a5b4fc' }}
+            style={{ color: 'var(--pw-pearl)' }}
           >
             {pearls}
           </span>

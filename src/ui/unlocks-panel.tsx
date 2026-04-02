@@ -109,7 +109,10 @@ export function UnlocksPanel() {
         {/* Header */}
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="font-heading text-xl tracking-wider uppercase" style={{ color: '#a78bfa' }}>
+            <h2
+              class="font-heading text-xl tracking-wider uppercase"
+              style={{ color: 'var(--pw-unlock)' }}
+            >
               Unlocks
             </h2>
             <p class="font-game text-xs mt-1" style={{ color: 'var(--pw-text-muted)' }}>
@@ -181,7 +184,7 @@ export function UnlocksPanel() {
                   <span style={{ fontSize: '13px' }}>{earned ? '\u2605' : '\uD83D\uDD12'}</span>
                   <span
                     class="font-heading text-sm tracking-wide"
-                    style={{ color: earned ? '#a78bfa' : 'var(--pw-text-muted)' }}
+                    style={{ color: earned ? 'var(--pw-unlock)' : 'var(--pw-text-muted)' }}
                   >
                     {unlock.name}
                   </span>
@@ -225,7 +228,7 @@ export function UnlocksPanel() {
 function StatBadge({ label, value }: { label: string; value: string | number }) {
   return (
     <div class="flex flex-col items-center">
-      <span class="font-numbers text-sm" style={{ color: '#a78bfa' }}>
+      <span class="font-numbers text-sm" style={{ color: 'var(--pw-unlock)' }}>
         {value}
       </span>
       <span class="font-game text-[9px]" style={{ color: 'var(--pw-text-muted)' }}>
@@ -253,7 +256,7 @@ function CategoryTab({
         border: active
           ? '1px solid rgba(167, 139, 250, 0.5)'
           : '1px solid rgba(255, 255, 255, 0.08)',
-        color: active ? '#a78bfa' : 'var(--pw-text-muted)',
+        color: active ? 'var(--pw-unlock)' : 'var(--pw-text-muted)',
       }}
       onClick={onClick}
     >

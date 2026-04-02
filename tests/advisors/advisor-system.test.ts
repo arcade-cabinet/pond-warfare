@@ -181,6 +181,29 @@ describe('Advisor System', () => {
     expect(currentAdvisorTip.value?.id).toBe('high');
   });
 
+  it('enforces tip gap between consecutive tips', () => {
+    setTips([makeTip({ id: 'gap_test', cooldown: 1 })]);
+
+    // Show and dismiss tip
+    world.frameCount = ADVISOR_EVAL_INTERVAL;
+    advisorSystem(world);
+    expect(currentAdvisorTip.value).not.toBeNull();
+    dismissCurrentTip();
+    expect(currentAdvisorTip.value).toBeNull();
+
+    // Try again within the tip gap window — should be blocked
+    world.frameCount = ADVISOR_EVAL_INTERVAL * 2;
+    advisorSystem(world);
+    expect(currentAdvisorTip.value).toBeNull();
+
+    // After the gap expires (ADVISOR_TIP_GAP = 600 frames from tipShownFrame)
+    const afterGap =
+      Math.ceil((ADVISOR_EVAL_INTERVAL + 601) / ADVISOR_EVAL_INTERVAL) * ADVISOR_EVAL_INTERVAL;
+    world.frameCount = afterGap;
+    advisorSystem(world);
+    expect(currentAdvisorTip.value).not.toBeNull();
+  });
+
   it('auto-dismisses after ADVISOR_TOAST_DURATION frames', () => {
     setTips([makeTip({ id: 'auto_dismiss' })]);
 

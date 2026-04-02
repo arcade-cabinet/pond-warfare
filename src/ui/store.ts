@@ -167,9 +167,9 @@ export const hpPercent = computed(() => {
 
 export const hpBarColor = computed(() => {
   const pct = hpPercent.value / 100;
-  if (pct > 0.6) return '#22c55e';
-  if (pct > 0.3) return '#eab308';
-  return '#ef4444';
+  if (pct > 0.6) return 'var(--pw-hp-good)';
+  if (pct > 0.3) return 'var(--pw-hp-mid)';
+  return 'var(--pw-hp-low)';
 });
 
 export const colorBlindMode = signal(false);
@@ -218,6 +218,13 @@ export const settingsOpen = signal(false);
 
 // ---- Achievements panel ----
 export const achievementsOpen = signal(false);
+
+/** Active achievement toast: name + description shown for 3 seconds. */
+export interface AchievementToast {
+  name: string;
+  desc: string;
+}
+export const activeAchievementToast = signal<AchievementToast | null>(null);
 
 // ---- Leaderboard panel ----
 export const leaderboardOpen = signal(false);

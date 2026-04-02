@@ -60,8 +60,8 @@ const OPTIONS: RadialOption[] = [
   {
     label: 'Scout',
     angle: 108,
-    color: '#b090d8',
-    borderColor: '#8a6ab8',
+    color: 'var(--pw-scout)',
+    borderColor: 'var(--pw-scout-dark)',
     activeBackground: 'rgba(138, 106, 184, 0.3)',
     behaviorRole: 'scout',
     toggleSignal: autoScoutEnabled,

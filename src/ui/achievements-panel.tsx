@@ -52,7 +52,10 @@ export function AchievementsPanel() {
         {/* Header */}
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="font-heading text-xl tracking-wider uppercase" style={{ color: '#fbbf24' }}>
+            <h2
+              class="font-heading text-xl tracking-wider uppercase"
+              style={{ color: 'var(--pw-achievement)' }}
+            >
               Achievements
             </h2>
             <p class="font-game text-xs mt-1" style={{ color: 'var(--pw-text-muted)' }}>
@@ -91,7 +94,7 @@ export function AchievementsPanel() {
                   <span style={{ fontSize: '14px' }}>{isEarned ? '\u2605' : '\u2606'}</span>
                   <span
                     class="font-heading text-sm tracking-wide"
-                    style={{ color: isEarned ? '#fbbf24' : 'var(--pw-text-muted)' }}
+                    style={{ color: isEarned ? 'var(--pw-achievement)' : 'var(--pw-text-muted)' }}
                   >
                     {ach.name}
                   </span>

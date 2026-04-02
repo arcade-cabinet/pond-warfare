@@ -12,6 +12,7 @@ import { EntityTypeTag, FactionTag, Health, Veterancy } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { getSetting, isDatabaseReady, setSetting } from '@/storage';
 import { EntityKind, Faction } from '@/types';
+import { showAchievementToast } from '@/ui/achievement-toast-queue';
 import { ACHIEVEMENTS, type AchievementSnapshot } from './achievement-defs';
 
 export type { AchievementDef, AchievementSnapshot } from './achievement-defs';
@@ -208,18 +209,11 @@ export async function checkAchievements(world: GameWorld): Promise<string[]> {
     }
   }
 
-  // Show floating text for newly earned achievements
-  for (const name of newlyEarned) {
-    // Show at camera center
-    const cx = world.camX + world.viewWidth / 2;
-    const cy = world.camY + 60;
-    world.floatingTexts.push({
-      x: cx,
-      y: cy,
-      text: `Achievement: ${name}!`,
-      color: '#fbbf24',
-      life: 180,
-    });
+  // Show prominent toast for newly earned achievements
+  for (const ach of ACHIEVEMENTS) {
+    if (newlyEarned.includes(ach.name)) {
+      showAchievementToast(ach.name, ach.desc);
+    }
   }
 
   return newlyEarned;

@@ -66,6 +66,7 @@ export function createGameWorld(): GameWorld {
     stats: {
       unitsKilled: 0,
       unitsLost: 0,
+      unitsTrained: 0,
       resourcesGathered: 0,
       buildingsBuilt: 0,
       buildingsLost: 0,

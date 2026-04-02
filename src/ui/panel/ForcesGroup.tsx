@@ -16,7 +16,7 @@ const ROLE_COLORS: Record<string, string> = {
   gatherer: 'var(--pw-warning)',
   combat: 'var(--pw-enemy-light)',
   support: 'var(--pw-success)',
-  scout: '#b090d8',
+  scout: 'var(--pw-scout)',
   commander: 'var(--pw-accent)',
 };
 

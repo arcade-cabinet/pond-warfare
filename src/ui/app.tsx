@@ -20,6 +20,7 @@ import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
+import { AchievementToast } from './hud/AchievementToast';
 import { AdvisorToast } from './hud/AdvisorToast';
 import { AbilityBar } from './hud/ability-bar';
 import { AirdropButton } from './hud/airdrop-button';
@@ -217,6 +218,9 @@ export function App({ onMount }: AppProps) {
 
       {/* Advisor toast — bottom-left HUD, above safe area */}
       <AdvisorToast />
+
+      {/* Achievement toast — top-center, shown for 3 seconds */}
+      <AchievementToast />
 
       {/*
         Modal overlays — rendered as SIBLINGS of #game-container so they are

@@ -37,7 +37,7 @@ export function MenuTab() {
           {twigs}T
         </span>
         {pearls.value > 0 && (
-          <span class="font-numbers text-[10px] font-bold" style={{ color: '#a5b4fc' }}>
+          <span class="font-numbers text-[10px] font-bold" style={{ color: 'var(--pw-pearl)' }}>
             {pearls}P
           </span>
         )}

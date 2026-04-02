@@ -215,12 +215,12 @@ export const PRESET_LABELS: Record<PresetKey, string> = {
 };
 
 export const PRESET_COLORS: Record<PresetKey, string> = {
-  easy: '#22c55e',
+  easy: 'var(--pw-difficulty-easy)',
   normal: 'var(--pw-accent)',
-  hard: '#ef4444',
-  nightmare: '#a855f7',
-  ultraNightmare: '#dc2626',
-  sandbox: '#60a5fa',
-  speedrun: '#f59e0b',
-  survival: '#ec4899',
+  hard: 'var(--pw-difficulty-hard)',
+  nightmare: 'var(--pw-difficulty-nightmare)',
+  ultraNightmare: 'var(--pw-difficulty-ultra)',
+  sandbox: 'var(--pw-difficulty-sandbox)',
+  speedrun: 'var(--pw-difficulty-speedrun)',
+  survival: 'var(--pw-difficulty-survival)',
 };

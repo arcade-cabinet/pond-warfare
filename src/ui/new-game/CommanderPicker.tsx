@@ -12,13 +12,13 @@ import { selectedCommander } from '@/ui/store';
 
 /** Map sprite variant names to CSS color values. */
 const VARIANT_COLORS: Record<string, string> = {
-  blue: '#4488cc',
-  green: '#44aa66',
-  gold: '#ccaa44',
-  cyan: '#40c8d0',
-  purple: '#9966cc',
-  red: '#cc4444',
-  yellow: '#cccc44',
+  blue: 'var(--pw-commander-blue)',
+  green: 'var(--pw-commander-green)',
+  gold: 'var(--pw-commander-gold)',
+  cyan: 'var(--pw-accent)',
+  purple: 'var(--pw-commander-purple)',
+  red: 'var(--pw-commander-red)',
+  yellow: 'var(--pw-commander-yellow)',
 };
 
 function CommanderCard({ def, selected }: { def: CommanderDef; selected: boolean }) {

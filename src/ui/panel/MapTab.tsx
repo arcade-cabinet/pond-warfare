@@ -112,7 +112,7 @@ export function MapTab({ minimapCanvasRef, minimapCamRef }: MapTabProps) {
               class="w-3 h-3 rounded-full"
               style={{ background: 'radial-gradient(circle at 35% 35%, #e0e7ff, #a5b4fc)' }}
             />
-            <span class="font-numbers font-bold text-xs" style={{ color: '#a5b4fc' }}>
+            <span class="font-numbers font-bold text-xs" style={{ color: 'var(--pw-pearl)' }}>
               {pearls}
             </span>
           </div>

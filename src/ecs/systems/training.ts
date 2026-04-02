@@ -84,6 +84,9 @@ export function trainingSystem(world: GameWorld): void {
         continue;
       }
 
+      // Track trained unit stat
+      world.stats.unitsTrained++;
+
       // Notify campaign system of trained unit
       campaignNotifyTrained(world, unitKind);
 

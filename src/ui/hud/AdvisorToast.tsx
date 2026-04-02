@@ -69,7 +69,7 @@ export function AdvisorToast() {
             justifyContent: 'center',
             fontSize: isCompact ? '12px' : '14px',
             fontWeight: '700',
-            color: '#0c1a1f',
+            color: 'var(--pw-advisor-text)',
             flexShrink: '0',
           }}
         >

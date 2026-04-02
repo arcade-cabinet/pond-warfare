@@ -33,7 +33,7 @@ export function MenuButton({
       <span
         class="relative z-10 font-heading font-bold tracking-wider uppercase"
         style={{
-          color: '#1a3a3a',
+          color: 'var(--pw-btn-dark-text)',
           fontSize: wide ? '14px' : '11px',
           textShadow: '0 1px 1px rgba(180,220,220,0.4)',
         }}
