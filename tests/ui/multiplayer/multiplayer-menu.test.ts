@@ -124,7 +124,7 @@ describe('MultiplayerMenu', () => {
     const backBtn = [...document.querySelectorAll('button')].find((b) =>
       b.textContent?.includes('Back'),
     );
-    fireEvent.click(backBtn!);
+    if (backBtn) fireEvent.click(backBtn);
 
     // Should be back to choose mode
     expect(document.querySelector('[data-testid="room-code"]')).toBeNull();
