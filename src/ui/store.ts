@@ -106,9 +106,7 @@ export const autoCombatEnabled = signal(false); // covers attack + defend
 export const autoHealerEnabled = signal(false);
 export const autoScoutEnabled = signal(false);
 
-// --- Legacy aliases (deprecated, will be removed after full UI migration) ---
-// These computed signals map old per-action names to the new per-role signals
-// so existing UI code compiles during the transition.
+// Legacy aliases (deprecated, will be removed after full UI migration)
 export const autoGatherEnabled = autoGathererEnabled;
 export const autoBuildEnabled = autoGathererEnabled;
 export const autoDefendEnabled = autoCombatEnabled;
@@ -222,7 +220,6 @@ export type { PlayableFaction } from '@/config/factions';
 export const playerFaction = signal<import('@/config/factions').PlayableFaction>('otter');
 export const aiPersonality = signal<import('@/config/ai-personalities').AIPersonality>('balanced');
 
-// ---- Derived (extracted to store-derived) ----
 export {
   muteLabel,
   peaceStatusColor,
@@ -230,7 +227,6 @@ export {
   peaceStatusText,
   speedLabel,
 } from './store-derived';
-// ---- Gameplay & UI panel signals (extracted to store-gameplay) ----
 export {
   type AchievementToast,
   achievementsOpen,
@@ -250,24 +246,32 @@ export {
   commanderAbilityName,
   commanderAbilityReady,
   cosmeticsOpen,
+  dailyChallengeAlreadyDone,
+  dailyChallengeDesc,
+  dailyChallengeTitle,
   evacuationActive,
   fpsCounterVisible,
   fpsDisplay,
   type GameMode,
   gameEvents,
   gameMode,
+  goDailyChallengeCompleted,
   goDesc,
   goFrameCount,
+  goLeveledUp,
   goMapSeed,
+  goNewLevel,
   goRating,
   goStatLines,
   goStatsText,
   goTimeSurvived,
   goTitle,
   goTitleColor,
+  goXpEarned,
   keyboardRefOpen,
   leaderboardOpen,
   masterVolume,
+  matchHistoryOpen,
   mobilePanelOpen,
   musicVolume,
   type PanelTab,
@@ -292,5 +296,4 @@ export {
   unlocksOpen,
   waveNumber,
 } from './store-gameplay';
-// ---- Weather (extracted to store-weather) ----
 export { currentWeather, nextWeather, weatherCountdown, weatherLabel } from './store-weather';

@@ -96,3 +96,20 @@ export const masterVolume = signal(80);
 export const musicVolume = signal(50);
 export const sfxVolume = signal(80);
 export const autoSaveEnabled = signal(false);
+
+// ---- Match history / daily challenge / XP ----
+export const matchHistoryOpen = signal(false);
+/** XP earned in the just-completed game (shown in battle report). */
+export const goXpEarned = signal(0);
+/** Whether the player leveled up in the just-completed game. */
+export const goLeveledUp = signal(false);
+/** Player's new level after the just-completed game. */
+export const goNewLevel = signal(0);
+/** Whether today's daily challenge was completed in the just-completed game. */
+export const goDailyChallengeCompleted = signal(false);
+/** Today's daily challenge title (for HUD/menu display). */
+export const dailyChallengeTitle = signal('');
+/** Today's daily challenge description. */
+export const dailyChallengeDesc = signal('');
+/** Whether today's daily challenge has already been completed. */
+export const dailyChallengeAlreadyDone = signal(false);

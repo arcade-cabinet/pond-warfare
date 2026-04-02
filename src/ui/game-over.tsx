@@ -11,12 +11,16 @@ import { audio } from '@/audio/audio-system';
 import { animateGameOverStats } from '@/rendering/animations';
 import {
   gameState,
+  goDailyChallengeCompleted,
   goDesc,
+  goLeveledUp,
   goMapSeed,
+  goNewLevel,
   goRating,
   goStatLines,
   goTitle,
   goTitleColor,
+  goXpEarned,
   menuState,
 } from './store';
 
@@ -160,6 +164,28 @@ export function GameOverBanner(props: GameOverProps) {
           </p>
         ))}
       </div>
+
+      {/* XP earned */}
+      {goXpEarned.value > 0 && (
+        <div class="mt-3 flex flex-col items-center gap-1">
+          <span class="font-heading text-lg font-bold" style={{ color: 'var(--pw-accent-bright)' }}>
+            +{goXpEarned.value} XP
+          </span>
+          {goLeveledUp.value && (
+            <span
+              class="font-heading text-sm font-bold"
+              style={{ color: 'var(--pw-clam)', textShadow: '0 0 8px rgba(240, 208, 96, 0.4)' }}
+            >
+              Level Up! Level {goNewLevel.value}
+            </span>
+          )}
+          {goDailyChallengeCompleted.value && (
+            <span class="font-game text-xs" style={{ color: 'var(--pw-accent)' }}>
+              Daily Challenge Complete!
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Map seed for sharing / replay */}
       <p

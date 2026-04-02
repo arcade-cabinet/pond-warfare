@@ -158,6 +158,8 @@ export interface PlayerProfile {
   wins_commander_alive: number;
   total_pearls: number;
   wins_zero_losses: number;
+  total_xp: number;
+  player_level: number;
 }
 
 const DEFAULT_PROFILE: PlayerProfile = {
@@ -174,6 +176,8 @@ const DEFAULT_PROFILE: PlayerProfile = {
   wins_commander_alive: 0,
   total_pearls: 0,
   wins_zero_losses: 0,
+  total_xp: 0,
+  player_level: 0,
 };
 
 export async function getPlayerProfile(): Promise<PlayerProfile> {
@@ -195,6 +199,8 @@ export async function getPlayerProfile(): Promise<PlayerProfile> {
       wins_commander_alive: (row.wins_commander_alive as number) ?? 0,
       total_pearls: (row.total_pearls as number) ?? 0,
       wins_zero_losses: (row.wins_zero_losses as number) ?? 0,
+      total_xp: (row.total_xp as number) ?? 0,
+      player_level: (row.player_level as number) ?? 0,
     };
   }
   return { ...DEFAULT_PROFILE };
