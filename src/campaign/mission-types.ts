@@ -4,7 +4,7 @@
  * Shared types for mission definitions, objectives, and dialogue.
  */
 
-import type { TechId } from '@/config/tech-tree';
+import type { TechBranch, TechId } from '@/config/tech-tree';
 import type { CustomGameSettings } from '@/ui/store';
 
 export interface MissionDialogue {
@@ -50,6 +50,8 @@ export interface MissionDef {
   subtitle: string;
   /** Multi-line briefing text shown before the mission starts. */
   briefing: string;
+  /** Recommended tech branch hint displayed on the briefing screen. */
+  recommendedBranch?: TechBranch;
   /** Objectives that must ALL be completed to win. */
   objectives: MissionObjective[];
   /** Scripted dialogue lines shown at specific frames. */

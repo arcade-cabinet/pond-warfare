@@ -15,6 +15,7 @@ const mission1: MissionDef = {
   number: 1,
   title: 'First Dawn',
   subtitle: 'Learn the basics of survival',
+  recommendedBranch: 'lodge',
   briefing: [
     'Welcome, Commander. The pond is quiet... for now.',
     '',
@@ -87,6 +88,7 @@ const mission2: MissionDef = {
   number: 2,
   title: 'Into the Fog',
   subtitle: 'Explore the unknown and expand',
+  recommendedBranch: 'nature',
   briefing: [
     'The pond stretches far beyond our clearing.',
     '',

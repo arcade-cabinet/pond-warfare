@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { loadCampaignProgress, type MissionDef } from '@/campaign';
 import { CAMPAIGN_MISSIONS } from '@/campaign/missions';
+import { CampaignBriefing } from './campaign-briefing';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { campaignMissionId, campaignOpen, menuState } from './store';
 
@@ -15,8 +16,7 @@ export function CampaignPanel() {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [selectedMission, setSelectedMission] = useState<MissionDef | null>(null);
   const [showBriefing, setShowBriefing] = useState(false);
-  // Both views may need scroll on small screens — hooks must be at the top.
-  const briefingScrollRef = useScrollDrag<HTMLDivElement>();
+  // Mission list may need scroll on small screens.
   const missionScrollRef = useScrollDrag<HTMLDivElement>();
 
   // Load progress on mount
@@ -66,95 +66,7 @@ export function CampaignPanel() {
   // ---- Briefing overlay ----
   if (showBriefing && selectedMission) {
     return (
-      <div
-        ref={briefingScrollRef}
-        class="absolute inset-0 z-50 overflow-y-auto modal-overlay"
-        style={{ background: 'rgba(6, 14, 18, 0.95)' }}
-      >
-        <div class="min-h-full flex items-center justify-center p-4">
-          <div
-            class="flex flex-col items-center gap-6 max-w-lg w-full px-8 py-10 rounded-lg"
-            style={{
-              background: 'rgba(19, 40, 48, 0.9)',
-              border: '1px solid var(--pw-border)',
-            }}
-          >
-            <div class="text-center">
-              <span
-                class="font-numbers text-xs tracking-wider"
-                style={{ color: 'var(--pw-text-muted)' }}
-              >
-                MISSION {selectedMission.number}
-              </span>
-              <h2
-                class="font-heading text-2xl md:text-3xl font-bold mt-1"
-                style={{ color: 'var(--pw-accent)' }}
-              >
-                {selectedMission.title}
-              </h2>
-              <p class="font-game text-sm mt-1" style={{ color: 'var(--pw-text-secondary)' }}>
-                {selectedMission.subtitle}
-              </p>
-            </div>
-
-            {/* Briefing text */}
-            <div
-              class="font-game text-xs md:text-sm leading-relaxed whitespace-pre-line text-center"
-              style={{ color: 'var(--pw-text-muted)' }}
-            >
-              {selectedMission.briefing}
-            </div>
-
-            {/* Objectives */}
-            <div class="w-full">
-              <h3
-                class="font-heading text-xs font-bold tracking-wider mb-2"
-                style={{ color: 'var(--pw-text-secondary)' }}
-              >
-                OBJECTIVES
-              </h3>
-              <ul class="flex flex-col gap-1">
-                {selectedMission.objectives.map((obj) => (
-                  <li
-                    key={obj.id}
-                    class="font-game text-xs flex items-center gap-2"
-                    style={{ color: 'var(--pw-text-primary)' }}
-                  >
-                    <span style={{ color: 'var(--pw-accent)' }}>&#9679;</span>
-                    {obj.label}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Buttons */}
-            <div class="flex gap-4 mt-2">
-              <button
-                type="button"
-                class="action-btn font-heading font-bold text-sm tracking-wider"
-                style={{
-                  padding: '10px 28px',
-                  color: 'var(--pw-text-muted)',
-                }}
-                onClick={handleClose}
-              >
-                BACK
-              </button>
-              <button
-                type="button"
-                class="action-btn font-heading font-bold text-sm tracking-wider"
-                style={{
-                  padding: '10px 28px',
-                  color: 'var(--pw-accent)',
-                }}
-                onClick={handleLaunch}
-              >
-                LAUNCH MISSION
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CampaignBriefing mission={selectedMission} onBegin={handleLaunch} onBack={handleClose} />
     );
   }
 

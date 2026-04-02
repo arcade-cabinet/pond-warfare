@@ -208,5 +208,7 @@ export function createGameWorld(): GameWorld {
     berserkerCombatFrames: new Map(),
     shrineUsed: new Set(),
     wallGateFaction: new Map(),
+    // v2.1.0
+    extendedStats: {},
   };
 }

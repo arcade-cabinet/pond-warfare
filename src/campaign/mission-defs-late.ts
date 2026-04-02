@@ -14,6 +14,7 @@ export const mission3: MissionDef = {
   number: 3,
   title: 'The Nest Must Fall',
   subtitle: 'Destroy the enemy stronghold',
+  recommendedBranch: 'warfare',
   briefing: [
     "We've located an enemy nest nearby. It must be destroyed.",
     '',
@@ -54,6 +55,11 @@ export const mission3: MissionDef = {
       text: 'The enemy is training defenders. Strike before they get stronger.',
       duration: 180,
     },
+    {
+      frame: 3600,
+      text: 'If you researched Nature, train Divers to scout underwater paths to the nest.',
+      duration: 210,
+    },
     { frame: 5400, text: "Time's running out. Launch the attack!", duration: 150 },
   ],
   settingsOverrides: {
@@ -74,6 +80,7 @@ export const mission4: MissionDef = {
   number: 4,
   title: 'Evolution',
   subtitle: 'Adapt across all branches to survive',
+  recommendedBranch: 'shadow',
   briefing: [
     'Something is wrong. The predators are evolving at an alarming rate.',
     '',
@@ -132,6 +139,7 @@ export const mission4A: MissionDef = {
   number: 4,
   title: "Predator's Lair",
   subtitle: 'Assault the enemy nests with limited forces',
+  recommendedBranch: 'shadow',
   briefing: [
     'Commander, our scouts have located three predator nests deeper in',
     'the swamp. This is a surgical strike -- no time for a full buildup.',
@@ -140,6 +148,8 @@ export const mission4A: MissionDef = {
     'Sharp Sticks and Swift Paws are already researched.',
     'Use aggression and speed to destroy all 3 nests before',
     'they can overwhelm you with reinforcements.',
+    '',
+    'If you have Shadow tech, Berserkers can cut through defenders fast.',
   ].join('\n'),
   objectives: [
     { id: 'destroy-3-nests', type: 'destroyNest', label: 'Destroy 3 Enemy Nests', count: 3 },
@@ -176,6 +186,7 @@ export const mission4B: MissionDef = {
   number: 4,
   title: 'Siege of the Lodge',
   subtitle: 'Survive 10 mega-waves of predators',
+  recommendedBranch: 'fortifications',
   briefing: [
     'The predators are massing for an all-out assault on our Lodge.',
     'We have 10 mega-waves incoming. Survive them all.',
@@ -224,6 +235,10 @@ export const mission5: MissionDef = {
     'are unlocked -- Lodge, Nature, Warfare, Fortifications, and',
     'Shadow. Use every tool at your disposal.',
     '',
+    'Deploy Warships from the Dock to bombard from the water.',
+    'Send Engineers to build siege positions. Have your Shaman',
+    'support the front line. Unleash Berserkers for the final push.',
+    '',
     'Kill the Alpha. End this war.',
   ].join('\n'),
   objectives: [
@@ -247,9 +262,14 @@ export const mission5: MissionDef = {
       duration: 240,
     },
     {
+      frame: 1800,
+      text: 'Build a Dock for Warships. Engineers can create forward siege positions.',
+      duration: 210,
+    },
+    {
       frame: 2400,
-      text: 'The Alpha is powerful. Focus fire and protect your healers.',
-      duration: 180,
+      text: 'The Alpha is powerful. Shamans can debuff it. Berserkers deal more damage as they bleed.',
+      duration: 210,
     },
     { frame: 5400, text: 'Keep fighting! We can do this!', duration: 150 },
   ],

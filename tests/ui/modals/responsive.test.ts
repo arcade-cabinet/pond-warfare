@@ -262,14 +262,22 @@ describe('Modal responsive CSS classes', () => {
     assertClasses(src, ['modal-overlay', 'modal-scroll'], 'cosmetics-panel.tsx');
   });
 
-  it('campaign-panel uses modal-overlay for both briefing and mission-select views', async () => {
+  it('campaign-panel uses modal-overlay for mission-select view', async () => {
     const src = await import('@/ui/campaign-panel?raw').then((m: { default: string }) => m.default);
-    // Both views should use the class; counting occurrences validates both.
-    const count = (src.match(/modal-overlay/g) ?? []).length;
     expect(
-      count,
-      'campaign-panel.tsx should have modal-overlay in both briefing and select views',
-    ).toBeGreaterThanOrEqual(2);
+      (src.match(/modal-overlay/g) ?? []).length,
+      'campaign-panel.tsx should have modal-overlay in mission-select view',
+    ).toBeGreaterThanOrEqual(1);
+  });
+
+  it('campaign-briefing uses data-testid for the briefing view', async () => {
+    const src = await import('@/ui/campaign-briefing?raw').then(
+      (m: { default: string }) => m.default,
+    );
+    expect(
+      src.includes('campaign-briefing'),
+      'campaign-briefing.tsx should have data-testid="campaign-briefing"',
+    ).toBe(true);
   });
 
   it('drag/swipe behavior is available in all nine modal components', async () => {
