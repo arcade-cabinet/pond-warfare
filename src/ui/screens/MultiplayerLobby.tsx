@@ -7,15 +7,15 @@
 
 import { useCallback } from 'preact/hooks';
 import { COMMANDERS } from '@/config/commanders';
+import { sendReady, sendSettings, startMultiplayerGame } from '@/net/multiplayer-controller';
 import type { LobbyPlayer } from '@/net/types';
 import { MenuButton } from '../menu-button';
-import { menuState, selectedCommander } from '../store';
+import { selectedCommander } from '../store';
 import {
   multiplayerAllReady,
   multiplayerHostSettings,
   multiplayerIsHost,
   multiplayerLobbyPlayers,
-  multiplayerMode,
   multiplayerView,
 } from '../store-multiplayer';
 
@@ -36,11 +36,12 @@ export function MultiplayerLobby() {
     multiplayerLobbyPlayers.value = players.map((p) =>
       p.id === selfId ? { ...p, ready: !p.ready } : p,
     );
+    sendReady();
+    if (isHost) sendSettings();
   }, [isHost]);
 
   const handleStartGame = useCallback(() => {
-    multiplayerMode.value = true;
-    menuState.value = 'playing';
+    startMultiplayerGame();
   }, []);
 
   const handleBack = useCallback(() => {

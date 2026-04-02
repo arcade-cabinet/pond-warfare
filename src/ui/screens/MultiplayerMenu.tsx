@@ -6,11 +6,11 @@
  */
 
 import { useCallback, useState } from 'preact/hooks';
+import { disconnectMultiplayer, hostGame, joinGame } from '@/net/multiplayer-controller';
 import { MenuButton } from '../menu-button';
 import {
   multiplayerConnected,
   multiplayerHostSettings,
-  multiplayerIsHost,
   multiplayerMenuOpen,
   multiplayerRoomCode,
   multiplayerView,
@@ -18,27 +18,17 @@ import {
 
 type Mode = 'choose' | 'host' | 'join';
 
-function generateRoomCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
 export function MultiplayerMenu() {
   const [mode, setMode] = useState<Mode>('choose');
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(false);
 
   const handleHost = useCallback(() => {
-    const code = generateRoomCode();
-    multiplayerRoomCode.value = code;
-    multiplayerIsHost.value = true;
+    hostGame();
     setMode('host');
   }, []);
 
   const handleJoin = useCallback(() => {
-    multiplayerIsHost.value = false;
     setMode('join');
   }, []);
 
@@ -54,8 +44,7 @@ export function MultiplayerMenu() {
 
   const handleJoinSubmit = useCallback(() => {
     if (joinCode.length !== 6) return;
-    multiplayerRoomCode.value = joinCode.toUpperCase();
-    // Connection will be established by net/ module
+    joinGame(joinCode.toUpperCase());
   }, [joinCode]);
 
   const handleStartGame = useCallback(() => {
@@ -66,9 +55,8 @@ export function MultiplayerMenu() {
     if (mode === 'choose') {
       multiplayerMenuOpen.value = false;
     } else {
+      disconnectMultiplayer();
       setMode('choose');
-      multiplayerRoomCode.value = '';
-      multiplayerConnected.value = false;
     }
   }, [mode]);
 

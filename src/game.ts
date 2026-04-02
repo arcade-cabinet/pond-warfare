@@ -1,10 +1,9 @@
 /** Game Orchestrator – thin shell that delegates to focused sub-modules. */
-import { audio } from '@/audio/audio-system';
-import { EntityTypeTag } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { useAirdrop, usePondBlessing, useRallyCry, useTidalSurge } from '@/game/abilities';
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
 import { useCommanderAbility } from '@/game/commander-abilities';
+import { playUnitSelectSound } from '@/game/unit-select-sound';
 import {
   applyCampaignMission,
   applyDifficultyModifiers,
@@ -28,8 +27,7 @@ import {
   destroyGame,
   handleEvacuationChoice as handleEvacChoice,
 } from '@/game/game-lifecycle';
-import type { GameLoopState } from '@/game/game-loop';
-import { cycleSpeed as cycleSpeedFn } from '@/game/game-loop';
+import { cycleSpeed as cycleSpeedFn, type GameLoopState } from '@/game/game-loop';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
@@ -38,7 +36,7 @@ import { PhysicsManager } from '@/physics/physics-world';
 import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
-import type { EntityKind, SpriteId } from '@/types';
+import type { SpriteId } from '@/types';
 import * as store from '@/ui/store';
 
 export class Game {
@@ -199,7 +197,6 @@ export class Game {
 
     ensureLifecycleListeners(this.world);
   }
-
   resize(): void {
     resizeCanvases(
       this.world,
@@ -210,7 +207,6 @@ export class Game {
       this.lightCtx,
     );
   }
-
   setZoom(level: number): void {
     this.world.zoomLevel = Math.max(0.5, Math.min(2.0, level));
     this.resize();
@@ -222,7 +218,6 @@ export class Game {
   smoothPanTo(x: number, y: number): void {
     smoothPanTo(this.world, x, y, this.panHandle);
   }
-
   syncUIStore(): void {
     syncUIStoreFn({
       world: this.world,
@@ -264,12 +259,12 @@ export class Game {
   }
 
   private playUnitSelectSound(): void {
-    if (this.world.selection.length === 0) {
-      audio.selectUnit();
-      return;
-    }
-    const kind = EntityTypeTag.kind[this.world.selection[0]] as EntityKind;
-    audio.playGroupSelectionVoice(kind, this.world.playerFaction, this.world.selection.length);
+    playUnitSelectSound(this.world);
+  }
+
+  /** Attach or detach the lockstep synchronizer on the active game loop. */
+  setLockstep(ls: import('@/net/lockstep').LockstepSync | null): void {
+    if (this.loopState) this.loopState.lockstep = ls;
   }
 
   getSprite(id: SpriteId): HTMLCanvasElement | undefined {

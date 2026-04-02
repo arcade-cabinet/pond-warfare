@@ -6,9 +6,10 @@
  */
 
 import { useEffect, useState } from 'preact/hooks';
+import { disconnectMultiplayer } from '@/net/multiplayer-controller';
 import { MenuButton } from '../menu-button';
 import { menuState } from '../store';
-import { multiplayerDisconnected, multiplayerMode } from '../store-multiplayer';
+import { multiplayerDisconnected } from '../store-multiplayer';
 
 const RECONNECT_SECONDS = 30;
 
@@ -33,13 +34,11 @@ export function DisconnectOverlay() {
   }, []);
 
   const handleContinueSolo = () => {
-    multiplayerDisconnected.value = false;
-    multiplayerMode.value = false;
+    disconnectMultiplayer();
   };
 
   const handleReturnToMenu = () => {
-    multiplayerDisconnected.value = false;
-    multiplayerMode.value = false;
+    disconnectMultiplayer();
     menuState.value = 'main';
   };
 

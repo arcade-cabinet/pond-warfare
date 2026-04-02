@@ -6,6 +6,7 @@
  */
 
 import { signal } from '@preact/signals';
+import type { RosterBuilding, RosterGroup } from './roster-types';
 import type { GameEvent as _GameEvent } from './store-types';
 
 // ---- Game over stats ----
@@ -113,3 +114,16 @@ export const dailyChallengeTitle = signal('');
 export const dailyChallengeDesc = signal('');
 /** Whether today's daily challenge has already been completed. */
 export const dailyChallengeAlreadyDone = signal(false);
+
+// ---- Production queue (moved from store.ts) ----
+export interface QueueItem {
+  buildingKind: number;
+  unitLabel: string;
+  progress: number;
+  entityId?: number;
+}
+export const globalProductionQueue = signal<QueueItem[]>([]);
+
+// ---- Roster (Forces + Buildings tabs) ----
+export const unitRoster = signal<RosterGroup[]>([]);
+export const buildingRoster = signal<RosterBuilding[]>([]);

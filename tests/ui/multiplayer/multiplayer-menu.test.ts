@@ -14,6 +14,33 @@ vi.mock('@/platform', async () => {
   return { screenClass: signal('large'), canDockPanels: signal(false) };
 });
 
+// Mock the multiplayer controller so clicking Host/Join does not touch Trystero/WebRTC
+vi.mock('@/net/multiplayer-controller', async () => {
+  const mp = await import('@/ui/store-multiplayer');
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function mockCode(): string {
+    let c = '';
+    for (let i = 0; i < 6; i++) c += chars[Math.floor(Math.random() * chars.length)];
+    return c;
+  }
+  return {
+    hostGame: vi.fn(() => {
+      const code = mockCode();
+      mp.multiplayerRoomCode.value = code;
+      mp.multiplayerIsHost.value = true;
+      return code;
+    }),
+    joinGame: vi.fn((code: string) => {
+      mp.multiplayerRoomCode.value = code;
+      mp.multiplayerIsHost.value = false;
+    }),
+    disconnectMultiplayer: vi.fn(() => {
+      mp.multiplayerRoomCode.value = '';
+      mp.multiplayerConnected.value = false;
+    }),
+  };
+});
+
 import { MultiplayerMenu } from '@/ui/screens/MultiplayerMenu';
 import {
   multiplayerConnected,

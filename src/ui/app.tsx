@@ -33,6 +33,7 @@ import { CommandPanel } from './panel/CommandPanel';
 import { MultiplayerLobby } from './screens/MultiplayerLobby';
 import { MultiplayerMenu } from './screens/MultiplayerMenu';
 import * as store from './store';
+import { multiplayerMenuOpen, multiplayerView } from './store-multiplayer';
 import { TechTreePanel } from './tech-tree-panel';
 import { UnlocksPanel } from './unlocks-panel';
 
@@ -114,8 +115,8 @@ export function App({ onMount }: AppProps) {
         {store.unlocksOpen.value && <UnlocksPanel />}
         {store.cosmeticsOpen.value && <CosmeticsPanel />}
         {store.matchHistoryOpen.value && <MatchHistoryPanel />}
-        {store.multiplayerMenuOpen.value &&
-          (store.multiplayerView.value === 'lobby' ? <MultiplayerLobby /> : <MultiplayerMenu />)}
+        {multiplayerMenuOpen.value &&
+          (multiplayerView.value === 'lobby' ? <MultiplayerLobby /> : <MultiplayerMenu />)}
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {

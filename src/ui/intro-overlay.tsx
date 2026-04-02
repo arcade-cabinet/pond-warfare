@@ -10,10 +10,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { screenClass } from '@/platform';
 import { animateIntroSubtitle, animateIntroTitle } from '@/rendering/animations';
-import { customMapSeed, type Difficulty, selectedDifficulty } from '@/ui/store';
+import { customMapSeed, type DifficultyLevel, selectedDifficulty } from '@/ui/store';
 
 const DIFFICULTY_OPTIONS: {
-  key: Difficulty;
+  key: DifficultyLevel;
   label: string;
   desc: string;
   tint: string;
@@ -45,7 +45,7 @@ const DIFFICULTY_OPTIONS: {
 export function IntroOverlay() {
   const [visible, setVisible] = useState(true);
   const [fading, setFading] = useState(false);
-  const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('normal');
   const [seedInput, setSeedInput] = useState('');
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
