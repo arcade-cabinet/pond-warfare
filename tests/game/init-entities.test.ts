@@ -55,6 +55,9 @@ const SCENARIOS: MapScenario[] = [
   'labyrinth',
   'river',
   'peninsula',
+  'archipelago',
+  'ravine',
+  'swamp',
 ];
 
 describe('init-entities determinism', () => {

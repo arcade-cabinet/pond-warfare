@@ -1,0 +1,34 @@
+appId: com.arcadecabinet.pondwarfare
+name: Settings Persistence
+tags:
+  - ci
+---
+# Launch app
+- launchApp
+- waitForAnimationToEnd
+
+# Open Settings from main menu
+- tapOn: "Settings"
+- waitForAnimationToEnd
+
+# Change audio volume (tap the volume slider area)
+- tapOn: "Music Volume"
+- waitForAnimationToEnd
+- takeScreenshot: settings-volume-changed
+
+# Close settings
+- tapOn:
+    text: "\u2715"
+- waitForAnimationToEnd
+
+# Relaunch app to verify persistence
+- stopApp
+- launchApp
+- waitForAnimationToEnd
+
+# Re-open Settings
+- tapOn: "Settings"
+- waitForAnimationToEnd
+
+# Take screenshot to verify the setting persisted
+- takeScreenshot: settings-persisted-after-restart

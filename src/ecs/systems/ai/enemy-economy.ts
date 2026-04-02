@@ -6,6 +6,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
+import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   ENEMY_GATHERER_COST,
@@ -82,7 +83,13 @@ export function enemyEconomyTick(world: GameWorld): void {
       }
     }
 
-    if (gathererCount >= ENEMY_MAX_GATHERERS_PER_NEST) continue;
+    // AI personality adjusts max gatherers per nest
+    const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+    const maxGatherers = Math.max(
+      1,
+      Math.round(ENEMY_MAX_GATHERERS_PER_NEST * personality.gathererRate),
+    );
+    if (gathererCount >= Math.min(maxGatherers, personality.maxGatherersPerNest)) continue;
 
     // Find nearest resource node
     let closestResource = -1;

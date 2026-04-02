@@ -113,6 +113,9 @@ export interface GameWorld {
     | 'labyrinth'
     | 'river'
     | 'peninsula'
+    | 'archipelago'
+    | 'ravine'
+    | 'swamp'
     | null;
   nestCountOverride: number;
   resourceDensityMod: number;
@@ -212,6 +215,10 @@ export interface GameWorld {
 
   // Wave counter (incremented each mega-wave spawn)
   waveNumber: number;
+
+  // Commander active ability state
+  commanderAbilityCooldownUntil: number;
+  commanderAbilityActiveUntil: number;
 
   // Game-end spectacle state
   /** Frame at which the game entered 'win' or 'lose' (0 = not ended). */

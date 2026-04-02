@@ -1,0 +1,39 @@
+appId: com.arcadecabinet.pondwarfare
+name: In-Game HUD Verification
+tags:
+  - ci
+---
+# Launch and start a quick game
+- launchApp
+- waitForAnimationToEnd
+- tapOn: "New Game"
+- waitForAnimationToEnd
+- tapOn: "START GAME"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Clams"
+    timeout: 10000
+
+# Verify main HUD resource bar is visible
+- assertVisible: "Clams"
+- assertVisible: "Twigs"
+- takeScreenshot: hud-resources
+
+# Tap accordion sections in the HUD to verify they expand
+- tapOn: "Units"
+- waitForAnimationToEnd
+- takeScreenshot: hud-units-section
+
+- tapOn: "Buildings"
+- waitForAnimationToEnd
+- takeScreenshot: hud-buildings-section
+
+- tapOn: "Tech"
+- waitForAnimationToEnd
+- takeScreenshot: hud-tech-section
+
+# Verify settings gear button is accessible
+- tapOn:
+    id: "settings-btn"
+- waitForAnimationToEnd
+- takeScreenshot: hud-settings-opened

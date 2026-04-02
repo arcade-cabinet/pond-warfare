@@ -112,6 +112,9 @@ export function enemyTrainingTick(world: GameWorld): void {
   } else if (world.difficulty === 'easy') {
     trainInterval = Math.floor(trainInterval * 1.25);
   }
+  // AI personality train speed multiplier
+  const pConfig = resolvePersonality(world.aiPersonality, world.frameCount);
+  trainInterval = Math.max(30, Math.round(trainInterval / pConfig.trainSpeedMult));
   if (world.frameCount % trainInterval !== 0) return;
 
   const nestEids = getEnemyNests(world);

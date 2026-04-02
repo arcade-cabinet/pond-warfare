@@ -217,6 +217,70 @@ export const COMMANDERS: CommanderDef[] = [
   },
 ];
 
+export interface ActiveAbilityDef {
+  name: string;
+  description: string;
+  /** Cooldown duration in frames (60fps). */
+  cooldownFrames: number;
+  /** Duration of the active effect in frames. 0 = instant. */
+  durationFrames: number;
+  /** Keyboard shortcut key. */
+  hotkey: string;
+}
+
+/** Active ability for each commander. Keyed by commander id. */
+export const COMMANDER_ABILITIES: Record<string, ActiveAbilityDef> = {
+  marshal: {
+    name: 'Charge!',
+    description: 'Selected units gain 2x speed for 5 seconds.',
+    cooldownFrames: 5400, // 90s
+    durationFrames: 300, // 5s
+    hotkey: 'q',
+  },
+  sage: {
+    name: 'Eureka!',
+    description: 'Instantly complete current research.',
+    cooldownFrames: 10800, // 180s
+    durationFrames: 0, // instant
+    hotkey: 'q',
+  },
+  warden: {
+    name: 'Fortify!',
+    description: 'All buildings become invulnerable for 10 seconds.',
+    cooldownFrames: 7200, // 120s
+    durationFrames: 600, // 10s
+    hotkey: 'q',
+  },
+  tidekeeper: {
+    name: 'Tidal Wave',
+    description: 'Push enemies away from the Lodge.',
+    cooldownFrames: 5400, // 90s
+    durationFrames: 0, // instant
+    hotkey: 'q',
+  },
+  shadowfang: {
+    name: 'Vanish',
+    description: 'All units become invisible for 8 seconds.',
+    cooldownFrames: 7200, // 120s
+    durationFrames: 480, // 8s
+    hotkey: 'q',
+  },
+  ironpaw: {
+    name: 'Iron Will',
+    description: 'All units immune to damage for 5 seconds.',
+    cooldownFrames: 9000, // 150s
+    durationFrames: 300, // 5s
+    hotkey: 'q',
+  },
+  stormcaller: {
+    name: 'Thunder Strike',
+    description: 'Massive AoE damage at target location.',
+    cooldownFrames: 7200, // 120s
+    durationFrames: 0, // instant
+    hotkey: 'q',
+  },
+};
+
 /** Look up a commander definition by its id. Falls back to 'marshal'. */
 export function getCommanderDef(id: string): CommanderDef {
   return COMMANDERS.find((c) => c.id === id) ?? COMMANDERS[0];

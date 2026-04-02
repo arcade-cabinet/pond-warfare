@@ -25,6 +25,7 @@ import type { GameWorld } from '@/ecs/world';
 import { type EntityKind as EntityKindType, ResourceType, type SpriteId } from '@/types';
 import { entityScales } from '../animations';
 import { getRecoloredSprite, type RecolorPreset, veterancyPreset } from '../recolor';
+import { getAnimVisuals, tickAnimation } from '../sprite-animation';
 import {
   drawHealthBar,
   drawSelectionBrackets,
@@ -173,7 +174,6 @@ export function renderEntity(eid: number, frameCount: number): void {
     spr.visible = true;
   }
 
-  spr.position.set(ex, ey + yOff);
   spr.zIndex = ey;
 
   const animScale = entityScales.get(eid);
@@ -183,8 +183,23 @@ export function renderEntity(eid: number, frameCount: number): void {
     scaleX = animScale.scaleX;
     scaleY = animScale.scaleY;
   }
+
+  // Apply sprite animation (walk/attack/idle) for non-building, non-resource entities
+  let animYOff = 0;
+  let animRotation = 0;
+  if (!isBuilding && !isResource) {
+    tickAnimation(eid);
+    const anim = getAnimVisuals(eid);
+    animYOff = anim.yOffset;
+    scaleX *= anim.scaleX;
+    scaleY *= anim.scaleY;
+    animRotation = anim.rotation;
+  }
+
+  spr.position.set(ex, ey + yOff + animYOff);
   if (facingLeft && !isBuilding) scaleX = -scaleX;
   spr.scale.set(scaleX, scaleY);
+  spr.rotation = animRotation;
 
   if (flashTimer > 0) {
     spr.alpha = 0.7;

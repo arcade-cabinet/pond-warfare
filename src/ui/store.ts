@@ -126,8 +126,29 @@ export const goTimeSurvived = signal('');
 export const goFrameCount = signal(0);
 export const goMapSeed = signal(0);
 
+// ---- Game mode ----
+export type GameMode = 'skirmish' | 'survival' | 'campaign';
+export const gameMode = signal<GameMode>('skirmish');
+export const survivalScore = signal(0);
+export const survivalWave = signal(0);
+
+// ---- Commander ability ----
+export const commanderAbilityReady = signal(false);
+export const commanderAbilityCooldown = signal(0);
+export const commanderAbilityActive = signal(false);
+export const commanderAbilityName = signal('');
+
 // ---- Map scenario ----
-export type MapScenario = 'standard' | 'island' | 'contested' | 'labyrinth' | 'river' | 'peninsula';
+export type MapScenario =
+  | 'standard'
+  | 'island'
+  | 'contested'
+  | 'labyrinth'
+  | 'river'
+  | 'peninsula'
+  | 'archipelago'
+  | 'ravine'
+  | 'swamp';
 export const mapScenario = signal<MapScenario>('standard');
 
 // ---- Map seed input (for intro screen) ----

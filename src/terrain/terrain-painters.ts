@@ -3,11 +3,15 @@
  *
  * Scenario-specific terrain painting functions. Each paints terrain types
  * onto the TerrainGrid based on the map layout.
+ *
+ * Extended scenarios (Archipelago, Ravine, Swamp) are in terrain-painters-extended.ts.
  */
 
 import { TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { SeededRandom } from '@/utils/random';
 import { type TerrainGrid, TerrainType } from './terrain-grid';
+
+export { paintArchipelago, paintRavine, paintSwamp } from './terrain-painters-extended';
 
 interface PaintContext {
   grid: TerrainGrid;

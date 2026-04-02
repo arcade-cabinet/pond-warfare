@@ -183,6 +183,8 @@ export function createGameWorld(): GameWorld {
     terrainGrid: new TerrainGrid(WORLD_WIDTH, WORLD_HEIGHT, TILE_SIZE),
     combatZones: [],
     waveNumber: 0,
+    commanderAbilityCooldownUntil: 0,
+    commanderAbilityActiveUntil: 0,
     gameEndFrame: 0,
     gameEndFocusX: 0,
     gameEndFocusY: 0,
