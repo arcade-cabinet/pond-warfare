@@ -57,7 +57,7 @@ export function diverStealthSystem(world: GameWorld): void {
     const terrain = world.terrainGrid.getAt(Position.x[eid], Position.y[eid]);
     const onWater = STEALTH_TERRAINS.has(terrain);
     const state = UnitStateMachine.state[eid] as UnitState;
-    const isAttacking = state === UnitState.Attacking || state === UnitState.AttackMove;
+    const isAttacking = state === UnitState.Attacking;
 
     if (onWater && !isAttacking) {
       // Grant stealth if on water and not actively attacking
