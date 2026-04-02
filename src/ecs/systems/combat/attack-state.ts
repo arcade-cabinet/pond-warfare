@@ -26,6 +26,8 @@ import {
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
+import { triggerAttackLunge } from '@/rendering/animations';
+import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /**
@@ -54,7 +56,15 @@ export function processAttackState(
   Sprite.facingLeft[eid] = dx < 0 ? 1 : 0;
 
   const dist = Math.sqrt(dx * dx + dy * dy);
-  const atkRange = Combat.attackRange[eid];
+  let atkRange = Combat.attackRange[eid];
+
+  // High ground bonus: +25% range for ranged units (attackRange > 50)
+  if (atkRange > 50) {
+    const terrain = world.terrainGrid.getAt(ex, ey);
+    if (terrain === TerrainType.HighGround) {
+      atkRange = Math.round(atkRange * 1.25);
+    }
+  }
 
   if (dist <= atkRange) {
     if (Combat.attackCooldown[eid] <= 0) {
@@ -270,6 +280,7 @@ function executeMeleeAttack(
   }
 
   takeDamage(world, tEnt, meleeDmg, eid, mult);
+  triggerAttackLunge(eid, tEnt);
 
   if (kind === EntityKind.VenomSnake) {
     world.poisonTimers.set(tEnt, 5);

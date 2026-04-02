@@ -93,6 +93,7 @@ export function issueContextCommand(
   );
 
   let barkShown = false;
+  let voicePlayed = false;
 
   for (let idx = 0; idx < world.selection.length; idx++) {
     const eid = world.selection[idx];
@@ -111,11 +112,21 @@ export function issueContextCommand(
 
     if (target != null) {
       barkShown = dispatchTargetCommand(world, eid, target, kind, worldX, worldY, barkShown);
+      // Play command voice for the leader (first unit) only
+      if (!voicePlayed) {
+        const voiceTrigger = getCommandVoiceTrigger(world, target);
+        if (voiceTrigger) audio.playCommandVoice(kind, voiceTrigger);
+        voicePlayed = true;
+      }
     } else {
       UnitStateMachine.state[eid] = UnitState.Move;
       UnitStateMachine.targetEntity[eid] = -1;
       if (!barkShown) {
         barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'move');
+      }
+      if (!voicePlayed) {
+        audio.playCommandVoice(kind, 'move');
+        voicePlayed = true;
       }
     }
   }
@@ -219,6 +230,20 @@ function dispatchTargetCommand(
   }
 
   return barkShown;
+}
+
+/** Determine the voice trigger type based on the target entity. */
+function getCommandVoiceTrigger(
+  world: GameWorld,
+  target: number,
+): 'move' | 'attack' | 'gather' | null {
+  if (hasComponent(world.ecs, target, FactionTag) && FactionTag.faction[target] === Faction.Enemy) {
+    return 'attack';
+  }
+  if (hasComponent(world.ecs, target, IsResource)) {
+    return 'gather';
+  }
+  return 'move';
 }
 
 // ---- Formation Helpers ----

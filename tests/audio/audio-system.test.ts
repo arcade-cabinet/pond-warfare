@@ -157,6 +157,9 @@ describe('AudioSystem – sound methods (no throw when started)', () => {
     'deathBuilding',
     'trainComplete',
     'buildComplete',
+    'enemyEvolution',
+    'veteranPromotion',
+    'advisorTip',
   ];
 
   for (const method of methods) {

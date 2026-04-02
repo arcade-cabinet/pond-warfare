@@ -110,6 +110,37 @@ export function triggerSpawnPop(eid: number): void {
   activeAnimations.set(eid, anim);
 }
 
+/**
+ * Trigger a melee attack lunge: briefly shift toward the target then snap back.
+ * Uses scaleX to simulate the lunge (stretch toward target, then compress back).
+ */
+export function triggerAttackLunge(eid: number, targetEid: number): void {
+  // Use entityScales to represent lunge: stretch on X, squash on Y
+  const existing = activeAnimations.get(eid);
+  if (existing) existing.pause();
+
+  const scale: EntityScale = { scaleX: 1, scaleY: 1 };
+  entityScales.set(eid, scale);
+
+  const anim = animate(scale, {
+    scaleX: [1, 1.25, 0.95, 1.0],
+    scaleY: [1, 0.85, 1.05, 1.0],
+    duration: 180,
+    ease: 'outQuad',
+    onUpdate: () => {
+      entityScales.set(eid, { scaleX: scale.scaleX, scaleY: scale.scaleY });
+    },
+    onComplete: () => {
+      activeAnimations.delete(eid);
+      entityScales.delete(eid);
+    },
+  });
+
+  activeAnimations.set(eid, anim);
+  // Suppress unused parameter lint — targetEid reserved for directional lunge
+  void targetEid;
+}
+
 /** Remove animation state for a dead entity. */
 export function cleanupEntityAnimation(eid: number): void {
   const existing = activeAnimations.get(eid);

@@ -1,5 +1,4 @@
 /** Game Orchestrator – thin shell that delegates to focused sub-modules. */
-
 import { audio } from '@/audio/audio-system';
 import { EntityTypeTag } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -31,6 +30,7 @@ import {
 import type { GameLoopState } from '@/game/game-loop';
 import { cycleSpeed as cycleSpeedFn } from '@/game/game-loop';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
+import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import { PhysicsManager } from '@/physics/physics-world';
@@ -45,6 +45,7 @@ export class Game {
   spriteCanvases: Map<SpriteId, HTMLCanvasElement> = new Map();
   recorder = new ReplayRecorder();
   physicsManager!: PhysicsManager;
+  governor: Governor | null = null;
   private container!: HTMLElement;
   private gameCanvas!: HTMLCanvasElement;
   private fogCanvas!: HTMLCanvasElement;
@@ -187,6 +188,7 @@ export class Game {
       recorder: this.recorder,
       audioInitialized: this.audioInitialized,
       syncUIStore: () => this.syncUIStore(),
+      governor: this.governor,
     });
 
     // WebGL context recovery wired to loop state
@@ -213,11 +215,9 @@ export class Game {
     this.resize();
     clampCamera(this.world);
   }
-
   cycleSpeed(): void {
     if (this.loopState) cycleSpeedFn(this.loopState);
   }
-
   smoothPanTo(x: number, y: number): void {
     smoothPanTo(this.world, x, y, this.panHandle);
   }

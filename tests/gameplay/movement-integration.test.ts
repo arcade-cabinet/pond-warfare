@@ -33,6 +33,7 @@ import { combatSystem } from '@/ecs/systems/combat';
 import { movementSystem } from '@/ecs/systems/movement';
 import type { GameWorld } from '@/ecs/world';
 import { issueContextCommand } from '@/input/selection';
+import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 // Mock audio to prevent errors
@@ -100,6 +101,7 @@ function createTestWorld(): GameWorld {
       release: () => {},
     },
     activeParticles: [],
+    terrainGrid: new TerrainGrid(2560, 2560, 32),
   } as unknown as GameWorld;
 }
 

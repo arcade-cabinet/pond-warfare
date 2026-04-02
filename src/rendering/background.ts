@@ -8,7 +8,9 @@
  */
 
 import { FOG_TEXTURE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
-import { biomeColor, fbm, valueNoise } from './background-noise';
+import type { TerrainGrid } from '@/terrain/terrain-grid';
+import { TerrainType } from '@/terrain/terrain-grid';
+import { biomeColor, fbm, type RGB, valueNoise } from './background-noise';
 
 function require2DContext(
   canvas: HTMLCanvasElement,
@@ -27,8 +29,11 @@ function require2DContext(
  * Uses multi-octave value noise to create a biome map with smooth
  * blending between biome colors, detail noise for texture variation,
  * and shore foam effects along water-land boundaries.
+ *
+ * When a TerrainGrid is provided, terrain tiles are tinted to reflect
+ * their type (water=blue, mud=brown, rocks=grey, high ground=bright).
  */
-export function buildBackground(): HTMLCanvasElement {
+export function buildBackground(terrainGrid?: TerrainGrid): HTMLCanvasElement {
   const bgCanvas = document.createElement('canvas');
   bgCanvas.width = WORLD_WIDTH;
   bgCanvas.height = WORLD_HEIGHT;
@@ -122,6 +127,11 @@ export function buildBackground(): HTMLCanvasElement {
         }
       }
 
+      // Apply terrain type tint overlay
+      if (terrainGrid) {
+        color = applyTerrainTint(color, terrainGrid, x, y);
+      }
+
       const idx = (y * WORLD_WIDTH + x) * 4;
       pixels[idx] = color.r;
       pixels[idx + 1] = color.g;
@@ -132,6 +142,38 @@ export function buildBackground(): HTMLCanvasElement {
 
   ctx.putImageData(imageData, 0, 0);
   return bgCanvas;
+}
+
+/** Terrain type color tints applied as a blend over the procedural base. */
+const TERRAIN_TINTS: Partial<Record<TerrainType, RGB>> = {
+  [TerrainType.Water]: { r: 5, g: 20, b: 50 },
+  [TerrainType.Shallows]: { r: 20, g: 50, b: 70 },
+  [TerrainType.Mud]: { r: 50, g: 25, b: 5 },
+  [TerrainType.Rocks]: { r: 40, g: 40, b: 45 },
+  [TerrainType.HighGround]: { r: 25, g: 30, b: 15 },
+};
+
+/** Blend a terrain tint into the base color. Grass (default) is untouched. */
+function applyTerrainTint(base: RGB, terrainGrid: TerrainGrid, x: number, y: number): RGB {
+  const type = terrainGrid.getAt(x, y);
+  if (type === TerrainType.Grass) return base;
+
+  const tint = TERRAIN_TINTS[type];
+  if (!tint) return base;
+
+  // Blend strength varies by type
+  const strength =
+    type === TerrainType.Water || type === TerrainType.Rocks
+      ? 0.6
+      : type === TerrainType.Shallows
+        ? 0.4
+        : 0.35;
+
+  return {
+    r: Math.max(0, Math.min(255, Math.round(base.r * (1 - strength) + tint.r * strength))),
+    g: Math.max(0, Math.min(255, Math.round(base.g * (1 - strength) + tint.g * strength))),
+    b: Math.max(0, Math.min(255, Math.round(base.b * (1 - strength) + tint.b * strength))),
+  };
 }
 
 /**

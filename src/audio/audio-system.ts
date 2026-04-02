@@ -213,8 +213,26 @@ export class AudioSystem {
   buildComplete(): void {
     this.sfxMgr.buildComplete();
   }
+  enemyEvolution(): void {
+    this.sfxMgr.enemyEvolution();
+  }
+  veteranPromotion(worldX?: number): void {
+    this.sfxMgr.veteranPromotion(worldX);
+  }
+  advisorTip(): void {
+    this.sfxMgr.advisorTip();
+  }
+  deposit(worldX?: number): void {
+    this.sfxMgr.deposit(worldX);
+  }
+  pickup(worldX?: number): void {
+    this.sfxMgr.pickup(worldX);
+  }
   playSelectionVoice(kind: EntityKind, faction: PlayableFaction): void {
     this.voiceMgr.playSelectionVoice(kind, faction);
+  }
+  playCommandVoice(kind: EntityKind, trigger: 'move' | 'attack' | 'gather'): void {
+    this.voiceMgr.playCommandVoice(kind, trigger);
   }
   combatStinger(): void {
     this.cueMgr.combatStinger();

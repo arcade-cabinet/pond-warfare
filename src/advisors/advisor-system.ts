@@ -11,6 +11,7 @@
 
 import { signal } from '@preact/signals';
 
+import { audio } from '@/audio/audio-system';
 import {
   ADVISOR_EVAL_INTERVAL,
   ADVISOR_TIP_GAP,
@@ -87,6 +88,7 @@ export function advisorSystem(world: GameWorld): void {
   // Show the highest-priority candidate
   const winner = candidates[0];
   currentAdvisorTip.value = winner;
+  audio.advisorTip();
   tipShownFrame = frame;
 }
 

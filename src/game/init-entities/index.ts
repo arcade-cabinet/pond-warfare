@@ -9,11 +9,18 @@ import { getFactionConfig } from '@/config/factions';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import type { GameWorld } from '@/ecs/world';
+import {
+  paintContested,
+  paintIsland,
+  paintLabyrinth,
+  paintPeninsula,
+  paintRiver,
+  paintStandard,
+} from '@/terrain/terrain-painters';
 import { EntityKind, Faction } from '@/types';
 import type { MapScenario } from '@/ui/store';
 import { mapScenario as mapScenarioSignal } from '@/ui/store';
 import { SeededRandom } from '@/utils/random';
-
 import {
   clampWorld,
   QUADRANTS,
@@ -140,6 +147,29 @@ export function spawnInitialEntities(world: GameWorld): void {
       break;
     default:
       spawnStandard(ctx, targetNestCount);
+      break;
+  }
+
+  // ---- Paint terrain types for the selected scenario ----
+  const tg = world.terrainGrid;
+  switch (scenario) {
+    case 'island':
+      paintIsland(tg, rng);
+      break;
+    case 'contested':
+      paintContested(tg, rng);
+      break;
+    case 'labyrinth':
+      paintLabyrinth(tg, rng);
+      break;
+    case 'river':
+      paintRiver(tg, rng);
+      break;
+    case 'peninsula':
+      paintPeninsula(tg, rng);
+      break;
+    default:
+      paintStandard(tg, rng);
       break;
   }
 

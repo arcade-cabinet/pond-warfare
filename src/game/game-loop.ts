@@ -16,6 +16,7 @@ import {
   Selectable,
 } from '@/ecs/components';
 import { syncRosters } from '@/game/roster-sync';
+import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
@@ -56,6 +57,7 @@ export interface GameLoopState extends DrawState {
   pointer: PointerHandler;
   recorder: ReplayRecorder;
   syncUIStore: () => void;
+  governor: Governor | null;
 }
 
 /** Cycle game speed (1x -> 2x -> 3x -> 1x). */
@@ -159,6 +161,7 @@ function updateLogic(state: GameLoopState): void {
 
   const throttleAI = spatialEnts.length > 300 && w.frameCount % 2 !== 0;
   runSystems(w, state.physicsManager, throttleAI);
+  if (state.governor?.enabled) state.governor.tick();
 
   const pendingDrag = state.pointer.consumeDragRect();
   if (pendingDrag) {

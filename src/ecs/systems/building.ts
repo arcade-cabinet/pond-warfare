@@ -116,17 +116,20 @@ export function buildingSystem(world: GameWorld): void {
           // Flash the building sprite white
           Health.flashTimer[tEnt] = 12;
 
-          // Floating text celebration with building-specific name
+          // Gold floating announcement text centered on building
           const buildingName = hasComponent(world.ecs, tEnt, EntityTypeTag)
             ? entityKindName(EntityTypeTag.kind[tEnt] as EntityKind)
             : 'Building';
           world.floatingTexts.push({
             x: bx,
             y: by - 30,
-            text: `${buildingName} Complete!`,
-            color: '#4ade80',
+            text: `${buildingName} COMPLETE!`,
+            color: '#fbbf24',
             life: 90,
           });
+
+          // Minimap ping on the completed building
+          world.minimapPings.push({ x: bx, y: by, life: 120, maxLife: 120 });
 
           world.stats.buildingsBuilt++;
           UnitStateMachine.state[eid] = UnitState.Idle;

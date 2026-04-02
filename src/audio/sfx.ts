@@ -1,8 +1,10 @@
 /** SFX module - All sound effect methods and synth pool management. */
 import * as Tone from 'tone';
 import {
+  advisorTipEffect,
   buildCompleteEffect,
   deathBuildingEffect,
+  enemyEvolutionEffect,
   loseEffect,
   pingEffect,
   placeBuildingEffect,
@@ -11,11 +13,17 @@ import {
   selectHealerEffect,
   selectScoutEffect,
   upgradeEffect,
+  veteranPromotionEffect,
   winEffect,
 } from './sfx-secondary';
 
 function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
+}
+
+/** Return a multiplier in [1 - range, 1 + range] for pitch variation. */
+function jitter(range: number): number {
+  return 1 + (Math.random() * 2 - 1) * range;
 }
 
 export interface SynthPannerPair {
@@ -108,19 +116,23 @@ export class SfxManager {
 
   // ---- Single-note effects ----
   chop(worldX?: number): void {
-    this.playAt(200, 'square', 0.1, 0.05, 100, worldX);
+    const p = jitter(0.08);
+    this.playAt(200 * p, 'square', 0.1, 0.05, 100 * p, worldX);
   }
   mine(worldX?: number): void {
-    this.playAt(400, 'sine', 0.1, 0.05, 300, worldX);
+    const p = jitter(0.08);
+    this.playAt(400 * p, 'sine', 0.1, 0.05, 300 * p, worldX);
   }
   build(worldX?: number): void {
     this.playAt(150, 'sawtooth', 0.15, 0.05, 50, worldX);
   }
   hit(worldX?: number): void {
-    this.playAt(90, 'sawtooth', 0.2, 0.1, 40, worldX);
+    const p = jitter(0.05);
+    this.playAt(90 * p, 'sawtooth', 0.2, 0.1, 40 * p, worldX);
   }
   shoot(worldX?: number): void {
-    this.playAt(700, 'triangle', 0.1, 0.05, 1200, worldX);
+    const p = jitter(0.05);
+    this.playAt(700 * p, 'triangle', 0.1, 0.05, 1200 * p, worldX);
   }
   alert(): void {
     this.playAt(400, 'square', 0.8, 0.2, 300);
@@ -156,13 +168,22 @@ export class SfxManager {
     this.playAt(150, 'square', 0.15, 0.08, 80);
   }
   deathUnit(worldX?: number): void {
-    this.playAt(120, 'sawtooth', 0.15, 0.08, 60, worldX);
+    const p = jitter(0.05);
+    this.playAt(120 * p, 'sawtooth', 0.15, 0.08, 60 * p, worldX);
   }
   trainComplete(): void {
     this.playAt(500, 'sine', 0.1, 0.06, 800);
   }
   airdropIncoming(): void {
     this.playAt(1200, 'sine', 0.4, 0.08, 300);
+  }
+  /** Short rising tone when resources are deposited at the Lodge. */
+  deposit(worldX?: number): void {
+    this.playAt(500, 'sine', 0.08, 0.04, 800, worldX);
+  }
+  /** Subtle pickup sound when a gatherer finishes collecting a resource. */
+  pickup(worldX?: number): void {
+    this.playAt(700, 'triangle', 0.06, 0.03, 900, worldX);
   }
 
   // ---- Multi-note effects (delegated to sfx-secondary.ts) ----
@@ -198,5 +219,14 @@ export class SfxManager {
   }
   buildComplete(): void {
     buildCompleteEffect(this, this._getMuted, this._getStarted);
+  }
+  enemyEvolution(): void {
+    enemyEvolutionEffect(this, this._getMuted, this._getStarted);
+  }
+  veteranPromotion(worldX?: number): void {
+    veteranPromotionEffect(this, this._getMuted, this._getStarted, worldX);
+  }
+  advisorTip(): void {
+    advisorTipEffect(this, this._getMuted, this._getStarted);
   }
 }

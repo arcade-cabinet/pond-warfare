@@ -14,6 +14,7 @@
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { campaignNotifyTrained } from '@/campaign';
+import { entityKindName } from '@/config/entity-defs';
 import { TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -102,8 +103,19 @@ export function trainingSystem(world: GameWorld): void {
         TrainingQueue.timer[eid] = TRAIN_TIMER;
       }
 
-      // Training complete sound
+      // Training complete sound + unit selection voice
       audio.trainComplete();
+      audio.playSelectionVoice(unitKind, world.playerFaction);
+
+      // "{Unit Name} Ready" floating text near building
+      const unitName = entityKindName(unitKind);
+      world.floatingTexts.push({
+        x: bx,
+        y: by - 20,
+        text: `${unitName} Ready`,
+        color: '#38bdf8',
+        life: 50,
+      });
 
       // Spawn pop animation (scale 0 -> 1.2 -> 1.0)
       triggerSpawnPop(newEid);

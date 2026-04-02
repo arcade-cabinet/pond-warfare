@@ -59,7 +59,26 @@ export class VoiceManager {
   playSelectionVoice(kind: EntityKind, faction: PlayableFaction): void {
     const palette = faction === 'predator' ? PREDATOR_PALETTE : OTTER_PALETTE;
     const role = this.roleFor(kind, faction);
-    for (const step of palette[role]) {
+    this.playPalette(palette[role]);
+  }
+
+  /** Play a command acknowledgement voice (move/attack/gather). */
+  playCommandVoice(kind: EntityKind, trigger: 'move' | 'attack' | 'gather'): void {
+    const role = this.roleFor(kind, 'otter');
+    const base = OTTER_PALETTE[role];
+    // Pitch-shift the selection palette based on command type
+    const shift = trigger === 'attack' ? 0.7 : trigger === 'gather' ? 1.15 : 1.0;
+    const steps: VoiceStep[] = base.map((s) => ({
+      ...s,
+      freq: Math.round(s.freq * shift),
+      slide: s.slide ? Math.round(s.slide * shift) : undefined,
+      duration: s.duration * 0.8,
+    }));
+    this.playPalette(steps);
+  }
+
+  private playPalette(steps: readonly VoiceStep[]): void {
+    for (const step of steps) {
       setTimeout(() => {
         this.sfx.playAt(step.freq, step.type, step.duration, step.volume, step.slide ?? null);
       }, step.delay ?? 0);
