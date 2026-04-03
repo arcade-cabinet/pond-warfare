@@ -1,13 +1,13 @@
 /**
  * Background & Fog Texture Generator
  *
- * - buildBackground(): generates the 2560x2560 procedural terrain with biome
+ * - buildBackground(): generates the procedural terrain with biome
  *   blending using multi-octave value noise (fbm), splat blending between
  *   biome colors, detail noise, and shore foam effects.
  * - buildFogTexture(): generates the 256x256 seamless fog noise texture.
  */
 
-import { FOG_TEXTURE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { FOG_TEXTURE_SIZE } from '@/constants';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { biomeColor, fbm, type RGB, valueNoise } from './background-noise';
@@ -32,27 +32,37 @@ function require2DContext(
  *
  * When a TerrainGrid is provided, terrain tiles are tinted to reflect
  * their type (water=blue, mud=brown, rocks=grey, high ground=bright).
+ *
+ * @param worldW  - World width in pixels (defaults to terrainGrid dims or 2560).
+ * @param worldH  - World height in pixels (defaults to terrainGrid dims or 2560).
  */
-export function buildBackground(terrainGrid?: TerrainGrid): HTMLCanvasElement {
+export function buildBackground(
+  terrainGrid?: TerrainGrid,
+  worldW?: number,
+  worldH?: number,
+): HTMLCanvasElement {
+  const w = worldW ?? (terrainGrid ? terrainGrid.cols * 32 : 2560);
+  const h = worldH ?? (terrainGrid ? terrainGrid.rows * 32 : 2560);
+
   const bgCanvas = document.createElement('canvas');
-  bgCanvas.width = WORLD_WIDTH;
-  bgCanvas.height = WORLD_HEIGHT;
+  bgCanvas.width = w;
+  bgCanvas.height = h;
   const ctx = require2DContext(bgCanvas, { alpha: false });
 
-  const imageData = ctx.createImageData(WORLD_WIDTH, WORLD_HEIGHT);
+  const imageData = ctx.createImageData(w, h);
   const pixels = imageData.data;
 
   const seed = 42;
   const detailSeed = 137;
 
-  // Tile scale: map 2560px across ~80 tiles of noise space
-  const noiseScale = 80 / WORLD_WIDTH;
+  // Tile scale: map pixels across ~80 tiles of noise space
+  const noiseScale = 80 / w;
 
   // Pre-compute the biome noise grid at a lower resolution and upsample
   // for performance. Use 4px blocks.
   const blockSize = 4;
-  const gridW = Math.ceil(WORLD_WIDTH / blockSize);
-  const gridH = Math.ceil(WORLD_HEIGHT / blockSize);
+  const gridW = Math.ceil(w / blockSize);
+  const gridH = Math.ceil(h / blockSize);
 
   // Biome noise grid
   const biomeGrid = new Float32Array(gridW * gridH);
@@ -65,11 +75,8 @@ export function buildBackground(terrainGrid?: TerrainGrid): HTMLCanvasElement {
   }
 
   // Render pixels
-  for (let y = 0; y < WORLD_HEIGHT; y++) {
-    for (let x = 0; x < WORLD_WIDTH; x++) {
-      const gx = Math.min(Math.floor(x / blockSize), gridW - 1);
-      const gy = Math.min(Math.floor(y / blockSize), gridH - 1);
-
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
       // Bilinear interpolation of the biome grid for smoother results
       const gxf = x / blockSize;
       const gyf = y / blockSize;
@@ -105,9 +112,9 @@ export function buildBackground(terrainGrid?: TerrainGrid): HTMLCanvasElement {
       };
 
       // Shore foam effect: detect water-land boundary
-      // Check if we're near the 0.45 threshold (water/land boundary)
+      const gx = Math.min(Math.floor(x / blockSize), gridW - 1);
+      const gy = Math.min(Math.floor(y / blockSize), gridH - 1);
       if (biomeVal > 0.4 && biomeVal < 0.5) {
-        // Check neighbors for water
         const leftBiome = gx > 0 ? biomeGrid[gy * gridW + (gx - 1)] : biomeVal;
         const rightBiome = gx < gridW - 1 ? biomeGrid[gy * gridW + (gx + 1)] : biomeVal;
         const upBiome = gy > 0 ? biomeGrid[(gy - 1) * gridW + gx] : biomeVal;
@@ -117,7 +124,6 @@ export function buildBackground(terrainGrid?: TerrainGrid): HTMLCanvasElement {
           leftBiome < 0.35 || rightBiome < 0.35 || upBiome < 0.35 || downBiome < 0.35;
 
         if (hasWaterNeighbor) {
-          // Add foam (lighter color)
           const foamStrength = 0.3 + detail * 0.3;
           color = {
             r: Math.min(255, color.r + Math.round(60 * foamStrength)),
@@ -132,7 +138,7 @@ export function buildBackground(terrainGrid?: TerrainGrid): HTMLCanvasElement {
         color = applyTerrainTint(color, terrainGrid, x, y);
       }
 
-      const idx = (y * WORLD_WIDTH + x) * 4;
+      const idx = (y * w + x) * 4;
       pixels[idx] = color.r;
       pixels[idx + 1] = color.g;
       pixels[idx + 2] = color.b;
@@ -161,7 +167,6 @@ function applyTerrainTint(base: RGB, terrainGrid: TerrainGrid, x: number, y: num
   const tint = TERRAIN_TINTS[type];
   if (!tint) return base;
 
-  // Blend strength varies by type
   const strength =
     type === TerrainType.Water || type === TerrainType.Rocks
       ? 0.6
@@ -234,14 +239,22 @@ export function buildFogTexture(patternCtx: CanvasRenderingContext2D): {
 /**
  * Build the explored-area tracking canvas.
  * Initially black; player units paint white circles onto it to reveal explored terrain.
+ *
+ * @param worldW - World width in pixels (defaults to 2560).
+ * @param worldH - World height in pixels (defaults to 2560).
  */
-export function buildExploredCanvas(): {
+export function buildExploredCanvas(
+  worldW?: number,
+  worldH?: number,
+): {
   exploredCanvas: HTMLCanvasElement;
   exploredCtx: CanvasRenderingContext2D;
 } {
+  const w = worldW ?? 2560;
+  const h = worldH ?? 2560;
   const exploredCanvas = document.createElement('canvas');
-  exploredCanvas.width = Math.ceil(WORLD_WIDTH / 16);
-  exploredCanvas.height = Math.ceil(WORLD_HEIGHT / 16);
+  exploredCanvas.width = Math.ceil(w / 16);
+  exploredCanvas.height = Math.ceil(h / 16);
   const exploredCtx = require2DContext(exploredCanvas, { willReadFrequently: true });
   exploredCtx.fillStyle = '#000';
   exploredCtx.fillRect(0, 0, exploredCanvas.width, exploredCanvas.height);

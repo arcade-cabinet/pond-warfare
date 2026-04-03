@@ -7,7 +7,7 @@
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
-import { TILE_SIZE, TRAIN_TIMER, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { TILE_SIZE, TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Collider,
@@ -91,7 +91,7 @@ export function canPlaceBuilding(
     }
   }
 
-  if (bx - hw < 0 || bx + hw > WORLD_WIDTH || by - hh < 0 || by + hh > WORLD_HEIGHT) {
+  if (bx - hw < 0 || bx + hw > world.worldWidth || by - hh < 0 || by + hh > world.worldHeight) {
     return false;
   }
 

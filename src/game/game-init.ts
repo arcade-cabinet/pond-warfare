@@ -5,14 +5,19 @@
  */
 
 import { resetBarkState } from '@/config/barks';
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Position, Selectable } from '@/ecs/components';
 import { initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { resetRandomEvents } from '@/ecs/systems/random-events';
 import type { GameWorld } from '@/ecs/world';
 import { setZoom } from '@/game/camera';
 import { installLifecycleListeners } from '@/game/game-lifecycle';
+import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { buildKeyboardCallbacks, buildPointerCallbacks } from '@/game/input-setup';
+import {
+  applyVerticalMapToWorld,
+  buildVerticalTerrain,
+  generateVerticalMapLayout,
+} from '@/game/vertical-map';
 import { KeyboardHandler } from '@/input/keyboard';
 import { PointerHandler } from '@/input/pointer';
 import { canDockPanels } from '@/platform';
@@ -26,6 +31,7 @@ import type { ReplayRecorder } from '@/replay';
 import { loadAchievements, resetAchievementMatchState } from '@/systems/achievements';
 import type { SpriteId } from '@/types';
 import * as store from '@/ui/store';
+import { SeededRandom } from '@/utils/random';
 
 let lifecycleListenersInstalled = false;
 
@@ -53,7 +59,7 @@ export async function initCanvases(
   if (!fogCtx || !lightCtx) throw new Error('Failed to acquire 2D context');
 
   const { canvases } = generateAllSprites();
-  const bgCanvas = buildBackground(world.terrainGrid);
+  const bgCanvas = buildBackground(world.terrainGrid, world.worldWidth, world.worldHeight);
 
   const w = container.clientWidth;
   const h = container.clientHeight;
@@ -85,7 +91,7 @@ export async function initCanvases(
   const { fogPattern } = buildFogTexture(fogCtx);
   const fogState: FogRendererState = { fogCtx, fogPattern };
 
-  const explored = buildExploredCanvas();
+  const explored = buildExploredCanvas(world.worldWidth, world.worldHeight);
   initFogOfWar(explored.exploredCtx);
 
   return {
@@ -178,8 +184,8 @@ export function centerCameraOnLodge(world: GameWorld): void {
     Selectable.selected[lodge] = 1;
     world.isTracking = true;
   } else {
-    world.camX = WORLD_WIDTH / 2 - world.viewWidth / 2;
-    world.camY = WORLD_HEIGHT / 2 - world.viewHeight / 2;
+    world.camX = world.worldWidth / 2 - world.viewWidth / 2;
+    world.camY = world.worldHeight / 2 - world.viewHeight / 2;
   }
 }
 
@@ -187,8 +193,8 @@ export function centerCameraOnLodge(world: GameWorld): void {
 export function spawnFireflies(world: GameWorld): void {
   const rng = world.gameRng;
   world.fireflies = Array.from({ length: 150 }, () => ({
-    x: rng.next() * WORLD_WIDTH,
-    y: rng.next() * WORLD_HEIGHT,
+    x: rng.next() * world.worldWidth,
+    y: rng.next() * world.worldHeight,
     vx: rng.next() - 0.5,
     vy: (rng.next() - 0.5) * 0.5 - 0.2,
     phase: rng.next() * Math.PI * 2,
@@ -214,6 +220,45 @@ export function setupColorBlind(): () => void {
 export function setupDockResize(resizeFn: () => void): () => void {
   return canDockPanels.subscribe(() => {
     requestAnimationFrame(resizeFn);
+  });
+}
+
+/**
+ * Generate and apply the v3 vertical map, spawning all entities.
+ *
+ * Replaces the old scenario-based spawnInitialEntities() flow.
+ * - Generates vertical layout from terrain.json progression scaling
+ * - Builds terrain grid with water, rocks, mud paths
+ * - Spawns Lodge at bottom, resources in middle, enemies at top
+ * - Updates world dimensions and terrain grid
+ */
+export function spawnVerticalWorld(world: GameWorld, progressionLevel = 0): void {
+  const rng = new SeededRandom(world.mapSeed);
+
+  // Generate vertical layout from terrain.json config
+  const layout = generateVerticalMapLayout(progressionLevel, rng);
+
+  // Build terrain grid for this layout
+  const terrain = buildVerticalTerrain(layout, rng);
+
+  // Apply layout to world (sets terrainGrid, world dimensions)
+  applyVerticalMapToWorld(world, layout, terrain);
+  world.worldWidth = layout.worldWidth;
+  world.worldHeight = layout.worldHeight;
+
+  // Spawn entities (Lodge, units, resources, enemies)
+  spawnVerticalEntities(world, layout, rng);
+
+  // Floating text announcing the map
+  const lodge = world.selection[0];
+  const textX = lodge != null ? Position.x[lodge] : layout.lodgeX;
+  const textY = lodge != null ? Position.y[lodge] - 80 : layout.lodgeY - 80;
+  world.floatingTexts.push({
+    x: textX,
+    y: textY,
+    text: 'MAP: Vertical',
+    color: '#38bdf8',
+    life: 180,
   });
 }
 

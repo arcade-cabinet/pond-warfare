@@ -11,7 +11,6 @@
 
 import { entityExists, hasComponent } from 'bitecs';
 import { getKeymap } from '@/config/keymap';
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Selectable } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { fpsCounterVisible } from '@/ui/store';
@@ -102,9 +101,9 @@ export class KeyboardHandler {
       w.isTracking = false;
     }
 
-    // Clamp camera
-    w.camX = Math.max(0, Math.min(WORLD_WIDTH - w.viewWidth, w.camX));
-    w.camY = Math.max(0, Math.min(WORLD_HEIGHT - w.viewHeight, w.camY));
+    // Clamp camera to world bounds
+    w.camX = Math.max(0, Math.min(w.worldWidth - w.viewWidth, w.camX));
+    w.camY = Math.max(0, Math.min(w.worldHeight - w.viewHeight, w.camY));
 
     return manualPan;
   }

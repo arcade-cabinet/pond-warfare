@@ -24,17 +24,17 @@ export class PhysicsManager {
   private world: World;
   private bodies: Map<number, Body> = new Map();
 
-  constructor() {
+  constructor(worldWidth?: number, worldHeight?: number) {
     // Zero gravity for top-down game
     this.world = new World({ gravity: Vec2(0, 0) });
-    this.createWorldBounds();
+    this.createWorldBounds(worldWidth ?? WORLD_WIDTH, worldHeight ?? WORLD_HEIGHT);
   }
 
   /** Create 4 static edge bodies as world boundary walls. */
-  private createWorldBounds(): void {
+  private createWorldBounds(worldW: number, worldH: number): void {
     const m = WORLD_BOUNDS_MARGIN;
-    const w = WORLD_WIDTH - m;
-    const h = WORLD_HEIGHT - m;
+    const w = worldW - m;
+    const h = worldH - m;
 
     const wall = this.world.createBody();
     // Top

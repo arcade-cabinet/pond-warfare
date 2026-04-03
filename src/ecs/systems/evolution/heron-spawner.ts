@@ -11,7 +11,6 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   EntityTypeTag,
@@ -44,16 +43,18 @@ export function resetHeronSpawner(): void {
 /** Pick a random spawn position along a map edge. */
 function edgeSpawnPosition(world: GameWorld): { sx: number; sy: number } {
   const rng = world.gameRng;
+  const ww = world.worldWidth;
+  const wh = world.worldHeight;
   const edge = Math.floor(rng.next() * 4);
   switch (edge) {
-    case 0:
-      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: 30 };
-    case 1:
-      return { sx: WORLD_WIDTH - 30, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
-    case 2:
-      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: WORLD_HEIGHT - 30 };
-    default:
-      return { sx: 30, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
+    case 0: // top
+      return { sx: 100 + rng.next() * (ww - 200), sy: 30 };
+    case 1: // right
+      return { sx: ww - 30, sy: 100 + rng.next() * (wh - 200) };
+    case 2: // bottom
+      return { sx: 100 + rng.next() * (ww - 200), sy: wh - 30 };
+    default: // left
+      return { sx: 30, sy: 100 + rng.next() * (wh - 200) };
   }
 }
 

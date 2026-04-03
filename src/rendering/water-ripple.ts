@@ -13,7 +13,7 @@
 
 import { Sprite, Texture } from 'pixi.js';
 
-import { TILE_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { TILE_SIZE } from '@/constants';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import { TerrainType } from '@/terrain/terrain-grid';
 
@@ -85,8 +85,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /**
  * Build two overlay canvases (one per ripple frame) for a single terrain type.
- * Each canvas is WORLD_WIDTH x WORLD_HEIGHT but only the matching terrain
- * tiles have ripple pixels; everything else is transparent.
+ * Canvas dimensions are derived from the terrain grid (cols * tileSize x rows * tileSize).
  */
 function buildOverlayPair(
   img1: HTMLImageElement,
@@ -106,8 +105,10 @@ function buildSingleOverlay(
   terrainType: TerrainType,
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
-  canvas.width = WORLD_WIDTH;
-  canvas.height = WORLD_HEIGHT;
+  const canvasW = terrainGrid.cols * TILE_SIZE;
+  const canvasH = terrainGrid.rows * TILE_SIZE;
+  canvas.width = canvasW;
+  canvas.height = canvasH;
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
 

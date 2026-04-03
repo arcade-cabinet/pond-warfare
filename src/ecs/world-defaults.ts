@@ -83,6 +83,8 @@ export function createGameWorld(): GameWorld {
     gameSpeed: 1,
     ambientDarkness: 0,
     paused: false,
+    worldWidth: WORLD_WIDTH,
+    worldHeight: WORLD_HEIGHT,
     camX: 0,
     camY: 0,
     camVelX: 0,

@@ -16,7 +16,7 @@ import {
   setupDockResize,
   setupInput,
   spawnFireflies,
-  spawnInitialEntities,
+  spawnVerticalWorld,
   startGameLoop,
   wireWebGLHandlers,
 } from '@/game/game-init';
@@ -95,7 +95,17 @@ export class Game {
     this.minimapCanvas = minimapCanvas;
     this.minimapCamElement = minimapCamElement;
 
-    // Canvas and rendering pipeline
+    // Difficulty and map seed — BEFORE vertical map generation
+    applyDifficultyModifiers(this.world);
+    applyMapSeed(this.world);
+
+    // Generate vertical map and spawn entities (sets world dimensions + terrain)
+    spawnVerticalWorld(this.world);
+
+    // Physics world with correct vertical map dimensions
+    this.physicsManager = new PhysicsManager(this.world.worldWidth, this.world.worldHeight);
+
+    // Canvas and rendering pipeline (uses world.terrainGrid + world dimensions)
     const minimapCtx = minimapCanvas.getContext('2d', { alpha: false });
     const refs = await initCanvases(this.world, container, gameCanvas, fogCanvas, lightCanvas);
     this.fogCtx = refs.fogCtx;
@@ -126,12 +136,6 @@ export class Game {
     this.keyboard = input.keyboard;
     this.pointer = input.pointer;
     this.pointer.onZoomChange = (zoom) => this.setZoom(zoom);
-
-    // Physics, difficulty, world setup
-    this.physicsManager = new PhysicsManager();
-    applyDifficultyModifiers(this.world);
-    applyMapSeed(this.world);
-    spawnInitialEntities(this.world);
 
     if (this.world.fogOfWarMode === 'revealed') {
       this.exploredCtx.fillStyle = '#ffffff';

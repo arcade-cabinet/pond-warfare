@@ -6,7 +6,6 @@
  * clamping, and screen shake offset calculation.
  */
 
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
 import { screenShakeEnabled } from '@/ui/store';
 
@@ -17,8 +16,8 @@ export interface CameraShake {
 
 /** Clamp the camera so it cannot scroll beyond the world edges. */
 export function clampCamera(world: GameWorld): void {
-  world.camX = Math.max(0, Math.min(WORLD_WIDTH - world.viewWidth, world.camX));
-  world.camY = Math.max(0, Math.min(WORLD_HEIGHT - world.viewHeight, world.camY));
+  world.camX = Math.max(0, Math.min(world.worldWidth - world.viewWidth, world.camX));
+  world.camY = Math.max(0, Math.min(world.worldHeight - world.viewHeight, world.camY));
 }
 
 /**

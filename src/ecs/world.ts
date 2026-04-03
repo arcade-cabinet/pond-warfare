@@ -62,6 +62,10 @@ export interface GameWorld {
   // Pause
   paused: boolean;
 
+  // World dimensions (may differ from constants for vertical maps)
+  worldWidth: number;
+  worldHeight: number;
+
   // Camera
   camX: number;
   camY: number;

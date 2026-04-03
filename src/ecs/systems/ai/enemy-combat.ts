@@ -19,8 +19,6 @@ import {
   ENEMY_SCOUT_INTERVAL,
   ENEMY_SNAKE_COST_CLAMS,
   ENEMY_SNAKE_COST_TWIGS,
-  WORLD_HEIGHT,
-  WORLD_WIDTH,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
@@ -229,9 +227,10 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
     scoutX = Position.x[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
     scoutY = Position.y[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
   } else {
-    // Random map exploration
-    scoutX = 200 + world.gameRng.next() * (WORLD_WIDTH - 400);
-    scoutY = 200 + world.gameRng.next() * (WORLD_HEIGHT - 400);
+    // Random map exploration — use dynamic world dimensions
+    const margin = Math.min(200, world.worldWidth * 0.15);
+    scoutX = margin + world.gameRng.next() * (world.worldWidth - margin * 2);
+    scoutY = margin + world.gameRng.next() * (world.worldHeight - margin * 2);
   }
 
   UnitStateMachine.targetX[scoutEid] = scoutX;

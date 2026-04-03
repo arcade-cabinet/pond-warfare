@@ -4,7 +4,6 @@
  * Click/drag on minimap to pan camera and issue context commands.
  */
 
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
 import type { PointerCallbacks, PointerState } from './pointer';
 
@@ -64,9 +63,9 @@ export class MinimapHandler {
     if (!this.minimapCanvas) return;
 
     const rect = this.minimapCanvas.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * WORLD_WIDTH;
-    const clickY = ((e.clientY - rect.top) / rect.height) * WORLD_HEIGHT;
     const w = this.world;
+    const clickX = ((e.clientX - rect.left) / rect.width) * w.worldWidth;
+    const clickY = ((e.clientY - rect.top) / rect.height) * w.worldHeight;
 
     if (e.button === 2 && this.cb.hasPlayerUnitsSelected()) {
       const target = this.cb.getEntityAt(clickX, clickY);
@@ -109,11 +108,11 @@ export class MinimapHandler {
     const w = this.world;
     w.camX = Math.max(
       0,
-      Math.min(WORLD_WIDTH - w.viewWidth, xPercent * WORLD_WIDTH - this.minimapPanOffset.x),
+      Math.min(w.worldWidth - w.viewWidth, xPercent * w.worldWidth - this.minimapPanOffset.x),
     );
     w.camY = Math.max(
       0,
-      Math.min(WORLD_HEIGHT - w.viewHeight, yPercent * WORLD_HEIGHT - this.minimapPanOffset.y),
+      Math.min(w.worldHeight - w.viewHeight, yPercent * w.worldHeight - this.minimapPanOffset.y),
     );
   }
 }

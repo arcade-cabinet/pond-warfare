@@ -23,8 +23,6 @@ import {
   MINIMAP_SIZE,
   PALETTE,
   UNIT_SIGHT_RADIUS,
-  WORLD_HEIGHT,
-  WORLD_WIDTH,
 } from '@/constants';
 import {
   EntityTypeTag,
@@ -59,8 +57,8 @@ export function drawMinimap(
   bgCanvas?: HTMLCanvasElement,
 ): void {
   const mc = minimapCtx;
-  const sx = MINIMAP_SIZE / WORLD_WIDTH;
-  const sy = MINIMAP_SIZE / WORLD_HEIGHT;
+  const sx = MINIMAP_SIZE / _world.worldWidth;
+  const sy = MINIMAP_SIZE / _world.worldHeight;
 
   // Base layer: draw scaled terrain background if available, otherwise solid fill
   if (bgCanvas) {
@@ -247,8 +245,8 @@ export function drawMinimap(
  * @param world   - Game world state (camera position, viewport size).
  */
 export function updateMinimapViewport(element: HTMLElement, world: GameWorld): void {
-  const sx = MINIMAP_SIZE / WORLD_WIDTH;
-  const sy = MINIMAP_SIZE / WORLD_HEIGHT;
+  const sx = MINIMAP_SIZE / world.worldWidth;
+  const sy = MINIMAP_SIZE / world.worldHeight;
 
   element.classList.remove('hidden');
   element.style.left = `${world.camX * sx}px`;
