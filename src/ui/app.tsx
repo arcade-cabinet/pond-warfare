@@ -1,10 +1,21 @@
-/** Root Preact component — thin routing shell between menu and game screens. */
+/** Root Preact component -- thin routing shell between menu and game screens. */
 
 import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
+import {
+  handleClamsChange,
+  handlePearlBack,
+  handlePearlStateChange,
+  handleRankUpCancel,
+  handleRankUpConfirm,
+  handleRewardsPlayAgain,
+  handleRewardsRankUp,
+  handleRewardsUpgrades,
+  handleUpgradesBack,
+} from './app-v3-handlers';
 import { SvgFilters } from './components/SvgFilters';
 import { SwampEcosystem } from './components/SwampEcosystem';
 import { Tooltip } from './components/Tooltip';
@@ -24,7 +35,12 @@ import { MainMenu } from './main-menu';
 import { DisconnectOverlay } from './overlays/DisconnectOverlay';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
 import { SplashVideo } from './SplashVideo';
+import { PearlUpgradeScreen } from './screens/PearlUpgradeScreen';
+import { RankUpModal } from './screens/RankUpModal';
+import { RewardsScreen } from './screens/RewardsScreen';
+import { UpgradeWebScreen } from './screens/UpgradeWebScreen';
 import * as store from './store';
+import * as storeV3 from './store-v3';
 
 export interface AppProps {
   onMount: (refs: {
@@ -112,6 +128,22 @@ export function App({ onMount }: AppProps) {
             onClose={() => {
               store.keyboardRefOpen.value = false;
             }}
+          />
+        )}
+
+        {/* v3 overlay screens -- rendered on top of main menu */}
+        {storeV3.upgradesScreenOpen.value && (
+          <UpgradeWebScreen
+            clams={storeV3.totalClams.value}
+            onClamsChange={handleClamsChange}
+            onBack={handleUpgradesBack}
+          />
+        )}
+        {storeV3.pearlScreenOpen.value && (
+          <PearlUpgradeScreen
+            prestigeState={storeV3.prestigeState.value}
+            onStateChange={handlePearlStateChange}
+            onBack={handlePearlBack}
           />
         )}
       </div>
@@ -206,7 +238,7 @@ export function App({ onMount }: AppProps) {
       <ConnectionStatus />
       <AchievementToast />
 
-      {/* Modal overlays — siblings of #game-container for proper touch-action */}
+      {/* Modal overlays -- siblings of #game-container for proper touch-action */}
       <SettingsOverlay />
       {store.keyboardRefOpen.value && (
         <KeyboardReference
@@ -218,6 +250,30 @@ export function App({ onMount }: AppProps) {
       <DisconnectOverlay />
       <Tooltip />
       {store.gameLoading.value && <LoadingScreen />}
+
+      {/* v3 post-match screens -- rendered over game when active */}
+      {storeV3.rewardsScreenOpen.value && storeV3.lastRewardBreakdown.value && (
+        <RewardsScreen
+          breakdown={storeV3.lastRewardBreakdown.value}
+          kills={0}
+          eventsCompleted={storeV3.matchEventsCompleted.value}
+          resourcesGathered={0}
+          durationSeconds={0}
+          canRankUp={storeV3.canRankUpAfterMatch.value}
+          prestigeRank={storeV3.prestigeRank.value}
+          onRankUp={handleRewardsRankUp}
+          onUpgrades={handleRewardsUpgrades}
+          onPlayAgain={handleRewardsPlayAgain}
+        />
+      )}
+      {storeV3.rankUpModalOpen.value && (
+        <RankUpModal
+          prestigeState={storeV3.prestigeState.value}
+          progressionLevel={storeV3.progressionLevel.value}
+          onConfirm={handleRankUpConfirm}
+          onCancel={handleRankUpCancel}
+        />
+      )}
     </div>
   );
 }
