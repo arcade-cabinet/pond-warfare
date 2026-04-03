@@ -61,13 +61,14 @@ export function syncUIStore(state: UISyncState): void {
   buildActionPanel(w, state.recorder);
 
   // Active ability signals sync
-  store.rallyCryAvailable.value = w.tech.rallyCry;
+  store.rallyCryAvailable.value = w.tech.swiftPaws;
   store.rallyCryActive.value = w.rallyCryExpiry > 0 && w.frameCount < w.rallyCryExpiry;
   store.rallyCryCooldown.value =
     w.rallyCryCooldownUntil > w.frameCount
       ? Math.ceil((w.rallyCryCooldownUntil - w.frameCount) / 60)
       : 0;
-  store.pondBlessingAvailable.value = w.tech.pondBlessing && !w.pondBlessingUsed;
+  store.pondBlessingAvailable.value =
+    w.tech.pondBlessing && w.frameCount >= w.pondBlessingCooldownUntil;
   store.tidalSurgeAvailable.value = w.tech.tidalSurge && !w.tidalSurgeUsed;
 
   // Campaign objective status sync

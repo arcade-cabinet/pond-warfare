@@ -131,8 +131,8 @@ describe('calculatePositionalBonuses', () => {
       const bonuses = calculatePositionalBonuses(world, attacker, target);
       expect(bonuses.flanking).toBe(true);
       expect(bonuses.elevationUp).toBe(true);
-      // 1.0 + 0.25 (flank) + 0.10 (elevation) = 1.35
-      expect(bonuses.multiplier).toBeCloseTo(1.35, 2);
+      // 1.0 + 0.25 (flank) + 0.15 (elevation) = 1.40
+      expect(bonuses.multiplier).toBeCloseTo(1.4, 2);
     });
   });
 
@@ -170,7 +170,7 @@ describe('calculatePositionalBonuses', () => {
     it('should add both texts for flanking + elevation', () => {
       const target = createPosEntity(world, 200, 200, 0);
       const bonuses = {
-        multiplier: 1.35,
+        multiplier: 1.4,
         flanking: true,
         elevationUp: true,
         elevationDown: false,

@@ -119,11 +119,29 @@ describe('Difficulty Presets', () => {
     });
   });
 
+  describe('Hard', () => {
+    beforeEach(() => applyPreset(world, 'hard'));
+
+    it('has 2 enemy nests', () => {
+      expect(world.nestCountOverride).toBe(2);
+    });
+
+    it('has nest build rate multiplier of 0.8', () => {
+      expect(world.nestBuildRateMult).toBe(0.8);
+    });
+  });
+
   describe('Nightmare / Ultra', () => {
     it('nightmare has zero peace and fast evolution', () => {
       applyPreset(world, 'nightmare');
       expect(world.peaceTimer).toBe(0);
       expect(world.evolutionSpeedMod).toBe(0.5);
+    });
+
+    it('nightmare has 2 enemy nests and 1.25x enemy stats', () => {
+      applyPreset(world, 'nightmare');
+      expect(world.nestCountOverride).toBe(2);
+      expect(world.enemyStatMult).toBe(1.25);
     });
 
     it('ultra nightmare enables permadeath with more nests', () => {
@@ -133,6 +151,19 @@ describe('Difficulty Presets', () => {
       applyPreset(w2, 'ultraNightmare');
       expect(w2.permadeath).toBe(true);
       expect(w2.nestCountOverride).toBeGreaterThan(w1.nestCountOverride);
+    });
+
+    it('ultra nightmare has 1.5x enemy stats', () => {
+      applyPreset(world, 'ultraNightmare');
+      expect(world.enemyStatMult).toBe(1.5);
+    });
+  });
+
+  describe('Permadeath bonus', () => {
+    it('grants +75% gathering bonus (rewardsModifier = 1.75)', () => {
+      applyPreset(world, 'ultraNightmare');
+      expect(world.permadeath).toBe(true);
+      expect(world.rewardsModifier).toBe(1.75);
     });
   });
 });

@@ -64,7 +64,7 @@ export const TECH_UPGRADES = {
   tradeRoutes: {
     id: 'tradeRoutes',
     name: 'Trade Routes',
-    description: '+6 clams/5sec passive income per Lodge',
+    description: '+2 clams/sec passive income per Market',
     clamCost: 200,
     twigCost: 150,
     requires: 'cartography',
@@ -110,7 +110,7 @@ export const TECH_UPGRADES = {
   pondBlessing: {
     id: 'pondBlessing',
     name: 'Pond Blessing',
-    description: 'Active: heal all units 20% HP',
+    description: 'Active: heal all units 20% HP (120s cooldown)',
     clamCost: 200,
     twigCost: 150,
     pearlCost: 20,
@@ -130,7 +130,7 @@ export const TECH_UPGRADES = {
   regeneration: {
     id: 'regeneration',
     name: 'Regeneration',
-    description: 'All units passively regen 1 HP/5s',
+    description: 'All units regen 1 HP/5s when out of combat 5s',
     clamCost: 250,
     twigCost: 200,
     requires: 'aquaticTraining',
@@ -167,7 +167,7 @@ export const TECH_UPGRADES = {
   piercingShot: {
     id: 'piercingShot',
     name: 'Piercing Shot',
-    description: 'Snipers ignore 50% damage reduction',
+    description: 'Ranged attacks ignore 30% armor',
     clamCost: 300,
     twigCost: 200,
     requires: 'eagleEye',
@@ -176,7 +176,7 @@ export const TECH_UPGRADES = {
   warDrums: {
     id: 'warDrums',
     name: 'War Drums',
-    description: '+15% melee damage aura near Armory',
+    description: '+15% melee damage aura near any building (300px)',
     clamCost: 350,
     twigCost: 250,
     requires: 'battleRoar',
@@ -234,8 +234,8 @@ export const TECH_UPGRADES = {
   // ── Shadow (Subterfuge & Control) ────────────────────────────────
   swiftPaws: {
     id: 'swiftPaws',
-    name: 'Swift Paws',
-    description: 'All units +10% movement speed',
+    name: 'Shadow Sprint',
+    description: 'Permanent +15% speed. Active: +40% for 8s (60s cd)',
     clamCost: 100,
     twigCost: 50,
     branch: 'shadow',
@@ -251,8 +251,8 @@ export const TECH_UPGRADES = {
   },
   rallyCry: {
     id: 'rallyCry',
-    name: 'Rally Cry',
-    description: 'Active: all units +30% speed 10s',
+    name: 'Shadow Marks',
+    description: 'Trapped enemies take +25% damage from all sources',
     clamCost: 250,
     twigCost: 200,
     requires: 'swiftPaws',
@@ -270,7 +270,7 @@ export const TECH_UPGRADES = {
   venomCoating: {
     id: 'venomCoating',
     name: 'Venom Coating',
-    description: 'All melee apply 1 dmg/s poison 3s',
+    description: 'All melee apply 2 dmg/s poison 5s (10 total)',
     clamCost: 300,
     twigCost: 200,
     requires: 'cunningTraps',

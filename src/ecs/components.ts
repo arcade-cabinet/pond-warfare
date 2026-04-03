@@ -33,6 +33,7 @@ export const Health = soa({
   current: [] as number[],
   max: [] as number[],
   flashTimer: [] as number[],
+  lastDamagedFrame: [] as number[],
 });
 
 // Combat
@@ -117,6 +118,21 @@ export const TaskOverride = soa({
   task: [] as number[], // UnitState value for the assigned task
   targetEntity: [] as number[], // target entity for the task (0 = none)
 });
+
+// Unit stance (controls auto-aggro behavior)
+// 0 = Aggressive (chase enemies in vision)
+// 1 = Defensive (fight only if recently damaged)
+// 2 = Hold (don't auto-move or auto-fight)
+export const Stance = soa({
+  mode: [] as number[],
+});
+
+/** Stance mode constants for readability. */
+export const StanceMode = {
+  Aggressive: 0,
+  Defensive: 1,
+  Hold: 2,
+} as const;
 
 // Tag components - empty objects used purely as markers
 export const TowerAI = {};

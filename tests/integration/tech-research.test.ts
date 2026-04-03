@@ -156,11 +156,11 @@ describe('Tech Research Integration', () => {
   // ── Shadow Branch ─────────────────────────────────────────────
 
   describe('Shadow branch', () => {
-    it('swift paws adds +0.4 speed to spawned units', () => {
+    it('shadow sprint adds +15% speed to spawned units', () => {
       world.tech.swiftPaws = true;
       const baseSpeed = ENTITY_DEFS[EntityKind.Brawler].speed;
       const brawler = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
-      expect(Velocity.speed[brawler]).toBeCloseTo(baseSpeed + 0.4);
+      expect(Velocity.speed[brawler]).toBeCloseTo(baseSpeed * 1.15);
     });
 
     it('cunningTraps requires swiftPaws', () => {

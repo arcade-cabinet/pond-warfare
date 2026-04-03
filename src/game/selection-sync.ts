@@ -14,6 +14,8 @@ import {
   FactionTag,
   Health,
   IsResource,
+  Stance,
+  StanceMode,
   UnitStateMachine,
   Velocity,
   Veterancy,
@@ -47,6 +49,7 @@ export function syncSelectionInfo(
     store.selectionDesc.value = '';
     store.selectionSpriteData.value = null;
     store.selectionKills.value = 0;
+    store.selectionStance.value = -1;
   } else if (w.selection.length === 1) {
     const selEid = w.selection[0];
     const kind = EntityTypeTag.kind[selEid] as EntityKind;
@@ -101,6 +104,10 @@ export function syncSelectionInfo(
     };
     store.selectionDesc.value = stateNames[state] ?? '';
     store.selectionSpriteData.value = null;
+    store.selectionStance.value =
+      hasStateMachine && !def.isBuilding && !def.isResource && faction === Faction.Player
+        ? ((Stance.mode?.[selEid] as number | undefined) ?? StanceMode.Aggressive)
+        : -1;
   } else {
     // Multiple selected
     store.selectionIsMulti.value = true;
@@ -123,5 +130,17 @@ export function syncSelectionInfo(
     store.selectionStatsHtml.value = '';
     store.selectionDesc.value = '';
     store.selectionKills.value = 0;
+    let multiStance = -1;
+    for (const eid of w.selection) {
+      if (FactionTag.faction[eid] === Faction.Player) {
+        const ek = EntityTypeTag.kind[eid] as EntityKind;
+        const eDef = ENTITY_DEFS[ek];
+        if (!eDef.isBuilding && !eDef.isResource) {
+          multiStance = (Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive;
+          break;
+        }
+      }
+    }
+    store.selectionStance.value = multiStance;
   }
 }

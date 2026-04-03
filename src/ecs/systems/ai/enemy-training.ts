@@ -209,9 +209,12 @@ export function enemyTrainingQueueProcess(world: GameWorld): void {
 
     // Nest production multiplier: spawn multiple units per cycle in late game
     const prodMult = world.enemyEvolution.nestProductionMultiplier;
+    // Nest build rate modifier from difficulty (lower = slower production)
+    const buildRateMult = world.nestBuildRateMult ?? 1.0;
     // When multiplier >= 5 (continuous mode), use very short train timer
-    const effectiveTrainTime =
+    const baseTrainTime =
       prodMult >= 5 ? Math.max(30, Math.floor(ENEMY_TRAIN_TIME / 4)) : ENEMY_TRAIN_TIME;
+    const effectiveTrainTime = Math.round(baseTrainTime / buildRateMult);
 
     TrainingQueue.timer[eid]--;
     if (TrainingQueue.timer[eid] <= 0) {

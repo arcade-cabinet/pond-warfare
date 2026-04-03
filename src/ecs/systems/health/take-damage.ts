@@ -54,6 +54,7 @@ export function takeDamage(
   if (effectiveAmount === 0) return;
 
   Health.current[targetEid] -= effectiveAmount;
+  Health.lastDamagedFrame[targetEid] = world.frameCount;
   audio.hit();
 
   Health.flashTimer[targetEid] = 8;

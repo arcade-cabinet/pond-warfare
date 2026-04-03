@@ -116,15 +116,15 @@ export function AbilityBar(props: AbilityBarProps) {
           }}
           title={
             rallyActive
-              ? 'Rally Cry active!'
+              ? 'Shadow Sprint active!'
               : rallyOnCooldown
-                ? `Rally Cry cooldown: ${rallyCryCooldown.value}s`
+                ? `Shadow Sprint cooldown: ${rallyCryCooldown.value}s`
                 : 'Rally Cry: +30% speed for all units (10s)'
           }
           disabled={rallyOnCooldown || rallyActive}
           onClick={props.onRallyCry}
         >
-          <span>Rally Cry</span>
+          <span>Shadow Sprint</span>
           {rallyActive && (
             <span class="font-numbers text-xs" style={{ color: 'var(--pw-success)' }}>
               ACTIVE

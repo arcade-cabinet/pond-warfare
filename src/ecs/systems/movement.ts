@@ -75,13 +75,13 @@ export function movementSystem(world: GameWorld): void {
       speed += world.commanderModifiers.auraSpeedBonus;
     }
 
-    // Rally Cry: +30% speed to all player units while active
+    // Shadow Sprint active: +40% speed to all player units while active
     if (
       FactionTag.faction[eid] === Faction.Player &&
       world.rallyCryExpiry > 0 &&
       world.frameCount < world.rallyCryExpiry
     ) {
-      speed *= 1.3;
+      speed *= 1.4;
     }
 
     // Morale: demoralized units move 10% slower

@@ -151,7 +151,7 @@ describe('Progression Integration', () => {
     const brawler = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
 
     expect(Combat.damage[brawler]).toBe(baseDmg + 2);
-    expect(Velocity.speed[brawler]).toBeCloseTo(baseSpd + 0.4);
+    expect(Velocity.speed[brawler]).toBeCloseTo(baseSpd * 1.15);
   });
 
   it('peace timer prevents enemy evolution', () => {

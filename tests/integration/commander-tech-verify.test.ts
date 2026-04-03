@@ -201,12 +201,17 @@ describe('Commander passives', () => {
     expect(Combat.attackRange[c]).toBeGreaterThan(200);
   });
 
-  it('Stormcaller: lightning strikes enemy', () => {
+  it('Stormcaller: lightning strikes up to 3 enemies every 15s', () => {
     w.commanderModifiers.passiveLightningDamage = 10;
-    const e = u(w, 200, 200, Faction.Enemy, EntityKind.Gator, 100);
-    w.frameCount = 600;
+    const e1 = u(w, 200, 200, Faction.Enemy, EntityKind.Gator, 100);
+    const e2 = u(w, 300, 300, Faction.Enemy, EntityKind.Snake, 100);
+    const e3 = u(w, 400, 400, Faction.Enemy, EntityKind.Gator, 100);
+    w.frameCount = 900; // 15s at 60fps
     commanderPassivesSystem(w);
-    expect(Health.current[e]).toBeLessThan(100);
+    // All 3 enemies should have taken damage
+    expect(Health.current[e1]).toBeLessThan(100);
+    expect(Health.current[e2]).toBeLessThan(100);
+    expect(Health.current[e3]).toBeLessThan(100);
   });
 });
 
@@ -233,11 +238,13 @@ describe('Tech effects — all 25', () => {
     expect(Carrying.resourceAmount[g]).toBe(19); // 15 * 1.25 = 18.75 → 19
   });
 
-  it('tradeRoutes: passive income per Lodge', () => {
+  it('tradeRoutes: passive income per Market', () => {
     w.tech.tradeRoutes = true;
-    spawnEntity(w, EntityKind.Lodge, 200, 200, Faction.Player);
+    const mkt = spawnEntity(w, EntityKind.Market, 200, 200, Faction.Player);
+    Building.progress[mkt] = 100; // Mark as completed
+    Health.current[mkt] = Health.max[mkt];
     const before = w.resources.clams;
-    w.frameCount = 300;
+    w.frameCount = 60;
     gatheringSystem(w);
     expect(w.resources.clams).toBeGreaterThan(before);
   });
@@ -257,6 +264,7 @@ describe('Tech effects — all 25', () => {
     w.tech.regeneration = true;
     const e = u(w, 100, 100, Faction.Player, EntityKind.Brawler, 60);
     Health.current[e] = 50;
+    Health.lastDamagedFrame[e] = 0; // Ensure out-of-combat
     w.frameCount = 300;
     healthSystem(w);
     expect(Health.current[e]).toBe(52);

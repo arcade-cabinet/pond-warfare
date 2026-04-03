@@ -27,6 +27,7 @@ export interface KeyboardCallbacks {
   getPlayerBuildings: () => number[];
   onHalt: () => void;
   onAttackMoveMode: () => void;
+  onCycleStance: () => void;
   onActionHotkey: (index: number) => void;
 }
 
@@ -149,6 +150,11 @@ export class KeyboardHandler {
     // Halt (H)
     if (k === keymap.halt && this.cb.hasPlayerUnitsSelected()) {
       this.cb.onHalt();
+    }
+
+    // Cycle stance (V)
+    if (k === keymap.cycleStance && this.cb.hasPlayerUnitsSelected()) {
+      this.cb.onCycleStance();
     }
 
     // Control groups

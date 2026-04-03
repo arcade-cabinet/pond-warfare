@@ -16,6 +16,8 @@ import {
   IsBuilding,
   Position,
   Selectable,
+  Stance,
+  StanceMode,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -97,10 +99,38 @@ export function buildKeyboardCallbacks(deps: InputSetupDeps): KeyboardCallbacks 
     onAttackMoveMode: () => {
       world.attackMoveMode = true;
     },
+    onCycleStance: () => {
+      cycleStanceForSelection(world);
+      syncUIStore();
+    },
     onActionHotkey: (_index: number) => {
       // Action hotkeys handled by UI layer
     },
   };
+}
+
+const STANCE_LABELS = ['Aggressive', 'Defensive', 'Hold'];
+
+/** Cycle stance for all selected player units: Aggressive -> Defensive -> Hold -> Aggressive. */
+export function cycleStanceForSelection(world: GameWorld): void {
+  let newStance = -1;
+  for (const eid of world.selection) {
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding) continue;
+    const cur = (Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive;
+    if (newStance === -1) newStance = (cur + 1) % 3;
+    Stance.mode[eid] = newStance;
+  }
+  if (newStance >= 0) {
+    audio.click();
+    world.floatingTexts.push({
+      x: world.camX + world.viewWidth / 2,
+      y: world.camY + 60,
+      text: `Stance: ${STANCE_LABELS[newStance]}`,
+      color: '#38bdf8',
+      life: 60,
+    });
+  }
 }
 
 export interface PointerSetupDeps {

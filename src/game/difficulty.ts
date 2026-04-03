@@ -25,7 +25,7 @@ export function applyDifficultyModifiers(world: GameWorld): void {
   // Permadeath (from custom settings or ultra nightmare)
   const permadeath = cfg.permadeath || diff === 'ultraNightmare';
   world.permadeath = permadeath;
-  world.rewardsModifier = permadeath ? 1.5 : 1.0;
+  world.rewardsModifier = permadeath ? 1.75 : 1.0;
 
   // Peace timer: peaceMinutes * 3600 frames
   world.peaceTimer = cfg.peaceMinutes * 3600;
@@ -52,6 +52,12 @@ export function applyDifficultyModifiers(world: GameWorld): void {
 
   // Nest count
   world.nestCountOverride = cfg.enemyNests;
+
+  // Enemy stat multiplier (HP/damage scaling for enemy units)
+  world.enemyStatMult = cfg.enemyStatMult;
+
+  // Nest build rate multiplier (affects enemy nest production speed)
+  world.nestBuildRateMult = cfg.nestBuildRateMult;
 
   // Scenario
   world.scenarioOverride = cfg.scenario;

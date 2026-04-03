@@ -178,28 +178,30 @@ describe('commander passives', () => {
     expect(Combat.attackRange[cat]).toBe(375);
   });
 
-  it('Stormcaller: lightning strikes a random enemy', () => {
+  it('Stormcaller: lightning strikes up to 3 random enemies', () => {
     world.commanderModifiers.passiveLightningDamage = 10;
-    const enemy = createUnit(world, 200, 200, Faction.Enemy, EntityKind.Gator, 100);
-    const startHp = Health.current[enemy];
+    const e1 = createUnit(world, 200, 200, Faction.Enemy, EntityKind.Gator, 100);
+    const e2 = createUnit(world, 300, 300, Faction.Enemy, EntityKind.Snake, 100);
+    const e3 = createUnit(world, 400, 400, Faction.Enemy, EntityKind.Gator, 100);
 
-    // Fire on exact interval frame
-    world.frameCount = 600;
+    // Fire on exact interval frame (15 seconds = 900 frames)
+    world.frameCount = 900;
     commanderPassivesSystem(world);
 
-    // Enemy should have taken damage
-    expect(Health.current[enemy]).toBeLessThan(startHp);
-    // Should have created floating text including ZAP!
-    expect(world.floatingTexts.length).toBeGreaterThan(0);
-    const zapText = world.floatingTexts.find((t) => t.text === 'ZAP!');
-    expect(zapText).toBeDefined();
-    // Should have created particles
-    expect(world.particles.length).toBeGreaterThan(0);
+    // All 3 enemies should have taken damage
+    expect(Health.current[e1]).toBeLessThan(100);
+    expect(Health.current[e2]).toBeLessThan(100);
+    expect(Health.current[e3]).toBeLessThan(100);
+    // Should have created 3 ZAP! floating texts
+    const zapTexts = world.floatingTexts.filter((t) => t.text === 'ZAP!');
+    expect(zapTexts).toHaveLength(3);
+    // Should have created particles (at least 6 per target from lightning)
+    expect(world.particles.length).toBeGreaterThanOrEqual(18);
   });
 
   it('Stormcaller: no lightning when no enemies exist', () => {
     world.commanderModifiers.passiveLightningDamage = 10;
-    world.frameCount = 600;
+    world.frameCount = 900;
     commanderPassivesSystem(world);
     expect(world.floatingTexts.length).toBe(0);
   });

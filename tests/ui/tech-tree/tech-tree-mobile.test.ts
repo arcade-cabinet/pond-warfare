@@ -135,7 +135,7 @@ describe('TechCard', () => {
     render(h(TechCard, { node, state: 'locked', onClick: () => {} }));
     const text = document.body.textContent ?? '';
     expect(text).toContain('Needs');
-    expect(text).toContain('Swift Paws');
+    expect(text).toContain('Shadow Sprint');
   });
 
   it('shows unlock badge for nodes with unlocks', async () => {

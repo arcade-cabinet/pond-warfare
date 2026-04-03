@@ -13,36 +13,38 @@ import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 import * as store from '@/ui/store';
 
-/** Activate Rally Cry: +30% speed to all units for 10s. Cooldown 60s. */
-export function useRallyCry(world: GameWorld): boolean {
-  if (!world.tech.rallyCry) return false;
+/** Activate Shadow Sprint: +40% speed to all units for 8s. Cooldown 60s. */
+export function useShadowSprint(world: GameWorld): boolean {
+  if (!world.tech.swiftPaws) return false;
   if (world.frameCount < world.rallyCryCooldownUntil) return false;
   if (world.rallyCryExpiry > 0 && world.frameCount < world.rallyCryExpiry) return false;
 
-  world.rallyCryExpiry = world.frameCount + 600;
-  world.rallyCryCooldownUntil = world.frameCount + 3600;
+  world.rallyCryExpiry = world.frameCount + 480; // 8s at 60fps
+  world.rallyCryCooldownUntil = world.frameCount + 3600; // 60s cooldown
 
   audio.upgrade();
   world.floatingTexts.push({
     x: world.camX + world.viewWidth / 2,
     y: world.camY + 60,
-    text: 'RALLY CRY! +30% Speed',
-    color: '#facc15',
+    text: 'SHADOW SPRINT! +40% Speed',
+    color: '#a78bfa',
     life: 120,
   });
   return true;
 }
 
-/** Activate Pond Blessing: heal all player units to full HP (one-time). */
+/** Activate Pond Blessing: heal all player units 20% HP. 120s cooldown. */
 export function usePondBlessing(world: GameWorld): boolean {
-  if (!world.tech.pondBlessing || world.pondBlessingUsed) return false;
+  if (!world.tech.pondBlessing) return false;
+  if (world.frameCount < world.pondBlessingCooldownUntil) return false;
 
   const allUnits = query(world.ecs, [Position, Health, FactionTag]);
   for (let i = 0; i < allUnits.length; i++) {
     const eid = allUnits[i];
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
-    Health.current[eid] = Health.max[eid];
+    const healAmt = Math.round(Health.max[eid] * 0.2);
+    Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + healAmt);
     world.particles.push({
       x: Position.x[eid],
       y: Position.y[eid] - 10,
@@ -54,12 +56,12 @@ export function usePondBlessing(world: GameWorld): boolean {
     });
   }
 
-  world.pondBlessingUsed = true;
+  world.pondBlessingCooldownUntil = world.frameCount + 7200; // 120s at 60fps
   audio.heal();
   world.floatingTexts.push({
     x: world.camX + world.viewWidth / 2,
     y: world.camY + 60,
-    text: 'POND BLESSING! All units healed!',
+    text: 'POND BLESSING! All units +20% HP!',
     color: '#4ade80',
     life: 120,
   });

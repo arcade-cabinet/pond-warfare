@@ -50,7 +50,7 @@ describe('CommanderPicker', () => {
     render(h(CommanderPicker, {}));
     const sageCard = document.querySelector('[data-testid="commander-sage"]');
     expect(sageCard?.textContent).toContain('+25% tech research speed');
-    expect(sageCard?.textContent).toContain('Gatherers +15% gather rate');
+    expect(sageCard?.textContent).toContain('Gatherers +10% gather rate');
   });
 
   it('shows unlock requirements for locked commanders', () => {

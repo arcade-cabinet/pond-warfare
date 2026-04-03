@@ -7,6 +7,7 @@ export interface KeyMap {
   panRight: string[];
   attackMove: string;
   halt: string;
+  cycleStance: string;
   pause: string;
   mute: string;
   speed: string;
@@ -25,6 +26,7 @@ export const DEFAULT_KEYMAP: KeyMap = {
   panRight: ['d', 'arrowright'],
   attackMove: 'a',
   halt: 'h',
+  cycleStance: 'v',
   pause: 'p',
   mute: 'm',
   speed: 'f',
@@ -47,6 +49,7 @@ function deepCopyKeymap(keymap: KeyMap): KeyMap {
     panRight: [...keymap.panRight],
     attackMove: keymap.attackMove,
     halt: keymap.halt,
+    cycleStance: keymap.cycleStance,
     pause: keymap.pause,
     mute: keymap.mute,
     speed: keymap.speed,
@@ -71,6 +74,7 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
   if (keymap.panRight !== undefined) merged.panRight = [...keymap.panRight];
   if (keymap.attackMove !== undefined) merged.attackMove = keymap.attackMove;
   if (keymap.halt !== undefined) merged.halt = keymap.halt;
+  if (keymap.cycleStance !== undefined) merged.cycleStance = keymap.cycleStance;
   if (keymap.pause !== undefined) merged.pause = keymap.pause;
   if (keymap.mute !== undefined) merged.mute = keymap.mute;
   if (keymap.speed !== undefined) merged.speed = keymap.speed;
@@ -133,6 +137,7 @@ function isValidPartialKeyMap(obj: any): boolean {
   // Check string fields if present
   if (obj.attackMove !== undefined && typeof obj.attackMove !== 'string') return false;
   if (obj.halt !== undefined && typeof obj.halt !== 'string') return false;
+  if (obj.cycleStance !== undefined && typeof obj.cycleStance !== 'string') return false;
   if (obj.pause !== undefined && typeof obj.pause !== 'string') return false;
   if (obj.mute !== undefined && typeof obj.mute !== 'string') return false;
   if (obj.speed !== undefined && typeof obj.speed !== 'string') return false;

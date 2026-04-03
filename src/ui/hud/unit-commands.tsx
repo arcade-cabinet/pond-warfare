@@ -5,6 +5,7 @@
 
 import { useState } from 'preact/hooks';
 import { screenClass } from '@/platform';
+import { cycleStance } from '../game-actions';
 import {
   armyCount,
   attackMoveActive,
@@ -20,7 +21,12 @@ import {
   idleScoutCount,
   idleWorkerCount,
   selectionCount,
+  selectionStance,
 } from '../store';
+import { AutoToggleButton } from './auto-toggle-button';
+
+const STANCE_LABELS = ['A', 'D', 'H'] as const;
+const STANCE_TITLES = ['Aggressive', 'Defensive', 'Hold'] as const;
 
 export interface UnitCommandsProps {
   onIdleWorkerClick?: () => void;
@@ -28,47 +34,6 @@ export interface UnitCommandsProps {
   onAttackMoveClick?: () => void;
   onHaltClick?: () => void;
   onSaveCtrlGroup?: (group: number) => void;
-}
-
-/** A single auto-behavior toggle button. */
-function AutoToggleButton({
-  label,
-  enabled,
-  onToggle,
-  color,
-  activeBackground,
-}: {
-  label: string;
-  enabled: boolean;
-  onToggle: () => void;
-  color: string;
-  activeBackground: string;
-}) {
-  return (
-    <button
-      type="button"
-      class="cmd-btn border px-2 py-0.5 min-h-[32px] min-w-[32px] md:min-h-[36px] md:min-w-[36px] rounded-full font-bold text-[10px] md:text-sm flex items-center gap-1 md:gap-1.5 transition-colors shadow cursor-pointer"
-      style={{
-        borderColor: color,
-        color,
-        background: enabled ? activeBackground : undefined,
-      }}
-      title={`Auto-${label}: ${enabled ? 'ON' : 'OFF'}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onToggle();
-      }}
-    >
-      <span
-        class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-        style={{
-          border: `1px solid ${color}`,
-          background: enabled ? color : 'transparent',
-        }}
-      />
-      <span class="font-heading">{label}</span>
-    </button>
-  );
 }
 
 export function UnitCommands(props: UnitCommandsProps) {
@@ -228,9 +193,29 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
+      {/* Stance cycle button — desktop only */}
+      {!mobile &&
+        hasPlayerUnits.value &&
+        selectionCount.value > 0 &&
+        selectionStance.value >= 0 && (
+          <button
+            type="button"
+            id="stance-btn"
+            class="absolute top-[232px] md:top-64 right-2 md:right-6 cmd-btn border-2 px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+            style={{ borderColor: 'var(--pw-moss-bright)', color: 'var(--pw-moss-bright)' }}
+            title={`Stance: ${STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)`}
+            onClick={() => cycleStance()}
+          >
+            <span class="font-heading text-sm">
+              [{STANCE_LABELS[selectionStance.value] ?? 'A'}]{' '}
+              {STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)
+            </span>
+          </button>
+        )}
+
       {/* Save ctrl-group button — desktop only */}
       {!mobile && selectionCount.value > 0 && hasPlayerUnits.value && (
-        <div class="absolute top-[232px] md:top-64 right-2 md:right-6 z-20">
+        <div class="absolute top-[280px] md:top-[296px] right-2 md:right-6 z-20">
           {!saveGroupOpen ? (
             <button
               type="button"

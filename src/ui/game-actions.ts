@@ -11,6 +11,7 @@ import { audio } from '@/audio/audio-system';
 import { SPEED_LEVELS } from '@/constants';
 import { Selectable, UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
+import { cycleStanceForSelection } from '@/game/input-setup';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
@@ -194,6 +195,12 @@ export function openLeaderboard(): void {
 export function openKeyboardRef(): void {
   store.keyboardRefOpen.value = true;
   store.mobilePanelOpen.value = false;
+}
+
+/** Cycle unit stance for selected units (Aggressive -> Defensive -> Hold). */
+export function cycleStance(): void {
+  cycleStanceForSelection(game.world);
+  game.syncUIStore();
 }
 
 /** Toggle an auto-behavior by role, updating both the store signal and the world. */

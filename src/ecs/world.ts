@@ -122,6 +122,8 @@ export interface GameWorld {
   nestCountOverride: number;
   resourceDensityMod: number;
   enemyEconomyMod: number;
+  enemyStatMult: number;
+  nestBuildRateMult: number;
   enemyAggressionLevel: 'passive' | 'normal' | 'aggressive' | 'relentless';
 
   // Map seed for reproducible random generation
@@ -204,7 +206,7 @@ export interface GameWorld {
   // Active ability state (tech tree abilities)
   rallyCryExpiry: number;
   rallyCryCooldownUntil: number;
-  pondBlessingUsed: boolean;
+  pondBlessingCooldownUntil: number;
   tidalSurgeUsed: boolean;
   warDrumsBuff: Set<number>;
   venomCoatingTimers: Map<number, number>;

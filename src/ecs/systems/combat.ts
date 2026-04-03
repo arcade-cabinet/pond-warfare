@@ -18,6 +18,8 @@ import {
   IsBuilding,
   IsResource,
   Position,
+  Stance,
+  StanceMode,
   TowerAI,
   UnitStateMachine,
 } from '@/ecs/components';
@@ -140,8 +142,17 @@ export function combatSystem(world: GameWorld): void {
       continue;
     }
 
-    // Idle auto-aggro
+    // Idle auto-aggro (respects unit stance for player units)
     if (state === UnitState.Idle && dmg > 0 && world.frameCount % 30 === 0) {
+      const stanceMode = (Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive;
+      // Hold stance: never auto-aggro
+      if (faction === Faction.Player && stanceMode === StanceMode.Hold) continue;
+      // Defensive stance: only auto-aggro if recently damaged (within 120 frames / ~2s)
+      if (faction === Faction.Player && stanceMode === StanceMode.Defensive) {
+        const lastDmgFrame = (Health.lastDamagedFrame?.[eid] as number | undefined) ?? 0;
+        if (world.frameCount - lastDmgFrame > 120) continue;
+      }
+
       let aggroRad = faction === Faction.Enemy ? AGGRO_RADIUS_ENEMY : AGGRO_RADIUS_PLAYER;
       if (faction === Faction.Enemy && world.tech.camouflage)
         aggroRad = Math.round(aggroRad * 0.67);

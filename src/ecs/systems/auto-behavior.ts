@@ -23,6 +23,8 @@ import {
   IsResource,
   Position,
   Resource,
+  Stance,
+  StanceMode,
   TaskOverride,
   UnitStateMachine,
   Velocity,
@@ -61,6 +63,10 @@ export function autoBehaviorSystem(world: GameWorld): void {
 
     // Skip units with manual task overrides from the Forces tab
     if (TaskOverride.active[eid] === 1) continue;
+
+    // Hold stance units are never auto-assigned tasks
+    if (((Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive) === StanceMode.Hold)
+      continue;
 
     const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
 

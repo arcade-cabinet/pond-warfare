@@ -88,6 +88,9 @@ export const autoMenuExpanded = signal(false);
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);
 
+/** Current stance of the first selected player unit (-1 = no units, 0=Aggressive, 1=Defensive, 2=Hold). */
+export const selectionStance = signal(-1);
+
 // ---- Action panel tab ----
 export const activeActionTab = signal<'train' | 'build' | 'tech'>('train');
 

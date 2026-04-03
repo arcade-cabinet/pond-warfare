@@ -215,6 +215,60 @@ describe('TECH_UPGRADES', () => {
     }
   });
 
+  it('tech costs remain unchanged after rebalance', () => {
+    expect(TECH_UPGRADES.tradeRoutes.clamCost).toBe(200);
+    expect(TECH_UPGRADES.tradeRoutes.twigCost).toBe(150);
+    expect(TECH_UPGRADES.pondBlessing.clamCost).toBe(200);
+    expect(TECH_UPGRADES.pondBlessing.twigCost).toBe(150);
+    expect(TECH_UPGRADES.regeneration.clamCost).toBe(250);
+    expect(TECH_UPGRADES.regeneration.twigCost).toBe(200);
+    expect(TECH_UPGRADES.warDrums.clamCost).toBe(350);
+    expect(TECH_UPGRADES.warDrums.twigCost).toBe(250);
+    expect(TECH_UPGRADES.piercingShot.clamCost).toBe(300);
+    expect(TECH_UPGRADES.piercingShot.twigCost).toBe(200);
+    expect(TECH_UPGRADES.swiftPaws.clamCost).toBe(100);
+    expect(TECH_UPGRADES.swiftPaws.twigCost).toBe(50);
+    expect(TECH_UPGRADES.rallyCry.clamCost).toBe(250);
+    expect(TECH_UPGRADES.rallyCry.twigCost).toBe(200);
+    expect(TECH_UPGRADES.venomCoating.clamCost).toBe(300);
+    expect(TECH_UPGRADES.venomCoating.twigCost).toBe(200);
+  });
+
+  it('swiftPaws renamed to Shadow Sprint', () => {
+    expect(TECH_UPGRADES.swiftPaws.name).toBe('Shadow Sprint');
+    expect(TECH_UPGRADES.swiftPaws.description).toContain('+15% speed');
+  });
+
+  it('rallyCry repurposed to Shadow Marks', () => {
+    expect(TECH_UPGRADES.rallyCry.name).toBe('Shadow Marks');
+    expect(TECH_UPGRADES.rallyCry.description).toContain('+25% damage');
+  });
+
+  it('venomCoating buffed to 2 dmg/s 5s', () => {
+    expect(TECH_UPGRADES.venomCoating.description).toContain('2 dmg/s');
+    expect(TECH_UPGRADES.venomCoating.description).toContain('5s');
+  });
+
+  it('tradeRoutes references Market not Lodge', () => {
+    expect(TECH_UPGRADES.tradeRoutes.description).toContain('Market');
+  });
+
+  it('warDrums references any building', () => {
+    expect(TECH_UPGRADES.warDrums.description).toContain('any building');
+  });
+
+  it('piercingShot references 30% armor', () => {
+    expect(TECH_UPGRADES.piercingShot.description).toContain('30% armor');
+  });
+
+  it('regeneration mentions out of combat', () => {
+    expect(TECH_UPGRADES.regeneration.description).toContain('out of combat');
+  });
+
+  it('pondBlessing mentions cooldown', () => {
+    expect(TECH_UPGRADES.pondBlessing.description).toContain('120s');
+  });
+
   it('every branch has a valid branch field', () => {
     const validBranches = new Set(['lodge', 'nature', 'warfare', 'fortifications', 'shadow']);
     for (const [, upgrade] of Object.entries(TECH_UPGRADES)) {
