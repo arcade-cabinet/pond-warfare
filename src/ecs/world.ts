@@ -8,11 +8,9 @@
  */
 
 import type { createWorld } from 'bitecs';
-import type { AdvisorState } from '@/advisors/types';
 import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
-import type { TechState } from '@/config/tech-tree';
 import type { WeatherState } from '@/config/weather';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import type {
@@ -50,7 +48,7 @@ export interface GameWorld {
   // Game state
   resources: GameResources;
   enemyResources: { clams: number; twigs: number };
-  tech: TechState;
+  tech: Record<string, boolean>;
   stats: GameStats;
   state: GameState;
 
@@ -172,8 +170,8 @@ export interface GameWorld {
   // First-game detection (used by advisor system)
   isFirstGame: boolean;
 
-  // Advisor system state
-  advisorState: AdvisorState;
+  // Advisor system state (deprecated, kept for save compatibility)
+  advisorState: Record<string, unknown>;
 
   // Commander aura + selection
   commanderDamageBuff: Set<number>;

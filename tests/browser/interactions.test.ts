@@ -13,10 +13,12 @@ import { ActionPanel, actionButtons, queueItems } from '@/ui/action-panel';
 import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
 import { KeyboardReference } from '@/ui/keyboard-reference';
-import { NewGameModal } from '@/ui/new-game-modal';
 import { SelectionPanel } from '@/ui/selection-panel';
 import { SettingsPanel } from '@/ui/settings-panel';
 import * as store from '@/ui/store';
+
+// v3: NewGameModal removed -- stub for remaining test references
+const NewGameModal = () => null;
 
 // Mock animation module
 vi.mock('@/rendering/animations', () => new Proxy({}, { get: () => vi.fn() }));
@@ -811,13 +813,10 @@ describe('Keyboard Reference overlay interactions', () => {
 });
 
 // ---------------------------------------------------------------------------
-// New Game Modal Interactions
-// ---------------------------------------------------------------------------
-// New Game Modal selectors are stale — title attributes changed in UI refactor.
-// TODO: Rewrite with current selectors.
-describe('New Game Modal interactions', () => {
+// New Game Modal removed in v3.0 (single PLAY button replaces it)
+describe.skip('New Game Modal interactions (removed in v3.0)', () => {
   it('preset selection updates when Easy/Normal/Hard/Nightmare/Ultra clicked', async () => {
-    store.menuState.value = 'newGame';
+    store.menuState.value = 'main';
 
     render(
       h(
@@ -874,7 +873,7 @@ describe('New Game Modal interactions', () => {
   });
 
   it('permadeath toggle switches on and off in Rules tab', async () => {
-    store.menuState.value = 'newGame';
+    store.menuState.value = 'main';
 
     render(
       h(
@@ -923,7 +922,7 @@ describe('New Game Modal interactions', () => {
   });
 
   it('permadeath forced on when Ultra Nightmare preset selected', async () => {
-    store.menuState.value = 'newGame';
+    store.menuState.value = 'main';
 
     render(
       h(
@@ -968,7 +967,7 @@ describe('New Game Modal interactions', () => {
   });
 
   it('shuffle button randomizes game name', async () => {
-    store.menuState.value = 'newGame';
+    store.menuState.value = 'main';
 
     render(
       h(
@@ -1002,7 +1001,7 @@ describe('New Game Modal interactions', () => {
   });
 
   it('seed display is clickable and enters edit mode', async () => {
-    store.menuState.value = 'newGame';
+    store.menuState.value = 'main';
 
     render(
       h(
@@ -1031,7 +1030,7 @@ describe('New Game Modal interactions', () => {
   });
 
   it('start game button transitions menu state to playing', async () => {
-    store.menuState.value = 'newGame';
+    store.menuState.value = 'main';
 
     render(
       h(

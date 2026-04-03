@@ -6,9 +6,7 @@
  */
 
 import { createWorld } from 'bitecs';
-import { createAdvisorState } from '@/advisors/types';
 import { YukaManager } from '@/ai/yuka-manager';
-import { createInitialTechState } from '@/config/tech-tree';
 import { createWeatherState } from '@/config/weather';
 import {
   ENEMY_STARTING_CLAMS,
@@ -66,7 +64,7 @@ export function createGameWorld(): GameWorld {
       clams: ENEMY_STARTING_CLAMS,
       twigs: ENEMY_STARTING_TWIGS,
     },
-    tech: createInitialTechState(),
+    tech: {},
     stats: {
       unitsKilled: 0,
       unitsLost: 0,
@@ -151,7 +149,7 @@ export function createGameWorld(): GameWorld {
     alphaDamageBuff: new Map(),
     championEnemies: new Set(),
     isFirstGame: true,
-    advisorState: createAdvisorState(),
+    advisorState: {},
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),
     commanderHpBuffApplied: new Set(),

@@ -66,8 +66,8 @@ export function EdgeVertical({ left }: EdgeVerticalProps) {
       {/* Vine -- thin highlight */}
       <path d={d} fill="none" stroke={COLORS.vineHighlight} strokeWidth="3" strokeLinecap="round" />
       {/* Decorative leaves */}
-      <SvgLeaf x={left ? 5 : 55} y="20%" rot={left ? -90 : 90} scale={0.8} />
-      <SvgLeaf x={left ? 15 : 45} y="70%" rot={left ? -45 : 45} scale={1} />
+      <SvgLeaf x={left ? 5 : 55} y={100} rot={left ? -90 : 90} scale={0.8} />
+      <SvgLeaf x={left ? 15 : 45} y={350} rot={left ? -45 : 45} scale={1} />
     </svg>
   );
 }

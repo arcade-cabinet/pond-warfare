@@ -10,7 +10,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { GATHER_AMOUNT } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Carrying, Health, Resource, UnitStateMachine } from '@/ecs/components';
-import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -98,10 +97,9 @@ describe('Economy Integration', () => {
     const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     UnitStateMachine.state[gatherer] = UnitState.Idle;
 
-    autoBehaviorSystem(world);
-
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
-    expect(UnitStateMachine.targetEntity[gatherer]).toBe(resource);
+    // Auto-behavior system removed in v3.0 (replaced by prestige auto-deploy)
+    // Idle gatherers no longer auto-assign; player must manually command them
+    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
   });
 
   it('multiple gatherers work in parallel without conflict', () => {

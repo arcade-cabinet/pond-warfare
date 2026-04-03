@@ -106,7 +106,13 @@ export function Frame9Slice({
           {title && (
             <div class="absolute inset-0 flex items-center justify-center z-30 pointer-events-none mt-1">
               <h2
-                class="text-3xl tracking-widest text-center transition-all group-hover:scale-[1.03] duration-500"
+                class={`tracking-wider text-center transition-all group-hover:scale-[1.03] duration-500 px-2 ${
+                  title.length > 30
+                    ? 'text-xs md:text-sm'
+                    : title.length > 20
+                      ? 'text-sm md:text-lg'
+                      : 'text-lg md:text-2xl'
+                }`}
                 style={TITLE_STYLE}
               >
                 {title}

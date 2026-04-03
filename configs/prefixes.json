@@ -1,0 +1,14 @@
+{
+  "tiers": [
+    { "prefix": "Basic", "multiplier": 1 },
+    { "prefix": "Enhanced", "multiplier": 2 },
+    { "prefix": "Super", "multiplier": 3 },
+    { "prefix": "Mega", "multiplier": 4 },
+    { "prefix": "Ultra", "multiplier": 5 },
+    { "prefix": "Seismic", "multiplier": 6 },
+    { "prefix": "Colossal", "multiplier": 7 },
+    { "prefix": "Legendary", "multiplier": 8 },
+    { "prefix": "Mythic", "multiplier": 9 },
+    { "prefix": "Transcendent", "multiplier": 10 }
+  ]
+}

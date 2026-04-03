@@ -4,7 +4,6 @@ import { useAirdrop, usePondBlessing, useShadowSprint, useTidalSurge } from '@/g
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
 import { useCommanderAbility } from '@/game/commander-abilities';
 import {
-  applyCampaignMission,
   applyDifficultyModifiers,
   applyMapSeed,
   centerCameraOnLodge,
@@ -132,7 +131,6 @@ export class Game {
     this.physicsManager = new PhysicsManager();
     applyDifficultyModifiers(this.world);
     applyMapSeed(this.world);
-    applyCampaignMission(this.world);
     spawnInitialEntities(this.world);
 
     if (this.world.fogOfWarMode === 'revealed') {

@@ -28,9 +28,6 @@ export { MainMenu } from './main-menu';
 // Minimap panel
 export { MinimapPanel, type MinimapPanelProps } from './minimap-panel';
 
-// New game modal
-export { NewGameModal } from './new-game-modal';
-
 // Radial menu
 export { RadialMenu, type RadialMenuProps } from './radial-menu';
 
@@ -42,6 +39,3 @@ export { SettingsPanel, type SettingsPanelProps } from './settings-panel';
 
 // Store (namespace re-export not possible; re-export key items)
 export * as store from './store';
-
-// Tech tree panel
-export { TechTreePanel, type TechTreePanelProps } from './tech-tree-panel';

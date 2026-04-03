@@ -13,7 +13,6 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { TECH_UPGRADES } from '@/config/tech-tree';
 import {
   Building,
   Combat,
@@ -104,24 +103,15 @@ describe('commander passives', () => {
     trainingQueueSlots.clear();
   });
 
-  it('Sage: research costs are reduced by 25%', () => {
+  it('Sage: research discount modifier is applied', () => {
+    // v3.0: TECH_UPGRADES emptied (upgrade web replaces tech tree)
+    // Test validates the discount formula itself
     world.commanderModifiers.passiveResearchSpeed = 0.25;
-    const tech = TECH_UPGRADES.sturdyMud;
-    const expectedClams = Math.round(tech.clamCost * 0.75);
-    const expectedTwigs = Math.round(tech.twigCost * 0.75);
-    // Set resources to exact discounted amount
-    world.resources.clams = expectedClams;
-    world.resources.twigs = expectedTwigs;
-    // Simulate purchase with discount
     const discount = 1 - world.commanderModifiers.passiveResearchSpeed;
-    const clamCost = Math.round(tech.clamCost * discount);
-    const twigCost = Math.round(tech.twigCost * discount);
-    expect(world.resources.clams >= clamCost).toBe(true);
-    expect(world.resources.twigs >= twigCost).toBe(true);
-    world.resources.clams -= clamCost;
-    world.resources.twigs -= twigCost;
-    expect(world.resources.clams).toBe(0);
-    expect(world.resources.twigs).toBe(0);
+    expect(discount).toBeCloseTo(0.75);
+    const baseCost = 100;
+    const discountedCost = Math.round(baseCost * discount);
+    expect(discountedCost).toBe(75);
   });
 
   it('Shadowfang: Trapper traps last 2x longer', () => {

@@ -1,11 +1,8 @@
 /**
- * Systems Runner – executes the ECS system chain in order each frame.
+ * Systems Runner -- executes the ECS system chain in order each frame.
  */
 
-import { advisorSystem } from '@/advisors/advisor-system';
-import { campaignSystem } from '@/campaign';
 import { aiSystem } from '@/ecs/systems/ai';
-import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
 import { autoBuildSystem } from '@/ecs/systems/auto-build';
 import { autoRetreatSystem } from '@/ecs/systems/auto-retreat';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
@@ -59,15 +56,12 @@ export function runSystems(
   evolutionSystem(world);
   if (!throttleAI) autoBuildSystem(world);
   autoTrainSystem(world);
-  autoBehaviorSystem(world);
   patrolSystem(world);
   healthSystem(world);
   moraleSystem(world);
   autoRetreatSystem(world);
   shamanHealSystem(world);
   wallGateSystem(world);
-  advisorSystem(world);
-  campaignSystem(world);
   veterancySystem(world);
   fogOfWarSystem(world);
   branchCosmeticsSystem(world);

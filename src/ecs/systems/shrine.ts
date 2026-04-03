@@ -2,37 +2,40 @@
  * Shrine System
  *
  * Manages Shrine building abilities. Each Shrine provides one powerful
- * one-time ability based on the player's dominant tech branch.
+ * one-time ability based on the player's dominant upgrade category.
  *
  * Abilities:
- * - Lodge: "Flood" — all Water tiles expand by 1 for 30s
- * - Nature: "Bloom" — heal all units to full HP
- * - Warfare: "Meteor" — massive AoE damage at target location
- * - Fortifications: "Stone Wall" — ring of walls around Lodge
- * - Shadow: "Eclipse" — all enemies blinded for 15s
+ * - gathering: "Bloom" -- heal all units to full HP
+ * - combat: "Meteor" -- massive AoE damage at target location
+ * - defense: "Stone Wall" -- ring of walls around Lodge
+ * - utility: "Flood" -- all Water tiles expand by 1 for 30s
+ * - economy: "Bloom" (same as gathering)
+ * - siege: "Meteor" (same as combat)
  *
  * One use per Shrine, then it crumbles (destroyed after activation).
- * Requires at least 3 techs in the dominant branch.
+ * Requires at least 3 upgrades in the dominant category.
  */
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import type { TechBranch, TechState } from '@/config/tech-tree';
-import { TECH_UPGRADES } from '@/config/tech-tree';
 import { FactionTag, Health, Position, UnitStateMachine } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { Faction, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
+/** v3 upgrade categories (replaces old TechBranch). */
+export type UpgradeCategory = 'gathering' | 'combat' | 'defense' | 'utility' | 'economy' | 'siege';
+
 export type ShrineAbility = 'flood' | 'bloom' | 'meteor' | 'stoneWall' | 'eclipse';
 
-/** Map from tech branch to shrine ability. */
-const BRANCH_ABILITY: Record<TechBranch, ShrineAbility> = {
-  lodge: 'flood',
-  nature: 'bloom',
-  warfare: 'meteor',
-  fortifications: 'stoneWall',
-  shadow: 'eclipse',
+/** Map from upgrade category to shrine ability. */
+const CATEGORY_ABILITY: Record<UpgradeCategory, ShrineAbility> = {
+  gathering: 'bloom',
+  combat: 'meteor',
+  defense: 'stoneWall',
+  utility: 'flood',
+  economy: 'bloom',
+  siege: 'meteor',
 };
 
 /** Map from ability to display name. */
@@ -53,29 +56,34 @@ export const SHRINE_ABILITY_DESCRIPTIONS: Record<ShrineAbility, string> = {
   eclipse: 'All enemies stop moving/attacking for 15 seconds',
 };
 
-/** Count researched techs per branch. */
-export function countBranchTechs(tech: TechState): Record<TechBranch, number> {
-  const counts: Record<TechBranch, number> = {
-    lodge: 0,
-    nature: 0,
-    warfare: 0,
-    fortifications: 0,
-    shadow: 0,
+/** Count researched techs per upgrade category. */
+export function countBranchTechs(tech: Record<string, boolean>): Record<UpgradeCategory, number> {
+  const counts: Record<UpgradeCategory, number> = {
+    gathering: 0,
+    combat: 0,
+    defense: 0,
+    utility: 0,
+    economy: 0,
+    siege: 0,
   };
-  for (const [id, upgrade] of Object.entries(TECH_UPGRADES)) {
-    if (tech[id as keyof TechState]) {
-      counts[upgrade.branch]++;
+  for (const [id, researched] of Object.entries(tech)) {
+    if (!researched) continue;
+    // v3 upgrade IDs follow pattern: "{category}_{subcategory}_t{tier}"
+    const parts = id.split('_');
+    const category = parts[0] as UpgradeCategory;
+    if (category in counts) {
+      counts[category]++;
     }
   }
   return counts;
 }
 
-/** Get the dominant tech branch (most researched techs, min 3). */
-export function getDominantBranch(tech: TechState): TechBranch | null {
+/** Get the dominant upgrade category (most researched, min 3). */
+export function getDominantBranch(tech: Record<string, boolean>): UpgradeCategory | null {
   const counts = countBranchTechs(tech);
-  let best: TechBranch | null = null;
+  let best: UpgradeCategory | null = null;
   let bestCount = 0;
-  for (const [branch, count] of Object.entries(counts) as [TechBranch, number][]) {
+  for (const [branch, count] of Object.entries(counts) as [UpgradeCategory, number][]) {
     if (count >= 3 && count > bestCount) {
       best = branch;
       bestCount = count;
@@ -88,7 +96,7 @@ export function getDominantBranch(tech: TechState): TechBranch | null {
 export function getShrineAbility(world: GameWorld): ShrineAbility | null {
   const branch = getDominantBranch(world.tech);
   if (!branch) return null;
-  return BRANCH_ABILITY[branch];
+  return CATEGORY_ABILITY[branch];
 }
 
 /** Activate a shrine ability. Returns true if successful. */

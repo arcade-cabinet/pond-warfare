@@ -13,7 +13,6 @@
 // TODO: Focus management — on open, move focus to the close button or first
 // interactive element. On close, return focus to the trigger (e.g. gear icon button).
 import { useMemo } from 'preact/hooks';
-import { AdvisorSettings } from './components/AdvisorSettings';
 import { Frame9Slice } from './components/frame';
 import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';
@@ -124,7 +123,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
         summary: `Speed ${currentSpeed}x${autoSaveEnabled.value ? ', Auto-save ON' : ''}`,
       },
       { key: 'accessibility', title: 'Accessibility' },
-      { key: 'advisors', title: 'Advisors' },
     ],
     [currentSpeed],
   );
@@ -249,9 +247,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   onToggle={() => props.onReduceVisualNoiseToggle?.()}
                 />
               </div>
-
-              {/* Advisors */}
-              <AdvisorSettings />
             </PondAccordion>
           </div>
         </Frame9Slice>

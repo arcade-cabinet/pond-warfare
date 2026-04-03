@@ -97,7 +97,8 @@ export function MatchHistoryPanel() {
 }
 
 function ChallengeHistorySection() {
-  const history = dailyChallengeHistory.value;
+  type ChallengeEntry = { date: string; challengeTitle: string; completed: boolean };
+  const history = dailyChallengeHistory.value as ChallengeEntry[];
   const streak = dailyChallengeStreak.value;
 
   if (history.length === 0) return null;
@@ -125,7 +126,7 @@ function ChallengeHistorySection() {
         )}
       </div>
       <div class="grid grid-cols-7 gap-1">
-        {history.map((entry) => (
+        {history.map((entry: ChallengeEntry) => (
           <ChallengeDay key={entry.date} entry={entry} />
         ))}
       </div>

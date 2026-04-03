@@ -4,7 +4,6 @@
  * Extracted from Game.init() to keep the orchestrator under 300 LOC.
  */
 
-import { initAdvisorState } from '@/advisors/advisor-state';
 import { resetBarkState } from '@/config/barks';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Position, Selectable } from '@/ecs/components';
@@ -25,7 +24,6 @@ import { generateAllSprites } from '@/rendering/sprites';
 import { attachRippleSprites, initWaterRipples } from '@/rendering/water-ripple';
 import type { ReplayRecorder } from '@/replay';
 import { loadAchievements, resetAchievementMatchState } from '@/systems/achievements';
-import { loadUnlocks, resetMatchUpdateGuard } from '@/systems/unlock-tracker';
 import type { SpriteId } from '@/types';
 import * as store from '@/ui/store';
 
@@ -105,11 +103,8 @@ export async function initCanvases(
 export function resetSession(world: GameWorld): void {
   resetBarkState();
   resetAchievementMatchState();
-  resetMatchUpdateGuard();
   resetRandomEvents();
   loadAchievements().catch(() => {});
-  loadUnlocks().catch(() => {});
-  initAdvisorState(world).catch(() => {});
 }
 
 /** Wire up keyboard and pointer handlers. */
@@ -223,7 +218,7 @@ export function setupDockResize(resizeFn: () => void): () => void {
 }
 
 export { createGameWorld } from '@/ecs/world';
-export { applyCampaignMission, applyDifficultyModifiers } from '@/game/difficulty';
+export { applyDifficultyModifiers } from '@/game/difficulty';
 export { setupAudio } from '@/game/game-lifecycle';
 export { startGameLoop, wireWebGLHandlers } from '@/game/game-loop-setup';
 export { spawnInitialEntities } from '@/game/init-entities/index';

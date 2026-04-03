@@ -1,7 +1,7 @@
 /**
- * Store — Gameplay Mode Signals
+ * Store -- Gameplay Mode Signals
  *
- * Game-over stats, campaign, FPS counter, puzzle, replay, and game event feed
+ * Game-over stats, FPS counter, replay, and game event feed
  * signals extracted from store.ts for file size compliance.
  */
 
@@ -20,24 +20,13 @@ export const goTimeSurvived = signal('');
 export const goFrameCount = signal(0);
 export const goMapSeed = signal(0);
 
-// ---- FPS / Campaign ----
+// ---- FPS ----
 export const fpsDisplay = signal(0);
 export const fpsCounterVisible = signal(false);
-export const campaignOpen = signal(false);
-export const campaignMissionId = signal('');
-export const campaignObjectiveStatuses = signal<Record<string, boolean>>({});
-export const campaignChoiceOpen = signal(false);
-export const campaignBranchPath = signal<'A' | 'B' | null>(null);
 
 // ---- Game event feed / wave tracking ----
 export const gameEvents = signal<_GameEvent[]>([]);
 export const waveNumber = signal(0);
-
-// ---- v2.0.0: Puzzle mode ----
-export const puzzleId = signal('');
-export const puzzleStars = signal(0);
-export const puzzleObjectiveText = signal('');
-export const puzzleTimerDisplay = signal('');
 
 // ---- v2.0.0: Replay ----
 export const replayMode = signal(false);
@@ -45,12 +34,6 @@ export const replayProgress = signal(0);
 export const replayTimeDisplay = signal('00:00');
 export const replaySpeedLabel = signal('1x');
 export const replayPaused = signal(false);
-
-// ---- Game mode ----
-export type GameMode = 'skirmish' | 'survival' | 'campaign' | 'puzzle';
-export const gameMode = signal<GameMode>('skirmish');
-export const survivalScore = signal(0);
-export const survivalWave = signal(0);
 
 // ---- Commander ability ----
 export const commanderAbilityReady = signal(false);
@@ -66,7 +49,7 @@ export const airdropCooldown = signal(0);
 export const evacuationActive = signal(false);
 export const checkpointCount = signal(0);
 
-// ---- Active abilities (tech tree) ----
+// ---- Active abilities ----
 export const rallyCryAvailable = signal(false);
 export const rallyCryCooldown = signal(0);
 export const rallyCryActive = signal(false);
@@ -77,14 +60,9 @@ export const tidalSurgeAvailable = signal(false);
 export const settingsOpen = signal(false);
 export const achievementsOpen = signal(false);
 export const leaderboardOpen = signal(false);
-export const unlocksOpen = signal(false);
 export const cosmeticsOpen = signal(false);
 export const keyboardRefOpen = signal(false);
 export const mobilePanelOpen = signal(false);
-
-// ---- Puzzle & Survival selection screens (US1, US2) ----
-export const puzzleSelectOpen = signal(false);
-export const survivalSelectOpen = signal(false);
 
 /** Active achievement toast: name + description shown for 3 seconds. */
 export interface AchievementToast {
@@ -93,16 +71,13 @@ export interface AchievementToast {
 }
 export const activeAchievementToast = signal<AchievementToast | null>(null);
 
-// ---- Volume & panel tab ----
-/** Active tab in the slide-out command panel. */
-export type PanelTab = 'map' | 'forces' | 'buildings' | 'menu';
-export const activePanelTab = signal<PanelTab>('forces');
+// ---- Volume ----
 export const masterVolume = signal(80);
 export const musicVolume = signal(50);
 export const sfxVolume = signal(80);
 export const autoSaveEnabled = signal(false);
 
-// ---- Match history / daily challenge / XP ----
+// ---- Match history / XP ----
 export const matchHistoryOpen = signal(false);
 /** XP earned in the just-completed game (shown in battle report). */
 export const goXpEarned = signal(0);
@@ -110,24 +85,36 @@ export const goXpEarned = signal(0);
 export const goLeveledUp = signal(false);
 /** Player's new level after the just-completed game. */
 export const goNewLevel = signal(0);
-/** Whether today's daily challenge was completed in the just-completed game. */
-export const goDailyChallengeCompleted = signal(false);
-/** Today's daily challenge title (for HUD/menu display). */
-export const dailyChallengeTitle = signal('');
-/** Today's daily challenge description. */
-export const dailyChallengeDesc = signal('');
-/** Today's daily challenge XP reward amount. */
-export const dailyChallengeXp = signal(0);
-/** Whether today's daily challenge has already been completed. */
-export const dailyChallengeAlreadyDone = signal(false);
-/** Current daily challenge streak (consecutive days completed). */
-export const dailyChallengeStreak = signal(0);
-/** Recent 7-day challenge history entries. */
-export const dailyChallengeHistory = signal<
-  Array<{ date: string; challengeTitle: string; completed: boolean }>
->([]);
 
-// ---- Production queue (moved from store.ts) ----
+// ---- Daily challenge (v3: stub signals, will be replaced by event system) ----
+export const goDailyChallengeCompleted = signal(false);
+export const dailyChallengeTitle = signal('');
+export const dailyChallengeDesc = signal('');
+export const dailyChallengeXp = signal(0);
+export const dailyChallengeAlreadyDone = signal(false);
+export const dailyChallengeStreak = signal(0);
+export const dailyChallengeHistory = signal<unknown[]>([]);
+
+// ---- Auto-behavior toggles (v3: stub signals, replaced by prestige auto-deploy) ----
+export const autoGathererEnabled = signal(false);
+export const autoCombatEnabled = signal(false);
+export const autoHealerEnabled = signal(false);
+export const autoScoutEnabled = signal(false);
+export const autoMenuExpanded = signal(false);
+
+// ---- Panel tab (v3: stub, panel removed) ----
+export type PanelTab = 'map' | 'forces' | 'buildings' | 'menu';
+export const activePanelTab = signal<PanelTab>('forces');
+
+// ---- Tech tree open (v3: stub, replaced by upgrade web) ----
+export const techTreeOpen = signal(false);
+// ---- Campaign (v3: stub, removed) ----
+export const campaignOpen = signal(false);
+export const campaignMissionId = signal<string | null>(null);
+// ---- Unlocks (v3: stub, removed) ----
+export const unlocksOpen = signal(false);
+
+// ---- Production queue ----
 export interface QueueItem {
   buildingKind: number;
   unitLabel: string;
@@ -136,7 +123,7 @@ export interface QueueItem {
 }
 export const globalProductionQueue = signal<QueueItem[]>([]);
 
-// ---- Roster (Forces + Buildings tabs) ----
+// ---- Roster (Forces + Buildings) ----
 export const unitRoster = signal<RosterGroup[]>([]);
 export const buildingRoster = signal<RosterBuilding[]>([]);
 

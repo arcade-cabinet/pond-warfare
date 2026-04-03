@@ -1,6 +1,6 @@
 /**
- * UnitCommands - Idle worker button with contextual auto-behavior toggles,
- * army select button, attack-move button, halt button, save-group UI.
+ * UnitCommands - Army select button, attack-move button, halt button,
+ * stance cycling, patrol mode, save-group UI.
  */
 
 import { useState } from 'preact/hooks';
@@ -9,24 +9,13 @@ import { cycleStance } from '../game-actions';
 import {
   armyCount,
   attackMoveActive,
-  patrolModeActive,
-  autoCombatEnabled,
-  autoGathererEnabled,
-  autoHealerEnabled,
-  autoMenuExpanded,
-  autoScoutEnabled,
   hasPlayerUnits,
-  idleCombatCount,
-  idleGathererCount,
-  idleHealerCount,
-  idleScoutCount,
   idleWorkerCount,
+  patrolModeActive,
   selectionCount,
   selectionStance,
 } from '../store';
-import { AutoToggleButton } from './auto-toggle-button';
 
-const _STANCE_LABELS = ['A', 'D', 'H'] as const;
 const STANCE_TITLES = ['Aggressive', 'Defensive', 'Hold'] as const;
 
 export interface UnitCommandsProps {
@@ -38,121 +27,34 @@ export interface UnitCommandsProps {
 }
 
 export function UnitCommands(props: UnitCommandsProps) {
-  // Save-group picker state
   const [saveGroupOpen, setSaveGroupOpen] = useState(false);
 
-  const expanded = autoMenuExpanded.value;
   const totalIdle = idleWorkerCount.value;
-  const hasIdleGatherers = idleGathererCount.value > 0;
-  const hasIdleCombat = idleCombatCount.value > 0;
-  const hasIdleHealers = idleHealerCount.value > 0;
-  const hasIdleScouts = idleScoutCount.value > 0;
-
   const mobile = screenClass.value === 'compact';
 
   return (
     <>
-      {/* Idle units button + contextual auto-behavior row (desktop only — mobile uses slide-out panel) */}
+      {/* Idle units button (desktop only) */}
       {!mobile && totalIdle > 0 && (
         <div class="absolute top-14 right-2 md:right-6 z-20 flex flex-wrap items-center gap-1">
-          {/* Main idle button */}
           <button
             type="button"
             id="idle-worker-btn"
             class="cmd-btn border-2 px-2 py-0.5 md:px-4 md:py-2 min-h-[32px] md:min-h-[36px] rounded-full font-bold flex items-center gap-1.5 md:gap-2 transition-colors shadow-lg cursor-pointer"
             style={{ borderColor: 'var(--pw-warning)', color: 'var(--pw-warning)' }}
-            title={expanded ? 'Collapse auto menu (.)' : 'Expand auto menu (.)'}
-            onClick={() => {
-              autoMenuExpanded.value = !autoMenuExpanded.value;
-            }}
+            title="Select idle worker (.)"
+            onClick={() => props.onIdleWorkerClick?.()}
           >
             <span
               class="w-3 h-3 rounded-full animate-pulse"
               style={{ background: 'var(--pw-warning)' }}
             />
-            <span class="font-heading text-xs md:text-sm">
-              {totalIdle} Idle {expanded ? '\u25B2' : '\u25BC'}
-            </span>
+            <span class="font-heading text-xs md:text-sm">{totalIdle} Idle</span>
           </button>
-
-          {/* Contextual auto-behavior toggle buttons */}
-          {expanded && (
-            <>
-              {/* Gatherer role: gather + build */}
-              {hasIdleGatherers && (
-                <AutoToggleButton
-                  label="Gatherer"
-                  enabled={autoGathererEnabled.value}
-                  onToggle={() => {
-                    autoGathererEnabled.value = !autoGathererEnabled.value;
-                  }}
-                  color="var(--pw-warning)"
-                  activeBackground="var(--pw-auto-warning-bg)"
-                />
-              )}
-
-              {/* Combat role: attack + defend */}
-              {hasIdleCombat && (
-                <AutoToggleButton
-                  label="Combat"
-                  enabled={autoCombatEnabled.value}
-                  onToggle={() => {
-                    autoCombatEnabled.value = !autoCombatEnabled.value;
-                  }}
-                  color="var(--pw-enemy-light)"
-                  activeBackground="var(--pw-auto-enemy-bg)"
-                />
-              )}
-
-              {/* Healer role */}
-              {hasIdleHealers && (
-                <AutoToggleButton
-                  label="Healer"
-                  enabled={autoHealerEnabled.value}
-                  onToggle={() => {
-                    autoHealerEnabled.value = !autoHealerEnabled.value;
-                  }}
-                  color="var(--pw-success)"
-                  activeBackground="var(--pw-auto-success-bg)"
-                />
-              )}
-
-              {/* Scout role */}
-              {hasIdleScouts && (
-                <AutoToggleButton
-                  label="Scout"
-                  enabled={autoScoutEnabled.value}
-                  onToggle={() => {
-                    autoScoutEnabled.value = !autoScoutEnabled.value;
-                  }}
-                  color="var(--pw-scout)"
-                  activeBackground="var(--pw-auto-scout-bg)"
-                />
-              )}
-
-              {/* Select All idle units */}
-              <button
-                type="button"
-                class="cmd-btn border px-2 py-0.5 min-h-[32px] min-w-[32px] md:min-h-[36px] md:min-w-[36px] rounded-full font-bold text-[10px] md:text-sm flex items-center gap-1 md:gap-1.5 transition-colors shadow cursor-pointer"
-                style={{
-                  borderColor: 'var(--pw-success)',
-                  color: 'var(--pw-success)',
-                }}
-                title="Select all idle units"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (props.onIdleWorkerClick) props.onIdleWorkerClick();
-                  autoMenuExpanded.value = false;
-                }}
-              >
-                <span class="font-heading">Select</span>
-              </button>
-            </>
-          )}
         </div>
       )}
 
-      {/* Army select button (desktop only — mobile has it in sidebar) */}
+      {/* Army select button (desktop only) */}
       {!mobile && armyCount.value > 0 && (
         <button
           type="button"
@@ -166,7 +68,7 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Attack-move button — all devices */}
+      {/* Attack-move button */}
       {hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
         <button
           type="button"
@@ -180,7 +82,7 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Halt/Stop button — all devices */}
+      {/* Halt/Stop button */}
       {hasPlayerUnits.value && selectionCount.value > 0 && (
         <button
           type="button"
@@ -194,7 +96,7 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Stance cycle button — all devices */}
+      {/* Stance cycle button */}
       {hasPlayerUnits.value && selectionCount.value > 0 && selectionStance.value >= 0 && (
         <button
           type="button"
@@ -211,14 +113,16 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Patrol mode button — all devices (mobile tap-to-patrol, desktop shift+click) */}
+      {/* Patrol mode button */}
       {hasPlayerUnits.value && selectionCount.value > 0 && (
         <button
           type="button"
           id="patrol-btn"
           class={`absolute top-[280px] md:top-[296px] right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px] ${patrolModeActive.value ? 'ring-2 ring-offset-1' : ''}`}
           style={{
-            borderColor: patrolModeActive.value ? 'var(--pw-vine-highlight)' : 'var(--pw-vine-base)',
+            borderColor: patrolModeActive.value
+              ? 'var(--pw-vine-highlight)'
+              : 'var(--pw-vine-base)',
             color: patrolModeActive.value ? 'var(--pw-vine-highlight)' : 'var(--pw-vine-base)',
           }}
           title="Patrol: tap terrain to set waypoints"
@@ -232,9 +136,9 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Save ctrl-group button — desktop only */}
+      {/* Save ctrl-group button (desktop only) */}
       {!mobile && selectionCount.value > 0 && hasPlayerUnits.value && (
-        <div class="absolute top-[280px] md:top-[296px] right-2 md:right-6 z-20">
+        <div class="absolute top-[328px] md:top-[344px] right-2 md:right-6 z-20">
           {!saveGroupOpen ? (
             <button
               type="button"

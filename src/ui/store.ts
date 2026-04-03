@@ -84,9 +84,6 @@ export const idleCombatCount = signal(0);
 export const idleHealerCount = signal(0);
 export const idleScoutCount = signal(0);
 
-/** Whether the auto-behavior menu is expanded from the idle button */
-export const autoMenuExpanded = signal(false);
-
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);
 
@@ -96,26 +93,10 @@ export const selectionStance = signal(-1);
 // ---- Action panel tab ----
 export const activeActionTab = signal<'train' | 'build' | 'tech'>('train');
 
-// ---- Tech tree panel ----
-export const techTreeOpen = signal(false);
-
 // ---- Radial menu ----
 export const radialMenuOpen = signal(false);
 export const radialMenuX = signal(0);
 export const radialMenuY = signal(0);
-
-// Auto-behavior toggle states grouped by role (persist across menu opens)
-export const autoGathererEnabled = signal(false); // covers gather + build
-export const autoCombatEnabled = signal(false); // covers attack + defend
-export const autoHealerEnabled = signal(false);
-export const autoScoutEnabled = signal(false);
-
-// Legacy aliases (deprecated, will be removed after full UI migration)
-export const autoGatherEnabled = autoGathererEnabled;
-export const autoBuildEnabled = autoGathererEnabled;
-export const autoDefendEnabled = autoCombatEnabled;
-export const autoAttackEnabled = autoCombatEnabled;
-export const autoHealEnabled = autoHealerEnabled;
 
 // ---- Map scenario ----
 export type MapScenario =
@@ -199,7 +180,7 @@ import { DEFAULT_CUSTOM_SETTINGS as _defaults } from './store-types';
 export const customGameSettings = signal<typeof _defaults>({ ..._defaults });
 
 // ---- Menu state ----
-export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
+export const menuState = signal<'main' | 'playing'>('main');
 /** True while PixiJS initialises and entities spawn (shows loading screen). */
 export const gameLoading = signal(false);
 /** True when the player chose "Continue" from the main menu (load save on init). */
@@ -225,6 +206,7 @@ export {
   peaceStatusText,
   speedLabel,
 } from './store-derived';
+// ---- Legacy aliases (v3: backward compat for tests, will be removed) ----
 export {
   type AchievementToast,
   achievementsOpen,
@@ -232,11 +214,18 @@ export {
   activePanelTab,
   airdropCooldown,
   airdropsRemaining,
+  autoCombatEnabled,
+  autoCombatEnabled as autoDefendEnabled,
+  autoCombatEnabled as autoAttackEnabled,
+  autoGathererEnabled,
+  autoGathererEnabled as autoGatherEnabled,
+  autoGathererEnabled as autoBuildEnabled,
+  autoHealerEnabled,
+  autoHealerEnabled as autoHealEnabled,
+  autoMenuExpanded,
   autoSaveEnabled,
-  campaignBranchPath,
-  campaignChoiceOpen,
+  autoScoutEnabled,
   campaignMissionId,
-  campaignObjectiveStatuses,
   campaignOpen,
   checkpointCount,
   commanderAbilityActive,
@@ -253,9 +242,7 @@ export {
   evacuationActive,
   fpsCounterVisible,
   fpsDisplay,
-  type GameMode,
   gameEvents,
-  gameMode,
   goDailyChallengeCompleted,
   goDesc,
   goFrameCount,
@@ -277,11 +264,6 @@ export {
   musicVolume,
   type PanelTab,
   pondBlessingAvailable,
-  puzzleId,
-  puzzleObjectiveText,
-  puzzleSelectOpen,
-  puzzleStars,
-  puzzleTimerDisplay,
   rallyCryActive,
   rallyCryAvailable,
   rallyCryCooldown,
@@ -293,9 +275,7 @@ export {
   settingsOpen,
   sfxVolume,
   showSplashVideo,
-  survivalScore,
-  survivalSelectOpen,
-  survivalWave,
+  techTreeOpen,
   tidalSurgeAvailable,
   unlocksOpen,
   waveNumber,

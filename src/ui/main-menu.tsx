@@ -1,40 +1,41 @@
-/** Main Menu — Gritty swamp war room with dark atmosphere. */
+/** Main Menu — Simplified v3.0: PLAY button + settings. */
 
-import { useCallback, useRef } from 'preact/hooks';
+import { useCallback } from 'preact/hooks';
 import { screenClass } from '@/platform';
-import { DailyChallengeCard } from './daily-challenge-card';
 import { MenuBackground } from './menu-background';
 import { MenuButton } from './menu-button';
-import { MenuPlayerStatus } from './menu-player-status';
-import { generateName, generateSeed } from './new-game/presets';
 import {
-  achievementsOpen,
-  campaignOpen,
   continueRequested,
-  cosmeticsOpen,
   customGameSettings,
   customMapSeed,
   DEFAULT_CUSTOM_SETTINGS,
   gameName,
   gameSeed,
   hasSaveGame,
-  leaderboardOpen,
-  matchHistoryOpen,
   menuState,
   permadeathEnabled,
   selectedDifficulty,
   settingsOpen,
-  unlocksOpen,
 } from './store';
-import { puzzleSelectOpen, survivalSelectOpen } from './store-gameplay';
-import { multiplayerMenuOpen } from './store-multiplayer';
-import { NextUnlockHint, UnlockProgress } from './unlock-progress';
+
+/** Generate a random game name. */
+function generateName(): string {
+  const adj = ['Murky', 'Still', 'Raging', 'Deep', 'Frozen', 'Verdant'];
+  const nouns = ['Pond', 'Marsh', 'Swamp', 'Creek', 'Lagoon', 'Brook'];
+  const a = adj[Math.floor(Math.random() * adj.length)];
+  const n = nouns[Math.floor(Math.random() * nouns.length)];
+  return `${a} ${n}`;
+}
+
+/** Generate a random seed. */
+function generateSeed(): number {
+  return Math.floor(Math.random() * 2147483647);
+}
 
 export function MainMenu() {
   const compact = screenClass.value !== 'large';
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleQuickPlay = useCallback(() => {
+  const handlePlay = useCallback(() => {
     selectedDifficulty.value = 'normal';
     permadeathEnabled.value = false;
     customGameSettings.value = { ...DEFAULT_CUSTOM_SETTINGS };
@@ -45,19 +46,14 @@ export function MainMenu() {
     menuState.value = 'playing';
   }, []);
 
-  const set = (sig: { value: boolean }) => () => {
-    sig.value = true;
-  };
-
   return (
     <div
-      ref={containerRef}
       id="intro-overlay"
       class={`relative h-screen w-full flex flex-col items-center safe-area-pad ${compact ? 'justify-start pt-2 overflow-y-auto' : 'justify-center overflow-hidden'}`}
     >
       <MenuBackground />
 
-      {/* Title — moss green + gritty gold, heavy black outline */}
+      {/* Title */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'mb-1' : 'mb-4'}`}>
         <h1 class="mb-0 tracking-widest uppercase text-center">
           <span
@@ -99,55 +95,17 @@ export function MainMenu() {
             </span>
           </div>
         )}
-        <MenuPlayerStatus compact={compact} />
-        <NextUnlockHint />
       </div>
-
-      {/* Unlock progress */}
-      <div class="relative z-10 flex justify-center mb-2">
-        <UnlockProgress />
-      </div>
-
-      {/* Daily challenge card */}
-      <DailyChallengeCard compact={compact} />
 
       {/* Menu buttons */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-        {/* Hero CTA — Campaign */}
-        <div class="flex flex-col items-center">
-          <MenuButton
-            label="Campaign"
-            wide
-            onClick={set(campaignOpen)}
-            extraStyle={{ width: '220px', height: '56px', fontSize: '1.3rem' }}
-          />
-          {!hasSaveGame.value && (
-            <span
-              class="font-game text-[11px] mt-1"
-              style={{ color: 'var(--pw-gold)', opacity: 0.85 }}
-            >
-              New to Pond Warfare? Start here!
-            </span>
-          )}
-        </div>
-
-        {/* Game modes */}
-        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-          <MenuButton label="Puzzles" onClick={set(puzzleSelectOpen)} />
-          <MenuButton label="Survival" onClick={set(survivalSelectOpen)} />
-        </div>
-
-        {/* Freeplay */}
-        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-          <MenuButton label="Quick Play" wide onClick={handleQuickPlay} />
-          <MenuButton
-            label="New Game"
-            wide
-            onClick={() => {
-              menuState.value = 'newGame';
-            }}
-          />
-        </div>
+        {/* Hero CTA — PLAY */}
+        <MenuButton
+          label="PLAY"
+          wide
+          onClick={handlePlay}
+          extraStyle={{ width: '220px', height: '56px', fontSize: '1.3rem' }}
+        />
 
         {/* Continue — only if save exists */}
         {hasSaveGame.value && (
@@ -161,27 +119,20 @@ export function MainMenu() {
           />
         )}
 
-        {/* Multiplayer */}
-        <MenuButton label="Co-op" onClick={set(multiplayerMenuOpen)} />
-
-        {/* Meta */}
-        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-          <MenuButton label="Settings" onClick={set(settingsOpen)} />
-          <MenuButton label="Leaderboard" onClick={set(leaderboardOpen)} />
-          <MenuButton label="Achievements" onClick={set(achievementsOpen)} />
-        </div>
-        <div class={`flex items-center ${compact ? 'gap-1' : 'gap-2'} flex-wrap justify-center`}>
-          <MenuButton label="Unlocks" onClick={set(unlocksOpen)} />
-          <MenuButton label="Cosmetics" onClick={set(cosmeticsOpen)} />
-          <MenuButton label="History" onClick={set(matchHistoryOpen)} />
-        </div>
+        {/* Settings */}
+        <MenuButton
+          label="Settings"
+          onClick={() => {
+            settingsOpen.value = true;
+          }}
+        />
       </div>
 
       {/* Version */}
       {!compact && (
         <div class="relative z-10 mt-3 mb-4">
           <span class="font-game text-[10px]" style={{ color: 'var(--pw-text-muted)' }}>
-            v1.0 &middot; Defend the Pond
+            v3.0 &middot; Defend the Pond
           </span>
         </div>
       )}

@@ -9,12 +9,13 @@
  */
 
 import { screenClass } from '@/platform';
-import { CommandCenterOverview } from './command-center-overview';
 import {
+  armyCount,
   attackMoveActive,
   hasPlayerUnits,
   hpBarColor,
   hpPercent,
+  idleWorkerCount,
   selectionComposition,
   selectionCount,
   selectionDesc,
@@ -92,9 +93,24 @@ export function SelectionPanel({
         </button>
       )}
 
-      {/* No selection: compact overview */}
+      {/* No selection: basic counts */}
       {count === 0 && (
-        <CommandCenterOverview onIdleClick={onIdleWorkerClick} onArmyClick={onArmyClick} />
+        <div class="flex gap-3 items-center font-game text-xs" style={MUTED_TEXT_STYLE}>
+          <button
+            type="button"
+            class="cursor-pointer min-h-[44px] px-2"
+            onClick={() => onIdleWorkerClick?.()}
+          >
+            Idle: {idleWorkerCount.value}
+          </button>
+          <button
+            type="button"
+            class="cursor-pointer min-h-[44px] px-2"
+            onClick={() => onArmyClick?.()}
+          >
+            Army: {armyCount.value}
+          </button>
+        </div>
       )}
 
       {/* Mobile command buttons (A-Move / Stop) */}

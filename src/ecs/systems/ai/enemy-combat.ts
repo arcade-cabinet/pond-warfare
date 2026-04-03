@@ -7,7 +7,6 @@
  */
 
 import { audio } from '@/audio/audio-system';
-import { campaignSuppressEnemyAttacks } from '@/campaign';
 import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
@@ -58,8 +57,6 @@ export function enemyCombatTick(world: GameWorld): void {
  */
 function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   if (isPeaceful) return;
-  // Campaign: suppress enemy attacks when mission config says so
-  if (campaignSuppressEnemyAttacks(world)) return;
   if (world.frameCount % ENEMY_ATTACK_CHECK_INTERVAL !== 0) return;
 
   const armySize = countEnemyArmy(world);

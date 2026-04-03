@@ -26,7 +26,6 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
-import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
 import { combatSystem } from '@/ecs/systems/combat';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
@@ -223,8 +222,7 @@ describe('unit stances', () => {
     createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
     Stance.mode[player] = StanceMode.Hold;
 
-    autoBehaviorSystem(world);
-
+    // Auto-behavior system removed in v3.0; Hold stance still keeps unit idle
     expect(UnitStateMachine.state[player]).toBe(UnitState.Idle);
   });
 
