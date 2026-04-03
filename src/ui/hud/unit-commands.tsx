@@ -165,50 +165,49 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Attack-move button — desktop only (mobile uses slide-out panel buttons) */}
-      {!mobile && hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
+      {/* Attack-move button — all devices */}
+      {hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
         <button
           type="button"
           id="attack-move-btn"
-          class="absolute top-36 md:top-40 right-2 md:right-6 cmd-btn border-2 px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-36 md:top-40 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
           style={{ borderColor: 'var(--pw-twig)', color: 'var(--pw-otter)' }}
           title="Attack-Move (A)"
           onClick={props.onAttackMoveClick}
         >
-          <span class="font-heading text-sm">A-Move (A)</span>
+          <span class="font-heading text-xs md:text-sm">A-Move{!mobile && ' (A)'}</span>
         </button>
       )}
 
-      {/* Halt/Stop button — desktop only (keyboard H on mobile) */}
-      {!mobile && hasPlayerUnits.value && selectionCount.value > 0 && (
+      {/* Halt/Stop button — all devices */}
+      {hasPlayerUnits.value && selectionCount.value > 0 && (
         <button
           type="button"
           id="halt-btn"
-          class="absolute top-48 md:top-52 right-2 md:right-6 cmd-btn border-2 px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+          class="absolute top-48 md:top-52 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
           style={{ borderColor: 'var(--pw-border)', color: 'var(--pw-text-secondary)' }}
           title="Stop/Halt (H)"
           onClick={props.onHaltClick}
         >
-          <span class="font-heading text-sm">Stop (H)</span>
+          <span class="font-heading text-xs md:text-sm">Stop{!mobile && ' (H)'}</span>
         </button>
       )}
 
-      {/* Stance cycle button — desktop only */}
-      {!mobile &&
-        hasPlayerUnits.value &&
+      {/* Stance cycle button — all devices */}
+      {hasPlayerUnits.value &&
         selectionCount.value > 0 &&
         selectionStance.value >= 0 && (
           <button
             type="button"
             id="stance-btn"
-            class="absolute top-[232px] md:top-64 right-2 md:right-6 cmd-btn border-2 px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
+            class="absolute top-[232px] md:top-64 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
             style={{ borderColor: 'var(--pw-moss-bright)', color: 'var(--pw-moss-bright)' }}
             title={`Stance: ${STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)`}
             onClick={() => cycleStance()}
           >
-            <span class="font-heading text-sm">
-              [{STANCE_LABELS[selectionStance.value] ?? 'A'}]{' '}
-              {STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)
+            <span class="font-heading text-xs md:text-sm">
+              {STANCE_TITLES[selectionStance.value] ?? 'Aggressive'}
+              {!mobile && ' (V)'}
             </span>
           </button>
         )}
