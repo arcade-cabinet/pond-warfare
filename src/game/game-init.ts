@@ -59,13 +59,17 @@ export async function initCanvases(
   if (!fogCtx || !lightCtx) throw new Error('Failed to acquire 2D context');
 
   const { canvases } = generateAllSprites();
-  const bgCanvas = buildBackground(world.terrainGrid, world.worldWidth, world.worldHeight);
 
   const w = container.clientWidth;
   const h = container.clientHeight;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   world.viewWidth = w;
   world.viewHeight = h;
+
+  // Pass viewport dimensions so the background canvas extends beyond the
+  // playable area (deep water fill) if the map is smaller than the viewport.
+  const bgCanvas = buildBackground(world.terrainGrid, world.worldWidth, world.worldHeight, w, h);
+
   fogCanvas.width = w * dpr;
   fogCanvas.height = h * dpr;
   fogCanvas.style.width = `${w}px`;

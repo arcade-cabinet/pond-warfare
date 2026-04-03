@@ -5,6 +5,11 @@
  *   blending using multi-octave value noise (fbm), splat blending between
  *   biome colors, detail noise, and shore foam effects.
  * - buildFogTexture(): generates the 256x256 seamless fog noise texture.
+ *
+ * The background canvas is sized to at least match the viewport so that
+ * no black void is visible when the map is smaller than the screen.
+ * Out-of-bounds pixels (outside the playable world) are filled with
+ * procedural deep water.
  */
 
 import { FOG_TEXTURE_SIZE } from '@/constants';
@@ -33,16 +38,32 @@ function require2DContext(
  * When a TerrainGrid is provided, terrain tiles are tinted to reflect
  * their type (water=blue, mud=brown, rocks=grey, high ground=bright).
  *
+ * The canvas extends to `max(worldW, viewW) x max(worldH, viewH)` so
+ * the viewport never sees black void. Pixels outside the playable area
+ * are filled with deep water noise.
+ *
  * @param worldW  - World width in pixels (defaults to terrainGrid dims or 2560).
  * @param worldH  - World height in pixels (defaults to terrainGrid dims or 2560).
+ * @param viewW   - Viewport width (optional, used to extend canvas).
+ * @param viewH   - Viewport height (optional, used to extend canvas).
  */
 export function buildBackground(
   terrainGrid?: TerrainGrid,
   worldW?: number,
   worldH?: number,
+  viewW?: number,
+  viewH?: number,
 ): HTMLCanvasElement {
-  const w = worldW ?? (terrainGrid ? terrainGrid.cols * 32 : 2560);
-  const h = worldH ?? (terrainGrid ? terrainGrid.rows * 32 : 2560);
+  const mapW = worldW ?? (terrainGrid ? terrainGrid.cols * 32 : 2560);
+  const mapH = worldH ?? (terrainGrid ? terrainGrid.rows * 32 : 2560);
+
+  // Canvas must be at least as large as the viewport to avoid black void.
+  // Add padding so that when the camera centers a narrow map, the edges
+  // outside the playable area still show terrain (deep water).
+  const padX = viewW && viewW > mapW ? Math.ceil((viewW - mapW) / 2) : 0;
+  const padY = viewH && viewH > mapH ? Math.ceil((viewH - mapH) / 2) : 0;
+  const w = mapW + padX * 2;
+  const h = mapH + padY * 2;
 
   const bgCanvas = document.createElement('canvas');
   bgCanvas.width = w;
@@ -56,15 +77,15 @@ export function buildBackground(
   const detailSeed = 137;
 
   // Tile scale: map pixels across ~80 tiles of noise space
-  const noiseScale = 80 / w;
+  const noiseScale = 80 / mapW;
 
   // Pre-compute the biome noise grid at a lower resolution and upsample
   // for performance. Use 4px blocks.
   const blockSize = 4;
-  const gridW = Math.ceil(w / blockSize);
-  const gridH = Math.ceil(h / blockSize);
+  const gridW = Math.ceil(mapW / blockSize);
+  const gridH = Math.ceil(mapH / blockSize);
 
-  // Biome noise grid
+  // Biome noise grid (covers only the playable area)
   const biomeGrid = new Float32Array(gridW * gridH);
   for (let gy = 0; gy < gridH; gy++) {
     for (let gx = 0; gx < gridW; gx++) {
@@ -74,12 +95,33 @@ export function buildBackground(
     }
   }
 
+  // Deep water base color for out-of-bounds pixels
+  const DEEP_WATER: RGB = { r: 15, g: 32, b: 50 };
+
   // Render pixels
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
+      // Convert canvas coords to map-space coords
+      const mx = x - padX;
+      const my = y - padY;
+
+      // Out-of-bounds: fill with deep water noise
+      if (mx < 0 || mx >= mapW || my < 0 || my >= mapH) {
+        const detailNx = x * noiseScale * 2;
+        const detailNy = y * noiseScale * 2;
+        const detail = valueNoise(detailNx, detailNy, detailSeed);
+        const offset = (detail - 0.5) * 12;
+        const idx = (y * w + x) * 4;
+        pixels[idx] = Math.max(0, Math.min(255, DEEP_WATER.r + offset));
+        pixels[idx + 1] = Math.max(0, Math.min(255, DEEP_WATER.g + offset));
+        pixels[idx + 2] = Math.max(0, Math.min(255, DEEP_WATER.b + offset));
+        pixels[idx + 3] = 255;
+        continue;
+      }
+
       // Bilinear interpolation of the biome grid for smoother results
-      const gxf = x / blockSize;
-      const gyf = y / blockSize;
+      const gxf = mx / blockSize;
+      const gyf = my / blockSize;
       const gx0 = Math.min(Math.floor(gxf), gridW - 1);
       const gy0 = Math.min(Math.floor(gyf), gridH - 1);
       const gx1 = Math.min(gx0 + 1, gridW - 1);
@@ -100,8 +142,8 @@ export function buildBackground(
       let color = biomeColor(biomeVal);
 
       // Detail noise: higher frequency texture variation within each biome
-      const detailNx = x * noiseScale * 4;
-      const detailNy = y * noiseScale * 4;
+      const detailNx = mx * noiseScale * 4;
+      const detailNy = my * noiseScale * 4;
       const detail = valueNoise(detailNx, detailNy, detailSeed);
       const detailOffset = (detail - 0.5) * 16; // +/- 8 brightness variation
 
@@ -112,8 +154,8 @@ export function buildBackground(
       };
 
       // Shore foam effect: detect water-land boundary
-      const gx = Math.min(Math.floor(x / blockSize), gridW - 1);
-      const gy = Math.min(Math.floor(y / blockSize), gridH - 1);
+      const gx = Math.min(Math.floor(mx / blockSize), gridW - 1);
+      const gy = Math.min(Math.floor(my / blockSize), gridH - 1);
       if (biomeVal > 0.4 && biomeVal < 0.5) {
         const leftBiome = gx > 0 ? biomeGrid[gy * gridW + (gx - 1)] : biomeVal;
         const rightBiome = gx < gridW - 1 ? biomeGrid[gy * gridW + (gx + 1)] : biomeVal;
@@ -135,7 +177,7 @@ export function buildBackground(
 
       // Apply terrain type tint overlay
       if (terrainGrid) {
-        color = applyTerrainTint(color, terrainGrid, x, y);
+        color = applyTerrainTint(color, terrainGrid, mx, my);
       }
 
       const idx = (y * w + x) * 4;
@@ -147,7 +189,19 @@ export function buildBackground(
   }
 
   ctx.putImageData(imageData, 0, 0);
+
+  // Store padding offset on the canvas element so the renderer can
+  // position the background sprite correctly (shifted by -padX, -padY).
+  (bgCanvas as BgCanvas).padX = padX;
+  (bgCanvas as BgCanvas).padY = padY;
+
   return bgCanvas;
+}
+
+/** Extended canvas type with padding metadata. */
+export interface BgCanvas extends HTMLCanvasElement {
+  padX: number;
+  padY: number;
 }
 
 /** Terrain type color tints applied as a blend over the procedural base. */

@@ -44,24 +44,24 @@ import { SeededRandom } from '@/utils/random';
 
 function makeLayout(): VerticalMapLayout {
   return {
-    worldWidth: 800,
-    worldHeight: 1200,
-    cols: 25,
-    rows: 38,
-    lodgeX: 400,
-    lodgeY: 1110,
+    worldWidth: 1600,
+    worldHeight: 2400,
+    cols: 50,
+    rows: 75,
+    lodgeX: 800,
+    lodgeY: 2220,
     resourcePositions: [
-      { x: 200, y: 500, type: 'fish_node' },
-      { x: 400, y: 600, type: 'rock_deposit' },
-      { x: 600, y: 550, type: 'tree_cluster' },
+      { x: 400, y: 1000, type: 'fish_node' },
+      { x: 800, y: 1200, type: 'rock_deposit' },
+      { x: 1200, y: 1100, type: 'tree_cluster' },
     ],
-    enemySpawnPositions: [{ x: 400, y: 90 }],
+    enemySpawnPositions: [{ x: 800, y: 180 }],
     spawnDirections: ['top'],
     terrainTier: {
       min_level: 0,
       max_level: 10,
-      map_width: 800,
-      map_height: 1200,
+      map_width: 1600,
+      map_height: 2400,
       resource_nodes: 6,
       enemy_spawn_directions: ['top'],
     },
@@ -96,8 +96,8 @@ describe('spawnVerticalEntities', () => {
 
     const lodges = spawnedEntities.filter((e) => e.kind === 5); // Lodge
     expect(lodges).toHaveLength(1);
-    expect(lodges[0].x).toBe(400);
-    expect(lodges[0].y).toBe(1110);
+    expect(lodges[0].x).toBe(800);
+    expect(lodges[0].y).toBe(2220);
     expect(lodges[0].faction).toBe(0); // Faction.Player
   });
 
@@ -141,7 +141,7 @@ describe('spawnVerticalEntities', () => {
       (e) => e.faction === 1 && e.kind === 9, // Enemy PredatorNest
     );
     expect(enemyBuildings).toHaveLength(1);
-    expect(enemyBuildings[0].y).toBe(90); // Top of map
+    expect(enemyBuildings[0].y).toBe(180); // Top of map
   });
 
   it('spawns enemy guard units near enemy nest', () => {

@@ -1,8 +1,8 @@
 {
   "progression_scaling": [
-    { "min_level": 0, "max_level": 10, "map_width": 800, "map_height": 1200, "resource_nodes": 6, "enemy_spawn_directions": ["top"] },
-    { "min_level": 11, "max_level": 30, "map_width": 1000, "map_height": 1600, "resource_nodes": 10, "enemy_spawn_directions": ["top", "left", "right"] },
-    { "min_level": 31, "max_level": 999, "map_width": 1200, "map_height": 2000, "resource_nodes": 15, "enemy_spawn_directions": ["top", "left", "right", "bottom_sides"] }
+    { "min_level": 0, "max_level": 10, "map_width": 1600, "map_height": 2400, "resource_nodes": 6, "enemy_spawn_directions": ["top"] },
+    { "min_level": 11, "max_level": 30, "map_width": 2000, "map_height": 3000, "resource_nodes": 10, "enemy_spawn_directions": ["top", "left", "right"] },
+    { "min_level": 31, "max_level": 999, "map_width": 2400, "map_height": 3600, "resource_nodes": 15, "enemy_spawn_directions": ["top", "left", "right", "bottom_sides"] }
   ],
   "resource_types": ["fish_node", "rock_deposit", "tree_cluster"],
   "terrain_types": ["grass", "water", "rocks", "mud"]

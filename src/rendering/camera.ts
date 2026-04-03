@@ -14,10 +14,28 @@ export interface CameraShake {
   offsetY: number;
 }
 
-/** Clamp the camera so it cannot scroll beyond the world edges. */
+/**
+ * Clamp the camera so it cannot scroll beyond the world edges.
+ *
+ * When the map is narrower than the viewport, the camera is centered
+ * horizontally so the playable area sits in the middle (instead of
+ * being pinned to the left edge with black void on the right).
+ * The same logic applies vertically when the map is shorter than the viewport.
+ */
 export function clampCamera(world: GameWorld): void {
-  world.camX = Math.max(0, Math.min(world.worldWidth - world.viewWidth, world.camX));
-  world.camY = Math.max(0, Math.min(world.worldHeight - world.viewHeight, world.camY));
+  if (world.worldWidth <= world.viewWidth) {
+    // Map narrower than viewport: center it horizontally
+    world.camX = -(world.viewWidth - world.worldWidth) / 2;
+  } else {
+    world.camX = Math.max(0, Math.min(world.worldWidth - world.viewWidth, world.camX));
+  }
+
+  if (world.worldHeight <= world.viewHeight) {
+    // Map shorter than viewport: center it vertically
+    world.camY = -(world.viewHeight - world.worldHeight) / 2;
+  } else {
+    world.camY = Math.max(0, Math.min(world.worldHeight - world.viewHeight, world.camY));
+  }
 }
 
 /**

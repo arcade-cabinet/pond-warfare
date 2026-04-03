@@ -25,25 +25,25 @@ function makeLayout(level: number, seed = 42): VerticalMapLayout {
 describe('generateVerticalMapLayout', () => {
   it('returns correct dimensions for level 0 (smallest map)', () => {
     const layout = makeLayout(0);
-    // terrain.json: level 0-10 -> 800x1200
-    expect(layout.worldWidth).toBe(800);
-    expect(layout.worldHeight).toBe(1200);
+    // terrain.json: level 0-10 -> 1600x2400
+    expect(layout.worldWidth).toBe(1600);
+    expect(layout.worldHeight).toBe(2400);
     expect(layout.cols).toBeGreaterThan(0);
     expect(layout.rows).toBeGreaterThan(0);
   });
 
   it('returns larger map for mid-level progression', () => {
     const layout = makeLayout(20);
-    // terrain.json: level 11-30 -> 1000x1600
-    expect(layout.worldWidth).toBe(1000);
-    expect(layout.worldHeight).toBe(1600);
+    // terrain.json: level 11-30 -> 2000x3000
+    expect(layout.worldWidth).toBe(2000);
+    expect(layout.worldHeight).toBe(3000);
   });
 
   it('returns largest map for high-level progression', () => {
     const layout = makeLayout(50);
-    // terrain.json: level 31-999 -> 1200x2000
-    expect(layout.worldWidth).toBe(1200);
-    expect(layout.worldHeight).toBe(2000);
+    // terrain.json: level 31-999 -> 2400x3600
+    expect(layout.worldWidth).toBe(2400);
+    expect(layout.worldHeight).toBe(3600);
   });
 
   it('places Lodge at bottom center of map', () => {

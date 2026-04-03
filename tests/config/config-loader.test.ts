@@ -120,31 +120,31 @@ describe('Enemy configs', () => {
 describe('Terrain configs', () => {
   it('should return correct params for level 0 (early game)', () => {
     const tier = getTerrainForLevel(0);
-    expect(tier.map_width).toBe(800);
-    expect(tier.map_height).toBe(1200);
+    expect(tier.map_width).toBe(1600);
+    expect(tier.map_height).toBe(2400);
     expect(tier.resource_nodes).toBe(6);
     expect(tier.enemy_spawn_directions).toEqual(['top']);
   });
 
   it('should return correct params for level 15 (mid game)', () => {
     const tier = getTerrainForLevel(15);
-    expect(tier.map_width).toBe(1000);
-    expect(tier.map_height).toBe(1600);
+    expect(tier.map_width).toBe(2000);
+    expect(tier.map_height).toBe(3000);
     expect(tier.resource_nodes).toBe(10);
     expect(tier.enemy_spawn_directions).toEqual(['top', 'left', 'right']);
   });
 
   it('should return correct params for level 50 (late game)', () => {
     const tier = getTerrainForLevel(50);
-    expect(tier.map_width).toBe(1200);
-    expect(tier.map_height).toBe(2000);
+    expect(tier.map_width).toBe(2400);
+    expect(tier.map_height).toBe(3600);
     expect(tier.resource_nodes).toBe(15);
     expect(tier.enemy_spawn_directions).toContain('bottom_sides');
   });
 
   it('should fall back to highest tier for very high levels', () => {
     const tier = getTerrainForLevel(9999);
-    expect(tier.map_width).toBe(1200);
+    expect(tier.map_width).toBe(2400);
     expect(tier.resource_nodes).toBe(15);
   });
 
