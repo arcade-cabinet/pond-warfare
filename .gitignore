@@ -162,3 +162,7 @@ tests/e2e/screenshots/
 screenshots/
 tests/e2e/*.png
 tests/browser/screenshots/
+
+# Build/cache directories
+.vite/
+.superpowers/
