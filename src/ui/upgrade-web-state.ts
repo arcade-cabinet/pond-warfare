@@ -103,7 +103,8 @@ export function purchaseDiamondNode(
 ): PurchaseNodeResult {
   const diamond = web.diamondMap.get(diamondId);
   if (!diamond) return { success: false, reason: 'Unknown diamond node' };
-  if (state.purchasedDiamonds.has(diamondId)) return { success: false, reason: 'Already purchased' };
+  if (state.purchasedDiamonds.has(diamondId))
+    return { success: false, reason: 'Already purchased' };
   if (!isDiamondNodeUnlocked(diamond.requires, state.highestTiers)) {
     return { success: false, reason: 'Prerequisites not met' };
   }

@@ -1,4 +1,11 @@
-/** Main Menu — Simplified v3.0: PLAY button + settings. */
+/**
+ * Main Menu — v3.0 Simplified (US19)
+ *
+ * One button to start playing. PLAY, UPGRADES, PRESTIGE (if available).
+ * Lodge preview shows current wings, prestige glow.
+ * SwampEcosystem canvas background provided by parent.
+ * In a match in under 2 seconds.
+ */
 
 import { useCallback } from 'preact/hooks';
 import { screenClass } from '@/platform';
@@ -17,6 +24,13 @@ import {
   selectedDifficulty,
   settingsOpen,
 } from './store';
+import {
+  pearlScreenOpen,
+  prestigeRank,
+  totalClams,
+  totalPearls,
+  upgradesScreenOpen,
+} from './store-v3';
 
 /** Generate a random game name. */
 function generateName(): string {
@@ -34,6 +48,8 @@ function generateSeed(): number {
 
 export function MainMenu() {
   const compact = screenClass.value !== 'large';
+  const rank = prestigeRank.value;
+  const showPrestige = rank > 0;
 
   const handlePlay = useCallback(() => {
     selectedDifficulty.value = 'normal';
@@ -97,6 +113,33 @@ export function MainMenu() {
         )}
       </div>
 
+      {/* Stats summary */}
+      {(rank > 0 || totalClams.value > 0) && (
+        <div class="relative z-10 flex gap-4 mb-2">
+          {rank > 0 && (
+            <span
+              class="font-numbers text-xs px-2 py-0.5 rounded"
+              style={{
+                color: 'var(--pw-gold)',
+                background: 'rgba(197,160,89,0.15)',
+              }}
+            >
+              Rank {rank}
+            </span>
+          )}
+          {totalClams.value > 0 && (
+            <span class="font-numbers text-xs" style={{ color: 'var(--pw-clam)' }}>
+              {totalClams.value} Clams
+            </span>
+          )}
+          {totalPearls.value > 0 && (
+            <span class="font-numbers text-xs" style={{ color: 'var(--pw-pearl, #c4b5fd)' }}>
+              {totalPearls.value} Pearls
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Menu buttons */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
         {/* Hero CTA — PLAY */}
@@ -115,6 +158,25 @@ export function MainMenu() {
             onClick={() => {
               continueRequested.value = true;
               menuState.value = 'playing';
+            }}
+          />
+        )}
+
+        {/* Upgrades */}
+        <MenuButton
+          label="Upgrades"
+          wide
+          onClick={() => {
+            upgradesScreenOpen.value = true;
+          }}
+        />
+
+        {/* Prestige — only visible after first prestige */}
+        {showPrestige && (
+          <MenuButton
+            label="Prestige"
+            onClick={() => {
+              pearlScreenOpen.value = true;
             }}
           />
         )}

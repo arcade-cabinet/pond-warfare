@@ -147,6 +147,11 @@ export function validateEvents(data: EventsConfig): void {
     assertNonNegative(tmpl.min_progression, `${ctx}.min_progression`);
     assertPositive(tmpl.duration_seconds, `${ctx}.duration_seconds`);
     assertNonNegative(tmpl.reward_clams, `${ctx}.reward_clams`);
+    if (tmpl.max_progression <= tmpl.min_progression) {
+      throw new Error(
+        `Config validation: ${ctx}.max_progression (${tmpl.max_progression}) must be greater than min_progression (${tmpl.min_progression})`,
+      );
+    }
   }
   assertField(data, 'timing', 'events');
   assertPositive(data.timing.first_event_delay_seconds, 'events.timing.first_event_delay_seconds');
