@@ -227,9 +227,20 @@ export function App({ onMount }: AppProps) {
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
         {/* Minimap — small overlay in bottom-right corner */}
-        <div class="absolute bottom-2 right-2 z-20 w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded overflow-hidden border-2" style={{ borderColor: 'var(--pw-mud)', background: 'var(--pw-bg-deep)' }}>
-          <canvas ref={minimapCanvasRef} id="minimap" class="w-full h-full block render-pixelated cursor-crosshair" />
-          <div ref={minimapCamRef} id="minimap-cam" class="absolute border border-white/40 pointer-events-none" />
+        <div
+          class="absolute bottom-2 right-2 z-20 w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded overflow-hidden border-2"
+          style={{ borderColor: 'var(--pw-mud)', background: 'var(--pw-bg-deep)' }}
+        >
+          <canvas
+            ref={minimapCanvasRef}
+            id="minimap"
+            class="w-full h-full block render-pixelated cursor-crosshair"
+          />
+          <div
+            ref={minimapCamRef}
+            id="minimap-cam"
+            class="absolute border border-white/40 pointer-events-none"
+          />
         </div>
         <WeatherEffects />
         <GameOverBanner onRestart={() => window.location.reload()} />

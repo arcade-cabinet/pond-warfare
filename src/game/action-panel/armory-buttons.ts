@@ -1,21 +1,22 @@
 /**
- * Action Panel — Armory Buttons
+ * Action Panel -- Armory Buttons
  *
  * Train buttons (Brawler, Sniper, Healer, Shieldbearer, Catapult, Trapper)
- * and primary tech buttons shown when a completed Armory is selected.
- * Late-game tech buttons are in armory-techs.ts.
+ * shown when a completed Armory is selected.
+ *
+ * In v3.0 the in-match tech research was removed, so inline tech buttons
+ * (sharpSticks, eagleEye, etc.) and the late-game tech panel are gone.
+ * Conditional units (Shieldbearer, Catapult, Trapper) are gated on
+ * world.tech flags — since those are always false in the v3 stub,
+ * the buttons simply won't appear until the upgrade web grants them.
  */
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { TECH_UPGRADES } from '@/config/tech-tree';
 import type { GameWorld } from '@/ecs/world';
 import { train } from '@/input/selection';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind } from '@/types';
 import type { ActionButtonDef } from '@/ui/action-panel';
-
-import { buildArmoryTechButtons } from './armory-techs';
-import { canAffordTech, discountedTechCost, purchaseTech, techRequiresLabel } from './tech-helpers';
 
 export function buildArmoryButtons(
   w: GameWorld,
@@ -94,55 +95,7 @@ export function buildArmoryButtons(
     },
   });
 
-  // Primary tech buttons (Sharp Sticks, Eagle Eye, Hardened Shells)
-  const ssTech = TECH_UPGRADES.sharpSticks;
-  const ssCost = discountedTechCost(w, ssTech.clamCost, ssTech.twigCost);
-  btns.push({
-    title: ssTech.name,
-    cost: `${ssCost.clams}C ${ssCost.twigs}T`,
-    hotkey: 'R',
-    affordable: canAffordTech(w, 'sharpSticks'),
-    description: ssTech.description,
-    category: 'tech',
-    costBreakdown: { clams: ssCost.clams, twigs: ssCost.twigs },
-    requires: techRequiresLabel('sharpSticks'),
-    onClick: () => {
-      purchaseTech(w, 'sharpSticks');
-    },
-  });
-  const eeTech = TECH_UPGRADES.eagleEye;
-  const eeCost = discountedTechCost(w, eeTech.clamCost, eeTech.twigCost);
-  btns.push({
-    title: eeTech.name,
-    cost: `${eeCost.clams}C ${eeCost.twigs}T`,
-    hotkey: 'T',
-    affordable: canAffordTech(w, 'eagleEye'),
-    description: eeTech.description,
-    category: 'tech',
-    costBreakdown: { clams: eeCost.clams, twigs: eeCost.twigs },
-    requires: techRequiresLabel('eagleEye'),
-    onClick: () => {
-      purchaseTech(w, 'eagleEye');
-    },
-  });
-  const hsTech = TECH_UPGRADES.hardenedShells;
-  const hsPearlCost = hsTech.pearlCost ?? 0;
-  const hsCost = discountedTechCost(w, hsTech.clamCost, hsTech.twigCost);
-  btns.push({
-    title: hsTech.name,
-    cost: `${hsCost.clams}C ${hsCost.twigs}T${hsPearlCost > 0 ? ` ${hsPearlCost}P` : ''}`,
-    hotkey: 'Y',
-    affordable: canAffordTech(w, 'hardenedShells') && w.resources.pearls >= hsPearlCost,
-    description: hsTech.description,
-    category: 'tech',
-    costBreakdown: { clams: hsCost.clams, twigs: hsCost.twigs, pearls: hsPearlCost },
-    requires: techRequiresLabel('hardenedShells'),
-    onClick: () => {
-      purchaseTech(w, 'hardenedShells');
-    },
-  });
-
-  // Conditional train units
+  // Conditional train units — gated on tech flags (always false in v3 stub)
   if (w.tech.ironShell) {
     const sbDef = ENTITY_DEFS[EntityKind.Shieldbearer];
     btns.push({
@@ -195,9 +148,6 @@ export function buildArmoryButtons(
       },
     });
   }
-
-  // Late-game tech buttons (ironShell, siegeWorks, battleRoar, cunningTraps, camouflage)
-  btns.push(...buildArmoryTechButtons(w));
 
   // Trapper (conditional on cunningTraps)
   if (w.tech.cunningTraps) {

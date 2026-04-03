@@ -39,11 +39,12 @@ export function syncGameOverStats(world: GameWorld): void {
   store.goFrameCount.value = w.frameCount;
   store.goMapSeed.value = w.mapSeed;
 
-  // Compute researched tech names
+  // Compute researched tech names (guard against empty TECH_UPGRADES stub)
   const researchedTechs: string[] = [];
   for (const [key, val] of Object.entries(w.tech)) {
     if (val && key in TECH_UPGRADES) {
-      researchedTechs.push(TECH_UPGRADES[key as TechId].name);
+      const upgrade = TECH_UPGRADES[key as TechId];
+      if (upgrade) researchedTechs.push(upgrade.name);
     }
   }
   const techSummary =
@@ -119,6 +120,6 @@ export function syncGameOverStats(world: GameWorld): void {
 
   // Process XP, match record, and daily challenge (async, best-effort)
   processGameOverRewards(w).catch(() => {
-    /* best-effort — don't block game-over display */
+    /* best-effort -- don't block game-over display */
   });
 }
