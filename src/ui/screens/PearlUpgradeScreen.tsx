@@ -4,6 +4,9 @@
  * Full-screen screen accessible from main menu for spending Pearls.
  * Shows all Pearl upgrades from prestige.json with current rank and cost.
  * Categories: Auto-Deploy, Auto-Behavior, Multipliers.
+ *
+ * Design bible: Frame9Slice list wrapper, font-heading headers,
+ * rts-btn buttons, design token colors.
  */
 
 import { useCallback, useMemo, useState } from 'preact/hooks';
@@ -14,6 +17,7 @@ import {
   purchasePearlUpgrade,
 } from '@/config/prestige-logic';
 import { Frame9Slice } from '@/ui/components/frame';
+import { COLORS } from '@/ui/design-tokens';
 
 export interface PearlUpgradeScreenProps {
   prestigeState: PrestigeState;
@@ -64,16 +68,16 @@ function UpgradeRow({
       {/* Info */}
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-1.5">
-          <span class="font-heading text-sm truncate" style={{ color: 'var(--pw-text-primary)' }}>
+          <span class="font-heading text-sm truncate" style={{ color: COLORS.sepiaText }}>
             {upgrade.label}
           </span>
           {upgrade.isMaxed && (
-            <span class="font-game text-[10px] px-1 rounded" style={{ color: 'var(--pw-success)' }}>
+            <span class="font-game text-[10px] px-1 rounded" style={{ color: COLORS.mossGreen }}>
               MAX
             </span>
           )}
         </div>
-        <div class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+        <div class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
           {upgrade.effectSummary || upgrade.description}
         </div>
         {/* Rank bar */}
@@ -86,31 +90,32 @@ function UpgradeRow({
               class="h-full rounded-full transition-all"
               style={{
                 width: `${pct}%`,
-                background: upgrade.isMaxed ? 'var(--pw-success)' : 'var(--pw-pearl, #c4b5fd)',
+                background: upgrade.isMaxed ? COLORS.mossGreen : 'var(--pw-pearl, #c4b5fd)',
               }}
             />
           </div>
           <span
             class="font-numbers text-[10px] whitespace-nowrap"
-            style={{ color: 'var(--pw-text-muted)' }}
+            style={{ color: COLORS.weatheredSteel }}
           >
             {upgrade.currentRank}/{upgrade.maxRank}
           </span>
         </div>
       </div>
 
-      {/* Purchase button */}
+      {/* Purchase button — rts-btn */}
       {!upgrade.isMaxed && (
         <button
           type="button"
-          class="action-btn px-3 py-1.5 font-heading text-xs rounded-lg shrink-0"
+          class="rts-btn px-3 py-1.5 font-heading text-xs shrink-0"
           style={{
-            color: upgrade.canAfford ? 'var(--pw-pearl, #c4b5fd)' : 'var(--pw-text-muted)',
-            borderColor: upgrade.canAfford ? 'var(--pw-pearl, #c4b5fd)' : 'var(--pw-text-muted)',
+            color: upgrade.canAfford ? 'var(--pw-pearl, #c4b5fd)' : COLORS.weatheredSteel,
+            borderColor: upgrade.canAfford ? 'var(--pw-pearl, #c4b5fd)' : COLORS.weatheredSteel,
             opacity: upgrade.canAfford ? 1 : 0.4,
             cursor: upgrade.canAfford ? 'pointer' : 'not-allowed',
             minWidth: '64px',
             minHeight: '44px',
+            fontSize: '0.75rem',
           }}
           onClick={() => onPurchase(upgrade.id)}
           disabled={!upgrade.canAfford}
@@ -169,18 +174,19 @@ export function PearlUpgradeScreen({
       <div class="flex items-center justify-between px-4 py-3 shrink-0">
         <button
           type="button"
-          class="action-btn px-3 py-2 font-heading text-sm rounded-lg"
+          class="rts-btn px-3 py-2 font-heading text-sm"
           style={{
-            color: 'var(--pw-text-secondary)',
-            borderColor: 'var(--pw-text-muted)',
+            color: COLORS.weatheredSteel,
+            borderColor: COLORS.weatheredSteel,
             minHeight: '44px',
+            fontSize: '0.85rem',
           }}
           onClick={onBack}
         >
           Back
         </button>
         <h1
-          class="font-title text-xl tracking-wider uppercase"
+          class="font-heading text-xl tracking-wider uppercase"
           style={{ color: 'var(--pw-pearl, #c4b5fd)' }}
         >
           Pearl Upgrades
@@ -198,41 +204,37 @@ export function PearlUpgradeScreen({
 
       {/* Rank badge */}
       <div class="text-center pb-2 shrink-0">
-        <span class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+        <span class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
           Prestige Rank {prestigeState.rank} — Total Pearls Earned:{' '}
           {prestigeState.totalPearlsEarned}
         </span>
       </div>
 
-      {/* Category tabs */}
+      {/* Category tabs — rts-btn style */}
       <div class="flex gap-1 px-4 pb-2 shrink-0">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.key}
-            type="button"
-            class="flex-1 py-2 font-heading text-xs rounded-lg transition-colors"
-            style={{
-              color:
-                activeCategory === cat.key ? 'var(--pw-pearl, #c4b5fd)' : 'var(--pw-text-muted)',
-              background:
-                activeCategory === cat.key ? 'rgba(196,181,253,0.12)' : 'rgba(255,255,255,0.03)',
-              borderBottom:
-                activeCategory === cat.key
-                  ? '2px solid var(--pw-pearl, #c4b5fd)'
-                  : '2px solid transparent',
-              minHeight: '44px',
-            }}
-            onClick={() => setActiveCategory(cat.key)}
-          >
-            {cat.label}
-          </button>
-        ))}
+        {CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat.key;
+          return (
+            <button
+              key={cat.key}
+              type="button"
+              class={`rts-btn flex-1 py-2 font-heading text-xs ${isActive ? 'active' : ''}`}
+              style={{
+                minHeight: '44px',
+                fontSize: '0.75rem',
+              }}
+              onClick={() => setActiveCategory(cat.key)}
+            >
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Category description */}
       {activeCategoryInfo && (
         <div class="px-4 pb-2 shrink-0">
-          <span class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+          <span class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
             {activeCategoryInfo.description}
           </span>
         </div>
@@ -244,7 +246,7 @@ export function PearlUpgradeScreen({
           <div class="px-2 py-2 flex flex-col gap-1">
             {activeUpgrades.length === 0 ? (
               <div class="text-center py-4">
-                <span class="font-game text-sm" style={{ color: 'var(--pw-text-muted)' }}>
+                <span class="font-game text-sm" style={{ color: COLORS.weatheredSteel }}>
                   No upgrades in this category
                 </span>
               </div>

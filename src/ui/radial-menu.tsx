@@ -5,12 +5,14 @@
  * - Tap Lodge -> Train Gatherer, Train Fighter, Train Medic, Train Scout, Fortify, Repair
  * - Tap selected unit -> role-specific actions (Gather, Attack, Heal, Scout, Hold, Patrol)
  *
- * Design: vine frame, gritty gold icons, wood background, 44px min touch targets.
+ * Design bible: vine-frame popup, gritty gold icons, wood plank button backgrounds,
+ * design token colors from design-tokens.ts.
  * Auto-dismisses after 3 seconds if no selection.
  */
 
 import { useEffect, useRef } from 'preact/hooks';
-import type { RadialMenuMode, RadialOption } from './radial-menu-options';
+import { COLORS } from '@/ui/design-tokens';
+import type { RadialOption } from './radial-menu-options';
 import { getRadialOptions } from './radial-menu-options';
 import {
   radialMenuMode,
@@ -30,6 +32,47 @@ const ITEM_SIZE = 52; // 52px > 44px minimum touch target
 
 function closeMenu() {
   radialMenuOpen.value = false;
+}
+
+/**
+ * Inline SVG vine frame ring rendered behind the radial items.
+ * Gives the popup the organic, overgrown feel from the design bible.
+ */
+function VineFrameRing({ r }: { r: number }) {
+  const d = r * 2 + ITEM_SIZE;
+  const c = d / 2;
+  return (
+    <svg
+      class="absolute pointer-events-none"
+      width={d}
+      height={d}
+      style={{ left: `${-d / 2}px`, top: `${-d / 2}px` }}
+      aria-hidden="true"
+    >
+      {/* Thick vine stroke */}
+      <circle
+        cx={c}
+        cy={c}
+        r={r}
+        fill="none"
+        stroke={COLORS.vineBase}
+        strokeWidth="8"
+        opacity="0.6"
+      />
+      {/* Thin highlight overlay */}
+      <circle
+        cx={c}
+        cy={c}
+        r={r}
+        fill="none"
+        stroke={COLORS.vineHighlight}
+        strokeWidth="3"
+        opacity="0.4"
+      />
+      {/* Dark inner fill for the hub area */}
+      <circle cx={c} cy={c} r={28} fill={COLORS.bgPanel} stroke={COLORS.woodDark} strokeWidth="2" />
+    </svg>
+  );
 }
 
 export function RadialMenu({ onAction }: RadialMenuProps) {
@@ -94,20 +137,29 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
           transform: 'translate(-50%, -50%)',
         }}
       >
+        {/* Vine frame ring */}
+        <VineFrameRing r={RADIUS} />
+
         {/* Center hub label */}
         <div
-          class="absolute w-14 h-14 rounded-full flex items-center justify-center z-50 shadow-lg stone-node"
-          style={{ left: '-28px', top: '-28px' }}
+          class="absolute w-14 h-14 rounded-full flex items-center justify-center z-50"
+          style={{
+            left: '-28px',
+            top: '-28px',
+            background: COLORS.bgPanel,
+            border: `2px solid ${COLORS.woodDark}`,
+            boxShadow: `0 0 12px rgba(0,0,0,0.8), inset 0 1px 0 rgba(139,105,20,0.1)`,
+          }}
         >
           <span
             class="font-heading font-bold text-[10px] text-center leading-tight"
-            style={{ color: 'var(--pw-warning)' }}
+            style={{ color: COLORS.grittyGold }}
           >
             {mode === 'lodge' ? 'Lodge' : (role ?? 'Unit')}
           </span>
         </div>
 
-        {/* Radial options */}
+        {/* Radial options — wood plank button backgrounds */}
         {options.map((opt, i) => {
           const angle = (i / options.length) * Math.PI * 2 - Math.PI / 2;
           const ox = Math.cos(angle) * RADIUS;
@@ -117,19 +169,19 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
             <button
               type="button"
               key={opt.id}
-              class={`absolute rounded-full stone-node flex flex-col items-center justify-center cursor-pointer transition-all duration-150 shadow-lg z-50 ${opt.disabled ? 'opacity-40' : ''}`}
+              class={`absolute rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-150 z-50 ${opt.disabled ? 'opacity-40' : ''}`}
               style={{
                 width: `${ITEM_SIZE}px`,
                 height: `${ITEM_SIZE}px`,
                 left: `${ox - ITEM_SIZE / 2}px`,
                 top: `${oy - ITEM_SIZE / 2}px`,
                 animation: `radial-sprout ${100 + i * 50}ms ease-out both`,
-                borderColor: opt.disabled
-                  ? 'var(--pw-border)'
-                  : `var(--pw-${opt.color ?? 'success'})`,
-                color: opt.disabled
-                  ? 'var(--pw-text-muted)'
-                  : `var(--pw-${opt.color ?? 'success'})`,
+                background: `linear-gradient(145deg, ${COLORS.woodBase}, ${COLORS.woodDark})`,
+                border: `2px solid ${opt.disabled ? COLORS.weatheredSteel : COLORS.goldDim}`,
+                boxShadow: opt.disabled
+                  ? 'none'
+                  : `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(139,105,20,0.15)`,
+                color: opt.disabled ? COLORS.weatheredSteel : COLORS.grittyGold,
               }}
               title={opt.tooltip}
               disabled={opt.disabled}

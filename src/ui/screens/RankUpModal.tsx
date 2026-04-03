@@ -3,7 +3,10 @@
  *
  * Shows when player taps "RANK UP" on the rewards screen.
  * Displays: Pearls to earn, what resets, what persists.
- * Confirm → execute prestige, back to main menu.
+ * Confirm -> execute prestige, back to main menu.
+ *
+ * Design bible: Frame9Slice wrapper, font-heading headers,
+ * rts-btn buttons, design token colors.
  */
 
 import { useCallback, useMemo, useState } from 'preact/hooks';
@@ -16,6 +19,7 @@ import {
   pearlsForPrestige,
 } from '@/config/prestige-logic';
 import { Frame9Slice } from '@/ui/components/frame';
+import { COLORS } from '@/ui/design-tokens';
 
 export interface RankUpModalProps {
   prestigeState: PrestigeState;
@@ -70,30 +74,30 @@ export function RankUpModal({
             {/* Title */}
             <h2
               id="rank-up-title"
-              class="font-title text-2xl tracking-widest uppercase"
+              class="font-heading text-2xl tracking-widest uppercase"
               style={{
-                color: 'var(--pw-gold)',
+                color: COLORS.grittyGold,
                 textShadow: '0 0 20px rgba(197,160,89,0.4)',
               }}
             >
               RANK UP
             </h2>
 
-            {/* Current → New rank */}
+            {/* Current -> New rank */}
             <div class="flex items-center gap-3">
-              <span class="font-heading text-lg" style={{ color: 'var(--pw-text-secondary)' }}>
+              <span class="font-heading text-lg" style={{ color: COLORS.weatheredSteel }}>
                 Rank {prestigeState.rank}
               </span>
               <span
                 class="font-heading text-lg"
-                style={{ color: 'var(--pw-gold)' }}
+                style={{ color: COLORS.grittyGold }}
                 aria-hidden="true"
               >
-                →
+                {'\u2192'}
               </span>
               <span
                 class="font-heading text-xl font-bold"
-                style={{ color: 'var(--pw-gold)', textShadow: '0 0 8px rgba(197,160,89,0.3)' }}
+                style={{ color: COLORS.grittyGold, textShadow: '0 0 8px rgba(197,160,89,0.3)' }}
               >
                 Rank {newRank}
               </span>
@@ -104,7 +108,7 @@ export function RankUpModal({
               class="w-full text-center py-2 rounded"
               style={{ background: 'rgba(197,160,89,0.1)' }}
             >
-              <span class="font-heading text-sm" style={{ color: 'var(--pw-text-secondary)' }}>
+              <span class="font-heading text-sm" style={{ color: COLORS.weatheredSteel }}>
                 Pearls Earned
               </span>
               <div
@@ -118,19 +122,19 @@ export function RankUpModal({
             {/* What resets */}
             <div class="w-full">
               <span
-                class="section-header text-xs uppercase tracking-wider"
-                style={{ color: 'var(--pw-enemy-light)' }}
+                class="font-heading text-xs uppercase tracking-wider"
+                style={{ color: COLORS.bloodRed }}
               >
                 Resets
               </span>
               <ul class="mt-1 space-y-0.5">
-                <li class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+                <li class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
                   All Clam upgrades reset to zero
                 </li>
-                <li class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+                <li class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
                   Current match progress cleared
                 </li>
-                <li class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+                <li class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
                   Difficulty baseline increases
                 </li>
               </ul>
@@ -139,19 +143,19 @@ export function RankUpModal({
             {/* What persists */}
             <div class="w-full">
               <span
-                class="section-header text-xs uppercase tracking-wider"
-                style={{ color: 'var(--pw-success)' }}
+                class="font-heading text-xs uppercase tracking-wider"
+                style={{ color: COLORS.mossGreen }}
               >
                 Keeps
               </span>
               <ul class="mt-1 space-y-0.5">
-                <li class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+                <li class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
                   All Pearl upgrades remain active
                 </li>
-                <li class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+                <li class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
                   Prestige rank (permanent)
                 </li>
-                <li class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
+                <li class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
                   Total Pearls earned (stat)
                 </li>
               </ul>
@@ -161,20 +165,20 @@ export function RankUpModal({
             {!eligible && (
               <div
                 class="w-full text-center py-1 rounded text-xs font-game"
-                style={{ color: 'var(--pw-warning)', background: 'rgba(251,191,36,0.08)' }}
+                style={{ color: COLORS.grittyGold, background: 'rgba(197,160,89,0.08)' }}
               >
                 Need progression level {threshold} (current: {progressionLevel})
               </div>
             )}
 
-            {/* Buttons */}
+            {/* Buttons — rts-btn */}
             <div class="flex gap-3 mt-2 w-full">
               <button
                 type="button"
-                class="action-btn flex-1 px-4 py-2.5 font-heading text-sm rounded-lg"
+                class="rts-btn flex-1 font-heading text-sm"
                 style={{
-                  color: 'var(--pw-text-secondary)',
-                  borderColor: 'var(--pw-text-muted)',
+                  color: COLORS.weatheredSteel,
+                  borderColor: COLORS.weatheredSteel,
                 }}
                 onClick={onCancel}
               >
@@ -182,10 +186,10 @@ export function RankUpModal({
               </button>
               <button
                 type="button"
-                class="action-btn flex-1 px-4 py-2.5 font-heading text-sm rounded-lg"
+                class="rts-btn flex-1 font-heading text-sm"
                 style={{
-                  color: eligible ? 'var(--pw-gold)' : 'var(--pw-text-muted)',
-                  borderColor: eligible ? 'var(--pw-gold)' : 'var(--pw-text-muted)',
+                  color: eligible ? COLORS.grittyGold : COLORS.weatheredSteel,
+                  borderColor: eligible ? COLORS.grittyGold : COLORS.weatheredSteel,
                   opacity: eligible && !confirmed ? 1 : 0.5,
                   cursor: eligible && !confirmed ? 'pointer' : 'not-allowed',
                 }}
