@@ -7,7 +7,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 
-const UI = '/pond-warfare/assets/ui';
+const PANEL = '/pond-warfare/assets/ui/panel';
 
 export interface AccordionSectionProps {
   sectionKey: string;
@@ -49,7 +49,12 @@ export function PondAccordionSection({
         onClick={() => onToggle(sectionKey)}
         aria-expanded={open}
       >
-        <img src={`${UI}/Button.png`} alt="" class="pond-accordion-header-bg" draggable={false} />
+        <img
+          src={`${PANEL}/section-header.png`}
+          alt=""
+          class="pond-accordion-header-bg"
+          draggable={false}
+        />
         <span class="pond-accordion-header-content">
           <span class="pond-accordion-title">
             {icon && <span class="pond-accordion-icon">{icon}</span>}
@@ -76,7 +81,7 @@ export function PondAccordionSection({
         data-testid={`accordion-content-${sectionKey}`}
       >
         <div class="pond-accordion-watermark" aria-hidden="true">
-          <img src={`${UI}/Lillypad-tiny.png`} alt="" draggable={false} />
+          <img src={`${PANEL}/otter-icon.png`} alt="" draggable={false} />
         </div>
         {children}
       </div>

@@ -24,6 +24,7 @@ import { Overlays } from './hud/overlays';
 import { WeatherEffects } from './hud/WeatherEffects';
 import { KeyboardReference } from './keyboard-reference';
 import { LoadingScreen } from './LoadingScreen';
+import { SplashVideo } from './SplashVideo';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { MainMenu } from './main-menu';
 import { MatchHistoryPanel } from './match-history-panel';
@@ -133,6 +134,18 @@ export function App({ onMount }: AppProps) {
           />
         )}
       </div>
+    );
+  }
+
+  // ---------- Splash video before new game ----------
+  if (store.showSplashVideo.value) {
+    return (
+      <SplashVideo
+        onComplete={() => {
+          store.showSplashVideo.value = false;
+          store.menuState.value = 'playing';
+        }}
+      />
     );
   }
 

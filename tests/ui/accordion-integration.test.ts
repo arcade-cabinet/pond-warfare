@@ -167,9 +167,9 @@ describe('CommandPanel accordion integration', () => {
     expect(s?.textContent).toContain('No buildings');
   });
 
-  it('has pond-panel-bg class on panel container', async () => {
+  it('has war-panel class on panel container', async () => {
     await renderPanel();
-    const panel = document.querySelector('.pond-panel-bg');
+    const panel = document.querySelector('.war-panel');
     expect(panel).toBeTruthy();
   });
 });

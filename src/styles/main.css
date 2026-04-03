@@ -1,27 +1,39 @@
 @import 'tailwindcss';
 
 /* ====================================================================
-   Pond Warfare - Brand Identity Palette
+   Pond Warfare - Brand Identity Palette (WARFARE theme)
    ==================================================================== */
 :root {
-  /* Background surfaces - pond depths */
-  --pw-bg-deep: #0c1a1f;
-  --pw-bg-surface: #132830;
-  --pw-bg-elevated: #1a3540;
-  --pw-border: rgba(64, 200, 208, 0.15);
-  --pw-border-accent: rgba(64, 200, 208, 0.3);
+  /* === WARFARE PALETTE (from design bible) === */
+  --pw-gold: #8B6914;
+  --pw-gold-bright: #C49B1A;
+  --pw-gold-dim: #5C4510;
+  --pw-moss: #2D4A1E;
+  --pw-moss-bright: #4A7A32;
+  --pw-steel: #6B7D8B;
+  --pw-steel-dim: #4A5660;
+  --pw-bark: #1A1208;
+  --pw-mud: #3D2B14;
+  --pw-mud-light: #5C4020;
 
-  /* Pond panel surfaces (watercolor-inspired tones) */
-  --pw-wood-dark: #0d2128;
-  --pw-wood-mid: #132d36;
-  --pw-wood-light: #1a3a44;
-  --pw-wood-highlight: #245058;
-  --pw-wood-grain: #102830;
+  /* Background surfaces - dark bark depths */
+  --pw-bg-deep: #1A1208;
+  --pw-bg-surface: #2A1E10;
+  --pw-bg-elevated: #3D2B14;
+  --pw-border: rgba(139, 105, 20, 0.2);
+  --pw-border-accent: rgba(139, 105, 20, 0.4);
 
-  /* Text hierarchy */
-  --pw-text-primary: #d4e8e0;
-  --pw-text-secondary: #8ab4a8;
-  --pw-text-muted: #5a8878;
+  /* Panel backgrounds using wood textures */
+  --pw-wood-dark: var(--pw-bark);
+  --pw-wood-mid: var(--pw-mud);
+  --pw-wood-light: var(--pw-mud-light);
+  --pw-wood-highlight: #6B4D28;
+  --pw-wood-grain: #2A1E10;
+
+  /* Text hierarchy - warfare palette */
+  --pw-text-primary: var(--pw-gold-bright);
+  --pw-text-secondary: var(--pw-steel);
+  --pw-text-muted: var(--pw-steel-dim);
 
   /* Resource colors */
   --pw-otter: #c9854a;
@@ -34,23 +46,23 @@
   --pw-enemy: #c03030;
   --pw-enemy-light: #e06060;
 
-  /* Accent & utility */
-  --pw-accent: #40c8d0;
-  --pw-accent-bright: #60e8f0;
-  --pw-accent-dim: #2a8a90;
+  /* Accent & utility - mapped to gold */
+  --pw-accent: var(--pw-gold);
+  --pw-accent-bright: var(--pw-gold-bright);
+  --pw-accent-dim: var(--pw-gold-dim);
   --pw-success: #40b868;
-  --pw-warning: #e8a030;
+  --pw-warning: var(--pw-gold);
 
-  /* Parchment / map texture */
-  --pw-parchment: #2a3a30;
-  --pw-parchment-light: #384a3c;
-  --pw-parchment-dark: #1e2c24;
+  /* Parchment / map texture - now muddy */
+  --pw-parchment: #3D2B14;
+  --pw-parchment-light: #5C4020;
+  --pw-parchment-dark: #2A1E10;
 
-  /* Stone surface */
-  --pw-stone: #283838;
-  --pw-stone-light: #344848;
-  --pw-stone-dark: #1c2828;
-  --pw-stone-highlight: #3c5858;
+  /* Stone surface - now bark tones */
+  --pw-stone: #3D2B14;
+  --pw-stone-light: #5C4020;
+  --pw-stone-dark: #1A1208;
+  --pw-stone-highlight: #6B4D28;
 
   /* Role colors */
   --pw-scout: #b090d8;
@@ -71,11 +83,11 @@
   /* FPS / status feedback */
   --pw-fps-good: #4ade80;
 
-  /* Button text on teal backgrounds */
-  --pw-btn-dark-text: #1a3a3a;
+  /* Button text on wood backgrounds */
+  --pw-btn-dark-text: #1A1208;
 
   /* Advisor icon text on colored backgrounds */
-  --pw-advisor-text: #0c1a1f;
+  --pw-advisor-text: #1A1208;
 
   /* Difficulty preset colors */
   --pw-difficulty-easy: #22c55e;
@@ -113,30 +125,30 @@
   /* ================================================================
      Overlay / surface alpha tokens (US6 — centralise rgba patterns)
      ================================================================ */
-  --pw-overlay-dark: rgba(12, 26, 31, 0.85);
-  --pw-overlay-heavy: rgba(12, 26, 31, 0.9);
-  --pw-overlay-medium: rgba(12, 26, 31, 0.8);
-  --pw-overlay-75: rgba(12, 26, 31, 0.75);
-  --pw-overlay-light: rgba(12, 26, 31, 0.5);
-  --pw-overlay-60: rgba(12, 26, 31, 0.6);
-  --pw-overlay-92: rgba(12, 26, 31, 0.92);
+  --pw-overlay-dark: rgba(26, 18, 8, 0.85);
+  --pw-overlay-heavy: rgba(26, 18, 8, 0.9);
+  --pw-overlay-medium: rgba(26, 18, 8, 0.8);
+  --pw-overlay-75: rgba(26, 18, 8, 0.75);
+  --pw-overlay-light: rgba(26, 18, 8, 0.5);
+  --pw-overlay-60: rgba(26, 18, 8, 0.6);
+  --pw-overlay-92: rgba(26, 18, 8, 0.92);
 
-  /* Panel / card surfaces */
-  --pw-surface-panel: rgba(19, 45, 54, 0.88);
-  --pw-surface-panel-80: rgba(19, 45, 54, 0.8);
-  --pw-surface-panel-dark: rgba(13, 33, 40, 0.92);
-  --pw-surface-panel-mid: rgba(13, 33, 40, 0.85);
-  --pw-surface-panel-light: rgba(13, 33, 40, 0.8);
-  --pw-surface-panel-60: rgba(13, 33, 40, 0.6);
-  --pw-surface-card: rgba(20, 30, 35, 0.8);
-  --pw-surface-card-60: rgba(20, 30, 35, 0.6);
-  --pw-surface-card-70: rgba(20, 30, 35, 0.7);
-  --pw-surface-briefing: rgba(19, 40, 48, 0.92);
-  --pw-surface-locked: rgba(19, 40, 48, 0.6);
-  --pw-surface-unaffordable: rgba(26, 53, 64, 0.8);
-  --pw-surface-secondary-btn: rgba(26, 58, 68, 0.85);
+  /* Panel / card surfaces — mud-brown wood tones */
+  --pw-surface-panel: rgba(61, 43, 20, 0.88);
+  --pw-surface-panel-80: rgba(61, 43, 20, 0.8);
+  --pw-surface-panel-dark: rgba(26, 18, 8, 0.92);
+  --pw-surface-panel-mid: rgba(26, 18, 8, 0.85);
+  --pw-surface-panel-light: rgba(26, 18, 8, 0.8);
+  --pw-surface-panel-60: rgba(26, 18, 8, 0.6);
+  --pw-surface-card: rgba(42, 30, 16, 0.8);
+  --pw-surface-card-60: rgba(42, 30, 16, 0.6);
+  --pw-surface-card-70: rgba(42, 30, 16, 0.7);
+  --pw-surface-briefing: rgba(61, 43, 20, 0.92);
+  --pw-surface-locked: rgba(61, 43, 20, 0.6);
+  --pw-surface-unaffordable: rgba(92, 64, 32, 0.8);
+  --pw-surface-secondary-btn: rgba(61, 43, 20, 0.85);
   --pw-surface-danger-btn: rgba(68, 26, 26, 0.85);
-  --pw-surface-campaign: rgba(6, 14, 18, 0.95);
+  --pw-surface-campaign: rgba(26, 18, 8, 0.95);
 
   /* Shadow / scrim */
   --pw-shadow-soft: rgba(0, 0, 0, 0.3);
@@ -148,14 +160,14 @@
   --pw-scrim-35: rgba(0, 0, 0, 0.35);
   --pw-scrim-70: rgba(0, 0, 0, 0.7);
 
-  /* Accent glow family */
-  --pw-glow-accent: rgba(64, 200, 208, 0.15);
-  --pw-glow-accent-strong: rgba(64, 200, 208, 0.4);
-  --pw-glow-accent-08: rgba(64, 200, 208, 0.08);
-  --pw-glow-accent-10: rgba(64, 200, 208, 0.1);
-  --pw-glow-accent-12: rgba(64, 200, 208, 0.12);
-  --pw-glow-accent-20: rgba(64, 200, 208, 0.2);
-  --pw-glow-accent-30: rgba(64, 200, 208, 0.3);
+  /* Accent glow family — gritty gold */
+  --pw-glow-accent: rgba(139, 105, 20, 0.15);
+  --pw-glow-accent-strong: rgba(139, 105, 20, 0.4);
+  --pw-glow-accent-08: rgba(139, 105, 20, 0.08);
+  --pw-glow-accent-10: rgba(139, 105, 20, 0.1);
+  --pw-glow-accent-12: rgba(139, 105, 20, 0.12);
+  --pw-glow-accent-20: rgba(139, 105, 20, 0.2);
+  --pw-glow-accent-30: rgba(139, 105, 20, 0.3);
 
   /* White highlights */
   --pw-white-03: rgba(255, 255, 255, 0.03);
@@ -200,7 +212,7 @@
   --pw-defeat-glow-80: rgba(192, 48, 48, 0.8);
 
   /* Auto-behavior active backgrounds */
-  --pw-auto-warning-bg: rgba(232, 160, 48, 0.3);
+  --pw-auto-warning-bg: rgba(139, 105, 20, 0.3);
   --pw-auto-enemy-bg: rgba(224, 96, 96, 0.3);
   --pw-auto-success-bg: rgba(64, 184, 104, 0.3);
   --pw-auto-scout-bg: rgba(138, 106, 184, 0.3);
@@ -219,15 +231,15 @@
   /* Wave/alert banners */
   --pw-wave-warning-bg: rgba(180, 120, 20, 0.85);
 
-  /* Decorative text */
-  --pw-text-decorative: rgba(180, 220, 210, 0.8);
-  --pw-text-decorative-60: rgba(180, 220, 210, 0.6);
-  --pw-text-decorative-40: rgba(180, 220, 210, 0.4);
-  --pw-text-shadow-decorative: rgba(180, 220, 220, 0.4);
+  /* Decorative text — gritty gold tones */
+  --pw-text-decorative: rgba(196, 155, 26, 0.8);
+  --pw-text-decorative-60: rgba(196, 155, 26, 0.6);
+  --pw-text-decorative-40: rgba(196, 155, 26, 0.4);
+  --pw-text-shadow-decorative: rgba(139, 105, 20, 0.4);
 
   /* Difficulty tints */
   --pw-diff-easy-tint: rgba(34, 197, 94, 0.15);
-  --pw-diff-normal-tint: rgba(64, 200, 208, 0.15);
+  --pw-diff-normal-tint: rgba(139, 105, 20, 0.15);
   --pw-diff-hard-tint: rgba(239, 68, 68, 0.15);
 
   /* Pearl glow */
@@ -248,9 +260,9 @@
   --pw-mission-5-tint: rgba(80, 20, 20, 0.35);
   --pw-mission-default-tint: rgba(20, 40, 50, 0.25);
 
-  /* Toast gradient */
-  --pw-toast-bg-start: rgba(12, 26, 31, 0.95);
-  --pw-toast-bg-end: rgba(30, 50, 55, 0.95);
+  /* Toast gradient — dark bark */
+  --pw-toast-bg-start: rgba(26, 18, 8, 0.95);
+  --pw-toast-bg-end: rgba(61, 43, 20, 0.95);
 
   /* Drop shadow filter */
   --pw-drop-shadow: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
@@ -368,17 +380,16 @@ body {
   border-color: var(--pw-border);
   border-radius: 8px;
   box-shadow:
-    inset 0 1px 0 rgba(64, 200, 208, 0.06),
+    inset 0 1px 0 rgba(139, 105, 20, 0.06),
     inset 0 -1px 0 rgba(0, 0, 0, 0.3),
     0 2px 12px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
 }
 
-/* Inner glow - cyan water light reflection on edges */
+/* Inner glow - warm gold light reflection on edges */
 .water-glow {
   box-shadow:
-    inset 0 0 12px rgba(64, 200, 208, 0.06),
-    inset 0 1px 0 rgba(64, 200, 208, 0.1),
+    inset 0 0 12px rgba(139, 105, 20, 0.06),
+    inset 0 1px 0 rgba(139, 105, 20, 0.1),
     0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
@@ -393,15 +404,75 @@ body {
 }
 
 /* ====================================================================
-   UI Panel - Core themed panel class (wood + water)
+   War Panel - 9-Slice wood panel with mossy borders
+   ==================================================================== */
+.war-panel {
+  border-image:
+    url('/pond-warfare/assets/ui/panel/panel-9slice.png')
+    64 fill / 32px / 0 round;
+  background: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Header bar with gritty gold section-header texture */
+.war-panel-header {
+  background:
+    url('/pond-warfare/assets/ui/panel/section-header.png')
+    repeat-x center;
+  background-size: auto 100%;
+  color: var(--pw-gold-bright);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Wood button with pressed state */
+.war-btn {
+  background:
+    url('/pond-warfare/assets/ui/panel/btn-wood.png')
+    no-repeat center;
+  background-size: 100% 100%;
+  border: none;
+  color: var(--pw-gold-bright);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: filter 0.12s ease, transform 0.12s ease;
+}
+
+.war-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.war-btn:active:not(:disabled),
+.war-btn.pressed {
+  background-image:
+    url('/pond-warfare/assets/ui/panel/btn-wood-pressed.png');
+  transform: translateY(1px);
+  filter: brightness(0.95);
+}
+
+.war-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+
+/* Tiled wood center background for content areas */
+.war-panel-content {
+  background:
+    url('/pond-warfare/assets/ui/panel/panel-center.png')
+    repeat center;
+  background-size: 128px 128px;
+}
+
+/* ====================================================================
+   UI Panel - Core themed panel class (wood warfare)
    ==================================================================== */
 .ui-panel {
   background:
     linear-gradient(
       180deg,
-      rgba(26, 58, 68, 0.9) 0%,
-      rgba(19, 45, 54, 0.85) 30%,
-      rgba(13, 33, 40, 0.9) 100%
+      rgba(92, 64, 32, 0.9) 0%,
+      rgba(61, 43, 20, 0.85) 30%,
+      rgba(26, 18, 8, 0.9) 100%
     );
   border-color: var(--pw-border);
   border-radius: 8px;
@@ -409,21 +480,20 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-shadow:
-    inset 0 1px 0 rgba(64, 200, 208, 0.06),
+    inset 0 1px 0 rgba(139, 105, 20, 0.06),
     0 2px 16px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(6px);
 }
 
 /* ====================================================================
-   Action Buttons - Carved stone/wood tablet
+   Action Buttons - Carved wood tablet
    ==================================================================== */
 .action-btn {
   background:
     linear-gradient(
       170deg,
-      rgba(26, 58, 68, 0.85) 0%,
-      rgba(19, 45, 54, 0.8) 45%,
-      rgba(13, 33, 40, 0.85) 100%
+      rgba(92, 64, 32, 0.85) 0%,
+      rgba(61, 43, 20, 0.8) 45%,
+      rgba(26, 18, 8, 0.85) 100%
     );
   border: 1px solid var(--pw-border);
   border-radius: 6px;
@@ -433,17 +503,16 @@ body {
   animation: panel-fade-in 0.12s ease-out;
   color: var(--pw-text-primary);
   box-shadow:
-    inset 0 1px 0 rgba(64, 200, 208, 0.06),
+    inset 0 1px 0 rgba(139, 105, 20, 0.06),
     0 2px 6px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
 }
 
 .action-btn:active {
   background:
     linear-gradient(
       170deg,
-      rgba(13, 33, 40, 0.9) 0%,
-      rgba(19, 45, 54, 0.85) 100%
+      rgba(26, 18, 8, 0.9) 0%,
+      rgba(61, 43, 20, 0.85) 100%
     );
   transform: translateY(1px);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -451,8 +520,8 @@ body {
 
 .action-btn:hover:not(:disabled) {
   box-shadow:
-    inset 0 1px 0 rgba(64, 200, 208, 0.1),
-    0 0 12px rgba(64, 200, 208, 0.2),
+    inset 0 1px 0 rgba(139, 105, 20, 0.1),
+    0 0 12px rgba(139, 105, 20, 0.2),
     0 2px 8px rgba(0, 0, 0, 0.3);
   border-color: var(--pw-border-accent);
 }
@@ -474,7 +543,7 @@ body {
   padding: 0 4px;
   border-radius: 2px;
   line-height: 1.3;
-  border: 1px solid rgba(64, 200, 208, 0.15);
+  border: 1px solid rgba(139, 105, 20, 0.15);
 }
 
 /* ====================================================================
@@ -482,8 +551,8 @@ body {
    ==================================================================== */
 .game-btn:hover:not(:disabled) {
   box-shadow:
-    inset 0 1px 0 rgba(64, 200, 208, 0.1),
-    0 0 12px rgba(64, 200, 208, 0.2),
+    inset 0 1px 0 rgba(139, 105, 20, 0.1),
+    0 0 12px rgba(139, 105, 20, 0.2),
     0 2px 8px rgba(0, 0, 0, 0.3);
   filter: brightness(1.1);
 }
@@ -494,23 +563,27 @@ body {
   filter: brightness(0.95);
 }
 
+/* Swap primary button bg to pressed texture on :active */
+.game-btn:active:not(:disabled) .game-btn-wood-bg {
+  content: url('/pond-warfare/assets/ui/panel/btn-wood-pressed.png');
+}
+
 /* ====================================================================
    HUD Buttons - Carved wood look for top bar controls
    ==================================================================== */
 .hud-btn {
-  background: rgba(19, 45, 54, 0.7);
+  background: rgba(61, 43, 20, 0.7);
   border: 1px solid var(--pw-border);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.12s ease;
   color: var(--pw-text-secondary);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(4px);
 }
 
 .hud-btn:hover:not(:disabled) {
   box-shadow:
-    0 0 10px rgba(64, 200, 208, 0.15),
+    0 0 10px rgba(139, 105, 20, 0.15),
     0 1px 4px rgba(0, 0, 0, 0.2);
   border-color: var(--pw-border-accent);
 }
@@ -529,18 +602,17 @@ body {
    Command Buttons - Pill-shaped floating action buttons
    ==================================================================== */
 .cmd-btn {
-  background: rgba(19, 45, 54, 0.8);
+  background: rgba(61, 43, 20, 0.8);
   border: 1px solid var(--pw-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
 }
 
 .cmd-btn:hover {
   box-shadow:
-    0 0 12px rgba(64, 200, 208, 0.2),
+    0 0 12px rgba(139, 105, 20, 0.2),
     0 3px 10px rgba(0, 0, 0, 0.3);
   border-color: var(--pw-border-accent);
 }
@@ -552,40 +624,32 @@ body {
   background:
     linear-gradient(
       145deg,
-      rgba(26, 58, 68, 0.85) 0%,
-      rgba(19, 45, 54, 0.8) 50%,
-      rgba(13, 33, 40, 0.85) 100%
+      rgba(92, 64, 32, 0.85) 0%,
+      rgba(61, 43, 20, 0.8) 50%,
+      rgba(26, 18, 8, 0.85) 100%
     );
   border: 1px solid var(--pw-border);
   border-radius: 8px;
   box-shadow:
-    inset 0 1px 0 rgba(64, 200, 208, 0.06),
+    inset 0 1px 0 rgba(139, 105, 20, 0.06),
     0 2px 8px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
 }
 
 /* ====================================================================
-   Parchment Panel - For overlays and modal backgrounds
+   Parchment Panel - For overlays and modal backgrounds (wood warfare)
    ==================================================================== */
 .parchment-panel {
-  background:
-    linear-gradient(
-      160deg,
-      rgba(26, 58, 68, 0.92) 0%,
-      rgba(19, 45, 54, 0.88) 40%,
-      rgba(13, 33, 40, 0.92) 100%
-    );
-  border: 1px solid var(--pw-border);
-  border-radius: 12px;
+  border-image:
+    url('/pond-warfare/assets/ui/panel/panel-9slice.png')
+    64 fill / 32px / 0 round;
+  background: none;
+  border-radius: 0;
   box-shadow:
-    inset 0 0 30px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(64, 200, 208, 0.06),
-    0 4px 24px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
+    0 4px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ====================================================================
-   Toggle Switch - Themed
+   Toggle Switch - Themed (warfare gold)
    ==================================================================== */
 .toggle-track {
   background: var(--pw-stone-dark);
@@ -594,8 +658,8 @@ body {
 }
 
 .toggle-track-active {
-  background: var(--pw-accent-dim);
-  border-color: var(--pw-accent);
+  background: var(--pw-gold-dim);
+  border-color: var(--pw-gold);
 }
 
 .toggle-thumb {
@@ -622,7 +686,7 @@ body {
 }
 
 /* ====================================================================
-   Scrollbar (themed - dark water)
+   Scrollbar (themed - dark wood)
    ==================================================================== */
 ::-webkit-scrollbar {
   width: 6px;
@@ -633,31 +697,30 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(64, 200, 208, 0.3);
+  background: rgba(139, 105, 20, 0.3);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(64, 200, 208, 0.5);
+  background: rgba(139, 105, 20, 0.5);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(64, 200, 208, 0.3) transparent;
+  scrollbar-color: rgba(139, 105, 20, 0.3) transparent;
 }
 
 /* ====================================================================
    Advisor Toast - Bottom-left HUD toast for advisor tips
    ==================================================================== */
 .advisor-toast {
-  background: rgba(19, 45, 54, 0.85);
+  background: rgba(61, 43, 20, 0.85);
   border: 1px solid var(--pw-border);
   border-radius: 8px;
   padding: 10px 12px 10px 15px;
-  backdrop-filter: blur(10px);
   box-shadow:
-    inset 0 1px 0 rgba(64, 200, 208, 0.06),
+    inset 0 1px 0 rgba(139, 105, 20, 0.06),
     0 4px 16px rgba(0, 0, 0, 0.35);
   animation: advisor-slide-up 0.25s ease-out;
   overflow: hidden;
@@ -679,7 +742,7 @@ body {
    ==================================================================== */
 .tooltip {
   position: absolute;
-  background: rgba(13, 33, 40, 0.88);
+  background: rgba(26, 18, 8, 0.92);
   border: 1px solid var(--pw-border);
   color: var(--pw-text-primary);
   padding: 6px 10px;
@@ -690,7 +753,6 @@ body {
   border-radius: 6px;
   font-family: 'Inter', system-ui, sans-serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -1521,12 +1583,12 @@ body {
   text-transform: uppercase;
   color: var(--pw-accent-dim);
   font-size: 0.625rem;
-  border-bottom: 1px solid rgba(64, 200, 208, 0.1);
+  border-bottom: 1px solid rgba(139, 105, 20, 0.1);
   padding-bottom: 4px;
 }
 
 /* ====================================================================
-   Range Slider - Themed
+   Range Slider - Themed (wood warfare)
    ==================================================================== */
 input[type="range"] {
   -webkit-appearance: none;
@@ -1541,6 +1603,7 @@ input[type="range"] {
   border-radius: 3px;
   border: 1px solid var(--pw-border);
   cursor: pointer;
+  accent-color: var(--pw-gold);
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -1700,9 +1763,9 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .settings-tab-btn[data-active='true'] {
-  background: rgba(64, 200, 208, 0.08);
-  color: var(--pw-accent);
-  border-bottom-color: var(--pw-accent);
+  background: rgba(139, 105, 20, 0.08);
+  color: var(--pw-gold-bright);
+  border-bottom-color: var(--pw-gold);
   border-radius: 6px 6px 0 0;
 }
 
@@ -1748,7 +1811,7 @@ input[type="range"]::-moz-range-thumb {
   height: 100%;
   object-fit: fill;
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .pond-accordion-header-content {
@@ -1768,8 +1831,8 @@ input[type="range"]::-moz-range-thumb {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #1a3a3a;
-  text-shadow: 0 1px 1px rgba(180, 220, 220, 0.4);
+  color: var(--pw-gold-bright);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   text-align: left;
   display: flex;
   align-items: center;
@@ -1783,7 +1846,7 @@ input[type="range"]::-moz-range-thumb {
 .pond-accordion-summary {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 10px;
-  color: #3a5a5a;
+  color: var(--pw-steel);
   white-space: nowrap;
   opacity: 0.8;
   margin-right: 4px;
@@ -1791,7 +1854,7 @@ input[type="range"]::-moz-range-thumb {
 
 .pond-accordion-chevron {
   font-size: 10px;
-  color: #2a4a4a;
+  color: var(--pw-gold-dim);
   transition: transform 0.25s ease;
   flex-shrink: 0;
 }
@@ -1805,17 +1868,13 @@ input[type="range"]::-moz-range-thumb {
   position: relative;
   overflow: hidden;
   background:
-    linear-gradient(
-      180deg,
-      rgba(13, 33, 40, 0.5) 0%,
-      rgba(19, 45, 54, 0.4) 50%,
-      rgba(13, 33, 40, 0.5) 100%
-    );
-  border-left: 1px solid rgba(64, 200, 208, 0.1);
-  border-right: 1px solid rgba(64, 200, 208, 0.1);
-  border-bottom: 1px solid rgba(64, 200, 208, 0.1);
+    url('/pond-warfare/assets/ui/panel/panel-center.png')
+    repeat center;
+  background-size: 128px 128px;
+  border-left: 1px solid rgba(139, 105, 20, 0.1);
+  border-right: 1px solid rgba(139, 105, 20, 0.1);
+  border-bottom: 1px solid rgba(139, 105, 20, 0.1);
   border-radius: 0 0 8px 8px;
-  backdrop-filter: blur(4px);
   max-height: 0;
   opacity: 0;
   transition: max-height 0.25s ease-out, opacity 0.2s ease-out, padding 0.25s ease-out;
@@ -1842,7 +1901,7 @@ input[type="range"]::-moz-range-thumb {
   height: 48px;
 }
 
-/* Panel background with watercolor texture overlay */
+/* Panel background with wood texture overlay */
 .pond-panel-bg {
   position: relative;
 }
@@ -1851,17 +1910,17 @@ input[type="range"]::-moz-range-thumb {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('/pond-warfare/assets/ui/Background.png');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.06;
+  background-image: url('/pond-warfare/assets/ui/panel/panel-center.png');
+  background-size: 128px 128px;
+  background-repeat: repeat;
+  opacity: 0.12;
   pointer-events: none;
   z-index: 0;
   border-radius: inherit;
 }
 
 /* ====================================================================
-   Focus & Selection States — pond-themed soft teal glow
+   Focus & Selection States — warfare gold glow
    ==================================================================== */
 :focus-visible {
   outline: none;
@@ -1876,7 +1935,7 @@ button:focus-visible,
 }
 
 ::selection {
-  background: rgba(64, 200, 208, 0.25);
+  background: rgba(139, 105, 20, 0.25);
   color: var(--pw-text-primary);
 }
 
