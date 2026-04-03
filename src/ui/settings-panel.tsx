@@ -61,6 +61,11 @@ function VolumeSlider({
         min="0"
         max="100"
         value={value}
+        tabIndex={0}
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={value}
         onInput={(e) => onChange(Number((e.target as HTMLInputElement).value))}
         class="flex-1 h-6 appearance-none rounded cursor-pointer touch-none"
         style={{ background: 'var(--pw-border)', accentColor: 'var(--pw-accent)' }}

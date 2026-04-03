@@ -17,6 +17,9 @@ export interface KeyMap {
   cycleBuildings: string;
   escape: string;
   actionSlots: string[]; // Q, W, E, R, T, Y
+  abilityRallyCry: string;
+  abilityPondBlessing: string;
+  abilityTidalSurge: string;
 }
 
 export const DEFAULT_KEYMAP: KeyMap = {
@@ -36,6 +39,9 @@ export const DEFAULT_KEYMAP: KeyMap = {
   cycleBuildings: 'tab',
   escape: 'escape',
   actionSlots: ['q', 'w', 'e', 'r', 't', 'y'],
+  abilityRallyCry: 'b',
+  abilityPondBlessing: 'g',
+  abilityTidalSurge: 'n',
 };
 
 let activeKeymap: KeyMap = deepCopyKeymap(DEFAULT_KEYMAP);
@@ -59,6 +65,9 @@ function deepCopyKeymap(keymap: KeyMap): KeyMap {
     cycleBuildings: keymap.cycleBuildings,
     escape: keymap.escape,
     actionSlots: [...keymap.actionSlots],
+    abilityRallyCry: keymap.abilityRallyCry,
+    abilityPondBlessing: keymap.abilityPondBlessing,
+    abilityTidalSurge: keymap.abilityTidalSurge,
   };
 }
 
@@ -83,6 +92,10 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
   if (keymap.centerSelection !== undefined) merged.centerSelection = keymap.centerSelection;
   if (keymap.cycleBuildings !== undefined) merged.cycleBuildings = keymap.cycleBuildings;
   if (keymap.escape !== undefined) merged.escape = keymap.escape;
+  if (keymap.abilityRallyCry !== undefined) merged.abilityRallyCry = keymap.abilityRallyCry;
+  if (keymap.abilityPondBlessing !== undefined)
+    merged.abilityPondBlessing = keymap.abilityPondBlessing;
+  if (keymap.abilityTidalSurge !== undefined) merged.abilityTidalSurge = keymap.abilityTidalSurge;
   if (keymap.actionSlots !== undefined) {
     const slots = [...keymap.actionSlots];
     // Normalize to exactly 6 items: pad with defaults or truncate.
@@ -146,6 +159,11 @@ function isValidPartialKeyMap(obj: any): boolean {
   if (obj.centerSelection !== undefined && typeof obj.centerSelection !== 'string') return false;
   if (obj.cycleBuildings !== undefined && typeof obj.cycleBuildings !== 'string') return false;
   if (obj.escape !== undefined && typeof obj.escape !== 'string') return false;
+  if (obj.abilityRallyCry !== undefined && typeof obj.abilityRallyCry !== 'string') return false;
+  if (obj.abilityPondBlessing !== undefined && typeof obj.abilityPondBlessing !== 'string')
+    return false;
+  if (obj.abilityTidalSurge !== undefined && typeof obj.abilityTidalSurge !== 'string')
+    return false;
 
   return true;
 }

@@ -18,6 +18,7 @@ import {
   Sprite,
   UnitStateMachine,
 } from '@/ecs/components';
+import { getWeatherGatherMult } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { Faction, ResourceType, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
@@ -53,7 +54,9 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
       break;
     case UnitState.GatherMove:
       UnitStateMachine.state[eid] = UnitState.Gathering;
-      UnitStateMachine.gatherTimer[eid] = Math.round(GATHER_TIMER * world.gatherSpeedMod);
+      UnitStateMachine.gatherTimer[eid] = Math.round(
+        GATHER_TIMER * world.gatherSpeedMod * (1 / getWeatherGatherMult(world)),
+      );
       break;
     case UnitState.BuildMove:
       UnitStateMachine.state[eid] = UnitState.Building;

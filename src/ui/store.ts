@@ -295,4 +295,10 @@ export {
   unlocksOpen,
   waveNumber,
 } from './store-gameplay';
-export { currentWeather, nextWeather, weatherCountdown, weatherLabel } from './store-weather';
+export {
+  currentWeather,
+  nextWeather,
+  nextWeatherLabel,
+  weatherCountdown,
+  weatherLabel,
+} from './store-weather';

@@ -29,6 +29,9 @@ export interface KeyboardCallbacks {
   onAttackMoveMode: () => void;
   onCycleStance: () => void;
   onActionHotkey: (index: number) => void;
+  onRallyCry: () => void;
+  onPondBlessing: () => void;
+  onTidalSurge: () => void;
 }
 
 const PAN_SPEED = 12;
@@ -222,6 +225,20 @@ export class KeyboardHandler {
         this.cb.onPlaySound('selectBuild');
         this.cb.onUpdateUI();
       }
+    }
+
+    // Ability hotkeys: B (Rally Cry / Shadow Sprint), G (Pond Blessing), N (Tidal Surge)
+    if (k === keymap.abilityRallyCry) {
+      this.cb.onRallyCry();
+      return;
+    }
+    if (k === keymap.abilityPondBlessing) {
+      this.cb.onPondBlessing();
+      return;
+    }
+    if (k === keymap.abilityTidalSurge) {
+      this.cb.onTidalSurge();
+      return;
     }
 
     // F12: toggle FPS counter

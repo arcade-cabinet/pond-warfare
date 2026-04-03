@@ -21,6 +21,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
 import type { KeyboardCallbacks } from '@/input/keyboard';
 import type { PointerCallbacks } from '@/input/pointer';
 import {
@@ -105,6 +106,15 @@ export function buildKeyboardCallbacks(deps: InputSetupDeps): KeyboardCallbacks 
     },
     onActionHotkey: (_index: number) => {
       // Action hotkeys handled by UI layer
+    },
+    onRallyCry: () => {
+      useShadowSprint(world);
+    },
+    onPondBlessing: () => {
+      usePondBlessing(world);
+    },
+    onTidalSurge: () => {
+      useTidalSurge(world);
     },
   };
 }

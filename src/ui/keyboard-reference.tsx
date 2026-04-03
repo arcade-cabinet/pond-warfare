@@ -41,6 +41,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
     entries: [
       { keys: 'A', label: 'Attack-move' },
       { keys: 'H', label: 'Halt / Stop' },
+      { keys: 'V', label: 'Cycle stance' },
       { keys: 'Esc', label: 'Cancel action' },
     ],
   },
@@ -51,6 +52,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: '1-9', label: 'Recall group' },
       { keys: '.', label: 'Select idle workers' },
       { keys: ',', label: 'Select army' },
+      { keys: 'Tab', label: 'Cycle buildings' },
     ],
   },
   {
@@ -59,15 +61,26 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: 'F', label: 'Cycle speed' },
       { keys: 'M', label: 'Mute audio' },
       { keys: 'P', label: 'Pause' },
+      { keys: 'F12', label: 'FPS counter' },
     ],
   },
   {
-    title: 'Build',
+    title: 'Actions',
     entries: [
-      { keys: 'Q', label: 'Slot 1' },
+      { keys: 'Q', label: 'Slot 1 / Commander' },
       { keys: 'W', label: 'Slot 2' },
       { keys: 'E', label: 'Slot 3' },
       { keys: 'R', label: 'Slot 4' },
+      { keys: 'T', label: 'Slot 5' },
+      { keys: 'Y', label: 'Slot 6' },
+    ],
+  },
+  {
+    title: 'Abilities',
+    entries: [
+      { keys: 'B', label: 'Shadow Sprint' },
+      { keys: 'G', label: 'Pond Blessing' },
+      { keys: 'N', label: 'Tidal Surge' },
     ],
   },
 ];

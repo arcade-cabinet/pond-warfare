@@ -25,6 +25,7 @@ import {
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
+import { getWeatherAttackThresholdMult } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -80,11 +81,16 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   }
   // AI personality modifier: adjusts how large the army must be before attacking
   const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+  // Weather modifier: fog increases threshold by 50% (enemies wait longer)
+  const weatherMult = getWeatherAttackThresholdMult(world);
   baseThreshold = Math.max(
     personality.minArmyForAttack,
-    Math.round(baseThreshold * personality.attackThresholdMult),
+    Math.round(baseThreshold * personality.attackThresholdMult * weatherMult),
   );
-  lateThreshold = Math.max(1, Math.round(lateThreshold * personality.attackThresholdMult));
+  lateThreshold = Math.max(
+    1,
+    Math.round(lateThreshold * personality.attackThresholdMult * weatherMult),
+  );
   const attackThreshold = world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
   if (armySize < attackThreshold) return;
 

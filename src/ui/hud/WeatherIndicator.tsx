@@ -3,7 +3,7 @@
  * US3: Shows current weather icon + label and countdown to next change.
  */
 
-import { currentWeather, weatherCountdown, weatherLabel } from '../store-weather';
+import { currentWeather, nextWeatherLabel, weatherCountdown, weatherLabel } from '../store-weather';
 
 const WEATHER_ICONS: Record<string, string> = {
   clear: '\u2600', // sun
@@ -29,6 +29,7 @@ export function WeatherIndicator({ compact }: { compact: boolean }) {
   const weather = currentWeather.value;
   const label = weatherLabel.value;
   const countdown = weatherCountdown.value;
+  const nextLabel = nextWeatherLabel.value;
   const icon = WEATHER_ICONS[weather] || '';
   const color = WEATHER_COLORS[weather] || 'var(--pw-text-secondary)';
 
@@ -46,6 +47,11 @@ export function WeatherIndicator({ compact }: { compact: boolean }) {
           style={{ color: countdown < 30 ? 'var(--pw-warning)' : 'var(--pw-text-muted)' }}
         >
           {formatCountdown(countdown)}
+        </span>
+      )}
+      {!compact && countdown > 0 && (
+        <span class="font-numbers text-[9px]" style={{ color: 'var(--pw-text-muted)' }}>
+          Next: {nextLabel} in {formatCountdown(countdown)}
         </span>
       )}
     </div>

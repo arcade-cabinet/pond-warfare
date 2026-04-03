@@ -101,7 +101,7 @@ export function AbilityBar(props: AbilityBarProps) {
       {hasRally && (
         <button
           type="button"
-          class={`action-btn px-3 py-2 rounded-lg font-heading text-xs flex items-center gap-2 ${
+          class={`action-btn relative px-3 py-2 rounded-lg font-heading text-xs flex items-center gap-2 ${
             rallyOnCooldown || rallyActive ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           style={{
@@ -124,6 +124,7 @@ export function AbilityBar(props: AbilityBarProps) {
           disabled={rallyOnCooldown || rallyActive}
           onClick={props.onRallyCry}
         >
+          <KeyBadge label="B" />
           <span>Shadow Sprint</span>
           {rallyActive && (
             <span class="font-numbers text-xs" style={{ color: 'var(--pw-success)' }}>
@@ -140,32 +141,34 @@ export function AbilityBar(props: AbilityBarProps) {
       {hasPond && (
         <button
           type="button"
-          class="action-btn px-3 py-2 rounded-lg font-heading text-xs flex items-center gap-2"
+          class="action-btn relative px-3 py-2 rounded-lg font-heading text-xs flex items-center gap-2"
           style={{
             color: 'var(--pw-accent)',
             borderColor: 'var(--pw-accent)',
             minWidth: '44px',
             minHeight: '44px',
           }}
-          title="Pond Blessing: heal all units to full HP (one-time)"
+          title="Pond Blessing: heal all units 20% HP (G)"
           onClick={props.onPondBlessing}
         >
+          <KeyBadge label="G" />
           <span>Pond Blessing</span>
         </button>
       )}
       {hasTidal && (
         <button
           type="button"
-          class="action-btn px-3 py-2 rounded-lg font-heading text-xs flex items-center gap-2"
+          class="action-btn relative px-3 py-2 rounded-lg font-heading text-xs flex items-center gap-2"
           style={{
             color: 'var(--pw-enemy-light)',
             borderColor: 'var(--pw-enemy-light)',
             minWidth: '44px',
             minHeight: '44px',
           }}
-          title="Tidal Surge: deal 50 damage to all enemies (one-time)"
+          title="Tidal Surge: deal 50 damage to all enemies (N)"
           onClick={props.onTidalSurge}
         >
+          <KeyBadge label="N" />
           <span>Tidal Surge</span>
         </button>
       )}

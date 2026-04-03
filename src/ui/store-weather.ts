@@ -18,3 +18,9 @@ export const weatherLabel = computed(() => {
   const w = currentWeather.value;
   return w.charAt(0).toUpperCase() + w.slice(1);
 });
+
+/** Next weather display label for forecast. */
+export const nextWeatherLabel = computed(() => {
+  const w = nextWeather.value;
+  return w.charAt(0).toUpperCase() + w.slice(1);
+});

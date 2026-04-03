@@ -153,7 +153,26 @@ export function spawnSurvivalWave(world: GameWorld): number {
   return spawned;
 }
 
-/** Calculate survival mode score. */
+/** Difficulty score multipliers for survival mode. */
+const DIFFICULTY_MULTIPLIERS: Record<string, number> = {
+  easy: 0.5,
+  normal: 1.0,
+  hard: 2.0,
+  nightmare: 3.0,
+  ultraNightmare: 5.0,
+};
+
+/** Wave milestone bonuses: [waveThreshold, bonusPoints]. */
+const WAVE_MILESTONES: [number, number][] = [
+  [10, 500],
+  [20, 1000],
+  [30, 2000],
+];
+
+/** Commander diversity bonus multiplier for non-default commanders. */
+const COMMANDER_DIVERSITY_BONUS = 0.1;
+
+/** Calculate survival mode score with difficulty, milestones, and commander bonuses. */
 export function calculateSurvivalScore(world: GameWorld): number {
   const timeScore = Math.floor(world.frameCount / 60); // 1 point per second
   const killScore = world.stats.unitsKilled * 10; // 10 points per kill
@@ -168,5 +187,21 @@ export function calculateSurvivalScore(world: GameWorld): number {
   }
   const buildingScore = buildingsStanding * 50; // 50 points per building
 
-  return timeScore + killScore + buildingScore;
+  let baseScore = timeScore + killScore + buildingScore;
+
+  // Wave milestone bonuses
+  for (const [threshold, bonus] of WAVE_MILESTONES) {
+    if (world.waveNumber >= threshold) {
+      baseScore += bonus;
+    }
+  }
+
+  // Commander diversity bonus: +10% for non-default (non-marshal) commanders
+  if (world.commanderId && world.commanderId !== 'marshal') {
+    baseScore = Math.round(baseScore * (1 + COMMANDER_DIVERSITY_BONUS));
+  }
+
+  // Difficulty multiplier
+  const diffMult = DIFFICULTY_MULTIPLIERS[world.difficulty] ?? 1.0;
+  return Math.round(baseScore * diffMult);
 }
