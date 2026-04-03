@@ -282,6 +282,7 @@ export {
   replayTimeDisplay,
   settingsOpen,
   sfxVolume,
+  showSplashVideo,
   survivalScore,
   survivalSelectOpen,
   survivalWave,
@@ -290,4 +291,3 @@ export {
   waveNumber,
 } from './store-gameplay';
 export { currentWeather, nextWeather, weatherCountdown, weatherLabel } from './store-weather';
-export { showSplashVideo } from './store-gameplay';

@@ -19,8 +19,7 @@ export function SplashVideo({ onComplete }: SplashVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Pick orientation-appropriate video
-  const isPortrait =
-    typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
+  const isPortrait = typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
   const src = isPortrait ? `${BASE}/splash-9x16.mp4` : `${BASE}/splash-16x9.mp4`;
 
   const handleSkip = useCallback(() => {
