@@ -50,6 +50,7 @@ export function EdgeHorizontal({ top }: EdgeHorizontalProps) {
 
   return (
     <svg
+      viewBox="0 0 1000 60"
       width="100%"
       height="100%"
       preserveAspectRatio="none"

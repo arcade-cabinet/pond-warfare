@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks';
+import { reduceVisualNoise } from '@/ui/store';
 
 interface FogBlob {
   x: number;
@@ -32,6 +33,9 @@ export function SwampEcosystem() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Respect accessibility — skip animation when visual noise is reduced
+    if (reduceVisualNoise.value) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;

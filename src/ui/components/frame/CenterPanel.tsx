@@ -15,19 +15,17 @@ export interface CenterPanelProps {
 
 export function CenterPanel({ children }: CenterPanelProps) {
   return (
-    <div
-      class="relative w-full h-full overflow-hidden flex items-center justify-center bg-repeat bg-center"
-      style={{
-        backgroundColor: COLORS.bgPanel,
-        filter: 'url(#grunge-heavy)',
-      }}
-    >
-      {/* Inset shadow overlay */}
+    <div class="relative w-full h-full overflow-hidden">
+      {/* Grunge-filtered background — isolated from content so text isn't distorted */}
       <div
         class="absolute inset-0 pointer-events-none z-0"
-        style={{ boxShadow: 'inset 0 0 40px rgba(15,20,10,1)' }}
+        style={{
+          backgroundColor: COLORS.bgPanel,
+          filter: 'url(#grunge-heavy)',
+          boxShadow: 'inset 0 0 40px rgba(15,20,10,1)',
+        }}
       />
-      {/* Content */}
+      {/* Content rendered above the filtered background */}
       <div class="relative z-10 w-full h-full p-4">{children}</div>
     </div>
   );
