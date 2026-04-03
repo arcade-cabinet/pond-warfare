@@ -1,7 +1,6 @@
 /** Loading screen shown during menu-to-game transition. */
 
 import { useMemo } from 'preact/hooks';
-import { MenuBackground } from './menu-background';
 import { customGameSettings } from './store';
 
 const LOADING_TIPS = [
@@ -31,13 +30,16 @@ export function LoadingScreen() {
   const mapName = capitalize(customGameSettings.value.scenario);
 
   return (
-    <div class="absolute inset-0 z-[100] flex flex-col items-center justify-center">
-      <MenuBackground />
-
+    <div
+      class="absolute inset-0 z-[100] flex flex-col items-center justify-center"
+      style={{
+        background: 'linear-gradient(180deg, var(--pw-bark) 0%, var(--pw-mud) 100%)',
+      }}
+    >
       <div class="relative z-10 flex flex-col items-center gap-6 px-4 text-center">
         <h2
           class="font-heading text-2xl md:text-3xl tracking-wider uppercase"
-          style={{ color: 'var(--pw-accent)', textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}
+          style={{ color: 'var(--pw-accent)', textShadow: '0 2px 8px var(--pw-shadow-heavy)' }}
         >
           Loading {mapName} Map...
         </h2>
@@ -61,7 +63,7 @@ export function LoadingScreen() {
         <p
           class="font-game text-xs md:text-sm max-w-md"
           style={{
-            color: 'var(--pw-text-decorative)',
+            color: 'var(--pw-sepia-text)',
             textShadow: `0 1px 4px var(--pw-shadow-medium)`,
           }}
         >

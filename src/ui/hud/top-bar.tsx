@@ -29,10 +29,12 @@ export function TopBar(props: TopBarProps) {
     <div
       class={`absolute top-0 left-0 w-full wood-panel border-0 border-b flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm ${compact ? 'h-10' : 'h-10 md:h-12'}`}
       style={{
-        borderBottomColor: 'var(--pw-border)',
+        borderBottomColor: 'var(--pw-mud)',
+        borderBottomWidth: '2px',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-        background: `linear-gradient(180deg, var(--pw-surface-panel-mid) 0%, var(--pw-surface-panel-80) 100%)`,
+        background: `linear-gradient(180deg, var(--pw-mud-light) 0%, var(--pw-mud) 60%, var(--pw-bark) 100%)`,
         backdropFilter: 'blur(8px)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(139, 105, 20, 0.08)',
       }}
     >
       <div class="flex items-center gap-2 md:gap-4">

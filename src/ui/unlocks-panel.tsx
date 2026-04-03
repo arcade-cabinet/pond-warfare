@@ -13,6 +13,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { UNLOCK_CATEGORIES, UNLOCKS, type UnlockCategory } from '@/config/unlocks';
 import type { PlayerProfile } from '@/storage/database';
 import { getCachedProfile, getUnlockedIds, loadUnlocks } from '@/systems/unlock-tracker';
+import { Frame9Slice } from './components/frame';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { unlocksOpen } from './store';
 
@@ -101,125 +102,118 @@ export function UnlocksPanel() {
     >
       <div
         ref={scrollRef}
-        class="relative w-[90vw] max-w-[720px] modal-scroll-lg rounded-lg p-6"
-        style={{
-          background: 'linear-gradient(135deg, #1a2332 0%, #0f1923 100%)',
-          border: `1px solid var(--pw-unlock-glow-30)`,
-          boxShadow: `0 0 30px var(--pw-unlock-glow-10)`,
-        }}
+        class="relative w-[90vw] max-w-[720px] modal-scroll-lg font-game text-sm z-10"
+        style={{ color: 'var(--pw-text-primary)' }}
       >
-        {/* Header */}
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2
-              class="font-heading text-xl tracking-wider uppercase"
-              style={{ color: 'var(--pw-unlock)' }}
+        <Frame9Slice title="UNLOCKS">
+          <div class="relative">
+            {/* Close button */}
+            <button
+              type="button"
+              class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              onClick={() => {
+                unlocksOpen.value = false;
+              }}
             >
-              Unlocks
-            </h2>
-            <p class="font-game text-xs mt-1" style={{ color: 'var(--pw-text-muted)' }}>
+              {'\u2715'}
+            </button>
+
+            <p class="font-game text-xs mb-4" style={{ color: 'var(--pw-text-muted)' }}>
               {totalUnlocked} / {UNLOCKS.length} unlocked
             </p>
-          </div>
-          <button
-            type="button"
-            class="font-heading text-lg px-3 py-1 rounded"
-            style={{ color: 'var(--pw-text-muted)' }}
-            onClick={() => {
-              unlocksOpen.value = false;
-            }}
-          >
-            X
-          </button>
-        </div>
 
-        {/* Profile summary */}
-        {profile && (
-          <div
-            class="rounded-lg p-3 mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2"
-            style={{
-              background: 'var(--pw-white-03)',
-              border: `1px solid var(--pw-white-08)`,
-            }}
-          >
-            <StatBadge label="Wins" value={p.total_wins} />
-            <StatBadge label="Games" value={p.total_games} />
-            <StatBadge label="Kills" value={p.total_kills} />
-            <StatBadge label="Playtime" value={`${Math.floor(p.total_playtime_seconds / 60)}m`} />
-          </div>
-        )}
-
-        {/* Category tabs */}
-        <div class="flex flex-wrap gap-1.5 mb-4">
-          <CategoryTab
-            label="All"
-            active={activeCategory === 'all'}
-            onClick={() => setActiveCategory('all')}
-          />
-          {UNLOCK_CATEGORIES.map((cat) => (
-            <CategoryTab
-              key={cat.key}
-              label={cat.label}
-              active={activeCategory === cat.key}
-              onClick={() => setActiveCategory(cat.key)}
-            />
-          ))}
-        </div>
-
-        {/* Unlock grid */}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {filteredUnlocks.map((unlock) => {
-            const earned = unlockedSet.has(unlock.id);
-            return (
+            {/* Profile summary */}
+            {profile && (
               <div
-                key={unlock.id}
-                class="rounded-lg p-3 transition-all"
+                class="rounded-lg p-3 mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2"
                 style={{
-                  background: earned ? 'var(--pw-unlock-glow-08)' : 'var(--pw-white-03)',
-                  border: earned
-                    ? `1px solid var(--pw-unlock-glow-50)`
-                    : `1px solid var(--pw-white-08)`,
-                  opacity: earned ? 1 : 0.6,
+                  background: 'var(--pw-white-03)',
+                  border: `1px solid var(--pw-white-08)`,
                 }}
               >
-                <div class="flex items-center gap-2 mb-1">
-                  <span style={{ fontSize: '13px' }}>{earned ? '\u2605' : '\uD83D\uDD12'}</span>
-                  <span
-                    class="font-heading text-sm tracking-wide"
-                    style={{ color: earned ? 'var(--pw-unlock)' : 'var(--pw-text-muted)' }}
-                  >
-                    {unlock.name}
-                  </span>
-                  <span
-                    class="font-game text-[9px] px-1.5 py-0.5 rounded ml-auto"
+                <StatBadge label="Wins" value={p.total_wins} />
+                <StatBadge label="Games" value={p.total_games} />
+                <StatBadge label="Kills" value={p.total_kills} />
+                <StatBadge
+                  label="Playtime"
+                  value={`${Math.floor(p.total_playtime_seconds / 60)}m`}
+                />
+              </div>
+            )}
+
+            {/* Category tabs */}
+            <div class="flex flex-wrap gap-1.5 mb-4">
+              <CategoryTab
+                label="All"
+                active={activeCategory === 'all'}
+                onClick={() => setActiveCategory('all')}
+              />
+              {UNLOCK_CATEGORIES.map((cat) => (
+                <CategoryTab
+                  key={cat.key}
+                  label={cat.label}
+                  active={activeCategory === cat.key}
+                  onClick={() => setActiveCategory(cat.key)}
+                />
+              ))}
+            </div>
+
+            {/* Unlock grid */}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filteredUnlocks.map((unlock) => {
+                const earned = unlockedSet.has(unlock.id);
+                return (
+                  <div
+                    key={unlock.id}
+                    class="rounded-lg p-3 transition-all"
                     style={{
-                      background: 'var(--pw-white-06)',
-                      color: 'var(--pw-text-muted)',
+                      background: earned ? 'var(--pw-unlock-glow-08)' : 'var(--pw-white-03)',
+                      border: earned
+                        ? `1px solid var(--pw-unlock-glow-50)`
+                        : `1px solid var(--pw-white-08)`,
+                      opacity: earned ? 1 : 0.6,
                     }}
                   >
-                    {unlock.category}
-                  </span>
-                </div>
-                <p
-                  class="font-game text-xs pl-5"
-                  style={{
-                    color: earned ? 'var(--pw-text-secondary)' : 'var(--pw-text-muted)',
-                  }}
-                >
-                  {earned ? unlock.description : unlock.requirement}
-                </p>
-                {!earned && profile && (
-                  <p
-                    class="font-numbers text-[10px] pl-5 mt-1"
-                    style={{ color: 'var(--pw-unlock-glow-60)' }}
-                  >
-                    {progressText(unlock, p)}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span style={{ fontSize: '13px' }}>{earned ? '\u2605' : '\uD83D\uDD12'}</span>
+                      <span
+                        class="font-heading text-sm tracking-wide"
+                        style={{ color: earned ? 'var(--pw-unlock)' : 'var(--pw-text-muted)' }}
+                      >
+                        {unlock.name}
+                      </span>
+                      <span
+                        class="font-game text-[9px] px-1.5 py-0.5 rounded ml-auto"
+                        style={{
+                          background: 'var(--pw-white-06)',
+                          color: 'var(--pw-text-muted)',
+                        }}
+                      >
+                        {unlock.category}
+                      </span>
+                    </div>
+                    <p
+                      class="font-game text-xs pl-5"
+                      style={{
+                        color: earned ? 'var(--pw-text-secondary)' : 'var(--pw-text-muted)',
+                      }}
+                    >
+                      {earned ? unlock.description : unlock.requirement}
+                    </p>
+                    {!earned && profile && (
+                      <p
+                        class="font-numbers text-[10px] pl-5 mt-1"
+                        style={{ color: 'var(--pw-unlock-glow-60)' }}
+                      >
+                        {progressText(unlock, p)}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Frame9Slice>
       </div>
     </div>
   );

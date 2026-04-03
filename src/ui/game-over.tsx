@@ -9,6 +9,7 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { animateGameOverStats } from '@/rendering/animations';
+import { Frame9Slice } from './components/frame';
 import {
   gameState,
   goDailyChallengeCompleted,
@@ -146,30 +147,31 @@ export function GameOverBanner(props: GameOverProps) {
 
       <StarRating stars={stars} />
 
-      {/* Parchment stat card */}
-      <div
-        ref={statsContainerRef}
-        class="parchment-panel pond-panel-bg mt-5 px-6 py-4 rounded-lg flex flex-col items-center gap-1.5 min-w-[240px]"
-      >
-        <span
-          class="section-header w-full text-center mb-1"
-          style={{
-            color: isVictory ? 'var(--pw-clam)' : 'var(--pw-enemy-light)',
-            borderColor: isVictory ? 'var(--pw-victory-glow-20)' : 'var(--pw-defeat-glow-20)',
-          }}
-        >
-          Battle Report
-        </span>
-        {lines.map((line, i) => (
-          <p
-            key={`stat-${i}`}
-            data-stat-line
-            class="font-numbers text-sm"
-            style={{ opacity: 0, color: 'var(--pw-text-secondary)' }}
-          >
-            {line}
-          </p>
-        ))}
+      {/* Stat card */}
+      <div ref={statsContainerRef} class="mt-5 min-w-[240px]">
+        <Frame9Slice>
+          <div class="px-6 py-4 flex flex-col items-center gap-1.5">
+            <span
+              class="section-header w-full text-center mb-1"
+              style={{
+                color: isVictory ? 'var(--pw-clam)' : 'var(--pw-enemy-light)',
+                borderColor: isVictory ? 'var(--pw-victory-glow-20)' : 'var(--pw-defeat-glow-20)',
+              }}
+            >
+              Battle Report
+            </span>
+            {lines.map((line, i) => (
+              <p
+                key={`stat-${i}`}
+                data-stat-line
+                class="font-numbers text-sm"
+                style={{ opacity: 0, color: 'var(--pw-text-secondary)' }}
+              >
+                {line}
+              </p>
+            ))}
+          </div>
+        </Frame9Slice>
       </div>
 
       {/* XP earned */}
@@ -181,7 +183,7 @@ export function GameOverBanner(props: GameOverProps) {
           {goLeveledUp.value && (
             <span
               class="font-heading text-sm font-bold"
-              style={{ color: 'var(--pw-clam)', textShadow: '0 0 8px rgba(240, 208, 96, 0.4)' }}
+              style={{ color: 'var(--pw-clam)', textShadow: '0 0 8px var(--pw-victory-glow-40)' }}
             >
               Level Up! Level {goNewLevel.value}
             </span>

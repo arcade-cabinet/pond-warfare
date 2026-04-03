@@ -9,6 +9,8 @@ import { game } from '@/game';
 import { AchievementsPanel } from './achievements-panel';
 import { CampaignPanel, ObjectiveTracker } from './campaign-panel';
 import { HamburgerButton } from './components/HamburgerButton';
+import { SvgFilters } from './components/SvgFilters';
+import { SwampEcosystem } from './components/SwampEcosystem';
 import { Tooltip } from './components/Tooltip';
 import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
@@ -114,6 +116,8 @@ export function App({ onMount }: AppProps) {
             <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
           </div>
         </div>
+        <SwampEcosystem />
+        <SvgFilters />
         <ErrorOverlay />
         <MainMenu />
         {store.campaignOpen.value && <CampaignPanel />}
@@ -161,6 +165,7 @@ export function App({ onMount }: AppProps) {
           <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
         </div>
       </div>
+      <SvgFilters />
       <ErrorOverlay />
 
       {/* Fullscreen game container */}
@@ -200,6 +205,7 @@ export function App({ onMount }: AppProps) {
               cy += Position.y[eid];
             }
             game.smoothPanTo(cx / alive.length, cy / alive.length);
+            store.lastRecalledGroup.value = group;
             audio.selectUnit();
             game.syncUIStore();
           }}

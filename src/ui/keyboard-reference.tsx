@@ -3,10 +3,11 @@
  *
  * Modal overlay showing all keyboard shortcuts in a 3-column grid.
  * Accessible via the "?" button in the HUD top bar.
- * Styled with parchment-panel and font-game classes.
+ * Styled with Frame9Slice and font-game classes.
  */
 
 import { screenClass } from '@/platform';
+import { Frame9Slice } from './components/frame';
 import { useScrollDrag } from './hooks/useScrollDrag';
 
 interface ShortcutEntry {
@@ -115,32 +116,31 @@ export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
       {/* Panel card */}
       <div
         ref={scrollRef}
-        class="relative rounded-lg shadow-2xl w-[520px] max-w-[95vw] modal-scroll p-5 font-game text-sm z-10 parchment-panel pond-panel-bg"
+        class="relative w-[520px] max-w-[95vw] modal-scroll font-game text-sm z-10"
         style={{ color: 'var(--pw-text-primary)' }}
       >
-        {/* Header */}
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-title text-lg tracking-wide" style={{ color: 'var(--pw-accent)' }}>
-            Keyboard Shortcuts
-          </h2>
-          <button
-            type="button"
-            class="hud-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded"
-            onClick={onClose}
-            title="Close"
-          >
-            {'\u2715'}
-          </button>
-        </div>
+        <Frame9Slice title="KEYBOARD REFERENCE">
+          <div class="relative">
+            {/* Close button */}
+            <button
+              type="button"
+              class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              onClick={onClose}
+              title="Close"
+            >
+              {'\u2715'}
+            </button>
 
-        {/* 3-column grid of shortcut groups */}
-        <div
-          class={`grid gap-4 ${screenClass.value === 'compact' ? 'grid-cols-2' : 'grid-cols-3'}`}
-        >
-          {SHORTCUT_GROUPS.map((group) => (
-            <ShortcutColumn key={group.title} group={group} />
-          ))}
-        </div>
+            {/* 3-column grid of shortcut groups */}
+            <div
+              class={`grid gap-4 ${screenClass.value === 'compact' ? 'grid-cols-2' : 'grid-cols-3'}`}
+            >
+              {SHORTCUT_GROUPS.map((group) => (
+                <ShortcutColumn key={group.title} group={group} />
+              ))}
+            </div>
+          </div>
+        </Frame9Slice>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { useSignal } from '@preact/signals';
 import { useMemo } from 'preact/hooks';
 import { entityKindName } from '@/config/entity-defs';
 import { canDockPanels, screenClass } from '@/platform';
+import { Frame9Slice } from '../components/frame';
 import { type AccordionSection, PondAccordion } from '../components/PondAccordion';
 import * as store from '../store';
 import { buildingRoster, idleWorkerCount, unitRoster } from '../store';
@@ -67,7 +68,7 @@ export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelPr
     <>
       {/* Panel */}
       <div
-        class={`absolute top-0 right-0 h-full z-40 flex flex-col war-panel ${docked ? '' : 'transition-transform duration-200 ease-out'} ${open && !collapsed.value ? 'translate-x-0' : 'translate-x-full'}`}
+        class={`absolute top-0 right-0 h-full z-40 flex flex-col ${docked ? '' : 'transition-transform duration-200 ease-out'} ${open && !collapsed.value ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
           width: panelWidth,
           boxShadow: open && !docked ? `-4px 0 20px var(--pw-shadow-soft)` : 'none',
@@ -95,12 +96,14 @@ export function CommandPanel({ minimapCanvasRef, minimapCamRef }: CommandPanelPr
 
         {/* Accordion content */}
         <div class="flex-1 overflow-y-auto min-h-0">
-          <PondAccordion sections={sections} allowMultiple={true}>
-            <MapTab minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
-            <ForcesTab />
-            <BuildingsTab />
-            <MenuTab />
-          </PondAccordion>
+          <Frame9Slice title="COMMAND">
+            <PondAccordion sections={sections} allowMultiple={true}>
+              <MapTab minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
+              <ForcesTab />
+              <BuildingsTab />
+              <MenuTab />
+            </PondAccordion>
+          </Frame9Slice>
         </div>
       </div>
 

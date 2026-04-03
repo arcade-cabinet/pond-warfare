@@ -8,6 +8,7 @@
 
 import type { MissionDef } from '@/campaign/mission-types';
 import type { TechBranch } from '@/config/tech-tree';
+import { Frame9Slice } from './components/frame';
 import { MenuButton } from './menu-button';
 
 /** Background tint per mission number. */
@@ -43,68 +44,58 @@ export function CampaignBriefing({ mission, onBegin, onBack }: Props) {
       style={{ background: `linear-gradient(${tint}, var(--pw-surface-campaign))` }}
       data-testid="campaign-briefing"
     >
-      <div
-        class="flex flex-col items-center gap-5 max-w-md w-full px-8 py-10 rounded-lg"
-        style={{
-          background: 'var(--pw-surface-briefing)',
-          border: '1px solid var(--pw-border)',
-        }}
-      >
-        {/* Header */}
-        <div class="text-center">
-          <span
-            class="font-numbers text-xs tracking-wider"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
-            MISSION {mission.number}
-          </span>
-          <h2 class="font-heading text-2xl font-bold mt-1" style={{ color: 'var(--pw-accent)' }}>
-            {mission.title}
-          </h2>
-          <p class="font-game text-sm mt-1" style={{ color: 'var(--pw-text-secondary)' }}>
-            {mission.subtitle}
-          </p>
-        </div>
-
-        {/* Objectives summary */}
-        <div class="w-full">
-          <h3
-            class="font-heading text-xs font-bold tracking-wider mb-2"
-            style={{ color: 'var(--pw-text-secondary)' }}
-          >
-            OBJECTIVES
-          </h3>
-          <ul class="flex flex-col gap-1">
-            {mission.objectives.map((obj) => (
-              <li
-                key={obj.id}
-                class="font-game text-xs flex items-center gap-2"
-                style={{ color: 'var(--pw-text-primary)' }}
-              >
-                <span style={{ color: 'var(--pw-accent)' }}>&#9679;</span>
-                {obj.label}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Recommended branch */}
-        {branch && (
-          <div
-            class="w-full text-center font-game text-xs"
-            style={{ color: branch.color }}
-            data-testid="recommended-branch"
-          >
-            Recommended: {branch.label}
+      <Frame9Slice title={`MISSION ${mission.number}`}>
+        <div class="flex flex-col items-center gap-5">
+          {/* Header */}
+          <div class="text-center">
+            <span class="font-heading text-2xl font-bold" style={{ color: 'var(--pw-accent)' }}>
+              {mission.title}
+            </span>
+            <p class="font-game text-sm mt-1" style={{ color: 'var(--pw-text-secondary)' }}>
+              {mission.subtitle}
+            </p>
           </div>
-        )}
 
-        {/* Actions */}
-        <div class="flex gap-4 mt-2">
-          <MenuButton label="Back" onClick={onBack} />
-          <MenuButton label="Begin Mission" wide onClick={onBegin} />
+          {/* Objectives summary */}
+          <div class="w-full">
+            <h3
+              class="font-heading text-xs font-bold tracking-wider mb-2"
+              style={{ color: 'var(--pw-text-secondary)' }}
+            >
+              OBJECTIVES
+            </h3>
+            <ul class="flex flex-col gap-1">
+              {mission.objectives.map((obj) => (
+                <li
+                  key={obj.id}
+                  class="font-game text-xs flex items-center gap-2"
+                  style={{ color: 'var(--pw-text-primary)' }}
+                >
+                  <span style={{ color: 'var(--pw-accent)' }}>&#9679;</span>
+                  {obj.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Recommended branch */}
+          {branch && (
+            <div
+              class="w-full text-center font-game text-xs"
+              style={{ color: branch.color }}
+              data-testid="recommended-branch"
+            >
+              Recommended: {branch.label}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div class="flex gap-4 mt-2">
+            <MenuButton label="Back" onClick={onBack} />
+            <MenuButton label="Begin Mission" wide onClick={onBegin} />
+          </div>
         </div>
-      </div>
+      </Frame9Slice>
     </div>
   );
 }

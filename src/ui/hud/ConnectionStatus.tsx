@@ -30,9 +30,10 @@ export function ConnectionStatus() {
     <div
       class="absolute top-12 right-2 z-30 flex items-center gap-2 px-2 py-1 rounded"
       style={{
-        background: 'var(--pw-surface-panel-light)',
+        background: 'var(--pw-bg-surface)',
         backdropFilter: 'blur(4px)',
-        border: '1px solid var(--pw-border)',
+        border: '1px solid var(--pw-mud)',
+        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
       }}
       data-testid="connection-status"
     >
@@ -44,7 +45,7 @@ export function ConnectionStatus() {
       />
 
       {/* Ping */}
-      <span class="font-game text-xs" style={{ color: 'var(--pw-text-secondary)' }}>
+      <span class="font-game text-xs" style={{ color: 'var(--pw-text-muted)' }}>
         {ping}ms
       </span>
 

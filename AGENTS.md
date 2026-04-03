@@ -25,6 +25,53 @@ See [docs/architecture.md](docs/architecture.md) for the full system overview.
 
 **Key pattern:** ECS game state lives in `GameWorld` (src/ecs/world.ts). UI reads from reactive `signal()` values in `src/ui/store.ts` (core signals) + `src/ui/store-weather.ts` (weather) + `src/ui/store-gameplay.ts` (game over, campaign, puzzle, replay, abilities). The game orchestrator (`src/game.ts` + `src/game/`) syncs world -> store every 30 frames via `syncUIStore()`.
 
+## Design System (Design Bible)
+
+The visual identity follows the design bible at `docs/brand/`. Reference components at `docs/brand/ui-reference-full.jsx`.
+
+### Design Tokens
+Import from `@/ui/design-tokens`:
+- `COLORS` — grittyGold, mossGreen, weatheredSteel, woodBase, vineBase, etc.
+- `FONTS` — header (IM Fell English SC), body (Open Sans)
+- `FRAME` — cornerSize (60px)
+
+### Frame9Slice (SVG 9-Slice Panel System)
+Import from `@/ui/components/frame`:
+- `Frame9Slice` — CSS grid wrapper assembling SVG corners, edges, and center panel
+- `CenterPanel` — Standalone dark interior with grunge filter
+
+Props: `{ children, title?, isExpanded?, onClick?, class? }`
+
+Used for: ALL panels, modals, accordion sections. No PNG assets needed.
+
+### SVG Filters
+`SvgFilters` component (mounted at app root) provides:
+- `url(#grunge-heavy)` — Fractal noise worn texture
+- `url(#organic-wood)` — Directional wood grain + displacement warp
+- `url(#swamp-glow)` — Dual drop-shadow (black + moss green)
+
+### SVG Sprites
+Import from `@/ui/components/sprites`:
+- `SpriteOtter` — Assault infantry (idle + attack frames)
+- `SpriteCroc` — Siege heavy (idle + attack with gatling)
+- `SpriteSnake` — Sniper specialist (idle + attack with laser)
+
+CSS animations: `.sprite-frame-1` / `.sprite-frame-2` toggle frames at 0.4s steps.
+
+### SwampEcosystem
+Canvas background component with animated fog blobs + fireflies. Rendered at app root for menu screens.
+
+### Typography
+- Headers: `font-heading` class → IM Fell English SC
+- Body: `font-game` class → Open Sans
+- Numbers: `font-numbers` class → JetBrains Mono
+
+### Button Styles
+- `.rts-btn` — Primary warfare button (dark bg, bark border, sepia text, uppercase)
+- `.rts-btn.active` — Gold border, moss background glow
+- `.action-btn` — In-game action button (wood gradient)
+- `.hud-btn` — Compact HUD control button
+
 ## Core Conventions
 
 ### ECS Components (bitECS 0.4)
@@ -431,6 +478,8 @@ src/
   terrain/        -- Terrain grid, painters
   ui/
     components/   -- Small reusable UI primitives (<100 LOC each)
+      frame/      -- SVG 9-slice panel system (Frame9Slice, corners, edges, center)
+      sprites/    -- SVG unit sprites (Otter, Croc, Snake) with idle/attack frames
     panel/        -- Command panel tabs
     overlays/     -- Modal overlays (settings, tech tree, etc.)
     hud/          -- HUD elements (overlays, ctrl-groups, abilities, minimap legend, connection status)

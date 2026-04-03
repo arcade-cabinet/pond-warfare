@@ -137,6 +137,8 @@ export const tooltipY = signal(0);
 // ---- Control groups ----
 /** Mapping of group number (1-9) to entity count. Empty groups are omitted. */
 export const ctrlGroupCounts = signal<Record<number, number>>({});
+/** Last-recalled control group number, -1 means none active. */
+export const lastRecalledGroup = signal(-1);
 
 // ---- Production queue & roster: re-exported from store-gameplay ----
 export {

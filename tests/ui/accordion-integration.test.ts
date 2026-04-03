@@ -41,16 +41,47 @@ vi.mock('@/config/entity-defs', () => ({
 
 import * as store from '@/ui/store';
 
-const header = (k: string) =>
-  document.querySelector(`[data-testid="accordion-header-${k}"]`) as HTMLElement;
-const content = (k: string) =>
-  document.querySelector(`[data-testid="accordion-content-${k}"]`) as HTMLElement;
-const summaryEl = (k: string) =>
-  document.querySelector(`[data-testid="accordion-summary-${k}"]`) as HTMLElement | null;
+/** Get accordion section wrapper by key. */
+const section = (k: string) =>
+  document.querySelector(`[data-testid="accordion-section-${k}"]`) as HTMLElement;
 
-/** Check if an accordion section is visually open (has the open CSS class). */
+/** Frame9Slice renders h2 title in the top edge — get it. */
+function sectionTitle(k: string): string {
+  const el = section(k);
+  const h2 = el?.querySelector('h2');
+  return h2?.textContent ?? '';
+}
+
+/** Click the Frame9Slice top-center cell (the clickable header). */
+function clickHeader(k: string) {
+  const el = section(k);
+  const grid = el?.querySelector('.grid');
+  const topCenter = grid?.children[1] as HTMLElement;
+  if (topCenter) fireEvent.click(topCenter);
+}
+
+/** Get content within a section. */
+function sectionContent(k: string): HTMLElement | null {
+  const el = section(k);
+  if (!el) return null;
+  const grid = el.querySelector('.grid');
+  if (!grid) return null;
+  return grid.children[4] as HTMLElement;
+}
+
+/**
+ * Check if a section is expanded.
+ * Frame9Slice center cell uses Tailwind class "scale-y-0" when collapsed,
+ * "scale-y-100" when expanded.
+ */
 function isOpen(key: string): boolean {
-  return content(key).classList.contains('pond-accordion-content-open');
+  const el = section(key);
+  if (!el) return false;
+  const grid = el.querySelector('.grid');
+  if (!grid) return false;
+  const centerCell = grid.children[4] as HTMLElement;
+  if (!centerCell) return false;
+  return !centerCell.className.includes('scale-y-0');
 }
 
 beforeEach(() => {
@@ -81,7 +112,7 @@ describe('NewGameModal accordion integration', () => {
   it('renders all five accordion sections', async () => {
     await renderNewGame();
     for (const key of ['commander', 'map', 'economy', 'enemies', 'rules']) {
-      expect(header(key)).toBeTruthy();
+      expect(section(key)).toBeTruthy();
     }
   });
 
@@ -92,23 +123,21 @@ describe('NewGameModal accordion integration', () => {
 
   it('map section shows scenario + density summary when collapsed', async () => {
     await renderNewGame();
-    const s = summaryEl('map');
-    expect(s).toBeTruthy();
-    expect(s?.textContent).toContain('Standard');
-    expect(s?.textContent).toContain('density');
+    const title = sectionTitle('map');
+    expect(title).toContain('Standard');
+    expect(title).toContain('density');
   });
 
   it('enemies section shows nest count summary', async () => {
     await renderNewGame();
-    const s = summaryEl('enemies');
-    expect(s).toBeTruthy();
-    expect(s?.textContent).toContain('nests');
+    const title = sectionTitle('enemies');
+    expect(title).toContain('nests');
   });
 
   it('clicking a section header expands it', async () => {
     await renderNewGame();
     expect(isOpen('economy')).toBe(false);
-    fireEvent.click(header('economy'));
+    clickHeader('economy');
     expect(isOpen('economy')).toBe(true);
   });
 
@@ -144,7 +173,7 @@ describe('CommandPanel accordion integration', () => {
   it('renders all four accordion sections', async () => {
     await renderPanel();
     for (const key of ['map', 'forces', 'buildings', 'menu']) {
-      expect(header(key)).toBeTruthy();
+      expect(section(key)).toBeTruthy();
     }
   });
 
@@ -155,21 +184,20 @@ describe('CommandPanel accordion integration', () => {
 
   it('forces summary shows "No units" when roster is empty', async () => {
     await renderPanel();
-    const s = summaryEl('forces');
-    expect(s).toBeTruthy();
-    expect(s?.textContent).toContain('No units');
+    const title = sectionTitle('forces');
+    expect(title).toContain('No units');
   });
 
   it('buildings summary shows no buildings when empty', async () => {
     await renderPanel();
-    const s = summaryEl('buildings');
-    expect(s).toBeTruthy();
-    expect(s?.textContent).toContain('No buildings');
+    const title = sectionTitle('buildings');
+    expect(title).toContain('No buildings');
   });
 
-  it('has war-panel class on panel container', async () => {
+  it('renders command panel container', async () => {
     await renderPanel();
-    const panel = document.querySelector('.war-panel');
+    // CommandPanel renders accordion sections inside Frame9Slice
+    const panel = document.querySelector('[data-testid="accordion-section-map"]');
     expect(panel).toBeTruthy();
   });
 });
@@ -196,7 +224,7 @@ describe('SettingsPanel accordion integration', () => {
   it('renders all four accordion sections', async () => {
     await renderSettings();
     for (const key of ['audio', 'gameplay', 'accessibility', 'advisors']) {
-      expect(header(key)).toBeTruthy();
+      expect(section(key)).toBeTruthy();
     }
   });
 
@@ -208,30 +236,30 @@ describe('SettingsPanel accordion integration', () => {
   it('audio summary shows master volume percentage', async () => {
     await renderSettings();
     // Audio is defaultOpen so summary is hidden; collapse it first
-    fireEvent.click(header('audio'));
-    const s = summaryEl('audio');
-    expect(s).toBeTruthy();
-    expect(s?.textContent).toContain('Master 80%');
+    clickHeader('audio');
+    const title = sectionTitle('audio');
+    expect(title).toContain('Master 80%');
   });
 
   it('gameplay summary shows speed', async () => {
     await renderSettings();
-    const s = summaryEl('gameplay');
-    expect(s).toBeTruthy();
-    expect(s?.textContent).toContain('Speed 1x');
+    const title = sectionTitle('gameplay');
+    expect(title).toContain('Speed 1x');
   });
 
-  it('has pond-panel-bg class on settings card', async () => {
+  it('renders settings panel container', async () => {
     await renderSettings();
-    const panel = document.querySelector('.pond-panel-bg');
+    // SettingsPanel is rendered
+    const panel = document.querySelector('[data-testid="accordion-section-audio"]');
     expect(panel).toBeTruthy();
   });
 
   it('clicking gameplay section expands and shows speed buttons', async () => {
     await renderSettings();
-    fireEvent.click(header('gameplay'));
+    clickHeader('gameplay');
     expect(isOpen('gameplay')).toBe(true);
-    const speedBtns = content('gameplay').querySelectorAll('.font-numbers');
+    const contentEl = sectionContent('gameplay');
+    const speedBtns = contentEl?.querySelectorAll('.font-numbers') ?? [];
     expect(speedBtns.length).toBeGreaterThanOrEqual(3);
   });
 });

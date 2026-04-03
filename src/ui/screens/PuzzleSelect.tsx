@@ -5,6 +5,7 @@
 
 import { PUZZLES, type PuzzleDef } from '@/config/puzzles';
 import { screenClass } from '@/platform';
+import { Frame9Slice } from '../components/frame';
 
 export interface PuzzleSelectProps {
   /** Stars earned per puzzle (by puzzle ID). 0 = not completed. */
@@ -71,75 +72,77 @@ export function PuzzleSelect({
         style={{ background: 'var(--pw-overlay-dark)' }}
         onClick={onClose}
       />
-      <div
-        class={`relative parchment-panel modal-scroll ${compact ? 'w-[95%] max-w-lg' : 'w-[700px]'} p-4`}
-      >
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-heading text-lg" style={{ color: 'var(--pw-accent)' }}>
-            Puzzle Missions
-          </h2>
-          <button type="button" class="hud-btn px-3 py-1 text-xs" onClick={onClose}>
-            Close
-          </button>
-        </div>
-
-        <div class="grid gap-2">
-          {PUZZLES.map((puzzle, idx) => {
-            const unlocked = unlockedPuzzles.has(puzzle.id);
-            const stars = earnedStars[puzzle.id] || 0;
-
-            return (
-              <button
-                key={puzzle.id}
-                type="button"
-                class={`action-btn p-3 text-left flex items-start gap-3 ${unlocked ? '' : 'opacity-40 cursor-not-allowed'}`}
-                disabled={!unlocked}
-                onClick={() => unlocked && onSelectPuzzle(puzzle)}
-                data-testid={`puzzle-card-${puzzle.id}`}
-              >
-                <div
-                  class="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center font-numbers font-bold"
-                  style={{
-                    background: unlocked ? 'var(--pw-accent-dim)' : 'var(--pw-stone-dark)',
-                    color: unlocked ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
-                  }}
-                >
-                  {idx + 1}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-2">
-                    <span
-                      class="font-heading text-xs truncate"
-                      style={{ color: 'var(--pw-text-primary)' }}
-                    >
-                      {unlocked ? puzzle.name : 'Locked'}
-                    </span>
-                    <StarDisplay earned={stars} max={3} />
-                  </div>
-                  {unlocked && (
-                    <>
-                      <p
-                        class="text-[10px] mt-0.5 line-clamp-2"
-                        style={{ color: 'var(--pw-text-muted)' }}
-                      >
-                        {puzzle.description}
-                      </p>
-                      <div class="flex items-center gap-3 mt-1">
-                        <DifficultyDots level={puzzle.difficulty} />
-                        <span
-                          class="font-numbers text-[9px]"
-                          style={{ color: 'var(--pw-text-muted)' }}
-                        >
-                          Par: {formatParTime(puzzle.parTimeFrames)}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
+      <div class={`relative ${compact ? 'w-[95%] max-w-lg' : 'w-[700px]'}`}>
+        <Frame9Slice>
+          <div class="modal-scroll p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-heading text-lg" style={{ color: 'var(--pw-accent)' }}>
+                Puzzle Missions
+              </h2>
+              <button type="button" class="hud-btn px-3 py-1 text-xs" onClick={onClose}>
+                Close
               </button>
-            );
-          })}
-        </div>
+            </div>
+
+            <div class="grid gap-2">
+              {PUZZLES.map((puzzle, idx) => {
+                const unlocked = unlockedPuzzles.has(puzzle.id);
+                const stars = earnedStars[puzzle.id] || 0;
+
+                return (
+                  <button
+                    key={puzzle.id}
+                    type="button"
+                    class={`action-btn p-3 text-left flex items-start gap-3 ${unlocked ? '' : 'opacity-40 cursor-not-allowed'}`}
+                    disabled={!unlocked}
+                    onClick={() => unlocked && onSelectPuzzle(puzzle)}
+                    data-testid={`puzzle-card-${puzzle.id}`}
+                  >
+                    <div
+                      class="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center font-numbers font-bold"
+                      style={{
+                        background: unlocked ? 'var(--pw-accent-dim)' : 'var(--pw-stone-dark)',
+                        color: unlocked ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
+                      }}
+                    >
+                      {idx + 1}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between gap-2">
+                        <span
+                          class="font-heading text-xs truncate"
+                          style={{ color: 'var(--pw-text-primary)' }}
+                        >
+                          {unlocked ? puzzle.name : 'Locked'}
+                        </span>
+                        <StarDisplay earned={stars} max={3} />
+                      </div>
+                      {unlocked && (
+                        <>
+                          <p
+                            class="text-[10px] mt-0.5 line-clamp-2"
+                            style={{ color: 'var(--pw-text-muted)' }}
+                          >
+                            {puzzle.description}
+                          </p>
+                          <div class="flex items-center gap-3 mt-1">
+                            <DifficultyDots level={puzzle.difficulty} />
+                            <span
+                              class="font-numbers text-[9px]"
+                              style={{ color: 'var(--pw-text-muted)' }}
+                            >
+                              Par: {formatParTime(puzzle.parTimeFrames)}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </Frame9Slice>
       </div>
     </div>
   );

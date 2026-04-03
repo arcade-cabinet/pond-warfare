@@ -7,6 +7,7 @@
 
 import { useCallback, useState } from 'preact/hooks';
 import { disconnectMultiplayer, hostGame, joinGame } from '@/net/multiplayer-controller';
+import { Frame9Slice } from '../components/frame';
 import { MenuButton } from '../menu-button';
 import {
   multiplayerConnected,
@@ -65,41 +66,46 @@ export function MultiplayerMenu() {
   const hostSettings = multiplayerHostSettings.value;
 
   return (
-    <div class="modal-overlay" data-testid="multiplayer-menu">
-      <div class="modal-scroll" style={{ maxWidth: '420px' }}>
-        <h2
-          class="font-heading text-xl tracking-wider uppercase text-center mb-4"
-          style={{ color: 'var(--pw-accent)' }}
-        >
-          Co-op
-        </h2>
+    <div
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
+      data-testid="multiplayer-menu"
+    >
+      <div
+        class="absolute inset-0"
+        style={{ background: 'var(--pw-overlay-dark)' }}
+        onClick={handleBack}
+      />
+      <div class="relative w-[95%] max-w-md">
+        <Frame9Slice title="MULTIPLAYER">
+          <div class="modal-scroll p-4">
+            {mode === 'choose' && <ChooseMode onHost={handleHost} onJoin={handleJoin} />}
 
-        {mode === 'choose' && <ChooseMode onHost={handleHost} onJoin={handleJoin} />}
+            {mode === 'host' && (
+              <HostPanel
+                roomCode={roomCode}
+                connected={connected}
+                copied={copied}
+                onCopy={handleCopyCode}
+                onStart={handleStartGame}
+              />
+            )}
 
-        {mode === 'host' && (
-          <HostPanel
-            roomCode={roomCode}
-            connected={connected}
-            copied={copied}
-            onCopy={handleCopyCode}
-            onStart={handleStartGame}
-          />
-        )}
+            {mode === 'join' && (
+              <JoinPanel
+                joinCode={joinCode}
+                connected={connected}
+                hostSettings={hostSettings}
+                onCodeChange={setJoinCode}
+                onJoin={handleJoinSubmit}
+                onReady={handleStartGame}
+              />
+            )}
 
-        {mode === 'join' && (
-          <JoinPanel
-            joinCode={joinCode}
-            connected={connected}
-            hostSettings={hostSettings}
-            onCodeChange={setJoinCode}
-            onJoin={handleJoinSubmit}
-            onReady={handleStartGame}
-          />
-        )}
-
-        <div class="flex justify-center mt-4">
-          <MenuButton label="Back" onClick={handleBack} />
-        </div>
+            <div class="flex justify-center mt-4">
+              <MenuButton label="Back" onClick={handleBack} />
+            </div>
+          </div>
+        </Frame9Slice>
       </div>
     </div>
   );

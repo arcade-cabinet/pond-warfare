@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { COSMETICS, type CosmeticDef } from '@/config/cosmetics';
 import { getPlayerProfile, getSetting, type PlayerProfile, setSetting } from '@/storage';
+import { Frame9Slice } from './components/frame';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { cosmeticsOpen } from './store';
 
@@ -93,63 +94,65 @@ export function CosmeticsPanel() {
       {/* Panel card */}
       <div
         ref={scrollRef}
-        class="relative rounded-lg shadow-2xl w-[440px] max-w-[95vw] modal-scroll p-5 md:p-6 font-game text-sm z-10 parchment-panel pond-panel-bg"
+        class="relative w-[440px] max-w-[95vw] modal-scroll font-game text-sm z-10"
         style={{ color: 'var(--pw-text-primary)' }}
       >
-        {/* Header */}
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-title text-xl tracking-wide" style={{ color: 'var(--pw-accent)' }}>
-            Cosmetics
-          </h2>
-          <button
-            type="button"
-            class="hud-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded"
-            onClick={handleClose}
-            title="Close"
-          >
-            {'\u2715'}
-          </button>
-        </div>
+        <Frame9Slice title="COSMETICS">
+          <div class="relative">
+            {/* Close button */}
+            <button
+              type="button"
+              class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              onClick={handleClose}
+              title="Close"
+            >
+              {'\u2715'}
+            </button>
 
-        {loading || !profile ? (
-          <div class="text-center py-8 font-game text-sm" style={{ color: 'var(--pw-text-muted)' }}>
-            Loading...
+            {loading || !profile ? (
+              <div
+                class="text-center py-8 font-game text-sm"
+                style={{ color: 'var(--pw-text-muted)' }}
+              >
+                Loading...
+              </div>
+            ) : (
+              <>
+                {/* Unit Skins */}
+                <div class="mb-4">
+                  <div class="section-header mb-2">Unit Skins</div>
+                  <div class="space-y-2">
+                    {unitSkins.map((c) => (
+                      <CosmeticRow
+                        key={c.id}
+                        cosmetic={c}
+                        profile={profile}
+                        active={activeIds.has(c.id)}
+                        onToggle={handleToggle}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Building Themes */}
+                <div>
+                  <div class="section-header mb-2">Building Themes</div>
+                  <div class="space-y-2">
+                    {buildingThemes.map((c) => (
+                      <CosmeticRow
+                        key={c.id}
+                        cosmetic={c}
+                        profile={profile}
+                        active={activeIds.has(c.id)}
+                        onToggle={handleToggle}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-        ) : (
-          <>
-            {/* Unit Skins */}
-            <div class="mb-4">
-              <div class="section-header mb-2">Unit Skins</div>
-              <div class="space-y-2">
-                {unitSkins.map((c) => (
-                  <CosmeticRow
-                    key={c.id}
-                    cosmetic={c}
-                    profile={profile}
-                    active={activeIds.has(c.id)}
-                    onToggle={handleToggle}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Building Themes */}
-            <div>
-              <div class="section-header mb-2">Building Themes</div>
-              <div class="space-y-2">
-                {buildingThemes.map((c) => (
-                  <CosmeticRow
-                    key={c.id}
-                    cosmetic={c}
-                    profile={profile}
-                    active={activeIds.has(c.id)}
-                    onToggle={handleToggle}
-                  />
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+        </Frame9Slice>
       </div>
     </div>
   );

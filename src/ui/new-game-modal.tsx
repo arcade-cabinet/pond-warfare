@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
+import { Frame9Slice } from './components/frame';
 import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { CommanderPicker } from './new-game/CommanderPicker';
@@ -138,133 +139,132 @@ export function NewGameModal() {
 
       <div
         ref={scrollRef}
-        class="relative rounded-lg shadow-2xl w-[480px] max-w-[95vw] modal-scroll-lg p-5 md:p-6 font-game text-sm z-10 parchment-panel pond-panel-bg"
+        class="relative w-[540px] max-w-[95vw] modal-scroll-lg font-game text-sm z-10"
         style={{ color: 'var(--pw-text-primary)' }}
       >
-        {/* Header */}
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-title text-xl tracking-wide" style={{ color: 'var(--pw-accent)' }}>
-            New Game
-          </h2>
-          <button
-            type="button"
-            class="hud-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded"
-            onClick={handleClose}
-            title="Close"
-          >
-            {'\u2715'}
-          </button>
-        </div>
-
-        {/* Game Name + Seed row */}
-        <div class="mb-4">
-          <div class="flex items-center gap-2 mb-1">
-            <input
-              type="text"
-              value={name}
-              onInput={(e) => setName((e.target as HTMLInputElement).value)}
-              onKeyDown={(e) => e.stopPropagation()}
-              class="font-game text-sm px-3 py-2 rounded flex-1"
-              style={{
-                minHeight: '44px',
-                background: 'var(--pw-surface-card)',
-                border: '1px solid var(--pw-border)',
-                color: 'var(--pw-text-primary)',
-                outline: 'none',
-              }}
-            />
+        <Frame9Slice title="NEW GAME">
+          <div class="relative">
+            {/* Close button */}
             <button
               type="button"
-              class="hud-btn rounded flex items-center justify-center text-lg"
-              style={{
-                minWidth: '44px',
-                minHeight: '44px',
-                transition: 'transform 0.3s ease',
-                transform: shuffleAnim ? 'rotate(360deg) scale(1.1)' : 'none',
-              }}
-              onClick={handleShuffle}
-              title="Randomize name and seed"
+              class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              onClick={handleClose}
+              title="Close"
             >
-              {'\uD83D\uDD00'}
+              {'\u2715'}
             </button>
-          </div>
-          <SeedDisplay
-            seed={seed}
-            editingSeed={editingSeed}
-            seedText={seedText}
-            onStartEdit={() => {
-              setSeedText(String(seed));
-              setEditingSeed(true);
-            }}
-            onSeedText={setSeedText}
-            onCommit={(v) => {
-              setSeed(v);
-              setEditingSeed(false);
-            }}
-            onCancel={() => setEditingSeed(false)}
-          />
-        </div>
 
-        {/* Accordion sections */}
-        <div class="mb-4">
-          <PondAccordion sections={accordionSections}>
-            <CommanderPicker />
-            <MapTab settings={settings} onUpdate={handleUpdate} />
-            <EconomyTab settings={settings} onUpdate={handleUpdate} />
-            <EnemiesTab settings={settings} onUpdate={handleUpdate} />
-            <RulesTab settings={settings} onUpdate={handleUpdate} />
-          </PondAccordion>
-        </div>
-
-        {/* Presets row */}
-        <div class="mb-4">
-          <div
-            class="font-game text-[10px] tracking-wider uppercase mb-2"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
-            Presets
-          </div>
-          <div class="flex flex-wrap gap-1">
-            {presetKeys.map((key) => {
-              const isActive = activePreset === key;
-              const color = PRESET_COLORS[key];
-              return (
+            {/* Game Name + Seed row */}
+            <div class="mb-4">
+              <div class="flex items-center gap-2 mb-1">
+                <input
+                  type="text"
+                  value={name}
+                  onInput={(e) => setName((e.target as HTMLInputElement).value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  class="font-game text-sm px-3 py-2 rounded flex-1"
+                  style={{
+                    minHeight: '44px',
+                    background: 'var(--pw-surface-card)',
+                    border: '1px solid var(--pw-border)',
+                    color: 'var(--pw-text-primary)',
+                    outline: 'none',
+                  }}
+                />
                 <button
-                  key={key}
                   type="button"
-                  class="stone-node rounded px-2 py-1 font-heading font-bold text-[9px] md:text-[10px] tracking-wider cursor-pointer transition-all duration-150"
+                  class="hud-btn rounded flex items-center justify-center text-lg"
                   style={{
                     minWidth: '44px',
                     minHeight: '44px',
-                    background: isActive ? `${color}25` : 'var(--pw-surface-card)',
-                    borderColor: isActive ? color : 'var(--pw-border)',
-                    color: isActive ? color : 'var(--pw-text-muted)',
-                    boxShadow: isActive ? `0 0 8px ${color}30` : 'none',
+                    transition: 'transform 0.3s ease',
+                    transform: shuffleAnim ? 'rotate(360deg) scale(1.1)' : 'none',
                   }}
-                  onClick={() => handlePreset(key)}
-                  title={`Apply ${PRESET_LABELS[key]} preset`}
+                  onClick={handleShuffle}
+                  title="Randomize name and seed"
                 >
-                  {PRESET_LABELS[key]}
+                  {'\uD83D\uDD00'}
                 </button>
-              );
-            })}
-          </div>
-        </div>
+              </div>
+              <SeedDisplay
+                seed={seed}
+                editingSeed={editingSeed}
+                seedText={seedText}
+                onStartEdit={() => {
+                  setSeedText(String(seed));
+                  setEditingSeed(true);
+                }}
+                onSeedText={setSeedText}
+                onCommit={(v) => {
+                  setSeed(v);
+                  setEditingSeed(false);
+                }}
+                onCancel={() => setEditingSeed(false)}
+              />
+            </div>
 
-        {/* Start Game button */}
-        <button
-          type="button"
-          class="action-btn font-heading font-bold text-base md:text-lg tracking-wider w-full animate-begin-glow"
-          style={{
-            minHeight: '56px',
-            padding: '14px 32px',
-            color: 'var(--pw-accent)',
-            borderColor: 'var(--pw-accent-dim)',
-          }}
-          onClick={handleStartGame}
-        >
-          START GAME
-        </button>
+            {/* Accordion sections */}
+            <div class="mb-4">
+              <PondAccordion sections={accordionSections}>
+                <CommanderPicker />
+                <MapTab settings={settings} onUpdate={handleUpdate} />
+                <EconomyTab settings={settings} onUpdate={handleUpdate} />
+                <EnemiesTab settings={settings} onUpdate={handleUpdate} />
+                <RulesTab settings={settings} onUpdate={handleUpdate} />
+              </PondAccordion>
+            </div>
+
+            {/* Presets row */}
+            <div class="mb-4">
+              <div
+                class="font-game text-[10px] tracking-wider uppercase mb-2"
+                style={{ color: 'var(--pw-text-muted)' }}
+              >
+                Presets
+              </div>
+              <div class="flex flex-wrap gap-1">
+                {presetKeys.map((key) => {
+                  const isActive = activePreset === key;
+                  const color = PRESET_COLORS[key];
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      class="stone-node rounded px-2 py-1 font-heading font-bold text-[9px] md:text-[10px] tracking-wider cursor-pointer transition-all duration-150"
+                      style={{
+                        minWidth: '44px',
+                        minHeight: '44px',
+                        background: isActive ? `${color}25` : 'var(--pw-surface-card)',
+                        borderColor: isActive ? color : 'var(--pw-border)',
+                        color: isActive ? color : 'var(--pw-text-muted)',
+                        boxShadow: isActive ? `0 0 8px ${color}30` : 'none',
+                      }}
+                      onClick={() => handlePreset(key)}
+                      title={`Apply ${PRESET_LABELS[key]} preset`}
+                    >
+                      {PRESET_LABELS[key]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Start Game button */}
+            <button
+              type="button"
+              class="action-btn font-heading font-bold text-base md:text-lg tracking-wider w-full animate-begin-glow"
+              style={{
+                minHeight: '56px',
+                padding: '14px 32px',
+                color: 'var(--pw-accent)',
+                borderColor: 'var(--pw-accent-dim)',
+              }}
+              onClick={handleStartGame}
+            >
+              START GAME
+            </button>
+          </div>
+        </Frame9Slice>
       </div>
     </div>
   );

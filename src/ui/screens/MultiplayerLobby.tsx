@@ -9,6 +9,7 @@ import { useCallback } from 'preact/hooks';
 import { COMMANDERS } from '@/config/commanders';
 import { sendReady, sendSettings, startMultiplayerGame } from '@/net/multiplayer-controller';
 import type { LobbyPlayer } from '@/net/types';
+import { Frame9Slice } from '../components/frame';
 import { MenuButton } from '../menu-button';
 import { selectedCommander } from '../store';
 import {
@@ -49,64 +50,77 @@ export function MultiplayerLobby() {
   }, []);
 
   return (
-    <div class="modal-overlay" data-testid="multiplayer-lobby">
-      <div class="modal-scroll" style={{ maxWidth: '480px' }}>
-        <h2
-          class="font-heading text-xl tracking-wider uppercase text-center mb-4"
-          style={{ color: 'var(--pw-accent)' }}
-        >
-          Lobby
-        </h2>
+    <div
+      class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
+      data-testid="multiplayer-lobby"
+    >
+      <div
+        class="absolute inset-0"
+        style={{ background: 'var(--pw-overlay-dark)' }}
+        onClick={handleBack}
+      />
+      <div class="relative w-[95%] max-w-lg">
+        <Frame9Slice title="LOBBY">
+          <div class="modal-scroll p-4">
+            {/* Player list */}
+            <div class="flex flex-col gap-2 mb-4">
+              {players.map((player) => (
+                <PlayerRow key={player.id} player={player} />
+              ))}
+              {players.length < 2 && (
+                <p class="font-game text-xs text-center" style={{ color: 'var(--pw-text-muted)' }}>
+                  Waiting for second player...
+                </p>
+              )}
+            </div>
 
-        {/* Player list */}
-        <div class="flex flex-col gap-2 mb-4">
-          {players.map((player) => (
-            <PlayerRow key={player.id} player={player} />
-          ))}
-          {players.length < 2 && (
-            <p class="font-game text-xs text-center" style={{ color: 'var(--pw-text-muted)' }}>
-              Waiting for second player...
-            </p>
-          )}
-        </div>
+            {/* Host settings */}
+            {settings && (
+              <div
+                class="rounded p-3 mb-4"
+                style={{
+                  background: 'var(--pw-bg-elevated)',
+                  border: '1px solid var(--pw-border)',
+                }}
+              >
+                <h3
+                  class="font-heading text-sm uppercase mb-2"
+                  style={{ color: 'var(--pw-text-secondary)' }}
+                >
+                  Game Settings
+                </h3>
+                <div
+                  class="font-game text-xs grid grid-cols-2 gap-1"
+                  style={{ color: 'var(--pw-text-primary)' }}
+                >
+                  <span style={{ color: 'var(--pw-text-muted)' }}>Map:</span>
+                  <span>{settings.scenario}</span>
+                  <span style={{ color: 'var(--pw-text-muted)' }}>Difficulty:</span>
+                  <span>{settings.difficulty}</span>
+                  <span style={{ color: 'var(--pw-text-muted)' }}>Seed:</span>
+                  <span>{settings.mapSeed}</span>
+                </div>
+              </div>
+            )}
 
-        {/* Host settings */}
-        {settings && (
-          <div
-            class="rounded p-3 mb-4"
-            style={{ background: 'var(--pw-bg-elevated)', border: '1px solid var(--pw-border)' }}
-          >
-            <h3
-              class="font-heading text-sm uppercase mb-2"
-              style={{ color: 'var(--pw-text-secondary)' }}
-            >
-              Game Settings
-            </h3>
-            <div
-              class="font-game text-xs grid grid-cols-2 gap-1"
-              style={{ color: 'var(--pw-text-primary)' }}
-            >
-              <span style={{ color: 'var(--pw-text-muted)' }}>Map:</span>
-              <span>{settings.scenario}</span>
-              <span style={{ color: 'var(--pw-text-muted)' }}>Difficulty:</span>
-              <span>{settings.difficulty}</span>
-              <span style={{ color: 'var(--pw-text-muted)' }}>Seed:</span>
-              <span>{settings.mapSeed}</span>
+            {/* Commander picker */}
+            <CommanderPicker selected={selectedCommander.value} onChange={handleCommanderChange} />
+
+            {/* Actions */}
+            <div class="flex flex-col items-center gap-2 mt-4">
+              <MenuButton label="Toggle Ready" wide onClick={handleToggleReady} />
+              {isHost && (
+                <MenuButton
+                  label="Start Game"
+                  wide
+                  onClick={handleStartGame}
+                  disabled={!allReady}
+                />
+              )}
+              <MenuButton label="Back" onClick={handleBack} />
             </div>
           </div>
-        )}
-
-        {/* Commander picker */}
-        <CommanderPicker selected={selectedCommander.value} onChange={handleCommanderChange} />
-
-        {/* Actions */}
-        <div class="flex flex-col items-center gap-2 mt-4">
-          <MenuButton label="Toggle Ready" wide onClick={handleToggleReady} />
-          {isHost && (
-            <MenuButton label="Start Game" wide onClick={handleStartGame} disabled={!allReady} />
-          )}
-          <MenuButton label="Back" onClick={handleBack} />
-        </div>
+        </Frame9Slice>
       </div>
     </div>
   );

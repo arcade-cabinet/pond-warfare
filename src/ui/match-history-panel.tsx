@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { getMatchHistory, type MatchRecord } from '@/storage/match-history';
 import { formatDuration } from '@/systems/leaderboard';
+import { Frame9Slice } from './components/frame';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import { matchHistoryOpen } from './store';
 
@@ -49,38 +50,44 @@ export function MatchHistoryPanel() {
 
       <div
         ref={scrollRef}
-        class="relative rounded-lg shadow-2xl w-[480px] max-w-[95vw] max-h-[85dvh] modal-scroll p-5 md:p-6 font-game text-sm z-10 parchment-panel pond-panel-bg"
+        class="relative w-[480px] max-w-[95vw] max-h-[85dvh] modal-scroll font-game text-sm z-10"
         style={{ color: 'var(--pw-text-primary)' }}
       >
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-title text-xl tracking-wide" style={{ color: 'var(--pw-accent)' }}>
-            Match History
-          </h2>
-          <button
-            type="button"
-            class="hud-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded"
-            onClick={handleClose}
-            title="Close"
-          >
-            {'\u2715'}
-          </button>
-        </div>
+        <Frame9Slice title="MATCH HISTORY">
+          <div class="relative">
+            {/* Close button */}
+            <button
+              type="button"
+              class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              onClick={handleClose}
+              title="Close"
+            >
+              {'\u2715'}
+            </button>
 
-        {loading ? (
-          <div class="text-center py-8 font-game text-sm" style={{ color: 'var(--pw-text-muted)' }}>
-            Loading...
+            {loading ? (
+              <div
+                class="text-center py-8 font-game text-sm"
+                style={{ color: 'var(--pw-text-muted)' }}
+              >
+                Loading...
+              </div>
+            ) : records.length === 0 ? (
+              <div
+                class="text-center py-8 font-game text-sm"
+                style={{ color: 'var(--pw-text-muted)' }}
+              >
+                No matches played yet. Start a game!
+              </div>
+            ) : (
+              <div class="space-y-2">
+                {records.map((r) => (
+                  <MatchRow key={r.id} record={r} />
+                ))}
+              </div>
+            )}
           </div>
-        ) : records.length === 0 ? (
-          <div class="text-center py-8 font-game text-sm" style={{ color: 'var(--pw-text-muted)' }}>
-            No matches played yet. Start a game!
-          </div>
-        ) : (
-          <div class="space-y-2">
-            {records.map((r) => (
-              <MatchRow key={r.id} record={r} />
-            ))}
-          </div>
-        )}
+        </Frame9Slice>
       </div>
     </div>
   );

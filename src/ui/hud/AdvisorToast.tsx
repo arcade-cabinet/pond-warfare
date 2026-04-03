@@ -1,9 +1,9 @@
 /**
- * AdvisorToast -- HUD toast for advisor tips.
+ * AdvisorToast -- Vine-framed briefing card for advisor tips.
  *
  * Positioned bottom-left, above safe area, responsive via screenClass.
- * Shows advisor persona icon, name, message, and dismiss controls.
- * Slides up on entrance with the existing panel-fade-in animation.
+ * Shows advisor persona icon with vine-border treatment, name, message,
+ * and dismiss controls. Dark bark background with mud/vine accents.
  */
 
 import {
@@ -42,35 +42,17 @@ export function AdvisorToast() {
 
   return (
     <div class="advisor-toast" style={getContainerStyle()} role="status" aria-live="polite">
-      {/* Colored accent border */}
-      <div
-        style={{
-          position: 'absolute',
-          left: '0',
-          top: '0',
-          bottom: '0',
-          width: '3px',
-          background: persona.color,
-          borderRadius: '4px 0 0 4px',
-        }}
-      />
+      {/* Vine accent stripe */}
+      <div class="advisor-toast-vine-stripe" style={{ background: persona.color }} />
 
       {/* Header: icon + name */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
         <div
-          class="advisor-icon"
+          class="advisor-icon advisor-toast-icon"
           style={{
             background: persona.color,
-            width: isCompact ? '24px' : '28px',
-            height: isCompact ? '24px' : '28px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: isCompact ? '12px' : '14px',
-            fontWeight: '700',
-            color: 'var(--pw-advisor-text)',
-            flexShrink: '0',
+            width: isCompact ? '26px' : '30px',
+            height: isCompact ? '26px' : '30px',
           }}
         >
           {persona.initial}
@@ -90,7 +72,7 @@ export function AdvisorToast() {
           margin: '0 0 8px 0',
           fontSize: isCompact ? '12px' : '13px',
           lineHeight: '1.4',
-          color: 'var(--pw-text-primary)',
+          color: 'var(--pw-sepia-text)',
           cursor: tip.action ? 'pointer' : 'default',
           textDecoration: tip.action ? 'underline' : 'none',
           textDecorationColor: tip.action ? 'var(--pw-text-muted)' : undefined,
@@ -125,7 +107,6 @@ export function AdvisorToast() {
           style={{
             padding: isCompact ? '4px 10px' : '4px 12px',
             fontSize: isCompact ? '11px' : '12px',
-            borderRadius: '4px',
           }}
           onClick={dismissCurrentTip}
           type="button"
@@ -133,17 +114,7 @@ export function AdvisorToast() {
           Got it
         </button>
         <button
-          class="advisor-dismiss-btn"
-          style={{
-            background: 'transparent',
-            border: '1px solid var(--pw-border)',
-            color: 'var(--pw-text-muted)',
-            cursor: 'pointer',
-            padding: '4px 8px',
-            fontSize: '12px',
-            borderRadius: '4px',
-            lineHeight: '1',
-          }}
+          class="advisor-toast-dismiss"
           onClick={permanentlyDismissTip}
           title="Don't show again"
           aria-label="Don't show this tip again"
