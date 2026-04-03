@@ -84,6 +84,7 @@ export function SwampEcosystem() {
         if (f.x > canvas.width + f.r) f.x = -f.r;
         if (f.x < -f.r) f.x = canvas.width + f.r;
         if (f.y > canvas.height + f.r) f.y = -f.r;
+        if (f.y < -f.r) f.y = canvas.height + f.r;
 
         const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r);
         grad.addColorStop(0, 'rgba(60, 80, 50, 0.08)');
@@ -101,8 +102,9 @@ export function SwampEcosystem() {
         f.x += Math.cos(f.angle) * f.speed;
         f.y += Math.sin(f.angle) * f.speed - 0.2;
 
-        // Wrap around screen edges
+        // Wrap around all screen edges
         if (f.y < -10) f.y = canvas.height + 10;
+        if (f.y > canvas.height + 10) f.y = -10;
         if (f.x < -10) f.x = canvas.width + 10;
         if (f.x > canvas.width + 10) f.x = -10;
 

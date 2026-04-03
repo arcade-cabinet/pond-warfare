@@ -71,11 +71,11 @@ export function EdgeHorizontal({ top }: EdgeHorizontalProps) {
       <path d={d} fill="none" stroke={COLORS.vineBase} strokeWidth="8" strokeLinecap="round" />
       {/* Vine -- thin highlight */}
       <path d={d} fill="none" stroke={COLORS.vineHighlight} strokeWidth="3" strokeLinecap="round" />
-      {/* Decorative leaves at intervals */}
+      {/* Decorative leaves at fixed intervals (SVG coords, not percentages) */}
       {LEAF_PCTS.map((pct, i) => (
         <SvgLeaf
           key={i}
-          x={`${pct}%`}
+          x={pct * 10}
           y={top ? (i % 2 === 0 ? 0 : 20) : i % 2 === 0 ? 40 : 60}
           rot={i * 45}
           scale={0.7}

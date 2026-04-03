@@ -28,6 +28,8 @@ export interface Frame9SliceProps {
   isExpanded?: boolean;
   onClick?: () => void;
   title?: string;
+  /** Extra CSS class on the outermost wrapper */
+  class?: string;
 }
 
 /** Inline styles that cannot be expressed in utility classes. */
@@ -43,7 +45,13 @@ const TITLE_STYLE = {
     '2px 2px 0 #111, -1px -1px 0 #111, 1px -1px 0 #111, -1px 1px 0 #111, 0 8px 12px rgba(0,0,0,0.9)',
 };
 
-export function Frame9Slice({ children, isExpanded = true, onClick, title }: Frame9SliceProps) {
+export function Frame9Slice({
+  children,
+  isExpanded = true,
+  onClick,
+  title,
+  class: extraClass,
+}: Frame9SliceProps) {
   const clickable = typeof onClick === 'function';
   const gridRows = `60px ${isExpanded ? 'auto' : '0px'} 60px`;
   const expandedOpacity = isExpanded ? 'opacity-100' : 'opacity-0';
@@ -55,13 +63,11 @@ export function Frame9Slice({ children, isExpanded = true, onClick, title }: Fra
   const handleGridClick = clickable ? () => onClick() : undefined;
 
   /** Stop content clicks from toggling the accordion. */
-  const stopContentClick = clickable
-    ? (e: Event) => e.stopPropagation()
-    : undefined;
+  const stopContentClick = clickable ? (e: Event) => e.stopPropagation() : undefined;
 
   return (
     <div
-      class={`relative w-full max-w-4xl mx-auto my-8 transition-all duration-500 ease-in-out group ${clickable ? 'cursor-pointer' : ''}`}
+      class={`relative w-full transition-all duration-500 ease-in-out group ${clickable ? 'cursor-pointer' : ''} ${extraClass ?? ''}`}
     >
       {/* Expanded glow effect */}
       <div

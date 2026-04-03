@@ -20,7 +20,7 @@
   /* Background surfaces - dark bark depths */
   --pw-bg-deep: var(--pw-bark);
   --pw-bg-surface: #2A1E10;
-  --pw-bg-elevated: #3D2B14;
+  --pw-bg-elevated: var(--pw-mud);
   --pw-border: rgba(139, 105, 20, 0.2);
   --pw-border-accent: rgba(139, 105, 20, 0.4);
 
@@ -1185,7 +1185,7 @@ body {
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)) brightness(0.92) !important;
 }
 
-/* DEPRECATED -- .firefly CSS class unused; fireflies now rendered via PixiJS */
+/* DEPRECATED -- .firefly CSS class unused; fireflies now rendered via SwampEcosystem canvas */
 /* --- Firefly particles --- */
 @keyframes firefly-float {
   0%, 100% { transform: translate(0, 0); opacity: 0; }
