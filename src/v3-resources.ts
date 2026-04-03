@@ -8,7 +8,7 @@
  * from resource node EntityKind to v3 ResourceType.
  */
 
-import { EntityKind, ResourceType, type GameResources } from './types';
+import { EntityKind, type GameResources, ResourceType } from './types';
 
 /** Get Fish count (alias for clams). */
 export function getFish(r: GameResources): number {

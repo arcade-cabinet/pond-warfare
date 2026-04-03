@@ -36,6 +36,9 @@ import * as storeV3 from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
 import { deploySpecialistsAtMatchStart } from './init-entities/specialist-init';
 
+// Re-export computeInitialZoom so game.ts can keep its existing import path
+export { computeInitialZoom } from '@/rendering/camera';
+
 let lifecycleListenersInstalled = false;
 
 /** All canvas and rendering refs produced by initCanvases(). */

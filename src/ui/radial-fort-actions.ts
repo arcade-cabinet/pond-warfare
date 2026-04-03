@@ -8,19 +8,13 @@
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  IsBuilding,
-  Position,
-} from '@/ecs/components';
-import type { GameWorld } from '@/ecs/world';
+import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import {
   findClosestSlot,
   initFortificationState,
   placeFortification,
 } from '@/ecs/systems/fortification';
+import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
 import { EntityKind, Faction } from '@/types';
 import { progressionLevel } from '@/ui/store-v3';
@@ -70,11 +64,7 @@ export function handleFortTypeAction(world: GameWorld, actionId: string): boolea
  * Called from pointer-click when placingBuilding starts with "fort_".
  * Returns true if placement succeeded.
  */
-export function tryPlaceFortAtPosition(
-  world: GameWorld,
-  worldX: number,
-  worldY: number,
-): boolean {
+export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY: number): boolean {
   ensureFortState(world);
   if (!world.fortifications) return false;
 

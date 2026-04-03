@@ -26,7 +26,7 @@ import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { pushGameEvent } from './game-events';
-import { handleFortTypeAction, handleFortifyAction } from './radial-fort-actions';
+import { handleFortifyAction, handleFortTypeAction } from './radial-fort-actions';
 
 // Re-export for pointer-click.ts
 export { tryPlaceFortAtPosition } from './radial-fort-actions';
@@ -143,7 +143,9 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
       game.syncUIStore();
       return true;
     case 'cmd_patrol':
-      import('./store').then((s) => { s.patrolModeActive.value = true; });
+      import('./store').then((s) => {
+        s.patrolModeActive.value = true;
+      });
       return true;
     case 'cmd_stance':
       import('../game/input-setup').then(({ cycleStanceForSelection }) => {

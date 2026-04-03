@@ -7,6 +7,7 @@ import {
   applyDifficultyModifiers,
   applyMapSeed,
   centerCameraOnLodge,
+  computeInitialZoom,
   createGameWorld,
   ensureLifecycleListeners,
   initCanvases,
@@ -102,6 +103,11 @@ export class Game {
     // Generate vertical map and spawn entities (sets world dimensions + terrain)
     spawnVerticalWorld(this.world);
 
+    // Set initial zoom so pixel-art sprites are visible on the vertical map.
+    // Must happen BEFORE resize() which uses zoomLevel to compute viewWidth/viewHeight.
+    const viewportW = container.clientWidth;
+    this.world.zoomLevel = computeInitialZoom(this.world.worldWidth, viewportW);
+
     // Physics world with correct vertical map dimensions
     this.physicsManager = new PhysicsManager(this.world.worldWidth, this.world.worldHeight);
 
@@ -116,7 +122,7 @@ export class Game {
     this.exploredCtx = refs.exploredCtx;
     this.spriteCanvases = refs.spriteCanvases;
 
-    // Resize and listeners
+    // Resize applies zoom to viewWidth/viewHeight — must happen before centerCameraOnLodge
     this.resize();
     this.boundResize = () => this.resize();
     window.addEventListener('resize', this.boundResize);
@@ -143,6 +149,7 @@ export class Game {
     }
 
     centerCameraOnLodge(this.world);
+    clampCamera(this.world);
     spawnFireflies(this.world);
     this.syncUIStore();
     this.colorBlindUnsubscribe = setupColorBlind();

@@ -58,3 +58,23 @@ export function computeShakeOffset(world: GameWorld): CameraShake {
   }
   return { offsetX: 0, offsetY: 0 };
 }
+
+/**
+ * Compute the initial zoom level so that the map fills the viewport
+ * and pixel-art sprites (16-32 px) are visible and tappable.
+ *
+ * Strategy: pick a zoom that makes the map width fit the viewport,
+ * with a minimum floor so sprites stay large enough to see and tap.
+ * Clamped to engine limits (0.5 - 2.0).
+ */
+const MIN_PLAYABLE_ZOOM = 1.2;
+
+export function computeInitialZoom(worldWidth: number, viewportWidth: number): number {
+  // Zoom so the map width fills the viewport exactly
+  const zoomForWidth = viewportWidth / worldWidth;
+  // Enforce minimum so pixel-art is visible and tappable
+  let zoom = Math.max(zoomForWidth, MIN_PLAYABLE_ZOOM);
+  // Clamp to engine limits (matches setZoom in camera.ts)
+  zoom = Math.max(0.5, Math.min(2.0, zoom));
+  return zoom;
+}
