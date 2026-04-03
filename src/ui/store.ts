@@ -282,6 +282,7 @@ export {
   replayTimeDisplay,
   settingsOpen,
   sfxVolume,
+  showSplashVideo,
   survivalScore,
   survivalSelectOpen,
   survivalWave,

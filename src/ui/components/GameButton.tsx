@@ -5,7 +5,7 @@
  * All variants meet 44px minimum touch target and are keyboard-accessible.
  */
 
-const UI = '/pond-warfare/assets/ui';
+const PANEL = '/pond-warfare/assets/ui/panel';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -37,7 +37,7 @@ const VARIANT_STYLES: Record<
   }
 > = {
   primary: {
-    color: 'var(--pw-btn-dark-text, #1a3a44)',
+    color: 'var(--pw-gold-bright, #C49B1A)',
     borderColor: 'transparent',
     bg: 'transparent',
     hoverBg: 'transparent',
@@ -102,12 +102,12 @@ export function GameButton({
             }
       }
     >
-      {/* Primary variant: Button.png background */}
+      {/* Primary variant: btn-wood.png background */}
       {isPrimary && (
         <img
-          src={`${UI}/Button.png`}
+          src={`${PANEL}/btn-wood.png`}
           alt=""
-          class="absolute inset-0 w-full h-full object-fill pointer-events-none"
+          class="absolute inset-0 w-full h-full object-fill pointer-events-none game-btn-wood-bg"
           draggable={false}
           style={{ filter: 'var(--pw-drop-shadow)' }}
         />

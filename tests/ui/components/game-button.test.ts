@@ -55,11 +55,11 @@ describe('GameButton', () => {
     expect(badges.length).toBe(0);
   });
 
-  it('primary variant renders Button.png background image', () => {
+  it('primary variant renders btn-wood.png background image', () => {
     render(h(GameButton, { label: 'Start', onClick: vi.fn(), variant: 'primary' }));
     const img = document.querySelector('img');
     expect(img).toBeTruthy();
-    expect(img?.src).toContain('Button.png');
+    expect(img?.src).toContain('btn-wood.png');
   });
 
   it('secondary variant does not render image', () => {

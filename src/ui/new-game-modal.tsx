@@ -34,6 +34,7 @@ import {
   menuState,
   permadeathEnabled,
   selectedDifficulty,
+  showSplashVideo,
 } from './store';
 
 export function NewGameModal() {
@@ -80,7 +81,7 @@ export function NewGameModal() {
     gameName.value = name;
     gameSeed.value = seed;
     customMapSeed.value = String(seed);
-    menuState.value = 'playing';
+    showSplashVideo.value = true;
   }, [settings, activePreset, name, seed]);
 
   const handleClose = useCallback(() => {

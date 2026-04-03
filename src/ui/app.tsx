@@ -31,6 +31,7 @@ import { NewGameModal } from './new-game-modal';
 import { DisconnectOverlay } from './overlays/DisconnectOverlay';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
 import { CommandPanel } from './panel/CommandPanel';
+import { SplashVideo } from './SplashVideo';
 import { MultiplayerLobby } from './screens/MultiplayerLobby';
 import { MultiplayerMenu } from './screens/MultiplayerMenu';
 import * as store from './store';
@@ -133,6 +134,18 @@ export function App({ onMount }: AppProps) {
           />
         )}
       </div>
+    );
+  }
+
+  // ---------- Splash video before new game ----------
+  if (store.showSplashVideo.value) {
+    return (
+      <SplashVideo
+        onComplete={() => {
+          store.showSplashVideo.value = false;
+          store.menuState.value = 'playing';
+        }}
+      />
     );
   }
 
