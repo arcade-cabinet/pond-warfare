@@ -32,7 +32,9 @@ import type { ReplayRecorder } from '@/replay';
 import { loadAchievements, resetAchievementMatchState } from '@/systems/achievements';
 import type { SpriteId } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
+import { deploySpecialistsAtMatchStart } from './init-entities/specialist-init';
 
 let lifecycleListenersInstalled = false;
 
@@ -236,6 +238,7 @@ export function setupDockResize(resizeFn: () => void): () => void {
  * - Generates vertical layout from terrain.json progression scaling
  * - Builds terrain grid with water, rocks, mud paths
  * - Spawns Lodge at bottom, resources in middle, enemies at top
+ * - Auto-deploys prestige specialist units near Lodge (v3 US11)
  * - Updates world dimensions and terrain grid
  */
 export function spawnVerticalWorld(world: GameWorld, progressionLevel = 0): void {
@@ -253,7 +256,11 @@ export function spawnVerticalWorld(world: GameWorld, progressionLevel = 0): void
   world.worldHeight = layout.worldHeight;
 
   // Spawn entities (Lodge, units, resources, enemies)
-  spawnVerticalEntities(world, layout, rng);
+  const lodgeEid = spawnVerticalEntities(world, layout, rng);
+
+  // v3 US11: Specialist auto-deploy from prestige state
+  const prestigeState = storeV3.prestigeState.value;
+  deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
 
   // Floating text announcing the map
   const lodge = world.selection[0];

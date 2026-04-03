@@ -1,11 +1,11 @@
 /**
- * Tests: Radial Action Dispatcher (v3.0 — US9/US10)
+ * Tests: Radial Action Dispatcher (v3.0 -- US9/US10)
  *
  * Validates:
  * - Training actions check resources and Lodge existence
  * - Insufficient resources show error
  * - Unit commands dispatch correctly
- * - Fortify enters building placement mode
+ * - Fortify enters building placement mode (v3: fort_wood_wall, Rocks)
  * - Unknown actions return false
  */
 
@@ -25,13 +25,14 @@ vi.mock('bitecs', async () => {
 vi.mock('@/game', () => ({
   game: {
     world: {
-      resources: { clams: 500, twigs: 200, pearls: 0, food: 0, maxFood: 0 },
+      resources: { clams: 500, twigs: 200, pearls: 100, food: 0, maxFood: 0 },
       frameCount: 100,
       placingBuilding: null as string | null,
       attackMoveMode: false,
       selection: [] as number[],
       ecs: {},
       yukaManager: { removeUnit: vi.fn(), clearFormationBehaviors: vi.fn() },
+      fortifications: null,
     },
     syncUIStore: vi.fn(),
   },
@@ -50,6 +51,35 @@ vi.mock('@/ui/game-events', () => ({
   pushGameEvent: vi.fn(),
 }));
 
+// Mock fortification system (since initFortificationState needs lodge-renderer)
+vi.mock('@/ecs/systems/fortification', () => ({
+  initFortificationState: vi.fn().mockReturnValue({
+    slots: [
+      {
+        index: 0,
+        worldX: 100,
+        worldY: 100,
+        ring: 0,
+        status: 'empty',
+        fortType: null,
+        currentHp: 0,
+        maxHp: 0,
+        damage: 0,
+        range: 0,
+        lastAttackFrame: 0,
+      },
+    ],
+    totalRockCost: 0,
+  }),
+  findClosestSlot: vi.fn(),
+  placeFortification: vi.fn(),
+}));
+
+// Mock store-v3
+vi.mock('@/ui/store-v3', () => ({
+  progressionLevel: { value: 0 },
+}));
+
 import { audio } from '@/audio/audio-system';
 import { game } from '@/game';
 import { pushGameEvent } from '@/ui/game-events';
@@ -59,14 +89,16 @@ beforeEach(() => {
   vi.clearAllMocks();
   game.world.resources.clams = 500;
   game.world.resources.twigs = 200;
+  game.world.resources.pearls = 100;
   game.world.placingBuilding = null;
   game.world.attackMoveMode = false;
   game.world.selection = [];
+  game.world.fortifications = null;
 });
 
-describe('dispatchRadialAction — training', () => {
+describe('dispatchRadialAction -- training', () => {
   it('returns false when Lodge not found (no buildings in query)', () => {
-    // query returns [] — no lodge entity found
+    // query returns [] -- no lodge entity found
     const result = dispatchRadialAction('train_gatherer');
     expect(result).toBe(false);
   });
@@ -92,16 +124,17 @@ describe('dispatchRadialAction — training', () => {
   });
 });
 
-describe('dispatchRadialAction — fortify', () => {
-  it('enters building placement mode when resources available', () => {
+describe('dispatchRadialAction -- fortify', () => {
+  it('enters fort placement mode when Rocks available', () => {
+    game.world.resources.pearls = 100; // Rocks mapped to pearls
     const result = dispatchRadialAction('fortify');
     expect(result).toBe(true);
-    expect(game.world.placingBuilding).toBe('wall');
+    expect(game.world.placingBuilding).toBe('fort_wood_wall');
     expect(audio.click).toHaveBeenCalled();
   });
 
-  it('fails when not enough rocks (twigs)', () => {
-    game.world.resources.twigs = 0;
+  it('fails when not enough Rocks (pearls internally)', () => {
+    game.world.resources.pearls = 0;
     const result = dispatchRadialAction('fortify');
     expect(result).toBe(false);
     expect(audio.error).toHaveBeenCalled();
@@ -109,14 +142,14 @@ describe('dispatchRadialAction — fortify', () => {
   });
 });
 
-describe('dispatchRadialAction — repair', () => {
+describe('dispatchRadialAction -- repair', () => {
   it('fails when Lodge not found', () => {
     const result = dispatchRadialAction('repair');
     expect(result).toBe(false);
   });
 });
 
-describe('dispatchRadialAction — unit commands', () => {
+describe('dispatchRadialAction -- unit commands', () => {
   it('cmd_hold returns true (halts selected)', () => {
     const result = dispatchRadialAction('cmd_hold');
     expect(result).toBe(true);
@@ -161,7 +194,7 @@ describe('dispatchRadialAction — unit commands', () => {
   });
 });
 
-describe('dispatchRadialAction — unknown action', () => {
+describe('dispatchRadialAction -- unknown action', () => {
   it('returns false for completely unknown action', () => {
     const result = dispatchRadialAction('do_something_weird');
     expect(result).toBe(false);

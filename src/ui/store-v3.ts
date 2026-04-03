@@ -2,11 +2,12 @@
  * v3 Store Signals
  *
  * New signals for v3 rearchitecture features: prestige, Pearl upgrades,
- * upgrade web screen, rewards screen, event-driven match flow.
+ * upgrade web screen, rewards screen, event-driven match flow, Lodge HP,
+ * wave indicator.
  * Kept separate from store.ts to avoid growing that file beyond 300 LOC.
  */
 
-import { signal } from '@preact/signals';
+import { computed, signal } from '@preact/signals';
 import type { PrestigeState } from '@/config/prestige-logic';
 import type { RewardBreakdown } from '@/game/match-rewards';
 
@@ -61,3 +62,32 @@ export const matchEventsCompleted = signal(0);
 
 /** Currently active event descriptions (for HUD display). */
 export const activeEventDescriptions = signal<string[]>([]);
+
+// ── Lodge HP (v3 Gap 5) ─────────────────────────────────────────
+
+/** Current Lodge HP. Updated from game-ui-sync each frame. */
+export const lodgeHp = signal(0);
+
+/** Max Lodge HP. */
+export const lodgeMaxHp = signal(0);
+
+/** Lodge HP as a 0-1 fraction. */
+export const lodgeHpPercent = computed(() =>
+  lodgeMaxHp.value > 0 ? lodgeHp.value / lodgeMaxHp.value : 1,
+);
+
+/** Lodge HP bar color based on percentage. */
+export const lodgeHpColor = computed(() => {
+  const pct = lodgeHpPercent.value;
+  if (pct > 0.6) return '#4ade80';
+  if (pct > 0.3) return '#facc15';
+  return '#ef4444';
+});
+
+// ── Wave Indicator (v3 Gap 6) ───────────────────────────────────
+
+/** Current wave number from match-event-runner. */
+export const currentWaveNumber = signal(0);
+
+/** Direction of the last wave spawn (for HUD indicator). */
+export const waveDirection = signal<'north' | 'east' | 'west' | 'south'>('north');

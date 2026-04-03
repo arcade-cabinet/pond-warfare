@@ -1,6 +1,8 @@
 /**
- * Resource Finder — helpers for locating resources by type and clearing
+ * Resource Finder -- helpers for locating resources by type and clearing
  * manual task overrides from the Forces tab.
+ *
+ * v3: uses nodeKindToResourceType from types.ts for consistent mapping.
  */
 
 import { query } from 'bitecs';
@@ -13,20 +15,13 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, ResourceType, UnitState } from '@/types';
-
-/** Map from EntityKind of a resource node to its ResourceType enum value. */
-const KIND_TO_RESOURCE: Partial<Record<EntityKind, ResourceType>> = {
-  [EntityKind.Clambed]: ResourceType.Clams,
-  [EntityKind.Cattail]: ResourceType.Twigs,
-  [EntityKind.PearlBed]: ResourceType.Pearls,
-};
+import { type EntityKind, nodeKindToResourceType, type ResourceType, UnitState } from '@/types';
 
 /**
  * Find the nearest resource entity of a given type that still has amount > 0.
  * Returns the entity ID of the closest match, or -1 if none found.
  *
- * @param resourceType - The ResourceType to search for (Clams, Twigs, Pearls).
+ * @param resourceType - The ResourceType to search for (Fish, Rocks, Logs).
  */
 export function findNearestResourceByType(
   world: GameWorld,
@@ -59,9 +54,11 @@ export function findNearestResourceByType(
 /**
  * Resolve an EntityKind (Clambed, Cattail, PearlBed) to its ResourceType.
  * Returns ResourceType.None for non-resource kinds.
+ *
+ * v3 mapping: Clambed->Fish, PearlBed->Rocks, Cattail->Logs.
  */
 export function kindToResourceType(kind: EntityKind): ResourceType {
-  return KIND_TO_RESOURCE[kind] ?? ResourceType.None;
+  return nodeKindToResourceType(kind);
 }
 
 /**

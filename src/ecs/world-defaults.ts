@@ -219,5 +219,7 @@ export function createGameWorld(): GameWorld {
     coopResourceCallback: null,
     // Patrol waypoints (entity ID -> waypoint array)
     patrolWaypoints: new Map(),
+    // v3.0: fortification slots
+    fortifications: null,
   };
 }

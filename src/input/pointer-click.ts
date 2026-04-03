@@ -3,11 +3,13 @@
  *
  * Single-click, double-click, attack-move, and shift-click logic.
  * Also opens the radial menu on Lodge or selected-unit taps.
+ * v3: handles fortification slot placement when placingBuilding starts with "fort_".
  */
 
 import { showSelectBark } from '@/config/barks';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, type EntityKind as EntityKindType } from '@/types';
+import { tryPlaceFortAtPosition } from '@/ui/radial-actions';
 import { entityKindToRole } from '@/ui/radial-menu-options';
 import { openRadialMenu } from '@/ui/store-radial';
 import type { PointerCallbacks, PointerState } from './pointer';
@@ -26,6 +28,13 @@ export function handleClick(
   clickState: ClickState,
   isShiftDown: () => boolean,
 ): void {
+  // v3: Fortification slot placement mode
+  if (world.placingBuilding?.startsWith('fort_')) {
+    tryPlaceFortAtPosition(world, mouse.worldX, mouse.worldY);
+    cb.onUpdateUI();
+    return;
+  }
+
   if (world.attackMoveMode) {
     world.attackMoveMode = false;
     const clicked = cb.getEntityAt(mouse.worldX, mouse.worldY);

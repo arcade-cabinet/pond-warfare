@@ -12,6 +12,7 @@ import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
 import type { WeatherState } from '@/config/weather';
+import type { FortificationState } from '@/ecs/systems/fortification';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import type {
   Corpse,
@@ -215,70 +216,49 @@ export interface GameWorld {
   commanderAbilityCooldownUntil: number;
   commanderAbilityActiveUntil: number;
   demoralizedUnits: Set<number>;
-  /** Frame until which all player units are demoralized (commander death). 0 = inactive. */
   commanderDeathDemoralizeUntil: number;
-  /** Whether auto-retreat is enabled (player can toggle in settings). */
   autoRetreatEnabled: boolean;
 
   // Game-end spectacle state
-  /** Frame at which the game entered 'win' or 'lose' (0 = not ended). */
   gameEndFrame: number;
-  /** World position to pan the camera to during the game-end spectacle. */
   gameEndFocusX: number;
   gameEndFocusY: number;
-  /** True while slow-mo spectacle is playing before game-over UI appears. */
   gameEndSpectacleActive: boolean;
-  /** Pre-spectacle game speed to restore if needed. */
   gameEndPrevSpeed: number;
 
   // Diver stealth: set of entity IDs currently in stealth
   stealthEntities: Set<number>;
-  /** Tracks whether an entity's stealth ambush bonus is available (first attack from stealth). */
   stealthAmbushReady: Set<number>;
 
   // Burrowing Worm: entity ID -> remaining burrow frames before emergence
   wormBurrowTimers: Map<number, number>;
-  /** Frame of last worm spawn (used for spawn rate). */
   lastWormSpawnFrame: number;
 
-  // Engineer temporary bridges: { col, row, revertFrame, originalTerrain }[]
+  // Engineer temporary bridges
   engineerBridges: { col: number; row: number; revertFrame: number; original: number }[];
 
   // --- v2.0.0 ---
-
-  /** Dynamic weather system state. */
   weather: WeatherState;
-
-  /** Berserker rage: tracks entities in berserker HP drain combat state. */
   berserkerCombatFrames: Map<number, number>;
-
-  /** Shrine abilities: tracks which shrines have been used (entity ID set). */
   shrineUsed: Set<number>;
-
-  /** Wall gate ownership: maps gate entity ID to faction for pass-through logic. */
   wallGateFaction: Map<number, number>;
 
   // --- v2.1.0 ---
-
-  /** Extended stats for new achievements (incrementally tracked per match). */
   extendedStats?: Partial<ExtendedStats>;
 
   // --- Co-op multiplayer ---
-
-  /** True when playing co-op multiplayer. Gates all co-op gameplay rules. */
   coopMode: boolean;
-
-  /** True when co-op partner's Lodge has been destroyed (they can still play). */
   partnerLodgeDestroyed: boolean;
-
-  /** Co-op partner unit positions for shared fog-of-war (updated via network). */
   partnerUnitPositions: { x: number; y: number; isBuilding: boolean }[];
-
-  /** Callback invoked when player resources change in co-op (set by multiplayer controller). */
   coopResourceCallback: (() => void) | null;
 
-  /** Patrol waypoints per entity (bitECS SoA can't store nested arrays). */
+  // Patrol waypoints per entity (bitECS SoA can't store nested arrays)
   patrolWaypoints: Map<number, { x: number; y: number }[]>;
+
+  // --- v3.0 ---
+
+  /** Fortification slots around the Lodge (walls/towers). */
+  fortifications: FortificationState | null;
 }
 
 /** Extended game stats tracked per match for v2.1.0 achievements. */

@@ -5,19 +5,22 @@
  * threat/objective syncing to focused sub-modules; keeps resource tracking,
  * peace timer, time display, and enemy-visibility logic here.
  *
+ * v3: also syncs Lodge HP, wave number, and fortification state.
+ *
  * Sub-modules:
- *   population-counter.ts – food/army/idle counts + Commander policy
- *   game-over-sync.ts     – victory/defeat stats + permadeath deletion
- *   threat-sync.ts        – wave countdown, production queue, base threat, nests
+ *   population-counter.ts - food/army/idle counts + Commander policy
+ *   game-over-sync.ts     - victory/defeat stats + permadeath deletion
+ *   threat-sync.ts        - wave countdown, production queue, base threat, nests
  */
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { DAY_FRAMES, EXPLORED_SCALE } from '@/constants';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind } from '@/types';
+import { EntityKind, Faction } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 import { resetPermadeathGuard, syncGameOverStats } from './game-over-sync';
 import { computePopulation, type PopulationResult } from './population-counter';
 import { syncThreatAndObjectives } from './threat-sync';
@@ -128,6 +131,14 @@ export function syncPopulationAndTimers(
   }
   store.ctrlGroupCounts.value = groupCounts;
 
+  // --- v3: Lodge HP sync (every 30 frames to avoid per-frame query cost) ---
+  if (w.frameCount % 30 === 0) {
+    syncLodgeHp(w);
+  }
+
+  // --- v3: Wave number sync ---
+  storeV3.currentWaveNumber.value = w.waveNumber;
+
   // --- Population, army, idle counts (delegated) ---
   const popResult = computePopulation(w);
 
@@ -178,4 +189,23 @@ export function syncPopulationAndTimers(
   syncThreatAndObjectives(w);
 
   return popResult;
+}
+
+/** Sync the player Lodge HP to v3 store signals. */
+function syncLodgeHp(w: GameWorld): void {
+  const buildings = query(w.ecs, [IsBuilding, FactionTag, EntityTypeTag, Health]);
+  for (let i = 0; i < buildings.length; i++) {
+    const eid = buildings[i];
+    if (
+      FactionTag.faction[eid] === Faction.Player &&
+      (EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Lodge &&
+      Health.current[eid] > 0
+    ) {
+      storeV3.lodgeHp.value = Health.current[eid];
+      storeV3.lodgeMaxHp.value = Health.max[eid];
+      return;
+    }
+  }
+  // Lodge not found (destroyed)
+  storeV3.lodgeHp.value = 0;
 }

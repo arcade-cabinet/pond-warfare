@@ -89,20 +89,18 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
 
 export enum ResourceType {
   None = 0,
+  /** v2 name retained for backward compat. v3 alias: Fish */
   Clams = 1,
+  /** v2 name retained for backward compat. v3 alias: Logs */
   Twigs = 2,
+  /** v2 name retained for backward compat. v3 alias: Rocks */
   Pearls = 3,
+  /** v3 aliases -- identical numeric values so both names work. */
+  Fish = 1,
+  Logs = 2,
+  Rocks = 3,
 }
 
-/**
- * Sprite identifiers for all procedurally-generated sprites.
- *
- * IMPORTANT: Values 0–43 intentionally mirror EntityKind values for entity
- * sprites so entity kinds can be directly used as sprite IDs.
- *
- * Bones and Rubble are non-entity visual sprites (corpse/ruin overlays) and
- * remain independent values.
- */
 export enum SpriteId {
   Gatherer = 0,
   Brawler = 1,
@@ -154,6 +152,7 @@ export enum SpriteId {
   Rubble = 51,
 }
 
+/** In-match resources. v3 mapping: clams=fish, twigs=logs, pearls=rocks. */
 export interface GameResources {
   clams: number;
   twigs: number;
@@ -161,6 +160,17 @@ export interface GameResources {
   food: number;
   maxFood: number;
 }
+
+/** Re-export v3 resource helpers from dedicated module. */
+export {
+  getFish,
+  getLogs,
+  getRocks,
+  nodeKindToResourceType,
+  setFish,
+  setLogs,
+  setRocks,
+} from './v3-resources';
 
 export interface GameStats {
   unitsKilled: number;
@@ -220,7 +230,6 @@ export interface MinimapPing {
   y: number;
   life: number;
   maxLife: number;
-  /** Optional color override (defaults to red for alerts, cyan for co-op pings). */
   color?: string;
 }
 
@@ -253,14 +262,9 @@ export interface TooltipData {
   cost: string;
   description: string;
   hotkey: string;
-  /** Individual resource costs for detailed breakdown */
   costBreakdown?: { clams?: number; twigs?: number; pearls?: number; food?: number };
-  /** Tech requirement label, e.g. "Requires: Eagle Eye" */
   requires?: string;
-  /** Stat lines displayed as label: value pairs (e.g. unit/building stats) */
   statLines?: { label: string; value: string }[];
-  /** Status badge text, e.g. "Researched", "Available", "Locked" */
   status?: string;
-  /** CSS color for the status badge */
   statusColor?: string;
 }
