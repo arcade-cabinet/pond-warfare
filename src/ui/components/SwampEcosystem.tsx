@@ -36,7 +36,8 @@ export function SwampEcosystem() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId: number | undefined;
+    let stopped = false;
     const fog: FogBlob[] = [];
     const fireflies: Firefly[] = [];
 
@@ -108,23 +109,32 @@ export function SwampEcosystem() {
         f.flashPhase += f.flashSpeed;
         const opacity = ((Math.sin(f.flashPhase) + 1) / 2) * 0.8 + 0.2;
 
+        // Draw glow circle (cheaper than shadowBlur)
+        const glowR = f.size + 8;
+        const glow = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, glowR);
+        glow.addColorStop(0, `hsla(${f.hue}, 100%, 50%, ${opacity * 0.6})`);
+        glow.addColorStop(1, `hsla(${f.hue}, 100%, 50%, 0)`);
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw firefly dot
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(${f.hue}, 90%, 60%, ${opacity})`;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = `hsla(${f.hue}, 100%, 50%, ${opacity})`;
         ctx.fill();
-        ctx.shadowBlur = 0;
       }
 
-      animationFrameId = requestAnimationFrame(animate);
+      if (!stopped) animationFrameId = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
+      stopped = true;
       window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== undefined) cancelAnimationFrame(animationFrameId);
     };
   }, []);
 

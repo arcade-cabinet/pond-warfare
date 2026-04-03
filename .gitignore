@@ -166,3 +166,6 @@ tests/browser/screenshots/
 # Build/cache directories
 .vite/
 .superpowers/
+
+# Brand reference assets (large PNGs/JPGs, HTML prototypes — not needed in build)
+docs/brand/

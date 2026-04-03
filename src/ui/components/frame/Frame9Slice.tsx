@@ -44,30 +44,42 @@ const TITLE_STYLE = {
 };
 
 export function Frame9Slice({ children, isExpanded = true, onClick, title }: Frame9SliceProps) {
+  const clickable = typeof onClick === 'function';
   const gridRows = `60px ${isExpanded ? 'auto' : '0px'} 60px`;
   const expandedOpacity = isExpanded ? 'opacity-100' : 'opacity-0';
   const bodyTransform = isExpanded
     ? 'opacity-100 scale-y-100'
     : 'opacity-0 scale-y-0 h-0 overflow-hidden';
 
+  /** Handler on the grid — content cell uses stopPropagation to prevent toggle. */
+  const handleGridClick = clickable ? () => onClick() : undefined;
+
+  /** Stop content clicks from toggling the accordion. */
+  const stopContentClick = clickable
+    ? (e: Event) => e.stopPropagation()
+    : undefined;
+
   return (
-    <div class="relative w-full max-w-4xl mx-auto my-8 transition-all duration-500 ease-in-out cursor-pointer group panel-3d">
+    <div
+      class={`relative w-full max-w-4xl mx-auto my-8 transition-all duration-500 ease-in-out group ${clickable ? 'cursor-pointer' : ''}`}
+    >
       {/* Expanded glow effect */}
       <div
         class={`absolute inset-[-20px] blur-[40px] rounded-3xl transition-opacity duration-1000 -z-10 ${isExpanded ? 'opacity-30' : 'opacity-0'}`}
         style={{ backgroundColor: COLORS.vineHighlight }}
       />
 
-      {/* 9-slice grid */}
+      {/* 9-slice grid — single onClick at grid level prevents double-fire */}
       <div
         class="grid drop-shadow-[0_20px_30px_rgba(0,0,0,0.9)]"
         style={{ ...GRID_STYLE, gridTemplateRows: gridRows }}
+        onClick={handleGridClick}
       >
         {/* Row 1: Top corners + top edge */}
-        <div class="w-[60px] h-[60px] z-20" onClick={onClick}>
+        <div class="w-[60px] h-[60px] z-20">
           <CornerTopLeft />
         </div>
-        <div class="h-[60px] z-10 relative" onClick={onClick}>
+        <div class="h-[60px] z-10 relative">
           <div class="absolute inset-0">
             <EdgeHorizontal top={true} />
           </div>
@@ -82,7 +94,7 @@ export function Frame9Slice({ children, isExpanded = true, onClick, title }: Fra
             </div>
           )}
         </div>
-        <div class="w-[60px] h-[60px] z-20" onClick={onClick}>
+        <div class="w-[60px] h-[60px] z-20">
           <CornerTopRight />
         </div>
 
@@ -90,7 +102,10 @@ export function Frame9Slice({ children, isExpanded = true, onClick, title }: Fra
         <div class={`w-[60px] z-10 transition-all duration-700 ease-out ${expandedOpacity}`}>
           {isExpanded && <EdgeVertical left={true} />}
         </div>
-        <div class={`transition-all duration-700 origin-top cursor-default ${bodyTransform}`}>
+        <div
+          class={`transition-all duration-700 origin-top cursor-default ${bodyTransform}`}
+          onClick={stopContentClick}
+        >
           <CenterPanel>{children}</CenterPanel>
         </div>
         <div class={`w-[60px] z-10 transition-all duration-700 ease-out ${expandedOpacity}`}>
@@ -98,15 +113,15 @@ export function Frame9Slice({ children, isExpanded = true, onClick, title }: Fra
         </div>
 
         {/* Row 3: Bottom corners + bottom edge */}
-        <div class="w-[60px] h-[60px] z-20" onClick={onClick}>
+        <div class="w-[60px] h-[60px] z-20">
           <CornerBottomLeft />
         </div>
-        <div class="h-[60px] z-10 relative" onClick={onClick}>
+        <div class="h-[60px] z-10 relative">
           <div class="absolute inset-0">
             <EdgeHorizontal top={false} />
           </div>
         </div>
-        <div class="w-[60px] h-[60px] z-20" onClick={onClick}>
+        <div class="w-[60px] h-[60px] z-20">
           <CornerBottomRight />
         </div>
       </div>
