@@ -31,6 +31,8 @@ export class PointerHandler {
     worldY: 0,
     startX: 0,
     startY: 0,
+    screenX: 0,
+    screenY: 0,
     isDown: false,
     btn: 0,
     in: false,
@@ -127,6 +129,8 @@ export class PointerHandler {
     this.mouse.y = (e.clientY - rect.top) / zoom;
     this.mouse.worldX = this.mouse.x + this.world.camX;
     this.mouse.worldY = this.mouse.y + this.world.camY;
+    this.mouse.screenX = e.clientX;
+    this.mouse.screenY = e.clientY;
   }
 
   private onPointerDown(e: PointerEvent): void {

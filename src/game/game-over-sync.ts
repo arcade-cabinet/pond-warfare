@@ -3,21 +3,29 @@
  *
  * Writes victory/defeat stats to UI store signals and handles
  * permadeath save-deletion when a game is lost.
+ * Also sets v3 store signals for rewards screen display.
  */
 
 import { TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { DAY_FRAMES } from '@/constants';
+import { getEventsCompletedCount } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
 import { deleteSave, getLatestSave } from '@/storage';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 import { processGameOverRewards, resetRewardsGuard } from './game-over-rewards';
+import { calculateMatchReward } from './match-rewards';
 
 /** Module-level guard so permadeath deletion only fires once per loss. */
 let _permadeathDeleteFired = false;
 
+/** Module-level guard so rewards screen signals are only set once per game. */
+let _rewardsScreenFired = false;
+
 /** Reset the permadeath guard (call at the start of a new game). */
 export function resetPermadeathGuard(): void {
   _permadeathDeleteFired = false;
+  _rewardsScreenFired = false;
   resetRewardsGuard();
 }
 
@@ -116,6 +124,26 @@ export function syncGameOverStats(world: GameWorld): void {
       .catch(() => {
         /* best-effort cleanup */
       });
+  }
+
+  // v3 rewards screen: calculate breakdown and set signals (once per game end)
+  if (!_rewardsScreenFired) {
+    _rewardsScreenFired = true;
+    const durationSeconds = Math.round(w.frameCount / 60);
+    const eventsCompleted = getEventsCompletedCount();
+
+    const breakdown = calculateMatchReward({
+      result: w.state === 'win' ? 'win' : 'loss',
+      durationSeconds,
+      kills: w.stats.unitsKilled,
+      resourcesGathered: w.stats.resourcesGathered,
+      eventsCompleted,
+      prestigeRank: storeV3.prestigeRank.value,
+    });
+
+    storeV3.lastRewardBreakdown.value = breakdown;
+    storeV3.matchEventsCompleted.value = eventsCompleted;
+    storeV3.rewardsScreenOpen.value = true;
   }
 
   // Process XP, match record, and daily challenge (async, best-effort)

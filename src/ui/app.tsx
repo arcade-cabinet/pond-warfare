@@ -34,6 +34,8 @@ import { LoadingScreen } from './LoadingScreen';
 import { MainMenu } from './main-menu';
 import { DisconnectOverlay } from './overlays/DisconnectOverlay';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
+import { dispatchRadialAction } from './radial-actions';
+import { RadialMenu } from './radial-menu';
 import { SplashVideo } from './SplashVideo';
 import { PearlUpgradeScreen } from './screens/PearlUpgradeScreen';
 import { RankUpModal } from './screens/RankUpModal';
@@ -226,7 +228,7 @@ export function App({ onMount }: AppProps) {
           class="absolute inset-0 pointer-events-none z-10"
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
-        {/* Minimap — small overlay in bottom-right corner */}
+        {/* Minimap -- small overlay in bottom-right corner */}
         <div
           class="absolute bottom-2 right-2 z-20 w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded overflow-hidden border-2"
           style={{ borderColor: 'var(--pw-mud)', background: 'var(--pw-bg-deep)' }}
@@ -249,6 +251,8 @@ export function App({ onMount }: AppProps) {
             game.handleEvacuationChoice(choice);
           }}
         />
+        {/* Radial menu -- contextual actions for Lodge and units */}
+        <RadialMenu onAction={dispatchRadialAction} />
       </div>
 
       <ConnectionStatus />

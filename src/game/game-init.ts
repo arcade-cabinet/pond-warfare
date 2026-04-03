@@ -1,5 +1,5 @@
 /**
- * Game Init – canvas setup, rendering pipeline, input wiring, loop state construction.
+ * Game Init -- canvas setup, rendering pipeline, input wiring, loop state construction.
  *
  * Extracted from Game.init() to keep the orchestrator under 300 LOC.
  */
@@ -7,6 +7,7 @@
 import { resetBarkState } from '@/config/barks';
 import { Position, Selectable } from '@/ecs/components';
 import { initFogOfWar } from '@/ecs/systems/fog-of-war';
+import { resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import { resetRandomEvents } from '@/ecs/systems/random-events';
 import type { GameWorld } from '@/ecs/world';
 import { setZoom } from '@/game/camera';
@@ -114,6 +115,7 @@ export function resetSession(world: GameWorld): void {
   resetBarkState();
   resetAchievementMatchState();
   resetRandomEvents();
+  resetMatchEventRunner();
   loadAchievements().catch(() => {});
 }
 

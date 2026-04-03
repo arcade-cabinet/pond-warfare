@@ -20,6 +20,7 @@ import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem } from '@/ecs/systems/fog-of-war';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
+import { matchEventRunnerSystem } from '@/ecs/systems/match-event-runner';
 import { moraleSystem } from '@/ecs/systems/morale';
 import { movementSystem } from '@/ecs/systems/movement';
 import { patrolSystem } from '@/ecs/systems/patrol';
@@ -32,6 +33,7 @@ import { wallGateSystem } from '@/ecs/systems/wall-gate';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import type { PhysicsManager } from '@/physics/physics-world';
+import { progressionLevel } from '@/ui/store-v3';
 
 /** Run all ECS systems in the correct order for one logic frame. */
 export function runSystems(
@@ -65,6 +67,7 @@ export function runSystems(
   veterancySystem(world);
   fogOfWarSystem(world);
   branchCosmeticsSystem(world);
+  matchEventRunnerSystem(world, progressionLevel.value);
   randomEventsSystem(world);
   cleanupSystem(world);
 }

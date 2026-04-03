@@ -2,11 +2,14 @@
  * Pointer Click Handler
  *
  * Single-click, double-click, attack-move, and shift-click logic.
+ * Also opens the radial menu on Lodge or selected-unit taps.
  */
 
 import { showSelectBark } from '@/config/barks';
 import type { GameWorld } from '@/ecs/world';
-import type { EntityKind } from '@/types';
+import { EntityKind, type EntityKind as EntityKindType } from '@/types';
+import { entityKindToRole } from '@/ui/radial-menu-options';
+import { openRadialMenu } from '@/ui/store-radial';
 import type { PointerCallbacks, PointerState } from './pointer';
 
 const DOUBLE_CLICK_MS = 350;
@@ -58,6 +61,9 @@ export function handleClick(
       for (const eid of world.selection) cb.selectEntity(eid);
       world.isTracking = true;
     } else if (cb.isPlayerUnit(clicked)) {
+      // Check if this unit was already selected -> open radial menu
+      const wasAlreadySelected = world.selection.includes(clicked);
+
       if (isShiftDown()) {
         const idx = world.selection.indexOf(clicked);
         if (idx > -1) {
@@ -75,7 +81,25 @@ export function handleClick(
       }
       const pos = cb.getEntityPosition(clicked);
       if (pos)
-        showSelectBark(world, clicked, pos.x, pos.y, cb.getEntityKind(clicked) as EntityKind);
+        showSelectBark(world, clicked, pos.x, pos.y, cb.getEntityKind(clicked) as EntityKindType);
+
+      // Open unit radial on re-tap of an already-selected unit
+      if (wasAlreadySelected && !isShiftDown()) {
+        const kind = cb.getEntityKind(clicked);
+        const role = entityKindToRole(kind);
+        openRadialMenu(mouse.screenX, mouse.screenY, 'unit', role);
+      }
+    } else if (cb.isPlayerBuilding(clicked)) {
+      // Player building tap: select it and open radial for Lodge
+      cb.deselectAll();
+      world.selection = [clicked];
+      cb.selectEntity(clicked);
+      world.isTracking = true;
+
+      const kind = cb.getEntityKind(clicked);
+      if (kind === EntityKind.Lodge) {
+        openRadialMenu(mouse.screenX, mouse.screenY, 'lodge', null);
+      }
     } else {
       if (cb.hasPlayerUnitsSelected()) cb.issueContextCommand(clicked);
       else {

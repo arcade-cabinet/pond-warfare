@@ -9,6 +9,9 @@ export interface PointerState {
   worldY: number;
   startX: number;
   startY: number;
+  /** Raw screen coordinates (clientX/clientY) for UI positioning (e.g. radial menu). */
+  screenX: number;
+  screenY: number;
   isDown: boolean;
   btn: number;
   in: boolean;

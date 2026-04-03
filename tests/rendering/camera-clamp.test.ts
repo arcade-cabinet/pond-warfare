@@ -8,14 +8,16 @@
 import { describe, expect, it } from 'vitest';
 import { clampCamera } from '@/rendering/camera';
 
-function makeWorld(overrides: Partial<{
-  worldWidth: number;
-  worldHeight: number;
-  viewWidth: number;
-  viewHeight: number;
-  camX: number;
-  camY: number;
-}>) {
+function makeWorld(
+  overrides: Partial<{
+    worldWidth: number;
+    worldHeight: number;
+    viewWidth: number;
+    viewHeight: number;
+    camX: number;
+    camY: number;
+  }>,
+) {
   return {
     worldWidth: 1600,
     worldHeight: 2400,

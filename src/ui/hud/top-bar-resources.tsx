@@ -1,9 +1,9 @@
 /**
- * TopBar Resources — Fish, rocks, pearls, and food display.
+ * TopBar Resources — Fish, logs, pearls, and food display.
  * Directional flash: green/gold on increase, red on decrease.
  * Food flashes green/red on population change, orange at cap.
  *
- * v3 resource rename: Clams -> Fish, Twigs -> Rocks.
+ * v3 resource rename: Clams -> Fish, Twigs -> Logs.
  * Internal signals still use `clams`/`twigs` for backward compat.
  */
 
@@ -57,10 +57,10 @@ function flashClass(dir: FlashDir): string {
 
 export function TopBarResources({ compact }: { compact: boolean }) {
   const fishRate = rateClams.value;
-  const rocksRate = rateTwigs.value;
+  const logsRate = rateTwigs.value;
 
   const currentFish = clams.value;
-  const currentRocks = twigs.value;
+  const currentLogs = twigs.value;
   const currentPearls = pearls.value;
   const currentFood = food.value;
   const currentMaxFood = maxFood.value;
@@ -69,7 +69,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
   const foodChange = lastFoodChange.value;
 
   const fishFlash = useDirectionalFlash(currentFish, 5, resChange.clams);
-  const rocksFlash = useDirectionalFlash(currentRocks, 5, resChange.twigs);
+  const logsFlash = useDirectionalFlash(currentLogs, 5, resChange.twigs);
   const pearlsFlash = useDirectionalFlash(currentPearls, 5, resChange.pearls);
 
   // Food flash: directional + cap override
@@ -135,26 +135,26 @@ export function TopBarResources({ compact }: { compact: boolean }) {
         )}
       </div>
 
-      {/* Rocks (formerly Twigs) */}
+      {/* Logs (formerly Twigs) */}
       <div
         role="status"
         class="flex items-center space-x-1 md:space-x-2"
-        aria-label={`Rocks: ${currentRocks}`}
+        aria-label={`Logs: ${currentLogs}`}
       >
         <div
-          class="w-3 h-3 md:w-4 md:h-4 shadow-sm"
+          class="w-3 h-3 md:w-4 md:h-4 rounded shadow-sm"
           style={{
-            background: 'linear-gradient(135deg, var(--pw-twig), #6b7280)',
+            background: 'linear-gradient(135deg, var(--pw-twig), #8B5E3C)',
             border: '1px solid var(--pw-otter)',
           }}
         />
         {!compact && (
           <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-            Rocks:{' '}
+            Logs:{' '}
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(rocksFlash)} ${lowTwigs.value ? 'animate-pulse' : ''}`}
+          class={`font-numbers font-bold ${flashClass(logsFlash)} ${lowTwigs.value ? 'animate-pulse' : ''}`}
           style={{ color: lowTwigs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
         >
           {twigs}
@@ -163,17 +163,17 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           <span
             class="font-bold animate-pulse"
             style={{ color: 'var(--pw-warning)' }}
-            title="Low rocks!"
+            title="Low logs!"
           >
             !
           </span>
         )}
-        {!compact && rocksRate !== 0 && (
+        {!compact && logsRate !== 0 && (
           <span
             class="text-[10px] font-numbers"
-            style={{ color: rocksRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
+            style={{ color: logsRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
           >
-            {rocksRate >= 0 ? `+${rocksRate}` : rocksRate}
+            {logsRate >= 0 ? `+${logsRate}` : logsRate}
           </span>
         )}
       </div>
