@@ -67,7 +67,7 @@ export function computeShakeOffset(world: GameWorld): CameraShake {
  * with a minimum floor so sprites stay large enough to see and tap.
  * Clamped to engine limits (0.5 - 2.0).
  */
-const MIN_PLAYABLE_ZOOM = 1.2;
+const MIN_PLAYABLE_ZOOM = 2.0;
 
 export function computeInitialZoom(worldWidth: number, viewportWidth: number): number {
   // Zoom so the map width fills the viewport exactly
