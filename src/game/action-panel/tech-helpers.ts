@@ -3,6 +3,12 @@
  *
  * Shared utilities for tech cost calculation, affordability checks,
  * purchasing, and training queue display.
+ *
+ * v3.0 note: In-game research was removed. TECH_UPGRADES is empty and
+ * canResearch always returns false, so canAffordTech/purchaseTech
+ * naturally return false and techRequiresLabel returns undefined.
+ * These functions are kept for API compatibility with combat systems
+ * that still check world.tech flags (set by commanders, not research).
  */
 
 import { hasComponent, query } from 'bitecs';

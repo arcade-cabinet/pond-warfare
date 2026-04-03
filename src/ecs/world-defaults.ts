@@ -64,6 +64,7 @@ export function createGameWorld(): GameWorld {
       clams: ENEMY_STARTING_CLAMS,
       twigs: ENEMY_STARTING_TWIGS,
     },
+    // v3.0: tech flags set by commanders, not in-game research
     tech: {},
     stats: {
       unitsKilled: 0,
@@ -151,6 +152,7 @@ export function createGameWorld(): GameWorld {
     alphaDamageBuff: new Map(),
     championEnemies: new Set(),
     isFirstGame: true,
+    // @deprecated Advisor system removed in v3.0 -- kept for save compat
     advisorState: {},
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),

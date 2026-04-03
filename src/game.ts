@@ -1,4 +1,4 @@
-/** Game Orchestrator – thin shell that delegates to focused sub-modules. */
+/** Game Orchestrator -- thin shell that delegates to focused sub-modules. */
 import type { GameWorld } from '@/ecs/world';
 import { useAirdrop, usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
@@ -6,20 +6,10 @@ import { useCommanderAbility } from '@/game/commander-abilities';
 import {
   applyDifficultyModifiers,
   applyMapSeed,
-  centerCameraOnLodge,
   computeInitialZoom,
   createGameWorld,
-  ensureLifecycleListeners,
-  initCanvases,
   resetSession,
-  setupAudio,
-  setupColorBlind,
-  setupDockResize,
-  setupInput,
-  spawnFireflies,
   spawnVerticalWorld,
-  startGameLoop,
-  wireWebGLHandlers,
 } from '@/game/game-init';
 import {
   type DestroyRefs,
@@ -27,17 +17,17 @@ import {
   handleEvacuationChoice as handleEvacChoice,
 } from '@/game/game-lifecycle';
 import { cycleSpeed as cycleSpeedFn, type GameLoopState } from '@/game/game-loop';
+import { runGameSetup } from '@/game/game-setup';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
 import { playUnitSelectSound } from '@/game/unit-select-sound';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
-import { PhysicsManager } from '@/physics/physics-world';
+import type { PhysicsManager } from '@/physics/physics-world';
 import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
 import type { SpriteId } from '@/types';
-import * as store from '@/ui/store';
 
 export class Game {
   world: GameWorld;
@@ -96,115 +86,55 @@ export class Game {
     this.minimapCanvas = minimapCanvas;
     this.minimapCamElement = minimapCamElement;
 
-    // Difficulty and map seed — BEFORE vertical map generation
     applyDifficultyModifiers(this.world);
     applyMapSeed(this.world);
-
-    // Generate vertical map and spawn entities (sets world dimensions + terrain)
     spawnVerticalWorld(this.world);
 
-    // Set initial zoom so pixel-art sprites are visible on the vertical map.
-    // Must happen BEFORE resize() which uses zoomLevel to compute viewWidth/viewHeight.
-    const viewportW = container.clientWidth;
-    this.world.zoomLevel = computeInitialZoom(this.world.worldWidth, viewportW);
+    // Initial zoom BEFORE resize (zoomLevel drives viewWidth/viewHeight)
+    this.world.zoomLevel = computeInitialZoom(this.world.worldWidth, container.clientWidth);
 
-    // Physics world with correct vertical map dimensions
-    this.physicsManager = new PhysicsManager(this.world.worldWidth, this.world.worldHeight);
-
-    // Canvas and rendering pipeline (uses world.terrainGrid + world dimensions)
-    const minimapCtx = minimapCanvas.getContext('2d', { alpha: false });
-    const refs = await initCanvases(this.world, container, gameCanvas, fogCanvas, lightCanvas);
-    this.fogCtx = refs.fogCtx;
-    this.lightCtx = refs.lightCtx;
-    this.bgCanvas = refs.bgCanvas;
-    this.fogState = refs.fogState;
-    this.exploredCanvas = refs.exploredCanvas;
-    this.exploredCtx = refs.exploredCtx;
-    this.spriteCanvases = refs.spriteCanvases;
-
-    // Resize applies zoom to viewWidth/viewHeight — must happen before centerCameraOnLodge
-    this.resize();
-    this.boundResize = () => this.resize();
-    window.addEventListener('resize', this.boundResize);
-    this.dockPanelUnsubscribe = setupDockResize(() => this.resize());
-
-    // Input
-    const input = setupInput(
-      this.world,
+    // Delegate the remaining setup pipeline to game-setup module
+    const out = await runGameSetup({
+      world: this.world,
       container,
       gameCanvas,
+      fogCanvas,
+      lightCanvas,
       minimapCanvas,
-      this.recorder,
-      () => this.syncUIStore(),
-      () => this.cycleSpeed(),
-      () => this.playUnitSelectSound(),
-    );
-    this.keyboard = input.keyboard;
-    this.pointer = input.pointer;
-    this.pointer.onZoomChange = (zoom) => this.setZoom(zoom);
-
-    if (this.world.fogOfWarMode === 'revealed') {
-      this.exploredCtx.fillStyle = '#ffffff';
-      this.exploredCtx.fillRect(0, 0, this.exploredCanvas.width, this.exploredCanvas.height);
-    }
-
-    centerCameraOnLodge(this.world);
-    clampCamera(this.world);
-    spawnFireflies(this.world);
-    this.syncUIStore();
-    this.colorBlindUnsubscribe = setupColorBlind();
-
-    // Visibility pause handler
-    this.boundVisibilityChange = () => {
-      if (document.hidden && store.menuState.value === 'playing' && !this.world.paused) {
-        this.world.paused = true;
-        store.paused.value = true;
-      }
-    };
-    document.addEventListener('visibilitychange', this.boundVisibilityChange);
-    const audioRefs = {
-      audioInitialized: this.audioInitialized,
-      audioInitPromise: null as Promise<void> | null,
-      initAudioHandler: this.initAudioHandler,
-      loopState: null as GameLoopState | null,
-    };
-    setupAudio(audioRefs);
-    this.audioInitialized = audioRefs.audioInitialized;
-    this.initAudioHandler = audioRefs.initAudioHandler;
-
-    this.recorder.start();
-    this.running = true;
-    this.initializing = false;
-
-    // Start game loop
-    this.loopState = startGameLoop({
-      world: this.world,
-      spriteCanvases: this.spriteCanvases,
-      pointer: this.pointer,
-      keyboard: this.keyboard,
-      fogState: this.fogState,
-      fogCtx: this.fogCtx,
-      fogCanvas: this.fogCanvas,
-      lightCtx: this.lightCtx,
-      lightCanvas: this.lightCanvas,
-      minimapCtx: minimapCtx!,
-      minimapCamElement: this.minimapCamElement,
-      exploredCanvas: this.exploredCanvas,
-      bgCanvas: this.bgCanvas,
-      physicsManager: this.physicsManager,
-      container: this.container,
+      minimapCamElement,
       recorder: this.recorder,
+      panHandle: this.panHandle,
       audioInitialized: this.audioInitialized,
+      initAudioHandler: this.initAudioHandler,
       syncUIStore: () => this.syncUIStore(),
+      cycleSpeed: () => this.cycleSpeed(),
+      playUnitSelectSound: () => this.playUnitSelectSound(),
+      setZoom: (zoom) => this.setZoom(zoom),
       governor: this.governor,
     });
 
-    // WebGL context recovery wired to loop state
-    const webgl = wireWebGLHandlers(gameCanvas, this.world, this.loopState);
-    this.boundContextLost = webgl.contextLost;
-    this.boundContextRestored = webgl.contextRestored;
+    this.fogCtx = out.fogCtx;
+    this.lightCtx = out.lightCtx;
+    this.bgCanvas = out.bgCanvas;
+    this.fogState = out.fogState;
+    this.exploredCanvas = out.exploredCanvas;
+    this.exploredCtx = out.exploredCtx;
+    this.spriteCanvases = out.spriteCanvases;
+    this.keyboard = out.keyboard;
+    this.pointer = out.pointer;
+    this.physicsManager = out.physicsManager;
+    this.loopState = out.loopState;
+    this.colorBlindUnsubscribe = out.colorBlindUnsubscribe;
+    this.dockPanelUnsubscribe = out.dockPanelUnsubscribe;
+    this.boundResize = out.boundResize;
+    this.boundContextLost = out.boundContextLost;
+    this.boundContextRestored = out.boundContextRestored;
+    this.boundVisibilityChange = out.boundVisibilityChange;
+    this.audioInitialized = out.audioInitialized;
+    this.initAudioHandler = out.initAudioHandler;
 
-    ensureLifecycleListeners(this.world);
+    this.running = true;
+    this.initializing = false;
   }
   resize(): void {
     resizeCanvases(
@@ -237,7 +167,6 @@ export class Game {
       exploredCtx: this.exploredCtx ?? null,
     });
   }
-
   useRallyCry(): boolean {
     return useShadowSprint(this.world);
   }
@@ -253,7 +182,6 @@ export class Game {
   useCommanderAbility(): boolean {
     return useCommanderAbility(this.world);
   }
-
   handleEvacuationChoice(choice: 'checkpoint' | 'restart' | 'quit'): void {
     handleEvacChoice(this.world, choice, () =>
       this.init(
@@ -266,20 +194,16 @@ export class Game {
       ),
     );
   }
-
   private playUnitSelectSound(): void {
     playUnitSelectSound(this.world);
   }
-
   /** Attach or detach the lockstep synchronizer on the active game loop. */
   setLockstep(ls: import('@/net/lockstep').LockstepSync | null): void {
     if (this.loopState) this.loopState.lockstep = ls;
   }
-
   getSprite(id: SpriteId): HTMLCanvasElement | undefined {
     return this.spriteCanvases.get(id);
   }
-
   destroy(): void {
     this.running = false;
     const refs: DestroyRefs = {

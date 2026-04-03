@@ -5,7 +5,6 @@
  * and updates player profile after a game ends. Called once per game end.
  */
 
-import { TECH_UPGRADES } from '@/config/tech-tree';
 import type { GameWorld } from '@/ecs/world';
 import { getPlayerProfile, getSetting, setSetting, updatePlayerProfile } from '@/storage';
 import { type MatchRecord, saveMatchRecord } from '@/storage/match-history';
@@ -151,11 +150,18 @@ function buildGameEndStats(world: GameWorld): GameEndStats {
   };
 }
 
-/** Count how many techs are researched in the world. */
+/**
+ * Count how many techs are researched in the world.
+ *
+ * v3.0 note: In-game research was removed. world.tech flags may still be
+ * set by commander abilities, so we count whatever is truthy. This always
+ * returns 0 for standard games since TECH_UPGRADES is empty, but the
+ * count is preserved for the match record and stats display.
+ */
 function countResearchedTechs(world: GameWorld): number {
   let count = 0;
-  for (const [key, val] of Object.entries(world.tech)) {
-    if (val && key in TECH_UPGRADES) count++;
+  for (const val of Object.values(world.tech)) {
+    if (val) count++;
   }
   return count;
 }

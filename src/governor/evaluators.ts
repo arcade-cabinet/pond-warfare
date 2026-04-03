@@ -6,9 +6,6 @@
  */
 
 import { type GameEntity, GoalEvaluator } from 'yuka';
-import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
-import { game } from '@/game';
-import { canAffordTech } from '@/game/action-panel/tech-helpers';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import { AttackGoal, MIN_ATTACK_ARMY } from './goals/attack-goal';
@@ -81,14 +78,16 @@ export class TrainEvaluator extends GoalEvaluator {
   }
 }
 
-/** Medium score when affordable tech is available. */
+/**
+ * Research evaluator -- always returns 0 in v3.0.
+ *
+ * In-game research was removed in v3.0 (TECH_UPGRADES is empty,
+ * canResearch always returns false). This evaluator is kept so the
+ * governor brain wiring stays intact for future reintroduction.
+ */
 export class ResearchEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
-    const w = game.world;
-    for (const techId of Object.keys(TECH_UPGRADES) as TechId[]) {
-      if (!canResearch(techId, w.tech) || !canAffordTech(w, techId)) continue;
-      return 0.5;
-    }
+    // v3.0: no in-game research available -- always return 0
     return 0;
   }
 

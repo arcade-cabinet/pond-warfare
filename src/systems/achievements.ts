@@ -86,17 +86,20 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     peakKillStreak = world.killStreak.count;
   }
 
-  // Count researched techs and branch stats
+  // Count researched techs and branch stats.
+  // v3.0: TECH_UPGRADES is empty, so only keys present in both world.tech
+  // AND TECH_UPGRADES are counted. Commander-set flags are skipped safely.
   let techCount = 0;
   const branchCounts: Record<string, number> = {};
   let hasNonShadowTech = false;
   for (const [key, val] of Object.entries(world.tech as TechState)) {
-    if (val) {
-      techCount++;
-      const branch: TechBranch = TECH_UPGRADES[key as keyof typeof TECH_UPGRADES].branch;
-      branchCounts[branch] = (branchCounts[branch] ?? 0) + 1;
-      if (branch !== 'shadow') hasNonShadowTech = true;
-    }
+    if (!val) continue;
+    const upgrade = TECH_UPGRADES[key as keyof typeof TECH_UPGRADES];
+    if (!upgrade) continue; // Skip tech flags not in TECH_UPGRADES (e.g. commander-set)
+    techCount++;
+    const branch: TechBranch = upgrade.branch;
+    branchCounts[branch] = (branchCounts[branch] ?? 0) + 1;
+    if (branch !== 'shadow') hasNonShadowTech = true;
   }
   const maxBranchTechCount = Math.max(0, ...Object.values(branchCounts));
 
@@ -155,7 +158,7 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     if (Health.current[eid] > 0) aliveNests++;
   }
 
-  // Extended stats — read from world.extendedStats if available, else 0
+  // Extended stats -- read from world.extendedStats if available, else 0
   const ext = world.extendedStats ?? {};
 
   return {
@@ -178,7 +181,7 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     buildingsBuilt: world.stats.buildingsBuilt,
     buildingsLost: world.stats.buildingsLost,
     onlyShadowTechs: techCount > 0 && !hasNonShadowTech,
-    // v2.1.0 — extended stats
+    // v2.1.0 -- extended stats
     weatherTypesExperienced: ext.weatherTypesExperienced ?? 0,
     warshipKills: ext.warshipKills ?? 0,
     bridgesBuilt: ext.bridgesBuilt ?? 0,

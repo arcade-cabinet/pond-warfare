@@ -49,6 +49,11 @@ export interface GameWorld {
   // Game state
   resources: GameResources;
   enemyResources: { clams: number; twigs: number };
+  /**
+   * Tech flags -- runtime boolean bag. In v3.0 these are set by
+   * commanders at game start, not through in-game research (which
+   * was removed). Combat systems still read these flags.
+   */
   tech: Record<string, boolean>;
   stats: GameStats;
   state: GameState;
@@ -172,10 +177,10 @@ export interface GameWorld {
   // Champion enemies: set of entity IDs that are champion variants
   championEnemies: Set<number>;
 
-  // First-game detection (used by advisor system)
+  // First-game detection (used by tutorial hints)
   isFirstGame: boolean;
 
-  // Advisor system state (deprecated, kept for save compatibility)
+  /** @deprecated Advisor system was removed in v3.0. Kept for save compatibility. */
   advisorState: Record<string, unknown>;
 
   // Commander aura + selection
@@ -198,7 +203,7 @@ export interface GameWorld {
   playerFaction: PlayableFaction;
   aiPersonality: AIPersonality;
 
-  // Active ability state (tech tree abilities)
+  // Active ability state (commander abilities, gated on tech flags)
   rallyCryExpiry: number;
   rallyCryCooldownUntil: number;
   pondBlessingCooldownUntil: number;

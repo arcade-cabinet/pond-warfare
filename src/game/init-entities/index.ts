@@ -1,8 +1,16 @@
 /**
- * Initial Entity Spawning
+ * Initial Entity Spawning (Legacy)
  *
  * Sets up the starting map using the world's mapSeed for reproducible
  * generation. Scenario functions are in separate files.
+ *
+ * v3.0 note: This is the legacy horizontal-map scenario spawner. The
+ * active game mode uses spawn-vertical.ts for the vertical strip map.
+ * This file is retained for:
+ *   - Horizontal scenario support (standard, island, contested, etc.)
+ *   - Campaign missions that use the classic map layout
+ *   - Determinism tests that validate spawning reproducibility
+ * It will be removed when horizontal scenarios are fully deprecated.
  */
 
 import { getFactionConfig } from '@/config/factions';

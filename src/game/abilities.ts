@@ -1,7 +1,11 @@
 /**
- * Active Abilities & Airdrop – tech tree abilities and supply drops.
+ * Active Abilities & Airdrop -- commander abilities and supply drops.
  *
- * All functions accept the GameWorld and return boolean success.
+ * v3.0 note: In-game research was removed, but these abilities remain
+ * valid. They gate on world.tech flags (swiftPaws, pondBlessing,
+ * tidalSurge) which are set at game start based on the chosen commander,
+ * not through in-game research. All functions accept the GameWorld and
+ * return boolean success.
  */
 
 import { query } from 'bitecs';

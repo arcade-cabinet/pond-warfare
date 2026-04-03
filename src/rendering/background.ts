@@ -1,32 +1,25 @@
 /**
- * Background & Fog Texture Generator
+ * Background Texture Generator
  *
- * - buildBackground(): generates the procedural terrain with biome
- *   blending using multi-octave value noise (fbm), splat blending between
- *   biome colors, detail noise, and shore foam effects.
- * - buildFogTexture(): generates the 256x256 seamless fog noise texture.
+ * buildBackground(): generates the procedural terrain with biome blending
+ * using multi-octave value noise (fbm), splat blending between biome colors,
+ * detail noise, and shore foam effects.
  *
  * The background canvas is sized to at least match the viewport so that
  * no black void is visible when the map is smaller than the screen.
  * Out-of-bounds pixels (outside the playable world) are filled with
  * procedural deep water.
+ *
+ * Fog texture and explored canvas utilities live in background-padding.ts.
  */
 
-import { FOG_TEXTURE_SIZE } from '@/constants';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { biomeColor, fbm, type RGB, valueNoise } from './background-noise';
+import { require2DContext } from './background-padding';
 
-function require2DContext(
-  canvas: HTMLCanvasElement,
-  options?: CanvasRenderingContext2DSettings,
-): CanvasRenderingContext2D {
-  const ctx = canvas.getContext('2d', options);
-  if (!ctx) {
-    throw new Error('2D canvas context is unavailable');
-  }
-  return ctx;
-}
+// Re-export fog/explored builders so existing imports from '@/rendering/background' keep working
+export { buildExploredCanvas, buildFogTexture, require2DContext } from './background-padding';
 
 /**
  * Generate the full-world procedural terrain background canvas.
@@ -233,84 +226,4 @@ function applyTerrainTint(base: RGB, terrainGrid: TerrainGrid, x: number, y: num
     g: Math.max(0, Math.min(255, Math.round(base.g * (1 - strength) + tint.g * strength))),
     b: Math.max(0, Math.min(255, Math.round(base.b * (1 - strength) + tint.b * strength))),
   };
-}
-
-/**
- * Generate the 256x256 seamless fog noise texture and create a repeating
- * CanvasPattern from it.
- */
-export function buildFogTexture(patternCtx: CanvasRenderingContext2D): {
-  fogBgCanvas: HTMLCanvasElement;
-  fogPattern: CanvasPattern;
-} {
-  const size = FOG_TEXTURE_SIZE;
-  const fogBgCanvas = document.createElement('canvas');
-  fogBgCanvas.width = size;
-  fogBgCanvas.height = size;
-  const ctx = require2DContext(fogBgCanvas);
-
-  // Base fill
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, size, size);
-
-  // 150 radial gradient blobs with seamless tiling
-  const offsets: [number, number][] = [
-    [-1, -1],
-    [0, -1],
-    [1, -1],
-    [-1, 0],
-    [0, 0],
-    [1, 0],
-    [-1, 1],
-    [0, 1],
-    [1, 1],
-  ];
-  for (let i = 0; i < 150; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const r = 15 + Math.random() * 30;
-
-    for (const [ox, oy] of offsets) {
-      const cx = x + ox * size;
-      const cy = y + oy * size;
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      g.addColorStop(0, 'rgba(51, 65, 85, 0.5)');
-      g.addColorStop(1, 'rgba(51, 65, 85, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  const fogPattern = patternCtx.createPattern(fogBgCanvas, 'repeat');
-  if (!fogPattern) {
-    throw new Error('Unable to create fog pattern');
-  }
-  return { fogBgCanvas, fogPattern };
-}
-
-/**
- * Build the explored-area tracking canvas.
- * Initially black; player units paint white circles onto it to reveal explored terrain.
- *
- * @param worldW - World width in pixels (defaults to 2560).
- * @param worldH - World height in pixels (defaults to 2560).
- */
-export function buildExploredCanvas(
-  worldW?: number,
-  worldH?: number,
-): {
-  exploredCanvas: HTMLCanvasElement;
-  exploredCtx: CanvasRenderingContext2D;
-} {
-  const w = worldW ?? 2560;
-  const h = worldH ?? 2560;
-  const exploredCanvas = document.createElement('canvas');
-  exploredCanvas.width = Math.ceil(w / 16);
-  exploredCanvas.height = Math.ceil(h / 16);
-  const exploredCtx = require2DContext(exploredCanvas, { willReadFrequently: true });
-  exploredCtx.fillStyle = '#000';
-  exploredCtx.fillRect(0, 0, exploredCanvas.width, exploredCanvas.height);
-  return { exploredCanvas, exploredCtx };
 }
