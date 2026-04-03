@@ -9,6 +9,7 @@ import { cycleStance } from '../game-actions';
 import {
   armyCount,
   attackMoveActive,
+  patrolModeActive,
   autoCombatEnabled,
   autoGathererEnabled,
   autoHealerEnabled,
@@ -206,6 +207,27 @@ export function UnitCommands(props: UnitCommandsProps) {
           <span class="font-heading text-xs md:text-sm">
             {STANCE_TITLES[selectionStance.value] ?? 'Aggressive'}
             {!mobile && ' (V)'}
+          </span>
+        </button>
+      )}
+
+      {/* Patrol mode button — all devices (mobile tap-to-patrol, desktop shift+click) */}
+      {hasPlayerUnits.value && selectionCount.value > 0 && (
+        <button
+          type="button"
+          id="patrol-btn"
+          class={`absolute top-[280px] md:top-[296px] right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px] ${patrolModeActive.value ? 'ring-2 ring-offset-1' : ''}`}
+          style={{
+            borderColor: patrolModeActive.value ? 'var(--pw-vine-highlight)' : 'var(--pw-vine-base)',
+            color: patrolModeActive.value ? 'var(--pw-vine-highlight)' : 'var(--pw-vine-base)',
+          }}
+          title="Patrol: tap terrain to set waypoints"
+          onClick={() => {
+            patrolModeActive.value = !patrolModeActive.value;
+          }}
+        >
+          <span class="font-heading text-xs md:text-sm">
+            {patrolModeActive.value ? 'Patrolling...' : 'Patrol'}
           </span>
         </button>
       )}

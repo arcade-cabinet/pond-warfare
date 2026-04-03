@@ -65,6 +65,8 @@ export const waveCountdown = signal(-1);
 export const lowClams = signal(false);
 export const lowTwigs = signal(false);
 export const attackMoveActive = signal(false);
+/** When true, next terrain tap adds a patrol waypoint instead of a move command */
+export const patrolModeActive = signal(false);
 
 /** Countdown seconds when peace timer is about to expire (< 30s remaining), -1 otherwise */
 export const peaceWarningCountdown = signal(-1);
