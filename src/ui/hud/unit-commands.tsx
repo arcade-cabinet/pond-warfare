@@ -25,7 +25,7 @@ import {
 } from '../store';
 import { AutoToggleButton } from './auto-toggle-button';
 
-const STANCE_LABELS = ['A', 'D', 'H'] as const;
+const _STANCE_LABELS = ['A', 'D', 'H'] as const;
 const STANCE_TITLES = ['Aggressive', 'Defensive', 'Hold'] as const;
 
 export interface UnitCommandsProps {
@@ -194,23 +194,21 @@ export function UnitCommands(props: UnitCommandsProps) {
       )}
 
       {/* Stance cycle button — all devices */}
-      {hasPlayerUnits.value &&
-        selectionCount.value > 0 &&
-        selectionStance.value >= 0 && (
-          <button
-            type="button"
-            id="stance-btn"
-            class="absolute top-[232px] md:top-64 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
-            style={{ borderColor: 'var(--pw-moss-bright)', color: 'var(--pw-moss-bright)' }}
-            title={`Stance: ${STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)`}
-            onClick={() => cycleStance()}
-          >
-            <span class="font-heading text-xs md:text-sm">
-              {STANCE_TITLES[selectionStance.value] ?? 'Aggressive'}
-              {!mobile && ' (V)'}
-            </span>
-          </button>
-        )}
+      {hasPlayerUnits.value && selectionCount.value > 0 && selectionStance.value >= 0 && (
+        <button
+          type="button"
+          id="stance-btn"
+          class="absolute top-[232px] md:top-64 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
+          style={{ borderColor: 'var(--pw-moss-bright)', color: 'var(--pw-moss-bright)' }}
+          title={`Stance: ${STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)`}
+          onClick={() => cycleStance()}
+        >
+          <span class="font-heading text-xs md:text-sm">
+            {STANCE_TITLES[selectionStance.value] ?? 'Aggressive'}
+            {!mobile && ' (V)'}
+          </span>
+        </button>
+      )}
 
       {/* Save ctrl-group button — desktop only */}
       {!mobile && selectionCount.value > 0 && hasPlayerUnits.value && (

@@ -19,7 +19,7 @@ describe('unlock-progress', () => {
   });
 
   it('should have correct total unlock count', () => {
-    expect(UNLOCKS.length).toBe(21);
+    expect(UNLOCKS.length).toBe(28);
   });
 
   it('should group unlocks by category correctly', () => {

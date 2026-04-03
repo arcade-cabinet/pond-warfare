@@ -33,7 +33,12 @@ export type NetMessage =
   | { type: 'resume' }
   | { type: 'ping'; timestamp: number }
   | { type: 'pong'; timestamp: number }
-  | { type: 'disconnect' };
+  | { type: 'disconnect' }
+  // Co-op messages
+  | { type: 'coop-resource'; clams: number; twigs: number; pearls: number }
+  | { type: 'coop-ping'; x: number; y: number }
+  | { type: 'coop-fog'; tiles: number[] }
+  | { type: 'coop-lodge-destroyed' };
 
 export interface NetState {
   connected: boolean;

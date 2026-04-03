@@ -141,6 +141,13 @@ export const IsResource = {};
 export const Dead = {};
 export const IsProjectile = {};
 
+// Patrol route tracking (waypoints stored externally in world.patrolWaypoints)
+export const Patrol = soa({
+  waypointCount: [] as number[],
+  currentWaypoint: [] as number[],
+  active: [] as number[], // 1 = patrolling, 0 = inactive
+});
+
 // Projectile component
 export const ProjectileData = soa({
   targetEntity: [] as number[],

@@ -25,6 +25,7 @@ import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
 import { moraleSystem } from '@/ecs/systems/morale';
 import { movementSystem } from '@/ecs/systems/movement';
+import { patrolSystem } from '@/ecs/systems/patrol';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import { randomEventsSystem } from '@/ecs/systems/random-events';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
@@ -59,6 +60,7 @@ export function runSystems(
   if (!throttleAI) autoBuildSystem(world);
   autoTrainSystem(world);
   autoBehaviorSystem(world);
+  patrolSystem(world);
   healthSystem(world);
   moraleSystem(world);
   autoRetreatSystem(world);

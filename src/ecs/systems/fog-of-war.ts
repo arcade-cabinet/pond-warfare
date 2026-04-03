@@ -110,6 +110,20 @@ export function fogOfWarSystem(world: GameWorld): void {
     }
   }
 
+  // Co-op shared fog: reveal areas around partner's units
+  if (world.coopMode && world.partnerUnitPositions.length > 0) {
+    for (const pos of world.partnerUnitPositions) {
+      let rad = pos.isBuilding ? 16 : 10;
+      if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
+      const ex = Math.floor(pos.x / EXPLORED_SCALE);
+      const ey = Math.floor(pos.y / EXPLORED_SCALE);
+      exploredCtx.fillStyle = 'rgba(255,255,255,0.15)';
+      exploredCtx.beginPath();
+      exploredCtx.arc(ex, ey, rad, 0, Math.PI * 2);
+      exploredCtx.fill();
+    }
+  }
+
   // Compute explored percentage every 60 frames (for campaign objectives)
   if (world.frameCount % 60 === 0) {
     const cw = exploredCtx.canvas.width;

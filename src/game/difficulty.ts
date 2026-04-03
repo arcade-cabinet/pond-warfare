@@ -14,6 +14,7 @@ import {
   STARTING_TWIGS,
 } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
+import { applyCoopDifficultyScaling } from '@/net/coop-rules';
 import * as store from '@/ui/store';
 
 /** Apply difficulty modifiers to world state before entities are spawned. */
@@ -136,6 +137,9 @@ export function applyDifficultyModifiers(world: GameWorld): void {
   // Player faction & AI personality
   world.playerFaction = store.playerFaction.value;
   world.aiPersonality = store.aiPersonality.value;
+
+  // Co-op difficulty scaling: +50% enemy HP/damage when co-op is active
+  applyCoopDifficultyScaling(world);
 
   // Checkpoint/evacuation reset
   world.checkpoints = [];

@@ -225,7 +225,10 @@ export class PointerHandler {
         this.handleDragSelect();
       }
     } else if (e.button === 2) {
-      this.cb.issueContextCommand(this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY));
+      this.cb.issueContextCommand(
+        this.cb.getEntityAt(this.mouse.worldX, this.mouse.worldY),
+        this.isShiftDown(),
+      );
     }
   }
 

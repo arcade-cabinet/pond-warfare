@@ -2,6 +2,7 @@
 
 import { useCallback, useRef } from 'preact/hooks';
 import { screenClass } from '@/platform';
+import { DailyChallengeCard } from './daily-challenge-card';
 import { MenuBackground } from './menu-background';
 import { MenuButton } from './menu-button';
 import { MenuPlayerStatus } from './menu-player-status';
@@ -106,6 +107,9 @@ export function MainMenu() {
       <div class="relative z-10 flex justify-center mb-2">
         <UnlockProgress />
       </div>
+
+      {/* Daily challenge card */}
+      <DailyChallengeCard compact={compact} />
 
       {/* Menu buttons */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>

@@ -213,6 +213,66 @@ export const UNLOCKS: UnlockDef[] = [
     requirement: 'Win 15 games total',
     check: (p) => p.total_wins >= 15,
   },
+
+  // --- Campaign Mission 6-10 Unlocks ---
+  // NOTE: These use total_wins as a proxy for campaign progress.
+  // Full campaign-aware checks will query campaign_progress table directly.
+  {
+    id: 'commander_ironpaw',
+    category: 'unit',
+    name: 'Ironpaw Commander',
+    description: 'Defensive commander with fortification bonuses',
+    requirement: 'Complete Mission 6: The Siege (Win 6+ games)',
+    check: (p) => p.total_wins >= 6,
+  },
+  {
+    id: 'cosmetic_siege_master',
+    category: 'cosmetic',
+    name: 'Siege Master',
+    description: 'Golden siege banner on all Catapults',
+    requirement: 'Complete Mission 7: Allied Waters (Win 7+ games)',
+    check: (p) => p.total_wins >= 7,
+  },
+  {
+    id: 'cosmetic_shadow_ops',
+    category: 'cosmetic',
+    name: 'Shadow Ops',
+    description: 'Dark mist trail on Shadow-branch units',
+    requirement: 'Complete Mission 8A: Shadow Strike (Win 8+ games)',
+    check: (p) => p.total_wins >= 8,
+  },
+  {
+    id: 'cosmetic_heavy_armor',
+    category: 'cosmetic',
+    name: 'Heavy Armor',
+    description: 'Reinforced plate visuals on Shieldbearers',
+    requirement: 'Complete Mission 8B: Iron Tide (Win 8+ games)',
+    check: (p) => p.total_wins >= 8,
+  },
+  {
+    id: 'cosmetic_veteran_badge',
+    category: 'cosmetic',
+    name: 'Veteran Badge',
+    description: 'Battle-scarred veteran insignia on Commander',
+    requirement: 'Complete Mission 9: Last Stand (Survive 45+ min)',
+    check: (p) => p.longest_survival_seconds >= 2700,
+  },
+  {
+    id: 'cosmetic_champion_title',
+    category: 'cosmetic',
+    name: 'Champion Title',
+    description: 'Champion title and golden aura on Commander',
+    requirement: "Complete Mission 10: Pond's End (Win 10+ games)",
+    check: (p) => p.total_wins >= 10 && p.total_kills >= 100,
+  },
+  {
+    id: 'commander_stormcaller',
+    category: 'unit',
+    name: 'Stormcaller Commander',
+    description: 'Offensive commander with lightning abilities',
+    requirement: "Complete Mission 10: Pond's End (Win 10+ games, kill 200+)",
+    check: (p) => p.total_wins >= 10 && p.total_kills >= 200,
+  },
 ];
 
 /** Category display order and labels. */

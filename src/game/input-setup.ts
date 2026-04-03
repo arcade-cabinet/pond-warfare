@@ -156,7 +156,7 @@ export function buildPointerCallbacks(deps: PointerSetupDeps): PointerCallbacks 
   return {
     getEntityAt: (wx, wy) => getEntityAt(world, wx, wy),
     hasPlayerUnitsSelected: () => hasPlayerUnitsSelected(world),
-    issueContextCommand: (target) => {
+    issueContextCommand: (target, shiftDown) => {
       for (const eid of world.selection) {
         triggerCommandPulse(eid);
       }
@@ -164,9 +164,10 @@ export function buildPointerCallbacks(deps: PointerSetupDeps): PointerCallbacks 
       const wx = mouse.worldX;
       const wy = mouse.worldY;
       const selectionSnapshot = [...world.selection];
-      const dispatched = issueContextCommand(world, target, wx, wy);
+      const dispatched = issueContextCommand(world, target, wx, wy, shiftDown);
 
-      if (dispatched) {
+      // Don't deselect when shift is held (patrol mode) so player can add waypoints
+      if (dispatched && !shiftDown) {
         for (const eid of world.selection) {
           if (hasComponent(world.ecs, eid, Selectable)) {
             Selectable.selected[eid] = 0;

@@ -44,7 +44,7 @@ export interface MissionObjective {
 
 export interface MissionDef {
   id: string;
-  /** Display number (1-5). */
+  /** Display number (1-10). */
   number: number;
   title: string;
   subtitle: string;
@@ -83,6 +83,12 @@ export const EK = {
   Lodge: 5,
   Armory: 7,
   PredatorNest: 9,
+  Shieldbearer: 15,
   Scout: 16,
+  Catapult: 17,
+  Wall: 18,
+  ArmoredGator: 20,
+  SiegeTurtle: 23,
   AlphaPredator: 24,
+  Diver: 33,
 } as const;

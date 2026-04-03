@@ -116,8 +116,16 @@ export const goDailyChallengeCompleted = signal(false);
 export const dailyChallengeTitle = signal('');
 /** Today's daily challenge description. */
 export const dailyChallengeDesc = signal('');
+/** Today's daily challenge XP reward amount. */
+export const dailyChallengeXp = signal(0);
 /** Whether today's daily challenge has already been completed. */
 export const dailyChallengeAlreadyDone = signal(false);
+/** Current daily challenge streak (consecutive days completed). */
+export const dailyChallengeStreak = signal(0);
+/** Recent 7-day challenge history entries. */
+export const dailyChallengeHistory = signal<
+  Array<{ date: string; challengeTitle: string; completed: boolean }>
+>([]);
 
 // ---- Production queue (moved from store.ts) ----
 export interface QueueItem {

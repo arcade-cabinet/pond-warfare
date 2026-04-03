@@ -12,6 +12,8 @@ export {
 } from './campaign-system';
 export {
   BRANCH_MISSIONS,
+  BRANCH_MISSIONS_EARLY,
+  BRANCH_MISSIONS_LATE,
   CAMPAIGN_MISSIONS,
   getMission,
   type MissionDef,

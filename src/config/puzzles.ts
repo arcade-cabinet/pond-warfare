@@ -1,9 +1,9 @@
 /**
  * Puzzle Mission Definitions — Types, star rating, and aggregate export
  *
- * 10 tactical puzzle missions with fixed starting units and specific objectives.
- * Split across puzzles-core.ts (1-5) and puzzles-advanced.ts (6-10) to stay
- * under 300 LOC per file.
+ * 20 tactical puzzle missions with fixed starting units and specific objectives.
+ * Split across puzzles-core.ts (1-5), puzzles-advanced.ts (6-10), and
+ * puzzles-expert.ts (11-20) to stay under 300 LOC per file.
  */
 
 import type { EntityKind } from '@/types';
@@ -31,11 +31,22 @@ export interface PuzzleObjective {
   description: string;
 }
 
+export type DifficultyTier = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
+export const DIFFICULTY_TIER_LABELS: Record<DifficultyTier, string> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced',
+  expert: 'Expert',
+};
+
 export interface PuzzleDef {
   id: string;
   name: string;
   description: string;
   difficulty: 1 | 2 | 3 | 4 | 5;
+  /** Named difficulty tier for UI grouping. */
+  difficultyTier: DifficultyTier;
   /** Fixed map seed for reproducible terrain. */
   mapSeed: number;
   /** Scenario override for map generation. */
@@ -65,8 +76,29 @@ export interface PuzzleDef {
 
 import { ADVANCED_PUZZLES } from './puzzles-advanced';
 import { CORE_PUZZLES } from './puzzles-core';
+import { EXPERT_PUZZLES } from './puzzles-expert';
+import { MASTER_PUZZLES } from './puzzles-master';
 
-export const PUZZLES: PuzzleDef[] = [...CORE_PUZZLES, ...ADVANCED_PUZZLES];
+export const PUZZLES: PuzzleDef[] = [
+  ...CORE_PUZZLES,
+  ...ADVANCED_PUZZLES,
+  ...EXPERT_PUZZLES,
+  ...MASTER_PUZZLES,
+];
+
+/** Group puzzles by difficulty tier for UI display. */
+export function puzzlesByTier(): Record<DifficultyTier, PuzzleDef[]> {
+  const groups: Record<DifficultyTier, PuzzleDef[]> = {
+    beginner: [],
+    intermediate: [],
+    advanced: [],
+    expert: [],
+  };
+  for (const p of PUZZLES) {
+    groups[p.difficultyTier].push(p);
+  }
+  return groups;
+}
 
 /** Star rating: 1 star (complete), 2 stars (under par), 3 stars (no unit losses). */
 export function getPuzzleStars(

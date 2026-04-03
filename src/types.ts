@@ -18,6 +18,7 @@ export enum UnitState {
   Attacking = 10,
   AttackMovePatrol = 11,
   Retreat = 12,
+  PatrolMove = 13,
 }
 
 export enum EntityKind {
@@ -219,6 +220,8 @@ export interface MinimapPing {
   y: number;
   life: number;
   maxLife: number;
+  /** Optional color override (defaults to red for alerts, cyan for co-op pings). */
+  color?: string;
 }
 
 export interface GroundPing {

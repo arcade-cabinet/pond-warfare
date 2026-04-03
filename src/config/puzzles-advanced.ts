@@ -14,6 +14,7 @@ export const ADVANCED_PUZZLES: PuzzleDef[] = [
     name: 'Naval Ambush',
     description: '3 Divers + 1 Warship must destroy the enemy Dock before reinforcements arrive.',
     difficulty: 3,
+    difficultyTier: 'intermediate',
     mapSeed: 42006,
     scenario: 'archipelago',
     playerUnits: [
@@ -44,6 +45,7 @@ export const ADVANCED_PUZZLES: PuzzleDef[] = [
     name: "Engineer's Bridge",
     description: '2 Engineers + 4 Brawlers must cross the river and destroy the nest.',
     difficulty: 3,
+    difficultyTier: 'intermediate',
     mapSeed: 42007,
     scenario: 'river',
     playerUnits: [
@@ -75,6 +77,7 @@ export const ADVANCED_PUZZLES: PuzzleDef[] = [
     name: 'Weather Warfare',
     description: '5 units must survive 5 minutes of changing weather conditions.',
     difficulty: 4,
+    difficultyTier: 'intermediate',
     mapSeed: 42008,
     scenario: 'island',
     playerUnits: [
@@ -106,6 +109,7 @@ export const ADVANCED_PUZZLES: PuzzleDef[] = [
     name: "The Berserker's Last Stand",
     description: '1 Berserker (200 HP) must kill 20 enemies before dying. No healing.',
     difficulty: 4,
+    difficultyTier: 'intermediate',
     mapSeed: 42009,
     scenario: 'contested',
     playerUnits: [{ kind: EntityKind.Berserker, x: 1200, y: 1200 }],
@@ -135,6 +139,7 @@ export const ADVANCED_PUZZLES: PuzzleDef[] = [
     description:
       'Build one of every building, research one tech per branch, train one of every unit.',
     difficulty: 5,
+    difficultyTier: 'intermediate',
     mapSeed: 42010,
     scenario: 'standard',
     playerUnits: [

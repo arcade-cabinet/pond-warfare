@@ -175,32 +175,24 @@ export interface GameWorld {
   // Advisor system state
   advisorState: AdvisorState;
 
-  // Commander aura: entity IDs within commander aura range
+  // Commander aura + selection
   commanderDamageBuff: Set<number>;
   commanderSpeedBuff: Set<number>;
   commanderHpBuffApplied: Set<number>;
   commanderUnitHpBuff: Set<number>;
   commanderEnemyDebuff: Set<number>;
-
-  // Commander selection
   commanderId: string;
   commanderModifiers: CommanderModifiers;
 
-  // Airdrop safety net
+  // Airdrop, checkpoint, evacuation
   airdropsRemaining: number;
   airdropCooldownUntil: number;
-
-  // Checkpoint system (serialized save state strings)
   checkpoints: string[];
   lastCheckpointFrame: number;
-
-  // Evacuation state
   evacuationTriggered: boolean;
 
-  // Faction selection: which faction the player controls
+  // Faction + AI
   playerFaction: PlayableFaction;
-
-  // AI personality: modifies enemy AI behavior
   aiPersonality: AIPersonality;
 
   // Active ability state (tech tree abilities)
@@ -211,23 +203,15 @@ export interface GameWorld {
   warDrumsBuff: Set<number>;
   venomCoatingTimers: Map<number, number>;
 
-  // Map exploration
+  // Map, terrain, combat zones
   exploredPercent: number;
-
-  // Terrain grid (tile-based terrain types affecting movement/combat)
   terrainGrid: TerrainGrid;
-
-  // Combat zone tracking for minimap indicators
   combatZones: { x: number; y: number; life: number }[];
-
-  // Wave counter (incremented each mega-wave spawn)
   waveNumber: number;
 
-  // Commander active ability state
+  // Commander active ability + morale
   commanderAbilityCooldownUntil: number;
   commanderAbilityActiveUntil: number;
-
-  // Morale system: demoralized units get -20% dmg, -10% speed
   demoralizedUnits: Set<number>;
   /** Frame until which all player units are demoralized (commander death). 0 = inactive. */
   commanderDeathDemoralizeUntil: number;
@@ -276,6 +260,23 @@ export interface GameWorld {
 
   /** Extended stats for new achievements (incrementally tracked per match). */
   extendedStats?: Partial<ExtendedStats>;
+
+  // --- Co-op multiplayer ---
+
+  /** True when playing co-op multiplayer. Gates all co-op gameplay rules. */
+  coopMode: boolean;
+
+  /** True when co-op partner's Lodge has been destroyed (they can still play). */
+  partnerLodgeDestroyed: boolean;
+
+  /** Co-op partner unit positions for shared fog-of-war (updated via network). */
+  partnerUnitPositions: { x: number; y: number; isBuilding: boolean }[];
+
+  /** Callback invoked when player resources change in co-op (set by multiplayer controller). */
+  coopResourceCallback: (() => void) | null;
+
+  /** Patrol waypoints per entity (bitECS SoA can't store nested arrays). */
+  patrolWaypoints: Map<number, { x: number; y: number }[]>;
 }
 
 /** Extended game stats tracked per match for v2.1.0 achievements. */

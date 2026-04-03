@@ -17,7 +17,7 @@ export interface PointerState {
 export interface PointerCallbacks {
   getEntityAt: (wx: number, wy: number) => number | null;
   hasPlayerUnitsSelected: () => boolean;
-  issueContextCommand: (target: number | null) => void;
+  issueContextCommand: (target: number | null, shiftDown?: boolean) => void;
   onUpdateUI: () => void;
   onPlaceBuilding: () => void;
   onPlaySound: (name: 'selectUnit' | 'selectBuild' | 'click') => void;

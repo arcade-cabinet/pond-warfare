@@ -13,6 +13,7 @@ import { BUILD_TIMER, GATHER_AMOUNT, GATHER_TIMER, REPAIR_TIMER } from '@/consta
 import {
   Carrying,
   FactionTag,
+  Patrol,
   Position,
   Resource,
   Sprite,
@@ -37,6 +38,7 @@ export const MOVE_STATES = new Set<number>([
   UnitState.AttackMovePatrol,
   UnitState.RepairMove,
   UnitState.Retreat,
+  UnitState.PatrolMove,
 ]);
 
 /** Handles state transitions when a unit reaches its target position. */
@@ -163,6 +165,11 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
         Carrying.resourceAmount[eid] = 0;
         audio.deposit(Position.x[eid]);
 
+        // Co-op: notify partner of resource change
+        if (faction === Faction.Player && world.coopMode && world.coopResourceCallback) {
+          world.coopResourceCallback();
+        }
+
         // If the gather target still has resources, go back to it
         const tEnt = UnitStateMachine.targetEntity[eid];
         if (
@@ -186,7 +193,34 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
       UnitStateMachine.state[eid] = UnitState.Attacking;
       break;
 
+    case UnitState.PatrolMove:
+      advancePatrolWaypoint(world, eid);
+      break;
+
     default:
       break;
   }
+}
+
+/** Advance a patrolling unit to the next waypoint, looping back to start. */
+function advancePatrolWaypoint(world: GameWorld, eid: number): void {
+  if (Patrol.active[eid] !== 1) {
+    UnitStateMachine.state[eid] = UnitState.Idle;
+    return;
+  }
+
+  const waypoints = world.patrolWaypoints.get(eid);
+  if (!waypoints || waypoints.length === 0) {
+    Patrol.active[eid] = 0;
+    UnitStateMachine.state[eid] = UnitState.Idle;
+    return;
+  }
+
+  const next = (Patrol.currentWaypoint[eid] + 1) % waypoints.length;
+  Patrol.currentWaypoint[eid] = next;
+
+  const wp = waypoints[next];
+  UnitStateMachine.targetX[eid] = wp.x;
+  UnitStateMachine.targetY[eid] = wp.y;
+  UnitStateMachine.state[eid] = UnitState.PatrolMove;
 }

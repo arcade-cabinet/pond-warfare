@@ -29,14 +29,14 @@ vi.mock('@capacitor-community/sqlite', () => ({
 // ---------------------------------------------------------------------------
 
 describe('Campaign missions — structural', () => {
-  it('has exactly 5 missions numbered 1-5', () => {
-    expect(CAMPAIGN_MISSIONS).toHaveLength(5);
-    expect(CAMPAIGN_MISSIONS.map((m) => m.number)).toEqual([1, 2, 3, 4, 5]);
+  it('has exactly 10 missions numbered 1-10', () => {
+    expect(CAMPAIGN_MISSIONS).toHaveLength(10);
+    expect(CAMPAIGN_MISSIONS.map((m) => m.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 
   it('each mission has unique id and at least 1 objective', () => {
     const ids = CAMPAIGN_MISSIONS.map((m) => m.id);
-    expect(new Set(ids).size).toBe(5);
+    expect(new Set(ids).size).toBe(10);
     for (const m of CAMPAIGN_MISSIONS) {
       expect(m.objectives.length).toBeGreaterThanOrEqual(1);
     }

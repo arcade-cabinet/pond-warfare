@@ -13,6 +13,7 @@ export const CORE_PUZZLES: PuzzleDef[] = [
     name: 'First Strike',
     description: '3 Brawlers must destroy 1 Predator Nest. No training allowed.',
     difficulty: 1,
+    difficultyTier: 'beginner',
     mapSeed: 42001,
     scenario: 'standard',
     playerUnits: [
@@ -41,6 +42,7 @@ export const CORE_PUZZLES: PuzzleDef[] = [
     name: 'Stealth Run',
     description: '2 Divers must reach the enemy Lodge without being detected.',
     difficulty: 2,
+    difficultyTier: 'beginner',
     mapSeed: 42002,
     scenario: 'river',
     playerUnits: [
@@ -70,6 +72,7 @@ export const CORE_PUZZLES: PuzzleDef[] = [
     name: 'Hold the Bridge',
     description: '5 units must defend a bridge chokepoint for 3 minutes.',
     difficulty: 3,
+    difficultyTier: 'beginner',
     mapSeed: 42003,
     scenario: 'river',
     playerUnits: [
@@ -100,6 +103,7 @@ export const CORE_PUZZLES: PuzzleDef[] = [
     name: 'Economy Race',
     description: '4 Gatherers must accumulate 1000 clams before the enemy.',
     difficulty: 3,
+    difficultyTier: 'beginner',
     mapSeed: 42004,
     scenario: 'standard',
     playerUnits: [
@@ -124,6 +128,7 @@ export const CORE_PUZZLES: PuzzleDef[] = [
     name: 'Commander Down',
     description: 'Kill the Alpha Predator with only your Commander + 2 Healers.',
     difficulty: 5,
+    difficultyTier: 'beginner',
     mapSeed: 42005,
     scenario: 'contested',
     playerUnits: [

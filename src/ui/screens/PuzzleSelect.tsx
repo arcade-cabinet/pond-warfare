@@ -1,9 +1,14 @@
 /**
- * PuzzleSelect — Puzzle selection screen showing all 10 puzzles.
+ * PuzzleSelect — Puzzle selection screen showing all 20 puzzles grouped by tier.
  * US1: Name, description, star rating, locked/unlocked status, par time.
  */
 
-import { PUZZLES, type PuzzleDef } from '@/config/puzzles';
+import {
+  DIFFICULTY_TIER_LABELS,
+  type DifficultyTier,
+  type PuzzleDef,
+  puzzlesByTier,
+} from '@/config/puzzles';
 import { screenClass } from '@/platform';
 import { Frame9Slice } from '../components/frame';
 
@@ -57,6 +62,69 @@ function DifficultyDots({ level }: { level: number }) {
   );
 }
 
+const TIER_COLORS: Record<DifficultyTier, string> = {
+  beginner: 'var(--pw-health)',
+  intermediate: 'var(--pw-achievement)',
+  advanced: 'var(--pw-warning)',
+  expert: 'var(--pw-danger, #e74c3c)',
+};
+
+function PuzzleCard({
+  puzzle,
+  index,
+  unlocked,
+  stars,
+  onSelect,
+}: {
+  puzzle: PuzzleDef;
+  index: number;
+  unlocked: boolean;
+  stars: number;
+  onSelect: (p: PuzzleDef) => void;
+}) {
+  return (
+    <button
+      key={puzzle.id}
+      type="button"
+      class={`action-btn p-3 text-left flex items-start gap-3 ${unlocked ? '' : 'opacity-40 cursor-not-allowed'}`}
+      disabled={!unlocked}
+      onClick={() => unlocked && onSelect(puzzle)}
+      data-testid={`puzzle-card-${puzzle.id}`}
+    >
+      <div
+        class="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center font-numbers font-bold"
+        style={{
+          background: unlocked ? 'var(--pw-accent-dim)' : 'var(--pw-stone-dark)',
+          color: unlocked ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
+        }}
+      >
+        {index + 1}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <span class="font-heading text-xs truncate" style={{ color: 'var(--pw-text-primary)' }}>
+            {unlocked ? puzzle.name : 'Locked'}
+          </span>
+          <StarDisplay earned={stars} max={3} />
+        </div>
+        {unlocked && (
+          <>
+            <p class="text-[10px] mt-0.5 line-clamp-2" style={{ color: 'var(--pw-text-muted)' }}>
+              {puzzle.description}
+            </p>
+            <div class="flex items-center gap-3 mt-1">
+              <DifficultyDots level={puzzle.difficulty} />
+              <span class="font-numbers text-[9px]" style={{ color: 'var(--pw-text-muted)' }}>
+                Par: {formatParTime(puzzle.parTimeFrames)}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+    </button>
+  );
+}
+
 export function PuzzleSelect({
   earnedStars,
   unlockedPuzzles,
@@ -64,6 +132,9 @@ export function PuzzleSelect({
   onClose,
 }: PuzzleSelectProps) {
   const compact = screenClass.value !== 'large';
+  const grouped = puzzlesByTier();
+  const tiers: DifficultyTier[] = ['beginner', 'intermediate', 'advanced', 'expert'];
+  let globalIdx = 0;
 
   return (
     <div class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay">
@@ -84,63 +155,35 @@ export function PuzzleSelect({
               </button>
             </div>
 
-            <div class="grid gap-2">
-              {PUZZLES.map((puzzle, idx) => {
-                const unlocked = unlockedPuzzles.has(puzzle.id);
-                const stars = earnedStars[puzzle.id] || 0;
+            {tiers.map((tier) => {
+              const puzzles = grouped[tier];
+              if (puzzles.length === 0) return null;
+              const startIdx = globalIdx;
+              globalIdx += puzzles.length;
 
-                return (
-                  <button
-                    key={puzzle.id}
-                    type="button"
-                    class={`action-btn p-3 text-left flex items-start gap-3 ${unlocked ? '' : 'opacity-40 cursor-not-allowed'}`}
-                    disabled={!unlocked}
-                    onClick={() => unlocked && onSelectPuzzle(puzzle)}
-                    data-testid={`puzzle-card-${puzzle.id}`}
+              return (
+                <div key={tier} class="mb-4" data-testid={`puzzle-tier-${tier}`}>
+                  <h3
+                    class="font-heading text-xs mb-2 uppercase tracking-wider"
+                    style={{ color: TIER_COLORS[tier] }}
                   >
-                    <div
-                      class="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center font-numbers font-bold"
-                      style={{
-                        background: unlocked ? 'var(--pw-accent-dim)' : 'var(--pw-stone-dark)',
-                        color: unlocked ? 'var(--pw-text-primary)' : 'var(--pw-text-muted)',
-                      }}
-                    >
-                      {idx + 1}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center justify-between gap-2">
-                        <span
-                          class="font-heading text-xs truncate"
-                          style={{ color: 'var(--pw-text-primary)' }}
-                        >
-                          {unlocked ? puzzle.name : 'Locked'}
-                        </span>
-                        <StarDisplay earned={stars} max={3} />
-                      </div>
-                      {unlocked && (
-                        <>
-                          <p
-                            class="text-[10px] mt-0.5 line-clamp-2"
-                            style={{ color: 'var(--pw-text-muted)' }}
-                          >
-                            {puzzle.description}
-                          </p>
-                          <div class="flex items-center gap-3 mt-1">
-                            <DifficultyDots level={puzzle.difficulty} />
-                            <span
-                              class="font-numbers text-[9px]"
-                              style={{ color: 'var(--pw-text-muted)' }}
-                            >
-                              Par: {formatParTime(puzzle.parTimeFrames)}
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    {DIFFICULTY_TIER_LABELS[tier]}
+                  </h3>
+                  <div class="grid gap-2">
+                    {puzzles.map((puzzle, i) => (
+                      <PuzzleCard
+                        key={puzzle.id}
+                        puzzle={puzzle}
+                        index={startIdx + i}
+                        unlocked={unlockedPuzzles.has(puzzle.id)}
+                        stars={earnedStars[puzzle.id] || 0}
+                        onSelect={onSelectPuzzle}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Frame9Slice>
       </div>

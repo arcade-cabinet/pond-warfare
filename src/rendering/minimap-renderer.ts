@@ -232,7 +232,9 @@ export function drawMinimap(
   for (const p of minimapPings) {
     const alpha = p.life / p.maxLife;
     const radius = 4 + Math.sin(p.life * 0.2) * 2;
-    mc.strokeStyle = `rgba(239, 68, 68, ${alpha})`;
+    // Use custom color if provided (co-op pings use cyan), otherwise default red
+    const color = p.color ?? '239, 68, 68';
+    mc.strokeStyle = `rgba(${color}, ${alpha})`;
     mc.lineWidth = 1.5;
     mc.strokeRect(p.x * sx - radius, p.y * sy - radius, radius * 2, radius * 2);
   }

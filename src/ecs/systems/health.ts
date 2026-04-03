@@ -11,6 +11,7 @@ import { hasComponent, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { Combat, EntityTypeTag, FactionTag, Health, IsResource, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { checkCoopWinLose } from '@/net/coop-rules';
 import { EntityKind, Faction } from '@/types';
 import { processDeath } from './health/death';
 import {
@@ -95,22 +96,51 @@ export function healthSystem(world: GameWorld): void {
         lastNestY = Position.y[eid];
       }
     }
-    if (!playerLodgeAlive) {
-      world.state = 'lose';
-      world.gameEndFrame = world.frameCount;
-      world.gameEndFocusX = lodgeX;
-      world.gameEndFocusY = lodgeY;
-      world.gameEndPrevSpeed = world.gameSpeed;
-      world.gameEndSpectacleActive = true;
-      audio.lose();
-    } else if (!nestsRemaining) {
-      world.state = 'win';
-      world.gameEndFrame = world.frameCount;
-      world.gameEndFocusX = lastNestX;
-      world.gameEndFocusY = lastNestY;
-      world.gameEndPrevSpeed = world.gameSpeed;
-      world.gameEndSpectacleActive = true;
-      audio.win();
+
+    // Co-op: use both-survive rules when coopMode is active
+    if (world.coopMode) {
+      const result = checkCoopWinLose(
+        playerLodgeAlive,
+        nestsRemaining,
+        world.partnerLodgeDestroyed,
+      );
+      if (result === 'lose') {
+        world.state = 'lose';
+        world.gameEndFrame = world.frameCount;
+        world.gameEndFocusX = lodgeX;
+        world.gameEndFocusY = lodgeY;
+        world.gameEndPrevSpeed = world.gameSpeed;
+        world.gameEndSpectacleActive = true;
+        audio.lose();
+      } else if (result === 'win') {
+        world.state = 'win';
+        world.gameEndFrame = world.frameCount;
+        world.gameEndFocusX = lastNestX;
+        world.gameEndFocusY = lastNestY;
+        world.gameEndPrevSpeed = world.gameSpeed;
+        world.gameEndSpectacleActive = true;
+        audio.win();
+      }
+      // result === 'playing' or null: continue playing
+    } else {
+      // Solo mode: original logic
+      if (!playerLodgeAlive) {
+        world.state = 'lose';
+        world.gameEndFrame = world.frameCount;
+        world.gameEndFocusX = lodgeX;
+        world.gameEndFocusY = lodgeY;
+        world.gameEndPrevSpeed = world.gameSpeed;
+        world.gameEndSpectacleActive = true;
+        audio.lose();
+      } else if (!nestsRemaining) {
+        world.state = 'win';
+        world.gameEndFrame = world.frameCount;
+        world.gameEndFocusX = lastNestX;
+        world.gameEndFocusY = lastNestY;
+        world.gameEndPrevSpeed = world.gameSpeed;
+        world.gameEndSpectacleActive = true;
+        audio.win();
+      }
     }
   }
 }

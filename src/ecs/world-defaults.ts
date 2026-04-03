@@ -212,5 +212,12 @@ export function createGameWorld(): GameWorld {
     wallGateFaction: new Map(),
     // v2.1.0
     extendedStats: {},
+    // Co-op multiplayer
+    coopMode: false,
+    partnerLodgeDestroyed: false,
+    partnerUnitPositions: [],
+    coopResourceCallback: null,
+    // Patrol waypoints (entity ID -> waypoint array)
+    patrolWaypoints: new Map(),
   };
 }

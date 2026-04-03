@@ -19,11 +19,15 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
+import { clearPatrol } from '@/ecs/systems/patrol';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { calculateFormationPositions } from './formation';
+import { issuePatrolCommand } from './patrol-command';
 
 /**
  * Issue a context command (right-click or ground click) to selected units.
+ * When shiftDown is true and target is null (ground click), issues a patrol command.
  * Returns `true` when at least one movable unit was dispatched.
  */
 export function issueContextCommand(
@@ -31,6 +35,7 @@ export function issueContextCommand(
   target: number | null,
   worldX: number,
   worldY: number,
+  shiftDown = false,
 ): boolean {
   if (world.placingBuilding) {
     world.placingBuilding = null;
@@ -53,6 +58,11 @@ export function issueContextCommand(
   if (world.selection.length === 0) return false;
 
   audio.click();
+
+  // Shift+right-click on ground: patrol command
+  if (shiftDown && target == null) {
+    return issuePatrolCommand(world, worldX, worldY);
+  }
 
   // Ground pings
   if (target == null) {
@@ -109,6 +119,8 @@ export function issueContextCommand(
     UnitStateMachine.attackMoveTargetY[eid] = 0;
     UnitStateMachine.targetEntity[eid] = -1;
     UnitStateMachine.returnEntity[eid] = -1;
+    // Regular move/attack clears any existing patrol
+    clearPatrol(world, eid);
 
     if (target != null) {
       barkShown = dispatchTargetCommand(world, eid, target, kind, worldX, worldY, barkShown);
@@ -244,51 +256,4 @@ function getCommandVoiceTrigger(
     return 'gather';
   }
   return 'move';
-}
-
-// ---- Formation Helpers ----
-
-const FORMATION_SPACING = 60;
-
-function calculateFormationPositions(
-  units: number[],
-  targetX: number,
-  targetY: number,
-): { eid: number; x: number; y: number }[] {
-  const melee: number[] = [];
-  const ranged: number[] = [];
-  const support: number[] = [];
-
-  for (const eid of units) {
-    const kind = EntityTypeTag.kind[eid] as EntityKind;
-    if (kind === EntityKind.Brawler || kind === EntityKind.Gator) {
-      melee.push(eid);
-    } else if (kind === EntityKind.Sniper) {
-      ranged.push(eid);
-    } else {
-      support.push(eid);
-    }
-  }
-
-  const positions: { eid: number; x: number; y: number }[] = [];
-
-  layoutRow(melee, targetX, targetY, FORMATION_SPACING, positions);
-  layoutRow(ranged, targetX, targetY + FORMATION_SPACING, FORMATION_SPACING, positions);
-  layoutRow(support, targetX, targetY + FORMATION_SPACING * 2, FORMATION_SPACING, positions);
-
-  return positions;
-}
-
-function layoutRow(
-  eids: number[],
-  cx: number,
-  cy: number,
-  spacing: number,
-  out: { eid: number; x: number; y: number }[],
-): void {
-  const count = eids.length;
-  for (let i = 0; i < count; i++) {
-    const offsetX = (i - (count - 1) / 2) * spacing;
-    out.push({ eid: eids[i], x: cx + offsetX, y: cy });
-  }
 }

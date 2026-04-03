@@ -4,9 +4,15 @@
  * Each mission progressively introduces 1-2 of the 5 tech branches:
  *   1) First Dawn  — basics + Lodge hint
  *   2) Into the Fog — Lodge + Nature intro
- *   3-5 in mission-defs-late.ts
+ *   3-5  in mission-defs-late.ts
+ *   6-7  in mission-defs-finale.ts
+ *   8A/B in mission-defs-finale-late.ts
+ *   9-10 in mission-defs-endgame.ts
  */
 
+import { mission9, mission10 } from './mission-defs-endgame';
+import { mission6, mission7 } from './mission-defs-finale';
+import { mission8A, mission8B } from './mission-defs-finale-late';
 import { mission3, mission4, mission4A, mission4B, mission5 } from './mission-defs-late';
 import { EK, type MissionDef } from './mission-types';
 
@@ -148,7 +154,24 @@ const mission2: MissionDef = {
   },
 };
 
-export const CAMPAIGN_MISSIONS: MissionDef[] = [mission1, mission2, mission3, mission4, mission5];
+export const CAMPAIGN_MISSIONS: MissionDef[] = [
+  mission1,
+  mission2,
+  mission3,
+  mission4,
+  mission5,
+  mission6,
+  mission7,
+  mission8A,
+  mission9,
+  mission10,
+];
 
 /** Branching missions available after Mission 3. */
-export const BRANCH_MISSIONS = { A: mission4A, B: mission4B } as const;
+export const BRANCH_MISSIONS_EARLY = { A: mission4A, B: mission4B } as const;
+
+/** Branching missions available after Mission 7 (stealth vs siege path). */
+export const BRANCH_MISSIONS_LATE = { A: mission8A, B: mission8B } as const;
+
+/** @deprecated Use BRANCH_MISSIONS_EARLY for clarity. */
+export const BRANCH_MISSIONS = BRANCH_MISSIONS_EARLY;

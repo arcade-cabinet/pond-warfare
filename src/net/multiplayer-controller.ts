@@ -10,6 +10,12 @@ import { game } from '@/game';
 import { mapScenario, menuState, selectedCommander, selectedDifficulty } from '@/ui/store';
 import * as mp from '@/ui/store-multiplayer';
 import { createRoom, generateRoomCode, type PeerConnection } from './connection';
+import {
+  applyCoopPing,
+  applyResourceSync,
+  buildLodgeDestroyedMessage,
+  buildResourceSyncMessage,
+} from './coop-rules';
 import { LockstepSync } from './lockstep';
 import type { NetMessage, PlayerId } from './types';
 
@@ -98,6 +104,28 @@ export function startMultiplayerGame(): void {
   mp.multiplayerMode.value = true;
   mp.multiplayerDisconnected.value = false;
   menuState.value = 'playing';
+
+  // Enable co-op mode on the world and wire up resource sync callback
+  const world = game.world;
+  if (world) {
+    world.coopMode = true;
+    world.coopResourceCallback = () => {
+      if (!connection) return;
+      connection.sendMeta(buildResourceSyncMessage(world));
+    };
+  }
+}
+
+// ---- Co-op: Send Minimap Ping ----
+
+/** Broadcast a minimap ping to the co-op partner. */
+export function sendCoopPing(x: number, y: number): void {
+  connection?.sendMeta({ type: 'coop-ping', x, y });
+}
+
+/** Notify partner that our Lodge was destroyed. */
+export function sendLodgeDestroyed(): void {
+  connection?.sendMeta(buildLodgeDestroyedMessage());
 }
 
 // ---- Disconnect ----
@@ -160,6 +188,29 @@ function handleMetaMessage(msg: NetMessage): void {
       mp.multiplayerDisconnected.value = true;
       mp.multiplayerConnected.value = false;
       break;
+    // Co-op messages
+    case 'coop-resource': {
+      const world = game.world;
+      if (world?.coopMode) {
+        applyResourceSync(world, msg);
+      }
+      break;
+    }
+    case 'coop-ping': {
+      const world = game.world;
+      if (world?.coopMode) {
+        applyCoopPing(world, msg.x, msg.y);
+      }
+      break;
+    }
+    case 'coop-lodge-destroyed': {
+      const world = game.world;
+      if (world?.coopMode) {
+        world.partnerLodgeDestroyed = true;
+        mp.coopPartnerLodgeDestroyed.value = true;
+      }
+      break;
+    }
     default:
       break;
   }

@@ -59,9 +59,9 @@ describe('Campaign branching', () => {
       expect(m5?.number).toBe(5);
     });
 
-    it('main CAMPAIGN_MISSIONS should still have 5 missions in order', () => {
-      expect(CAMPAIGN_MISSIONS).toHaveLength(5);
-      expect(CAMPAIGN_MISSIONS.map((m) => m.number)).toEqual([1, 2, 3, 4, 5]);
+    it('main CAMPAIGN_MISSIONS should have 10 missions in order', () => {
+      expect(CAMPAIGN_MISSIONS).toHaveLength(10);
+      expect(CAMPAIGN_MISSIONS.map((m) => m.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
   });
 

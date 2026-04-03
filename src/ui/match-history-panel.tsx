@@ -10,7 +10,7 @@ import { getMatchHistory, type MatchRecord } from '@/storage/match-history';
 import { formatDuration } from '@/systems/leaderboard';
 import { Frame9Slice } from './components/frame';
 import { useScrollDrag } from './hooks/useScrollDrag';
-import { matchHistoryOpen } from './store';
+import { dailyChallengeHistory, dailyChallengeStreak, matchHistoryOpen } from './store';
 
 export function MatchHistoryPanel() {
   const [records, setRecords] = useState<MatchRecord[]>([]);
@@ -65,6 +65,9 @@ export function MatchHistoryPanel() {
               {'\u2715'}
             </button>
 
+            {/* Daily Challenges section */}
+            <ChallengeHistorySection />
+
             {loading ? (
               <div
                 class="text-center py-8 font-game text-sm"
@@ -89,6 +92,78 @@ export function MatchHistoryPanel() {
           </div>
         </Frame9Slice>
       </div>
+    </div>
+  );
+}
+
+function ChallengeHistorySection() {
+  const history = dailyChallengeHistory.value;
+  const streak = dailyChallengeStreak.value;
+
+  if (history.length === 0) return null;
+
+  return (
+    <div class="mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <span
+          class="font-heading text-xs tracking-wider uppercase"
+          style={{ color: 'var(--pw-gold)' }}
+        >
+          Daily Challenges
+        </span>
+        {streak > 0 && (
+          <span
+            class="font-numbers text-[10px] px-1.5 py-0.5 rounded"
+            style={{
+              background: 'var(--pw-glow-accent)',
+              color: 'var(--pw-accent)',
+              border: '1px solid var(--pw-accent-dim)',
+            }}
+          >
+            {streak}-day streak
+          </span>
+        )}
+      </div>
+      <div class="grid grid-cols-7 gap-1">
+        {history.map((entry) => (
+          <ChallengeDay key={entry.date} entry={entry} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChallengeDay({
+  entry,
+}: {
+  entry: { date: string; challengeTitle: string; completed: boolean };
+}) {
+  const dayLabel = new Date(`${entry.date}T00:00:00Z`).toLocaleDateString('en', {
+    weekday: 'narrow',
+  });
+
+  return (
+    <div
+      class="flex flex-col items-center py-1 rounded"
+      style={{
+        background: entry.completed ? 'var(--pw-victory-glow-06)' : 'var(--pw-white-04)',
+        border: entry.completed
+          ? '1px solid var(--pw-victory-glow-15)'
+          : '1px solid var(--pw-white-08)',
+      }}
+      title={`${entry.date}: ${entry.challengeTitle}`}
+    >
+      <span class="font-game text-[9px]" style={{ color: 'var(--pw-text-muted)' }}>
+        {dayLabel}
+      </span>
+      <span
+        class="text-sm leading-none mt-0.5"
+        style={{
+          color: entry.completed ? 'var(--pw-clam)' : 'var(--pw-text-muted)',
+        }}
+      >
+        {entry.completed ? '\u2713' : '\u2013'}
+      </span>
     </div>
   );
 }
