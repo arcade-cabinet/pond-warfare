@@ -10,6 +10,15 @@ import { TopBarControls } from './top-bar-controls';
 import { TopBarResources } from './top-bar-resources';
 import { WeatherIndicator } from './WeatherIndicator';
 
+const TOP_BAR_STYLE = {
+  borderBottomColor: 'var(--pw-mud)',
+  borderBottomWidth: '2px',
+  paddingTop: 'env(safe-area-inset-top, 0px)',
+  background: `linear-gradient(180deg, var(--pw-mud-light) 0%, var(--pw-mud) 60%, var(--pw-bark) 100%)`,
+  backdropFilter: 'blur(8px)',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(139, 105, 20, 0.08)',
+} as const;
+
 export interface TopBarProps {
   onSpeedClick?: () => void;
   onMuteClick?: () => void;
@@ -28,14 +37,7 @@ export function TopBar(props: TopBarProps) {
   return (
     <div
       class={`absolute top-0 left-0 w-full wood-panel border-0 border-b flex items-center justify-between px-2 md:px-6 z-20 text-xs md:text-sm ${compact ? 'h-10' : 'h-10 md:h-12'}`}
-      style={{
-        borderBottomColor: 'var(--pw-mud)',
-        borderBottomWidth: '2px',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        background: `linear-gradient(180deg, var(--pw-mud-light) 0%, var(--pw-mud) 60%, var(--pw-bark) 100%)`,
-        backdropFilter: 'blur(8px)',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(139, 105, 20, 0.08)',
-      }}
+      style={TOP_BAR_STYLE}
     >
       <div class="flex items-center gap-2 md:gap-4">
         <TopBarResources compact={compact} />

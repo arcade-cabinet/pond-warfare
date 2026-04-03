@@ -80,6 +80,20 @@ export function Frame9Slice({
         class="grid drop-shadow-[0_20px_30px_rgba(0,0,0,0.9)]"
         style={{ ...GRID_STYLE, gridTemplateRows: gridRows }}
         onClick={handleGridClick}
+        {...(clickable
+          ? {
+              role: 'button',
+              tabIndex: 0,
+              'aria-expanded': isExpanded,
+              'aria-label': title ? `Toggle ${title}` : 'Toggle section',
+              onKeyDown: (e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onClick?.();
+                }
+              },
+            }
+          : {})}
       >
         {/* Row 1: Top corners + top edge */}
         <div class="w-[60px] h-[60px] z-20">

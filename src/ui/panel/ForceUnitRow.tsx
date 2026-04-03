@@ -7,6 +7,7 @@
  * Hovering the row shows a stat tooltip with HP, damage, range, speed, task.
  */
 
+import { memo } from 'preact/compat';
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import { clearTaskOverride } from '@/game/resource-finder';
 import type { EntityKind } from '@/types';
@@ -19,6 +20,21 @@ export interface ForceUnitRowProps {
   onSelect: (eid: number) => void;
   onTaskChange: (eid: number, task: UnitTask) => void;
 }
+
+const HP_BAR_TRACK_STYLE = { height: '3px', background: 'var(--pw-bar-track)' } as const;
+const NAME_BTN_BASE_STYLE = {
+  background: 'none',
+  border: 'none',
+  padding: 0,
+} as const;
+const UNPIN_BTN_STYLE = {
+  color: 'var(--pw-text-secondary)',
+  background: 'none',
+  border: 'none',
+  padding: '2px',
+  lineHeight: 1,
+} as const;
+const PIN_ICON_STYLE = { color: 'var(--pw-accent)' } as const;
 
 function hpBarColor(pct: number): string {
   if (pct > 0.5) return 'var(--pw-success)';
@@ -44,7 +60,11 @@ function taskLabel(task: UnitTask): string {
   return labels[task] ?? task;
 }
 
-export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps) {
+export const ForceUnitRow = memo(function ForceUnitRow({
+  unit,
+  onSelect,
+  onTaskChange,
+}: ForceUnitRowProps) {
   const isIdle = unit.task === 'idle';
   const hpPct = unit.maxHp > 0 ? unit.hp / unit.maxHp : 0;
   const name = entityKindName(unit.kind as EntityKind) ?? 'Unit';
@@ -80,20 +100,14 @@ export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps
           type="button"
           class="text-[10px] font-bold cursor-pointer truncate flex items-center gap-1"
           style={{
+            ...NAME_BTN_BASE_STYLE,
             color: isIdle ? 'var(--pw-warning)' : 'var(--pw-text-primary)',
-            background: 'none',
-            border: 'none',
-            padding: 0,
           }}
           data-testid="unit-name-btn"
           onClick={() => onSelect(unit.eid)}
         >
           {unit.hasOverride && (
-            <span
-              class="text-[8px]"
-              style={{ color: 'var(--pw-accent)' }}
-              title="Manual task override"
-            >
+            <span class="text-[8px]" style={PIN_ICON_STYLE} title="Manual task override">
               &#x1F4CC;
             </span>
           )}
@@ -109,13 +123,7 @@ export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps
             <button
               type="button"
               class="text-[10px] cursor-pointer"
-              style={{
-                color: 'var(--pw-text-secondary)',
-                background: 'none',
-                border: 'none',
-                padding: '2px',
-                lineHeight: 1,
-              }}
+              style={UNPIN_BTN_STYLE}
               title="Return to auto-behavior"
               data-testid="unpin-btn"
               onClick={(e) => {
@@ -130,10 +138,7 @@ export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps
       </div>
 
       {/* HP bar */}
-      <div
-        class="mt-0.5 rounded-full overflow-hidden"
-        style={{ height: '3px', background: 'var(--pw-bar-track)' }}
-      >
+      <div class="mt-0.5 rounded-full overflow-hidden" style={HP_BAR_TRACK_STYLE}>
         <div
           class="h-full rounded-full transition-all"
           style={{
@@ -145,4 +150,4 @@ export function ForceUnitRow({ unit, onSelect, onTaskChange }: ForceUnitRowProps
       </div>
     </div>
   );
-}
+});

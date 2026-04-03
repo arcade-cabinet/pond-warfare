@@ -10,6 +10,8 @@
  * Accessible from the gear icon button in the HUD top bar.
  */
 
+// TODO: Focus management — on open, move focus to the close button or first
+// interactive element. On close, return focus to the trigger (e.g. gear icon button).
 import { useMemo } from 'preact/hooks';
 import { AdvisorSettings } from './components/AdvisorSettings';
 import { Frame9Slice } from './components/frame';
@@ -86,6 +88,9 @@ function Toggle({
       </span>
       <button
         type="button"
+        role="switch"
+        aria-checked={active}
+        aria-label={label}
         class={`w-12 h-7 rounded-full relative cursor-pointer ${
           active ? 'toggle-track-active' : 'toggle-track'
         }`}
@@ -121,6 +126,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Settings"
       class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) props.onClose();
@@ -140,6 +148,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             {/* Close button */}
             <button
               type="button"
+              aria-label="Close Settings"
               class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={props.onClose}
               title="Close Settings"

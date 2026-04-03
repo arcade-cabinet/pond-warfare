@@ -27,6 +27,31 @@ import {
   selectionStatsHtml,
 } from './store';
 
+const PANEL_BG_STYLE = {
+  background: 'linear-gradient(180deg, var(--pw-bg-surface) 0%, var(--pw-bg-deep) 100%)',
+  borderColor: 'var(--pw-border)',
+} as const;
+
+const STATS_TEXT_STYLE = { color: 'var(--pw-text-secondary)' } as const;
+const MUTED_TEXT_STYLE = { color: 'var(--pw-text-muted)' } as const;
+
+const PORTRAIT_STYLE = {
+  background: 'var(--pw-bg-surface)',
+  border: '2px solid var(--pw-border)',
+  boxShadow: `inset 0 0 8px var(--pw-shadow-medium), 0 0 4px var(--pw-glow-accent-10)`,
+} as const;
+
+const KILL_BADGE_STYLE = {
+  background: 'linear-gradient(135deg, var(--pw-enemy), #801818)',
+  border: '1px solid var(--pw-enemy-light)',
+} as const;
+
+const AMOVE_BTN_STYLE = { border: '1px solid var(--pw-twig)', color: 'var(--pw-otter)' } as const;
+const STOP_BTN_STYLE = {
+  border: '1px solid var(--pw-border)',
+  color: 'var(--pw-text-secondary)',
+} as const;
+
 export interface SelectionPanelProps {
   onDeselect?: () => void;
   onIdleWorkerClick?: () => void;
@@ -50,10 +75,7 @@ export function SelectionPanel({
     <div
       id="selection-info"
       class="w-full flex-shrink-0 p-2 border-b-2 flex flex-col gap-1 overflow-y-auto relative"
-      style={{
-        background: 'linear-gradient(180deg, var(--pw-bg-surface) 0%, var(--pw-bg-deep) 100%)',
-        borderColor: 'var(--pw-border)',
-      }}
+      style={PANEL_BG_STYLE}
     >
       {/* Deselect button */}
       {count > 0 && onDeselect && (
@@ -82,7 +104,7 @@ export function SelectionPanel({
             <button
               type="button"
               class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
-              style={{ border: '1px solid var(--pw-twig)', color: 'var(--pw-otter)' }}
+              style={AMOVE_BTN_STYLE}
               onClick={(e) => {
                 e.stopPropagation();
                 onAttackMoveClick?.();
@@ -94,7 +116,7 @@ export function SelectionPanel({
           <button
             type="button"
             class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
-            style={{ border: '1px solid var(--pw-border)', color: 'var(--pw-text-secondary)' }}
+            style={STOP_BTN_STYLE}
             onClick={(e) => {
               e.stopPropagation();
               onHaltClick?.();
@@ -115,20 +137,13 @@ export function SelectionPanel({
                 src={selectionSpriteData.value}
                 alt="portrait"
                 class="rounded-sm shadow-inner w-12 h-12 md:w-14 md:h-14 render-pixelated cursor-pointer transition-colors"
-                style={{
-                  background: 'var(--pw-bg-surface)',
-                  border: '2px solid var(--pw-border)',
-                  boxShadow: `inset 0 0 8px var(--pw-shadow-medium), 0 0 4px var(--pw-glow-accent-10)`,
-                }}
+                style={PORTRAIT_STYLE}
                 title="Click to track unit"
               />
               {selectionKills.value > 0 && (
                 <span
                   class="absolute -top-1 -right-1 text-white text-[9px] md:text-[10px] font-numbers font-bold rounded-full px-1 leading-tight"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--pw-enemy), #801818)',
-                    border: '1px solid var(--pw-enemy-light)',
-                  }}
+                  style={KILL_BADGE_STYLE}
                 >
                   {selectionKills.value}
                 </span>
@@ -155,20 +170,17 @@ export function SelectionPanel({
             <div
               id="sel-stats"
               class="font-numbers text-[10px] md:text-xs mt-0.5"
-              style={{ color: 'var(--pw-text-secondary)' }}
+              style={STATS_TEXT_STYLE}
             >
               {selectionStatsHtml}
             </div>
-            <p
-              class="font-game text-[10px] md:text-xs leading-tight"
-              style={{ color: 'var(--pw-text-muted)' }}
-            >
+            <p class="font-game text-[10px] md:text-xs leading-tight" style={MUTED_TEXT_STYLE}>
               {selectionDesc}
             </p>
             {selectionIsMulti.value && (
               <p
                 class="font-game text-[10px] md:text-xs leading-tight mt-0.5"
-                style={{ color: 'var(--pw-text-muted)' }}
+                style={MUTED_TEXT_STYLE}
               >
                 {selectionComposition}
               </p>

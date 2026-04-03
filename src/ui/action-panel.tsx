@@ -1,12 +1,6 @@
 /**
- * Action Panel
- *
- * Context-sensitive action buttons organized into three tabs: Train, Build, Tech.
- * For gatherers: Build tab shows Burrow/Armory/Tower etc.
- * For lodge: Train tab shows Gatherer/Scout, Tech tab shows upgrades.
- * For armory: Train tab shows Brawler/Sniper/Healer etc., Tech tab shows upgrades.
- * Training queue display with progress bars and cancel-on-click.
- * Each button has hotkey badge (Q/W/E/R or custom).
+ * Action Panel — Context-sensitive Train/Build/Tech tabs with action buttons,
+ * training queue, hotkey badges, and cost tooltips.
  */
 
 import { signal } from '@preact/signals';
@@ -78,6 +72,7 @@ function ActionButton({ def }: { def: ActionButtonDef; index: number }) {
   return (
     <button
       type="button"
+      aria-label={`${def.title}, costs ${def.cost}${def.requires ? `, ${def.requires}` : ''}`}
       class={`action-btn relative flex flex-col items-center justify-center p-1 md:p-2 rounded text-[10px] md:text-xs font-bold shadow-md min-w-[44px] min-h-[44px] ${
         !def.affordable ? 'opacity-50 grayscale cursor-not-allowed' : ''
       }`}
@@ -121,6 +116,7 @@ function QueueDisplay() {
           <button
             type="button"
             key={`q-${i}`}
+            aria-label={`Cancel ${item.label}, ${Math.round(item.progressPct)}% complete`}
             class="relative w-8 h-8 min-w-[44px] min-h-[44px] rounded cursor-pointer overflow-hidden transition-colors stone-node"
             onClick={(e) => {
               e.stopPropagation();
@@ -171,6 +167,9 @@ function TabButton({
   return (
     <button
       type="button"
+      role="tab"
+      aria-label={`${TAB_LABELS[tab]} tab, ${count} actions`}
+      aria-selected={active}
       class={`flex-1 py-1 px-1 text-[10px] md:text-xs font-bold cursor-pointer transition-colors min-h-[44px] md:min-h-0 font-heading`}
       style={{
         background: active ? 'var(--pw-glow-accent-08)' : 'transparent',
@@ -237,6 +236,8 @@ export function ActionPanel() {
       {buttons.length > 0 && (
         <div
           class="flex flex-shrink-0"
+          role="tablist"
+          aria-label="Action categories"
           style={{ borderBottom: `1px solid var(--pw-glow-accent-12)` }}
         >
           <TabButton

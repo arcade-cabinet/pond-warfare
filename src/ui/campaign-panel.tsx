@@ -5,6 +5,8 @@
  * Shows 5 missions with lock/unlock states and a briefing before launch.
  */
 
+// TODO: Focus management — on open, move focus to first unlocked mission button.
+// On close, return focus to the trigger button that opened the campaign panel.
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { loadCampaignProgress, type MissionDef } from '@/campaign';
 import { CAMPAIGN_MISSIONS } from '@/campaign/missions';
@@ -75,6 +77,9 @@ export function CampaignPanel() {
   return (
     <div
       ref={missionScrollRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Campaign"
       class="absolute inset-0 z-50 overflow-y-auto modal-overlay"
       style={{ background: 'var(--pw-surface-campaign)' }}
     >
@@ -84,6 +89,7 @@ export function CampaignPanel() {
             {/* Close button */}
             <button
               type="button"
+              aria-label="Close Campaign"
               class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={handleClose}
             >
@@ -103,6 +109,7 @@ export function CampaignPanel() {
                   <button
                     key={mission.id}
                     type="button"
+                    aria-label={`Mission ${mission.number}: ${mission.title}${done ? ', completed' : !unlocked ? ', locked' : ''}`}
                     class="action-btn flex items-center gap-4 text-left w-full"
                     disabled={!unlocked}
                     style={{

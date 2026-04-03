@@ -15,6 +15,15 @@ import { executeAdvisorAction } from '@/advisors/tip-actions';
 import { ADVISOR_PERSONAS } from '@/config/advisor-config';
 import { canDockPanels, screenClass } from '@/platform';
 
+const HEADER_STYLE = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  marginBottom: '6px',
+} as const;
+const ACTIONS_ROW_STYLE = { display: 'flex', justifyContent: 'flex-end', gap: '6px' } as const;
+const ARROW_STYLE = { marginLeft: '4px' } as const;
+
 /** Toast container positioning based on layout signals. */
 function getContainerStyle(): Record<string, string> {
   const isCompact = screenClass.value === 'compact';
@@ -46,7 +55,7 @@ export function AdvisorToast() {
       <div class="advisor-toast-vine-stripe" style={{ background: persona.color }} />
 
       {/* Header: icon + name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+      <div style={HEADER_STYLE}>
         <div
           class="advisor-icon advisor-toast-icon"
           style={{
@@ -94,14 +103,14 @@ export function AdvisorToast() {
       >
         {tip.message}
         {tip.action && (
-          <span aria-hidden="true" style={{ marginLeft: '4px' }}>
+          <span aria-hidden="true" style={ARROW_STYLE}>
             →
           </span>
         )}
       </p>
 
       {/* Actions row */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+      <div style={ACTIONS_ROW_STYLE}>
         <button
           class="action-btn"
           style={{

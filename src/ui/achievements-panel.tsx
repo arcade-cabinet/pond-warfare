@@ -6,6 +6,8 @@
  * Accessible from the main menu and settings panel.
  */
 
+// TODO: Focus management — on open, move focus to the close button or first
+// interactive element. On close, return focus to the trigger button.
 import { useEffect, useState } from 'preact/hooks';
 import { ACHIEVEMENTS, getEarnedAchievements, loadAchievements } from '@/systems/achievements';
 import { Frame9Slice } from './components/frame';
@@ -33,6 +35,9 @@ export function AchievementsPanel() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Achievements"
       class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       style={{ background: 'var(--pw-shadow-strong)' }}
       onClick={(e) => {
@@ -51,6 +56,7 @@ export function AchievementsPanel() {
             {/* Close button */}
             <button
               type="button"
+              aria-label="Close Achievements"
               class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={() => {
                 achievementsOpen.value = false;

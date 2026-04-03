@@ -1,5 +1,6 @@
 /** BuildingRow -- Single building card with HP, training progress, and train picker. */
 
+import { memo } from 'preact/compat';
 import { useState } from 'preact/hooks';
 import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
 import type { EntityKind } from '@/types';
@@ -23,6 +24,11 @@ function hpColor(pct: number): string {
 }
 
 const BAR_TRACK = { height: '3px', background: 'var(--pw-bar-track)' } as const;
+const CARD_STYLE = {
+  background: 'var(--pw-wood-dark)',
+  border: '1px solid var(--pw-border)',
+} as const;
+const HP_TEXT_STYLE = { color: 'var(--pw-text-secondary)' } as const;
 const NAME_BTN_STYLE = {
   color: 'var(--pw-text-primary)',
   background: 'none',
@@ -43,7 +49,12 @@ function ThinBar({ pct, color, testId }: { pct: number; color: string; testId?: 
   );
 }
 
-export function BuildingRow({ building, onSelect, onTrain, onCancelTrain }: BuildingRowProps) {
+export const BuildingRow = memo(function BuildingRow({
+  building,
+  onSelect,
+  onTrain,
+  onCancelTrain,
+}: BuildingRowProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const name = entityKindName(building.kind) ?? 'Building';
   const hpPct = building.maxHp > 0 ? building.hp / building.maxHp : 0;
@@ -71,7 +82,7 @@ export function BuildingRow({ building, onSelect, onTrain, onCancelTrain }: Buil
   return (
     <div
       class="rounded p-2"
-      style={{ background: 'var(--pw-wood-dark)', border: '1px solid var(--pw-border)' }}
+      style={CARD_STYLE}
       data-testid="building-row"
       onMouseEnter={onMouseEnter}
       onMouseLeave={hideTooltip}
@@ -86,10 +97,7 @@ export function BuildingRow({ building, onSelect, onTrain, onCancelTrain }: Buil
         >
           {name}
         </button>
-        <span
-          class="font-numbers text-[9px] flex-shrink-0"
-          style={{ color: 'var(--pw-text-secondary)' }}
-        >
+        <span class="font-numbers text-[9px] flex-shrink-0" style={HP_TEXT_STYLE}>
           HP: {building.hp}/{building.maxHp}
         </span>
       </div>
@@ -125,4 +133,4 @@ export function BuildingRow({ building, onSelect, onTrain, onCancelTrain }: Buil
       )}
     </div>
   );
-}
+});

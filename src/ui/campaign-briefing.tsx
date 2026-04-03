@@ -40,6 +40,9 @@ export function CampaignBriefing({ mission, onBegin, onBack }: Props) {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Mission ${mission.number} Briefing: ${mission.title}`}
       class="absolute inset-0 z-50 flex items-center justify-center"
       style={{ background: `linear-gradient(${tint}, var(--pw-surface-campaign))` }}
       data-testid="campaign-briefing"

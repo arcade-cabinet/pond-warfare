@@ -109,8 +109,33 @@ export function MainMenu() {
 
       {/* Menu buttons */}
       <div class={`relative z-10 flex flex-col items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-        <MenuButton label="Quick Play" wide onClick={handleQuickPlay} />
+        {/* Hero CTA — Campaign */}
+        <div class="flex flex-col items-center">
+          <MenuButton
+            label="Campaign"
+            wide
+            onClick={set(campaignOpen)}
+            extraStyle={{ width: '220px', height: '56px', fontSize: '1.3rem' }}
+          />
+          {!hasSaveGame.value && (
+            <span
+              class="font-game text-[11px] mt-1"
+              style={{ color: 'var(--pw-gold)', opacity: 0.85 }}
+            >
+              New to Pond Warfare? Start here!
+            </span>
+          )}
+        </div>
+
+        {/* Game modes */}
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+          <MenuButton label="Puzzles" onClick={set(puzzleSelectOpen)} />
+          <MenuButton label="Survival" onClick={set(survivalSelectOpen)} />
+        </div>
+
+        {/* Freeplay */}
+        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+          <MenuButton label="Quick Play" wide onClick={handleQuickPlay} />
           <MenuButton
             label="New Game"
             wide
@@ -118,24 +143,24 @@ export function MainMenu() {
               menuState.value = 'newGame';
             }}
           />
+        </div>
+
+        {/* Continue — only if save exists */}
+        {hasSaveGame.value && (
           <MenuButton
             label="Continue"
             wide
-            disabled={!hasSaveGame.value}
             onClick={() => {
-              if (hasSaveGame.value) {
-                continueRequested.value = true;
-                menuState.value = 'playing';
-              }
+              continueRequested.value = true;
+              menuState.value = 'playing';
             }}
           />
-        </div>
-        <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
-          <MenuButton label="Puzzles" onClick={set(puzzleSelectOpen)} />
-          <MenuButton label="Survival" onClick={set(survivalSelectOpen)} />
-          <MenuButton label="Co-op" onClick={set(multiplayerMenuOpen)} />
-          <MenuButton label="Campaign" onClick={set(campaignOpen)} />
-        </div>
+        )}
+
+        {/* Multiplayer */}
+        <MenuButton label="Co-op" onClick={set(multiplayerMenuOpen)} />
+
+        {/* Meta */}
         <div class={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
           <MenuButton label="Settings" onClick={set(settingsOpen)} />
           <MenuButton label="Leaderboard" onClick={set(leaderboardOpen)} />

@@ -7,6 +7,8 @@
  * - medium/large: side-by-side SVG graphs (row of 3 + row of 2)
  */
 
+// TODO: Focus management — on open, move focus to the close button or first
+// interactive element. On close, return focus to the trigger (e.g. Tech Tree HUD button).
 import { useState } from 'preact/hooks';
 import type { TechId, TechState } from '@/config/tech-tree';
 import { screenClass } from '@/platform';
@@ -113,6 +115,9 @@ export function TechTreePanel({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Tech Tree"
       class="absolute inset-0 z-50 modal-overlay"
       style={{ background: 'var(--pw-overlay-heavy)' }}
       onClick={(e) => {
@@ -125,6 +130,7 @@ export function TechTreePanel({
             {/* Close button */}
             <button
               type="button"
+              aria-label="Close Tech Tree"
               class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={(e) => {
                 e.stopPropagation();

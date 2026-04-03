@@ -89,7 +89,11 @@ export function TopBarResources({ compact }: { compact: boolean }) {
   return (
     <div class="flex space-x-3 md:space-x-6">
       {/* Clams */}
-      <div class="flex items-center space-x-1 md:space-x-2">
+      <div
+        role="status"
+        class="flex items-center space-x-1 md:space-x-2"
+        aria-label={`Clams: ${currentClams}`}
+      >
         <div
           class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm"
           style={{
@@ -129,7 +133,11 @@ export function TopBarResources({ compact }: { compact: boolean }) {
       </div>
 
       {/* Twigs */}
-      <div class="flex items-center space-x-1 md:space-x-2">
+      <div
+        role="status"
+        class="flex items-center space-x-1 md:space-x-2"
+        aria-label={`Twigs: ${currentTwigs}`}
+      >
         <div
           class="w-3 h-3 md:w-4 md:h-4 shadow-sm"
           style={{
@@ -169,7 +177,11 @@ export function TopBarResources({ compact }: { compact: boolean }) {
 
       {/* Pearls */}
       {currentPearls > 0 && (
-        <div class="flex items-center space-x-1 md:space-x-2">
+        <div
+          role="status"
+          class="flex items-center space-x-1 md:space-x-2"
+          aria-label={`Pearls: ${currentPearls}`}
+        >
           <div
             class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm"
             style={{
@@ -193,7 +205,11 @@ export function TopBarResources({ compact }: { compact: boolean }) {
       )}
 
       {/* Food */}
-      <div class="flex items-center space-x-1 md:space-x-2">
+      <div
+        role="status"
+        class="flex items-center space-x-1 md:space-x-2"
+        aria-label={`Food: ${currentFood} / ${currentMaxFood}`}
+      >
         <div
           class="w-3 h-3 md:w-4 md:h-4 rounded-sm shadow-sm"
           style={{

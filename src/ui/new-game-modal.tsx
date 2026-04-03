@@ -9,6 +9,8 @@
  * Decomposed into submodules under src/ui/new-game/.
  */
 
+// TODO: Focus management — on open, move focus to the game name input.
+// On close, return focus to the trigger element (e.g. "New Game" menu button).
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import { Frame9Slice } from './components/frame';
 import { type AccordionSection, PondAccordion } from './components/PondAccordion';
@@ -130,6 +132,9 @@ export function NewGameModal() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="New Game"
       class="absolute inset-0 z-[60] flex items-center justify-center modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
@@ -147,6 +152,7 @@ export function NewGameModal() {
             {/* Close button */}
             <button
               type="button"
+              aria-label="Close New Game dialog"
               class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={handleClose}
               title="Close"
@@ -159,6 +165,7 @@ export function NewGameModal() {
               <div class="flex items-center gap-2 mb-1">
                 <input
                   type="text"
+                  aria-label="Game name"
                   value={name}
                   onInput={(e) => setName((e.target as HTMLInputElement).value)}
                   onKeyDown={(e) => e.stopPropagation()}
