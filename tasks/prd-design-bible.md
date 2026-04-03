@@ -1,3 +1,6 @@
+> **SUPERSEDED BY v3** -- This PRD describes v1/v2 features. The v3 rearchitecture
+> replaced many referenced systems. See tasks/prd-v3-rearchitecture.md for current spec.
+
 # PRD: Design Bible — Complete Visual Identity Implementation
 
 ## Overview

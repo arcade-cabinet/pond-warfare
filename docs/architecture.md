@@ -1,5 +1,9 @@
 # Architecture
 
+> **NOTE (v3)**: This document describes the core ECS/PixiJS/Preact architecture which
+> remains valid in v3. Game mode references (campaigns, puzzles, etc.) are outdated.
+> See AGENTS.md and docs/gameplay.md for the current v3 game design.
+
 Pond Warfare uses an Entity Component System (ECS) architecture powered by bitECS, with Preact for UI and PixiJS 8 for rendering.
 
 ## System Overview

@@ -1,3 +1,6 @@
+> **NOTE (v3)**: These findings are from v1/v2 playtests. Some issues are addressed
+> by the v3 rearchitecture (simplified game mode, tutorial, etc.).
+
 # Playtest Findings - 5 Player Personas
 
 ## Critical Issues (fix immediately)

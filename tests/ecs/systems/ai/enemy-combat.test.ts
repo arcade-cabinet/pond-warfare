@@ -2,10 +2,14 @@
  * Enemy Combat System Tests
  *
  * Validates attack decisions and retreat logic.
+ *
+ * NOTE: bitECS SoA components are global typed arrays, so entities from
+ * parallel test files can pollute queries. We mock audio to prevent
+ * side-effects and use generous army sizes to be resilient.
  */
 
 import { addComponent, addEntity } from 'bitecs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { ENEMY_ATTACK_CHECK_INTERVAL, ENEMY_RETREAT_HP_PERCENT } from '@/constants';
 import {
@@ -21,6 +25,21 @@ import {
 import { enemyCombatTick } from '@/ecs/systems/ai/enemy-combat';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
+
+// Mock audio to prevent side-effects during tests
+vi.mock('@/audio/audio-system', () => ({
+  audio: {
+    alert: vi.fn(),
+    hit: vi.fn(),
+    shoot: vi.fn(),
+    selectUnit: vi.fn(),
+  },
+}));
+
+// Mock rendering animations to prevent side-effects
+vi.mock('@/rendering/animations', () => ({
+  triggerSpawnPop: vi.fn(),
+}));
 
 /** Create a completed enemy nest. */
 function createEnemyNest(world: GameWorld, x: number, y: number): number {
@@ -101,20 +120,22 @@ describe('enemyCombatTick', () => {
   beforeEach(() => {
     world = createGameWorld();
     world.peaceTimer = 0;
-    // Set difficulty to easy so threshold is higher but predictable
-    world.difficulty = 'easy';
+    // Use normal difficulty for more predictable threshold (base=5)
+    world.difficulty = 'normal';
   });
 
   it('should attack when army exceeds threshold', () => {
-    // Easy mode base threshold = 8, and needs 3+ idle units
+    // Normal mode: baseThreshold=5, balanced personality mult=1.0
+    // Needs 3+ idle units (Math.min(ENEMY_ARMY_ATTACK_THRESHOLD, 3))
     world.frameCount = ENEMY_ATTACK_CHECK_INTERVAL;
 
     createEnemyNest(world, 1000, 1000);
     createPlayerBuilding(world, EntityKind.Lodge, 200, 200);
 
-    // Create enough idle enemy combat units to exceed the threshold
+    // Create enough idle enemy combat units to exceed any threshold
+    // (15 units: well above 8, even with parallel test contamination)
     const units: number[] = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       units.push(createEnemyCombatUnit(world, EntityKind.Gator, 1000 + i * 10, 1000));
     }
 
