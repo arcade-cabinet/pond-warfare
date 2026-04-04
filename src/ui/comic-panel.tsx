@@ -11,7 +11,8 @@
  * dynamism. In portrait tablet, panels fill width.
  */
 
-import type { ComponentChildren } from 'preact';
+import type preact from 'preact';
+import { Frame9Slice } from '@/ui/components/frame';
 import { SpriteCroc } from '@/ui/components/sprites/SpriteCroc';
 import { SpriteOtter } from '@/ui/components/sprites/SpriteOtter';
 import { SpriteSnake } from '@/ui/components/sprites/SpriteSnake';
@@ -159,29 +160,27 @@ function BubbleContent({
 }
 
 /**
- * Lightweight panel frame: 2px gold border with rounded corners + subtle grunge.
- * Replaces the heavy Frame9Slice (60px/36px SVG corners) with a simple CSS border.
+ * Comic panel frame using the design system Frame9Slice at 'sm' size (20px vine corners).
+ * Organic vine borders instead of boxy CSS rectangles.
  */
-function LightFrame({ children, biomeTint }: { children: ComponentChildren; biomeTint: string }) {
+function ComicFrame({
+  children,
+  biomeTint,
+}: {
+  children: preact.ComponentChildren;
+  biomeTint: string;
+}) {
   return (
-    <div
-      class="comic-panel-frame relative overflow-hidden"
-      style={{
-        border: `2px solid ${COLORS.grittyGold}`,
-        borderRadius: '12px',
-        background: COLORS.bgPanel,
-        boxShadow: `0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(197,160,89,0.1)`,
-        maxHeight: '180px',
-        filter: 'url(#grunge-heavy)',
-      }}
-    >
-      {/* Biome tint overlay */}
-      <div class="absolute inset-0 pointer-events-none" style={{ backgroundColor: biomeTint }} />
-      {/* Panel content */}
-      <div class="relative flex items-center justify-center gap-2 md:gap-3 py-2 px-2 md:px-3">
-        {children}
+    <Frame9Slice size="sm" class="comic-panel-frame">
+      <div class="relative">
+        {/* Biome tint overlay */}
+        <div class="absolute inset-0 pointer-events-none" style={{ backgroundColor: biomeTint }} />
+        {/* Panel content */}
+        <div class="relative flex items-center justify-center gap-2 md:gap-3 py-2 px-2 md:px-3">
+          {children}
+        </div>
       </div>
-    </div>
+    </Frame9Slice>
   );
 }
 
@@ -220,7 +219,7 @@ export function ComicPanel({
         transform: `rotate(${STAGGER_ROTATIONS[staggerPos]})`,
       }}
     >
-      <LightFrame biomeTint={tint}>
+      <ComicFrame biomeTint={tint}>
         {isCharLeft ? (
           <>
             {spriteEl}
@@ -232,7 +231,7 @@ export function ComicPanel({
             {spriteEl}
           </>
         )}
-      </LightFrame>
+      </ComicFrame>
     </div>
   );
 }

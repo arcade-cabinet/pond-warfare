@@ -25,6 +25,15 @@ import { CornerTopRight } from './CornerTopRight';
 import { EdgeHorizontal } from './EdgeHorizontal';
 import { EdgeVertical } from './EdgeVertical';
 
+/** Frame size presets */
+export type FrameSize = 'lg' | 'md' | 'sm';
+
+const SIZE_MAP: Record<FrameSize, number> = {
+  lg: 60, // Full modals, settings, upgrade web
+  md: 36, // Cards, comic panels, rewards
+  sm: 20, // Speech bubbles, small containers, tooltips
+};
+
 export interface Frame9SliceProps {
   children?: ComponentChildren;
   isExpanded?: boolean;
@@ -32,7 +41,9 @@ export interface Frame9SliceProps {
   title?: string;
   /** Extra CSS class on the outermost wrapper */
   class?: string;
-  /** Use smaller 36px corners for space-constrained layouts */
+  /** Frame size: 'lg' (60px corners), 'md' (36px), 'sm' (20px). Default: 'lg' */
+  size?: FrameSize;
+  /** @deprecated Use size='md' instead */
   compact?: boolean;
 }
 
@@ -49,9 +60,10 @@ export function Frame9Slice({
   onClick,
   title,
   class: extraClass,
+  size,
   compact = false,
 }: Frame9SliceProps) {
-  const cornerSize = compact ? 36 : 60;
+  const cornerSize = size ? SIZE_MAP[size] : compact ? 36 : 60;
   const cornerPx = `${cornerSize}px`;
   const clickable = typeof onClick === 'function';
   const gridRows = `${cornerPx} ${isExpanded ? 'auto' : '0px'} ${cornerPx}`;

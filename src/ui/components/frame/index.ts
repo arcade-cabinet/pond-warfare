@@ -7,5 +7,5 @@
 
 export type { CenterPanelProps } from './CenterPanel';
 export { CenterPanel } from './CenterPanel';
-export type { Frame9SliceProps } from './Frame9Slice';
+export type { Frame9SliceProps, FrameSize } from './Frame9Slice';
 export { Frame9Slice } from './Frame9Slice';
