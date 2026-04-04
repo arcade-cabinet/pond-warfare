@@ -73,27 +73,12 @@ export function ComicLanding() {
 
       {/* Title */}
       <div class="relative z-10 flex flex-col items-center mb-1 md:mb-2">
-        <h1 class="font-heading mb-0 tracking-widest uppercase text-center">
-          <span
-            class="block text-2xl md:text-5xl leading-tight"
-            style={{
-              color: COLORS.mossGreen,
-              textShadow:
-                '4px 4px 0 #050505, -2px -2px 0 #050505, 2px -2px 0 #050505, -2px 2px 0 #050505, 0 0 20px rgba(90,107,58,0.4)',
-            }}
-          >
-            Pond
-          </span>
-          <span
-            class="block text-xl md:text-4xl leading-tight mt-0.5"
-            style={{
-              color: COLORS.grittyGold,
-              textShadow:
-                '4px 4px 0 #050505, -2px -2px 0 #050505, 2px -2px 0 #050505, -2px 2px 0 #050505, 0 0 20px rgba(197,160,89,0.3)',
-            }}
-          >
-            Warfare
-          </span>
+        <h1
+          class="font-heading mb-0 tracking-widest uppercase text-center text-2xl md:text-5xl leading-tight"
+          style={{ textShadow: '3px 3px 0 #050505, -1px -1px 0 #050505, 1px -1px 0 #050505, -1px 1px 0 #050505, 0 0 15px rgba(0,0,0,0.6)' }}
+        >
+          <span style={{ color: COLORS.mossGreen }}>Pond</span>{' '}
+          <span style={{ color: COLORS.grittyGold }}>Warfare</span>
         </h1>
       </div>
 
