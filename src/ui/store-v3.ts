@@ -10,6 +10,7 @@
 import { computed, signal } from '@preact/signals';
 import type { PrestigeState } from '@/config/prestige-logic';
 import type { RewardBreakdown } from '@/game/match-rewards';
+import { COLORS } from './design-tokens';
 
 // ── Prestige ─────────────────────────────────────────────────────
 
@@ -79,8 +80,8 @@ export const lodgeHpPercent = computed(() =>
 /** Lodge HP bar color based on percentage. */
 export const lodgeHpColor = computed(() => {
   const pct = lodgeHpPercent.value;
-  if (pct > 0.6) return '#4ade80';
-  if (pct > 0.3) return '#facc15';
+  if (pct > 0.6) return COLORS.feedbackSuccess;
+  if (pct > 0.3) return COLORS.feedbackWarn;
   return '#ef4444';
 });
 

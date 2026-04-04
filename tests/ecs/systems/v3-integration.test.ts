@@ -23,6 +23,7 @@ import {
   setLogs,
   setRocks,
 } from '@/types';
+import { COLORS } from '@/ui/design-tokens';
 
 describe('v3 resource aliases', () => {
   it('ResourceType aliases have matching numeric values', () => {
@@ -189,18 +190,18 @@ describe('lodge HP signals', () => {
     expect(storeV3.lodgeHpPercent.value).toBe(0.5);
   });
 
-  it('lodgeHpColor is yellow at 50%', async () => {
+  it('lodgeHpColor uses feedbackWarn token at 50%', async () => {
     const storeV3 = await import('@/ui/store-v3');
     storeV3.lodgeHp.value = 750;
     storeV3.lodgeMaxHp.value = 1500;
-    expect(storeV3.lodgeHpColor.value).toBe('#facc15');
+    expect(storeV3.lodgeHpColor.value).toBe(COLORS.feedbackWarn);
   });
 
-  it('lodgeHpColor is green above 60%', async () => {
+  it('lodgeHpColor uses feedbackSuccess token above 60%', async () => {
     const storeV3 = await import('@/ui/store-v3');
     storeV3.lodgeHp.value = 1200;
     storeV3.lodgeMaxHp.value = 1500;
-    expect(storeV3.lodgeHpColor.value).toBe('#4ade80');
+    expect(storeV3.lodgeHpColor.value).toBe(COLORS.feedbackSuccess);
   });
 
   it('lodgeHpColor is red below 30%', async () => {

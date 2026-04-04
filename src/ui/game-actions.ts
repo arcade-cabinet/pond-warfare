@@ -16,6 +16,7 @@ import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/se
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
+import { COLORS } from './design-tokens';
 import * as store from './store';
 import {
   autoCombatEnabled,
@@ -100,7 +101,7 @@ export function quickSave(): void {
         x: game.world.camX + (game.world.viewWidth || 400) / 2,
         y: game.world.camY + 60,
         text: 'Game Saved',
-        color: '#4ade80',
+        color: COLORS.feedbackSuccess,
         life: 60,
       });
       audio.click();
@@ -112,7 +113,7 @@ export function quickSave(): void {
         x: game.world.camX + (game.world.viewWidth || 400) / 2,
         y: game.world.camY + 60,
         text: 'Save Failed',
-        color: '#f87171',
+        color: COLORS.feedbackError,
         life: 90,
       });
     });

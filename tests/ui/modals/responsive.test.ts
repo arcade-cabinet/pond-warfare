@@ -7,7 +7,8 @@
  *    uses the correct responsive CSS classes.
  *
  * v3: Removed tests for deleted modals (new-game-modal, tech-tree-panel,
- * campaign-panel, campaign-briefing, unlocks-panel).
+ * campaign-panel, campaign-briefing, unlocks-panel, achievements-panel,
+ * leaderboard-panel, cosmetics-panel, match-history-panel).
  */
 
 import { cleanup, render } from '@testing-library/preact';
@@ -121,20 +122,6 @@ describe('Modal responsive CSS classes', () => {
     assertClasses(src, ['modal-overlay', 'modal-scroll'], 'settings-panel.tsx');
   });
 
-  it('achievements-panel uses modal-overlay and modal-scroll', async () => {
-    const src = await import('@/ui/achievements-panel?raw').then(
-      (m: { default: string }) => m.default,
-    );
-    assertClasses(src, ['modal-overlay', 'modal-scroll'], 'achievements-panel.tsx');
-  });
-
-  it('leaderboard-panel uses modal-overlay and modal-scroll', async () => {
-    const src = await import('@/ui/leaderboard-panel?raw').then(
-      (m: { default: string }) => m.default,
-    );
-    assertClasses(src, ['modal-overlay', 'modal-scroll'], 'leaderboard-panel.tsx');
-  });
-
   it('keyboard-reference uses modal-overlay and modal-scroll', async () => {
     const src = await import('@/ui/keyboard-reference?raw').then(
       (m: { default: string }) => m.default,
@@ -142,21 +129,8 @@ describe('Modal responsive CSS classes', () => {
     assertClasses(src, ['modal-overlay', 'modal-scroll'], 'keyboard-reference.tsx');
   });
 
-  it('cosmetics-panel uses modal-overlay and modal-scroll', async () => {
-    const src = await import('@/ui/cosmetics-panel?raw').then(
-      (m: { default: string }) => m.default,
-    );
-    assertClasses(src, ['modal-overlay', 'modal-scroll'], 'cosmetics-panel.tsx');
-  });
-
   it('drag/swipe behavior is available in surviving modal components', async () => {
-    const modules = [
-      '@/ui/settings-panel',
-      '@/ui/achievements-panel',
-      '@/ui/leaderboard-panel',
-      '@/ui/keyboard-reference',
-      '@/ui/cosmetics-panel',
-    ] as const;
+    const modules = ['@/ui/settings-panel', '@/ui/keyboard-reference'] as const;
 
     for (const mod of modules) {
       const src = await import(`${mod}?raw`).then((m: { default: string }) => m.default);

@@ -25,6 +25,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { COLORS } from '@/ui/design-tokens';
 import { pushGameEvent } from './game-events';
 import { handleFortifyAction, handleFortTypeAction } from './radial-fort-actions';
 
@@ -73,7 +74,7 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const fishCost = def.cost.fish ?? 0;
 
   if (world.resources.clams < fishCost) {
-    pushGameEvent('Not enough Fish!', '#f87171', world.frameCount);
+    pushGameEvent('Not enough Fish!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
@@ -98,7 +99,7 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
     train_medic: 'Medic',
     train_scout: 'Scout',
   };
-  pushGameEvent(`Training ${names[actionId]}`, '#38bdf8', world.frameCount);
+  pushGameEvent(`Training ${names[actionId]}`, COLORS.feedbackInfo, world.frameCount);
   audio.click();
   game.syncUIStore();
   return true;
@@ -111,7 +112,7 @@ function handleRepairAction(world: GameWorld): boolean {
 
   const logCost = 30;
   if (world.resources.twigs < logCost) {
-    pushGameEvent('Not enough Logs!', '#f87171', world.frameCount);
+    pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
@@ -119,14 +120,14 @@ function handleRepairAction(world: GameWorld): boolean {
   const current = Health.current[lodgeEid];
   const max = Health.max[lodgeEid];
   if (current >= max) {
-    pushGameEvent('Lodge is at full health', '#4ade80', world.frameCount);
+    pushGameEvent('Lodge is at full health', COLORS.feedbackSuccess, world.frameCount);
     return false;
   }
 
   world.resources.twigs -= logCost;
   const healAmount = Math.min(100, max - current);
   Health.current[lodgeEid] = current + healAmount;
-  pushGameEvent(`Lodge repaired (+${healAmount} HP)`, '#4ade80', world.frameCount);
+  pushGameEvent(`Lodge repaired (+${healAmount} HP)`, COLORS.feedbackSuccess, world.frameCount);
   audio.click();
   game.syncUIStore();
   return true;
@@ -161,7 +162,7 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
     case 'cmd_heal':
     case 'cmd_scout':
     case 'cmd_move':
-      pushGameEvent('Tap target...', '#38bdf8', world.frameCount);
+      pushGameEvent('Tap target...', COLORS.feedbackInfo, world.frameCount);
       return true;
     default:
       return false;

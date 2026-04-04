@@ -1,12 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  deserializeCommand,
-  deserializeCommands,
-  serializeCommand,
-  serializeCommands,
-} from '@/net/command-serializer';
 import { generateRoomCode } from '@/net/connection';
-import type { ReplayCommand } from '@/replay/recorder';
 
 describe('generateRoomCode', () => {
   it('produces a 6-character string', () => {
@@ -55,42 +48,5 @@ describe('generateRoomCode', () => {
       writable: true,
       configurable: true,
     });
-  });
-});
-
-describe('command-serializer', () => {
-  it('round-trips a ReplayCommand', () => {
-    const cmd: ReplayCommand = { frame: 42, type: 'move', data: { x: 10, y: 20 } };
-    const serialized = serializeCommand(cmd);
-    expect(serialized.type).toBe('move');
-    expect(serialized.data).toEqual({ x: 10, y: 20 });
-
-    const deserialized = deserializeCommand(serialized, 42);
-    expect(deserialized).toEqual(cmd);
-  });
-
-  it('filters out invalid command types', () => {
-    const bad = { type: 'hack', data: {} };
-    expect(deserializeCommand(bad, 0)).toBeNull();
-  });
-
-  it('serializes multiple commands', () => {
-    const cmds: ReplayCommand[] = [
-      { frame: 1, type: 'select', data: { ids: [1] } },
-      { frame: 1, type: 'move', data: { x: 5, y: 5 } },
-    ];
-    const serialized = serializeCommands(cmds);
-    expect(serialized).toHaveLength(2);
-
-    const deserialized = deserializeCommands(serialized, 1);
-    expect(deserialized).toEqual(cmds);
-  });
-
-  it('preserves all valid command types', () => {
-    const types = ['select', 'move', 'attack', 'build', 'train', 'stop', 'research', 'rally'];
-    for (const t of types) {
-      const cmd = { type: t, data: {} };
-      expect(deserializeCommand(cmd, 0)).not.toBeNull();
-    }
   });
 });

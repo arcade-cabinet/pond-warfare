@@ -82,6 +82,7 @@ export function SelectionPanel({
       {count > 0 && onDeselect && (
         <button
           type="button"
+          aria-label="Clear selection"
           class="absolute top-1 right-1 rounded-full w-8 h-8 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer text-xs font-bold z-10 transition-colors hud-btn"
           title="Clear selection (Esc)"
           onClick={(e) => {
@@ -98,6 +99,7 @@ export function SelectionPanel({
         <div class="flex gap-3 items-center font-game text-xs" style={MUTED_TEXT_STYLE}>
           <button
             type="button"
+            aria-label={`Select idle worker, ${idleWorkerCount.value} idle`}
             class="cursor-pointer min-h-[44px] px-2"
             onClick={() => onIdleWorkerClick?.()}
           >
@@ -105,6 +107,7 @@ export function SelectionPanel({
           </button>
           <button
             type="button"
+            aria-label={`Select army, ${armyCount.value} units`}
             class="cursor-pointer min-h-[44px] px-2"
             onClick={() => onArmyClick?.()}
           >
@@ -119,6 +122,7 @@ export function SelectionPanel({
           {!attackMoveActive.value && (
             <button
               type="button"
+              aria-label="Attack-move selected units"
               class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
               style={AMOVE_BTN_STYLE}
               onClick={(e) => {
@@ -131,6 +135,7 @@ export function SelectionPanel({
           )}
           <button
             type="button"
+            aria-label="Stop selected units"
             class="px-2 py-1 rounded text-[10px] font-bold cursor-pointer min-h-[44px]"
             style={STOP_BTN_STYLE}
             onClick={(e) => {

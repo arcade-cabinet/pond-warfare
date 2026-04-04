@@ -17,6 +17,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
 import { EntityKind, Faction } from '@/types';
+import { COLORS } from '@/ui/design-tokens';
 import { progressionLevel } from '@/ui/store-v3';
 import { pushGameEvent } from './game-events';
 
@@ -28,20 +29,20 @@ export function handleFortifyAction(world: GameWorld): boolean {
   if (world.fortifications) {
     const emptySlots = world.fortifications.slots.filter((s) => s.status === 'empty');
     if (emptySlots.length === 0) {
-      pushGameEvent('No empty fort slots!', '#f87171', world.frameCount);
+      pushGameEvent('No empty fort slots!', COLORS.feedbackError, world.frameCount);
       return false;
     }
   }
 
   // v3: Rocks mapped to pearls internally
   if (world.resources.pearls < 15) {
-    pushGameEvent('Not enough Rocks!', '#f87171', world.frameCount);
+    pushGameEvent('Not enough Rocks!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
 
   world.placingBuilding = 'fort_wood_wall';
-  pushGameEvent('Tap slot to place wall', '#f59e0b', world.frameCount);
+  pushGameEvent('Tap slot to place wall', COLORS.feedbackWarn, world.frameCount);
   audio.click();
   game.syncUIStore();
   return true;
@@ -53,7 +54,11 @@ export function handleFortTypeAction(world: GameWorld, actionId: string): boolea
   ensureFortState(world);
 
   world.placingBuilding = `fort_${fortType}`;
-  pushGameEvent(`Tap slot to place ${fortType.replace('_', ' ')}`, '#f59e0b', world.frameCount);
+  pushGameEvent(
+    `Tap slot to place ${fortType.replace('_', ' ')}`,
+    COLORS.feedbackWarn,
+    world.frameCount,
+  );
   audio.click();
   game.syncUIStore();
   return true;
@@ -74,7 +79,7 @@ export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY:
   // Find closest empty slot to the tap
   const slot = findClosestSlot(world.fortifications, worldX, worldY, 'empty');
   if (!slot) {
-    pushGameEvent('No empty slot near tap', '#f87171', world.frameCount);
+    pushGameEvent('No empty slot near tap', COLORS.feedbackError, world.frameCount);
     return false;
   }
 
@@ -82,7 +87,7 @@ export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY:
   const dx = slot.worldX - worldX;
   const dy = slot.worldY - worldY;
   if (dx * dx + dy * dy > 120 * 120) {
-    pushGameEvent('Too far from slot', '#f87171', world.frameCount);
+    pushGameEvent('Too far from slot', COLORS.feedbackError, world.frameCount);
     return false;
   }
 
@@ -95,7 +100,7 @@ export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY:
   );
 
   if (!result.success) {
-    pushGameEvent(result.reason ?? 'Cannot place', '#f87171', world.frameCount);
+    pushGameEvent(result.reason ?? 'Cannot place', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
@@ -105,7 +110,7 @@ export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY:
     world.resources.pearls -= result.rockCost;
   }
 
-  pushGameEvent(`Built ${fortTypeRaw.replace('_', ' ')}`, '#4ade80', world.frameCount);
+  pushGameEvent(`Built ${fortTypeRaw.replace('_', ' ')}`, COLORS.feedbackSuccess, world.frameCount);
   audio.click();
   game.syncUIStore();
   return true;

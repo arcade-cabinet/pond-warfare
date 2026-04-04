@@ -1,5 +1,5 @@
 /**
- * Radial Action Menu (v3.0 — US9)
+ * Radial Action Menu (v3.0 -- US9)
  *
  * Contextual circular menu that appears on tap:
  * - Tap Lodge -> Train Gatherer, Train Fighter, Train Medic, Train Scout, Fortify, Repair
@@ -125,6 +125,8 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
     <div
       ref={overlayRef}
       class="fixed inset-0 z-40"
+      role="menu"
+      aria-label={`${mode === 'lodge' ? 'Lodge' : 'Unit'} actions`}
       style={{ background: 'var(--pw-overlay-light)' }}
       onClick={handleOverlayClick}
       onTouchEnd={handleOverlayClick}
@@ -159,7 +161,7 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
           </span>
         </div>
 
-        {/* Radial options — wood plank button backgrounds */}
+        {/* Radial options -- wood plank button backgrounds */}
         {options.map((opt, i) => {
           const angle = (i / options.length) * Math.PI * 2 - Math.PI / 2;
           const ox = Math.cos(angle) * RADIUS;
@@ -169,6 +171,8 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
             <button
               type="button"
               key={opt.id}
+              role="menuitem"
+              aria-label={opt.tooltip ?? opt.label}
               class={`absolute rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-150 z-50 ${opt.disabled ? 'opacity-40' : ''}`}
               style={{
                 width: `${ITEM_SIZE}px`,

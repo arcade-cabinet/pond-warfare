@@ -26,6 +26,10 @@ describe('COLORS', () => {
       'bgPanel',
       'bloodRed',
       'muzzleFlash',
+      'feedbackSuccess',
+      'feedbackError',
+      'feedbackInfo',
+      'feedbackWarn',
     ];
     for (const key of expectedKeys) {
       expect(COLORS).toHaveProperty(key);
@@ -34,6 +38,13 @@ describe('COLORS', () => {
 
   it('grittyGold is "#C5A059"', () => {
     expect(COLORS.grittyGold).toBe('#C5A059');
+  });
+
+  it('feedback tokens have correct values', () => {
+    expect(COLORS.feedbackSuccess).toBe('#4ade80');
+    expect(COLORS.feedbackError).toBe('#f87171');
+    expect(COLORS.feedbackInfo).toBe('#38bdf8');
+    expect(COLORS.feedbackWarn).toBe('#f59e0b');
   });
 });
 

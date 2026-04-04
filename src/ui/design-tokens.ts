@@ -37,6 +37,15 @@ export const COLORS = {
   bloodRed: '#8B2525',
   /** Bright orange for muzzle flash effects */
   muzzleFlash: '#FFAA00',
+  // ── Game Feedback Colors ───────────────────────────────────
+  /** Success green for positive events (built, healed, saved) */
+  feedbackSuccess: '#4ade80',
+  /** Error red for negative events (not enough resources, failed) */
+  feedbackError: '#f87171',
+  /** Info blue for neutral/instructional events (training, tap target) */
+  feedbackInfo: '#38bdf8',
+  /** Warning amber for caution events (placement mode, low resources) */
+  feedbackWarn: '#f59e0b',
 } as const;
 
 export const FONTS = {
