@@ -17,35 +17,40 @@ import {
   subscribeErrors,
   subscribeFatalError,
 } from '@/errors';
+import { Frame9Slice } from './components/frame';
 
 /** Fatal error modal — blocks the screen until dismissed. */
 function FatalErrorModal({ error, onDismiss }: { error: Error; onDismiss: () => void }) {
   return (
     <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80">
-      <div class="parchment-panel pond-panel-bg max-w-lg w-full mx-4 p-6 rounded-lg">
-        <h2 class="font-title text-2xl text-[var(--pw-enemy)] mb-4">Fatal Error</h2>
-        <p class="font-game text-[var(--pw-text-primary)] mb-2">{error.message}</p>
-        {error.stack && (
-          <pre class="font-numbers text-[10px] text-[var(--pw-text-muted)] bg-black/40 p-3 rounded mt-2 max-h-40 overflow-auto whitespace-pre-wrap">
-            {error.stack}
-          </pre>
-        )}
-        <div class="flex gap-3 mt-6">
-          <button
-            type="button"
-            class="action-btn px-4 py-2 min-h-[44px] font-heading text-sm"
-            onClick={() => window.location.reload()}
-          >
-            Reload Game
-          </button>
-          <button
-            type="button"
-            class="hud-btn px-4 py-2 min-h-[44px] font-heading text-sm"
-            onClick={onDismiss}
-          >
-            Dismiss
-          </button>
-        </div>
+      <div class="max-w-lg w-full mx-4">
+        <Frame9Slice>
+          <div class="p-6">
+            <h2 class="font-title text-2xl text-[var(--pw-enemy)] mb-4">Fatal Error</h2>
+            <p class="font-game text-[var(--pw-text-primary)] mb-2">{error.message}</p>
+            {error.stack && (
+              <pre class="font-numbers text-[10px] text-[var(--pw-text-muted)] bg-black/40 p-3 rounded mt-2 max-h-40 overflow-auto whitespace-pre-wrap">
+                {error.stack}
+              </pre>
+            )}
+            <div class="flex gap-3 mt-6">
+              <button
+                type="button"
+                class="action-btn px-4 py-2 min-h-[44px] font-heading text-sm"
+                onClick={() => window.location.reload()}
+              >
+                Reload Game
+              </button>
+              <button
+                type="button"
+                class="hud-btn px-4 py-2 min-h-[44px] font-heading text-sm"
+                onClick={onDismiss}
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </Frame9Slice>
       </div>
     </div>
   );

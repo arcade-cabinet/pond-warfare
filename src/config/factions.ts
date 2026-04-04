@@ -6,7 +6,6 @@
  */
 
 import { EntityKind } from '@/types';
-import type { TechId } from './tech-tree';
 
 export type PlayableFaction = 'otter' | 'predator';
 
@@ -20,7 +19,8 @@ export interface FactionConfig {
   supportKind: EntityKind;
   siegeKind: EntityKind;
   heroKind: EntityKind;
-  techTree: TechId[];
+  /** Tech IDs available to this faction (v3: upgrade web categories). */
+  techTree: string[];
 }
 
 /** Otter faction: the original player side. */
@@ -34,23 +34,7 @@ export const OTTER_FACTION: FactionConfig = {
   supportKind: EntityKind.Healer,
   siegeKind: EntityKind.Catapult,
   heroKind: EntityKind.Commander,
-  techTree: [
-    'sturdyMud',
-    'swiftPaws',
-    'sharpSticks',
-    'eagleEye',
-    'hardenedShells',
-    'ironShell',
-    'siegeWorks',
-    'cartography',
-    'tidalHarvest',
-    'battleRoar',
-    'herbalMedicine',
-    'aquaticTraining',
-    'deepDiving',
-    'cunningTraps',
-    'camouflage',
-  ],
+  techTree: ['gathering', 'combat', 'defense', 'utility', 'economy', 'siege'],
 };
 
 /** Predator faction: play as the swamp predators. */
@@ -64,16 +48,7 @@ export const PREDATOR_FACTION: FactionConfig = {
   supportKind: EntityKind.SwampDrake,
   siegeKind: EntityKind.SiegeTurtle,
   heroKind: EntityKind.BossCroc,
-  techTree: [
-    'sturdyMud',
-    'swiftPaws',
-    'sharpSticks',
-    'battleRoar',
-    'hardenedShells',
-    'tidalHarvest',
-    'cartography',
-    'herbalMedicine',
-  ],
+  techTree: ['gathering', 'combat', 'defense', 'utility'],
 };
 
 /** Look up faction config by faction key. */

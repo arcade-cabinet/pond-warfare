@@ -1,5 +1,5 @@
 /**
- * Game Loop Setup — builds GameLoopState and starts the RAF loop,
+ * Game Loop Setup -- builds GameLoopState and starts the RAF loop,
  * plus WebGL context loss/restore handlers.
  *
  * Extracted from game-init.ts to stay under 300 LOC.
@@ -27,8 +27,6 @@ export function startGameLoop(deps: {
   fogCanvas: HTMLCanvasElement;
   lightCtx: CanvasRenderingContext2D;
   lightCanvas: HTMLCanvasElement;
-  minimapCtx: CanvasRenderingContext2D;
-  minimapCamElement: HTMLElement;
   exploredCanvas: HTMLCanvasElement;
   bgCanvas: HTMLCanvasElement;
   physicsManager: PhysicsManager;
@@ -56,8 +54,6 @@ export function startGameLoop(deps: {
     pointer: deps.pointer,
     fogState: deps.fogState,
     lightCtx: deps.lightCtx,
-    minimapCtx: deps.minimapCtx,
-    minimapCamElement: deps.minimapCamElement,
     exploredCanvas: deps.exploredCanvas,
     bgCanvas: deps.bgCanvas,
     physicsManager: deps.physicsManager,

@@ -79,7 +79,8 @@ export function IntroOverlay() {
         fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
-        background: 'radial-gradient(ellipse at 50% 60%, #132830 0%, #0c1a1f 50%, #060e12 100%)',
+        background:
+          'radial-gradient(ellipse at 50% 60%, var(--pw-mud) 0%, var(--pw-bark) 50%, #0a0805 100%)',
       }}
     >
       {/* Water ripple rings behind the title */}
@@ -99,7 +100,7 @@ export function IntroOverlay() {
 
       <h1
         ref={titleRef}
-        class="mb-2 tracking-widest uppercase text-center relative z-10"
+        class="font-heading mb-2 tracking-widest uppercase text-center relative z-10"
         style={{ opacity: 0 }}
       >
         <span class="logo-pond block text-4xl md:text-7xl leading-tight">Pond</span>

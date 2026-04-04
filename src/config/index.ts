@@ -7,6 +7,31 @@ export {
 } from './ai-personalities';
 export { COMMANDERS, type CommanderDef, getCommanderDef } from './commanders';
 export {
+  calculatePearlReward,
+  generateUpgradeCatalog,
+  getAllEnemyIds,
+  getAllUnitIds,
+  getBiomeTerrainRule,
+  getBiomeTerrainRules,
+  getEnemyDef,
+  getEnemyScaling,
+  getEventsConfig,
+  getEventsForLevel,
+  getEventTiming,
+  getFortDef,
+  getFortificationsConfig,
+  getLodgeConfig,
+  getPearlUpgrade,
+  getPrefixesConfig,
+  getPrestigeConfig,
+  getPrestigeThreshold,
+  getRewardFormula,
+  getTerrainConfig,
+  getTierPrefix,
+  getUnitDef,
+  getUpgradesConfig,
+} from './config-loader';
+export {
   DAMAGE_MULTIPLIERS,
   ENTITY_DEFS,
   entityKindFromString,
@@ -30,11 +55,3 @@ export {
   saveKeymapToStorage,
   setKeymap,
 } from './keymap';
-export {
-  canResearch,
-  createInitialTechState,
-  TECH_UPGRADES,
-  type TechId,
-  type TechState,
-  type TechUpgrade,
-} from './tech-tree';

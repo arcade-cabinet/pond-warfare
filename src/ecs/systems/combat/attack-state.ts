@@ -155,8 +155,9 @@ function executeSniperAttack(
 ): void {
   const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
   let mult = getDamageMultiplier(kind, targetKind);
-  if (world.tech.piercingShot && mult < 1.0) {
-    mult = mult + (1.0 - mult) * 0.5;
+  // Piercing Shot: ignore 30% of target's armor (always applies to ranged)
+  if (world.tech.piercingShot) {
+    mult *= 1.3;
   }
   let sniperDmg = Math.round(dmg * mult);
 

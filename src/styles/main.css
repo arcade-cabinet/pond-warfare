@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Open+Sans:ital,wght@0,400;0,700;1,400&display=swap');
 @import 'tailwindcss';
 
 /* ====================================================================
@@ -5,21 +6,21 @@
    ==================================================================== */
 :root {
   /* === WARFARE PALETTE (from design bible) === */
-  --pw-gold: #8B6914;
-  --pw-gold-bright: #C49B1A;
-  --pw-gold-dim: #5C4510;
-  --pw-moss: #2D4A1E;
-  --pw-moss-bright: #4A7A32;
-  --pw-steel: #6B7D8B;
+  --pw-gold: #C5A059;
+  --pw-gold-bright: #C5A059;
+  --pw-gold-dim: #8A6D3B;
+  --pw-moss: #2E3C1B;
+  --pw-moss-bright: #5A6B3A;
+  --pw-steel: #6A7A7A;
   --pw-steel-dim: #4A5660;
-  --pw-bark: #1A1208;
-  --pw-mud: #3D2B14;
-  --pw-mud-light: #5C4020;
+  --pw-bark: #21160C;
+  --pw-mud: #4A3320;
+  --pw-mud-light: #684B31;
 
   /* Background surfaces - dark bark depths */
-  --pw-bg-deep: #1A1208;
+  --pw-bg-deep: var(--pw-bark);
   --pw-bg-surface: #2A1E10;
-  --pw-bg-elevated: #3D2B14;
+  --pw-bg-elevated: var(--pw-mud);
   --pw-border: rgba(139, 105, 20, 0.2);
   --pw-border-accent: rgba(139, 105, 20, 0.4);
 
@@ -30,8 +31,14 @@
   --pw-wood-highlight: #6B4D28;
   --pw-wood-grain: #2A1E10;
 
+  /* Vine & swamp accents */
+  --pw-vine-base: #304515;
+  --pw-vine-highlight: #5A8022;
+  --pw-swamp-water: #1A2A25;
+  --pw-sepia-text: #E8DCC4;
+
   /* Text hierarchy - warfare palette */
-  --pw-text-primary: var(--pw-gold-bright);
+  --pw-text-primary: #E8DCC4;
   --pw-text-secondary: var(--pw-steel);
   --pw-text-muted: var(--pw-steel-dim);
 
@@ -61,7 +68,7 @@
   /* Stone surface - now bark tones */
   --pw-stone: #3D2B14;
   --pw-stone-light: #5C4020;
-  --pw-stone-dark: #1A1208;
+  --pw-stone-dark: var(--pw-bark);
   --pw-stone-highlight: #6B4D28;
 
   /* Role colors */
@@ -84,10 +91,10 @@
   --pw-fps-good: #4ade80;
 
   /* Button text on wood backgrounds */
-  --pw-btn-dark-text: #1A1208;
+  --pw-btn-dark-text: var(--pw-bark);
 
   /* Advisor icon text on colored backgrounds */
-  --pw-advisor-text: #1A1208;
+  --pw-advisor-text: var(--pw-bark);
 
   /* Difficulty preset colors */
   --pw-difficulty-easy: #22c55e;
@@ -282,15 +289,15 @@
    Typography
    ==================================================================== */
 .font-heading {
-  font-family: 'Cinzel', 'MedievalSharp', serif;
-  font-weight: 600;
+  font-family: 'IM Fell English SC', serif;
+  font-weight: 400;
 }
 .font-title {
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
+  font-family: 'IM Fell English SC', serif;
+  font-weight: 400;
 }
 .font-game {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Open Sans', system-ui, sans-serif;
 }
 .font-numbers {
   font-family: 'JetBrains Mono', monospace;
@@ -305,7 +312,7 @@ body {
   background-color: var(--pw-bg-deep);
   user-select: none;
   overscroll-behavior: none;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Open Sans', system-ui, sans-serif;
   color: var(--pw-text-primary);
 }
 
@@ -405,6 +412,7 @@ body {
 
 /* ====================================================================
    War Panel - 9-Slice wood panel with mossy borders
+   DEPRECATED — use Frame9Slice from @/ui/components/frame
    ==================================================================== */
 .war-panel {
   border-image:
@@ -414,6 +422,7 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
+/* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* Header bar with gritty gold section-header texture */
 .war-panel-header {
   background:
@@ -424,6 +433,7 @@ body {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
+/* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* Wood button with pressed state */
 .war-btn {
   background:
@@ -455,6 +465,7 @@ body {
   filter: grayscale(0.6);
 }
 
+/* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* Tiled wood center background for content areas */
 .war-panel-content {
   background:
@@ -477,7 +488,7 @@ body {
   border-color: var(--pw-border);
   border-radius: 8px;
   color: var(--pw-text-primary);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Open Sans', system-ui, sans-serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-shadow:
     inset 0 1px 0 rgba(139, 105, 20, 0.06),
@@ -563,6 +574,7 @@ body {
   filter: brightness(0.95);
 }
 
+/* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* Swap primary button bg to pressed texture on :active */
 .game-btn:active:not(:disabled) .game-btn-wood-bg {
   content: url('/pond-warfare/assets/ui/panel/btn-wood-pressed.png');
@@ -637,6 +649,7 @@ body {
 
 /* ====================================================================
    Parchment Panel - For overlays and modal backgrounds (wood warfare)
+   DEPRECATED — use Frame9Slice from @/ui/components/frame
    ==================================================================== */
 .parchment-panel {
   border-image:
@@ -712,18 +725,58 @@ body {
 }
 
 /* ====================================================================
-   Advisor Toast - Bottom-left HUD toast for advisor tips
+   Advisor Toast - Vine-framed briefing card
    ==================================================================== */
 .advisor-toast {
-  background: rgba(61, 43, 20, 0.85);
-  border: 1px solid var(--pw-border);
-  border-radius: 8px;
-  padding: 10px 12px 10px 15px;
+  background: var(--pw-bg-surface);
+  border: 2px solid var(--pw-mud);
+  border-left: 3px solid var(--pw-vine-base);
+  border-radius: 6px;
+  padding: 10px 12px 10px 16px;
   box-shadow:
-    inset 0 1px 0 rgba(139, 105, 20, 0.06),
-    0 4px 16px rgba(0, 0, 0, 0.35);
+    inset 0 1px 0 rgba(48, 69, 21, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(48, 69, 21, 0.2);
   animation: advisor-slide-up 0.25s ease-out;
   overflow: hidden;
+}
+
+.advisor-toast-vine-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 4px 0 0 4px;
+}
+
+.advisor-toast-icon {
+  border-radius: 4px;
+  border: 2px solid var(--pw-vine-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pw-advisor-text);
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.advisor-toast-dismiss {
+  background: transparent;
+  border: 1px solid var(--pw-mud);
+  color: var(--pw-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: border-color 0.15s ease;
+}
+
+.advisor-toast-dismiss:hover {
+  border-color: var(--pw-border-accent);
 }
 
 @keyframes advisor-slide-up {
@@ -751,7 +804,7 @@ body {
   z-index: var(--pw-z-tooltip);
   white-space: nowrap;
   border-radius: 6px;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Open Sans', system-ui, sans-serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
@@ -994,10 +1047,23 @@ body {
   }
 }
 
+/* Action toast slide-up */
+@keyframes action-toast-slide-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 /* ====================================================================
    Main Menu - Immersive Pond Scene
    ==================================================================== */
 
+/* DEPRECATED -- lily-pad classes unused; main menu redesigned without CSS pond scene */
 /* --- Lily pads: oval CSS shapes that float gently --- */
 @keyframes lily-drift {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -1006,6 +1072,7 @@ body {
   75%      { transform: translate(4px, 2px) rotate(1.5deg); }
 }
 
+/* DEPRECATED -- ripple-drift animations unused; pond scene removed */
 /* Water ripple overlay drift animations */
 @keyframes ripple-drift-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -1086,6 +1153,7 @@ body {
   right: 20%;
 }
 
+/* DEPRECATED -- lily-pad-btn classes unused; main menu redesigned */
 /* --- Interactive lily pad buttons (main menu) --- */
 @keyframes lily-bob {
   0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -1115,6 +1183,7 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.5), inset 0 -1px 3px rgba(0,0,0,0.4) !important;
 }
 
+/* DEPRECATED -- .menu-pond-btn class unused; main menu redesigned */
 /* --- Teal menu bar buttons (main menu) --- */
 .menu-pond-btn:hover:not(:disabled) img {
   filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35)) brightness(1.1) !important;
@@ -1128,6 +1197,7 @@ body {
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)) brightness(0.92) !important;
 }
 
+/* DEPRECATED -- .firefly CSS class unused; fireflies now rendered via SwampEcosystem canvas */
 /* --- Firefly particles --- */
 @keyframes firefly-float {
   0%, 100% { transform: translate(0, 0); opacity: 0; }
@@ -1161,6 +1231,7 @@ body {
 .firefly:nth-child(7)  { animation-delay: -5s; animation-duration: 12s, 1.9s; }
 .firefly:nth-child(8)  { animation-delay: -7s; animation-duration: 6s, 2.4s; }
 
+/* DEPRECATED -- .water-shimmer class unused; pond scene removed */
 /* --- Water shimmer overlay --- */
 @keyframes water-shimmer {
   0%   { background-position: 0% 0%; }
@@ -1184,6 +1255,7 @@ body {
   animation: water-shimmer 20s linear infinite;
 }
 
+/* DEPRECATED -- .water-caustics class unused; pond scene removed */
 /* --- Water caustics (light patterns on the pond surface) --- */
 @keyframes caustic-drift {
   0%   { transform: translate(0, 0) scale(1); opacity: 0.03; }
@@ -1459,6 +1531,7 @@ body {
   pointer-events: none;
 }
 
+/* DEPRECATED -- .reed-hang / .reed-medal classes unused in TSX */
 /* --- Reed / hanging medal for rank --- */
 @keyframes reed-sway {
   0%, 100% { transform: rotate(-2deg); }
@@ -1502,6 +1575,7 @@ body {
   line-height: 1;
 }
 
+/* DEPRECATED -- .cattail classes unused in TSX */
 /* --- Cattail / reed decorations --- */
 @keyframes cattail-sway {
   0%, 100% { transform: rotate(-1.5deg) scaleX(1); }
@@ -1537,7 +1611,7 @@ body {
    Logo / Title Treatment
    ==================================================================== */
 .logo-pond {
-  font-family: 'Cinzel', serif;
+  font-family: 'IM Fell English SC', serif;
   font-weight: 900;
   letter-spacing: 0.15em;
   color: var(--pw-accent);
@@ -1551,7 +1625,7 @@ body {
 }
 
 .logo-warfare {
-  font-family: 'Cinzel', serif;
+  font-family: 'IM Fell English SC', serif;
   font-weight: 900;
   letter-spacing: 0.25em;
   color: var(--pw-otter-light);
@@ -1577,7 +1651,7 @@ body {
    Section Header - Used in settings and overlay panels
    ==================================================================== */
 .section-header {
-  font-family: 'Cinzel', serif;
+  font-family: 'IM Fell English SC', serif;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1826,7 +1900,7 @@ input[type="range"]::-moz-range-thumb {
 
 .pond-accordion-title {
   flex: 1;
-  font-family: 'Cinzel', 'MedievalSharp', serif;
+  font-family: 'IM Fell English SC', serif;
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -1844,7 +1918,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .pond-accordion-summary {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Open Sans', system-ui, sans-serif;
   font-size: 10px;
   color: var(--pw-steel);
   white-space: nowrap;
@@ -1863,6 +1937,7 @@ input[type="range"]::-moz-range-thumb {
   transform: rotate(0deg);
 }
 
+/* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* US13: Smooth expand/collapse via max-height transition */
 .pond-accordion-content {
   position: relative;
@@ -1901,6 +1976,7 @@ input[type="range"]::-moz-range-thumb {
   height: 48px;
 }
 
+/* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* Panel background with wood texture overlay */
 .pond-panel-bg {
   position: relative;
@@ -2011,4 +2087,146 @@ button:focus-visible,
   opacity: 0;
   pointer-events: none;
   animation: wind-streak linear infinite;
+}
+
+/* ====================================================================
+   SVG Sprite Animations (Design Bible)
+   ==================================================================== */
+.sprite-frame-1 { animation: sprite-toggle-1 0.4s steps(1) infinite; }
+.sprite-frame-2 { animation: sprite-toggle-2 0.4s steps(1) infinite; }
+@keyframes sprite-toggle-1 { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes sprite-toggle-2 { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+.selection-circle {
+  animation: selection-spin 4s linear infinite;
+  transform-origin: center;
+}
+@keyframes selection-spin { 100% { transform: rotate(360deg); } }
+
+.menu-sprite-item:hover { transform: scale(1.12); }
+
+/* ====================================================================
+   RTS Button (Design Bible)
+   Primary action button for in-game panels, modals, and HUD controls.
+   Dark translucent background with bark border, uppercase IM Fell text.
+   States: default, .active (gold-bordered moss bg), :hover (moss tint).
+   Used by: MenuButton, CtrlGroups, modal close buttons, campaign CTA.
+   ==================================================================== */
+.rts-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid var(--pw-bark);
+  color: var(--pw-sepia-text, #E8DCC4);
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+  font-family: 'IM Fell English SC', serif;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.rts-btn.active {
+  border-color: var(--pw-gold);
+  background: var(--pw-moss);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 0 10px rgba(197, 160, 89, 0.4);
+  color: var(--pw-gold);
+}
+.rts-btn:hover:not(.active) {
+  border-color: var(--pw-moss-bright);
+  background: rgba(90, 107, 58, 0.3);
+}
+
+/* ================================================================
+   Comic Panel Stagger — responsive stagger layout for landing page.
+   Landscape: panels overlap slightly with left/center/right offsets.
+   Portrait tablet: panels fill width, no stagger.
+   ================================================================ */
+/* Portrait: full width, no stagger offset */
+@media (orientation: portrait) {
+  .comic-panel-stagger {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* Landscape narrow (< 1024px): stacked with alternating left/right margin */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+  .comic-panels-container {
+    gap: 4px !important;
+  }
+  .comic-panels-container > :nth-child(odd) {
+    margin-left: 1rem !important;
+    margin-right: 0 !important;
+  }
+  .comic-panels-container > :nth-child(even) {
+    margin-right: 1rem !important;
+    margin-left: 0 !important;
+  }
+  .comic-panels-container > :nth-child(2) {
+    margin-top: -6px;
+  }
+  .comic-panels-container > :nth-child(3) {
+    margin-top: -6px;
+  }
+}
+
+/* Landscape wide (>= 1024px): 3-column side-by-side grid */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .comic-panels-container {
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .comic-panel-stagger {
+    flex: 1 1 0 !important;
+    max-width: 360px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Floating command buttons — visible when units selected */
+.floating-cmd-btn {
+  min-height: 44px;
+  min-width: 44px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Onboarding hint fade animation */
+@keyframes hint-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes hint-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+.onboarding-hint-enter {
+  animation: hint-fade-in 0.4s ease-out forwards;
+}
+.onboarding-hint-exit {
+  animation: hint-fade-out 0.4s ease-in forwards;
+}
+
+/* Upgrade web pulsing affordable node highlight */
+@keyframes pulse-affordable {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.2); }
+}
+.upgrade-node-affordable-pulse {
+  animation: pulse-affordable 2s ease-in-out infinite;
+  border: 2px solid var(--pw-gold);
+  border-radius: 6px;
+}
+
+/* Rank-up button gold glow pulse */
+@keyframes pulse-gold-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(197, 160, 89, 0.4); }
+  50% { box-shadow: 0 0 18px rgba(197, 160, 89, 0.7), 0 0 4px rgba(197, 160, 89, 0.3); }
+}
+.animate-rank-up-pulse {
+  animation: pulse-gold-glow 1.8s ease-in-out infinite;
 }

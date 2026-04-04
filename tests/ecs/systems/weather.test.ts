@@ -7,6 +7,8 @@ import {
 } from '@/config/weather';
 import {
   areShallowsBlocked,
+  getWeatherAttackThresholdMult,
+  getWeatherGatherMult,
   getWeatherGrassSpeedMult,
   getWeatherProjectileOffset,
   getWeatherVisionMult,
@@ -34,8 +36,16 @@ describe('weather config', () => {
     expect(WEATHER_CONFIGS.fog.visionMult).toBe(0.6);
   });
 
-  it('wind has 15px projectile offset', () => {
-    expect(WEATHER_CONFIGS.wind.projectileOffset).toBe(15);
+  it('wind has 20px projectile offset', () => {
+    expect(WEATHER_CONFIGS.wind.projectileOffset).toBe(20);
+  });
+
+  it('rain reduces gather speed by 10%', () => {
+    expect(WEATHER_CONFIGS.rain.gatherSpeedMult).toBe(0.9);
+  });
+
+  it('fog increases enemy attack threshold by 50%', () => {
+    expect(WEATHER_CONFIGS.fog.attackThresholdMult).toBe(1.5);
   });
 
   it('clear has no modifiers', () => {
@@ -44,6 +54,8 @@ describe('weather config', () => {
     expect(clear.shallowsBlocked).toBe(false);
     expect(clear.visionMult).toBe(1.0);
     expect(clear.projectileOffset).toBe(0);
+    expect(clear.gatherSpeedMult).toBe(1.0);
+    expect(clear.attackThresholdMult).toBe(1.0);
   });
 });
 
@@ -157,7 +169,7 @@ describe('weather helper functions', () => {
     world.weather.current = 'wind';
     world.weather.windDirection = 0; // East
     const offset = getWeatherProjectileOffset(world);
-    expect(offset.dx).toBeCloseTo(15, 0);
+    expect(offset.dx).toBeCloseTo(20, 0);
     expect(offset.dy).toBeCloseTo(0, 0);
   });
 
@@ -167,5 +179,37 @@ describe('weather helper functions', () => {
     const offset = getWeatherProjectileOffset(world);
     expect(offset.dx).toBe(0);
     expect(offset.dy).toBe(0);
+  });
+
+  it('getWeatherGatherMult returns 0.9 for rain', () => {
+    const world = createGameWorld();
+    world.weather.current = 'rain';
+    expect(getWeatherGatherMult(world)).toBe(0.9);
+  });
+
+  it('getWeatherGatherMult returns 1.0 for non-rain', () => {
+    const world = createGameWorld();
+    world.weather.current = 'clear';
+    expect(getWeatherGatherMult(world)).toBe(1.0);
+    world.weather.current = 'fog';
+    expect(getWeatherGatherMult(world)).toBe(1.0);
+    world.weather.current = 'wind';
+    expect(getWeatherGatherMult(world)).toBe(1.0);
+  });
+
+  it('getWeatherAttackThresholdMult returns 1.5 for fog', () => {
+    const world = createGameWorld();
+    world.weather.current = 'fog';
+    expect(getWeatherAttackThresholdMult(world)).toBe(1.5);
+  });
+
+  it('getWeatherAttackThresholdMult returns 1.0 for non-fog', () => {
+    const world = createGameWorld();
+    world.weather.current = 'clear';
+    expect(getWeatherAttackThresholdMult(world)).toBe(1.0);
+    world.weather.current = 'rain';
+    expect(getWeatherAttackThresholdMult(world)).toBe(1.0);
+    world.weather.current = 'wind';
+    expect(getWeatherAttackThresholdMult(world)).toBe(1.0);
   });
 });

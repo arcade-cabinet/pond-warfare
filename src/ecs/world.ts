@@ -8,12 +8,11 @@
  */
 
 import type { createWorld } from 'bitecs';
-import type { AdvisorState } from '@/advisors/types';
 import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
-import type { TechState } from '@/config/tech-tree';
 import type { WeatherState } from '@/config/weather';
+import type { FortificationState } from '@/ecs/systems/fortification';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import type {
   Corpse,
@@ -50,7 +49,12 @@ export interface GameWorld {
   // Game state
   resources: GameResources;
   enemyResources: { clams: number; twigs: number };
-  tech: TechState;
+  /**
+   * Tech flags -- runtime boolean bag. In v3.0 these are set by
+   * commanders at game start, not through in-game research (which
+   * was removed). Combat systems still read these flags.
+   */
+  tech: Record<string, boolean>;
   stats: GameStats;
   state: GameState;
 
@@ -63,6 +67,10 @@ export interface GameWorld {
 
   // Pause
   paused: boolean;
+
+  // World dimensions (may differ from constants for vertical maps)
+  worldWidth: number;
+  worldHeight: number;
 
   // Camera
   camX: number;
@@ -122,6 +130,8 @@ export interface GameWorld {
   nestCountOverride: number;
   resourceDensityMod: number;
   enemyEconomyMod: number;
+  enemyStatMult: number;
+  nestBuildRateMult: number;
   enemyAggressionLevel: 'passive' | 'normal' | 'aggressive' | 'relentless';
 
   // Map seed for reproducible random generation
@@ -167,113 +177,104 @@ export interface GameWorld {
   // Champion enemies: set of entity IDs that are champion variants
   championEnemies: Set<number>;
 
-  // First-game detection (used by advisor system)
+  // First-game detection (used by tutorial hints)
   isFirstGame: boolean;
 
-  // Advisor system state
-  advisorState: AdvisorState;
+  /** @deprecated Advisor system was removed in v3.0. Kept for save compatibility. */
+  advisorState: Record<string, unknown>;
 
-  // Commander aura: entity IDs within commander aura range
+  // Commander aura + selection
   commanderDamageBuff: Set<number>;
   commanderSpeedBuff: Set<number>;
   commanderHpBuffApplied: Set<number>;
   commanderUnitHpBuff: Set<number>;
   commanderEnemyDebuff: Set<number>;
-
-  // Commander selection
   commanderId: string;
   commanderModifiers: CommanderModifiers;
 
-  // Airdrop safety net
+  // Airdrop, checkpoint, evacuation
   airdropsRemaining: number;
   airdropCooldownUntil: number;
-
-  // Checkpoint system (serialized save state strings)
   checkpoints: string[];
   lastCheckpointFrame: number;
-
-  // Evacuation state
   evacuationTriggered: boolean;
 
-  // Faction selection: which faction the player controls
+  // Faction + AI
   playerFaction: PlayableFaction;
-
-  // AI personality: modifies enemy AI behavior
   aiPersonality: AIPersonality;
 
-  // Active ability state (tech tree abilities)
+  // Active ability state (commander abilities, gated on tech flags)
   rallyCryExpiry: number;
   rallyCryCooldownUntil: number;
-  pondBlessingUsed: boolean;
+  pondBlessingCooldownUntil: number;
   tidalSurgeUsed: boolean;
   warDrumsBuff: Set<number>;
   venomCoatingTimers: Map<number, number>;
 
-  // Map exploration
+  // Map, terrain, combat zones
   exploredPercent: number;
-
-  // Terrain grid (tile-based terrain types affecting movement/combat)
   terrainGrid: TerrainGrid;
-
-  // Combat zone tracking for minimap indicators
   combatZones: { x: number; y: number; life: number }[];
-
-  // Wave counter (incremented each mega-wave spawn)
   waveNumber: number;
 
-  // Commander active ability state
+  /**
+   * Wave-survival mode: when true, win condition is surviving all scheduled
+   * waves instead of destroying enemy nests (used at stage 1 with no nests).
+   */
+  waveSurvivalMode: boolean;
+  /** Number of waves to survive for victory in wave-survival mode. */
+  waveSurvivalTarget: number;
+
+  // Commander active ability + morale
   commanderAbilityCooldownUntil: number;
   commanderAbilityActiveUntil: number;
-
-  // Morale system: demoralized units get -20% dmg, -10% speed
   demoralizedUnits: Set<number>;
-  /** Frame until which all player units are demoralized (commander death). 0 = inactive. */
   commanderDeathDemoralizeUntil: number;
-  /** Whether auto-retreat is enabled (player can toggle in settings). */
   autoRetreatEnabled: boolean;
 
   // Game-end spectacle state
-  /** Frame at which the game entered 'win' or 'lose' (0 = not ended). */
   gameEndFrame: number;
-  /** World position to pan the camera to during the game-end spectacle. */
   gameEndFocusX: number;
   gameEndFocusY: number;
-  /** True while slow-mo spectacle is playing before game-over UI appears. */
   gameEndSpectacleActive: boolean;
-  /** Pre-spectacle game speed to restore if needed. */
   gameEndPrevSpeed: number;
 
   // Diver stealth: set of entity IDs currently in stealth
   stealthEntities: Set<number>;
-  /** Tracks whether an entity's stealth ambush bonus is available (first attack from stealth). */
   stealthAmbushReady: Set<number>;
 
   // Burrowing Worm: entity ID -> remaining burrow frames before emergence
   wormBurrowTimers: Map<number, number>;
-  /** Frame of last worm spawn (used for spawn rate). */
   lastWormSpawnFrame: number;
 
-  // Engineer temporary bridges: { col, row, revertFrame, originalTerrain }[]
+  // Engineer temporary bridges
   engineerBridges: { col: number; row: number; revertFrame: number; original: number }[];
 
   // --- v2.0.0 ---
-
-  /** Dynamic weather system state. */
   weather: WeatherState;
-
-  /** Berserker rage: tracks entities in berserker HP drain combat state. */
   berserkerCombatFrames: Map<number, number>;
-
-  /** Shrine abilities: tracks which shrines have been used (entity ID set). */
   shrineUsed: Set<number>;
-
-  /** Wall gate ownership: maps gate entity ID to faction for pass-through logic. */
   wallGateFaction: Map<number, number>;
 
   // --- v2.1.0 ---
-
-  /** Extended stats for new achievements (incrementally tracked per match). */
   extendedStats?: Partial<ExtendedStats>;
+
+  // --- Co-op multiplayer ---
+  coopMode: boolean;
+  partnerLodgeDestroyed: boolean;
+  partnerUnitPositions: { x: number; y: number; isBuilding: boolean }[];
+  coopResourceCallback: (() => void) | null;
+
+  // Patrol waypoints per entity (bitECS SoA can't store nested arrays)
+  patrolWaypoints: Map<number, { x: number; y: number }[]>;
+
+  // --- v3.0 ---
+
+  /** Fortification slots around the Lodge (walls/towers). */
+  fortifications: FortificationState | null;
+
+  /** Panel grid for 6-panel map system. */
+  panelGrid: import('@/game/panel-grid').PanelGrid | null;
 }
 
 /** Extended game stats tracked per match for v2.1.0 achievements. */

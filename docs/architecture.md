@@ -14,7 +14,7 @@ Pond Warfare uses an Entity Component System (ECS) architecture powered by bitEC
                     +------+-------+
                            |
                     +------v-------+
-                    |   game.ts    |  Game orchestrator (1200+ lines)
+                    |   game.ts    |  Game orchestrator (decomposed)
                     +------+-------+
                            |
               +------------+------------+
@@ -25,7 +25,7 @@ Pond Warfare uses an Entity Component System (ECS) architecture powered by bitEC
        +------+-------+ +-------+ +--------------+
               |
     +---------+---------+
-    |   18 ECS Systems   |
+    |  30+ ECS Systems   |
     |  (run every frame) |
     +--------------------+
 ```
@@ -37,22 +37,36 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
 1. **Input** - Keyboard/pointer events update world state
 2. **Yuka AI** - Steering behaviors update (1/60s step), including formation flocking
 3. **Physics sync** - Create/remove Planck.js bodies
-4. **ECS Systems** - Execute in order:
+4. **ECS Systems** - Execute in order (see `src/game/systems-runner.ts`):
+   - `weatherSystem` - Weather transitions (clear/rain/fog/wind), speed/vision modifiers
    - `dayNightSystem` - Time of day, ambient darkness, fireflies
+   - `diverStealthSystem` - Water-based stealth mechanics
    - `movementSystem` - Unit pathfinding via Yuka steering
    - `collisionSystem` - Planck.js broadphase overlap resolution
    - `gatheringSystem` - Resource collection and dropoff (both factions)
    - `buildingSystem` - Construction progress and repair
-   - `combatSystem` - Tower auto-attack, aggro, melee/ranged combat with damage multipliers
+   - `engineerSystem` - Sapper siege mechanics
+   - `combatSystem` - Tower auto-attack, aggro, melee/ranged with damage multipliers
+   - `commanderPassivesSystem` - Commander aura/passive bonuses
+   - `berserkerSystem` - Berserker rage mechanic
    - `projectileSystem` - Projectile movement and impact
    - `trainingSystem` - Unit production from buildings
-   - `aiSystem` - Enemy economy (gatherer spawning, resource collection), wave spawning, nest defense, attack decisions
-   - `evolutionSystem` - Enemy tier evolution, poison ticks (VenomSnake), Alpha Predator damage aura
-   - `autoBehaviorSystem` - Player auto-gather/defend/attack/heal/scout
+   - `aiSystem` - Enemy economy, training, combat, defense, building (6 sub-systems)
+   - `evolutionSystem` - Enemy tier evolution, poison ticks, Alpha Predator aura
    - `autoBuildSystem` - Pressure-based auto-building when enabled
+   - `autoTrainSystem` - Automatic unit training
+   - `patrolSystem` - Patrol route movement
    - `healthSystem` - Damage, healing, death, kill streaks, win/lose
+   - `moraleSystem` - Morale effects, commander death demoralize
+   - `autoRetreatSystem` - Automatic retreat for low-HP units
+   - `shamanHealSystem` - Shaman auto-healing
+   - `wallGateSystem` - Wall gate open/close mechanics
    - `veterancySystem` - Kill tracking, rank-up bonuses (HP/damage/speed)
    - `fogOfWarSystem` - Visibility based on unit positions
+   - `branchCosmeticsSystem` - Visual branch unlocks
+   - `matchEventRunnerSystem` - Wave-survival event scheduling from events.json
+   - `randomEventsSystem` - Environmental random events
+   - `autoSymbolSystem` - Auto-behavior icon overlay after order completion
    - `cleanupSystem` - Particle/corpse/ping decay
 5. **Camera** - Pan velocity, tracking lerp, screen shake
 6. **UI Sync** - Every 30 frames, sync world state to Preact signals
@@ -67,68 +81,71 @@ GameWorld (ECS)  --sync every 30 frames-->  Store (Preact Signals)  --reactive--
      <---------------------- user actions (click, button press) ------------------------+
 ```
 
+Store is split across 5 files:
+- `store.ts` - Core signals (resources, selection, menu, settings)
+- `store-v3.ts` - Prestige, upgrade web, rewards, events, Lodge HP
+- `store-weather.ts` - Weather signals
+- `store-gameplay.ts` - Game over, FPS, ability signals
+- `store-multiplayer.ts` - P2P multiplayer signals (retained from v2)
+
 ## Enemy AI Architecture
 
-The enemy AI runs a full parallel economy and makes strategic decisions through the `aiSystem`. All sub-systems run on independent timers and share the `world.enemyResources` stockpile (starting: 500 clams, 200 twigs).
+The enemy AI runs a full parallel economy and makes strategic decisions through the `aiSystem` (7 sub-files in `src/ecs/systems/ai/`). In v3, enemies also have role-based behaviors:
+
+- **Raiders** (`enemy-raider.ts`) - Target player resource nodes
+- **Healers** (`enemy-healer.ts`) - Restore wounded enemy allies
+- **Sappers** (`enemy-sapper.ts`) - Breach player fortifications
 
 ```
 aiSystem()
   |
   +-- enemyGathererSpawning (every 1200 frames)
-  |     +-- Each nest spawns gatherers (50C, max 3 per nest)
-  |     +-- Gatherers collect from nearest resource node -> enemyResources
-  |
   +-- enemyBuildingConstruction (every 1800 frames)
-  |     +-- Priority: Tower > Burrow > Expansion Nest
-  |     +-- Placed within 200px of existing nests on tile grid
-  |
   +-- enemyArmyTraining (every 300 frames)
-  |     +-- Queues Gators/Snakes at each nest (max 3 in queue)
-  |     +-- Composition adapts to counter player's army
-  |     +-- Uses TrainingQueue component (240 frames per unit)
-  |
   +-- enemyAttackDecision (every 600 frames)
-  |     +-- Attacks when army >= 5 idle combat units
-  |     +-- Targets weakest player building
-  |     +-- Sends grouped attack-move
-  |
   +-- enemyRetreatLogic (every 60 frames)
-  |     +-- Units below 20% HP flee to nearest nest
-  |
   +-- enemyScoutLogic (every 3600 frames)
-  |     +-- Spawns Snake scouts, 70% biased toward player Lodge
-  |
   +-- nestDefenseReinforcement (every 600 frames)
-  |     +-- Nests below 50% HP spawn defenders (costs resources)
-  |
   +-- bossWaveLogic (every 3 wave intervals after wave 10)
-        +-- Boss Croc spawns from each nest
-
-evolutionSystem()
-  |
-  +-- Tier check (every 600 frames)
-  |     +-- Compare game minutes since peace vs. THRESHOLDS [5, 10, 15, 25, 40]
-  |     +-- On tier-up: unlock new enemy unit kind, announce with red warning text
-  |
-  +-- Poison tick (every 60 frames)
-  |     +-- VenomSnake poison: 2 damage/sec to poisoned entities
-  |     +-- Green particle effects on poisoned units
-  |
-  +-- Alpha Predator damage aura (every 60 frames)
-        +-- +20% damage buff to all enemy units within 200px radius
-        +-- Buff expires after 60 frames if out of range
-
-autoBuildSystem()
-  |
-  +-- Pressure evaluation (every 300 frames, if autoBehaviors.build enabled)
-  |     +-- Score: Under attack no tower (120), Pop cap (100), No armory (80), Resources depleting (60)
-  |     +-- Filter by affordability, sort by score descending
-  |
-  +-- Build execution
-        +-- Find idle gatherer
-        +-- Find valid tile position in expanding rings around Lodge
-        +-- Deduct resources, spawn building, assign gatherer to build
 ```
+
+## Wave Spawner
+
+`src/ecs/systems/wave-spawner.ts` handles role-based enemy spawning:
+- Maps `enemies.json` role keys to EntityKinds
+- Tracks spawned unit roles for behavior systems
+- Computes spawn positions from panel progression and map geometry
+
+## Match Event Runner
+
+`src/ecs/systems/match-event-runner.ts` drives the wave-survival game mode:
+- Reads event templates from `configs/events.json`
+- Schedules events based on progression level and PRNG timing
+- Delegates spawning to wave-spawner
+- Tracks completed events for post-match Clam reward calculation
+
+## Auto-Symbol System
+
+`src/ecs/systems/auto-symbol.ts` provides unit autonomy feedback:
+- After a unit completes an order and is deselected, a themed icon appears above it
+- Icons last 4 seconds; tapping confirms the auto-behavior
+- Confirmed units loop their last action; unconfirmed units idle
+
+## Vertical Map & Panel Grid
+
+Maps use a 6-panel grid system (`src/game/panel-grid.ts`) with progression-based unlock:
+- Panels defined in `configs/panels.json` with biome, resources, terrain features
+- Lodge panel at bottom center, enemy panels at top
+- Panel unlock tied to progression stage
+- Map dimensions scale with progression level via `configs/terrain.json`
+
+## Upgrade Effects Pipeline
+
+At game init, `src/game/upgrade-effects.ts`:
+1. Reads purchased upgrade web nodes from `store-v3`
+2. Computes active stat effects (gather rate, combat, defense, etc.)
+3. Reads Pearl upgrade multipliers from prestige state
+4. Applies all bonuses as world modifiers before entity spawning
 
 ## Veterancy System
 
@@ -151,7 +168,7 @@ When a group move command is issued via `issueContextCommand()`:
 
 ## Unit Counter System
 
-`getDamageMultiplier(attackerKind, defenderKind)` in `entity-defs.ts` returns a multiplier (default 1.0) applied to all damage calculations in the combat system. This creates asymmetric matchups that reward mixed army composition.
+`getDamageMultiplier(attackerKind, defenderKind)` in `entity-defs.ts` returns a multiplier (default 1.0) applied to all damage calculations in the combat system.
 
 ## Directory Structure
 
@@ -161,96 +178,87 @@ src/
 |   +-- yuka-manager.ts # Faction-agnostic vehicle management, formation flocking
 +-- audio/              # Tone.js audio system
 |   +-- audio-system.ts # SFX orchestrator, music, ambient sounds
-|   +-- sfx.ts          # SfxManager: 25+ synth-based SFX with spatial panning
-+-- campaign/           # Campaign mode
-|   +-- missions.ts     # 5 mission definitions with objectives, dialogue, overrides
 +-- config/             # Game balance and definitions
-|   +-- ai-personalities.ts # 5 AI personalities (balanced, turtle, rush, economic, random)
-|   +-- commanders.ts   # 7 commander definitions with aura/passive bonuses
-|   +-- dialogue.ts     # 15 dialogue trigger types, per-unit bark pools
-|   +-- entity-defs.ts  # All 33 entity types with stats + damage multiplier table
-|   +-- factions.ts     # 2 playable factions (otter, predator) with unit mappings
-|   +-- keymap.ts       # Remappable keyboard bindings
-|   +-- tech-tree.ts    # 25 technology upgrades with prerequisites + active abilities
-|   +-- unlocks.ts      # 18 unlockable items across 5 categories
-+-- constants.ts        # Game tuning constants (veterancy thresholds, enemy economy, etc.)
+|   +-- config-loader.ts # JSON config loader with typed accessors
+|   +-- v3-types.ts     # TypeScript types for JSON configs
+|   +-- upgrade-web.ts  # Procedural upgrade web generator (240+ nodes)
+|   +-- prestige-logic.ts # Prestige calculation and Pearl upgrades
+|   +-- entity-defs/    # Player units, enemy units, buildings, damage multipliers
++-- constants.ts        # Game tuning constants
 +-- ecs/                # Entity Component System
 |   +-- archetypes.ts   # Entity spawn templates
-|   +-- components.ts   # 14 SoA components + 5 tag components (incl. Veterancy)
-|   +-- systems/        # 18 game systems (see Game Loop)
-|   +-- world.ts        # GameWorld state container (incl. factions, personalities, abilities)
-+-- game.ts             # Main orchestrator (loop, sync, init)
-+-- input/              # Input handling
-|   +-- keyboard.ts     # Key bindings + camera pan
-|   +-- pointer.ts      # Mouse/touch + minimap interaction
-|   +-- selection.ts    # Unit selection, building, commands, formation positioning
+|   +-- components.ts   # SoA components + tag components
+|   +-- systems/        # 30+ game systems (see Game Loop)
+|   |   +-- ai/         # Enemy AI: economy, training, combat, defense, building, raider, healer, sapper
+|   |   +-- combat/     # Melee, positional damage
+|   |   +-- evolution/  # Evolution tiers, poison, alpha aura
+|   |   +-- gathering/  # Depletion warning, passive income
+|   |   +-- health/     # Damage, death, healing, particles
+|   |   +-- movement/   # Arrive, speed modifiers
+|   +-- world.ts        # GameWorld state container
++-- game/               # Game orchestrator modules
+|   +-- game.ts         # Entry point
+|   +-- systems-runner.ts # ECS system execution order
+|   +-- game-loop.ts    # Main update loop
+|   +-- game-init.ts    # World initialization
+|   +-- vertical-map.ts # Vertical map generator from terrain.json
+|   +-- panel-grid.ts   # 6-panel grid system from panels.json
+|   +-- match-rewards.ts # Post-match Clam reward calculator
+|   +-- upgrade-effects.ts # Upgrade web + Pearl multiplier application
+|   +-- action-panel/   # Train/Build button definitions
+|   +-- init-entities/  # Map generators + helpers
++-- governor/           # Yuka-driven AI governor player
++-- input/              # Pointer, keyboard, selection handlers
++-- net/                # P2P multiplayer (Trystero/WebRTC, retained from v2)
 +-- physics/            # Planck.js collision world
-+-- platform/           # Capacitor mobile integration
-+-- rendering/          # Visual output
-|   +-- pixi/           # PixiJS 8 rendering modules
-|   |   +-- entity-renderer.ts # Sprite rendering, recoloring, health bars (371 lines)
-|   |   +-- init.ts     # PixiJS application setup
-|   |   +-- index.ts    # Render orchestrator
-|   +-- animations.ts   # anime.js entity/camera animations
-|   +-- background.ts   # Procedural terrain generation
-|   +-- camera.ts       # Camera clamping + screen shake
-|   +-- fog-renderer.ts # Fog-of-war Canvas2D overlay
-|   +-- light-renderer.ts # Dynamic lighting + fireflies
-|   +-- minimap-renderer.ts # Minimap with pings
-|   +-- recolor.ts      # Sprite recoloring: 14 presets (veterancy, champion, commander, cosmetic)
-|   +-- water-shimmer.ts # Water visual effect
-+-- replay/             # Replay recording
-|   +-- recorder.ts     # Deterministic command recording for replay playback
-+-- save-system.ts      # Game save/load serialization
-+-- storage/            # Persistence layer
-|   +-- database.ts     # SQLite: saves, settings, game_history, unlocks, player_profile
-+-- systems/            # Non-ECS game systems
-|   +-- achievements.ts # 15 achievements with SQLite persistence
-|   +-- leaderboard.ts  # Ranked progression (Bronze/Silver/Gold/Diamond) + win streaks
-|   +-- unlock-tracker.ts # Profile updates and unlock checking on game end
-+-- types.ts            # TypeScript types and enums (33 EntityKind values)
-+-- ui/                 # Preact components
-|   +-- app.tsx          # Root component
-|   +-- store.ts         # Reactive signals (60+ signals)
-|   +-- main-menu.tsx    # Main menu with campaign, settings, leaderboard
-|   +-- hud/             # HUD components
-|   +-- selection-panel.tsx # Selected entity info
-|   +-- action-panel.tsx # Context-sensitive action buttons
-|   +-- radial-menu.tsx  # Idle unit auto-behavior menu
-|   +-- sidebar.tsx      # Left panel layout
-|   +-- game-over.tsx    # Win/lose overlay
-|   +-- intro-overlay.tsx # Start screen
-|   +-- keyboard-reference.tsx # Keyboard shortcut reference overlay
-|   +-- error-boundary.tsx # Error handling
-+-- utils/              # Utility modules
-    +-- particles.ts    # Particle spawning with pool + throttling
-    +-- pool.ts         # ObjectPool<T> for reusable allocations
-    +-- spatial-hash.ts # SpatialHash grid for O(n) proximity queries
++-- platform/           # Capacitor native detection
++-- rendering/          # PixiJS renderers (entity, effects, ui, background)
+|   +-- pixi/
+|   |   +-- entity-renderer.ts # Sprite rendering, health bars
+|   |   +-- auto-symbol-overlay.ts # Auto-symbol icon rendering
+|   |   +-- lodge-visuals.ts # Lodge wing rendering
++-- replay/             # Replay system (retained from v2)
++-- storage/            # SQLite persistence (schema, queries, settings)
++-- systems/            # Non-ECS systems (achievements, daily challenges, XP, leaderboard)
++-- terrain/            # Terrain grid, painters
++-- ui/
+|   +-- comic-landing.tsx # Comic book landing page (3 stacked panels)
+|   +-- comic-panel.tsx  # Reusable comic panel component
+|   +-- store.ts         # Core reactive signals
+|   +-- store-v3.ts      # v3 metagame signals
+|   +-- store-v3-persistence.ts # SQLite persistence for v3 state
+|   +-- components/      # Reusable UI primitives
+|   |   +-- frame/       # SVG 9-slice panel system
+|   |   +-- sprites/     # SVG unit sprites with idle/attack frames
+|   +-- hud/             # HUD elements (event alerts, onboarding, weather, ctrl-groups)
+|   +-- screens/         # UpgradeWebScreen, PearlUpgradeScreen, RewardsScreen, RankUpModal
+|   +-- overlays/        # Modal overlays (settings, etc.)
++-- utils/              # Utility modules (particles, pool, spatial-hash, random)
+configs/                # JSON game data (11 files)
+tests/                  # 140+ test files mirroring src/ structure
 ```
 
 ## Performance Optimizations
 
-- **SpatialHash grid** (`src/utils/spatial-hash.ts`) - O(n) proximity queries for aggro, healing, aura buffs. Rebuilt each frame with 200px cell size
+- **SpatialHash grid** (`src/utils/spatial-hash.ts`) - O(n) proximity queries for aggro, healing, aura buffs
 - **ObjectPool** (`src/utils/pool.ts`) - Reusable particle allocations to avoid GC pressure
-- **Particle throttling** (`src/utils/particles.ts`) - Probabilistic skip when particle count exceeds thresholds (>200: skip 50%, >400: skip 75%)
-- **Synth pool** (`src/audio/sfx.ts`) - 16 pre-allocated Tone.js synth+panner pairs, eviction on pool exhaustion
-- **Sprite recolor cache** (`src/rendering/recolor.ts`) - Recolored textures cached by preset+spriteId key
-- **30-frame UI sync** - Game state synced to Preact signals every 30 frames (not every frame) to minimize reactive updates
+- **Particle throttling** (`src/utils/particles.ts`) - Probabilistic skip when particle count exceeds thresholds
+- **Synth pool** - Pre-allocated Tone.js synth+panner pairs, eviction on pool exhaustion
+- **Sprite recolor cache** - Recolored textures cached by preset+spriteId key
+- **30-frame UI sync** - Game state synced to Preact signals every 30 frames (not every frame)
 
 ## Key Design Decisions
 
 - **bitECS SoA components** over traditional OOP entities for cache-friendly iteration
 - **Preact Signals** for reactive UI without re-rendering the entire tree
-- **PixiJS 8 + Canvas2D overlays** - PixiJS for entities/sprites, Canvas2D for fog/lighting (blend modes)
-- **Yuka.js for ALL units** (not just enemies) - smooth steering with separation/wander/flee/formation behaviors
-- **Mouse/touch-first design** - every action has a clickable UI element, keyboard shortcuts are secondary
-- **Fixed timestep with variable rendering** - deterministic game logic at 60 FPS
-- **Parallel economies** - enemy AI uses the same resource/gathering systems as the player, creating genuine competition
-- **Damage multiplier table** - centralized in `DAMAGE_MULTIPLIERS` for easy balance tuning
-- **Veterancy as incremental deltas** - bonuses are applied as differences between ranks, preventing double-counting on rank-up
-- **SQLite persistence** - uses capacitor-sqlite + jeep-sqlite for ALL platforms (web: sql.js + IndexedDB, native: native SQLite). No localStorage fallback -- SQLite is required
-- **Enemy evolution system** - tier-based progressive difficulty that unlocks new enemy types over time, encouraging player adaptation
-- **Pressure-based auto-build** - scores building needs by urgency (attack defense, pop cap, military production, resource expansion) rather than simple timers
-- **Faction-agnostic systems** - same ECS systems handle both player and AI factions; faction selection only swaps unit mappings
-- **AI personality multipliers** - personality configs apply multipliers to base AI behavior (attack threshold, tower rate, expansion rate) rather than branching logic
-- **Active abilities tracked in GameWorld** - Rally Cry/Pond Blessing/Tidal Surge use frame-based cooldown/expiry fields on the world object, checked by existing systems
+- **PixiJS 8 + Canvas2D overlays** - PixiJS for entities/sprites, Canvas2D for fog/lighting
+- **Yuka.js for ALL units** - smooth steering with separation/wander/flee/formation behaviors
+- **Mouse/touch-first design** - every action has a clickable UI element
+- **Wave-survival mode** - single game mode: defend the Lodge from escalating events
+- **6-panel grid** - map divided into panels with progression-based unlock
+- **Auto-symbol autonomy** - visual feedback loop for unit auto-behaviors
+- **JSON-driven balance** - all unit stats, events, upgrades in `configs/*.json`
+- **Deterministic PRNG** - all gameplay randomness through SeededRandom, never Math.random()
+- **SQLite persistence** - capacitor-sqlite + jeep-sqlite for all platforms
+- **Upgrade web + prestige** - deep metagame progression between matches
+- **Faction-agnostic systems** - same ECS systems handle both player and AI factions

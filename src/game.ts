@@ -1,25 +1,15 @@
-/** Game Orchestrator – thin shell that delegates to focused sub-modules. */
+/** Game Orchestrator -- thin shell that delegates to focused sub-modules. */
 import type { GameWorld } from '@/ecs/world';
-import { useAirdrop, usePondBlessing, useRallyCry, useTidalSurge } from '@/game/abilities';
+import { useAirdrop, usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
 import { useCommanderAbility } from '@/game/commander-abilities';
 import {
-  applyCampaignMission,
   applyDifficultyModifiers,
   applyMapSeed,
-  centerCameraOnLodge,
+  computeInitialZoom,
   createGameWorld,
-  ensureLifecycleListeners,
-  initCanvases,
   resetSession,
-  setupAudio,
-  setupColorBlind,
-  setupDockResize,
-  setupInput,
-  spawnFireflies,
-  spawnInitialEntities,
-  startGameLoop,
-  wireWebGLHandlers,
+  spawnVerticalWorld,
 } from '@/game/game-init';
 import {
   type DestroyRefs,
@@ -27,17 +17,20 @@ import {
   handleEvacuationChoice as handleEvacChoice,
 } from '@/game/game-lifecycle';
 import { cycleSpeed as cycleSpeedFn, type GameLoopState } from '@/game/game-loop';
+import { runGameSetup } from '@/game/game-setup';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
 import { playUnitSelectSound } from '@/game/unit-select-sound';
+import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
-import { PhysicsManager } from '@/physics/physics-world';
-import { clampCamera } from '@/rendering/camera';
+import type { PhysicsManager } from '@/physics/physics-world';
+import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
 import type { SpriteId } from '@/types';
-import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
+import { createUpgradeWebState } from '@/ui/upgrade-web-state';
 
 export class Game {
   world: GameWorld;
@@ -49,8 +42,6 @@ export class Game {
   private gameCanvas!: HTMLCanvasElement;
   private fogCanvas!: HTMLCanvasElement;
   private lightCanvas!: HTMLCanvasElement;
-  private minimapCanvas!: HTMLCanvasElement;
-  private minimapCamElement!: HTMLElement;
   private fogCtx!: CanvasRenderingContext2D;
   private lightCtx!: CanvasRenderingContext2D;
   private exploredCanvas!: HTMLCanvasElement;
@@ -79,8 +70,6 @@ export class Game {
     gameCanvas: HTMLCanvasElement,
     fogCanvas: HTMLCanvasElement,
     lightCanvas: HTMLCanvasElement,
-    minimapCanvas: HTMLCanvasElement,
-    minimapCamElement: HTMLElement,
   ): Promise<void> {
     if (this.initializing) return;
     this.initializing = true;
@@ -93,109 +82,59 @@ export class Game {
     this.gameCanvas = gameCanvas;
     this.fogCanvas = fogCanvas;
     this.lightCanvas = lightCanvas;
-    this.minimapCanvas = minimapCanvas;
-    this.minimapCamElement = minimapCamElement;
 
-    // Canvas and rendering pipeline
-    const minimapCtx = minimapCanvas.getContext('2d', { alpha: false });
-    const refs = await initCanvases(this.world, container, gameCanvas, fogCanvas, lightCanvas);
-    this.fogCtx = refs.fogCtx;
-    this.lightCtx = refs.lightCtx;
-    this.bgCanvas = refs.bgCanvas;
-    this.fogState = refs.fogState;
-    this.exploredCanvas = refs.exploredCanvas;
-    this.exploredCtx = refs.exploredCtx;
-    this.spriteCanvases = refs.spriteCanvases;
-
-    // Resize and listeners
-    this.resize();
-    this.boundResize = () => this.resize();
-    window.addEventListener('resize', this.boundResize);
-    this.dockPanelUnsubscribe = setupDockResize(() => this.resize());
-
-    // Input
-    const input = setupInput(
-      this.world,
-      container,
-      gameCanvas,
-      minimapCanvas,
-      this.recorder,
-      () => this.syncUIStore(),
-      () => this.cycleSpeed(),
-      () => this.playUnitSelectSound(),
-    );
-    this.keyboard = input.keyboard;
-    this.pointer = input.pointer;
-    this.pointer.onZoomChange = (zoom) => this.setZoom(zoom);
-
-    // Physics, difficulty, world setup
-    this.physicsManager = new PhysicsManager();
     applyDifficultyModifiers(this.world);
     applyMapSeed(this.world);
-    applyCampaignMission(this.world);
-    spawnInitialEntities(this.world);
 
-    if (this.world.fogOfWarMode === 'revealed') {
-      this.exploredCtx.fillStyle = '#ffffff';
-      this.exploredCtx.fillRect(0, 0, this.exploredCanvas.width, this.exploredCanvas.height);
-    }
+    // T39: Apply upgrade web effects from purchased nodes + Pearl multipliers
+    const upgradeState = createUpgradeWebState(storeV3.totalClams.value);
+    applyUpgradeEffects(this.world, upgradeState, storeV3.prestigeState.value);
 
-    centerCameraOnLodge(this.world);
-    spawnFireflies(this.world);
-    this.syncUIStore();
-    this.colorBlindUnsubscribe = setupColorBlind();
+    spawnVerticalWorld(this.world);
 
-    // Visibility pause handler
-    this.boundVisibilityChange = () => {
-      if (document.hidden && store.menuState.value === 'playing' && !this.world.paused) {
-        this.world.paused = true;
-        store.paused.value = true;
-      }
-    };
-    document.addEventListener('visibilitychange', this.boundVisibilityChange);
-    const audioRefs = {
-      audioInitialized: this.audioInitialized,
-      audioInitPromise: null as Promise<void> | null,
-      initAudioHandler: this.initAudioHandler,
-      loopState: null as GameLoopState | null,
-    };
-    setupAudio(audioRefs);
-    this.audioInitialized = audioRefs.audioInitialized;
-    this.initAudioHandler = audioRefs.initAudioHandler;
+    // Initial zoom BEFORE resize (zoomLevel drives viewWidth/viewHeight)
+    this.world.zoomLevel = computeInitialZoom(this.world.worldWidth, container.clientWidth);
 
-    this.recorder.start();
-    this.running = true;
-    this.initializing = false;
-
-    // Start game loop
-    this.loopState = startGameLoop({
+    // Delegate the remaining setup pipeline to game-setup module
+    const out = await runGameSetup({
       world: this.world,
-      spriteCanvases: this.spriteCanvases,
-      pointer: this.pointer,
-      keyboard: this.keyboard,
-      fogState: this.fogState,
-      fogCtx: this.fogCtx,
-      fogCanvas: this.fogCanvas,
-      lightCtx: this.lightCtx,
-      lightCanvas: this.lightCanvas,
-      minimapCtx: minimapCtx!,
-      minimapCamElement: this.minimapCamElement,
-      exploredCanvas: this.exploredCanvas,
-      bgCanvas: this.bgCanvas,
-      physicsManager: this.physicsManager,
-      container: this.container,
+      container,
+      gameCanvas,
+      fogCanvas,
+      lightCanvas,
       recorder: this.recorder,
+      panHandle: this.panHandle,
       audioInitialized: this.audioInitialized,
+      initAudioHandler: this.initAudioHandler,
       syncUIStore: () => this.syncUIStore(),
+      cycleSpeed: () => this.cycleSpeed(),
+      playUnitSelectSound: () => this.playUnitSelectSound(),
+      setZoom: (zoom) => this.setZoom(zoom),
       governor: this.governor,
     });
 
-    // WebGL context recovery wired to loop state
-    const webgl = wireWebGLHandlers(gameCanvas, this.world, this.loopState);
-    this.boundContextLost = webgl.contextLost;
-    this.boundContextRestored = webgl.contextRestored;
+    this.fogCtx = out.fogCtx;
+    this.lightCtx = out.lightCtx;
+    this.bgCanvas = out.bgCanvas;
+    this.fogState = out.fogState;
+    this.exploredCanvas = out.exploredCanvas;
+    this.exploredCtx = out.exploredCtx;
+    this.spriteCanvases = out.spriteCanvases;
+    this.keyboard = out.keyboard;
+    this.pointer = out.pointer;
+    this.physicsManager = out.physicsManager;
+    this.loopState = out.loopState;
+    this.colorBlindUnsubscribe = out.colorBlindUnsubscribe;
+    this.dockPanelUnsubscribe = out.dockPanelUnsubscribe;
+    this.boundResize = out.boundResize;
+    this.boundContextLost = out.boundContextLost;
+    this.boundContextRestored = out.boundContextRestored;
+    this.boundVisibilityChange = out.boundVisibilityChange;
+    this.audioInitialized = out.audioInitialized;
+    this.initAudioHandler = out.initAudioHandler;
 
-    ensureLifecycleListeners(this.world);
+    this.running = true;
+    this.initializing = false;
   }
   resize(): void {
     resizeCanvases(
@@ -208,7 +147,8 @@ export class Game {
     );
   }
   setZoom(level: number): void {
-    this.world.zoomLevel = Math.max(0.5, Math.min(2.0, level));
+    const minZoom = this.world.panelGrid ? computeMinZoom(this.world.panelGrid) : 0.5;
+    this.world.zoomLevel = Math.max(minZoom, Math.min(PANEL_MAX_ZOOM, level));
     this.resize();
     clampCamera(this.world);
   }
@@ -228,9 +168,8 @@ export class Game {
       exploredCtx: this.exploredCtx ?? null,
     });
   }
-
   useRallyCry(): boolean {
-    return useRallyCry(this.world);
+    return useShadowSprint(this.world);
   }
   usePondBlessing(): boolean {
     return usePondBlessing(this.world);
@@ -244,33 +183,21 @@ export class Game {
   useCommanderAbility(): boolean {
     return useCommanderAbility(this.world);
   }
-
   handleEvacuationChoice(choice: 'checkpoint' | 'restart' | 'quit'): void {
     handleEvacChoice(this.world, choice, () =>
-      this.init(
-        this.container,
-        this.gameCanvas,
-        this.fogCanvas,
-        this.lightCanvas,
-        this.minimapCanvas,
-        this.minimapCamElement,
-      ),
+      this.init(this.container, this.gameCanvas, this.fogCanvas, this.lightCanvas),
     );
   }
-
   private playUnitSelectSound(): void {
     playUnitSelectSound(this.world);
   }
-
   /** Attach or detach the lockstep synchronizer on the active game loop. */
   setLockstep(ls: import('@/net/lockstep').LockstepSync | null): void {
     if (this.loopState) this.loopState.lockstep = ls;
   }
-
   getSprite(id: SpriteId): HTMLCanvasElement | undefined {
     return this.spriteCanvases.get(id);
   }
-
   destroy(): void {
     this.running = false;
     const refs: DestroyRefs = {

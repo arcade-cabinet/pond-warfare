@@ -85,6 +85,8 @@ describe('movementSystem', () => {
   });
 
   it('should transition to Gathering on arrival for GatherMove state', () => {
+    // Ensure clear weather so gather timer has no weather penalty
+    world.weather.current = 'clear';
     const eid = createTestUnit(world, 100, 100);
     UnitStateMachine.state[eid] = UnitState.GatherMove;
     UnitStateMachine.targetX[eid] = 101;

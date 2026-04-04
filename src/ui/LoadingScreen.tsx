@@ -1,7 +1,13 @@
-/** Loading screen shown during menu-to-game transition. */
+/**
+ * Loading screen shown during menu-to-game transition.
+ *
+ * Design bible: swamp gradient background (bark->mud), font-heading title,
+ * Frame9Slice tip card, design token colors.
+ */
 
 import { useMemo } from 'preact/hooks';
-import { MenuBackground } from './menu-background';
+import { COLORS } from '@/ui/design-tokens';
+import { Frame9Slice } from './components/frame';
 import { customGameSettings } from './store';
 
 const LOADING_TIPS = [
@@ -19,7 +25,7 @@ const LOADING_TIPS = [
   'Walls block enemy pathing and buy time for your defenders.',
   'Research upgrades at the Lodge to unlock new units and abilities.',
   'Flying Herons can cross water and ignore terrain obstacles.',
-  'Use the minimap to keep an eye on enemy movements.',
+  "High ground ridges give tactical advantage in no-man's-land.",
 ] as const;
 
 function capitalize(s: string): string {
@@ -31,13 +37,19 @@ export function LoadingScreen() {
   const mapName = capitalize(customGameSettings.value.scenario);
 
   return (
-    <div class="absolute inset-0 z-[100] flex flex-col items-center justify-center">
-      <MenuBackground />
-
-      <div class="relative z-10 flex flex-col items-center gap-6 px-4 text-center">
+    <div
+      class="absolute inset-0 z-[100] flex flex-col items-center justify-center"
+      style={{
+        background: `linear-gradient(180deg, ${COLORS.woodDark} 0%, ${COLORS.woodBase} 100%)`,
+      }}
+    >
+      <div class="relative z-10 flex flex-col items-center gap-6 px-4 text-center max-w-md">
         <h2
           class="font-heading text-2xl md:text-3xl tracking-wider uppercase"
-          style={{ color: 'var(--pw-accent)', textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}
+          style={{
+            color: COLORS.grittyGold,
+            textShadow: '0 2px 8px rgba(0,0,0,0.7)',
+          }}
         >
           Loading {mapName} Map...
         </h2>
@@ -51,22 +63,27 @@ export function LoadingScreen() {
               style={{
                 width: '10px',
                 height: '10px',
-                background: 'var(--pw-accent)',
+                background: COLORS.grittyGold,
                 animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
               }}
             />
           ))}
         </div>
 
-        <p
-          class="font-game text-xs md:text-sm max-w-md"
-          style={{
-            color: 'var(--pw-text-decorative)',
-            textShadow: `0 1px 4px var(--pw-shadow-medium)`,
-          }}
-        >
-          {tip}
-        </p>
+        {/* Tip card wrapped in Frame9Slice */}
+        <Frame9Slice>
+          <div class="px-4 py-3 text-center">
+            <span
+              class="font-heading text-xs uppercase tracking-wider"
+              style={{ color: COLORS.goldDim }}
+            >
+              Tip
+            </span>
+            <p class="font-game text-xs md:text-sm mt-1" style={{ color: COLORS.sepiaText }}>
+              {tip}
+            </p>
+          </div>
+        </Frame9Slice>
       </div>
     </div>
   );

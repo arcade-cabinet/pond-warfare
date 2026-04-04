@@ -1,43 +1,49 @@
-/** Root Preact component — thin routing shell between menu and game screens. */
+/** Root Preact component -- thin routing shell between menu and game screens. */
 
 import { entityExists, hasComponent } from 'bitecs';
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
-import { canResearch, TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
-import { AchievementsPanel } from './achievements-panel';
-import { CampaignPanel, ObjectiveTracker } from './campaign-panel';
-import { HamburgerButton } from './components/HamburgerButton';
+import {
+  handleClamsChange,
+  handlePearlBack,
+  handlePearlStateChange,
+  handleRankUpCancel,
+  handleRankUpConfirm,
+  handleRewardsPlayAgain,
+  handleRewardsRankUp,
+  handleRewardsUpgrades,
+  handleUpgradesBack,
+} from './app-v3-handlers';
+import { SvgFilters } from './components/SvgFilters';
+import { SwampEcosystem } from './components/SwampEcosystem';
 import { Tooltip } from './components/Tooltip';
-import { CosmeticsPanel } from './cosmetics-panel';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
 import { AchievementToast } from './hud/AchievementToast';
-import { AdvisorToast } from './hud/AdvisorToast';
-import { AbilityBar } from './hud/ability-bar';
-import { AirdropButton } from './hud/airdrop-button';
 import { ConnectionStatus } from './hud/ConnectionStatus';
 import { CtrlGroups } from './hud/ctrl-groups';
+import { EventAlert } from './hud/EventAlert';
+import { OnboardingHint } from './hud/OnboardingHint';
 import { Overlays } from './hud/overlays';
+import { TopBar } from './hud/top-bar';
 import { WeatherEffects } from './hud/WeatherEffects';
 import { KeyboardReference } from './keyboard-reference';
 import { LoadingScreen } from './LoadingScreen';
-import { LeaderboardPanel } from './leaderboard-panel';
 import { MainMenu } from './main-menu';
-import { MatchHistoryPanel } from './match-history-panel';
-import { NewGameModal } from './new-game-modal';
 import { DisconnectOverlay } from './overlays/DisconnectOverlay';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
-import { CommandPanel } from './panel/CommandPanel';
+import { dispatchRadialAction } from './radial-actions';
+import { RadialMenu } from './radial-menu';
 import { SplashVideo } from './SplashVideo';
-import { MultiplayerLobby } from './screens/MultiplayerLobby';
-import { MultiplayerMenu } from './screens/MultiplayerMenu';
+import { PearlUpgradeScreen } from './screens/PearlUpgradeScreen';
+import { RankUpModal } from './screens/RankUpModal';
+import { RewardsScreen } from './screens/RewardsScreen';
+import { UpgradeWebScreen } from './screens/UpgradeWebScreen';
 import * as store from './store';
-import { multiplayerMenuOpen, multiplayerView } from './store-multiplayer';
-import { TechTreePanel } from './tech-tree-panel';
-import { UnlocksPanel } from './unlocks-panel';
+import * as storeV3 from './store-v3';
 
 export interface AppProps {
   onMount: (refs: {
@@ -45,8 +51,6 @@ export interface AppProps {
     gameCanvas: HTMLCanvasElement;
     fogCanvas: HTMLCanvasElement;
     lightCanvas: HTMLCanvasElement;
-    minimapCanvas: HTMLCanvasElement;
-    minimapCam: HTMLDivElement;
     dayNightOverlay: HTMLDivElement;
   }) => void | Promise<void>;
 }
@@ -64,8 +68,6 @@ export function App({ onMount }: AppProps) {
   const gameCanvasRef = useRef<HTMLCanvasElement>(null);
   const fogCanvasRef = useRef<HTMLCanvasElement>(null);
   const lightCanvasRef = useRef<HTMLCanvasElement>(null);
-  const minimapCanvasRef = useRef<HTMLCanvasElement>(null);
-  const minimapCamRef = useRef<HTMLDivElement>(null);
   const dayNightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,8 +77,6 @@ export function App({ onMount }: AppProps) {
       gameCanvasRef.current &&
       fogCanvasRef.current &&
       lightCanvasRef.current &&
-      minimapCanvasRef.current &&
-      minimapCamRef.current &&
       dayNightRef.current
     ) {
       const refs = {
@@ -84,25 +84,24 @@ export function App({ onMount }: AppProps) {
         gameCanvas: gameCanvasRef.current,
         fogCanvas: fogCanvasRef.current,
         lightCanvas: lightCanvasRef.current,
-        minimapCanvas: minimapCanvasRef.current,
-        minimapCam: minimapCamRef.current,
         dayNightOverlay: dayNightRef.current,
       };
       store.gameLoading.value = true;
       (async () => {
         try {
           await onMount(refs);
-        } catch (_err) {
-        } finally {
+        } catch (err) {
           // biome-ignore lint/suspicious/noConsole: surface init failures
+          console.error('Game init failed:', err);
+        } finally {
           store.gameLoading.value = false;
         }
       })();
     }
   }, [onMount, store.menuState.value]);
 
-  // ---------- Menu screens ----------
-  if (store.menuState.value === 'main' || store.menuState.value === 'newGame') {
+  // ---------- Menu screen ----------
+  if (store.menuState.value === 'main') {
     return (
       <div
         class="relative h-screen w-screen overflow-hidden"
@@ -114,23 +113,32 @@ export function App({ onMount }: AppProps) {
             <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
           </div>
         </div>
+        <SwampEcosystem />
+        <SvgFilters />
         <ErrorOverlay />
         <MainMenu />
-        {store.campaignOpen.value && <CampaignPanel />}
-        {store.menuState.value === 'newGame' && <NewGameModal />}
         <SettingsOverlay />
-        {store.achievementsOpen.value && <AchievementsPanel />}
-        {store.leaderboardOpen.value && <LeaderboardPanel />}
-        {store.unlocksOpen.value && <UnlocksPanel />}
-        {store.cosmeticsOpen.value && <CosmeticsPanel />}
-        {store.matchHistoryOpen.value && <MatchHistoryPanel />}
-        {multiplayerMenuOpen.value &&
-          (multiplayerView.value === 'lobby' ? <MultiplayerLobby /> : <MultiplayerMenu />)}
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {
               store.keyboardRefOpen.value = false;
             }}
+          />
+        )}
+
+        {/* v3 overlay screens -- rendered on top of main menu */}
+        {storeV3.upgradesScreenOpen.value && (
+          <UpgradeWebScreen
+            clams={storeV3.totalClams.value}
+            onClamsChange={handleClamsChange}
+            onBack={handleUpgradesBack}
+          />
+        )}
+        {storeV3.pearlScreenOpen.value && (
+          <PearlUpgradeScreen
+            prestigeState={storeV3.prestigeState.value}
+            onStateChange={handlePearlStateChange}
+            onBack={handlePearlBack}
           />
         )}
       </div>
@@ -161,23 +169,28 @@ export function App({ onMount }: AppProps) {
           <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
         </div>
       </div>
+      <SvgFilters />
       <ErrorOverlay />
+
+      {/* Resource HUD top bar */}
+      <TopBar
+        onSpeedClick={act(() => game.cycleSpeed())}
+        onMuteClick={act(() => audio.toggleMute())}
+        onPauseClick={act(() => {
+          game.world.paused = !game.world.paused;
+        })}
+        onSettingsClick={() => {
+          store.settingsOpen.value = true;
+        }}
+      />
 
       {/* Fullscreen game container */}
       <div
         ref={containerRef}
         id="game-container"
         class="absolute inset-0 cursor-crosshair overflow-hidden bg-black"
-        style={{ right: 'var(--pw-panel-width, 0px)' }}
       >
         <Overlays />
-        <AirdropButton onAirdrop={act(() => game.useAirdrop())} />
-        <AbilityBar
-          onRallyCry={act(() => game.useRallyCry())}
-          onPondBlessing={act(() => game.usePondBlessing())}
-          onTidalSurge={act(() => game.useTidalSurge())}
-          onCommanderAbility={act(() => game.useCommanderAbility())}
-        />
         <CtrlGroups
           onCtrlGroupClick={(group) => {
             const w = game.world;
@@ -200,6 +213,7 @@ export function App({ onMount }: AppProps) {
               cy += Position.y[eid];
             }
             game.smoothPanTo(cx / alive.length, cy / alive.length);
+            store.lastRecalledGroup.value = group;
             audio.selectUnit();
             game.syncUIStore();
           }}
@@ -213,46 +227,22 @@ export function App({ onMount }: AppProps) {
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
         <WeatherEffects />
-        {store.campaignMissionId.value && <ObjectiveTracker />}
         <GameOverBanner onRestart={() => window.location.reload()} />
         <EvacuationOverlay
           onChoice={(choice) => {
             game.handleEvacuationChoice(choice);
           }}
         />
+        {/* Radial menu -- contextual actions for Lodge and units */}
+        <RadialMenu onAction={dispatchRadialAction} />
       </div>
 
-      <HamburgerButton />
       <ConnectionStatus />
-      <AdvisorToast />
       <AchievementToast />
+      <EventAlert />
+      <OnboardingHint />
 
-      {/* Modal overlays — siblings of #game-container for proper touch-action */}
-      {store.techTreeOpen.value && (
-        <TechTreePanel
-          techState={{ ...game.world.tech }}
-          clams={store.clams.value}
-          twigs={store.twigs.value}
-          researchDiscount={game.world.commanderModifiers.passiveResearchSpeed}
-          onResearch={(id: TechId) => {
-            const w = game.world;
-            const upgrade = TECH_UPGRADES[id as keyof typeof TECH_UPGRADES];
-            if (!upgrade || !canResearch(id, w.tech)) return;
-            const discount = 1 - w.commanderModifiers.passiveResearchSpeed;
-            const clamCost = Math.round(upgrade.clamCost * discount);
-            const twigCost = Math.round(upgrade.twigCost * discount);
-            if (w.resources.clams >= clamCost && w.resources.twigs >= twigCost) {
-              w.resources.clams -= clamCost;
-              w.resources.twigs -= twigCost;
-              w.tech[id] = true;
-              game.syncUIStore();
-            }
-          }}
-          onClose={() => {
-            store.techTreeOpen.value = false;
-          }}
-        />
-      )}
+      {/* Modal overlays -- siblings of #game-container for proper touch-action */}
       <SettingsOverlay />
       {store.keyboardRefOpen.value && (
         <KeyboardReference
@@ -261,14 +251,33 @@ export function App({ onMount }: AppProps) {
           }}
         />
       )}
-      {store.achievementsOpen.value && <AchievementsPanel />}
-      {store.leaderboardOpen.value && <LeaderboardPanel />}
-      {store.unlocksOpen.value && <UnlocksPanel />}
-      {store.cosmeticsOpen.value && <CosmeticsPanel />}
       <DisconnectOverlay />
-      <CommandPanel minimapCanvasRef={minimapCanvasRef} minimapCamRef={minimapCamRef} />
       <Tooltip />
       {store.gameLoading.value && <LoadingScreen />}
+
+      {/* v3 post-match screens -- rendered over game when active */}
+      {storeV3.rewardsScreenOpen.value && storeV3.lastRewardBreakdown.value && (
+        <RewardsScreen
+          breakdown={storeV3.lastRewardBreakdown.value}
+          kills={0}
+          eventsCompleted={storeV3.matchEventsCompleted.value}
+          resourcesGathered={0}
+          durationSeconds={0}
+          canRankUp={storeV3.canRankUpAfterMatch.value}
+          prestigeRank={storeV3.prestigeRank.value}
+          onRankUp={handleRewardsRankUp}
+          onUpgrades={handleRewardsUpgrades}
+          onPlayAgain={handleRewardsPlayAgain}
+        />
+      )}
+      {storeV3.rankUpModalOpen.value && (
+        <RankUpModal
+          prestigeState={storeV3.prestigeState.value}
+          progressionLevel={storeV3.progressionLevel.value}
+          onConfirm={handleRankUpConfirm}
+          onCancel={handleRankUpCancel}
+        />
+      )}
     </div>
   );
 }

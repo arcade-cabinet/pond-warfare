@@ -3,6 +3,12 @@
  *
  * Shared utilities for tech cost calculation, affordability checks,
  * purchasing, and training queue display.
+ *
+ * v3.0 note: In-game research was removed. TECH_UPGRADES is empty and
+ * canResearch always returns false, so canAffordTech/purchaseTech
+ * naturally return false and techRequiresLabel returns undefined.
+ * These functions are kept for API compatibility with combat systems
+ * that still check world.tech flags (set by commanders, not research).
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -37,6 +43,7 @@ export function discountedTechCost(
 /** Check affordability for a tech upgrade with Sage discount applied. */
 export function canAffordTech(w: GameWorld, techId: TechId): boolean {
   const upgrade = TECH_UPGRADES[techId];
+  if (!upgrade) return false;
   const { clams, twigs } = discountedTechCost(w, upgrade.clamCost, upgrade.twigCost);
   const pearlCost = (upgrade as { pearlCost?: number }).pearlCost ?? 0;
   return (
@@ -60,6 +67,7 @@ const UNIT_BUFF_TECHS: ReadonlySet<TechId> = new Set([
 /** Purchase a tech upgrade, applying Sage discount. Returns true if successful. */
 export function purchaseTech(w: GameWorld, techId: TechId): boolean {
   const upgrade = TECH_UPGRADES[techId];
+  if (!upgrade) return false;
   const { clams, twigs } = discountedTechCost(w, upgrade.clamCost, upgrade.twigCost);
   const pearlCost = (upgrade as { pearlCost?: number }).pearlCost ?? 0;
   if (
@@ -114,6 +122,7 @@ export function purchaseTech(w: GameWorld, techId: TechId): boolean {
 /** Return a human-readable "Requires: <Tech Name>" string for a tech upgrade, or undefined. */
 export function techRequiresLabel(techId: TechId): string | undefined {
   const upgrade = TECH_UPGRADES[techId];
+  if (!upgrade) return undefined;
   if ('requires' in upgrade && upgrade.requires) {
     const req = TECH_UPGRADES[upgrade.requires];
     return `Requires: ${req.name}`;

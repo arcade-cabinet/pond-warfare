@@ -17,7 +17,7 @@ vi.mock('@/platform', async () => {
 
 import { WeatherEffects } from '@/ui/hud/WeatherEffects';
 import { WeatherIndicator } from '@/ui/hud/WeatherIndicator';
-import { currentWeather, weatherCountdown } from '@/ui/store-weather';
+import { currentWeather, nextWeather, weatherCountdown } from '@/ui/store-weather';
 
 afterEach(cleanup);
 
@@ -51,6 +51,22 @@ describe('WeatherIndicator', () => {
     expect(document.body.textContent).not.toContain('Wind');
     // But should still show countdown
     expect(document.body.textContent).toContain('0:45');
+  });
+
+  it('shows forecast with next weather in non-compact mode', () => {
+    currentWeather.value = 'clear';
+    nextWeather.value = 'rain';
+    weatherCountdown.value = 120;
+    render(h(WeatherIndicator, { compact: false }));
+    expect(document.body.textContent).toContain('Next: Rain in 2:00');
+  });
+
+  it('hides forecast in compact mode', () => {
+    currentWeather.value = 'clear';
+    nextWeather.value = 'fog';
+    weatherCountdown.value = 60;
+    render(h(WeatherIndicator, { compact: true }));
+    expect(document.body.textContent).not.toContain('Next:');
   });
 });
 

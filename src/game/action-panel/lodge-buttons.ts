@@ -1,21 +1,22 @@
 /**
- * Action Panel — Lodge Buttons
+ * Action Panel -- Lodge Buttons
  *
- * Builds Lodge action buttons (Gatherer, Sturdy Mud, Swift Paws,
- * Scout, Swimmer, Tech Tree) shared by Global Command Center and
- * selected-Lodge panel.
+ * Train buttons (Gatherer, Scout, Swimmer) shown by Global Command
+ * Center and when a completed Lodge is selected.
+ *
+ * In v3.0 the in-match tech research was removed, so inline tech
+ * buttons (sturdyMud, swiftPaws) and the "Tech Tree" button are gone.
+ * The Swimmer train button is gated on world.tech.aquaticTraining —
+ * since that flag is always false in the v3 stub, the button simply
+ * won't appear until the upgrade web grants it.
  */
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { TECH_UPGRADES } from '@/config/tech-tree';
 import type { GameWorld } from '@/ecs/world';
 import { train } from '@/input/selection';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind } from '@/types';
 import type { ActionButtonDef } from '@/ui/action-panel';
-import * as store from '@/ui/store';
-
-import { canAffordTech, discountedTechCost, purchaseTech, techRequiresLabel } from './tech-helpers';
 
 export function buildLodgeButtons(
   w: GameWorld,
@@ -49,40 +50,6 @@ export function buildLodgeButtons(
       });
     },
   });
-  const smTech = TECH_UPGRADES.sturdyMud;
-  const smCost = discountedTechCost(w, smTech.clamCost, smTech.twigCost);
-  btns.push({
-    title: smTech.name,
-    cost: `${smCost.clams}C ${smCost.twigs}T`,
-    hotkey: 'W',
-    affordable: canAffordTech(w, 'sturdyMud'),
-    description: smTech.description,
-    category: 'tech',
-    costBreakdown: { clams: smCost.clams, twigs: smCost.twigs },
-    requires: techRequiresLabel('sturdyMud'),
-    onClick: () => {
-      if (purchaseTech(w, 'sturdyMud')) {
-        recorder?.record(w.frameCount, 'research', { tech: 'sturdyMud' });
-      }
-    },
-  });
-  const spTech = TECH_UPGRADES.swiftPaws;
-  const spCost = discountedTechCost(w, spTech.clamCost, spTech.twigCost);
-  btns.push({
-    title: spTech.name,
-    cost: `${spCost.clams}C ${spCost.twigs}T`,
-    hotkey: 'E',
-    affordable: canAffordTech(w, 'swiftPaws'),
-    description: spTech.description,
-    category: 'tech',
-    costBreakdown: { clams: spCost.clams, twigs: spCost.twigs },
-    requires: techRequiresLabel('swiftPaws'),
-    onClick: () => {
-      if (purchaseTech(w, 'swiftPaws')) {
-        recorder?.record(w.frameCount, 'research', { tech: 'swiftPaws' });
-      }
-    },
-  });
   const scoutDef = ENTITY_DEFS[EntityKind.Scout];
   btns.push({
     title: 'Scout',
@@ -109,6 +76,8 @@ export function buildLodgeButtons(
       });
     },
   });
+
+  // Swimmer — gated on aquaticTraining tech (always false in v3 stub)
   if (w.tech.aquaticTraining) {
     const swimDef = ENTITY_DEFS[EntityKind.Swimmer];
     const swimDiscount = 1 - w.commanderModifiers.passiveSwimmerCostReduction;
@@ -135,16 +104,6 @@ export function buildLodgeButtons(
       },
     });
   }
-  btns.push({
-    title: 'Tech Tree',
-    cost: '',
-    hotkey: 'T',
-    affordable: true,
-    description: 'View full tech tree',
-    category: 'tech',
-    onClick: () => {
-      store.techTreeOpen.value = true;
-    },
-  });
+
   return btns;
 }

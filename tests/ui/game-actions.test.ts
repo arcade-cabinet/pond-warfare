@@ -196,31 +196,27 @@ describe('game-actions', () => {
   });
 
   describe('toggleAutoBehavior', () => {
-    it('toggles gatherer in both store and world', () => {
+    // v3.0: auto-behaviors are now prestige-earned; stub only toggles store signals
+    it('toggles gatherer store signal', () => {
       toggleAutoBehavior('gatherer');
       expect(store.autoGathererEnabled.value).toBe(true);
-      expect(game.world.autoBehaviors.gatherer).toBe(true);
       toggleAutoBehavior('gatherer');
       expect(store.autoGathererEnabled.value).toBe(false);
-      expect(game.world.autoBehaviors.gatherer).toBe(false);
     });
 
-    it('toggles combat in both store and world', () => {
+    it('toggles combat store signal', () => {
       toggleAutoBehavior('combat');
       expect(store.autoCombatEnabled.value).toBe(true);
-      expect(game.world.autoBehaviors.combat).toBe(true);
     });
 
-    it('toggles healer in both store and world', () => {
+    it('toggles healer store signal', () => {
       toggleAutoBehavior('healer');
       expect(store.autoHealerEnabled.value).toBe(true);
-      expect(game.world.autoBehaviors.healer).toBe(true);
     });
 
-    it('toggles scout in both store and world', () => {
+    it('toggles scout store signal', () => {
       toggleAutoBehavior('scout');
       expect(store.autoScoutEnabled.value).toBe(true);
-      expect(game.world.autoBehaviors.scout).toBe(true);
     });
   });
 });

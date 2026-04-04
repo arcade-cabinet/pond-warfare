@@ -1,13 +1,11 @@
 /**
- * Systems Runner – executes the ECS system chain in order each frame.
+ * Systems Runner -- executes the ECS system chain in order each frame.
  */
 
-import { advisorSystem } from '@/advisors/advisor-system';
-import { campaignSystem } from '@/campaign';
 import { aiSystem } from '@/ecs/systems/ai';
-import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
 import { autoBuildSystem } from '@/ecs/systems/auto-build';
 import { autoRetreatSystem } from '@/ecs/systems/auto-retreat';
+import { autoSymbolSystem } from '@/ecs/systems/auto-symbol';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
 import { berserkerSystem } from '@/ecs/systems/berserker';
 import { branchCosmeticsSystem } from '@/ecs/systems/branch-cosmetics';
@@ -23,8 +21,10 @@ import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem } from '@/ecs/systems/fog-of-war';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
+import { matchEventRunnerSystem } from '@/ecs/systems/match-event-runner';
 import { moraleSystem } from '@/ecs/systems/morale';
 import { movementSystem } from '@/ecs/systems/movement';
+import { patrolSystem } from '@/ecs/systems/patrol';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import { randomEventsSystem } from '@/ecs/systems/random-events';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
@@ -34,6 +34,7 @@ import { wallGateSystem } from '@/ecs/systems/wall-gate';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import type { PhysicsManager } from '@/physics/physics-world';
+import { progressionLevel } from '@/ui/store-v3';
 
 /** Run all ECS systems in the correct order for one logic frame. */
 export function runSystems(
@@ -58,17 +59,17 @@ export function runSystems(
   evolutionSystem(world);
   if (!throttleAI) autoBuildSystem(world);
   autoTrainSystem(world);
-  autoBehaviorSystem(world);
+  patrolSystem(world);
   healthSystem(world);
   moraleSystem(world);
   autoRetreatSystem(world);
   shamanHealSystem(world);
   wallGateSystem(world);
-  advisorSystem(world);
-  campaignSystem(world);
   veterancySystem(world);
   fogOfWarSystem(world);
   branchCosmeticsSystem(world);
+  matchEventRunnerSystem(world, progressionLevel.value);
   randomEventsSystem(world);
+  autoSymbolSystem(world);
   cleanupSystem(world);
 }

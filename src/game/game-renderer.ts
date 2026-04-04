@@ -1,5 +1,7 @@
 /**
- * Game Renderer – per-frame draw calls for PixiJS, fog, lighting, minimap.
+ * Game Renderer -- per-frame draw calls for PixiJS, fog, lighting.
+ *
+ * Minimap removed in v3 (viewport IS the map).
  */
 
 import { query } from 'bitecs';
@@ -19,7 +21,6 @@ import { canPlaceBuilding } from '@/input/selection';
 import { computeShakeOffset } from '@/rendering/camera';
 import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
-import { drawMinimap, updateMinimapViewport } from '@/rendering/minimap-renderer';
 import type { ProjectileRenderData } from '@/rendering/particles';
 import { updateProjectileTrails } from '@/rendering/particles';
 import {
@@ -36,8 +37,6 @@ export interface DrawState {
   pointer: PointerHandler;
   fogState: FogRendererState;
   lightCtx: CanvasRenderingContext2D;
-  minimapCtx: CanvasRenderingContext2D;
-  minimapCamElement: HTMLElement;
   exploredCanvas: HTMLCanvasElement;
   bgCanvas: HTMLCanvasElement;
 }
@@ -52,10 +51,6 @@ export function draw(state: DrawState): void {
   const allEnts = Array.from(query(w.ecs, [Position, Health, FactionTag, EntityTypeTag]));
   const liveEnts = allEnts.filter((eid) => Health.current[eid] > 0);
   const sortedEids = liveEnts.sort((a, b) => Position.y[a] - Position.y[b]);
-
-  const playerEids = allEnts.filter(
-    (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
-  );
 
   const dragRect = state.pointer.getDragRect();
   const selectionRect = dragRect
@@ -87,20 +82,13 @@ export function draw(state: DrawState): void {
 
   renderPixiFrame(w, state.spriteCanvases, renderData);
 
+  const playerEids = allEnts.filter(
+    (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
+  );
+
   drawFog(state.fogState, w, playerEids, shake.offsetX, shake.offsetY);
 
   drawLighting(state.lightCtx, w, liveEnts, w.fireflies, shake.offsetX, shake.offsetY);
-
-  drawMinimap(
-    state.minimapCtx,
-    w,
-    liveEnts,
-    state.exploredCanvas,
-    w.minimapPings ?? [],
-    playerEids,
-    state.bgCanvas,
-  );
-  updateMinimapViewport(state.minimapCamElement, w);
 }
 
 function getPlacementPreview(world: GameWorld, pointer: PointerHandler): PlacementPreview | null {

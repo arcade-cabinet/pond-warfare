@@ -7,7 +7,7 @@
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
-import { TILE_SIZE, TRAIN_TIMER, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
+import { TILE_SIZE, TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Collider,
@@ -41,11 +41,15 @@ export function getEntityAt(world: GameWorld, x: number, y: number): number | nu
       return Position.y[b] - Position.y[a];
     });
 
+  // At low zoom, entities are tiny on screen. Ensure hit area is at least
+  // 22px in screen space (44px diameter touch target) by scaling up in world space.
+  const minWorldHit = 22 / world.zoomLevel;
+
   for (const eid of sorted) {
     const radius = hasComponent(world.ecs, eid, Collider) ? Collider.radius[eid] : 16;
     const height = hasComponent(world.ecs, eid, Sprite) ? Sprite.height[eid] : 32;
-    const hitW = Math.max(25, radius + 15);
-    const hitH = Math.max(25, height / 2 + 15);
+    const hitW = Math.max(minWorldHit, radius + 15);
+    const hitH = Math.max(minWorldHit, height / 2 + 15);
 
     if (Math.abs(Position.x[eid] - x) < hitW && Math.abs(Position.y[eid] - y) < hitH) {
       return eid;
@@ -91,7 +95,7 @@ export function canPlaceBuilding(
     }
   }
 
-  if (bx - hw < 0 || bx + hw > WORLD_WIDTH || by - hh < 0 || by + hh > WORLD_HEIGHT) {
+  if (bx - hw < 0 || bx + hw > world.worldWidth || by - hh < 0 || by + hh > world.worldHeight) {
     return false;
   }
 

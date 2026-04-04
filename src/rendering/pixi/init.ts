@@ -16,6 +16,7 @@ import {
   Texture,
 } from 'pixi.js';
 
+import type { BgCanvas } from '@/rendering/background';
 import { resetWaterRipples } from '@/rendering/water-ripple';
 import type { SpriteId } from '@/types';
 
@@ -169,7 +170,7 @@ export async function initPixiApp(
     canvas: gameCanvas,
     width: viewWidth,
     height: viewHeight,
-    backgroundColor: 0x000000,
+    backgroundColor: 0x0f2032, // Deep water color to match background edge fill
     antialias: false,
     resolution: Math.min(window.devicePixelRatio || 1, 2),
     autoDensity: true,
@@ -209,10 +210,21 @@ export function resizePixiApp(width: number, height: number): void {
   app.renderer.resize(width, height);
 }
 
+/**
+ * Set the background sprite. If the canvas has padding metadata
+ * (padX/padY from buildBackground), offset the sprite so the playable
+ * area is positioned at world origin (0, 0) in camera space.
+ */
 export function setBackground(bgCanvas: HTMLCanvasElement): void {
   if (!initialised) return;
   const tex = Texture.from({ resource: bgCanvas, antialias: false });
   bgSprite = new Sprite(tex);
+
+  // Offset by negative padding so the playable-area origin aligns with (0,0)
+  const padX = (bgCanvas as BgCanvas).padX ?? 0;
+  const padY = (bgCanvas as BgCanvas).padY ?? 0;
+  bgSprite.position.set(-padX, -padY);
+
   bgLayer.addChild(bgSprite);
 }
 

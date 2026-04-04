@@ -65,6 +65,8 @@ export const waveCountdown = signal(-1);
 export const lowClams = signal(false);
 export const lowTwigs = signal(false);
 export const attackMoveActive = signal(false);
+/** When true, next terrain tap adds a patrol waypoint instead of a move command */
+export const patrolModeActive = signal(false);
 
 /** Countdown seconds when peace timer is about to expire (< 30s remaining), -1 otherwise */
 export const peaceWarningCountdown = signal(-1);
@@ -82,35 +84,19 @@ export const idleCombatCount = signal(0);
 export const idleHealerCount = signal(0);
 export const idleScoutCount = signal(0);
 
-/** Whether the auto-behavior menu is expanded from the idle button */
-export const autoMenuExpanded = signal(false);
-
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);
 
+/** Current stance of the first selected player unit (-1 = no units, 0=Aggressive, 1=Defensive, 2=Hold). */
+export const selectionStance = signal(-1);
+
 // ---- Action panel tab ----
 export const activeActionTab = signal<'train' | 'build' | 'tech'>('train');
-
-// ---- Tech tree panel ----
-export const techTreeOpen = signal(false);
 
 // ---- Radial menu ----
 export const radialMenuOpen = signal(false);
 export const radialMenuX = signal(0);
 export const radialMenuY = signal(0);
-
-// Auto-behavior toggle states grouped by role (persist across menu opens)
-export const autoGathererEnabled = signal(false); // covers gather + build
-export const autoCombatEnabled = signal(false); // covers attack + defend
-export const autoHealerEnabled = signal(false);
-export const autoScoutEnabled = signal(false);
-
-// Legacy aliases (deprecated, will be removed after full UI migration)
-export const autoGatherEnabled = autoGathererEnabled;
-export const autoBuildEnabled = autoGathererEnabled;
-export const autoDefendEnabled = autoCombatEnabled;
-export const autoAttackEnabled = autoCombatEnabled;
-export const autoHealEnabled = autoHealerEnabled;
 
 // ---- Map scenario ----
 export type MapScenario =
@@ -137,6 +123,8 @@ export const tooltipY = signal(0);
 // ---- Control groups ----
 /** Mapping of group number (1-9) to entity count. Empty groups are omitted. */
 export const ctrlGroupCounts = signal<Record<number, number>>({});
+/** Last-recalled control group number, -1 means none active. */
+export const lastRecalledGroup = signal(-1);
 
 // ---- Production queue & roster: re-exported from store-gameplay ----
 export {
@@ -192,7 +180,7 @@ import { DEFAULT_CUSTOM_SETTINGS as _defaults } from './store-types';
 export const customGameSettings = signal<typeof _defaults>({ ..._defaults });
 
 // ---- Menu state ----
-export const menuState = signal<'main' | 'newGame' | 'playing'>('main');
+export const menuState = signal<'main' | 'playing'>('main');
 /** True while PixiJS initialises and entities spawn (shows loading screen). */
 export const gameLoading = signal(false);
 /** True when the player chose "Continue" from the main menu (load save on init). */
@@ -218,6 +206,7 @@ export {
   peaceStatusText,
   speedLabel,
 } from './store-derived';
+// ---- Legacy aliases (v3: backward compat for tests, will be removed) ----
 export {
   type AchievementToast,
   achievementsOpen,
@@ -225,11 +214,18 @@ export {
   activePanelTab,
   airdropCooldown,
   airdropsRemaining,
+  autoCombatEnabled,
+  autoCombatEnabled as autoDefendEnabled,
+  autoCombatEnabled as autoAttackEnabled,
+  autoGathererEnabled,
+  autoGathererEnabled as autoGatherEnabled,
+  autoGathererEnabled as autoBuildEnabled,
+  autoHealerEnabled,
+  autoHealerEnabled as autoHealEnabled,
+  autoMenuExpanded,
   autoSaveEnabled,
-  campaignBranchPath,
-  campaignChoiceOpen,
+  autoScoutEnabled,
   campaignMissionId,
-  campaignObjectiveStatuses,
   campaignOpen,
   checkpointCount,
   commanderAbilityActive,
@@ -239,13 +235,14 @@ export {
   cosmeticsOpen,
   dailyChallengeAlreadyDone,
   dailyChallengeDesc,
+  dailyChallengeHistory,
+  dailyChallengeStreak,
   dailyChallengeTitle,
+  dailyChallengeXp,
   evacuationActive,
   fpsCounterVisible,
   fpsDisplay,
-  type GameMode,
   gameEvents,
-  gameMode,
   goDailyChallengeCompleted,
   goDesc,
   goFrameCount,
@@ -267,11 +264,6 @@ export {
   musicVolume,
   type PanelTab,
   pondBlessingAvailable,
-  puzzleId,
-  puzzleObjectiveText,
-  puzzleSelectOpen,
-  puzzleStars,
-  puzzleTimerDisplay,
   rallyCryActive,
   rallyCryAvailable,
   rallyCryCooldown,
@@ -283,11 +275,15 @@ export {
   settingsOpen,
   sfxVolume,
   showSplashVideo,
-  survivalScore,
-  survivalSelectOpen,
-  survivalWave,
+  techTreeOpen,
   tidalSurgeAvailable,
   unlocksOpen,
   waveNumber,
 } from './store-gameplay';
-export { currentWeather, nextWeather, weatherCountdown, weatherLabel } from './store-weather';
+export {
+  currentWeather,
+  nextWeather,
+  nextWeatherLabel,
+  weatherCountdown,
+  weatherLabel,
+} from './store-weather';

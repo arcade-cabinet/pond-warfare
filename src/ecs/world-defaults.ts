@@ -6,9 +6,7 @@
  */
 
 import { createWorld } from 'bitecs';
-import { createAdvisorState } from '@/advisors/types';
 import { YukaManager } from '@/ai/yuka-manager';
-import { createInitialTechState } from '@/config/tech-tree';
 import { createWeatherState } from '@/config/weather';
 import {
   ENEMY_STARTING_CLAMS,
@@ -66,7 +64,8 @@ export function createGameWorld(): GameWorld {
       clams: ENEMY_STARTING_CLAMS,
       twigs: ENEMY_STARTING_TWIGS,
     },
-    tech: createInitialTechState(),
+    // v3.0: tech flags set by commanders, not in-game research
+    tech: {},
     stats: {
       unitsKilled: 0,
       unitsLost: 0,
@@ -85,6 +84,8 @@ export function createGameWorld(): GameWorld {
     gameSpeed: 1,
     ambientDarkness: 0,
     paused: false,
+    worldWidth: WORLD_WIDTH,
+    worldHeight: WORLD_HEIGHT,
     camX: 0,
     camY: 0,
     camVelX: 0,
@@ -115,6 +116,8 @@ export function createGameWorld(): GameWorld {
     nestCountOverride: -1,
     resourceDensityMod: 1.0,
     enemyEconomyMod: 1.0,
+    enemyStatMult: 1.0,
+    nestBuildRateMult: 1.0,
     enemyAggressionLevel: 'normal',
     mapSeed: defaultSeed,
     gameRng: new SeededRandom(defaultSeed ^ 0x9e3779b9),
@@ -149,7 +152,8 @@ export function createGameWorld(): GameWorld {
     alphaDamageBuff: new Map(),
     championEnemies: new Set(),
     isFirstGame: true,
-    advisorState: createAdvisorState(),
+    // @deprecated Advisor system removed in v3.0 -- kept for save compat
+    advisorState: {},
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),
     commanderHpBuffApplied: new Set(),
@@ -157,7 +161,7 @@ export function createGameWorld(): GameWorld {
     commanderEnemyDebuff: new Set(),
     commanderId: 'marshal',
     commanderModifiers: {
-      auraDamageBonus: 0.1,
+      auraDamageBonus: 0.15,
       auraSpeedBonus: 0,
       auraHpBonus: 0,
       auraUnitHpBonus: 0,
@@ -180,7 +184,7 @@ export function createGameWorld(): GameWorld {
     aiPersonality: 'balanced',
     rallyCryExpiry: 0,
     rallyCryCooldownUntil: 0,
-    pondBlessingUsed: false,
+    pondBlessingCooldownUntil: 0,
     tidalSurgeUsed: false,
     warDrumsBuff: new Set(),
     venomCoatingTimers: new Map(),
@@ -188,6 +192,8 @@ export function createGameWorld(): GameWorld {
     terrainGrid: new TerrainGrid(WORLD_WIDTH, WORLD_HEIGHT, TILE_SIZE),
     combatZones: [],
     waveNumber: 0,
+    waveSurvivalMode: false,
+    waveSurvivalTarget: 5,
     commanderAbilityCooldownUntil: 0,
     commanderAbilityActiveUntil: 0,
     demoralizedUnits: new Set(),
@@ -210,5 +216,16 @@ export function createGameWorld(): GameWorld {
     wallGateFaction: new Map(),
     // v2.1.0
     extendedStats: {},
+    // Co-op multiplayer
+    coopMode: false,
+    partnerLodgeDestroyed: false,
+    partnerUnitPositions: [],
+    coopResourceCallback: null,
+    // Patrol waypoints (entity ID -> waypoint array)
+    patrolWaypoints: new Map(),
+    // v3.0: fortification slots
+    fortifications: null,
+    // v3.0: panel grid (6-panel map system)
+    panelGrid: null,
   };
 }

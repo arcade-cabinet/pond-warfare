@@ -16,6 +16,7 @@ import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { loadGame } from '@/save-system';
 import { getLatestSave, initDatabase } from '@/storage';
 import { loadPersistedSettings } from '@/storage/settings-persistence';
+import { hydrateV3StoreFromDb } from '@/ui/store-v3-persistence';
 
 // Install global error handlers FIRST — before anything else can fail
 installGlobalErrorHandlers();
@@ -29,8 +30,6 @@ let storedRefs: {
   gameCanvas: HTMLCanvasElement;
   fogCanvas: HTMLCanvasElement;
   lightCanvas: HTMLCanvasElement;
-  minimapCanvas: HTMLCanvasElement;
-  minimapCam: HTMLDivElement;
 } | null = null;
 
 let gameStarted = false;
@@ -40,14 +39,7 @@ function startGame(isContinue: boolean) {
   gameStarted = true;
 
   game
-    .init(
-      storedRefs.container,
-      storedRefs.gameCanvas,
-      storedRefs.fogCanvas,
-      storedRefs.lightCanvas,
-      storedRefs.minimapCanvas,
-      storedRefs.minimapCam,
-    )
+    .init(storedRefs.container, storedRefs.gameCanvas, storedRefs.fogCanvas, storedRefs.lightCanvas)
     .then(async () => {
       if (isContinue) {
         const save = await getLatestSave();
@@ -77,6 +69,9 @@ function startGame(isContinue: boolean) {
 
   // Load persisted user settings (volume, speed, accessibility, commander)
   await loadPersistedSettings();
+
+  // Hydrate v3 prestige/run signals from SQLite
+  await hydrateV3StoreFromDb();
 
   // Load keymap from Capacitor Preferences
   await loadKeymapFromStorage();

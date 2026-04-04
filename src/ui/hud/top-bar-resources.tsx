@@ -1,7 +1,10 @@
 /**
- * TopBar Resources — Clams, twigs, pearls, and food display.
+ * TopBar Resources -- Fish, Rocks, Logs, and food display.
  * Directional flash: green/gold on increase, red on decrease.
  * Food flashes green/red on population change, orange at cap.
+ *
+ * v3 resource mapping: clams -> Fish, pearls -> Rocks, twigs -> Logs.
+ * Internal signals still use v2 names for backward compat.
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
@@ -20,6 +23,7 @@ import {
   rateTwigs,
   twigs,
 } from '../store';
+import { waveNumber } from '../store-gameplay';
 
 type FlashDir = '' | 'up' | 'down' | 'cap';
 
@@ -53,21 +57,22 @@ function flashClass(dir: FlashDir): string {
 }
 
 export function TopBarResources({ compact }: { compact: boolean }) {
-  const clamsRate = rateClams.value;
-  const twigsRate = rateTwigs.value;
+  const fishRate = rateClams.value;
+  const logsRate = rateTwigs.value;
 
-  const currentClams = clams.value;
-  const currentTwigs = twigs.value;
-  const currentPearls = pearls.value;
+  const currentFish = clams.value;
+  const currentRocks = pearls.value;
+  const currentLogs = twigs.value;
   const currentFood = food.value;
   const currentMaxFood = maxFood.value;
+  const currentWave = waveNumber.value;
 
   const resChange = lastResourceChange.value;
   const foodChange = lastFoodChange.value;
 
-  const clamsFlash = useDirectionalFlash(currentClams, 5, resChange.clams);
-  const twigsFlash = useDirectionalFlash(currentTwigs, 5, resChange.twigs);
-  const pearlsFlash = useDirectionalFlash(currentPearls, 5, resChange.pearls);
+  const fishFlash = useDirectionalFlash(currentFish, 5, resChange.clams);
+  const rocksFlash = useDirectionalFlash(currentRocks, 5, resChange.pearls);
+  const logsFlash = useDirectionalFlash(currentLogs, 5, resChange.twigs);
 
   // Food flash: directional + cap override
   const foodDir = useDirectionalFlash(currentFood, 1, foodChange.delta);
@@ -88,23 +93,28 @@ export function TopBarResources({ compact }: { compact: boolean }) {
 
   return (
     <div class="flex space-x-3 md:space-x-6">
-      {/* Clams */}
-      <div class="flex items-center space-x-1 md:space-x-2">
+      {/* Fish (clams internally) */}
+      <div
+        role="status"
+        aria-live="polite"
+        class="flex items-center space-x-1 md:space-x-2"
+        aria-label={`Fish: ${currentFish}`}
+      >
         <div
           class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm"
           style={{
-            background: 'radial-gradient(circle at 35% 35%, var(--pw-clam), #b8a030)',
+            background: 'radial-gradient(circle at 35% 35%, var(--pw-clam), #4a90b0)',
             border: '1px solid var(--pw-otter-light)',
             boxShadow: `0 0 4px var(--pw-victory-glow-30)`,
           }}
         />
         {!compact && (
           <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-            Clams:{' '}
+            Fish:{' '}
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(clamsFlash)} ${lowClams.value ? 'animate-pulse' : ''}`}
+          class={`font-numbers font-bold ${flashClass(fishFlash)} ${lowClams.value ? 'animate-pulse' : ''}`}
           style={{ color: lowClams.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
         >
           {clams}
@@ -113,37 +123,70 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           <span
             class="font-bold animate-pulse"
             style={{ color: 'var(--pw-warning)' }}
-            title="Low clams!"
+            title="Low fish!"
           >
             !
           </span>
         )}
-        {!compact && clamsRate !== 0 && (
+        {!compact && fishRate !== 0 && (
           <span
             class="text-[10px] font-numbers"
-            style={{ color: clamsRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
+            style={{ color: fishRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
           >
-            {clamsRate >= 0 ? `+${clamsRate}` : clamsRate}
+            {fishRate >= 0 ? `+${fishRate}` : fishRate}
           </span>
         )}
       </div>
 
-      {/* Twigs */}
-      <div class="flex items-center space-x-1 md:space-x-2">
+      {/* Rocks (pearls internally -- in-match stone resource) */}
+      <div
+        role="status"
+        aria-live="polite"
+        class="flex items-center space-x-1 md:space-x-2"
+        aria-label={`Rocks: ${currentRocks}`}
+      >
         <div
-          class="w-3 h-3 md:w-4 md:h-4 shadow-sm"
+          class="w-3 h-3 md:w-4 md:h-4 rounded shadow-sm"
           style={{
-            background: 'linear-gradient(135deg, var(--pw-twig), #8a4820)',
+            background: 'radial-gradient(circle at 35% 35%, #9ca3af, #6b7280)',
+            border: '1px solid #6b7280',
+            boxShadow: `0 0 3px rgba(107,114,128,0.4)`,
+          }}
+        />
+        {!compact && (
+          <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+            Rocks:{' '}
+          </span>
+        )}
+        <span
+          class={`font-numbers font-bold ${flashClass(rocksFlash)}`}
+          style={{ color: '#9ca3af' }}
+        >
+          {pearls}
+        </span>
+      </div>
+
+      {/* Logs (twigs internally) */}
+      <div
+        role="status"
+        aria-live="polite"
+        class="flex items-center space-x-1 md:space-x-2"
+        aria-label={`Logs: ${currentLogs}`}
+      >
+        <div
+          class="w-3 h-3 md:w-4 md:h-4 rounded shadow-sm"
+          style={{
+            background: 'linear-gradient(135deg, var(--pw-twig), #8B5E3C)',
             border: '1px solid var(--pw-otter)',
           }}
         />
         {!compact && (
           <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-            Twigs:{' '}
+            Logs:{' '}
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(twigsFlash)} ${lowTwigs.value ? 'animate-pulse' : ''}`}
+          class={`font-numbers font-bold ${flashClass(logsFlash)} ${lowTwigs.value ? 'animate-pulse' : ''}`}
           style={{ color: lowTwigs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
         >
           {twigs}
@@ -152,48 +195,28 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           <span
             class="font-bold animate-pulse"
             style={{ color: 'var(--pw-warning)' }}
-            title="Low twigs!"
+            title="Low logs!"
           >
             !
           </span>
         )}
-        {!compact && twigsRate !== 0 && (
+        {!compact && logsRate !== 0 && (
           <span
             class="text-[10px] font-numbers"
-            style={{ color: twigsRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
+            style={{ color: logsRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
           >
-            {twigsRate >= 0 ? `+${twigsRate}` : twigsRate}
+            {logsRate >= 0 ? `+${logsRate}` : logsRate}
           </span>
         )}
       </div>
 
-      {/* Pearls */}
-      {currentPearls > 0 && (
-        <div class="flex items-center space-x-1 md:space-x-2">
-          <div
-            class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm"
-            style={{
-              background: 'radial-gradient(circle at 35% 35%, #e0e7ff, #a5b4fc)',
-              border: '1px solid #a5b4fc',
-              boxShadow: `0 0 4px var(--pw-pearl-glow-40)`,
-            }}
-          />
-          {!compact && (
-            <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
-              Pearls:{' '}
-            </span>
-          )}
-          <span
-            class={`font-numbers font-bold ${flashClass(pearlsFlash)}`}
-            style={{ color: 'var(--pw-pearl)' }}
-          >
-            {pearls}
-          </span>
-        </div>
-      )}
-
       {/* Food */}
-      <div class="flex items-center space-x-1 md:space-x-2">
+      <div
+        role="status"
+        aria-live="polite"
+        class="flex items-center space-x-1 md:space-x-2"
+        aria-label={`Food: ${currentFood} / ${currentMaxFood}`}
+      >
         <div
           class="w-3 h-3 md:w-4 md:h-4 rounded-sm shadow-sm"
           style={{
@@ -213,6 +236,19 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           {foodDisplay}
         </span>
       </div>
+
+      {/* Wave Indicator (Gap 6) */}
+      {currentWave > 0 && (
+        <div
+          role="status"
+          class="flex items-center space-x-1 md:space-x-2"
+          aria-label={`Wave ${currentWave}`}
+        >
+          <span class="font-game text-[10px] md:text-xs" style={{ color: 'var(--pw-enemy-light)' }}>
+            Wave {currentWave}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

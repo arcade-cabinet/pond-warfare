@@ -1,94 +1,98 @@
 /**
- * Radial Menu Component
+ * Radial Action Menu (v3.0 -- US9)
  *
- * A circular context menu that appears when clicking the idle units button.
- * Provides auto-behavior toggles (Gather, Defend, Attack) and a Select All action.
- * Each option is arranged radially around a central hub showing the idle unit count.
+ * Contextual circular menu that appears on tap:
+ * - Tap Lodge -> Train Gatherer, Train Fighter, Train Medic, Train Scout, Fortify, Repair
+ * - Tap selected unit -> role-specific actions (Gather, Attack, Heal, Scout, Hold, Patrol)
+ *
+ * Design bible: vine-frame popup, gritty gold icons, wood plank button backgrounds,
+ * design token colors from design-tokens.ts.
+ * Auto-dismisses after 8 seconds if no selection.
  */
 
 import { useEffect, useRef } from 'preact/hooks';
-import { toggleAutoBehavior } from './game-actions';
+import { COLORS } from '@/ui/design-tokens';
+import type { RadialOption } from './radial-menu-options';
+import { getRadialOptions } from './radial-menu-options';
 import {
-  autoCombatEnabled,
-  autoGathererEnabled,
-  autoScoutEnabled,
-  idleWorkerCount,
+  radialMenuMode,
   radialMenuOpen,
+  radialMenuUnitRole,
   radialMenuX,
   radialMenuY,
-} from './store';
+} from './store-radial';
 
 export interface RadialMenuProps {
-  onSelectAll: () => void;
+  onAction: (actionId: string) => void;
 }
 
-interface RadialOption {
-  label: string;
-  /** Angle in degrees: 0=top, 90=right, 180=bottom, 270=left */
-  angle: number;
-  color: string;
-  borderColor: string;
-  activeBackground: string;
-  /** Role key for auto-behavior toggle (updates both store + world). */
-  behaviorRole?: 'gatherer' | 'combat' | 'healer' | 'scout';
-  /** Signal used to read the current toggle state for display only. */
-  toggleSignal?: typeof autoGathererEnabled;
-  action?: () => void;
-}
-
-const RADIUS = 72;
-
-const OPTIONS: RadialOption[] = [
-  {
-    label: 'Gather',
-    angle: 288,
-    color: 'var(--pw-warning)',
-    borderColor: 'var(--pw-warning)',
-    activeBackground: 'var(--pw-auto-warning-bg)',
-    behaviorRole: 'gatherer',
-    toggleSignal: autoGathererEnabled,
-  },
-  {
-    label: 'Combat',
-    angle: 36,
-    color: 'var(--pw-enemy-light)',
-    borderColor: 'var(--pw-enemy-light)',
-    activeBackground: 'var(--pw-auto-enemy-bg)',
-    behaviorRole: 'combat',
-    toggleSignal: autoCombatEnabled,
-  },
-  {
-    label: 'Scout',
-    angle: 108,
-    color: 'var(--pw-scout)',
-    borderColor: 'var(--pw-scout-dark)',
-    activeBackground: 'var(--pw-auto-scout-bg)',
-    behaviorRole: 'scout',
-    toggleSignal: autoScoutEnabled,
-  },
-  {
-    label: 'Select',
-    angle: 180,
-    color: 'var(--pw-success)',
-    borderColor: 'var(--pw-success)',
-    activeBackground: 'var(--pw-auto-success-bg)',
-  },
-];
+const RADIUS = 80;
+const AUTO_DISMISS_MS = 8000;
+const ITEM_SIZE = 52; // 52px > 44px minimum touch target
 
 function closeMenu() {
   radialMenuOpen.value = false;
 }
 
-export function RadialMenu({ onSelectAll }: RadialMenuProps) {
+/**
+ * Inline SVG vine frame ring rendered behind the radial items.
+ * Gives the popup the organic, overgrown feel from the design bible.
+ */
+function VineFrameRing({ r }: { r: number }) {
+  const d = r * 2 + ITEM_SIZE;
+  const c = d / 2;
+  return (
+    <svg
+      class="absolute pointer-events-none"
+      width={d}
+      height={d}
+      style={{ left: `${-d / 2}px`, top: `${-d / 2}px` }}
+      aria-hidden="true"
+    >
+      {/* Thick vine stroke */}
+      <circle
+        cx={c}
+        cy={c}
+        r={r}
+        fill="none"
+        stroke={COLORS.vineBase}
+        strokeWidth="8"
+        opacity="0.6"
+      />
+      {/* Thin highlight overlay */}
+      <circle
+        cx={c}
+        cy={c}
+        r={r}
+        fill="none"
+        stroke={COLORS.vineHighlight}
+        strokeWidth="3"
+        opacity="0.4"
+      />
+      {/* Dark inner fill for the hub area */}
+      <circle cx={c} cy={c} r={28} fill={COLORS.bgPanel} stroke={COLORS.woodDark} strokeWidth="2" />
+    </svg>
+  );
+}
+
+export function RadialMenu({ onAction }: RadialMenuProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(
+    0 as unknown as ReturnType<typeof setTimeout>,
+  );
+
+  // Auto-dismiss safety timeout
+  useEffect(() => {
+    if (radialMenuOpen.value) {
+      timerRef.current = setTimeout(closeMenu, AUTO_DISMISS_MS);
+      return () => clearTimeout(timerRef.current);
+    }
+  }, [radialMenuOpen.value]);
 
   // Close on Escape key
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        closeMenu();
-      }
+      if (e.key === 'Escape') closeMenu();
     }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
@@ -96,41 +100,38 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
 
   if (!radialMenuOpen.value) return null;
 
-  // Clamp menu center to viewport bounds so options don't overflow off-screen
-  const margin = RADIUS + 28; // RADIUS + half button size
+  const mode = radialMenuMode.value;
+  const role = radialMenuUnitRole.value;
+  const options = getRadialOptions(mode, role);
+
+  // Clamp menu center to viewport bounds
+  const margin = RADIUS + ITEM_SIZE;
   const cx = Math.max(margin, Math.min(window.innerWidth - margin, radialMenuX.value));
   const cy = Math.max(margin, Math.min(window.innerHeight - margin, radialMenuY.value));
 
   function handleOverlayClick(e: MouseEvent | TouchEvent) {
-    // Close if the click target is the overlay itself (not a menu button)
-    if (e.target === overlayRef.current) {
-      closeMenu();
-    }
+    if (e.target === overlayRef.current) closeMenu();
   }
 
-  function handleOptionClick(opt: RadialOption) {
-    if (opt.behaviorRole) {
-      toggleAutoBehavior(opt.behaviorRole);
-    } else if (opt.label === 'Select') {
-      onSelectAll();
-      closeMenu();
-    }
-    if (opt.action) {
-      opt.action();
-    }
+  function handleOptionClick(opt: RadialOption, e: MouseEvent) {
+    e.stopPropagation();
+    if (opt.disabled) return;
+    clearTimeout(timerRef.current);
+    onAction(opt.id);
+    closeMenu();
   }
 
   return (
     <div
       ref={overlayRef}
       class="fixed inset-0 z-40"
+      role="menu"
+      aria-label={`${mode === 'lodge' ? 'Lodge' : 'Unit'} actions`}
       style={{ background: 'var(--pw-overlay-light)' }}
       onClick={handleOverlayClick}
       onTouchEnd={handleOverlayClick}
     >
-      {/* Menu container positioned at the button */}
       <div
-        ref={menuRef}
         class="absolute"
         style={{
           left: `${cx}px`,
@@ -138,58 +139,60 @@ export function RadialMenu({ onSelectAll }: RadialMenuProps) {
           transform: 'translate(-50%, -50%)',
         }}
       >
-        {/* Center hub */}
+        {/* Vine frame ring */}
+        <VineFrameRing r={RADIUS} />
+
+        {/* Center hub label */}
         <div
-          class="absolute w-12 h-12 rounded-full flex items-center justify-center z-50 shadow-lg stone-node"
+          class="absolute w-14 h-14 rounded-full flex items-center justify-center z-50"
           style={{
-            left: '-24px',
-            top: '-24px',
+            left: '-28px',
+            top: '-28px',
+            background: COLORS.bgPanel,
+            border: `2px solid ${COLORS.woodDark}`,
+            boxShadow: `0 0 12px rgba(0,0,0,0.8), inset 0 1px 0 rgba(139,105,20,0.1)`,
           }}
         >
-          <span class="font-numbers font-bold text-sm" style={{ color: 'var(--pw-warning)' }}>
-            {idleWorkerCount.value}
+          <span
+            class="font-heading font-bold text-[10px] text-center leading-tight"
+            style={{ color: COLORS.grittyGold }}
+          >
+            {mode === 'lodge' ? 'Lodge' : (role ?? 'Unit')}
           </span>
         </div>
 
-        {/* Radial options */}
-        {OPTIONS.map((opt, optIndex) => {
-          const rad = ((opt.angle - 90) * Math.PI) / 180;
-          const x = Math.cos(rad) * RADIUS;
-          const y = Math.sin(rad) * RADIUS;
-          const isToggle = !!opt.toggleSignal;
-          const isActive = isToggle && opt.toggleSignal?.value;
+        {/* Radial options -- wood plank button backgrounds */}
+        {options.map((opt, i) => {
+          const angle = (i / options.length) * Math.PI * 2 - Math.PI / 2;
+          const ox = Math.cos(angle) * RADIUS;
+          const oy = Math.sin(angle) * RADIUS;
 
           return (
             <button
-              key={opt.label}
               type="button"
-              class="absolute w-14 h-14 rounded-full stone-node flex flex-col items-center justify-center cursor-pointer transition-all duration-150 shadow-lg z-50"
+              key={opt.id}
+              role="menuitem"
+              aria-label={opt.tooltip ?? opt.label}
+              class={`absolute rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-150 z-50 ${opt.disabled ? 'opacity-40' : ''}`}
               style={{
-                left: `${x - 28}px`,
-                top: `${y - 28}px`,
-                animation: 'radial-sprout 150ms ease-out both',
-                animationDelay: `${optIndex * 30}ms`,
-                borderColor: opt.borderColor,
-                background: isActive ? opt.activeBackground : undefined,
-                color: opt.color,
+                width: `${ITEM_SIZE}px`,
+                height: `${ITEM_SIZE}px`,
+                left: `${ox - ITEM_SIZE / 2}px`,
+                top: `${oy - ITEM_SIZE / 2}px`,
+                animation: `radial-sprout ${100 + i * 50}ms ease-out both`,
+                background: `linear-gradient(145deg, ${COLORS.woodBase}, ${COLORS.woodDark})`,
+                border: `2px solid ${opt.disabled ? COLORS.weatheredSteel : COLORS.goldDim}`,
+                boxShadow: opt.disabled
+                  ? 'none'
+                  : `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(139,105,20,0.15)`,
+                color: opt.disabled ? COLORS.weatheredSteel : COLORS.grittyGold,
               }}
-              title={opt.label}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOptionClick(opt);
-              }}
+              title={opt.tooltip}
+              disabled={opt.disabled}
+              onClick={(e) => handleOptionClick(opt, e as unknown as MouseEvent)}
             >
-              {/* Toggle indicator for auto-behavior options */}
-              {isToggle && (
-                <span
-                  class="w-2.5 h-2.5 rounded-full mb-0.5"
-                  style={{
-                    border: `1px solid ${opt.borderColor}`,
-                    background: isActive ? opt.color : 'transparent',
-                  }}
-                />
-              )}
-              <span class="font-heading text-[10px] font-bold leading-tight">{opt.label}</span>
+              <span class="text-lg leading-none">{opt.icon}</span>
+              <span class="font-heading text-[9px] font-bold leading-tight">{opt.label}</span>
             </button>
           );
         })}

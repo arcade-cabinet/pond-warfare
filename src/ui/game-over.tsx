@@ -4,11 +4,16 @@
  * Victory/Defeat overlay with animated stat reveal (anime.js stagger),
  * counter-up numbers with tick sounds, performance rating, confetti for
  * victory, "Play Again" (same settings) and "Main Menu" buttons.
+ *
+ * Design bible: Frame9Slice stat card, font-heading headers,
+ * rts-btn action buttons, design token colors.
  */
 
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { animateGameOverStats } from '@/rendering/animations';
+import { COLORS } from '@/ui/design-tokens';
+import { Frame9Slice } from './components/frame';
 import {
   gameState,
   goDailyChallengeCompleted,
@@ -69,7 +74,7 @@ function StarRating({ stars }: { stars: number }) {
         <span
           key={`star-${i}`}
           style={{
-            color: i < stars ? 'var(--pw-clam)' : 'var(--pw-text-muted)',
+            color: i < stars ? 'var(--pw-clam)' : COLORS.weatheredSteel,
             textShadow: i < stars ? `0 0 8px var(--pw-victory-glow-40)` : 'none',
           }}
         >
@@ -125,7 +130,8 @@ export function GameOverBanner(props: GameOverProps) {
 
       <h1
         id="game-over-title"
-        class={`font-title text-4xl md:text-6xl mb-3 tracking-widest uppercase ${goTitleColor.value}`}
+        aria-live="assertive"
+        class={`font-heading text-4xl md:text-6xl mb-3 tracking-widest uppercase ${goTitleColor.value}`}
         style={{
           textShadow: isVictory
             ? `0 0 40px var(--pw-victory-glow-40), 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000`
@@ -146,48 +152,50 @@ export function GameOverBanner(props: GameOverProps) {
 
       <StarRating stars={stars} />
 
-      {/* Parchment stat card */}
-      <div
-        ref={statsContainerRef}
-        class="parchment-panel pond-panel-bg mt-5 px-6 py-4 rounded-lg flex flex-col items-center gap-1.5 min-w-[240px]"
-      >
-        <span
-          class="section-header w-full text-center mb-1"
-          style={{
-            color: isVictory ? 'var(--pw-clam)' : 'var(--pw-enemy-light)',
-            borderColor: isVictory ? 'var(--pw-victory-glow-20)' : 'var(--pw-defeat-glow-20)',
-          }}
-        >
-          Battle Report
-        </span>
-        {lines.map((line, i) => (
-          <p
-            key={`stat-${i}`}
-            data-stat-line
-            class="font-numbers text-sm"
-            style={{ opacity: 0, color: 'var(--pw-text-secondary)' }}
-          >
-            {line}
-          </p>
-        ))}
+      {/* Stat card — Frame9Slice */}
+      <div ref={statsContainerRef} class="mt-5 min-w-[240px]">
+        <Frame9Slice>
+          <div class="px-6 py-4 flex flex-col items-center gap-1.5">
+            <span
+              class="font-heading w-full text-center mb-1 text-sm uppercase tracking-wider"
+              style={{
+                color: isVictory ? 'var(--pw-clam)' : 'var(--pw-enemy-light)',
+                borderBottom: `1px solid ${isVictory ? 'var(--pw-victory-glow-20)' : 'var(--pw-defeat-glow-20)'}`,
+                paddingBottom: '4px',
+              }}
+            >
+              Battle Report
+            </span>
+            {lines.map((line, i) => (
+              <p
+                key={`stat-${i}`}
+                data-stat-line
+                class="font-numbers text-sm"
+                style={{ opacity: 0, color: COLORS.weatheredSteel }}
+              >
+                {line}
+              </p>
+            ))}
+          </div>
+        </Frame9Slice>
       </div>
 
       {/* XP earned */}
       {goXpEarned.value > 0 && (
         <div class="mt-3 flex flex-col items-center gap-1">
-          <span class="font-heading text-lg font-bold" style={{ color: 'var(--pw-accent-bright)' }}>
+          <span class="font-heading text-lg font-bold" style={{ color: COLORS.grittyGold }}>
             +{goXpEarned.value} XP
           </span>
           {goLeveledUp.value && (
             <span
               class="font-heading text-sm font-bold"
-              style={{ color: 'var(--pw-clam)', textShadow: '0 0 8px rgba(240, 208, 96, 0.4)' }}
+              style={{ color: 'var(--pw-clam)', textShadow: '0 0 8px var(--pw-victory-glow-40)' }}
             >
               Level Up! Level {goNewLevel.value}
             </span>
           )}
           {goDailyChallengeCompleted.value && (
-            <span class="font-game text-xs" style={{ color: 'var(--pw-accent)' }}>
+            <span class="font-game text-xs" style={{ color: COLORS.grittyGold }}>
               Daily Challenge Complete!
             </span>
           )}
@@ -197,22 +205,22 @@ export function GameOverBanner(props: GameOverProps) {
       {/* Map seed for sharing / replay */}
       <p
         class="font-numbers text-xs mt-3 select-all cursor-pointer"
-        style={{ color: 'var(--pw-text-muted)' }}
+        style={{ color: COLORS.weatheredSteel }}
         title="Click to select seed for copying"
       >
         Map Seed: {goMapSeed.value}
       </p>
 
-      {/* Action buttons */}
+      {/* Action buttons — rts-btn */}
       <div class="flex gap-4 mt-6">
         <button
           ref={restartButtonRef}
           type="button"
           id="restart-btn"
-          class="action-btn px-8 py-3 font-heading text-lg rounded-lg"
+          class="rts-btn px-8 py-3 font-heading text-lg"
           style={{
-            color: isVictory ? 'var(--pw-clam)' : 'var(--pw-accent-bright)',
-            borderColor: isVictory ? 'var(--pw-otter)' : 'var(--pw-accent)',
+            color: isVictory ? 'var(--pw-clam)' : COLORS.grittyGold,
+            borderColor: isVictory ? 'var(--pw-otter)' : COLORS.goldDim,
           }}
           onClick={props.onRestart}
         >
@@ -220,10 +228,10 @@ export function GameOverBanner(props: GameOverProps) {
         </button>
         <button
           type="button"
-          class="action-btn px-8 py-3 font-heading text-lg rounded-lg"
+          class="rts-btn px-8 py-3 font-heading text-lg"
           style={{
-            color: 'var(--pw-text-secondary)',
-            borderColor: 'var(--pw-text-muted)',
+            color: COLORS.weatheredSteel,
+            borderColor: COLORS.weatheredSteel,
           }}
           onClick={handleMainMenu}
         >

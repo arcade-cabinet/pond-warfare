@@ -13,7 +13,6 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { TECH_UPGRADES } from '@/config/tech-tree';
 import {
   Building,
   Combat,
@@ -104,24 +103,15 @@ describe('commander passives', () => {
     trainingQueueSlots.clear();
   });
 
-  it('Sage: research costs are reduced by 25%', () => {
+  it('Sage: research discount modifier is applied', () => {
+    // v3.0: TECH_UPGRADES emptied (upgrade web replaces tech tree)
+    // Test validates the discount formula itself
     world.commanderModifiers.passiveResearchSpeed = 0.25;
-    const tech = TECH_UPGRADES.sturdyMud;
-    const expectedClams = Math.round(tech.clamCost * 0.75);
-    const expectedTwigs = Math.round(tech.twigCost * 0.75);
-    // Set resources to exact discounted amount
-    world.resources.clams = expectedClams;
-    world.resources.twigs = expectedTwigs;
-    // Simulate purchase with discount
     const discount = 1 - world.commanderModifiers.passiveResearchSpeed;
-    const clamCost = Math.round(tech.clamCost * discount);
-    const twigCost = Math.round(tech.twigCost * discount);
-    expect(world.resources.clams >= clamCost).toBe(true);
-    expect(world.resources.twigs >= twigCost).toBe(true);
-    world.resources.clams -= clamCost;
-    world.resources.twigs -= twigCost;
-    expect(world.resources.clams).toBe(0);
-    expect(world.resources.twigs).toBe(0);
+    expect(discount).toBeCloseTo(0.75);
+    const baseCost = 100;
+    const discountedCost = Math.round(baseCost * discount);
+    expect(discountedCost).toBe(75);
   });
 
   it('Shadowfang: Trapper traps last 2x longer', () => {
@@ -178,28 +168,30 @@ describe('commander passives', () => {
     expect(Combat.attackRange[cat]).toBe(375);
   });
 
-  it('Stormcaller: lightning strikes a random enemy', () => {
+  it('Stormcaller: lightning strikes up to 3 random enemies', () => {
     world.commanderModifiers.passiveLightningDamage = 10;
-    const enemy = createUnit(world, 200, 200, Faction.Enemy, EntityKind.Gator, 100);
-    const startHp = Health.current[enemy];
+    const e1 = createUnit(world, 200, 200, Faction.Enemy, EntityKind.Gator, 100);
+    const e2 = createUnit(world, 300, 300, Faction.Enemy, EntityKind.Snake, 100);
+    const e3 = createUnit(world, 400, 400, Faction.Enemy, EntityKind.Gator, 100);
 
-    // Fire on exact interval frame
-    world.frameCount = 600;
+    // Fire on exact interval frame (15 seconds = 900 frames)
+    world.frameCount = 900;
     commanderPassivesSystem(world);
 
-    // Enemy should have taken damage
-    expect(Health.current[enemy]).toBeLessThan(startHp);
-    // Should have created floating text including ZAP!
-    expect(world.floatingTexts.length).toBeGreaterThan(0);
-    const zapText = world.floatingTexts.find((t) => t.text === 'ZAP!');
-    expect(zapText).toBeDefined();
-    // Should have created particles
-    expect(world.particles.length).toBeGreaterThan(0);
+    // All 3 enemies should have taken damage
+    expect(Health.current[e1]).toBeLessThan(100);
+    expect(Health.current[e2]).toBeLessThan(100);
+    expect(Health.current[e3]).toBeLessThan(100);
+    // Should have created 3 ZAP! floating texts
+    const zapTexts = world.floatingTexts.filter((t) => t.text === 'ZAP!');
+    expect(zapTexts).toHaveLength(3);
+    // Should have created particles (at least 6 per target from lightning)
+    expect(world.particles.length).toBeGreaterThanOrEqual(18);
   });
 
   it('Stormcaller: no lightning when no enemies exist', () => {
     world.commanderModifiers.passiveLightningDamage = 10;
-    world.frameCount = 600;
+    world.frameCount = 900;
     commanderPassivesSystem(world);
     expect(world.floatingTexts.length).toBe(0);
   });

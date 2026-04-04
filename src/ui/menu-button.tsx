@@ -1,45 +1,38 @@
 /**
- * MenuButton — Teal bar button using the painted Button.png asset.
+ * MenuButton — Wood plank warfare-styled button using the .rts-btn CSS class.
  */
-
-const UI = '/pond-warfare/assets/ui';
 
 export function MenuButton({
   label,
   onClick,
   disabled,
   wide,
+  extraClass,
+  extraStyle,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
   wide?: boolean;
+  extraClass?: string;
+  extraStyle?: Record<string, string | number>;
 }) {
+  const disabledCls = disabled ? 'opacity-40 cursor-not-allowed grayscale' : '';
+
   return (
     <button
       type="button"
-      class={`menu-pond-btn relative flex items-center justify-center cursor-pointer min-h-[44px] transition-transform ${disabled ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
-      style={{ width: wide ? '170px' : '140px', height: wide ? '48px' : '42px' }}
+      class={`rts-btn font-heading flex items-center justify-center min-h-[44px] tracking-wider ${disabledCls} ${extraClass ?? ''}`}
+      style={{
+        width: wide ? '190px' : '150px',
+        height: wide ? '50px' : '44px',
+        fontSize: wide ? '1.1rem' : '0.85rem',
+        ...extraStyle,
+      }}
       disabled={disabled}
       onClick={disabled ? undefined : onClick}
     >
-      <img
-        src={`${UI}/Button.png`}
-        alt=""
-        class="absolute inset-0 w-full h-full object-fill pointer-events-none"
-        draggable={false}
-        style={{ filter: 'var(--pw-drop-shadow)' }}
-      />
-      <span
-        class="relative z-10 font-heading font-bold tracking-wider uppercase"
-        style={{
-          color: 'var(--pw-btn-dark-text)',
-          fontSize: wide ? '14px' : '11px',
-          textShadow: `0 1px 1px var(--pw-text-shadow-decorative)`,
-        }}
-      >
-        {label}
-      </span>
+      {label}
     </button>
   );
 }

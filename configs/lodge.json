@@ -1,0 +1,14 @@
+{
+  "base_hp": 500,
+  "wings": {
+    "dock": { "unlock": "gathering_category_tier_5", "description": "Dock wing — faster fish gathering", "visual": "dock_wing" },
+    "barracks": { "unlock": "combat_category_tier_5", "description": "Barracks wing — faster unit training", "visual": "barracks_wing" },
+    "watchtower": { "unlock": "defense_category_tier_5", "description": "Watchtower — early wave warning", "visual": "watchtower_wing" },
+    "healing_pool": { "unlock": "utility_category_tier_5", "description": "Healing pool — units near Lodge heal", "visual": "healing_pool_wing" }
+  },
+  "fort_slots_per_level": [
+    { "min_level": 0, "slots": 4 },
+    { "min_level": 10, "slots": 8 },
+    { "min_level": 30, "slots": 12 }
+  ]
+}

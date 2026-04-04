@@ -1,13 +1,14 @@
 /**
  * PondAccordionSection -- Single collapsible section within PondAccordion.
- * Uses Button.png as header background, matching the landing-page MenuButton style.
- * US13: Smooth CSS max-height transition instead of display:none toggle.
+ *
+ * Uses the SVG Frame9Slice system (design bible) for vine-wrapped wood frame
+ * with organic corners, edges, and grunge-filtered center panel.
+ * Each section is a self-contained framed panel with title in the top edge.
  */
 
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
-
-const PANEL = '/pond-warfare/assets/ui/panel';
+import { Frame9Slice } from './frame';
 
 export interface AccordionSectionProps {
   sectionKey: string;
@@ -35,56 +36,19 @@ export function PondAccordionSection({
     if (open && contentRef.current) {
       const timer = setTimeout(() => {
         contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 260); // after animation completes
+      }, 700); // after Frame9Slice expand animation
       return () => clearTimeout(timer);
     }
   }, [open]);
 
-  return (
-    <div class="pond-accordion-section" data-testid={`accordion-section-${sectionKey}`}>
-      <button
-        type="button"
-        class="pond-accordion-header"
-        data-testid={`accordion-header-${sectionKey}`}
-        onClick={() => onToggle(sectionKey)}
-        aria-expanded={open}
-      >
-        <img
-          src={`${PANEL}/section-header.png`}
-          alt=""
-          class="pond-accordion-header-bg"
-          draggable={false}
-        />
-        <span class="pond-accordion-header-content">
-          <span class="pond-accordion-title">
-            {icon && <span class="pond-accordion-icon">{icon}</span>}
-            {title}
-          </span>
-          {!open && summary && (
-            <span class="pond-accordion-summary" data-testid={`accordion-summary-${sectionKey}`}>
-              {summary}
-            </span>
-          )}
-          <span
-            class={`pond-accordion-chevron ${open ? 'pond-accordion-chevron-open' : ''}`}
-            data-testid={`accordion-chevron-${sectionKey}`}
-            aria-hidden="true"
-          >
-            {open ? '\u25BC' : '\u25B6'}
-          </span>
-        </span>
-      </button>
+  const label = icon ? `${icon} ${title}` : title;
+  const displayTitle = !open && summary ? `${label} — ${summary}` : label;
 
-      <div
-        ref={contentRef}
-        class={`pond-accordion-content ${open ? 'pond-accordion-content-open' : ''}`}
-        data-testid={`accordion-content-${sectionKey}`}
-      >
-        <div class="pond-accordion-watermark" aria-hidden="true">
-          <img src={`${PANEL}/otter-icon.png`} alt="" draggable={false} />
-        </div>
+  return (
+    <section ref={contentRef} data-testid={`accordion-section-${sectionKey}`} aria-label={title}>
+      <Frame9Slice title={displayTitle} isExpanded={open} onClick={() => onToggle(sectionKey)}>
         {children}
-      </div>
-    </div>
+      </Frame9Slice>
+    </section>
   );
 }

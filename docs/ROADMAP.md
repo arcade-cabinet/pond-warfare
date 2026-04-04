@@ -1,108 +1,78 @@
 # Pond Warfare -- Feature Roadmap
 
-Current state: v2.0.0+ -- 1327 tests, 40 achievements, 10 puzzles, 5 game modes, P2P co-op multiplayer.
+Current state: v3.0 -- Mobile-first single-mode RTS with prestige loop. 1663 tests.
 
 ---
 
 ## COMPLETED MILESTONES
 
-### v1.4.0 -- Visual + Variety + Mobile (DONE)
+### v1.0 - v2.0 (Historical)
 
-- Sprite walk cycles and idle animations
-- 3 new map scenarios (Archipelago, Ravine, Swamp -- 9 total)
-- Survival Mode (endless waves, score-based)
-- AI personality differentiation (5 personalities feel meaningfully different)
-- Commander active abilities (7 unique abilities with cooldowns)
-- Maestro mobile testing + Android CI
-- Auto-merge workflow + Android debug APK
+Feature set from original multi-mode architecture. Many systems (campaigns, puzzles,
+survival mode, co-op multiplayer, 25-tech tree, 7 commanders, 5 game modes) have been
+superseded by the v3 rearchitecture. See git history for details.
 
-### v1.5.0 -- Depth (DONE)
+### v3.0 -- Complete Rearchitecture (DONE)
 
-- Flanking + elevation damage bonuses (positional combat)
-- Morale system + auto-retreat mechanic
-- 4 new player units: Diver, Engineer, Shaman, Berserker
-- Market building (resource trading)
-- 2 new enemy types: Burrowing Worm, Flying Heron
-- Campaign branching after Mission 3 (path A/B)
+Total rearchitecture from multi-mode 4X-hybrid to single-mode mobile-first RTS with
+prestige loop.
 
-### v2.0.0 -- Expansion (DONE)
-
-- Weather system (4 types: Clear, Rain, Fog, Wind)
-- Naval combat: Dock building, Otter Warship
-- Replay system (record + playback with speed control)
-- 10 puzzle missions (was 5, added 5 advanced puzzles)
-- Branch-themed cosmetics (Lodge, Nature, Warfare, Fortifications, Shadow visual themes)
-- Berserker rage mechanic (damage scales with low HP)
-- Wall Gate building (allies pass, enemies blocked)
-- Shrine building (one-time powerful ability)
-- P2P co-op multiplayer (Trystero/WebRTC, deterministic lockstep)
-- Campaign briefing screen with recommended tech branches
-- Daily challenges (15 rotating objectives with XP rewards)
-- XP/level system (performance-based progression)
-- Match history (last 50 games stored in SQLite)
-- 8 random in-game event types (seeded for determinism)
-- 40 achievements (was 26)
-- Unlock progression display + next-unlock hint
-- Deterministic dual-layer PRNG (zero Math.random in gameplay)
-- Idle unit indicators, ctrl group badges
-- Minimap legend
-- Tooltips, hotkeys, build placement preview
-- Quick Play, loading screen
-- Full audio cues for weather, shrine, berserker, diver, warship, etc.
+- **One game mode**: Defend the Lodge (replaces Skirmish, Campaign, Survival, Puzzles, Co-op)
+- **JSON config system**: 10 config files drive all game balance (units, enemies, events, upgrades, prestige, terrain, fortifications, lodge, rewards, prefixes)
+- **Vertical map**: Lodge at bottom, enemies from top, resources in middle; map scales with progression level
+- **Upgrade web**: 240+ procedural nodes from 6 categories x 4 subcategories x 10 tiers, plus diamond nodes for Lodge wings and specialist unlocks
+- **Prestige system**: Rank up to reset Clam upgrades and earn Pearls for permanent auto-deploy, auto-behavior, and multiplier upgrades
+- **Simplified units**: 4 generalists (Gatherer, Fighter, Medic, Scout) + 10 specialists (auto-deployed via prestige)
+- **6 enemy types**: Raider, Fighter, Healer, Scout, Sapper, Saboteur with per-level scaling
+- **Match events**: JSON-driven waves, bosses, sabotage, escorts, storms replacing old wave/evolution system
+- **Fortification system**: Walls and towers from JSON config with progression-based slot counts
+- **Lodge visual evolution**: Wings unlock via upgrade web diamond nodes, prestige glow
+- **Post-match rewards**: Clam earnings from kills, events, survival time, prestige multiplier
+- **New resource model**: Fish/Rocks/Logs (in-match), Clams/Pearls (metagame)
+- **v3 UI screens**: UpgradeWebScreen, PearlUpgradeScreen, RewardsScreen, RankUpModal
+- **Simplified main menu**: PLAY, Upgrades, Prestige, Settings
 
 ---
 
 ## FUTURE MILESTONES
 
-### v2.1.0 -- Community Tools
+### v3.1 -- Content Expansion
 
-1. **Map Editor** -- visual map creation tool, export/import map files, share community maps
-2. **Mod Support** -- config-driven entity/tech/commander definitions, JSON mod loading
-3. **More Campaign Missions** -- missions 6-8, new branch paths, story continuation
-4. **Custom Challenge Creator** -- players create and share daily-style challenges
-5. **Spectator Mode** -- watch co-op games in real-time with full map vision
+1. **More event types** -- new event templates in events.json (defense holdouts, resource race, VIP escort variants)
+2. **More upgrade diamond nodes** -- additional cross-category unlocks
+3. **Specialist balance pass** -- tune auto-deploy counts and specialist stats
+4. **Map variety** -- additional terrain painting patterns, biome variations
 
-### v2.2.0 -- Competitive Multiplayer
+### v3.2 -- Polish & Accessibility
 
-1. **1v1 Versus Mode** -- competitive PvP with mirrored starts, ranked ladder
-2. **Matchmaking via Trystero** -- lobby browser, skill-based matching, ELO rating
-3. **Tournament Mode** -- bracket-style elimination tournaments (2-8 players)
-4. **Replay Sharing** -- export replays as shareable files, community replay browser
-5. **Anti-cheat Checksums** -- enhanced desync detection, deterministic validation
+1. **Tutorial overlay** -- guided first-match experience
+2. **Screen reader support** -- aria-live regions for game events
+3. **Colorblind modes** -- deuteranopia, protanopia, tritanopia presets
+4. **Achievement system update** -- achievements aligned with v3 game mode
+5. **Statistics dashboard** -- lifetime stats, progression charts
 
-### v2.3.0 -- Polish & Accessibility
+### v3.3 -- Social Features
 
-1. **Screen Reader Support** -- aria-live regions for all game events
-2. **Advanced Colorblind Modes** -- deuteranopia, protanopia, tritanopia presets
-3. **Speed Control** -- 0.5x game speed option for accessibility
-4. **Tutorial Overhaul** -- interactive guided tutorial replacing advisor tips
-5. **Achievement Showcase** -- profile page with achievement display + statistics
-
-### v3.0.0 -- Second Playable Faction (Predators)
-
-1. **Full Predator Faction** -- complete unit roster mirroring Otter capabilities
-2. **Predator Tech Tree** -- 25 Predator-specific technologies across 5 branches
-3. **Predator Commanders** -- 7 Predator commanders with unique abilities
-4. **Predator Campaign** -- 5-mission story from the Predator perspective
-5. **Faction-Specific Buildings** -- Predator architecture with unique mechanics
-6. **Cross-Faction Balance** -- asymmetric balance testing, counter relationships
+1. **Leaderboards** -- global/friends progression rankings
+2. **Daily challenges** -- rotating challenge objectives with bonus Clam rewards
+3. **Replay sharing** -- export/import match replays
+4. **Profile showcase** -- prestige rank display, achievement badges
 
 ---
 
 ## INFRASTRUCTURE (Ongoing)
 
 ### CI/CD
-- Auto-merge release workflow (release-please + CI gate + auto-merge)
+- Auto-merge release workflow (release-please + CI gate)
 - Android debug APK artifact on each release
-- GitHub Pages deploy verification with PWA smoke test
-- Maestro mobile testing on Android emulator in CI
+- GitHub Pages deploy verification
 
 ### Performance
 - Frame budget monitoring (16ms target at 60fps)
-- Memory profiling for long sessions (survival mode)
-- Asset loading optimization (lazy sprite generation)
+- Memory profiling for long sessions
+- Asset loading optimization
 
 ### Testing
-- Maintain 1300+ tests across unit, integration, browser, and gameplay categories
+- Maintain 1600+ tests across unit, integration, browser, and gameplay categories
 - Browser screenshot regression tests
-- Multiplayer desync regression tests
+- bitECS test isolation (mock audio/rendering in parallel tests)

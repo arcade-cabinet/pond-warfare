@@ -47,6 +47,9 @@ export function entityKindFromString(name: string): EntityKind {
     berserker: EntityKind.Berserker,
     wall_gate: EntityKind.WallGate,
     shrine: EntityKind.Shrine,
+    // v3.0.0
+    sapper: EntityKind.Sapper,
+    saboteur: EntityKind.Saboteur,
   };
   const kind = map[name];
   if (kind === undefined) {
@@ -102,6 +105,9 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.Berserker]: 'Berserker',
     [EntityKind.WallGate]: 'Wall Gate',
     [EntityKind.Shrine]: 'Shrine',
+    // v3.0.0
+    [EntityKind.Sapper]: 'Sapper',
+    [EntityKind.Saboteur]: 'Saboteur',
   };
   return names[kind];
 }

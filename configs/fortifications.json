@@ -1,0 +1,8 @@
+{
+  "types": {
+    "wood_wall": { "hp": 100, "cost": { "rocks": 15 }, "blocks_movement": true, "description": "Basic wall segment" },
+    "stone_wall": { "hp": 250, "cost": { "rocks": 40 }, "blocks_movement": true, "description": "Reinforced wall" },
+    "watchtower": { "hp": 150, "damage": 5, "range": 200, "cost": { "rocks": 30 }, "description": "Ranged defense tower" },
+    "siege_tower": { "hp": 200, "damage": 15, "range": 300, "cost": { "rocks": 60 }, "description": "Heavy siege platform" }
+  }
+}

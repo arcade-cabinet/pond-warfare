@@ -11,11 +11,19 @@ import { audio } from '@/audio/audio-system';
 import { SPEED_LEVELS } from '@/constants';
 import { Selectable, UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
+import { cycleStanceForSelection } from '@/game/input-setup';
 import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
+import { COLORS } from './design-tokens';
 import * as store from './store';
+import {
+  autoCombatEnabled,
+  autoGathererEnabled,
+  autoHealerEnabled,
+  autoScoutEnabled,
+} from './store-gameplay';
 
 /** Clear current selection. */
 export function deselect(): void {
@@ -65,7 +73,6 @@ export function selectAllUnits(): void {
   }
   w.selection = [];
   // Select every selectable player unit
-  // Use the selectArmy helper which grabs all combat + gatherer units
   selectArmy(w);
   game.syncUIStore();
 }
@@ -94,7 +101,7 @@ export function quickSave(): void {
         x: game.world.camX + (game.world.viewWidth || 400) / 2,
         y: game.world.camY + 60,
         text: 'Game Saved',
-        color: '#4ade80',
+        color: COLORS.feedbackSuccess,
         life: 60,
       });
       audio.click();
@@ -106,7 +113,7 @@ export function quickSave(): void {
         x: game.world.camX + (game.world.viewWidth || 400) / 2,
         y: game.world.camY + 60,
         text: 'Save Failed',
-        color: '#f87171',
+        color: COLORS.feedbackError,
         life: 90,
       });
     });
@@ -128,7 +135,7 @@ export function quickLoad(): void {
     });
 }
 
-/** Cycle game speed (1x → 2x → 3x → 1x). */
+/** Cycle game speed (1x -> 2x -> 3x -> 1x). */
 export function cycleSpeed(): void {
   game.cycleSpeed();
 }
@@ -163,12 +170,6 @@ export function openSettings(): void {
   store.mobilePanelOpen.value = false;
 }
 
-/** Open tech tree and close panel. */
-export function openTechTree(): void {
-  store.techTreeOpen.value = true;
-  store.mobilePanelOpen.value = false;
-}
-
 /** Set game speed to a specific value. */
 export function setSpeed(speed: number): void {
   const w = game.world;
@@ -196,15 +197,37 @@ export function openKeyboardRef(): void {
   store.mobilePanelOpen.value = false;
 }
 
-/** Toggle an auto-behavior by role, updating both the store signal and the world. */
-export function toggleAutoBehavior(role: 'gatherer' | 'combat' | 'healer' | 'scout'): void {
-  const signalMap = {
-    gatherer: store.autoGathererEnabled,
-    combat: store.autoCombatEnabled,
-    healer: store.autoHealerEnabled,
-    scout: store.autoScoutEnabled,
-  } as const;
-  const sig = signalMap[role];
-  sig.value = !sig.value;
-  game.world.autoBehaviors[role] = sig.value;
+/** Cycle unit stance for selected units (Aggressive -> Defensive -> Hold). */
+export function cycleStance(): void {
+  cycleStanceForSelection(game.world);
+  game.syncUIStore();
+}
+
+/**
+ * Toggle an auto-behavior by name.
+ * Updates both the UI store signal and the game world autoBehaviors.
+ * v3 note: auto-behaviors will be replaced by prestige auto-deploy,
+ * but manual toggles still work during transition.
+ */
+export function toggleAutoBehavior(name: string): void {
+  const w = game.world;
+  switch (name) {
+    case 'gatherer':
+      autoGathererEnabled.value = !autoGathererEnabled.value;
+      w.autoBehaviors.gatherer = autoGathererEnabled.value;
+      break;
+    case 'combat':
+      autoCombatEnabled.value = !autoCombatEnabled.value;
+      w.autoBehaviors.combat = autoCombatEnabled.value;
+      break;
+    case 'healer':
+      autoHealerEnabled.value = !autoHealerEnabled.value;
+      w.autoBehaviors.healer = autoHealerEnabled.value;
+      break;
+    case 'scout':
+      autoScoutEnabled.value = !autoScoutEnabled.value;
+      w.autoBehaviors.scout = autoScoutEnabled.value;
+      break;
+  }
+  game.syncUIStore();
 }

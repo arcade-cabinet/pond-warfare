@@ -40,8 +40,6 @@ async function mountGame(): Promise<void> {
             refs.gameCanvas,
             refs.fogCanvas,
             refs.lightCanvas,
-            refs.minimapCanvas,
-            refs.minimapCam,
           );
           resolve();
         }}

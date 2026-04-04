@@ -8,7 +8,6 @@
 
 import { hasComponent, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { campaignNotifyKilled } from '@/campaign';
 import { showBark } from '@/config/barks';
 import { entityKindName } from '@/config/entity-defs';
 import {
@@ -65,7 +64,6 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
       if (!isBuilding) {
         world.stats.unitsKilled++;
       }
-      campaignNotifyKilled(world, EntityTypeTag.kind[eid]);
     }
   }
 

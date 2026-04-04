@@ -908,4 +908,44 @@ describe('issueContextCommand()', () => {
     const result = issueContextCommand(world, null, 500, 500);
     expect(result).toBe(false);
   });
+
+  it('issues move command when Healer targets a wounded ally', () => {
+    const healer = createPlayerUnit(world, 100, 100, EntityKind.Healer);
+    const wounded = createPlayerUnit(world, 300, 300, EntityKind.Brawler);
+    Health.current[wounded] = 30; // Wounded
+    Health.max[wounded] = 60;
+    world.selection = [healer];
+
+    issueContextCommand(world, wounded, 300, 300);
+    expect(UnitStateMachine.state[healer]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[healer]).toBe(wounded);
+    expect(UnitStateMachine.targetX[healer]).toBe(Position.x[wounded]);
+    expect(UnitStateMachine.targetY[healer]).toBe(Position.y[wounded]);
+  });
+
+  it('does not issue heal-move when Healer targets a full-health ally', () => {
+    const healer = createPlayerUnit(world, 100, 100, EntityKind.Healer);
+    const healthy = createPlayerUnit(world, 300, 300, EntityKind.Brawler);
+    Health.current[healthy] = 60;
+    Health.max[healthy] = 60;
+    world.selection = [healer];
+
+    issueContextCommand(world, healthy, 300, 300);
+    // Should fall through to generic move, not set targetEntity
+    expect(UnitStateMachine.state[healer]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[healer]).toBe(-1);
+  });
+
+  it('non-Healer targeting wounded ally falls through to generic move', () => {
+    const brawler = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    const wounded = createPlayerUnit(world, 300, 300, EntityKind.Gatherer);
+    Health.current[wounded] = 10;
+    Health.max[wounded] = 30;
+    world.selection = [brawler];
+
+    issueContextCommand(world, wounded, 300, 300);
+    // Brawler should not do a special heal-move; falls through to generic
+    expect(UnitStateMachine.state[brawler]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[brawler]).toBe(-1);
+  });
 });

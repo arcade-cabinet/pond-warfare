@@ -1,0 +1,121 @@
+{
+  "templates": {
+    "basic_wave": {
+      "type": "wave",
+      "min_progression": 0,
+      "max_progression": 999,
+      "duration_seconds": 60,
+      "enemy_composition": { "fighter": 3, "raider": 2 },
+      "reward_clams": 5,
+      "description": "A wave of enemies approaches from the north"
+    },
+    "raider_wave": {
+      "type": "wave",
+      "min_progression": 0,
+      "max_progression": 999,
+      "duration_seconds": 45,
+      "enemy_composition": { "raider": 5 },
+      "reward_clams": 4,
+      "description": "Raiders target your resource nodes"
+    },
+    "heavy_assault": {
+      "type": "wave",
+      "min_progression": 5,
+      "max_progression": 999,
+      "duration_seconds": 90,
+      "enemy_composition": { "fighter": 5, "sapper_enemy": 2 },
+      "reward_clams": 8,
+      "description": "A heavy assault force with wall-breakers"
+    },
+    "healer_squad": {
+      "type": "wave",
+      "min_progression": 10,
+      "max_progression": 999,
+      "duration_seconds": 75,
+      "enemy_composition": { "fighter": 4, "healer": 2 },
+      "reward_clams": 7,
+      "description": "Enemy healers support an assault force"
+    },
+    "scout_incursion": {
+      "type": "wave",
+      "min_progression": 3,
+      "max_progression": 999,
+      "duration_seconds": 30,
+      "enemy_composition": { "scout_enemy": 4 },
+      "reward_clams": 3,
+      "description": "Enemy scouts probe your defenses"
+    },
+    "sabotage_raid": {
+      "type": "sabotage",
+      "min_progression": 15,
+      "max_progression": 999,
+      "duration_seconds": 60,
+      "enemy_composition": { "saboteur_enemy": 3 },
+      "reward_clams": 6,
+      "description": "Saboteurs attempt to corrupt your resource nodes"
+    },
+    "boss_croc": {
+      "type": "boss",
+      "min_progression": 8,
+      "max_progression": 999,
+      "duration_seconds": 120,
+      "enemy_composition": { "fighter": 6, "sapper_enemy": 2 },
+      "boss": { "type": "fighter", "hp_multiplier": 5, "damage_multiplier": 3 },
+      "reward_clams": 15,
+      "description": "A massive boss croc leads an assault"
+    },
+    "storm": {
+      "type": "storm",
+      "min_progression": 5,
+      "max_progression": 999,
+      "duration_seconds": 90,
+      "enemy_composition": {},
+      "reward_clams": 3,
+      "effects": { "visibility_reduction": 0.5, "speed_penalty": 0.8 },
+      "description": "A fierce storm reduces visibility and slows movement"
+    },
+    "siege_defense": {
+      "type": "siege",
+      "min_progression": 12,
+      "max_progression": 999,
+      "duration_seconds": 120,
+      "enemy_composition": { "fighter": 4, "sapper_enemy": 4 },
+      "reward_clams": 10,
+      "description": "Siege forces target your fortifications"
+    },
+    "swarm": {
+      "type": "swarm",
+      "min_progression": 7,
+      "max_progression": 999,
+      "duration_seconds": 45,
+      "enemy_composition": { "raider": 8, "scout_enemy": 4 },
+      "reward_clams": 6,
+      "description": "A swarm of fast enemies floods the map"
+    },
+    "resource_surge": {
+      "type": "resource_surge",
+      "min_progression": 0,
+      "max_progression": 999,
+      "duration_seconds": 60,
+      "enemy_composition": {},
+      "reward_clams": 2,
+      "effects": { "bonus_nodes": 3 },
+      "description": "Bonus resource nodes appear temporarily"
+    },
+    "escort_mission": {
+      "type": "escort",
+      "min_progression": 10,
+      "max_progression": 999,
+      "duration_seconds": 90,
+      "enemy_composition": { "fighter": 3, "raider": 3 },
+      "reward_clams": 12,
+      "description": "Protect a friendly caravan crossing the map"
+    }
+  },
+  "timing": {
+    "first_event_delay_seconds": 60,
+    "min_interval_seconds": 45,
+    "max_interval_seconds": 120,
+    "max_concurrent_events": 2
+  }
+}

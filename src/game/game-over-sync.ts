@@ -3,21 +3,30 @@
  *
  * Writes victory/defeat stats to UI store signals and handles
  * permadeath save-deletion when a game is lost.
+ * Also sets v3 store signals for rewards screen display.
  */
 
 import { TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { DAY_FRAMES } from '@/constants';
+import { getEventsCompletedCount } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
 import { deleteSave, getLatestSave } from '@/storage';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
+import { persistCurrentRun, persistPrestigeState } from '@/ui/store-v3-persistence';
 import { processGameOverRewards, resetRewardsGuard } from './game-over-rewards';
+import { calculateMatchReward } from './match-rewards';
 
 /** Module-level guard so permadeath deletion only fires once per loss. */
 let _permadeathDeleteFired = false;
 
+/** Module-level guard so rewards screen signals are only set once per game. */
+let _rewardsScreenFired = false;
+
 /** Reset the permadeath guard (call at the start of a new game). */
 export function resetPermadeathGuard(): void {
   _permadeathDeleteFired = false;
+  _rewardsScreenFired = false;
   resetRewardsGuard();
 }
 
@@ -29,8 +38,15 @@ export function syncGameOverStats(world: GameWorld): void {
 
   store.goTitle.value = w.state === 'win' ? 'Victory' : 'Defeat';
   store.goTitleColor.value = w.state === 'win' ? 'text-amber-400' : 'text-red-500';
-  store.goDesc.value =
-    w.state === 'win' ? 'All predator nests destroyed!' : 'All lodges destroyed!';
+
+  // Description varies by game mode
+  if (w.waveSurvivalMode) {
+    store.goDesc.value =
+      w.state === 'win' ? `Survived all ${w.waveSurvivalTarget} waves!` : 'The Lodge has fallen!';
+  } else {
+    store.goDesc.value =
+      w.state === 'win' ? 'All predator nests destroyed!' : 'All lodges destroyed!';
+  }
 
   const days = Math.floor(w.frameCount / DAY_FRAMES);
   const remainFrames = w.frameCount % DAY_FRAMES;
@@ -39,11 +55,12 @@ export function syncGameOverStats(world: GameWorld): void {
   store.goFrameCount.value = w.frameCount;
   store.goMapSeed.value = w.mapSeed;
 
-  // Compute researched tech names
+  // Compute researched tech names (guard against empty TECH_UPGRADES stub)
   const researchedTechs: string[] = [];
   for (const [key, val] of Object.entries(w.tech)) {
     if (val && key in TECH_UPGRADES) {
-      researchedTechs.push(TECH_UPGRADES[key as TechId].name);
+      const upgrade = TECH_UPGRADES[key as TechId];
+      if (upgrade) researchedTechs.push(upgrade.name);
     }
   }
   const techSummary =
@@ -80,7 +97,9 @@ export function syncGameOverStats(world: GameWorld): void {
     `Units lost: ${w.stats.unitsLost}`,
     `Buildings built: ${w.stats.buildingsBuilt}`,
     `Buildings lost: ${w.stats.buildingsLost}`,
-    `Nests destroyed: ${nestsDestroyed}`,
+    ...(w.waveSurvivalMode
+      ? [`Waves survived: ${w.waveNumber}/${w.waveSurvivalTarget}`]
+      : [`Nests destroyed: ${nestsDestroyed}`]),
     `Resources gathered: ${w.stats.resourcesGathered}`,
     `Techs researched: ${techSummary}`,
     `Peak army: ${w.stats.peakArmy}`,
@@ -117,8 +136,40 @@ export function syncGameOverStats(world: GameWorld): void {
       });
   }
 
+  // v3 rewards screen: calculate breakdown and set signals (once per game end)
+  if (!_rewardsScreenFired) {
+    _rewardsScreenFired = true;
+    const durationSeconds = Math.round(w.frameCount / 60);
+    const eventsCompleted = getEventsCompletedCount();
+
+    const breakdown = calculateMatchReward({
+      result: w.state === 'win' ? 'win' : 'loss',
+      durationSeconds,
+      kills: w.stats.unitsKilled,
+      resourcesGathered: w.stats.resourcesGathered,
+      eventsCompleted,
+      prestigeRank: storeV3.prestigeRank.value,
+    });
+
+    storeV3.lastRewardBreakdown.value = breakdown;
+    storeV3.matchEventsCompleted.value = eventsCompleted;
+    storeV3.rewardsScreenOpen.value = true;
+
+    // T20: Increment progression level on win (0 for loss)
+    if (w.state === 'win') {
+      storeV3.progressionLevel.value += 1;
+    }
+
+    // T19: Add earned Clams to total and persist to SQLite
+    storeV3.totalClams.value += breakdown.totalClams;
+
+    // Persist prestige + current run state (async, best-effort)
+    persistPrestigeState().catch(() => {});
+    persistCurrentRun().catch(() => {});
+  }
+
   // Process XP, match record, and daily challenge (async, best-effort)
   processGameOverRewards(w).catch(() => {
-    /* best-effort — don't block game-over display */
+    /* best-effort -- don't block game-over display */
   });
 }

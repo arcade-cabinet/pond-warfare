@@ -19,8 +19,8 @@ const FLANK_ANGLE_THRESHOLD = (2 * Math.PI) / 3;
 /** Flanking damage multiplier: +25% */
 const FLANK_BONUS = 0.25;
 
-/** Elevation damage bonus: +10% attacking downhill */
-const ELEVATION_BONUS = 0.1;
+/** Elevation damage bonus: +15% attacking downhill */
+const ELEVATION_BONUS = 0.15;
 
 /** Elevation damage penalty: -10% attacking uphill */
 const ELEVATION_PENALTY = 0.1;

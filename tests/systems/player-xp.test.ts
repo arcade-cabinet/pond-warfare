@@ -45,6 +45,8 @@ function makeStats(overrides: Partial<GameEndStats> = {}): GameEndStats {
     pearlsEarned: 0,
     commanderAbilitiesUsed: 0,
     towersBuilt: 0,
+    combatUnitsTrained: 0,
+    survivalWaveReached: 0,
     gameStats,
     ...overrides,
   };

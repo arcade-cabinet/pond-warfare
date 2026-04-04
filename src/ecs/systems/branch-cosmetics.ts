@@ -1,29 +1,29 @@
 /**
  * Branch-Themed Cosmetics System
  *
- * Applies visual particle trails to player units when a full tech branch
- * (all 5 techs) is researched. Multiple themes can be active simultaneously.
+ * Applies visual particle trails to player units when a full upgrade
+ * category (all tiers) hits threshold. Multiple themes can be active simultaneously.
  *
  * Themes:
- * - Lodge: leaf/vine particle trail (brown/green)
- * - Nature: green healing glow particles
- * - Warfare: red damage spark particles
- * - Fortifications: shield shimmer overlay (silver)
- * - Shadow: dark mist/shadow trail (purple/black)
+ * - gathering: leaf/vine particle trail (brown/green)
+ * - combat: red damage spark particles
+ * - defense: shield shimmer overlay (silver)
+ * - utility: green healing glow particles
+ * - economy: gold shimmer particles
+ * - siege: dark mist/shadow trail (purple/black)
  *
  * Particles are subtle (small size, low opacity) to not obscure gameplay.
  * Runs every 30 frames to keep performance impact minimal.
  */
 
 import { query } from 'bitecs';
-import type { TechBranch } from '@/config/tech-tree';
 import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { BUILDING_KINDS, Faction } from '@/types';
 import { spawnParticle } from '@/utils/particles';
-import { countBranchTechs } from './shrine';
+import { countBranchTechs, type UpgradeCategory } from './shrine';
 
-/** Number of techs per branch required for cosmetic activation. */
+/** Number of upgrades per category required for cosmetic activation. */
 const FULL_BRANCH_COUNT = 5;
 
 /** Particle spawn interval in frames. */
@@ -38,36 +38,43 @@ interface CosmeticParticle {
   size: number;
 }
 
-const BRANCH_PARTICLES: Record<TechBranch, CosmeticParticle> = {
-  lodge: {
+const BRANCH_PARTICLES: Record<UpgradeCategory, CosmeticParticle> = {
+  gathering: {
     color: '#92400e',
     vx: (r) => (r() - 0.5) * 0.8,
     vy: (r) => -0.3 - r() * 0.5,
     life: 25,
     size: 1.5,
   },
-  nature: {
-    color: '#4ade80',
-    vx: (r) => (r() - 0.5) * 0.4,
-    vy: (r) => -0.5 - r() * 0.3,
-    life: 20,
-    size: 2,
-  },
-  warfare: {
+  combat: {
     color: '#ef4444',
     vx: (r) => (r() - 0.5) * 1.2,
     vy: (r) => -0.8 - r() * 0.5,
     life: 15,
     size: 1,
   },
-  fortifications: {
+  defense: {
     color: '#cbd5e1',
     vx: (r) => (r() - 0.5) * 0.3,
     vy: (r) => -0.2 - r() * 0.3,
     life: 30,
     size: 2,
   },
-  shadow: {
+  utility: {
+    color: '#4ade80',
+    vx: (r) => (r() - 0.5) * 0.4,
+    vy: (r) => -0.5 - r() * 0.3,
+    life: 20,
+    size: 2,
+  },
+  economy: {
+    color: '#facc15',
+    vx: (r) => (r() - 0.5) * 0.5,
+    vy: (r) => -0.4 - r() * 0.3,
+    life: 25,
+    size: 1.5,
+  },
+  siege: {
     color: '#4c1d95',
     vx: (r) => (r() - 0.5) * 0.6,
     vy: (r) => 0.2 + r() * 0.3,
@@ -79,10 +86,10 @@ const BRANCH_PARTICLES: Record<TechBranch, CosmeticParticle> = {
 export function branchCosmeticsSystem(world: GameWorld): void {
   if (world.frameCount % COSMETIC_INTERVAL !== 0) return;
 
-  // Determine which branches are fully researched
+  // Determine which categories have enough upgrades
   const counts = countBranchTechs(world.tech);
-  const activeBranches: TechBranch[] = [];
-  for (const [branch, count] of Object.entries(counts) as [TechBranch, number][]) {
+  const activeBranches: UpgradeCategory[] = [];
+  for (const [branch, count] of Object.entries(counts) as [UpgradeCategory, number][]) {
     if (count >= FULL_BRANCH_COUNT) {
       activeBranches.push(branch);
     }

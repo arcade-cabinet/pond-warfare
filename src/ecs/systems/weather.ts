@@ -5,9 +5,9 @@
  * Weather changes every 3-5 minutes (seeded from mapSeed for determinism).
  *
  * Effects:
- * - Rain: -15% speed on Grass, Shallows become impassable (flooding)
- * - Fog: -40% vision range for all units
- * - Wind: projectiles drift +-15px in wind direction
+ * - Rain: -15% speed on Grass, Shallows become impassable, -10% gather speed
+ * - Fog: -40% vision range, +50% enemy attack threshold (less aggressive)
+ * - Wind: projectiles drift +-20px in wind direction
  * - Clear: no modifiers
  *
  * Visual particles (rain drops, fog overlay, wind leaves) are spawned here
@@ -23,6 +23,7 @@ import {
   WEATHER_TYPES,
 } from '@/config/weather';
 import type { GameWorld } from '@/ecs/world';
+import { currentWeather, nextWeather, weatherCountdown } from '@/ui/store-weather';
 import { spawnParticle } from '@/utils/particles';
 
 /** How often to spawn weather particles (every N frames). */
@@ -42,6 +43,14 @@ export function weatherSystem(world: GameWorld): void {
   // Spawn visual particles for current weather
   if (frameCount % PARTICLE_INTERVAL === 0) {
     spawnWeatherParticles(world);
+  }
+
+  // Sync weather state to UI store (every 30 frames, aligned with syncUIStore)
+  if (frameCount % 30 === 0) {
+    currentWeather.value = weather.current;
+    nextWeather.value = weather.next;
+    const framesLeft = Math.max(0, weather.nextTransitionFrame - frameCount);
+    weatherCountdown.value = Math.ceil(framesLeft / 60);
   }
 }
 
@@ -158,4 +167,22 @@ export function getWeatherProjectileOffset(world: GameWorld): { dx: number; dy: 
     dx: Math.cos(dir) * config.projectileOffset,
     dy: Math.sin(dir) * config.projectileOffset,
   };
+}
+
+/**
+ * Get gathering speed multiplier for current weather.
+ * Rain reduces gathering speed by 10%. Applied on top of difficulty gatherSpeedMod.
+ */
+export function getWeatherGatherMult(world: GameWorld): number {
+  if (!world.weather) return 1.0;
+  return WEATHER_CONFIGS[world.weather.current].gatherSpeedMult;
+}
+
+/**
+ * Get enemy attack threshold multiplier for current weather.
+ * Fog increases attack threshold by 50% (enemies wait longer to attack).
+ */
+export function getWeatherAttackThresholdMult(world: GameWorld): number {
+  if (!world.weather) return 1.0;
+  return WEATHER_CONFIGS[world.weather.current].attackThresholdMult;
 }

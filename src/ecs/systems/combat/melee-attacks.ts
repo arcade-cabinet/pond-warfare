@@ -131,7 +131,7 @@ export function executeMeleeAttack(
 
   if (faction === Faction.Player && world.tech.venomCoating && kind !== EntityKind.VenomSnake) {
     if (!world.poisonTimers.has(tEnt)) {
-      world.venomCoatingTimers.set(tEnt, 3);
+      world.venomCoatingTimers.set(tEnt, 5);
     }
   }
 }

@@ -32,6 +32,7 @@ import {
 import { entityScales } from '../animations';
 import { getRecoloredSprite, type RecolorPreset, veterancyPreset } from '../recolor';
 import { getAnimVisuals, tickAnimation } from '../sprite-animation';
+import { renderAutoSymbol } from './auto-symbol-overlay';
 import {
   drawHealthBar,
   drawSelectionBrackets,
@@ -273,6 +274,11 @@ export function renderEntity(eid: number, frameCount: number): void {
   // Idle indicator + ctrl group badge (delegated to entity-status-overlays)
   updateIdleOverlay(eid, isBuilding, isResource, ex, ey, sh, yOff, frameCount, entityLayer);
   updateCtrlGroupOverlay(eid, isResource, ex, ey, sh, yOff, entityLayer, _world);
+
+  // Auto-symbol icon (unit autonomy confirmation)
+  if (!isBuilding && !isResource) {
+    renderAutoSymbol(eid, ex, ey, sh, yOff, frameCount, entityLayer);
+  }
 
   renderUnitLabel(eid, kind, isResource, selected, ex, ey, sh, yOff, entityLayer);
   renderBuildingProgress(

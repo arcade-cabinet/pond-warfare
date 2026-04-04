@@ -7,6 +7,7 @@ export interface KeyMap {
   panRight: string[];
   attackMove: string;
   halt: string;
+  cycleStance: string;
   pause: string;
   mute: string;
   speed: string;
@@ -16,6 +17,9 @@ export interface KeyMap {
   cycleBuildings: string;
   escape: string;
   actionSlots: string[]; // Q, W, E, R, T, Y
+  abilityRallyCry: string;
+  abilityPondBlessing: string;
+  abilityTidalSurge: string;
 }
 
 export const DEFAULT_KEYMAP: KeyMap = {
@@ -25,6 +29,7 @@ export const DEFAULT_KEYMAP: KeyMap = {
   panRight: ['d', 'arrowright'],
   attackMove: 'a',
   halt: 'h',
+  cycleStance: 'v',
   pause: 'p',
   mute: 'm',
   speed: 'f',
@@ -34,6 +39,9 @@ export const DEFAULT_KEYMAP: KeyMap = {
   cycleBuildings: 'tab',
   escape: 'escape',
   actionSlots: ['q', 'w', 'e', 'r', 't', 'y'],
+  abilityRallyCry: 'b',
+  abilityPondBlessing: 'g',
+  abilityTidalSurge: 'n',
 };
 
 let activeKeymap: KeyMap = deepCopyKeymap(DEFAULT_KEYMAP);
@@ -47,6 +55,7 @@ function deepCopyKeymap(keymap: KeyMap): KeyMap {
     panRight: [...keymap.panRight],
     attackMove: keymap.attackMove,
     halt: keymap.halt,
+    cycleStance: keymap.cycleStance,
     pause: keymap.pause,
     mute: keymap.mute,
     speed: keymap.speed,
@@ -56,6 +65,9 @@ function deepCopyKeymap(keymap: KeyMap): KeyMap {
     cycleBuildings: keymap.cycleBuildings,
     escape: keymap.escape,
     actionSlots: [...keymap.actionSlots],
+    abilityRallyCry: keymap.abilityRallyCry,
+    abilityPondBlessing: keymap.abilityPondBlessing,
+    abilityTidalSurge: keymap.abilityTidalSurge,
   };
 }
 
@@ -71,6 +83,7 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
   if (keymap.panRight !== undefined) merged.panRight = [...keymap.panRight];
   if (keymap.attackMove !== undefined) merged.attackMove = keymap.attackMove;
   if (keymap.halt !== undefined) merged.halt = keymap.halt;
+  if (keymap.cycleStance !== undefined) merged.cycleStance = keymap.cycleStance;
   if (keymap.pause !== undefined) merged.pause = keymap.pause;
   if (keymap.mute !== undefined) merged.mute = keymap.mute;
   if (keymap.speed !== undefined) merged.speed = keymap.speed;
@@ -79,6 +92,10 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
   if (keymap.centerSelection !== undefined) merged.centerSelection = keymap.centerSelection;
   if (keymap.cycleBuildings !== undefined) merged.cycleBuildings = keymap.cycleBuildings;
   if (keymap.escape !== undefined) merged.escape = keymap.escape;
+  if (keymap.abilityRallyCry !== undefined) merged.abilityRallyCry = keymap.abilityRallyCry;
+  if (keymap.abilityPondBlessing !== undefined)
+    merged.abilityPondBlessing = keymap.abilityPondBlessing;
+  if (keymap.abilityTidalSurge !== undefined) merged.abilityTidalSurge = keymap.abilityTidalSurge;
   if (keymap.actionSlots !== undefined) {
     const slots = [...keymap.actionSlots];
     // Normalize to exactly 6 items: pad with defaults or truncate.
@@ -133,6 +150,7 @@ function isValidPartialKeyMap(obj: any): boolean {
   // Check string fields if present
   if (obj.attackMove !== undefined && typeof obj.attackMove !== 'string') return false;
   if (obj.halt !== undefined && typeof obj.halt !== 'string') return false;
+  if (obj.cycleStance !== undefined && typeof obj.cycleStance !== 'string') return false;
   if (obj.pause !== undefined && typeof obj.pause !== 'string') return false;
   if (obj.mute !== undefined && typeof obj.mute !== 'string') return false;
   if (obj.speed !== undefined && typeof obj.speed !== 'string') return false;
@@ -141,6 +159,11 @@ function isValidPartialKeyMap(obj: any): boolean {
   if (obj.centerSelection !== undefined && typeof obj.centerSelection !== 'string') return false;
   if (obj.cycleBuildings !== undefined && typeof obj.cycleBuildings !== 'string') return false;
   if (obj.escape !== undefined && typeof obj.escape !== 'string') return false;
+  if (obj.abilityRallyCry !== undefined && typeof obj.abilityRallyCry !== 'string') return false;
+  if (obj.abilityPondBlessing !== undefined && typeof obj.abilityPondBlessing !== 'string')
+    return false;
+  if (obj.abilityTidalSurge !== undefined && typeof obj.abilityTidalSurge !== 'string')
+    return false;
 
   return true;
 }

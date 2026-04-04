@@ -16,9 +16,12 @@ import {
   IsBuilding,
   Position,
   Selectable,
+  Stance,
+  StanceMode,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
 import type { KeyboardCallbacks } from '@/input/keyboard';
 import type { PointerCallbacks } from '@/input/pointer';
 import {
@@ -97,10 +100,47 @@ export function buildKeyboardCallbacks(deps: InputSetupDeps): KeyboardCallbacks 
     onAttackMoveMode: () => {
       world.attackMoveMode = true;
     },
+    onCycleStance: () => {
+      cycleStanceForSelection(world);
+      syncUIStore();
+    },
     onActionHotkey: (_index: number) => {
       // Action hotkeys handled by UI layer
     },
+    onRallyCry: () => {
+      useShadowSprint(world);
+    },
+    onPondBlessing: () => {
+      usePondBlessing(world);
+    },
+    onTidalSurge: () => {
+      useTidalSurge(world);
+    },
   };
+}
+
+const STANCE_LABELS = ['Aggressive', 'Defensive', 'Hold'];
+
+/** Cycle stance for all selected player units: Aggressive -> Defensive -> Hold -> Aggressive. */
+export function cycleStanceForSelection(world: GameWorld): void {
+  let newStance = -1;
+  for (const eid of world.selection) {
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (ENTITY_DEFS[EntityTypeTag.kind[eid] as EntityKind]?.isBuilding) continue;
+    const cur = (Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive;
+    if (newStance === -1) newStance = (cur + 1) % 3;
+    Stance.mode[eid] = newStance;
+  }
+  if (newStance >= 0) {
+    audio.click();
+    world.floatingTexts.push({
+      x: world.camX + world.viewWidth / 2,
+      y: world.camY + 60,
+      text: `Stance: ${STANCE_LABELS[newStance]}`,
+      color: '#38bdf8',
+      life: 60,
+    });
+  }
 }
 
 export interface PointerSetupDeps {
@@ -116,7 +156,7 @@ export function buildPointerCallbacks(deps: PointerSetupDeps): PointerCallbacks 
   return {
     getEntityAt: (wx, wy) => getEntityAt(world, wx, wy),
     hasPlayerUnitsSelected: () => hasPlayerUnitsSelected(world),
-    issueContextCommand: (target) => {
+    issueContextCommand: (target, shiftDown) => {
       for (const eid of world.selection) {
         triggerCommandPulse(eid);
       }
@@ -124,9 +164,10 @@ export function buildPointerCallbacks(deps: PointerSetupDeps): PointerCallbacks 
       const wx = mouse.worldX;
       const wy = mouse.worldY;
       const selectionSnapshot = [...world.selection];
-      const dispatched = issueContextCommand(world, target, wx, wy);
+      const dispatched = issueContextCommand(world, target, wx, wy, shiftDown);
 
-      if (dispatched) {
+      // Don't deselect when shift is held (patrol mode) so player can add waypoints
+      if (dispatched && !shiftDown) {
         for (const eid of world.selection) {
           if (hasComponent(world.ecs, eid, Selectable)) {
             Selectable.selected[eid] = 0;

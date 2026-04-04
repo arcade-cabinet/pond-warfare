@@ -1,0 +1,117 @@
+{
+  "pearl_formula": {
+    "description": "floor(progression_level * rank_multiplier)",
+    "rank_multiplier": 0.5
+  },
+  "rank_threshold_base": 20,
+  "rank_threshold_formula": "rank_threshold_base * (1 + current_rank * 0.5)",
+  "pearl_upgrades": {
+    "auto_deploy_fisher": {
+      "label": "Auto-Deploy Fisher",
+      "description": "Spawns fishers at match start",
+      "cost_per_rank": 3,
+      "max_rank": 5,
+      "effect": { "type": "auto_deploy", "unit": "fisher", "count_per_rank": 1 }
+    },
+    "auto_deploy_digger": {
+      "label": "Auto-Deploy Digger",
+      "description": "Spawns diggers at match start",
+      "cost_per_rank": 3,
+      "max_rank": 5,
+      "effect": { "type": "auto_deploy", "unit": "digger", "count_per_rank": 1 }
+    },
+    "auto_deploy_logger": {
+      "label": "Auto-Deploy Logger",
+      "description": "Spawns loggers at match start",
+      "cost_per_rank": 3,
+      "max_rank": 5,
+      "effect": { "type": "auto_deploy", "unit": "logger", "count_per_rank": 1 }
+    },
+    "auto_deploy_guardian": {
+      "label": "Auto-Deploy Guardian",
+      "description": "Spawns guardians at match start",
+      "cost_per_rank": 5,
+      "max_rank": 3,
+      "effect": { "type": "auto_deploy", "unit": "guardian", "count_per_rank": 1 }
+    },
+    "auto_deploy_hunter": {
+      "label": "Auto-Deploy Hunter",
+      "description": "Spawns hunters at match start",
+      "cost_per_rank": 5,
+      "max_rank": 3,
+      "effect": { "type": "auto_deploy", "unit": "hunter", "count_per_rank": 1 }
+    },
+    "auto_deploy_ranger": {
+      "label": "Auto-Deploy Ranger",
+      "description": "Spawns rangers at match start",
+      "cost_per_rank": 4,
+      "max_rank": 3,
+      "effect": { "type": "auto_deploy", "unit": "ranger", "count_per_rank": 1 }
+    },
+    "auto_deploy_shaman": {
+      "label": "Auto-Deploy Shaman",
+      "description": "Spawns shamans at match start",
+      "cost_per_rank": 4,
+      "max_rank": 3,
+      "effect": { "type": "auto_deploy", "unit": "shaman", "count_per_rank": 1 }
+    },
+    "auto_deploy_lookout": {
+      "label": "Auto-Deploy Lookout",
+      "description": "Spawns lookouts at match start",
+      "cost_per_rank": 3,
+      "max_rank": 3,
+      "effect": { "type": "auto_deploy", "unit": "lookout", "count_per_rank": 1 }
+    },
+    "gather_multiplier": {
+      "label": "Gathering Multiplier",
+      "description": "Permanent boost to gathering speed",
+      "cost_per_rank": 5,
+      "max_rank": 10,
+      "effect": { "type": "multiplier", "stat": "gathering_speed", "value_per_rank": 0.05 }
+    },
+    "combat_multiplier": {
+      "label": "Combat Multiplier",
+      "description": "Permanent boost to unit damage",
+      "cost_per_rank": 5,
+      "max_rank": 10,
+      "effect": { "type": "multiplier", "stat": "damage", "value_per_rank": 0.03 }
+    },
+    "hp_multiplier": {
+      "label": "HP Multiplier",
+      "description": "Permanent boost to unit HP",
+      "cost_per_rank": 5,
+      "max_rank": 10,
+      "effect": { "type": "multiplier", "stat": "hp", "value_per_rank": 0.05 }
+    },
+    "clam_earnings_multiplier": {
+      "label": "Clam Earnings",
+      "description": "Earn more Clams per match",
+      "cost_per_rank": 8,
+      "max_rank": 10,
+      "effect": { "type": "multiplier", "stat": "clam_earnings", "value_per_rank": 0.1 }
+    },
+    "auto_heal_behavior": {
+      "label": "Auto-Heal",
+      "description": "Units near Lodge slowly regenerate",
+      "cost_per_rank": 10,
+      "max_rank": 1,
+      "effect": { "type": "auto_behavior", "behavior": "lodge_regen" }
+    },
+    "auto_repair_behavior": {
+      "label": "Auto-Repair",
+      "description": "Lodge slowly self-repairs",
+      "cost_per_rank": 12,
+      "max_rank": 1,
+      "effect": { "type": "auto_behavior", "behavior": "lodge_self_repair" }
+    },
+    "rare_resource_access": {
+      "label": "Rare Resources",
+      "description": "Rare resource nodes appear on the map",
+      "cost_per_rank": 15,
+      "max_rank": 1,
+      "effect": { "type": "auto_behavior", "behavior": "rare_resource_access" }
+    }
+  },
+  "resets_on_prestige": ["clam_upgrades", "current_run"],
+  "persists_on_prestige": ["pearl_upgrades", "rank", "total_pearls_earned"]
+}

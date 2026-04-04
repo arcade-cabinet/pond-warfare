@@ -61,66 +61,76 @@ describe('countBranchTechs', () => {
   it('counts zero when no techs researched', () => {
     const world = createGameWorld();
     const counts = countBranchTechs(world.tech);
-    expect(counts.lodge).toBe(0);
-    expect(counts.nature).toBe(0);
-    expect(counts.warfare).toBe(0);
-    expect(counts.fortifications).toBe(0);
-    expect(counts.shadow).toBe(0);
+    expect(counts.gathering).toBe(0);
+    expect(counts.combat).toBe(0);
+    expect(counts.defense).toBe(0);
+    expect(counts.utility).toBe(0);
+    expect(counts.economy).toBe(0);
+    expect(counts.siege).toBe(0);
   });
 
-  it('counts techs per branch correctly', () => {
+  it('counts techs per category correctly', () => {
     const world = createGameWorld();
-    world.tech.cartography = true;
-    world.tech.tidalHarvest = true;
-    world.tech.tradeRoutes = true;
+    // v3 upgrade IDs: {category}_{subcategory}_t{tier}
+    world.tech.gathering_fish_gathering_t0 = true;
+    world.tech.gathering_rock_gathering_t0 = true;
+    world.tech.gathering_log_gathering_t0 = true;
     const counts = countBranchTechs(world.tech);
-    expect(counts.lodge).toBe(3);
+    expect(counts.gathering).toBe(3);
   });
 });
 
 describe('getDominantBranch', () => {
-  it('returns null when no branch has 3+ techs', () => {
+  it('returns null when no category has 3+ techs', () => {
     const world = createGameWorld();
-    world.tech.cartography = true;
-    world.tech.tidalHarvest = true;
+    world.tech.gathering_fish_gathering_t0 = true;
+    world.tech.gathering_rock_gathering_t0 = true;
     expect(getDominantBranch(world.tech)).toBeNull();
   });
 
-  it('returns the branch with most techs (min 3)', () => {
+  it('returns the category with most techs (min 3)', () => {
     const world = createGameWorld();
-    // 3 nature techs
-    world.tech.herbalMedicine = true;
-    world.tech.aquaticTraining = true;
-    world.tech.pondBlessing = true;
-    expect(getDominantBranch(world.tech)).toBe('nature');
+    // 3 utility techs
+    world.tech.utility_unit_speed_t0 = true;
+    world.tech.utility_vision_range_t0 = true;
+    world.tech.utility_heal_power_t0 = true;
+    expect(getDominantBranch(world.tech)).toBe('utility');
   });
 });
 
 describe('getShrineAbility', () => {
-  it('returns null when no dominant branch', () => {
+  it('returns null when no dominant category', () => {
     const world = createGameWorld();
     expect(getShrineAbility(world)).toBeNull();
   });
 
-  it('returns bloom for nature dominance', () => {
+  it('returns bloom for gathering dominance', () => {
     const world = createGameWorld();
-    world.tech.herbalMedicine = true;
-    world.tech.aquaticTraining = true;
-    world.tech.pondBlessing = true;
+    world.tech.gathering_fish_gathering_t0 = true;
+    world.tech.gathering_rock_gathering_t0 = true;
+    world.tech.gathering_log_gathering_t0 = true;
     expect(getShrineAbility(world)).toBe('bloom');
   });
 
-  it('returns flood for lodge dominance', () => {
+  it('returns flood for utility dominance', () => {
     const world = createGameWorld();
-    world.tech.cartography = true;
-    world.tech.tidalHarvest = true;
-    world.tech.tradeRoutes = true;
+    world.tech.utility_unit_speed_t0 = true;
+    world.tech.utility_vision_range_t0 = true;
+    world.tech.utility_heal_power_t0 = true;
     expect(getShrineAbility(world)).toBe('flood');
+  });
+
+  it('returns meteor for combat dominance', () => {
+    const world = createGameWorld();
+    world.tech.combat_attack_power_t0 = true;
+    world.tech.combat_attack_speed_t0 = true;
+    world.tech.combat_armor_t0 = true;
+    expect(getShrineAbility(world)).toBe('meteor');
   });
 });
 
 describe('activateShrine', () => {
-  it('returns false when no dominant branch', () => {
+  it('returns false when no dominant category', () => {
     const world = createGameWorld();
     const eid = spawnShrine(world);
     expect(activateShrine(world, eid)).toBe(false);
@@ -128,9 +138,9 @@ describe('activateShrine', () => {
 
   it('returns false when shrine already used', () => {
     const world = createGameWorld();
-    world.tech.herbalMedicine = true;
-    world.tech.aquaticTraining = true;
-    world.tech.pondBlessing = true;
+    world.tech.gathering_fish_gathering_t0 = true;
+    world.tech.gathering_rock_gathering_t0 = true;
+    world.tech.gathering_log_gathering_t0 = true;
     const eid = spawnShrine(world);
     world.shrineUsed.add(eid);
     expect(activateShrine(world, eid)).toBe(false);
@@ -138,9 +148,9 @@ describe('activateShrine', () => {
 
   it('bloom heals all player units to full HP', () => {
     const world = createGameWorld();
-    world.tech.herbalMedicine = true;
-    world.tech.aquaticTraining = true;
-    world.tech.pondBlessing = true;
+    world.tech.gathering_fish_gathering_t0 = true;
+    world.tech.gathering_rock_gathering_t0 = true;
+    world.tech.gathering_log_gathering_t0 = true;
 
     const shrineEid = spawnShrine(world);
     const unitEid = spawnPlayerUnit(world);
@@ -154,35 +164,20 @@ describe('activateShrine', () => {
 
   it('destroys shrine after activation', () => {
     const world = createGameWorld();
-    world.tech.herbalMedicine = true;
-    world.tech.aquaticTraining = true;
-    world.tech.pondBlessing = true;
+    world.tech.gathering_fish_gathering_t0 = true;
+    world.tech.gathering_rock_gathering_t0 = true;
+    world.tech.gathering_log_gathering_t0 = true;
 
     const eid = spawnShrine(world);
     activateShrine(world, eid);
     expect(Health.current[eid]).toBe(0); // Shrine crumbled
   });
 
-  it('eclipse sets enemies to idle', () => {
-    const world = createGameWorld();
-    world.tech.swiftPaws = true;
-    world.tech.cunningTraps = true;
-    world.tech.rallyCry = true;
-
-    const shrineEid = spawnShrine(world);
-    const enemyEid = spawnEnemyUnit(world);
-
-    expect(UnitStateMachine.state[enemyEid]).toBe(UnitState.Attacking);
-
-    activateShrine(world, shrineEid);
-    expect(UnitStateMachine.state[enemyEid]).toBe(UnitState.Idle);
-  });
-
   it('meteor deals damage to enemies in radius', () => {
     const world = createGameWorld();
-    world.tech.sharpSticks = true;
-    world.tech.eagleEye = true;
-    world.tech.battleRoar = true;
+    world.tech.combat_attack_power_t0 = true;
+    world.tech.combat_attack_speed_t0 = true;
+    world.tech.combat_armor_t0 = true;
 
     const shrineEid = spawnShrine(world);
     const enemyEid = spawnEnemyUnit(world);

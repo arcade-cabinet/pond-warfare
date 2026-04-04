@@ -1,9 +1,8 @@
 /**
- * Game UI Sync – pushes world state into Preact signal store.
+ * Game UI Sync -- pushes world state into Preact signal store.
  */
 
 import { audio } from '@/audio/audio-system';
-import type { CampaignState } from '@/campaign';
 import type { GameWorld } from '@/ecs/world';
 import { buildActionPanel } from '@/game/action-panel';
 import { syncPopulationAndTimers } from '@/game/population-sync';
@@ -11,7 +10,6 @@ import { syncSelectionInfo } from '@/game/selection-sync';
 import { hasPlayerUnitsSelected } from '@/input/selection';
 import type { ReplayRecorder } from '@/replay';
 import { checkAchievements } from '@/systems/achievements';
-import { updateProfileAndCheckUnlocks } from '@/systems/unlock-tracker';
 import * as store from '@/ui/store';
 
 export interface UISyncState {
@@ -42,14 +40,11 @@ export function syncUIStore(state: UISyncState): void {
     audio.updateAmbient(w.ambientDarkness);
   }
 
-  // Game over: stop music (once), check achievements, update profile/unlocks
+  // Game over: stop music (once), check achievements
   if ((w.state === 'win' || w.state === 'lose') && state.audioInitialized && !state.wasGameOver) {
     audio.stopMusic();
     state.wasGameOver = true;
     checkAchievements(w).catch(() => {
-      /* best-effort */
-    });
-    updateProfileAndCheckUnlocks(w).catch(() => {
       /* best-effort */
     });
   }
@@ -61,22 +56,13 @@ export function syncUIStore(state: UISyncState): void {
   buildActionPanel(w, state.recorder);
 
   // Active ability signals sync
-  store.rallyCryAvailable.value = w.tech.rallyCry;
+  store.rallyCryAvailable.value = !!w.tech.swiftPaws;
   store.rallyCryActive.value = w.rallyCryExpiry > 0 && w.frameCount < w.rallyCryExpiry;
   store.rallyCryCooldown.value =
     w.rallyCryCooldownUntil > w.frameCount
       ? Math.ceil((w.rallyCryCooldownUntil - w.frameCount) / 60)
       : 0;
-  store.pondBlessingAvailable.value = w.tech.pondBlessing && !w.pondBlessingUsed;
-  store.tidalSurgeAvailable.value = w.tech.tidalSurge && !w.tidalSurgeUsed;
-
-  // Campaign objective status sync
-  const campaign = (w as GameWorld & { campaign?: CampaignState }).campaign;
-  if (campaign?.mission) {
-    const statuses: Record<string, boolean> = {};
-    for (const [id, done] of campaign.objectiveStatus) {
-      statuses[id] = done;
-    }
-    store.campaignObjectiveStatuses.value = statuses;
-  }
+  store.pondBlessingAvailable.value =
+    !!w.tech.pondBlessing && w.frameCount >= w.pondBlessingCooldownUntil;
+  store.tidalSurgeAvailable.value = !!w.tech.tidalSurge && !w.tidalSurgeUsed;
 }

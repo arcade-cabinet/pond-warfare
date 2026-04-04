@@ -8,7 +8,7 @@ import { Sprite } from 'pixi.js';
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { TILE_SIZE } from '@/constants';
-import { Building, Combat, EntityTypeTag, Position, Selectable } from '@/ecs/components';
+import { Building, Combat, EntityTypeTag, Patrol, Position, Selectable } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { type EntityKind, SpriteId, type SpriteId as SpriteIdType } from '@/types';
 import {
@@ -62,6 +62,40 @@ export function renderRallyAndRange(world: GameWorld, frameCount: number): void 
       const ex = Position.x[selEid];
       const ey = Position.y[selEid];
       drawDashedCircle(uiGfx, ex, ey, atkRange, 4, 4, 0xef4444, 1, 0.25);
+    }
+  }
+
+  // Patrol routes for selected units with active patrols
+  renderPatrolRoutes(world, uiGfx, frameCount);
+}
+
+/** Render dashed patrol route lines for selected units with active patrols. */
+function renderPatrolRoutes(
+  world: GameWorld,
+  uiGfx: ReturnType<typeof getUiGfx>,
+  frameCount: number,
+): void {
+  for (const selEid of world.selection) {
+    if (Patrol.active[selEid] !== 1) continue;
+    const waypoints = world.patrolWaypoints.get(selEid);
+    if (!waypoints || waypoints.length < 2) continue;
+
+    // Draw dashed lines between consecutive waypoints (looping)
+    const color = 0x6dbb58; // --pw-moss-bright green
+    for (let i = 0; i < waypoints.length; i++) {
+      const from = waypoints[i];
+      const to = waypoints[(i + 1) % waypoints.length];
+      drawDashedLine(uiGfx, from.x, from.y, to.x, to.y, 6, 4, color, 1.5);
+    }
+
+    // Draw small dots at each waypoint
+    for (let i = 0; i < waypoints.length; i++) {
+      const wp = waypoints[i];
+      const isCurrent = i === Patrol.currentWaypoint[selEid];
+      const dotSize = isCurrent ? 4 : 3;
+      const alpha = isCurrent ? 0.6 + 0.4 * Math.abs(Math.sin(frameCount * 0.08)) : 0.5;
+      uiGfx.circle(wp.x, wp.y, dotSize);
+      uiGfx.fill({ color, alpha });
     }
   }
 }

@@ -179,20 +179,17 @@ describe('ResearchGoal', () => {
     world.commanderModifiers = { ...world.commanderModifiers, passiveResearchSpeed: 0 };
   });
 
-  it('purchases the first affordable tech', async () => {
+  it('always fails when TECH_UPGRADES is empty (v3.0 stub)', async () => {
+    // v3.0: TECH_UPGRADES is empty, canResearch always returns false
     const { ResearchGoal } = await import('@/governor/goals/research-goal');
-
-    // tidalHarvest costs 100c 75t — should be affordable
-    expect(world.tech.tidalHarvest).toBe(false);
 
     const goal = new ResearchGoal();
     goal.activate();
 
-    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
-    expect(world.tech.tidalHarvest).toBe(true);
+    expect(goal.status).toBe(Goal.STATUS.FAILED);
   });
 
-  it('fails when nothing is affordable', async () => {
+  it('fails when resources are empty', async () => {
     const { ResearchGoal } = await import('@/governor/goals/research-goal');
 
     world.resources.clams = 0;

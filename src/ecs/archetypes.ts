@@ -2,6 +2,7 @@ import { addComponent, addEntity } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
 import {
+  AutoSymbol,
   Building,
   Carrying,
   Collider,
@@ -15,6 +16,8 @@ import {
   Resource,
   Selectable,
   Sprite,
+  Stance,
+  StanceMode,
   TowerAI,
   TrainingQueue,
   UnitStateMachine,
@@ -69,6 +72,9 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.Berserker]: SpriteId.Berserker,
   [EntityKind.WallGate]: SpriteId.WallGate,
   [EntityKind.Shrine]: SpriteId.Shrine,
+  // v3.0.0
+  [EntityKind.Sapper]: SpriteId.Sapper,
+  [EntityKind.Saboteur]: SpriteId.Saboteur,
 };
 
 export function spawnEntity(
@@ -111,6 +117,12 @@ export function spawnEntity(
   // Health
   let hp = def.hp;
   let maxHp = def.hp;
+
+  // Apply enemy stat multiplier (difficulty scaling for enemy units)
+  if (faction === Faction.Enemy && !def.isBuilding && !def.isResource && world.enemyStatMult > 1) {
+    hp = Math.round(hp * world.enemyStatMult);
+    maxHp = Math.round(maxHp * world.enemyStatMult);
+  }
 
   // Apply tech bonuses for player buildings
   if (faction === Faction.Player && def.isBuilding && world.tech.sturdyMud) {
@@ -169,13 +181,16 @@ export function spawnEntity(
 
     addComponent(world.ecs, eid, Velocity);
     let speed = def.speed;
-    if (faction === Faction.Player && world.tech.swiftPaws) speed += 0.4;
+    if (faction === Faction.Player && world.tech.swiftPaws) speed *= 1.15;
     Velocity.speed[eid] = speed;
     Velocity.speedDebuffTimer[eid] = 0;
 
     addComponent(world.ecs, eid, Combat);
     let damage = def.damage;
     if (faction === Faction.Player && world.tech.sharpSticks && damage > 0) damage += 2;
+    // Apply enemy stat multiplier to damage
+    if (faction === Faction.Enemy && world.enemyStatMult > 1 && damage > 0)
+      damage = Math.round(damage * world.enemyStatMult);
     Combat.damage[eid] = damage;
 
     let range = def.attackRange;
@@ -207,6 +222,20 @@ export function spawnEntity(
     addComponent(world.ecs, eid, Veterancy);
     Veterancy.rank[eid] = 0;
     Veterancy.appliedRank[eid] = 0;
+
+    // Stance: gatherers/healers default Defensive, combat units Aggressive
+    addComponent(world.ecs, eid, Stance);
+    Stance.mode[eid] =
+      kind === EntityKind.Gatherer || kind === EntityKind.Healer
+        ? StanceMode.Defensive
+        : StanceMode.Aggressive;
+
+    // Auto-symbol: tracks pending auto-behavior confirmation
+    addComponent(world.ecs, eid, AutoSymbol);
+    AutoSymbol.active[eid] = 0;
+    AutoSymbol.symbolType[eid] = 0;
+    AutoSymbol.timer[eid] = 0;
+    AutoSymbol.confirmed[eid] = 0;
   }
 
   return eid;

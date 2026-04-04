@@ -142,7 +142,7 @@ async function mountGame() {
 
   const ready = new Promise<void>((resolve) => {
     render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas, refs.minimapCanvas, refs.minimapCam);
+      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
       resolve();
     }} />, root!);
   });

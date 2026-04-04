@@ -7,7 +7,6 @@
  */
 
 import { audio } from '@/audio/audio-system';
-import { campaignSuppressEnemyAttacks } from '@/campaign';
 import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
@@ -20,11 +19,10 @@ import {
   ENEMY_SCOUT_INTERVAL,
   ENEMY_SNAKE_COST_CLAMS,
   ENEMY_SNAKE_COST_TWIGS,
-  WORLD_HEIGHT,
-  WORLD_WIDTH,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
+import { getWeatherAttackThresholdMult } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -57,8 +55,6 @@ export function enemyCombatTick(world: GameWorld): void {
  */
 function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   if (isPeaceful) return;
-  // Campaign: suppress enemy attacks when mission config says so
-  if (campaignSuppressEnemyAttacks(world)) return;
   if (world.frameCount % ENEMY_ATTACK_CHECK_INTERVAL !== 0) return;
 
   const armySize = countEnemyArmy(world);
@@ -80,11 +76,16 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
   }
   // AI personality modifier: adjusts how large the army must be before attacking
   const personality = resolvePersonality(world.aiPersonality, world.frameCount);
+  // Weather modifier: fog increases threshold by 50% (enemies wait longer)
+  const weatherMult = getWeatherAttackThresholdMult(world);
   baseThreshold = Math.max(
     personality.minArmyForAttack,
-    Math.round(baseThreshold * personality.attackThresholdMult),
+    Math.round(baseThreshold * personality.attackThresholdMult * weatherMult),
   );
-  lateThreshold = Math.max(1, Math.round(lateThreshold * personality.attackThresholdMult));
+  lateThreshold = Math.max(
+    1,
+    Math.round(lateThreshold * personality.attackThresholdMult * weatherMult),
+  );
   const attackThreshold = world.frameCount >= ENEMY_LATE_GAME_FRAME ? lateThreshold : baseThreshold;
   if (armySize < attackThreshold) return;
 
@@ -226,9 +227,10 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
     scoutX = Position.x[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
     scoutY = Position.y[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
   } else {
-    // Random map exploration
-    scoutX = 200 + world.gameRng.next() * (WORLD_WIDTH - 400);
-    scoutY = 200 + world.gameRng.next() * (WORLD_HEIGHT - 400);
+    // Random map exploration — use dynamic world dimensions
+    const margin = Math.min(200, world.worldWidth * 0.15);
+    scoutX = margin + world.gameRng.next() * (world.worldWidth - margin * 2);
+    scoutY = margin + world.gameRng.next() * (world.worldHeight - margin * 2);
   }
 
   UnitStateMachine.targetX[scoutEid] = scoutX;

@@ -33,6 +33,7 @@ export const Health = soa({
   current: [] as number[],
   max: [] as number[],
   flashTimer: [] as number[],
+  lastDamagedFrame: [] as number[],
 });
 
 // Combat
@@ -118,12 +119,51 @@ export const TaskOverride = soa({
   targetEntity: [] as number[], // target entity for the task (0 = none)
 });
 
+// Unit stance (controls auto-aggro behavior)
+// 0 = Aggressive (chase enemies in vision)
+// 1 = Defensive (fight only if recently damaged)
+// 2 = Hold (don't auto-move or auto-fight)
+export const Stance = soa({
+  mode: [] as number[],
+});
+
+/** Stance mode constants for readability. */
+export const StanceMode = {
+  Aggressive: 0,
+  Defensive: 1,
+  Hold: 2,
+} as const;
+
 // Tag components - empty objects used purely as markers
 export const TowerAI = {};
 export const IsBuilding = {};
 export const IsResource = {};
 export const Dead = {};
 export const IsProjectile = {};
+
+// Patrol route tracking (waypoints stored externally in world.patrolWaypoints)
+export const Patrol = soa({
+  waypointCount: [] as number[],
+  currentWaypoint: [] as number[],
+  active: [] as number[], // 1 = patrolling, 0 = inactive
+});
+
+// Auto-symbol: icon above unit head after completing an order while deselected
+export const AutoSymbol = soa({
+  active: [] as number[], // 0 = inactive, 1 = showing symbol
+  symbolType: [] as number[], // 0=none, 1=gather, 2=attack, 3=heal, 4=scout
+  timer: [] as number[], // frames remaining (240 = 4s at 60fps)
+  confirmed: [] as number[], // 0 = unconfirmed, 1 = player tapped to confirm
+});
+
+/** Symbol type constants for readability. */
+export const SymbolType = {
+  None: 0,
+  Gather: 1,
+  Attack: 2,
+  Heal: 3,
+  Scout: 4,
+} as const;
 
 // Projectile component
 export const ProjectileData = soa({

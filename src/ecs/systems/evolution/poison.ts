@@ -44,7 +44,7 @@ export function processPoisonTicks(world: GameWorld): void {
   }
 }
 
-/** Process Venom Coating poison: 1 damage/sec. */
+/** Process Venom Coating poison: 2 damage/sec for 5s (10 total). */
 export function processVenomCoatingTicks(world: GameWorld): void {
   for (const [eid, remaining] of world.venomCoatingTimers) {
     if (!hasComponent(world.ecs, eid, Health) || Health.current[eid] <= 0) {
@@ -52,7 +52,7 @@ export function processVenomCoatingTicks(world: GameWorld): void {
       continue;
     }
 
-    Health.current[eid] -= 1;
+    Health.current[eid] -= 2;
     Health.flashTimer[eid] = 4;
 
     if (hasComponent(world.ecs, eid, Position)) {

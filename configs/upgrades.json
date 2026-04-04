@@ -1,0 +1,208 @@
+{
+  "categories": {
+    "gathering": {
+      "label": "Gathering",
+      "subcategories": {
+        "fish_gathering": { "label": "Fish Gathering", "base_effect": 0.10, "base_cost": 10 },
+        "rock_gathering": { "label": "Rock Gathering", "base_effect": 0.10, "base_cost": 10 },
+        "log_gathering": { "label": "Log Gathering", "base_effect": 0.10, "base_cost": 10 },
+        "carry_capacity": { "label": "Carry Capacity", "base_effect": 0.1, "base_cost": 15 }
+      }
+    },
+    "combat": {
+      "label": "Combat",
+      "subcategories": {
+        "attack_power": { "label": "Attack Power", "base_effect": 0.08, "base_cost": 12 },
+        "attack_speed": { "label": "Attack Speed", "base_effect": 0.08, "base_cost": 15 },
+        "armor": { "label": "Armor", "base_effect": 0.08, "base_cost": 12 },
+        "critical_hit": { "label": "Critical Hit", "base_effect": 0.08, "base_cost": 20 }
+      }
+    },
+    "defense": {
+      "label": "Defense",
+      "subcategories": {
+        "wall_hp": { "label": "Wall HP", "base_effect": 0.10, "base_cost": 10 },
+        "tower_damage": { "label": "Tower Damage", "base_effect": 0.08, "base_cost": 15 },
+        "lodge_hp": { "label": "Lodge HP", "base_effect": 0.08, "base_cost": 12 },
+        "repair_speed": { "label": "Repair Speed", "base_effect": 0.08, "base_cost": 10 }
+      }
+    },
+    "utility": {
+      "label": "Utility",
+      "subcategories": {
+        "unit_speed": { "label": "Unit Speed", "base_effect": 0.03, "base_cost": 12 },
+        "vision_range": { "label": "Vision Range", "base_effect": 0.05, "base_cost": 10 },
+        "heal_power": { "label": "Heal Power", "base_effect": 0.05, "base_cost": 15 },
+        "train_speed": { "label": "Train Speed", "base_effect": 0.04, "base_cost": 12 }
+      }
+    },
+    "economy": {
+      "label": "Economy",
+      "subcategories": {
+        "node_yield": { "label": "Node Yield", "base_effect": 0.05, "base_cost": 15 },
+        "gather_radius": { "label": "Gather Radius", "base_effect": 0.1, "base_cost": 10 },
+        "unit_cost_reduction": { "label": "Unit Cost Reduction", "base_effect": 0.03, "base_cost": 20 },
+        "clam_bonus": { "label": "Clam Bonus", "base_effect": 0.05, "base_cost": 12 }
+      }
+    },
+    "siege": {
+      "label": "Siege",
+      "subcategories": {
+        "siege_damage": { "label": "Siege Damage", "base_effect": 0.05, "base_cost": 15 },
+        "siege_range": { "label": "Siege Range", "base_effect": 0.05, "base_cost": 12 },
+        "sapper_speed": { "label": "Sapper Speed", "base_effect": 0.03, "base_cost": 10 },
+        "demolish_power": { "label": "Demolish Power", "base_effect": 0.05, "base_cost": 18 }
+      }
+    }
+  },
+  "formulas": {
+    "cost": "base_cost * 2^tier",
+    "effect": "base_effect * (tier + 1)"
+  },
+  "tiers_per_subcategory": 10,
+  "diamond_nodes": {
+    "dock_wing": {
+      "label": "Dock Wing",
+      "requires": { "gathering": { "fish_gathering": 5 } },
+      "effect": { "type": "lodge_wing", "wing": "dock" },
+      "cost": 100
+    },
+    "barracks_wing": {
+      "label": "Barracks Wing",
+      "requires": { "combat": { "attack_power": 5 } },
+      "effect": { "type": "lodge_wing", "wing": "barracks" },
+      "cost": 100
+    },
+    "watchtower_wing": {
+      "label": "Watchtower Wing",
+      "requires": { "defense": { "wall_hp": 5 } },
+      "effect": { "type": "lodge_wing", "wing": "watchtower" },
+      "cost": 100
+    },
+    "healing_pool_wing": {
+      "label": "Healing Pool Wing",
+      "requires": { "utility": { "heal_power": 5 } },
+      "effect": { "type": "lodge_wing", "wing": "healing_pool" },
+      "cost": 100
+    },
+    "fisher_specialist": {
+      "label": "Master Fisher",
+      "requires": { "gathering": { "fish_gathering": 7 } },
+      "effect": { "type": "unlock_specialist", "unit": "fisher" },
+      "cost": 150
+    },
+    "digger_specialist": {
+      "label": "Master Digger",
+      "requires": { "gathering": { "rock_gathering": 7 } },
+      "effect": { "type": "unlock_specialist", "unit": "digger" },
+      "cost": 150
+    },
+    "logger_specialist": {
+      "label": "Master Logger",
+      "requires": { "gathering": { "log_gathering": 7 } },
+      "effect": { "type": "unlock_specialist", "unit": "logger" },
+      "cost": 150
+    },
+    "guardian_specialist": {
+      "label": "Guardian Unlock",
+      "requires": { "defense": { "lodge_hp": 5, "wall_hp": 5 } },
+      "effect": { "type": "unlock_specialist", "unit": "guardian" },
+      "cost": 200
+    },
+    "hunter_specialist": {
+      "label": "Hunter Unlock",
+      "requires": { "combat": { "attack_power": 7 } },
+      "effect": { "type": "unlock_specialist", "unit": "hunter" },
+      "cost": 200
+    },
+    "ranger_specialist": {
+      "label": "Ranger Unlock",
+      "requires": { "combat": { "attack_speed": 5 }, "utility": { "unit_speed": 5 } },
+      "effect": { "type": "unlock_specialist", "unit": "ranger" },
+      "cost": 200
+    },
+    "shaman_specialist": {
+      "label": "Shaman Unlock",
+      "requires": { "utility": { "heal_power": 7 } },
+      "effect": { "type": "unlock_specialist", "unit": "shaman" },
+      "cost": 200
+    },
+    "lookout_specialist": {
+      "label": "Lookout Unlock",
+      "requires": { "utility": { "vision_range": 7 } },
+      "effect": { "type": "unlock_specialist", "unit": "lookout" },
+      "cost": 150
+    },
+    "sapper_specialist": {
+      "label": "Sapper Unlock",
+      "requires": { "siege": { "siege_damage": 5, "demolish_power": 5 } },
+      "effect": { "type": "unlock_specialist", "unit": "sapper" },
+      "cost": 250
+    },
+    "saboteur_specialist": {
+      "label": "Saboteur Unlock",
+      "requires": { "siege": { "sapper_speed": 5 }, "economy": { "node_yield": 5 } },
+      "effect": { "type": "unlock_specialist", "unit": "saboteur" },
+      "cost": 250
+    },
+    "auto_battlements": {
+      "label": "Auto-Battlements",
+      "requires": { "defense": { "wall_hp": 7, "tower_damage": 7 } },
+      "effect": { "type": "auto_behavior", "behavior": "auto_build_defenses" },
+      "cost": 300
+    },
+    "auto_siege": {
+      "label": "Auto-Siege",
+      "requires": { "siege": { "siege_damage": 7, "siege_range": 7 } },
+      "effect": { "type": "auto_behavior", "behavior": "auto_siege" },
+      "cost": 300
+    },
+    "economy_master": {
+      "label": "Economy Master",
+      "requires": { "economy": { "node_yield": 7, "clam_bonus": 7 } },
+      "effect": { "type": "multiplier", "stat": "clam_earnings", "value": 1.5 },
+      "cost": 350
+    },
+    "combat_master": {
+      "label": "Combat Master",
+      "requires": { "combat": { "attack_power": 7, "critical_hit": 7 } },
+      "effect": { "type": "multiplier", "stat": "damage", "value": 1.25 },
+      "cost": 350
+    },
+    "frontier_expansion_1": {
+      "label": "Frontier Expansion I",
+      "description": "Unlock panel 2 — muddy forest with log groves",
+      "requires": { "gathering": { "log_gathering": 2 } },
+      "effect": { "type": "unlock_panel_stage", "stage": 2 },
+      "cost": 200
+    },
+    "frontier_expansion_2": {
+      "label": "Frontier Expansion II",
+      "description": "Unlock panel 1 or 3 — L-shape, multi-directional enemies",
+      "requires": { "defense": { "wall_hp": 3 } },
+      "effect": { "type": "unlock_panel_stage", "stage": 3 },
+      "cost": 400
+    },
+    "frontier_expansion_3": {
+      "label": "Frontier Expansion III",
+      "description": "Unlock remaining panel 1 or 3 — T-shape, 3 enemy spawns",
+      "requires": { "combat": { "attack_power": 4 }, "gathering": { "fish_gathering": 4 } },
+      "effect": { "type": "unlock_panel_stage", "stage": 4 },
+      "cost": 600
+    },
+    "frontier_expansion_4": {
+      "label": "Frontier Expansion IV",
+      "description": "Unlock panel 4 or 6 — flanking routes, fortifications needed",
+      "requires": { "defense": { "tower_damage": 5 }, "economy": { "node_yield": 5 } },
+      "effect": { "type": "unlock_panel_stage", "stage": 5 },
+      "cost": 900
+    },
+    "frontier_expansion_5": {
+      "label": "Frontier Expansion V",
+      "description": "Unlock full 3×2 grid — all threats, all strategies",
+      "requires": { "siege": { "siege_damage": 5 }, "utility": { "vision_range": 5 } },
+      "effect": { "type": "unlock_panel_stage", "stage": 6 },
+      "cost": 1200
+    }
+  }
+}

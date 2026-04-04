@@ -83,17 +83,14 @@ describe('Commander Active Abilities', () => {
     expect(cooldowns.get('ironpaw')).toBe(9000);
   });
 
-  it('sage eureka ability unlocks a tech', () => {
+  it('sage eureka ability fires without error (v3.0: tech tree stubbed)', () => {
+    // v3.0: TECH_UPGRADES is empty, so eureka has nothing to unlock,
+    // but it should still not throw
     const world = createGameWorld();
     world.commanderId = 'sage';
     world.viewWidth = 1280;
     world.viewHeight = 720;
 
-    // Count unlocked techs before
-    const techBefore = Object.values(world.tech).filter(Boolean).length;
-    useCommanderAbility(world);
-    const techAfter = Object.values(world.tech).filter(Boolean).length;
-
-    expect(techAfter).toBe(techBefore + 1);
+    expect(() => useCommanderAbility(world)).not.toThrow();
   });
 });

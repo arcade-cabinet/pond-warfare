@@ -1,16 +1,23 @@
 /**
- * Health System – orchestrator
+ * Health System -- orchestrator
  *
  * Delegates to focused sub-modules:
  * - take-damage.ts: damage application, retaliation, ally assist
  * - death.ts: entity death processing, stats, corpses
  * - healing.ts: passive healing, healer aura, herbalist hut
+ *
+ * Win/lose conditions:
+ * - Normal mode: LOSE if Lodge destroyed, WIN if all enemy nests destroyed
+ * - Wave-survival mode (stage 1, no nests): LOSE if Lodge destroyed,
+ *   WIN if player survived waveSurvivalTarget waves
+ * - Co-op: both-survive rules via coop-rules module
  */
 
-import { hasComponent, query, removeEntity } from 'bitecs';
+import { hasComponent, type QueryResult, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { Combat, EntityTypeTag, FactionTag, Health, IsResource, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { checkCoopWinLose } from '@/net/coop-rules';
 import { EntityKind, Faction } from '@/types';
 import { processDeath } from './health/death';
 import {
@@ -73,44 +80,86 @@ export function healthSystem(world: GameWorld): void {
 
   // Win/lose condition check (every 60 frames)
   if (world.frameCount % 60 === 0 && world.state === 'playing') {
-    let playerLodgeAlive = false;
-    let nestsRemaining = false;
-    let lodgeX = 0;
-    let lodgeY = 0;
-    let lastNestX = 0;
-    let lastNestY = 0;
-    for (let i = 0; i < allLiving.length; i++) {
-      const eid = allLiving[i];
-      if (Health.current[eid] <= 0) continue;
-      const kind = EntityTypeTag.kind[eid] as EntityKind;
-      const faction = FactionTag.faction[eid] as Faction;
-      if (kind === EntityKind.Lodge && faction === Faction.Player) {
-        playerLodgeAlive = true;
-        lodgeX = Position.x[eid];
-        lodgeY = Position.y[eid];
-      }
-      if (kind === EntityKind.PredatorNest) {
-        nestsRemaining = true;
-        lastNestX = Position.x[eid];
-        lastNestY = Position.y[eid];
-      }
+    checkWinLoseConditions(world, allLiving);
+  }
+}
+
+/** Check win/lose conditions based on game mode. */
+function checkWinLoseConditions(world: GameWorld, allLiving: QueryResult): void {
+  let playerLodgeAlive = false;
+  let nestsRemaining = false;
+  let lodgeX = 0;
+  let lodgeY = 0;
+  let lastNestX = 0;
+  let lastNestY = 0;
+
+  for (let i = 0; i < allLiving.length; i++) {
+    const eid = allLiving[i];
+    if (Health.current[eid] <= 0) continue;
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    const faction = FactionTag.faction[eid] as Faction;
+    if (kind === EntityKind.Lodge && faction === Faction.Player) {
+      playerLodgeAlive = true;
+      lodgeX = Position.x[eid];
+      lodgeY = Position.y[eid];
     }
-    if (!playerLodgeAlive) {
-      world.state = 'lose';
-      world.gameEndFrame = world.frameCount;
-      world.gameEndFocusX = lodgeX;
-      world.gameEndFocusY = lodgeY;
-      world.gameEndPrevSpeed = world.gameSpeed;
-      world.gameEndSpectacleActive = true;
-      audio.lose();
-    } else if (!nestsRemaining) {
-      world.state = 'win';
-      world.gameEndFrame = world.frameCount;
-      world.gameEndFocusX = lastNestX;
-      world.gameEndFocusY = lastNestY;
-      world.gameEndPrevSpeed = world.gameSpeed;
-      world.gameEndSpectacleActive = true;
-      audio.win();
+    if (kind === EntityKind.PredatorNest) {
+      nestsRemaining = true;
+      lastNestX = Position.x[eid];
+      lastNestY = Position.y[eid];
     }
+  }
+
+  // Co-op: use both-survive rules when coopMode is active
+  if (world.coopMode) {
+    const result = checkCoopWinLose(playerLodgeAlive, nestsRemaining, world.partnerLodgeDestroyed);
+    if (result === 'lose') {
+      triggerGameEnd(world, 'lose', lodgeX, lodgeY);
+    } else if (result === 'win') {
+      triggerGameEnd(world, 'win', lastNestX, lastNestY);
+    }
+    return;
+  }
+
+  // Solo mode: Lodge destruction is always a loss
+  if (!playerLodgeAlive) {
+    triggerGameEnd(world, 'lose', lodgeX, lodgeY);
+    return;
+  }
+
+  // Wave-survival mode (stage 1, no enemy nests): win after surviving N waves
+  if (world.waveSurvivalMode) {
+    // Don't check for victory during peace timer
+    if (world.frameCount < world.peaceTimer) return;
+    // Victory once enough waves have been weathered
+    if (world.waveNumber >= world.waveSurvivalTarget) {
+      triggerGameEnd(world, 'win', lodgeX, lodgeY);
+    }
+    return;
+  }
+
+  // Normal mode: win when all enemy nests are destroyed
+  if (!nestsRemaining) {
+    triggerGameEnd(world, 'win', lastNestX, lastNestY);
+  }
+}
+
+/** Trigger game end with spectacle animation. */
+function triggerGameEnd(
+  world: GameWorld,
+  result: 'win' | 'lose',
+  focusX: number,
+  focusY: number,
+): void {
+  world.state = result;
+  world.gameEndFrame = world.frameCount;
+  world.gameEndFocusX = focusX;
+  world.gameEndFocusY = focusY;
+  world.gameEndPrevSpeed = world.gameSpeed;
+  world.gameEndSpectacleActive = true;
+  if (result === 'win') {
+    audio.win();
+  } else {
+    audio.lose();
   }
 }

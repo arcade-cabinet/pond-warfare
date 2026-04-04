@@ -11,12 +11,15 @@ import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
 import { Faction } from '@/types';
 
-/** Interval in frames between lightning strikes (~10 seconds at 60fps). */
-const LIGHTNING_INTERVAL = 600;
+/** Interval in frames between lightning strikes (~15 seconds at 60fps). */
+const LIGHTNING_INTERVAL = 900;
+
+/** Number of enemy targets per lightning strike. */
+const LIGHTNING_TARGETS = 3;
 
 /**
- * Stormcaller passive: strike a random visible enemy unit for moderate damage.
- * Fires every ~10 seconds when the commander has passiveLightningDamage > 0.
+ * Stormcaller passive: strike up to 3 random visible enemy units for moderate damage.
+ * Fires every ~15 seconds when the commander has passiveLightningDamage > 0.
  */
 function stormcallerLightning(world: GameWorld): void {
   const dmg = world.commanderModifiers.passiveLightningDamage;
@@ -35,36 +38,46 @@ function stormcallerLightning(world: GameWorld): void {
 
   if (enemies.length === 0) return;
 
-  // Pick a random enemy
-  const target = enemies[Math.floor(world.gameRng.next() * enemies.length)];
-  const tx = Position.x[target];
-  const ty = Position.y[target];
-
-  // Deal lightning damage (8-12 range centered on configured damage)
-  const actualDmg = dmg + Math.round((world.gameRng.next() - 0.5) * 4);
-  takeDamage(world, target, Math.max(1, actualDmg), -1);
-
-  // Visual: white flash particles
-  for (let j = 0; j < 6; j++) {
-    world.particles.push({
-      x: tx,
-      y: ty - 10,
-      vx: (world.gameRng.next() - 0.5) * 4,
-      vy: -world.gameRng.next() * 3,
-      life: 15,
-      color: '#ffffff',
-      size: 4,
-    });
+  // Pick up to LIGHTNING_TARGETS random enemies (no duplicates)
+  const targetCount = Math.min(LIGHTNING_TARGETS, enemies.length);
+  const targets: number[] = [];
+  const available = [...enemies];
+  for (let t = 0; t < targetCount; t++) {
+    const idx = Math.floor(world.gameRng.next() * available.length);
+    targets.push(available[idx]);
+    available.splice(idx, 1);
   }
 
-  // Floating text
-  world.floatingTexts.push({
-    x: tx,
-    y: ty - 25,
-    text: 'ZAP!',
-    color: '#facc15',
-    life: 45,
-  });
+  for (const target of targets) {
+    const tx = Position.x[target];
+    const ty = Position.y[target];
+
+    // Deal lightning damage (8-12 range centered on configured damage)
+    const actualDmg = dmg + Math.round((world.gameRng.next() - 0.5) * 4);
+    takeDamage(world, target, Math.max(1, actualDmg), -1);
+
+    // Visual: white flash particles
+    for (let j = 0; j < 6; j++) {
+      world.particles.push({
+        x: tx,
+        y: ty - 10,
+        vx: (world.gameRng.next() - 0.5) * 4,
+        vy: -world.gameRng.next() * 3,
+        life: 15,
+        color: '#ffffff',
+        size: 4,
+      });
+    }
+
+    // Floating text
+    world.floatingTexts.push({
+      x: tx,
+      y: ty - 25,
+      text: 'ZAP!',
+      color: '#facc15',
+      life: 45,
+    });
+  }
 }
 
 /** Run all periodic commander passive effects. */

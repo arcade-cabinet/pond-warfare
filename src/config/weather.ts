@@ -19,6 +19,10 @@ export interface WeatherConfig {
   projectileOffset: number;
   /** Wind direction in radians (only relevant for wind weather). */
   windDirection: number;
+  /** Gathering speed multiplier (rain slows gathering). */
+  gatherSpeedMult: number;
+  /** Enemy attack threshold multiplier (fog makes enemies wait longer). */
+  attackThresholdMult: number;
 }
 
 /** Gameplay modifiers for each weather type. */
@@ -29,6 +33,8 @@ export const WEATHER_CONFIGS: Record<WeatherType, Omit<WeatherConfig, 'windDirec
     shallowsBlocked: false,
     visionMult: 1.0,
     projectileOffset: 0,
+    gatherSpeedMult: 1.0,
+    attackThresholdMult: 1.0,
   },
   rain: {
     type: 'rain',
@@ -36,6 +42,8 @@ export const WEATHER_CONFIGS: Record<WeatherType, Omit<WeatherConfig, 'windDirec
     shallowsBlocked: true, // Shallows become impassable (flooding)
     visionMult: 1.0,
     projectileOffset: 0,
+    gatherSpeedMult: 0.9, // -10% gathering speed
+    attackThresholdMult: 1.0,
   },
   fog: {
     type: 'fog',
@@ -43,13 +51,17 @@ export const WEATHER_CONFIGS: Record<WeatherType, Omit<WeatherConfig, 'windDirec
     shallowsBlocked: false,
     visionMult: 0.6, // -40% vision range
     projectileOffset: 0,
+    gatherSpeedMult: 1.0,
+    attackThresholdMult: 1.5, // +50% enemy attack threshold (less aggressive)
   },
   wind: {
     type: 'wind',
     grassSpeedMult: 1.0,
     shallowsBlocked: false,
     visionMult: 1.0,
-    projectileOffset: 15, // +-15px drift on projectiles
+    projectileOffset: 20, // +-20px drift on projectiles
+    gatherSpeedMult: 1.0,
+    attackThresholdMult: 1.0,
   },
 };
 

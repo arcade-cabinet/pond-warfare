@@ -18,7 +18,6 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
-import { autoBehaviorSystem } from '@/ecs/systems/auto-behavior';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { clearTaskOverride, dispatchTaskOverride } from '@/game/task-dispatch';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -190,10 +189,8 @@ describe('TaskOverride integration with auto-behavior', () => {
     dispatchTaskOverride(world, eid, 'attacking');
     expect(UnitStateMachine.state[eid]).toBe(UnitState.AttackMove);
 
-    // Run auto-behavior — it should skip this unit due to TaskOverride
-    autoBehaviorSystem(world);
-
-    // State should remain AttackMove, not be changed to GatherMove
+    // Auto-behavior system removed in v3.0 — TaskOverride still prevents
+    // any future auto-behavior from overriding manual commands
     expect(TaskOverride.active[eid]).toBe(1);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.AttackMove);
   });

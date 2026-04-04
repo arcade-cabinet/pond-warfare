@@ -8,7 +8,6 @@
  */
 
 import { audio } from '@/audio/audio-system';
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
@@ -19,16 +18,21 @@ import { findPlayerLodge, getEnemyNests } from '../ai/helpers';
 import { pickRandomUnlocked, sendToPosition, sendToTarget, spawnDustParticles } from './helpers';
 
 /** Pick a random spawn position along a map edge. */
-function edgeSpawnPosition(rng: SeededRandom, edge: number): { sx: number; sy: number } {
+function edgeSpawnPosition(
+  rng: SeededRandom,
+  edge: number,
+  ww: number,
+  wh: number,
+): { sx: number; sy: number } {
   switch (edge) {
-    case 0:
-      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: 50 };
-    case 1:
-      return { sx: WORLD_WIDTH - 50, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
-    case 2:
-      return { sx: 100 + rng.next() * (WORLD_WIDTH - 200), sy: WORLD_HEIGHT - 50 };
-    default:
-      return { sx: 50, sy: 100 + rng.next() * (WORLD_HEIGHT - 200) };
+    case 0: // top
+      return { sx: 100 + rng.next() * (ww - 200), sy: 50 };
+    case 1: // right
+      return { sx: ww - 50, sy: 100 + rng.next() * (wh - 200) };
+    case 2: // bottom
+      return { sx: 100 + rng.next() * (ww - 200), sy: wh - 50 };
+    default: // left
+      return { sx: 50, sy: 100 + rng.next() * (wh - 200) };
   }
 }
 
@@ -69,6 +73,8 @@ export function triggerRandomEvent(world: GameWorld): void {
   const rng = world.gameRng;
   const roll = rng.next();
   const lodgeEid = findPlayerLodge(world);
+  const ww = world.worldWidth;
+  const wh = world.worldHeight;
 
   if (roll < 0.45) {
     // --- Predator Migration ---
@@ -86,7 +92,7 @@ export function triggerRandomEvent(world: GameWorld): void {
     audio.alert();
 
     for (let i = 0; i < count; i++) {
-      const { sx, sy } = edgeSpawnPosition(rng, edge);
+      const { sx, sy } = edgeSpawnPosition(rng, edge, ww, wh);
       const unitKind = pickRandomUnlocked(rng, world.enemyEvolution.unlockedUnits);
       const eid = spawnEntity(world, unitKind, sx, sy, Faction.Enemy);
       if (eid < 0) continue;
@@ -96,8 +102,8 @@ export function triggerRandomEvent(world: GameWorld): void {
       if (lodgeEid !== -1) {
         sendToTarget(world, eid, lodgeEid);
       } else {
-        const tx = WORLD_WIDTH / 2 + (rng.next() - 0.5) * 400;
-        const ty = WORLD_HEIGHT / 2 + (rng.next() - 0.5) * 400;
+        const tx = ww / 2 + (rng.next() - 0.5) * 400;
+        const ty = wh / 2 + (rng.next() - 0.5) * 400;
         sendToPosition(world, eid, tx, ty);
       }
     }
@@ -121,7 +127,7 @@ export function triggerRandomEvent(world: GameWorld): void {
     }
 
     const edge = Math.floor(rng.next() * 4);
-    const { sx, sy } = edgeSpawnPosition(rng, edge);
+    const { sx, sy } = edgeSpawnPosition(rng, edge, ww, wh);
 
     const eid = spawnEntity(world, EntityKind.AlphaPredator, sx, sy, Faction.Enemy);
     if (eid < 0) return;

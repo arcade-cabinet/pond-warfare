@@ -47,6 +47,11 @@ export interface CustomGameSettings {
   permadeath: boolean;
   fogOfWar: 'full' | 'explored' | 'revealed';
   heroMode: boolean;
+
+  // Enemy stat scaling (HP/damage multiplier for enemy units, default 1.0)
+  enemyStatMult: number;
+  // Nest build rate multiplier (lower = slower enemy nest production, default 1.0)
+  nestBuildRateMult: number;
 }
 
 export const DEFAULT_CUSTOM_SETTINGS: CustomGameSettings = {
@@ -63,4 +68,6 @@ export const DEFAULT_CUSTOM_SETTINGS: CustomGameSettings = {
   permadeath: false,
   fogOfWar: 'full',
   heroMode: false,
+  enemyStatMult: 1.0,
+  nestBuildRateMult: 1.0,
 };

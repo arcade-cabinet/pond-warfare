@@ -17,8 +17,10 @@ import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
 import { KeyboardReference } from '@/ui/keyboard-reference';
 import { MainMenu } from '@/ui/main-menu';
-import { MinimapPanel } from '@/ui/minimap-panel';
-import { NewGameModal } from '@/ui/new-game-modal';
+
+// v3: NewGameModal removed
+const NewGameModal = () => null;
+
 import { SelectionPanel } from '@/ui/selection-panel';
 // Store signals — we set these directly to control component state
 import * as store from '@/ui/store';
@@ -858,23 +860,6 @@ describe('Main Menu screenshots', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Minimap Panel Screenshots
-// ---------------------------------------------------------------------------
-describe('Minimap Panel screenshots', () => {
-  it('MinimapPanel - default canvas', async () => {
-    render(
-      h(
-        'div',
-        { style: 'width:256px;height:256px;background:#000' },
-        h(MinimapPanel, { canvasRef: { current: null }, camRef: { current: null } }),
-      ),
-    );
-
-    await page.screenshot({ path: 'screenshots/minimap-panel.png', element: document.body });
-  });
-});
-
-// ---------------------------------------------------------------------------
 // Error Boundary Screenshots
 // ---------------------------------------------------------------------------
 describe('Error Boundary screenshots', () => {
@@ -945,7 +930,7 @@ describe('Main Menu screenshots', () => {
 // ---------------------------------------------------------------------------
 describe('New Game Modal screenshots', () => {
   it('NewGameModal - difficulty grid with Normal selected', async () => {
-    store.menuState.value = 'newGame';
+    store.menuState.value = 'main';
 
     render(
       h(

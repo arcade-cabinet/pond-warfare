@@ -1,14 +1,14 @@
 /**
- * Game Init – canvas setup, rendering pipeline, input wiring, loop state construction.
+ * Game Init -- canvas setup, rendering pipeline, input wiring, loop state construction.
  *
  * Extracted from Game.init() to keep the orchestrator under 300 LOC.
  */
 
-import { initAdvisorState } from '@/advisors/advisor-state';
 import { resetBarkState } from '@/config/barks';
-import { WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { Position, Selectable } from '@/ecs/components';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
 import { initFogOfWar } from '@/ecs/systems/fog-of-war';
+import { resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import { resetRandomEvents } from '@/ecs/systems/random-events';
 import type { GameWorld } from '@/ecs/world';
 import { setZoom } from '@/game/camera';
@@ -25,9 +25,11 @@ import { generateAllSprites } from '@/rendering/sprites';
 import { attachRippleSprites, initWaterRipples } from '@/rendering/water-ripple';
 import type { ReplayRecorder } from '@/replay';
 import { loadAchievements, resetAchievementMatchState } from '@/systems/achievements';
-import { loadUnlocks, resetMatchUpdateGuard } from '@/systems/unlock-tracker';
 import type { SpriteId } from '@/types';
 import * as store from '@/ui/store';
+
+// Re-export computeInitialZoom so game.ts can keep its existing import path
+export { computeInitialZoom } from '@/rendering/camera';
 
 let lifecycleListenersInstalled = false;
 
@@ -55,13 +57,24 @@ export async function initCanvases(
   if (!fogCtx || !lightCtx) throw new Error('Failed to acquire 2D context');
 
   const { canvases } = generateAllSprites();
-  const bgCanvas = buildBackground(world.terrainGrid);
 
   const w = container.clientWidth;
   const h = container.clientHeight;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   world.viewWidth = w;
   world.viewHeight = h;
+
+  // Pass viewport dimensions so the background canvas extends beyond the
+  // playable area (deep water fill) if the map is smaller than the viewport.
+  const bgCanvas = buildBackground(
+    world.terrainGrid,
+    world.worldWidth,
+    world.worldHeight,
+    w,
+    h,
+    world.panelGrid,
+  );
+
   fogCanvas.width = w * dpr;
   fogCanvas.height = h * dpr;
   fogCanvas.style.width = `${w}px`;
@@ -87,7 +100,7 @@ export async function initCanvases(
   const { fogPattern } = buildFogTexture(fogCtx);
   const fogState: FogRendererState = { fogCtx, fogPattern };
 
-  const explored = buildExploredCanvas();
+  const explored = buildExploredCanvas(world.worldWidth, world.worldHeight);
   initFogOfWar(explored.exploredCtx);
 
   return {
@@ -102,14 +115,13 @@ export async function initCanvases(
 }
 
 /** Reset world and session state for a new game. */
-export function resetSession(world: GameWorld): void {
+export function resetSession(_world: GameWorld): void {
   resetBarkState();
   resetAchievementMatchState();
-  resetMatchUpdateGuard();
+  resetAutoSymbol();
   resetRandomEvents();
+  resetMatchEventRunner();
   loadAchievements().catch(() => {});
-  loadUnlocks().catch(() => {});
-  initAdvisorState(world).catch(() => {});
 }
 
 /** Wire up keyboard and pointer handlers. */
@@ -122,7 +134,6 @@ export function setupInput(
   world: GameWorld,
   container: HTMLElement,
   gameCanvas: HTMLCanvasElement,
-  minimapCanvas: HTMLCanvasElement,
   recorder: ReplayRecorder,
   syncUIStore: () => void,
   cycleSpeed: () => void,
@@ -148,7 +159,6 @@ export function setupInput(
   });
   const pointer = new PointerHandler(world, container, gameCanvas, ptrCallbacks);
   pointerRef = pointer;
-  pointer.attachMinimap(minimapCanvas);
   pointer.setShiftGetter(() => !!keyboard.keys.shift);
   pointer.onZoomChange = (zoom) => {
     setZoom(world, zoom);
@@ -174,8 +184,20 @@ export function applyMapSeed(world: GameWorld): void {
   }
 }
 
-/** Center camera on the first selected entity (Lodge) or map center. */
+/** Center camera on Lodge position from PanelGrid, or fallback to selected entity / map center. */
 export function centerCameraOnLodge(world: GameWorld): void {
+  if (world.panelGrid) {
+    const lodgePos = world.panelGrid.getLodgePosition();
+    world.camX = lodgePos.x - world.viewWidth / 2;
+    world.camY = lodgePos.y - world.viewHeight / 2;
+    // Still select the Lodge entity if present
+    const lodge = world.selection[0];
+    if (lodge != null) {
+      Selectable.selected[lodge] = 1;
+      world.isTracking = true;
+    }
+    return;
+  }
   const lodge = world.selection[0];
   if (lodge != null) {
     world.camX = Position.x[lodge] - world.viewWidth / 2;
@@ -183,8 +205,8 @@ export function centerCameraOnLodge(world: GameWorld): void {
     Selectable.selected[lodge] = 1;
     world.isTracking = true;
   } else {
-    world.camX = WORLD_WIDTH / 2 - world.viewWidth / 2;
-    world.camY = WORLD_HEIGHT / 2 - world.viewHeight / 2;
+    world.camX = world.worldWidth / 2 - world.viewWidth / 2;
+    world.camY = world.worldHeight / 2 - world.viewHeight / 2;
   }
 }
 
@@ -192,8 +214,8 @@ export function centerCameraOnLodge(world: GameWorld): void {
 export function spawnFireflies(world: GameWorld): void {
   const rng = world.gameRng;
   world.fireflies = Array.from({ length: 150 }, () => ({
-    x: rng.next() * WORLD_WIDTH,
-    y: rng.next() * WORLD_HEIGHT,
+    x: rng.next() * world.worldWidth,
+    y: rng.next() * world.worldHeight,
     vx: rng.next() - 0.5,
     vy: (rng.next() - 0.5) * 0.5 - 0.2,
     phase: rng.next() * Math.PI * 2,
@@ -223,7 +245,8 @@ export function setupDockResize(resizeFn: () => void): () => void {
 }
 
 export { createGameWorld } from '@/ecs/world';
-export { applyCampaignMission, applyDifficultyModifiers } from '@/game/difficulty';
+export { applyDifficultyModifiers } from '@/game/difficulty';
 export { setupAudio } from '@/game/game-lifecycle';
 export { startGameLoop, wireWebGLHandlers } from '@/game/game-loop-setup';
 export { spawnInitialEntities } from '@/game/init-entities/index';
+export { spawnVerticalWorld } from '@/game/spawn-world';

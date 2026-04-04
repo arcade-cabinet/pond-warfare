@@ -4,6 +4,9 @@
  * Ported from Entity.update() gathering state (lines 1661-1683) and idle auto-gather
  * (lines 1627-1639) of the original HTML game.
  *
+ * v3: uses nodeKindToResourceType() for consistent resource mapping.
+ * Clambed -> Fish, PearlBed -> Rocks, Cattail -> Logs.
+ *
  * Responsibilities:
  * - Gathering state: timer countdown, resource depletion, carry resource, find lodge and return
  * - SFX calls (chop for cattails, mine for clambeds) every 30 frames while gathering
@@ -28,7 +31,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } from '@/types';
 import { checkResourceDepletion } from './gathering/depletion-warning';
 import { applyPassiveIncome } from './gathering/passive-income';
 
@@ -196,13 +199,8 @@ export function gatheringSystem(world: GameWorld): void {
     if (UnitStateMachine.gatherTimer[eid] <= 0) {
       const resKind = EntityTypeTag.kind[tEnt] as EntityKind;
 
-      // Set carried resource type
-      Carrying.resourceType[eid] =
-        resKind === EntityKind.Cattail
-          ? ResourceType.Twigs
-          : resKind === EntityKind.PearlBed
-            ? ResourceType.Pearls
-            : ResourceType.Clams;
+      // v3: use nodeKindToResourceType for consistent mapping
+      Carrying.resourceType[eid] = nodeKindToResourceType(resKind);
 
       // Deplete resource (Tidal Harvest: +25% gathering)
       let gatherAmt = GATHER_AMOUNT;
