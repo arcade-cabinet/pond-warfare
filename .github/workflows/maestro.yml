@@ -30,8 +30,5 @@ jobs:
       - name: Build web assets
         run: pnpm build
 
-      - name: Run E2E tests
-        run: pnpm test -- tests/e2e/ tests/integration/ --reporter=verbose
-
-      - name: Run browser tests
-        run: pnpm test -- tests/browser/ --reporter=verbose
+      - name: Run all tests (includes E2E + integration + browser)
+        run: pnpm test
