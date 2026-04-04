@@ -25,6 +25,8 @@ import { GameOverBanner } from './game-over';
 import { AchievementToast } from './hud/AchievementToast';
 import { ConnectionStatus } from './hud/ConnectionStatus';
 import { CtrlGroups } from './hud/ctrl-groups';
+import { EventAlert } from './hud/EventAlert';
+import { OnboardingHint } from './hud/OnboardingHint';
 import { Overlays } from './hud/overlays';
 import { TopBar } from './hud/top-bar';
 import { WeatherEffects } from './hud/WeatherEffects';
@@ -237,6 +239,8 @@ export function App({ onMount }: AppProps) {
 
       <ConnectionStatus />
       <AchievementToast />
+      <EventAlert />
+      <OnboardingHint />
 
       {/* Modal overlays -- siblings of #game-container for proper touch-action */}
       <SettingsOverlay />
