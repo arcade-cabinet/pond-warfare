@@ -13,6 +13,7 @@
  */
 
 import { COMMANDER_ABILITIES, getCommanderDef, getCommanderTypeIndex } from '@/config/commanders';
+import { applyStartingResources } from './starting-resources';
 import { getFactionConfig } from '@/config/factions';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Combat, Commander, Health, Resource, Velocity } from '@/ecs/components';
@@ -72,11 +73,12 @@ export function spawnVerticalEntities(
     Faction.Player,
   );
 
-  // 4 starting generalist units near Lodge
-  spawnStartingUnits(world, factionCfg, layout, rng);
-
-  // Player Commander next to Lodge
+  // Player Commander next to Lodge (the only starting unit — players train the rest)
   spawnPlayerCommander(world, layout);
+
+  // Starting resources computed from panels.json formula × unit costs from units.json
+  // Formula defines how many of each unit type the player should be able to afford
+  applyStartingResources(world, layout);
 
   // Resource nodes per panel biome
   spawnResourceNodes(world, layout, rng);

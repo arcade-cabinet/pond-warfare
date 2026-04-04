@@ -64,6 +64,14 @@
     { "stage": 5, "panels_add_one_of": [4, 6], "description": "T + side — flanking, need fortifications" },
     { "stage": 6, "panels_add_remaining_of": [4, 6], "description": "Full grid — all strategies" }
   ],
+  "starting_resources_formula": {
+    "1": { "fish": { "gatherer": 2, "fighter": 1, "buffer": 10 }, "rocks": 0, "logs": 0 },
+    "2": { "fish": { "gatherer": 3, "fighter": 2, "medic": 1, "buffer": 10 }, "rocks": 0, "logs": 0 },
+    "3": { "fish": { "gatherer": 3, "fighter": 2, "medic": 1, "scout": 1, "buffer": 10 }, "rocks": 0, "logs": 0 },
+    "4": { "fish": { "gatherer": 4, "fighter": 3, "medic": 1, "scout": 1, "buffer": 15 }, "rocks": 0, "logs": 0 },
+    "5": { "fish": { "gatherer": 4, "fighter": 3, "medic": 1, "scout": 1, "buffer": 15 }, "rocks": 30, "logs": 0 },
+    "6": { "fish": { "gatherer": 5, "fighter": 4, "medic": 2, "scout": 1, "buffer": 20 }, "rocks": 50, "logs": 30 }
+  },
   "thorn_wall_terrain": "thorn_wall",
   "rare_node_prestige_unlock": "rare_resource_access"
 }

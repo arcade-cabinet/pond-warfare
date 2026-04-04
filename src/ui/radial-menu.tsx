@@ -12,8 +12,10 @@
 
 import { useEffect, useRef } from 'preact/hooks';
 import { COLORS } from '@/ui/design-tokens';
-import type { RadialOption } from './radial-menu-options';
+import type { RadialGameState, RadialOption } from './radial-menu-options';
 import { getRadialOptions } from './radial-menu-options';
+import { clams, pearls, twigs } from './store';
+import { progressionLevel } from './store-v3';
 import {
   radialMenuMode,
   radialMenuOpen,
@@ -102,7 +104,14 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
 
   const mode = radialMenuMode.value;
   const role = radialMenuUnitRole.value;
-  const options = getRadialOptions(mode, role);
+  const gameState: RadialGameState = {
+    fish: clams.value,
+    rocks: pearls.value,
+    logs: twigs.value,
+    unlockStage: Math.min(6, Math.floor(progressionLevel.value / 10) + 1),
+    lodgeDamaged: false, // TODO: read from Lodge HP signal
+  };
+  const options = getRadialOptions(mode, role, gameState);
 
   // Clamp menu center to viewport bounds
   const margin = RADIUS + ITEM_SIZE;

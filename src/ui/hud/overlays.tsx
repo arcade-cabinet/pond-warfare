@@ -118,14 +118,25 @@ export function Overlays() {
       {/* Pause overlay */}
       {paused.value && (
         <div
-          class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+          class="absolute inset-0 z-50 flex flex-col items-center justify-center cursor-pointer"
           style={{ background: 'var(--pw-overlay-60)' }}
+          onClick={() => {
+            paused.value = false;
+          }}
+          role="button"
+          aria-label="Tap to resume"
         >
           <span
             class="font-title text-6xl font-bold tracking-widest"
             style={{ color: 'var(--pw-text-primary)' }}
           >
             PAUSED
+          </span>
+          <span
+            class="font-game text-sm mt-4"
+            style={{ color: 'var(--pw-text-muted)' }}
+          >
+            Tap to resume
           </span>
         </div>
       )}

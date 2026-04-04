@@ -218,11 +218,58 @@ const ROLE_OPTIONS: Record<string, RadialOption[]> = {
   scout: SCOUT_OPTIONS,
 };
 
+/** Game state used to filter Lodge radial options. */
+export interface RadialGameState {
+  /** Current fish (clams) available */
+  fish: number;
+  /** Current rocks (pearls) available */
+  rocks: number;
+  /** Current logs (twigs) available */
+  logs: number;
+  /** Which panel unlock stage the player is at (1-6) */
+  unlockStage: number;
+  /** Whether Lodge is damaged (for repair option) */
+  lodgeDamaged: boolean;
+}
+
 /**
  * Get the appropriate radial options for the current context.
+ * Lodge options are filtered by resource availability and progression.
  */
-export function getRadialOptions(mode: RadialMenuMode, unitRole: string | null): RadialOption[] {
-  if (mode === 'lodge') return LODGE_OPTIONS;
+export function getRadialOptions(
+  mode: RadialMenuMode,
+  unitRole: string | null,
+  gameState?: RadialGameState,
+): RadialOption[] {
+  if (mode === 'lodge') {
+    if (!gameState) return LODGE_OPTIONS;
+    return LODGE_OPTIONS.filter((opt) => {
+      switch (opt.id) {
+        case 'train_gatherer':
+          return gameState.fish >= 10;
+        case 'train_fighter':
+          return gameState.fish >= 20;
+        case 'train_medic':
+          return gameState.fish >= 15;
+        case 'train_scout':
+          return gameState.fish >= 8;
+        case 'train_sapper':
+          // Sapper needs rocks (panel 4/6 unlock = stage 5+)
+          return gameState.unlockStage >= 5 && gameState.fish >= 25 && gameState.rocks >= 15;
+        case 'train_saboteur':
+          // Saboteur needs rocks
+          return gameState.unlockStage >= 5 && gameState.fish >= 20 && gameState.rocks >= 10;
+        case 'fortify':
+          // Fortify needs rocks (panel 4/6)
+          return gameState.unlockStage >= 5 && gameState.rocks >= 15;
+        case 'repair':
+          // Repair needs logs (panel 2+) and Lodge must be damaged
+          return gameState.unlockStage >= 2 && gameState.logs >= 10 && gameState.lodgeDamaged;
+        default:
+          return true;
+      }
+    });
+  }
   if (unitRole && ROLE_OPTIONS[unitRole]) return ROLE_OPTIONS[unitRole];
   return GENERIC_OPTIONS;
 }
