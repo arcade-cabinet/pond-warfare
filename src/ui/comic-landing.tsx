@@ -25,7 +25,6 @@ import {
   menuState,
   permadeathEnabled,
   selectedDifficulty,
-  settingsOpen,
 } from './store';
 import { pearlScreenOpen, prestigeRank, totalPearls } from './store-v3';
 
@@ -61,9 +60,6 @@ export function ComicLanding() {
     pearlScreenOpen.value = true;
   }, []);
 
-  const handleSettings = useCallback(() => {
-    settingsOpen.value = true;
-  }, []);
 
   // US9: UPGRADES only visible when rank > 0 OR pearls > 0
   const showUpgrades = prestigeRank.value > 0 || totalPearls.value > 0;
@@ -125,15 +121,6 @@ export function ComicLanding() {
           />
         )}
 
-        {/* Panel 3: Snake — Settings (stagger right) */}
-        <ComicPanel
-          character="snake"
-          side="left"
-          quote="Adjust your gear"
-          buttonLabel="SETTINGS"
-          onButtonClick={handleSettings}
-          stagger="right"
-        />
       </div>
 
       {/* Version */}

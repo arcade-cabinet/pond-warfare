@@ -118,7 +118,6 @@ export function App({ onMount }: AppProps) {
         <SvgFilters />
         <ErrorOverlay />
         <MainMenu />
-        <SettingsOverlay />
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {
