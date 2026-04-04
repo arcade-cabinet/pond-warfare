@@ -13,6 +13,7 @@ import { screenClass } from '@/platform';
 import { COLORS } from '@/ui/design-tokens';
 import { MenuBackground } from './menu-background';
 import { MenuButton } from './menu-button';
+import { MenuSpriteShowcase } from './menu-sprites';
 import {
   continueRequested,
   customGameSettings,
@@ -159,6 +160,9 @@ export function MainMenu() {
           </div>
         )}
       </div>
+
+      {/* Animated sprite showcase */}
+      <MenuSpriteShowcase compact={compact} />
 
       {/* Stats summary */}
       {(rank > 0 || totalClams.value > 0) && (

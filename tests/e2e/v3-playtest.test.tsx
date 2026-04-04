@@ -20,10 +20,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   generateUpgradeCatalog,
+  getBiomeTerrainRule,
   getEventEntriesForLevel,
   getFortDef,
   getFortificationsConfig,
-  getTerrainForLevel,
   getUnitDef,
 } from '@/config/config-loader';
 import type { GeneralistDef } from '@/config/v3-types';
@@ -72,8 +72,9 @@ describe('E2E Playtest Suite — US20', () => {
 
   describe('E2E: Gatherer → resource node → collects → returns', () => {
     it('resource nodes exist on map (from terrain config)', () => {
-      const terrain = getTerrainForLevel(0);
-      expect(terrain.resource_nodes).toBeGreaterThan(0);
+      const rule = getBiomeTerrainRule('grassland_clearing');
+      expect(rule.primary).toBeTruthy();
+      expect(rule.water_coverage).toBeGreaterThan(0);
     });
   });
 

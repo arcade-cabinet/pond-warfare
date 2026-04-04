@@ -1,0 +1,69 @@
+{
+  "panels": {
+    "1": {
+      "row": 0,
+      "col": 0,
+      "biome": "rocky_marsh",
+      "resources": ["fish_node", "tree_cluster"],
+      "terrain_features": ["high_ground_ridges", "chokepoints"],
+      "enemy_spawn": true,
+      "unlock_stage": 3
+    },
+    "2": {
+      "row": 0,
+      "col": 1,
+      "biome": "muddy_forest",
+      "resources": ["tree_cluster"],
+      "terrain_features": ["mud_paths", "tree_cover"],
+      "enemy_spawn": true,
+      "unlock_stage": 2
+    },
+    "3": {
+      "row": 0,
+      "col": 2,
+      "biome": "flooded_swamp",
+      "resources": ["fish_node", "tree_cluster"],
+      "terrain_features": ["water_channels", "shallows", "limited_crossings"],
+      "enemy_spawn": true,
+      "unlock_stage": 3
+    },
+    "4": {
+      "row": 1,
+      "col": 0,
+      "biome": "stone_quarry",
+      "resources": ["rock_deposit"],
+      "terrain_features": ["heavy_rock", "narrow_corridors", "choke_funnels"],
+      "enemy_spawn": true,
+      "unlock_stage": 5
+    },
+    "5": {
+      "row": 1,
+      "col": 1,
+      "biome": "grassland_clearing",
+      "resources": ["fish_node"],
+      "terrain_features": ["clear_paths", "open_area"],
+      "enemy_spawn": false,
+      "lodge": true,
+      "unlock_stage": 1
+    },
+    "6": {
+      "row": 1,
+      "col": 2,
+      "biome": "dense_thicket",
+      "resources": ["rock_deposit", "tree_cluster"],
+      "terrain_features": ["dense_terrain", "vision_blocking", "ambush_territory"],
+      "enemy_spawn": true,
+      "unlock_stage": 5
+    }
+  },
+  "progression_stages": [
+    { "stage": 1, "panels": [5], "description": "Starting arena — fish only" },
+    { "stage": 2, "panels": [5, 2], "description": "Vertical strip — introduces logs and repair" },
+    { "stage": 3, "panels_add_one_of": [1, 3], "description": "L-shape — multi-directional enemies" },
+    { "stage": 4, "panels_add_remaining_of": [1, 3], "description": "T-shape — 3 enemy spawns" },
+    { "stage": 5, "panels_add_one_of": [4, 6], "description": "T + side — flanking, need fortifications" },
+    { "stage": 6, "panels_add_remaining_of": [4, 6], "description": "Full grid — all strategies" }
+  ],
+  "thorn_wall_terrain": "thorn_wall",
+  "rare_node_prestige_unlock": "rare_resource_access"
+}

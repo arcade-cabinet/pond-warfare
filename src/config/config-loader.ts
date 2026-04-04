@@ -18,6 +18,7 @@ import upgradesJson from '../../configs/upgrades.json';
 
 import type {
   AnyUnitDef,
+  BiomeTerrainRule,
   EnemiesConfig,
   EnemyDef,
   EventsConfig,
@@ -32,7 +33,6 @@ import type {
   RewardsConfig,
   SpecialistDef,
   TerrainConfig,
-  TerrainTier,
   TierEntry,
   UnitsConfig,
   UpgradesConfig,
@@ -66,6 +66,7 @@ import {
 
 export type {
   AnyUnitDef,
+  BiomeTerrainRule,
   EnemiesConfig,
   EnemyDef,
   EventsConfig,
@@ -80,7 +81,6 @@ export type {
   RewardsConfig,
   SpecialistDef,
   TerrainConfig,
-  TerrainTier,
   TierEntry,
   UnitsConfig,
   UpgradesConfig,
@@ -126,12 +126,14 @@ export function getEnemyDef(id: string): EnemyDef {
   return def;
 }
 
-export function getTerrainForLevel(level: number): TerrainTier {
-  const sorted = [...terrain.progression_scaling].sort((a, b) => b.min_level - a.min_level);
-  for (const tier of sorted) {
-    if (level >= tier.min_level && level <= tier.max_level) return tier;
-  }
-  return sorted[0];
+export function getBiomeTerrainRules(): Record<string, BiomeTerrainRule> {
+  return terrain.biome_terrain_rules;
+}
+
+export function getBiomeTerrainRule(biome: string): BiomeTerrainRule {
+  const rule = terrain.biome_terrain_rules[biome];
+  if (!rule) throw new Error(`Unknown biome: "${biome}". Check configs/terrain.json`);
+  return rule;
 }
 
 export function getFortDef(id: string): FortDef {

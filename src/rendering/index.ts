@@ -23,9 +23,6 @@ export { drawFog, type FogRendererState } from './fog-renderer';
 // Dynamic lighting
 export { drawLighting } from './light-renderer';
 
-// Minimap
-export { drawMinimap, updateMinimapViewport } from './minimap-renderer';
-
 // Particles & projectiles
 export {
   drawFloatingTexts,

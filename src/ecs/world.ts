@@ -264,6 +264,9 @@ export interface GameWorld {
 
   /** Fortification slots around the Lodge (walls/towers). */
   fortifications: FortificationState | null;
+
+  /** Panel grid for 6-panel map system. */
+  panelGrid: import('@/game/panel-grid').PanelGrid | null;
 }
 
 /** Extended game stats tracked per match for v2.1.0 achievements. */

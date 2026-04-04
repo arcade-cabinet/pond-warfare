@@ -177,8 +177,6 @@ async function mountGame() {
             refs.gameCanvas,
             refs.fogCanvas,
             refs.lightCanvas,
-            refs.minimapCanvas,
-            refs.minimapCam,
           );
           resolve();
         }}

@@ -34,8 +34,6 @@ export interface SetupInputs {
   gameCanvas: HTMLCanvasElement;
   fogCanvas: HTMLCanvasElement;
   lightCanvas: HTMLCanvasElement;
-  minimapCanvas: HTMLCanvasElement;
-  minimapCamElement: HTMLElement;
   recorder: ReplayRecorder;
   panHandle: PanAnimHandle;
   audioInitialized: boolean;
@@ -76,13 +74,12 @@ export interface SetupOutputs {
 
 /** Perform the full game setup pipeline after world creation. */
 export async function runGameSetup(cfg: SetupInputs): Promise<SetupOutputs> {
-  const { world, container, gameCanvas, fogCanvas, lightCanvas, minimapCanvas } = cfg;
+  const { world, container, gameCanvas, fogCanvas, lightCanvas } = cfg;
 
   // Physics world with correct vertical map dimensions
   const physicsManager = new PhysicsManager(world.worldWidth, world.worldHeight);
 
   // Canvas and rendering pipeline (uses world.terrainGrid + world dimensions)
-  const minimapCtx = minimapCanvas.getContext('2d', { alpha: false });
   const refs = await initCanvases(world, container, gameCanvas, fogCanvas, lightCanvas);
 
   // Resize applies zoom to viewWidth/viewHeight -- must happen before centerCameraOnLodge
@@ -94,12 +91,11 @@ export async function runGameSetup(cfg: SetupInputs): Promise<SetupOutputs> {
   window.addEventListener('resize', boundResize);
   const dockPanelUnsubscribe = setupDockResize(() => doResize());
 
-  // Input
+  // Input (no minimap in v3)
   const input = setupInput(
     world,
     container,
     gameCanvas,
-    minimapCanvas,
     cfg.recorder,
     cfg.syncUIStore,
     cfg.cycleSpeed,
@@ -139,7 +135,7 @@ export async function runGameSetup(cfg: SetupInputs): Promise<SetupOutputs> {
 
   cfg.recorder.start();
 
-  // Start game loop
+  // Start game loop (no minimap rendering in v3)
   const loopState = startGameLoop({
     world,
     spriteCanvases: refs.spriteCanvases,
@@ -150,8 +146,6 @@ export async function runGameSetup(cfg: SetupInputs): Promise<SetupOutputs> {
     fogCanvas,
     lightCtx: refs.lightCtx,
     lightCanvas,
-    minimapCtx: minimapCtx!,
-    minimapCamElement: cfg.minimapCamElement,
     exploredCanvas: refs.exploredCanvas,
     bgCanvas: refs.bgCanvas,
     physicsManager,

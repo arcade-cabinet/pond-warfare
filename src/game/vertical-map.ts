@@ -1,101 +1,81 @@
 /**
- * Vertical Map Generator (v3.0 — US5)
+ * Panel-Aware Map Generator (v3.0 — 6-Panel Map System)
  *
- * Creates a compact vertical map from terrain.json config.
- * Lodge at bottom, enemies from top, resources in the middle zone.
- * Map size scales with progression level.
+ * Generates terrain for each panel based on biome rules from terrain.json.
+ * Unlocked panels get biome-appropriate terrain; locked panels are filled
+ * with ThornWall (impassable barrier).
+ *
+ * Panel layout (3x2):
+ *   1 2 3   (top row — enemies, late game)
+ *   4 5 6   (bottom row — player territory)
  */
 
-import { getTerrainForLevel } from '@/config/config-loader';
-import type { TerrainTier } from '@/config/v3-types';
+import { getTerrainConfig } from '@/config/config-loader';
+import type { BiomeTerrainRule } from '@/config/v3-types';
 import type { GameWorld } from '@/ecs/world';
+import type { PanelGrid, PanelId } from '@/game/panel-grid';
 import { TerrainGrid, TerrainType } from '@/terrain/terrain-grid';
 import type { SeededRandom } from '@/utils/random';
 
-/** Tile size in world pixels. */
 const TILE_SIZE = 32;
 
-/** Layout zones as fraction of map height (bottom to top). */
-const LODGE_ZONE_FRAC = 0.15; // bottom 15% — Lodge + immediate area
-const RESOURCE_ZONE_START = 0.2; // resources start at 20%
-const RESOURCE_ZONE_END = 0.65; // resources end at 65%
-const ENEMY_ZONE_FRAC = 0.15; // top 15% — enemy spawn area
-
-/** Result of vertical map generation. */
+/** Result of panel-aware map generation. */
 export interface VerticalMapLayout {
-  /** World width in pixels. */
   worldWidth: number;
-  /** World height in pixels. */
   worldHeight: number;
-  /** Grid columns. */
   cols: number;
-  /** Grid rows. */
   rows: number;
-  /** Lodge spawn position (bottom center). */
   lodgeX: number;
   lodgeY: number;
-  /** Resource node positions (middle zone). */
-  resourcePositions: { x: number; y: number; type: string }[];
-  /** Enemy spawn positions (top zone). */
-  enemySpawnPositions: { x: number; y: number }[];
-  /** Spawn directions available at this progression level. */
-  spawnDirections: string[];
-  /** The terrain tier used for this layout. */
-  terrainTier: TerrainTier;
+  resourcePositions: { x: number; y: number; type: string; panelId: PanelId }[];
+  enemySpawnPositions: { x: number; y: number; panelId: PanelId }[];
+  panelGrid: PanelGrid;
 }
 
-/**
- * Generate a vertical map layout for the given progression level.
- * All positions are in world-space pixels.
- */
+/** Generate a panel-aware map layout. */
 export function generateVerticalMapLayout(
-  progressionLevel: number,
+  panelGrid: PanelGrid,
   rng: SeededRandom,
 ): VerticalMapLayout {
-  const tier = getTerrainForLevel(progressionLevel);
-
-  const worldWidth = tier.map_width;
-  const worldHeight = tier.map_height;
+  const { width: worldWidth, height: worldHeight } = panelGrid.getWorldDimensions();
   const cols = Math.ceil(worldWidth / TILE_SIZE);
   const rows = Math.ceil(worldHeight / TILE_SIZE);
+  const lodge = panelGrid.getLodgePosition();
 
-  // Lodge at bottom center
-  const lodgeX = worldWidth / 2;
-  const lodgeY = worldHeight * (1 - LODGE_ZONE_FRAC / 2);
+  const resourcePositions: VerticalMapLayout['resourcePositions'] = [];
+  const enemySpawnPositions: VerticalMapLayout['enemySpawnPositions'] = [];
 
-  // Resource nodes in the middle zone
-  const resStartY = worldHeight * RESOURCE_ZONE_START;
-  const resEndY = worldHeight * RESOURCE_ZONE_END;
-  const margin = 60;
-  const resourcePositions = generateResourcePositions(
-    tier.resource_nodes,
-    worldWidth,
-    resStartY,
-    resEndY,
-    margin,
-    rng,
-  );
+  const activePanels = panelGrid.getActivePanels();
+  for (const panelId of activePanels) {
+    const def = panelGrid.getPanelDef(panelId);
+    const bounds = panelGrid.getPanelBounds(panelId);
+    const margin = 60;
 
-  // Enemy spawn points at the top
-  const enemySpawnY = worldHeight * (ENEMY_ZONE_FRAC / 2);
-  const spawnCount = tier.enemy_spawn_directions.includes('top') ? 3 : 1;
-  const enemySpawnPositions: { x: number; y: number }[] = [];
+    // Resource nodes scattered within the panel
+    for (const resType of def.resources) {
+      const count = resType === 'fish_node' ? rng.int(2, 4) : rng.int(1, 3);
+      for (let i = 0; i < count; i++) {
+        resourcePositions.push({
+          x: bounds.x + margin + rng.next() * (bounds.width - margin * 2),
+          y: bounds.y + margin + rng.next() * (bounds.height - margin * 2),
+          type: resType,
+          panelId,
+        });
+      }
+    }
 
-  // Top spawns
-  for (let i = 0; i < spawnCount; i++) {
-    const fraction = (i + 1) / (spawnCount + 1);
-    enemySpawnPositions.push({
-      x: worldWidth * fraction,
-      y: enemySpawnY,
-    });
-  }
-
-  // Side spawns for higher progression
-  if (tier.enemy_spawn_directions.includes('left')) {
-    enemySpawnPositions.push({ x: margin, y: worldHeight * 0.4 });
-  }
-  if (tier.enemy_spawn_directions.includes('right')) {
-    enemySpawnPositions.push({ x: worldWidth - margin, y: worldHeight * 0.4 });
+    // Enemy spawn markers at top edge of panels with enemy_spawn=true
+    if (def.enemy_spawn) {
+      const spawnCount = rng.int(2, 4);
+      for (let i = 0; i < spawnCount; i++) {
+        const fraction = (i + 1) / (spawnCount + 1);
+        enemySpawnPositions.push({
+          x: bounds.x + bounds.width * fraction,
+          y: bounds.y + 40,
+          panelId,
+        });
+      }
+    }
   }
 
   return {
@@ -103,122 +83,139 @@ export function generateVerticalMapLayout(
     worldHeight,
     cols,
     rows,
-    lodgeX,
-    lodgeY,
+    lodgeX: lodge.x,
+    lodgeY: lodge.y,
     resourcePositions,
     enemySpawnPositions,
-    spawnDirections: tier.enemy_spawn_directions,
-    terrainTier: tier,
+    panelGrid,
   };
 }
 
-/** Generate scattered resource positions in the middle zone. */
-function generateResourcePositions(
-  count: number,
-  worldWidth: number,
-  startY: number,
-  endY: number,
-  margin: number,
-  rng: SeededRandom,
-): { x: number; y: number; type: string }[] {
-  const types = ['fish_node', 'rock_deposit', 'tree_cluster'];
-  const positions: { x: number; y: number; type: string }[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const x = margin + rng.next() * (worldWidth - margin * 2);
-    const y = startY + rng.next() * (endY - startY);
-    const type = types[i % types.length];
-    positions.push({ x, y, type });
-  }
-
-  return positions;
-}
-
-/**
- * Build a TerrainGrid for the vertical map layout.
- * Paints water patches, rock formations, and mud paths.
- * Order matters: water first, then rocks (so rocks aren't overwritten).
- */
+/** Build terrain grid with biome painting per panel and ThornWall for locked. */
 export function buildVerticalTerrain(layout: VerticalMapLayout, rng: SeededRandom): TerrainGrid {
   const grid = new TerrainGrid(layout.worldWidth, layout.worldHeight, TILE_SIZE);
+  const terrainCfg = getTerrainConfig();
+  const allPanels: PanelId[] = [1, 2, 3, 4, 5, 6];
 
-  // Pass 1: Water bodies around fish nodes
-  for (const res of layout.resourcePositions) {
-    if (res.type === 'fish_node') {
-      const col = grid.worldToCol(res.x);
-      const row = grid.worldToRow(res.y);
-      grid.fillCircle(col, row, 4, TerrainType.Shallows);
-      grid.fillCircle(col, row, 2, TerrainType.Water);
+  for (const panelId of allPanels) {
+    const bounds = layout.panelGrid.getPanelBounds(panelId);
+    const startCol = grid.worldToCol(bounds.x);
+    const startRow = grid.worldToRow(bounds.y);
+    const endCol = grid.worldToCol(bounds.x + bounds.width - 1);
+    const endRow = grid.worldToRow(bounds.y + bounds.height - 1);
+
+    if (!layout.panelGrid.isPanelUnlocked(panelId)) {
+      grid.fillRect(
+        startCol,
+        startRow,
+        endCol - startCol + 1,
+        endRow - startRow + 1,
+        TerrainType.ThornWall,
+      );
+      continue;
+    }
+
+    const def = layout.panelGrid.getPanelDef(panelId);
+    const rule = terrainCfg.biome_terrain_rules[def.biome];
+    if (rule) {
+      paintBiome(grid, startCol, startRow, endCol, endRow, rule, rng);
     }
   }
 
-  // Pass 2: Rock deposits (painted AFTER water so they win)
-  for (const res of layout.resourcePositions) {
-    if (res.type === 'rock_deposit') {
-      const col = grid.worldToCol(res.x);
-      const row = grid.worldToRow(res.y);
-      grid.fillCircle(col, row, 2, TerrainType.Rocks);
-    }
-  }
-
-  // Mud paths from Lodge zone to resource zone
-  const lodgeCol = grid.worldToCol(layout.lodgeX);
-  const lodgeRow = grid.worldToRow(layout.lodgeY);
-  const midRow = grid.worldToRow(layout.worldHeight * 0.4);
-  paintPath(grid, lodgeCol, lodgeRow, lodgeCol, midRow, TerrainType.Mud, rng);
-
-  // Random grass clearings (variety)
-  const clearingCount = Math.floor(layout.cols * layout.rows * 0.002);
-  for (let i = 0; i < clearingCount; i++) {
-    const col = Math.floor(rng.next() * layout.cols);
-    const row = Math.floor(rng.next() * layout.rows);
-    if (grid.get(col, row) === TerrainType.Grass) {
-      grid.fillCircle(col, row, 1 + Math.floor(rng.next() * 2), TerrainType.HighGround);
-    }
-  }
+  paintResourceTerrain(grid, layout);
 
   return grid;
 }
 
-/** Paint a rough path between two grid positions. */
-function paintPath(
+/** Paint biome terrain within a panel's grid region. */
+function paintBiome(
   grid: TerrainGrid,
-  c0: number,
-  r0: number,
-  c1: number,
-  r1: number,
-  type: TerrainType,
+  startCol: number,
+  startRow: number,
+  endCol: number,
+  endRow: number,
+  rule: BiomeTerrainRule,
   rng: SeededRandom,
 ): void {
-  let c = c0;
-  let r = r0;
-  const steps = Math.abs(r1 - r0) + Math.abs(c1 - c0);
+  const w = endCol - startCol + 1;
+  const h = endRow - startRow + 1;
+  const totalTiles = w * h;
 
-  for (let i = 0; i < steps; i++) {
-    grid.set(c, r, type);
-    // Adjacent tile for width
-    if (c + 1 < grid.cols) grid.set(c + 1, r, type);
+  if (rule.water_coverage) {
+    const count = Math.floor(totalTiles * rule.water_coverage * 0.1);
+    for (let i = 0; i < count; i++) {
+      const col = startCol + rng.int(1, w - 1);
+      const row = startRow + rng.int(1, h - 1);
+      const radius = rng.int(2, 5);
+      grid.fillCircle(col, row, radius, TerrainType.Shallows);
+      if (rng.next() < 0.4) {
+        grid.fillCircle(col, row, Math.max(1, radius - 2), TerrainType.Water);
+      }
+    }
+  }
 
-    // Step toward target with some randomness
-    if (rng.next() < 0.3 && c !== c1) {
-      c += c1 > c ? 1 : -1;
-    } else if (r !== r1) {
-      r += r1 > r ? 1 : -1;
+  if (rule.mud_coverage) {
+    const count = Math.floor(totalTiles * rule.mud_coverage * 0.1);
+    for (let i = 0; i < count; i++) {
+      const col = startCol + rng.int(1, w - 1);
+      const row = startRow + rng.int(1, h - 1);
+      grid.fillCircle(col, row, rng.int(2, 4), TerrainType.Mud);
+    }
+  }
+
+  if (rule.rock_coverage) {
+    const count = Math.floor(totalTiles * rule.rock_coverage * 0.08);
+    for (let i = 0; i < count; i++) {
+      const col = startCol + rng.int(1, w - 1);
+      const row = startRow + rng.int(1, h - 1);
+      grid.fillCircle(col, row, rng.int(2, 4), TerrainType.Rocks);
+    }
+  }
+
+  if (rule.high_ground_coverage) {
+    const count = Math.floor(totalTiles * rule.high_ground_coverage * 0.08);
+    for (let i = 0; i < count; i++) {
+      const col = startCol + rng.int(1, w - 1);
+      const row = startRow + rng.int(1, h - 1);
+      grid.fillCircle(col, row, rng.int(2, 3), TerrainType.HighGround);
+    }
+  }
+
+  if (rule.tree_density) {
+    const count = Math.floor(totalTiles * rule.tree_density * 0.06);
+    for (let i = 0; i < count; i++) {
+      const col = startCol + rng.int(2, w - 2);
+      const row = startRow + rng.int(2, h - 2);
+      grid.fillCircle(col, row, rng.int(1, 3), TerrainType.HighGround);
     }
   }
 }
 
-/**
- * Apply the vertical map layout to a GameWorld, replacing the
- * current square map with the vertical layout dimensions.
- */
+/** Paint terrain features around resource nodes. */
+function paintResourceTerrain(grid: TerrainGrid, layout: VerticalMapLayout): void {
+  for (const res of layout.resourcePositions) {
+    const col = grid.worldToCol(res.x);
+    const row = grid.worldToRow(res.y);
+
+    if (res.type === 'fish_node') {
+      grid.fillCircle(col, row, 5, TerrainType.Shallows);
+      grid.fillCircle(col, row, 3, TerrainType.Water);
+    } else if (res.type === 'rock_deposit') {
+      grid.fillCircle(col, row, 4, TerrainType.HighGround);
+      grid.fillCircle(col, row, 3, TerrainType.Rocks);
+    } else if (res.type === 'tree_cluster') {
+      grid.fillCircle(col, row, 3, TerrainType.HighGround);
+    }
+  }
+}
+
+/** Apply the vertical map layout to a GameWorld. */
 export function applyVerticalMapToWorld(
   world: GameWorld,
   layout: VerticalMapLayout,
   terrain: TerrainGrid,
 ): void {
   world.terrainGrid = terrain;
-  // Camera starts centered on Lodge
   world.camX = layout.lodgeX - world.viewWidth / 2;
   world.camY = layout.lodgeY - world.viewHeight / 2;
 }

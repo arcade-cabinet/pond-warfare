@@ -82,17 +82,21 @@ export function validateEnemies(data: EnemiesConfig): void {
 }
 
 export function validateTerrain(data: TerrainConfig): void {
-  if (!data.progression_scaling.length) {
-    throw new Error('Config validation: terrain.progression_scaling must not be empty');
+  if (!data.panel_based) {
+    throw new Error('Config validation: terrain.panel_based must be true');
   }
-  for (const [i, tier] of data.progression_scaling.entries()) {
-    const ctx = `terrain.progression_scaling[${i}]`;
-    assertPositive(tier.map_width, `${ctx}.map_width`);
-    assertPositive(tier.map_height, `${ctx}.map_height`);
-    assertPositive(tier.resource_nodes, `${ctx}.resource_nodes`);
-    if (!tier.enemy_spawn_directions.length) {
-      throw new Error(`Config validation: ${ctx}.enemy_spawn_directions must not be empty`);
-    }
+  if (!Object.keys(data.biome_terrain_rules).length) {
+    throw new Error('Config validation: terrain.biome_terrain_rules must not be empty');
+  }
+  for (const [biome, rule] of Object.entries(data.biome_terrain_rules)) {
+    const ctx = `terrain.biome_terrain_rules.${biome}`;
+    assertField(rule, 'primary', ctx);
+  }
+  if (!data.resource_types.length) {
+    throw new Error('Config validation: terrain.resource_types must not be empty');
+  }
+  if (!data.terrain_types.length) {
+    throw new Error('Config validation: terrain.terrain_types must not be empty');
   }
 }
 

@@ -14,6 +14,7 @@ import { setZoom } from '@/game/camera';
 import { installLifecycleListeners } from '@/game/game-lifecycle';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { buildKeyboardCallbacks, buildPointerCallbacks } from '@/game/input-setup';
+import { PanelGrid } from '@/game/panel-grid';
 import {
   applyVerticalMapToWorld,
   buildVerticalTerrain,
@@ -74,7 +75,14 @@ export async function initCanvases(
 
   // Pass viewport dimensions so the background canvas extends beyond the
   // playable area (deep water fill) if the map is smaller than the viewport.
-  const bgCanvas = buildBackground(world.terrainGrid, world.worldWidth, world.worldHeight, w, h);
+  const bgCanvas = buildBackground(
+    world.terrainGrid,
+    world.worldWidth,
+    world.worldHeight,
+    w,
+    h,
+    world.panelGrid,
+  );
 
   fogCanvas.width = w * dpr;
   fogCanvas.height = h * dpr;
@@ -134,7 +142,6 @@ export function setupInput(
   world: GameWorld,
   container: HTMLElement,
   gameCanvas: HTMLCanvasElement,
-  minimapCanvas: HTMLCanvasElement,
   recorder: ReplayRecorder,
   syncUIStore: () => void,
   cycleSpeed: () => void,
@@ -160,7 +167,6 @@ export function setupInput(
   });
   const pointer = new PointerHandler(world, container, gameCanvas, ptrCallbacks);
   pointerRef = pointer;
-  pointer.attachMinimap(minimapCanvas);
   pointer.setShiftGetter(() => !!keyboard.keys.shift);
   pointer.onZoomChange = (zoom) => {
     setZoom(world, zoom);
@@ -186,8 +192,20 @@ export function applyMapSeed(world: GameWorld): void {
   }
 }
 
-/** Center camera on the first selected entity (Lodge) or map center. */
+/** Center camera on Lodge position from PanelGrid, or fallback to selected entity / map center. */
 export function centerCameraOnLodge(world: GameWorld): void {
+  if (world.panelGrid) {
+    const lodgePos = world.panelGrid.getLodgePosition();
+    world.camX = lodgePos.x - world.viewWidth / 2;
+    world.camY = lodgePos.y - world.viewHeight / 2;
+    // Still select the Lodge entity if present
+    const lodge = world.selection[0];
+    if (lodge != null) {
+      Selectable.selected[lodge] = 1;
+      world.isTracking = true;
+    }
+    return;
+  }
   const lodge = world.selection[0];
   if (lodge != null) {
     world.camX = Position.x[lodge] - world.viewWidth / 2;
@@ -235,30 +253,45 @@ export function setupDockResize(resizeFn: () => void): () => void {
 }
 
 /**
- * Generate and apply the v3 vertical map, spawning all entities.
+ * Generate and apply the v3 panel-based map, spawning all entities.
  *
- * Replaces the old scenario-based spawnInitialEntities() flow.
- * - Generates vertical layout from terrain.json progression scaling
- * - Builds terrain grid with water, rocks, mud paths
- * - Spawns Lodge at bottom, resources in middle, enemies at top
- * - Auto-deploys prestige specialist units near Lodge (v3 US11)
- * - Updates world dimensions and terrain grid
+ * Uses the 6-panel map system: creates PanelGrid from viewport,
+ * generates biome terrain per panel, fills locked panels with ThornWall,
+ * spawns Lodge/units/resources/enemies per panel config.
  */
-export function spawnVerticalWorld(world: GameWorld, progressionLevel = 0): void {
+export function spawnVerticalWorld(world: GameWorld, unlockStage = 1): void {
   const rng = new SeededRandom(world.mapSeed);
 
-  // Generate vertical layout from terrain.json config
-  const layout = generateVerticalMapLayout(progressionLevel, rng);
+  // Viewport dimensions (use defaults if not yet set)
+  const vpW = world.viewWidth || 960;
+  const vpH = world.viewHeight || 540;
 
-  // Build terrain grid for this layout
+  // Create PanelGrid from viewport dimensions
+  const panelGrid = new PanelGrid(vpW, vpH, unlockStage);
+
+  // Use PRNG for 50/50 stage choices (stages 3 and 5)
+  if (unlockStage >= 3) {
+    const coinFlipStage3 = rng.next() < 0.5;
+    const coinFlipStage5 = rng.next() < 0.5;
+    panelGrid.computeUnlockedPanelsWithRng(unlockStage, coinFlipStage3, coinFlipStage5);
+  }
+
+  // Store panelGrid on world
+  world.panelGrid = panelGrid;
+
+  // Generate panel-aware layout
+  const layout = generateVerticalMapLayout(panelGrid, rng);
+
+  // Build terrain grid (biomes for unlocked, ThornWall for locked)
   const terrain = buildVerticalTerrain(layout, rng);
 
-  // Apply layout to world (sets terrainGrid, world dimensions)
+  // Apply layout to world
   applyVerticalMapToWorld(world, layout, terrain);
-  world.worldWidth = layout.worldWidth;
-  world.worldHeight = layout.worldHeight;
+  const dims = panelGrid.getWorldDimensions();
+  world.worldWidth = dims.width;
+  world.worldHeight = dims.height;
 
-  // Spawn entities (Lodge, units, resources, enemies)
+  // Spawn entities
   const lodgeEid = spawnVerticalEntities(world, layout, rng);
 
   // v3 US11: Specialist auto-deploy from prestige state
@@ -272,7 +305,7 @@ export function spawnVerticalWorld(world: GameWorld, progressionLevel = 0): void
   world.floatingTexts.push({
     x: textX,
     y: textY,
-    text: 'MAP: Vertical',
+    text: 'MAP: Panel Grid',
     color: '#38bdf8',
     life: 180,
   });

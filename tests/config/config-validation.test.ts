@@ -311,30 +311,29 @@ describe('Config Validation — US21', () => {
 
   // ── terrain.json ─────────────────────────────────────────────────
 
-  describe('terrain.json validation', () => {
-    it('should have progression scaling tiers', () => {
+  describe('terrain.json validation (panel-based)', () => {
+    it('should be panel-based with biome terrain rules', () => {
       const config = getTerrainConfig();
-      expect(config.progression_scaling.length).toBeGreaterThan(0);
+      expect(config.panel_based).toBe(true);
+      expect(Object.keys(config.biome_terrain_rules).length).toBeGreaterThan(0);
     });
 
-    it('each tier should have valid map dimensions', () => {
+    it('each biome rule should have a primary terrain type', () => {
       const config = getTerrainConfig();
-      for (const tier of config.progression_scaling) {
-        expect(tier.map_width, `level ${tier.min_level} width`).toBeGreaterThan(0);
-        expect(tier.map_height, `level ${tier.min_level} height`).toBeGreaterThan(0);
-        expect(tier.resource_nodes, `level ${tier.min_level} nodes`).toBeGreaterThan(0);
+      for (const [biome, rule] of Object.entries(config.biome_terrain_rules)) {
+        expect(rule.primary, `${biome} missing primary`).toBeTruthy();
       }
     });
 
-    it('higher levels should have larger maps', () => {
+    it('should include all expected biomes', () => {
       const config = getTerrainConfig();
-      const sorted = [...config.progression_scaling].sort((a, b) => a.min_level - b.min_level);
-      if (sorted.length >= 2) {
-        const first = sorted[0];
-        const last = sorted[sorted.length - 1];
-        expect(last.map_width).toBeGreaterThanOrEqual(first.map_width);
-        expect(last.map_height).toBeGreaterThanOrEqual(first.map_height);
-      }
+      const biomes = Object.keys(config.biome_terrain_rules);
+      expect(biomes).toContain('grassland_clearing');
+      expect(biomes).toContain('muddy_forest');
+      expect(biomes).toContain('rocky_marsh');
+      expect(biomes).toContain('flooded_swamp');
+      expect(biomes).toContain('stone_quarry');
+      expect(biomes).toContain('dense_thicket');
     });
   });
 

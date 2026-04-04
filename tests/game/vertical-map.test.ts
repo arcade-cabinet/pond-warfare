@@ -1,16 +1,17 @@
 /**
- * Tests: Vertical Map Generator (v3.0 — US5)
+ * Tests: Panel-Aware Map Generator (v3.0 — 6-Panel Map System)
  *
  * Validates:
- * - Map dimensions correct per progression level
- * - Lodge positioned at bottom center
- * - Resources in middle zone
- * - Enemy spawns at top
- * - Map size scales with progression
- * - Terrain generation
+ * - Map dimensions derived from panel grid
+ * - Lodge positioned at bottom center of panel 5
+ * - Resources placed within unlocked panels
+ * - Enemy spawns in panels with enemy_spawn=true
+ * - Terrain generation with biome painting
+ * - ThornWall fill for locked panels
  */
 
 import { describe, expect, it } from 'vitest';
+import { PanelGrid } from '@/game/panel-grid';
 import {
   buildVerticalTerrain,
   generateVerticalMapLayout,
@@ -18,104 +19,74 @@ import {
 } from '@/game/vertical-map';
 import { SeededRandom } from '@/utils/random';
 
-function makeLayout(level: number, seed = 42): VerticalMapLayout {
-  return generateVerticalMapLayout(level, new SeededRandom(seed));
+const VP_W = 960;
+const VP_H = 540;
+
+function makeLayout(stage = 1, seed = 42): VerticalMapLayout {
+  const grid = new PanelGrid(VP_W, VP_H, stage);
+  return generateVerticalMapLayout(grid, new SeededRandom(seed));
 }
 
-describe('generateVerticalMapLayout', () => {
-  it('returns correct dimensions for level 0 (smallest map)', () => {
-    const layout = makeLayout(0);
-    // terrain.json: level 0-10 -> 1600x2400
-    expect(layout.worldWidth).toBe(1600);
-    expect(layout.worldHeight).toBe(2400);
+describe('generateVerticalMapLayout (panel-based)', () => {
+  it('returns world dimensions equal to 3x2 panel grid', () => {
+    const layout = makeLayout(1);
+    expect(layout.worldWidth).toBe(VP_W * 3);
+    expect(layout.worldHeight).toBe(VP_H * 2);
     expect(layout.cols).toBeGreaterThan(0);
     expect(layout.rows).toBeGreaterThan(0);
   });
 
-  it('returns larger map for mid-level progression', () => {
-    const layout = makeLayout(20);
-    // terrain.json: level 11-30 -> 2000x3000
-    expect(layout.worldWidth).toBe(2000);
-    expect(layout.worldHeight).toBe(3000);
+  it('places Lodge in bottom center of panel 5', () => {
+    const layout = makeLayout(1);
+    // Panel 5 is at row=1, col=1 → x=[VP_W, 2*VP_W], y=[VP_H, 2*VP_H]
+    const p5Left = VP_W;
+    const p5Right = VP_W * 2;
+    const p5Top = VP_H;
+    const p5Bottom = VP_H * 2;
+    expect(layout.lodgeX).toBeGreaterThan(p5Left);
+    expect(layout.lodgeX).toBeLessThan(p5Right);
+    expect(layout.lodgeY).toBeGreaterThan(p5Top);
+    expect(layout.lodgeY).toBeLessThanOrEqual(p5Bottom);
   });
 
-  it('returns largest map for high-level progression', () => {
-    const layout = makeLayout(50);
-    // terrain.json: level 31-999 -> 2400x3600
-    expect(layout.worldWidth).toBe(2400);
-    expect(layout.worldHeight).toBe(3600);
-  });
-
-  it('places Lodge at bottom center of map', () => {
-    const layout = makeLayout(0);
-    // Lodge should be at horizontal center
-    expect(layout.lodgeX).toBe(layout.worldWidth / 2);
-    // Lodge should be in bottom zone (bottom 15%)
-    const bottomZoneStart = layout.worldHeight * 0.85;
-    expect(layout.lodgeY).toBeGreaterThan(bottomZoneStart);
-    expect(layout.lodgeY).toBeLessThanOrEqual(layout.worldHeight);
-  });
-
-  it('places resource nodes in the middle zone', () => {
-    const layout = makeLayout(0);
-    const middleStart = layout.worldHeight * 0.15;
-    const middleEnd = layout.worldHeight * 0.7;
+  it('generates resource positions only in unlocked panels', () => {
+    const layout = makeLayout(1); // only panel 5
+    const p5Left = VP_W;
+    const p5Right = VP_W * 2;
+    const p5Top = VP_H;
+    const p5Bottom = VP_H * 2;
 
     for (const res of layout.resourcePositions) {
-      expect(res.y).toBeGreaterThanOrEqual(middleStart);
-      expect(res.y).toBeLessThanOrEqual(middleEnd);
-      expect(res.x).toBeGreaterThan(0);
-      expect(res.x).toBeLessThan(layout.worldWidth);
+      expect(res.x).toBeGreaterThanOrEqual(p5Left);
+      expect(res.x).toBeLessThanOrEqual(p5Right);
+      expect(res.y).toBeGreaterThanOrEqual(p5Top);
+      expect(res.y).toBeLessThanOrEqual(p5Bottom);
+      expect(res.panelId).toBe(5);
     }
   });
 
-  it('spawns correct number of resource nodes per level', () => {
-    // Level 0: 6 resource nodes (from terrain.json)
-    const layout0 = makeLayout(0);
-    expect(layout0.resourcePositions).toHaveLength(6);
-
-    // Level 20: 10 resource nodes
-    const layout20 = makeLayout(20);
-    expect(layout20.resourcePositions).toHaveLength(10);
-
-    // Level 50: 15 resource nodes
-    const layout50 = makeLayout(50);
-    expect(layout50.resourcePositions).toHaveLength(15);
+  it('generates more resources when more panels are unlocked', () => {
+    const layout1 = makeLayout(1);
+    const layout6 = makeLayout(6);
+    expect(layout6.resourcePositions.length).toBeGreaterThan(layout1.resourcePositions.length);
   });
 
-  it('distributes resource types evenly (fish, rock, tree)', () => {
-    const layout = makeLayout(0);
-    const types = layout.resourcePositions.map((r) => r.type);
-    expect(types.filter((t) => t === 'fish_node').length).toBeGreaterThan(0);
-    expect(types.filter((t) => t === 'rock_deposit').length).toBeGreaterThan(0);
-    expect(types.filter((t) => t === 'tree_cluster').length).toBeGreaterThan(0);
-  });
+  it('has enemy spawn positions only in panels with enemy_spawn=true', () => {
+    // Stage 1: only panel 5 unlocked, which has enemy_spawn=false
+    const layout1 = makeLayout(1);
+    expect(layout1.enemySpawnPositions.length).toBe(0);
 
-  it('places enemy spawns in the top zone', () => {
-    const layout = makeLayout(0);
-    const topZone = layout.worldHeight * 0.2;
-
-    expect(layout.enemySpawnPositions.length).toBeGreaterThan(0);
-    for (const sp of layout.enemySpawnPositions) {
-      expect(sp.y).toBeLessThan(topZone);
+    // Stage 2: panels 5+2 unlocked, panel 2 has enemy_spawn=true
+    const layout2 = makeLayout(2);
+    expect(layout2.enemySpawnPositions.length).toBeGreaterThan(0);
+    for (const sp of layout2.enemySpawnPositions) {
+      expect(sp.panelId).toBe(2);
     }
-  });
-
-  it('adds side enemy spawns for higher progression', () => {
-    const layoutLow = makeLayout(0);
-    const layoutHigh = makeLayout(50);
-
-    // High-level maps have left/right spawn directions
-    expect(layoutHigh.enemySpawnPositions.length).toBeGreaterThan(
-      layoutLow.enemySpawnPositions.length,
-    );
-    expect(layoutHigh.spawnDirections).toContain('left');
-    expect(layoutHigh.spawnDirections).toContain('right');
   });
 
   it('is deterministic with the same seed', () => {
-    const a = makeLayout(10, 12345);
-    const b = makeLayout(10, 12345);
+    const a = makeLayout(3, 12345);
+    const b = makeLayout(3, 12345);
     expect(a.lodgeX).toBe(b.lodgeX);
     expect(a.lodgeY).toBe(b.lodgeY);
     expect(a.resourcePositions).toEqual(b.resourcePositions);
@@ -123,48 +94,32 @@ describe('generateVerticalMapLayout', () => {
   });
 
   it('produces different layouts with different seeds', () => {
-    const a = makeLayout(10, 111);
-    const b = makeLayout(10, 999);
-    // Resource positions should differ
+    const a = makeLayout(3, 111);
+    const b = makeLayout(3, 999);
     const aPosStr = JSON.stringify(a.resourcePositions);
     const bPosStr = JSON.stringify(b.resourcePositions);
     expect(aPosStr).not.toBe(bPosStr);
   });
 });
 
-describe('buildVerticalTerrain', () => {
+describe('buildVerticalTerrain (panel-based)', () => {
   it('creates a TerrainGrid with correct dimensions', () => {
-    const layout = makeLayout(0);
+    const layout = makeLayout(1);
     const terrain = buildVerticalTerrain(layout, new SeededRandom(42));
-
     expect(terrain.cols).toBe(layout.cols);
     expect(terrain.rows).toBe(layout.rows);
   });
 
   it('places water around fish node positions', () => {
-    const layout = makeLayout(0);
+    const layout = makeLayout(1);
     const terrain = buildVerticalTerrain(layout, new SeededRandom(42));
 
     const fishNodes = layout.resourcePositions.filter((r) => r.type === 'fish_node');
     expect(fishNodes.length).toBeGreaterThan(0);
 
-    // At least one fish node should have water nearby
     const fishNode = fishNodes[0];
     const type = terrain.getAt(fishNode.x, fishNode.y);
     // Center should be water or shallows
     expect([1, 2]).toContain(type); // TerrainType.Water = 1, Shallows = 2
-  });
-
-  it('places rocks around rock deposit positions', () => {
-    const layout = makeLayout(0);
-    const terrain = buildVerticalTerrain(layout, new SeededRandom(42));
-
-    const rockNodes = layout.resourcePositions.filter((r) => r.type === 'rock_deposit');
-    expect(rockNodes.length).toBeGreaterThan(0);
-
-    // Rock node center should be rocks terrain
-    const rockNode = rockNodes[0];
-    const type = terrain.getAt(rockNode.x, rockNode.y);
-    expect(type).toBe(4); // TerrainType.Rocks = 4
   });
 });

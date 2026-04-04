@@ -17,7 +17,6 @@ import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
 import { KeyboardReference } from '@/ui/keyboard-reference';
 import { MainMenu } from '@/ui/main-menu';
-import { MinimapPanel } from '@/ui/minimap-panel';
 
 // v3: NewGameModal removed
 const NewGameModal = () => null;
@@ -857,23 +856,6 @@ describe('Main Menu screenshots', () => {
     await new Promise((r) => setTimeout(r, 200));
 
     await page.screenshot({ path: 'screenshots/intro-overlay.png', element: document.body });
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Minimap Panel Screenshots
-// ---------------------------------------------------------------------------
-describe('Minimap Panel screenshots', () => {
-  it('MinimapPanel - default canvas', async () => {
-    render(
-      h(
-        'div',
-        { style: 'width:256px;height:256px;background:#000' },
-        h(MinimapPanel, { canvasRef: { current: null }, camRef: { current: null } }),
-      ),
-    );
-
-    await page.screenshot({ path: 'screenshots/minimap-panel.png', element: document.body });
   });
 });
 

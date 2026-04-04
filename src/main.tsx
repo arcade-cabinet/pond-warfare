@@ -29,8 +29,6 @@ let storedRefs: {
   gameCanvas: HTMLCanvasElement;
   fogCanvas: HTMLCanvasElement;
   lightCanvas: HTMLCanvasElement;
-  minimapCanvas: HTMLCanvasElement;
-  minimapCam: HTMLDivElement;
 } | null = null;
 
 let gameStarted = false;
@@ -40,14 +38,7 @@ function startGame(isContinue: boolean) {
   gameStarted = true;
 
   game
-    .init(
-      storedRefs.container,
-      storedRefs.gameCanvas,
-      storedRefs.fogCanvas,
-      storedRefs.lightCanvas,
-      storedRefs.minimapCanvas,
-      storedRefs.minimapCam,
-    )
+    .init(storedRefs.container, storedRefs.gameCanvas, storedRefs.fogCanvas, storedRefs.lightCanvas)
     .then(async () => {
       if (isContinue) {
         const save = await getLatestSave();

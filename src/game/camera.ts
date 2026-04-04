@@ -7,7 +7,7 @@
 
 import { animate } from 'animejs';
 import type { GameWorld } from '@/ecs/world';
-import { clampCamera } from '@/rendering/camera';
+import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera';
 import { resizePixiApp } from '@/rendering/pixi-app';
 
 /** Mutable handle for the running pan animation so the caller can cancel it. */
@@ -43,9 +43,11 @@ export function smoothPanTo(world: GameWorld, x: number, y: number, handle: PanA
   });
 }
 
-/** Apply a new zoom level, clamped between 0.5 and 2.0. */
+/** Apply a new zoom level, clamped to panel-aware bounds. */
 export function setZoom(world: GameWorld, level: number): void {
-  world.zoomLevel = Math.max(0.5, Math.min(2.0, level));
+  const minZoom = world.panelGrid ? computeMinZoom(world.panelGrid) : 0.5;
+  const maxZoom = PANEL_MAX_ZOOM;
+  world.zoomLevel = Math.max(minZoom, Math.min(maxZoom, level));
   // resize must be called after zoom change — handled by caller
 }
 

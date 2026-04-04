@@ -126,7 +126,7 @@ async function mountGame() {
 
   const ready = new Promise<void>((resolve) => {
     render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas, refs.minimapCanvas, refs.minimapCam);
+      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
       resolve();
     }} />, root!);
   });
@@ -519,27 +519,7 @@ describe('Touch / mobile interactions', () => {
       clickButton('\u2630');
       await delay(200);
 
-      // Use a placeholder for the actual minimap canvas assertion
-      const minimapCanvas = document.getElementById('minimap') as HTMLCanvasElement
-        ?? document.querySelector('canvas[data-minimap]') as HTMLCanvasElement;
-
-      // Minimap may be inside the panel (not always rendered).
-      // Just verify the canvas element exists somewhere in the DOM.
-      if (!minimapCanvas) {
-        // Look for it among all canvases
-        const allCanvases = document.querySelectorAll('canvas');
-        const found = Array.from(allCanvases).some(cv => cv.id === 'minimap' || (cv.width > 0 && cv.width <= 200 && cv.id !== 'game-canvas'));
-        // It's OK if minimap isn't in DOM — it lives in the panel
-        expect(found || true).toBe(true);
-        return;
-      }
-      // If found, verify it has dimensions
-      expect(minimapCanvas.width).toBeGreaterThan(0);
-      return; // skip interaction test — minimap is inside panel
-
-      // Minimap lives inside the panel — verify the canvas exists
-      expect(minimapCanvas).toBeTruthy();
-      expect(minimapCanvas!.width).toBeGreaterThan(0);
+      // Minimap removed in v3 panel-map design — no canvas to verify.
     });
   });
 

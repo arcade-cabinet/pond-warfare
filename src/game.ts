@@ -24,7 +24,7 @@ import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
-import { clampCamera } from '@/rendering/camera';
+import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
 import type { SpriteId } from '@/types';
@@ -39,8 +39,6 @@ export class Game {
   private gameCanvas!: HTMLCanvasElement;
   private fogCanvas!: HTMLCanvasElement;
   private lightCanvas!: HTMLCanvasElement;
-  private minimapCanvas!: HTMLCanvasElement;
-  private minimapCamElement!: HTMLElement;
   private fogCtx!: CanvasRenderingContext2D;
   private lightCtx!: CanvasRenderingContext2D;
   private exploredCanvas!: HTMLCanvasElement;
@@ -69,8 +67,6 @@ export class Game {
     gameCanvas: HTMLCanvasElement,
     fogCanvas: HTMLCanvasElement,
     lightCanvas: HTMLCanvasElement,
-    minimapCanvas: HTMLCanvasElement,
-    minimapCamElement: HTMLElement,
   ): Promise<void> {
     if (this.initializing) return;
     this.initializing = true;
@@ -83,8 +79,6 @@ export class Game {
     this.gameCanvas = gameCanvas;
     this.fogCanvas = fogCanvas;
     this.lightCanvas = lightCanvas;
-    this.minimapCanvas = minimapCanvas;
-    this.minimapCamElement = minimapCamElement;
 
     applyDifficultyModifiers(this.world);
     applyMapSeed(this.world);
@@ -100,8 +94,6 @@ export class Game {
       gameCanvas,
       fogCanvas,
       lightCanvas,
-      minimapCanvas,
-      minimapCamElement,
       recorder: this.recorder,
       panHandle: this.panHandle,
       audioInitialized: this.audioInitialized,
@@ -147,7 +139,8 @@ export class Game {
     );
   }
   setZoom(level: number): void {
-    this.world.zoomLevel = Math.max(0.5, Math.min(2.0, level));
+    const minZoom = this.world.panelGrid ? computeMinZoom(this.world.panelGrid) : 0.5;
+    this.world.zoomLevel = Math.max(minZoom, Math.min(PANEL_MAX_ZOOM, level));
     this.resize();
     clampCamera(this.world);
   }
@@ -184,14 +177,7 @@ export class Game {
   }
   handleEvacuationChoice(choice: 'checkpoint' | 'restart' | 'quit'): void {
     handleEvacChoice(this.world, choice, () =>
-      this.init(
-        this.container,
-        this.gameCanvas,
-        this.fogCanvas,
-        this.lightCanvas,
-        this.minimapCanvas,
-        this.minimapCamElement,
-      ),
+      this.init(this.container, this.gameCanvas, this.fogCanvas, this.lightCanvas),
     );
   }
   private playUnitSelectSound(): void {

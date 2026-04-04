@@ -23,8 +23,6 @@ import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
 import { AchievementToast } from './hud/AchievementToast';
-import { AbilityBar } from './hud/ability-bar';
-import { AirdropButton } from './hud/airdrop-button';
 import { ConnectionStatus } from './hud/ConnectionStatus';
 import { CtrlGroups } from './hud/ctrl-groups';
 import { Overlays } from './hud/overlays';
@@ -50,8 +48,6 @@ export interface AppProps {
     gameCanvas: HTMLCanvasElement;
     fogCanvas: HTMLCanvasElement;
     lightCanvas: HTMLCanvasElement;
-    minimapCanvas: HTMLCanvasElement;
-    minimapCam: HTMLDivElement;
     dayNightOverlay: HTMLDivElement;
   }) => void | Promise<void>;
 }
@@ -69,8 +65,6 @@ export function App({ onMount }: AppProps) {
   const gameCanvasRef = useRef<HTMLCanvasElement>(null);
   const fogCanvasRef = useRef<HTMLCanvasElement>(null);
   const lightCanvasRef = useRef<HTMLCanvasElement>(null);
-  const minimapCanvasRef = useRef<HTMLCanvasElement>(null);
-  const minimapCamRef = useRef<HTMLDivElement>(null);
   const dayNightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,8 +74,6 @@ export function App({ onMount }: AppProps) {
       gameCanvasRef.current &&
       fogCanvasRef.current &&
       lightCanvasRef.current &&
-      minimapCanvasRef.current &&
-      minimapCamRef.current &&
       dayNightRef.current
     ) {
       const refs = {
@@ -89,8 +81,6 @@ export function App({ onMount }: AppProps) {
         gameCanvas: gameCanvasRef.current,
         fogCanvas: fogCanvasRef.current,
         lightCanvas: lightCanvasRef.current,
-        minimapCanvas: minimapCanvasRef.current,
-        minimapCam: minimapCamRef.current,
         dayNightOverlay: dayNightRef.current,
       };
       store.gameLoading.value = true;
@@ -186,13 +176,6 @@ export function App({ onMount }: AppProps) {
         class="absolute inset-0 cursor-crosshair overflow-hidden bg-black"
       >
         <Overlays />
-        <AirdropButton onAirdrop={act(() => game.useAirdrop())} />
-        <AbilityBar
-          onRallyCry={act(() => game.useRallyCry())}
-          onPondBlessing={act(() => game.usePondBlessing())}
-          onTidalSurge={act(() => game.useTidalSurge())}
-          onCommanderAbility={act(() => game.useCommanderAbility())}
-        />
         <CtrlGroups
           onCtrlGroupClick={(group) => {
             const w = game.world;
@@ -228,22 +211,6 @@ export function App({ onMount }: AppProps) {
           class="absolute inset-0 pointer-events-none z-10"
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
-        {/* Minimap -- small overlay in bottom-right corner */}
-        <div
-          class="absolute bottom-2 right-2 z-20 w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded overflow-hidden border-2"
-          style={{ borderColor: 'var(--pw-mud)', background: 'var(--pw-bg-deep)' }}
-        >
-          <canvas
-            ref={minimapCanvasRef}
-            id="minimap"
-            class="w-full h-full block render-pixelated cursor-crosshair"
-          />
-          <div
-            ref={minimapCamRef}
-            id="minimap-cam"
-            class="absolute border border-white/40 pointer-events-none"
-          />
-        </div>
         <WeatherEffects />
         <GameOverBanner onRestart={() => window.location.reload()} />
         <EvacuationOverlay

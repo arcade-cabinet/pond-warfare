@@ -12,6 +12,7 @@ export enum TerrainType {
   Mud = 3,
   Rocks = 4,
   HighGround = 5,
+  ThornWall = 6,
 }
 
 /** Speed multiplier for each terrain type. 0 = impassable. */
@@ -22,6 +23,7 @@ const SPEED_MULTIPLIERS: Record<TerrainType, number> = {
   [TerrainType.Mud]: 0.75,
   [TerrainType.Rocks]: 0, // impassable
   [TerrainType.HighGround]: 1.0,
+  [TerrainType.ThornWall]: 0, // impassable — locked panel barrier
 };
 
 /** Entity kinds that can traverse water tiles (matched by EntityKind numeric value). */
@@ -117,10 +119,13 @@ export class TerrainGrid {
    * Warships are faster on water (1.0) and slower on land (0.33).
    */
   getSpeedMultiplier(worldX: number, worldY: number, entityKind: number): number {
-    // Flying units ignore all terrain penalties
-    if (FLYING_KINDS.has(entityKind)) return 1.0;
-
     const type = this.getAt(worldX, worldY);
+
+    // ThornWall blocks everything — even flying units
+    if (type === TerrainType.ThornWall) return 0;
+
+    // Flying units ignore all other terrain penalties
+    if (FLYING_KINDS.has(entityKind)) return 1.0;
 
     // Warships: faster on water, very slow on land
     if (WATER_PREFERRED_KINDS.has(entityKind)) {

@@ -13,8 +13,9 @@
  * Fog texture and explored canvas utilities live in background-padding.ts.
  */
 
+import type { PanelGrid } from '@/game/panel-grid';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
-import { TerrainType } from '@/terrain/terrain-grid';
+import { applyBiomeTint } from './background-biome';
 import { biomeColor, fbm, type RGB, valueNoise } from './background-noise';
 import { require2DContext } from './background-padding';
 
@@ -39,6 +40,7 @@ export { buildExploredCanvas, buildFogTexture, require2DContext } from './backgr
  * @param worldH  - World height in pixels (defaults to terrainGrid dims or 2560).
  * @param viewW   - Viewport width (optional, used to extend canvas).
  * @param viewH   - Viewport height (optional, used to extend canvas).
+ * @param panelGrid - Optional PanelGrid for biome-aware tinting per panel.
  */
 export function buildBackground(
   terrainGrid?: TerrainGrid,
@@ -46,6 +48,7 @@ export function buildBackground(
   worldH?: number,
   viewW?: number,
   viewH?: number,
+  panelGrid?: PanelGrid | null,
 ): HTMLCanvasElement {
   const mapW = worldW ?? (terrainGrid ? terrainGrid.cols * 32 : 2560);
   const mapH = worldH ?? (terrainGrid ? terrainGrid.rows * 32 : 2560);
@@ -168,9 +171,9 @@ export function buildBackground(
         }
       }
 
-      // Apply terrain type tint overlay
+      // Apply terrain type tint overlay (biome-aware when PanelGrid available)
       if (terrainGrid) {
-        color = applyTerrainTint(color, terrainGrid, mx, my);
+        color = applyBiomeTint(color, terrainGrid, mx, my, panelGrid);
       }
 
       const idx = (y * w + x) * 4;
@@ -195,35 +198,4 @@ export function buildBackground(
 export interface BgCanvas extends HTMLCanvasElement {
   padX: number;
   padY: number;
-}
-
-/** Terrain type color tints applied as a blend over the procedural base. */
-const TERRAIN_TINTS: Partial<Record<TerrainType, RGB>> = {
-  [TerrainType.Water]: { r: 5, g: 20, b: 50 },
-  [TerrainType.Shallows]: { r: 20, g: 50, b: 70 },
-  [TerrainType.Mud]: { r: 50, g: 25, b: 5 },
-  [TerrainType.Rocks]: { r: 40, g: 40, b: 45 },
-  [TerrainType.HighGround]: { r: 25, g: 30, b: 15 },
-};
-
-/** Blend a terrain tint into the base color. Grass (default) is untouched. */
-function applyTerrainTint(base: RGB, terrainGrid: TerrainGrid, x: number, y: number): RGB {
-  const type = terrainGrid.getAt(x, y);
-  if (type === TerrainType.Grass) return base;
-
-  const tint = TERRAIN_TINTS[type];
-  if (!tint) return base;
-
-  const strength =
-    type === TerrainType.Water || type === TerrainType.Rocks
-      ? 0.6
-      : type === TerrainType.Shallows
-        ? 0.4
-        : 0.35;
-
-  return {
-    r: Math.max(0, Math.min(255, Math.round(base.r * (1 - strength) + tint.r * strength))),
-    g: Math.max(0, Math.min(255, Math.round(base.g * (1 - strength) + tint.g * strength))),
-    b: Math.max(0, Math.min(255, Math.round(base.b * (1 - strength) + tint.b * strength))),
-  };
 }

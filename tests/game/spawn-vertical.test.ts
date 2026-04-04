@@ -39,32 +39,26 @@ vi.mock('@/config/factions', () => ({
 }));
 
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
+import { PanelGrid } from '@/game/panel-grid';
 import type { VerticalMapLayout } from '@/game/vertical-map';
 import { SeededRandom } from '@/utils/random';
 
 function makeLayout(): VerticalMapLayout {
+  const panelGrid = new PanelGrid(960, 540, 2);
   return {
-    worldWidth: 1600,
-    worldHeight: 2400,
-    cols: 50,
-    rows: 75,
-    lodgeX: 800,
-    lodgeY: 2220,
+    worldWidth: 2880,
+    worldHeight: 1080,
+    cols: 90,
+    rows: 34,
+    lodgeX: 1440,
+    lodgeY: 1026,
     resourcePositions: [
-      { x: 400, y: 1000, type: 'fish_node' },
-      { x: 800, y: 1200, type: 'rock_deposit' },
-      { x: 1200, y: 1100, type: 'tree_cluster' },
+      { x: 400, y: 700, type: 'fish_node', panelId: 5 as const },
+      { x: 800, y: 300, type: 'rock_deposit', panelId: 2 as const },
+      { x: 1200, y: 400, type: 'tree_cluster', panelId: 2 as const },
     ],
-    enemySpawnPositions: [{ x: 800, y: 180 }],
-    spawnDirections: ['top'],
-    terrainTier: {
-      min_level: 0,
-      max_level: 10,
-      map_width: 1600,
-      map_height: 2400,
-      resource_nodes: 6,
-      enemy_spawn_directions: ['top'],
-    },
+    enemySpawnPositions: [{ x: 1440, y: 40, panelId: 2 as const }],
+    panelGrid,
   };
 }
 
@@ -96,8 +90,8 @@ describe('spawnVerticalEntities', () => {
 
     const lodges = spawnedEntities.filter((e) => e.kind === 5); // Lodge
     expect(lodges).toHaveLength(1);
-    expect(lodges[0].x).toBe(800);
-    expect(lodges[0].y).toBe(2220);
+    expect(lodges[0].x).toBe(1440);
+    expect(lodges[0].y).toBe(1026);
     expect(lodges[0].faction).toBe(0); // Faction.Player
   });
 
@@ -141,7 +135,7 @@ describe('spawnVerticalEntities', () => {
       (e) => e.faction === 1 && e.kind === 9, // Enemy PredatorNest
     );
     expect(enemyBuildings).toHaveLength(1);
-    expect(enemyBuildings[0].y).toBe(180); // Top of map
+    expect(enemyBuildings[0].y).toBe(40); // Top edge of enemy panel
   });
 
   it('spawns enemy guard units near enemy nest', () => {

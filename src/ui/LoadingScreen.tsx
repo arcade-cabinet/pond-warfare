@@ -25,7 +25,7 @@ const LOADING_TIPS = [
   'Walls block enemy pathing and buy time for your defenders.',
   'Research upgrades at the Lodge to unlock new units and abilities.',
   'Flying Herons can cross water and ignore terrain obstacles.',
-  'Use the minimap to keep an eye on enemy movements.',
+  "High ground ridges give tactical advantage in no-man's-land.",
 ] as const;
 
 function capitalize(s: string): string {

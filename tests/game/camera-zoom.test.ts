@@ -1,74 +1,60 @@
 /**
  * Camera Zoom Tests
  *
- * Verifies computeInitialZoom produces correct zoom levels for various
- * map/viewport combinations so pixel-art sprites remain visible and tappable.
- *
- * v3: MIN_PLAYABLE_ZOOM is 2.0 (was 1.2) because the vertical map is
- * narrow and pixel-art sprites need to be large enough for tap targets.
+ * v3 panel-map: computeInitialZoom always returns 1.0 (one panel = one viewport).
+ * computeMinZoom returns the ratio to fit all unlocked panels in one viewport.
+ * PANEL_MAX_ZOOM is 1.5 for close-up micro.
  */
 
 import { describe, expect, it } from 'vitest';
-import { computeInitialZoom } from '@/rendering/camera';
+import { PanelGrid } from '@/game/panel-grid';
+import { computeInitialZoom, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera';
 
 describe('computeInitialZoom', () => {
-  it('zooms in when map is narrower than viewport (1600w map on 1920 viewport)', () => {
-    const zoom = computeInitialZoom(1600, 1920);
-    // 1920/1600 = 1.2, below MIN_PLAYABLE_ZOOM 2.0 -> clamped to 2.0
-    expect(zoom).toBe(2.0);
+  it('always returns 1.0 (one panel fills the viewport)', () => {
+    expect(computeInitialZoom(1600, 1920)).toBe(1.0);
+    expect(computeInitialZoom(1600, 800)).toBe(1.0);
+    expect(computeInitialZoom(100, 10000)).toBe(1.0);
+    expect(computeInitialZoom(10000, 100)).toBe(1.0);
+  });
+});
+
+describe('PANEL_MAX_ZOOM', () => {
+  it('is 1.5 for close-up micro', () => {
+    expect(PANEL_MAX_ZOOM).toBe(1.5);
+  });
+});
+
+describe('computeMinZoom', () => {
+  it('returns 1.0 for a single panel (stage 1)', () => {
+    const grid = new PanelGrid(960, 540, 1);
+    expect(computeMinZoom(grid)).toBeCloseTo(1.0);
   });
 
-  it('uses MIN_PLAYABLE_ZOOM when width ratio is below the floor', () => {
-    // 800px viewport on 1600px map: ratio = 0.5, should use MIN_PLAYABLE_ZOOM 2.0
-    const zoom = computeInitialZoom(1600, 800);
-    expect(zoom).toBe(2.0);
+  it('returns 0.5 for two vertical panels (stage 2: panels 5+2)', () => {
+    const grid = new PanelGrid(960, 540, 2);
+    // Panels 5 (row 1) and 2 (row 0) span 2 rows, 1 col
+    // regionH = 2 * 540 = 1080, panelH = 540 -> zoomY = 0.5
+    // regionW = 1 * 960 = 960, panelW = 960 -> zoomX = 1.0
+    // min(1.0, 0.5) = 0.5
+    expect(computeMinZoom(grid)).toBeCloseTo(0.5);
   });
 
-  it('uses width ratio when it exceeds MIN_PLAYABLE_ZOOM but within max', () => {
-    // With MIN_PLAYABLE_ZOOM at 2.0, we need ratio > 2.0
-    // But max zoom is also 2.0, so it clamps
-    // 2400px viewport on 1600px map: ratio = 1.5, below MIN=2.0 -> 2.0
-    const zoom = computeInitialZoom(1600, 2400);
-    expect(zoom).toBe(2.0);
+  it('returns correct zoom for 3 panels (stage 3)', () => {
+    const grid = new PanelGrid(960, 540, 3);
+    const minZ = computeMinZoom(grid);
+    // Stage 3 adds panel 1 or 3, so now 2 cols x 2 rows
+    // regionW = 2 * 960 = 1920, zoomX = 960/1920 = 0.5
+    // regionH = 2 * 540 = 1080, zoomY = 540/1080 = 0.5
+    expect(minZ).toBeCloseTo(0.5);
   });
 
-  it('clamps to max zoom of 2.0', () => {
-    // 4000px viewport on 1600px map: ratio = 2.5, clamped to 2.0
-    const zoom = computeInitialZoom(1600, 4000);
-    expect(zoom).toBe(2.0);
-  });
-
-  it('handles progression level 2 map (2400w) on 1920 viewport', () => {
-    // 1920/2400 = 0.8, below MIN_PLAYABLE_ZOOM 2.0 -> clamped to 2.0
-    const zoom = computeInitialZoom(2400, 1920);
-    expect(zoom).toBe(2.0);
-  });
-
-  it('handles mobile viewport (375w) on 1600w map', () => {
-    // 375/1600 = 0.234, below MIN_PLAYABLE_ZOOM -> 2.0
-    const zoom = computeInitialZoom(1600, 375);
-    expect(zoom).toBe(2.0);
-  });
-
-  it('never returns below 0.5', () => {
-    const zoom = computeInitialZoom(10000, 100);
-    expect(zoom).toBeGreaterThanOrEqual(0.5);
-  });
-
-  it('never returns above 2.0', () => {
-    const zoom = computeInitialZoom(100, 10000);
-    expect(zoom).toBeLessThanOrEqual(2.0);
-  });
-
-  it('handles exact match viewport = map width', () => {
-    // 1600/1600 = 1.0, below MIN_PLAYABLE_ZOOM -> 2.0
-    const zoom = computeInitialZoom(1600, 1600);
-    expect(zoom).toBe(2.0);
-  });
-
-  it('progression level 1 map (2000w) on 1920 viewport', () => {
-    // 1920/2000 = 0.96, below MIN_PLAYABLE_ZOOM 2.0 -> clamped to 2.0
-    const zoom = computeInitialZoom(2000, 1920);
-    expect(zoom).toBe(2.0);
+  it('returns correct zoom for all 6 panels (stage 6)', () => {
+    const grid = new PanelGrid(960, 540, 6);
+    // 3 cols x 2 rows
+    // regionW = 3 * 960 = 2880, zoomX = 960/2880 = 1/3
+    // regionH = 2 * 540 = 1080, zoomY = 540/1080 = 0.5
+    // min(1/3, 0.5) = 1/3
+    expect(computeMinZoom(grid)).toBeCloseTo(1 / 3);
   });
 });

@@ -56,17 +56,21 @@ export interface EnemiesConfig {
 }
 
 // ── Terrain definitions ────────────────────────────────────────────
-export interface TerrainTier {
-  min_level: number;
-  max_level: number;
-  map_width: number;
-  map_height: number;
-  resource_nodes: number;
-  enemy_spawn_directions: string[];
+export interface BiomeTerrainRule {
+  primary: string;
+  water_coverage?: number;
+  mud_coverage?: number;
+  rock_coverage?: number;
+  high_ground_coverage?: number;
+  tree_density?: number;
+  narrow_paths?: boolean;
+  vision_blocking?: boolean;
 }
 
 export interface TerrainConfig {
-  progression_scaling: TerrainTier[];
+  panel_based: boolean;
+  note: string;
+  biome_terrain_rules: Record<string, BiomeTerrainRule>;
   resource_types: string[];
   terrain_types: string[];
 }
@@ -182,10 +186,12 @@ export interface DiamondNodeEffect {
   behavior?: string;
   stat?: string;
   value?: number;
+  stage?: number;
 }
 
 export interface DiamondNodeDef {
   label: string;
+  description?: string;
   requires: DiamondNodeRequirements;
   effect: DiamondNodeEffect;
   cost: number;

@@ -223,5 +223,7 @@ export function createGameWorld(): GameWorld {
     patrolWaypoints: new Map(),
     // v3.0: fortification slots
     fortifications: null,
+    // v3.0: panel grid (6-panel map system)
+    panelGrid: null,
   };
 }

@@ -2103,6 +2103,8 @@ button:focus-visible,
 }
 @keyframes selection-spin { 100% { transform: rotate(360deg); } }
 
+.menu-sprite-item:hover { transform: scale(1.12); }
+
 /* ====================================================================
    RTS Button (Design Bible)
    Primary action button for in-game panels, modals, and HUD controls.

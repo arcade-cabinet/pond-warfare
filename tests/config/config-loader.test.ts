@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import {
   getAllEnemyIds,
   getAllUnitIds,
+  getBiomeTerrainRule,
+  getBiomeTerrainRules,
   getEnemyDef,
   getEnemyScaling,
   getFortDef,
@@ -12,7 +14,6 @@ import {
   getPrefixesConfig,
   getRewardFormula,
   getTerrainConfig,
-  getTerrainForLevel,
   getTierPrefix,
   getUnitDef,
   validateEnemies,
@@ -117,35 +118,37 @@ describe('Enemy configs', () => {
   });
 });
 
-describe('Terrain configs', () => {
-  it('should return correct params for level 0 (early game)', () => {
-    const tier = getTerrainForLevel(0);
-    expect(tier.map_width).toBe(1600);
-    expect(tier.map_height).toBe(2400);
-    expect(tier.resource_nodes).toBe(6);
-    expect(tier.enemy_spawn_directions).toEqual(['top']);
+describe('Terrain configs (panel-based)', () => {
+  it('should be panel-based with biome terrain rules', () => {
+    const config = getTerrainConfig();
+    expect(config.panel_based).toBe(true);
+    expect(Object.keys(config.biome_terrain_rules).length).toBeGreaterThan(0);
   });
 
-  it('should return correct params for level 15 (mid game)', () => {
-    const tier = getTerrainForLevel(15);
-    expect(tier.map_width).toBe(2000);
-    expect(tier.map_height).toBe(3000);
-    expect(tier.resource_nodes).toBe(10);
-    expect(tier.enemy_spawn_directions).toEqual(['top', 'left', 'right']);
+  it('should have rules for all 6 panel biomes', () => {
+    const rules = getBiomeTerrainRules();
+    const expectedBiomes = [
+      'grassland_clearing',
+      'muddy_forest',
+      'rocky_marsh',
+      'flooded_swamp',
+      'stone_quarry',
+      'dense_thicket',
+    ];
+    for (const biome of expectedBiomes) {
+      expect(rules[biome], `missing biome rule: ${biome}`).toBeDefined();
+      expect(rules[biome].primary).toBeTruthy();
+    }
   });
 
-  it('should return correct params for level 50 (late game)', () => {
-    const tier = getTerrainForLevel(50);
-    expect(tier.map_width).toBe(2400);
-    expect(tier.map_height).toBe(3600);
-    expect(tier.resource_nodes).toBe(15);
-    expect(tier.enemy_spawn_directions).toContain('bottom_sides');
+  it('should retrieve a single biome rule by name', () => {
+    const rule = getBiomeTerrainRule('grassland_clearing');
+    expect(rule.primary).toBe('grass');
+    expect(rule.water_coverage).toBe(0.15);
   });
 
-  it('should fall back to highest tier for very high levels', () => {
-    const tier = getTerrainForLevel(9999);
-    expect(tier.map_width).toBe(2400);
-    expect(tier.resource_nodes).toBe(15);
+  it('should throw for unknown biome', () => {
+    expect(() => getBiomeTerrainRule('nonexistent')).toThrow('Unknown biome');
   });
 
   it('should have resource and terrain type lists', () => {
@@ -153,6 +156,8 @@ describe('Terrain configs', () => {
     expect(config.resource_types).toContain('fish_node');
     expect(config.resource_types).toContain('rock_deposit');
     expect(config.resource_types).toContain('tree_cluster');
+    expect(config.resource_types).toContain('rare_node');
+    expect(config.terrain_types).toContain('thorn_wall');
     expect(config.terrain_types.length).toBeGreaterThan(0);
   });
 });
@@ -261,9 +266,15 @@ describe('Validation error detection', () => {
     expect(() => validateEnemies(bad)).toThrow('positive number');
   });
 
-  it('should reject terrain with empty progression_scaling', () => {
-    const bad = { progression_scaling: [], resource_types: [], terrain_types: [] } as TerrainConfig;
-    expect(() => validateTerrain(bad)).toThrow('must not be empty');
+  it('should reject terrain with panel_based=false', () => {
+    const bad = {
+      panel_based: false,
+      note: '',
+      biome_terrain_rules: {},
+      resource_types: [],
+      terrain_types: [],
+    } as TerrainConfig;
+    expect(() => validateTerrain(bad)).toThrow('panel_based must be true');
   });
 
   it('should reject fort with zero hp', () => {

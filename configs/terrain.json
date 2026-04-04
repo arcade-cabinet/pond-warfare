@@ -1,9 +1,14 @@
 {
-  "progression_scaling": [
-    { "min_level": 0, "max_level": 10, "map_width": 1600, "map_height": 2400, "resource_nodes": 6, "enemy_spawn_directions": ["top"] },
-    { "min_level": 11, "max_level": 30, "map_width": 2000, "map_height": 3000, "resource_nodes": 10, "enemy_spawn_directions": ["top", "left", "right"] },
-    { "min_level": 31, "max_level": 999, "map_width": 2400, "map_height": 3600, "resource_nodes": 15, "enemy_spawn_directions": ["top", "left", "right", "bottom_sides"] }
-  ],
-  "resource_types": ["fish_node", "rock_deposit", "tree_cluster"],
-  "terrain_types": ["grass", "water", "rocks", "mud"]
+  "panel_based": true,
+  "note": "Panel dimensions computed from viewport at runtime. See panel-grid.ts.",
+  "biome_terrain_rules": {
+    "grassland_clearing": { "primary": "grass", "water_coverage": 0.15, "mud_coverage": 0.05 },
+    "muddy_forest": { "primary": "grass", "mud_coverage": 0.3, "tree_density": 0.2 },
+    "rocky_marsh": { "primary": "grass", "rock_coverage": 0.2, "high_ground_coverage": 0.15, "water_coverage": 0.1 },
+    "flooded_swamp": { "primary": "shallows", "water_coverage": 0.4, "mud_coverage": 0.15 },
+    "stone_quarry": { "primary": "grass", "rock_coverage": 0.35, "narrow_paths": true },
+    "dense_thicket": { "primary": "grass", "tree_density": 0.35, "vision_blocking": true }
+  },
+  "resource_types": ["fish_node", "rock_deposit", "tree_cluster", "rare_node"],
+  "terrain_types": ["grass", "water", "shallows", "mud", "rocks", "high_ground", "thorn_wall"]
 }

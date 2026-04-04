@@ -5,18 +5,16 @@
  * right-click context commands, double-click select-all-of-type, shift-click
  * add/remove, attack-move clicks, and long-press touch emulation.
  *
- * Click logic is in pointer-click.ts; minimap handling is in pointer-minimap.ts.
+ * Click logic is in pointer-click.ts.
  */
 
 import type { GameWorld } from '@/ecs/world';
+import { computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera';
 import { type ClickState, handleClick } from './pointer-click';
-import { MinimapHandler } from './pointer-minimap';
 import {
   DRAG_THRESHOLD,
   LONG_PRESS_MOVE_THRESHOLD,
   LONG_PRESS_MS,
-  MAX_ZOOM,
-  MIN_ZOOM,
   type PointerCallbacks,
   type PointerState,
 } from './pointer-types';
@@ -41,7 +39,6 @@ export class PointerHandler {
   private world: GameWorld;
   private cb: PointerCallbacks;
   private canvas: HTMLCanvasElement;
-  private minimap: MinimapHandler;
   private clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
 
   private activePointers = new Map<number, { x: number; y: number }>();
@@ -73,7 +70,6 @@ export class PointerHandler {
     this.world = world;
     this.canvas = canvas;
     this.cb = callbacks;
-    this.minimap = new MinimapHandler(world, this.mouse, callbacks);
 
     this.boundPointerDown = (e) => this.onPointerDown(e);
     this.boundPointerMove = (e) => this.onPointerMove(e);
@@ -98,13 +94,8 @@ export class PointerHandler {
     window.addEventListener('pointerup', this.boundWindowUp);
   }
 
-  attachMinimap(minimapCanvas: HTMLCanvasElement): void {
-    this.minimap.attachMinimap(minimapCanvas);
-  }
-
   destroy(): void {
     this.cancelLongPress();
-    this.minimap.destroy();
     window.removeEventListener('pointermove', this.boundWindowMove);
     window.removeEventListener('pointerup', this.boundWindowUp);
   }
@@ -191,7 +182,8 @@ export class PointerHandler {
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (this.lastPinchDist !== null) {
         const scale = dist / this.lastPinchDist;
-        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, this.world.zoomLevel * scale));
+        const minZ = this.world.panelGrid ? computeMinZoom(this.world.panelGrid) : 0.5;
+        const newZoom = Math.max(minZ, Math.min(PANEL_MAX_ZOOM, this.world.zoomLevel * scale));
         if (newZoom !== this.world.zoomLevel && this.onZoomChange) this.onZoomChange(newZoom);
       }
       this.lastPinchDist = dist;
@@ -279,12 +271,11 @@ export class PointerHandler {
     }
   }
 
-  private onWindowPointerMove(e: PointerEvent): void {
-    this.minimap.onWindowPointerMove(e);
+  private onWindowPointerMove(_e: PointerEvent): void {
+    // Reserved for future use (e.g. panel-aware camera edge-scrolling)
   }
 
   private onWindowPointerUp(): void {
-    this.minimap.onWindowPointerUp();
     this.activePointers.clear();
     this.mouse.isDown = false;
     this.lastPanCenter = null;

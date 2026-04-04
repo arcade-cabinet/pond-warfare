@@ -25,9 +25,6 @@ export { KeyboardReference, type KeyboardReferenceProps } from './keyboard-refer
 // Main menu
 export { MainMenu } from './main-menu';
 
-// Minimap panel
-export { MinimapPanel, type MinimapPanelProps } from './minimap-panel';
-
 // Radial menu
 export { RadialMenu, type RadialMenuProps } from './radial-menu';
 
