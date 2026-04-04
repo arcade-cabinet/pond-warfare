@@ -5,7 +5,6 @@
  */
 
 import { resetBarkState } from '@/config/barks';
-import { isAutoBehaviorUnlocked } from '@/config/prestige-logic';
 import { Position, Selectable } from '@/ecs/components';
 import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
 import { initFogOfWar } from '@/ecs/systems/fog-of-war';
@@ -14,14 +13,7 @@ import { resetRandomEvents } from '@/ecs/systems/random-events';
 import type { GameWorld } from '@/ecs/world';
 import { setZoom } from '@/game/camera';
 import { installLifecycleListeners } from '@/game/game-lifecycle';
-import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { buildKeyboardCallbacks, buildPointerCallbacks } from '@/game/input-setup';
-import { PanelGrid } from '@/game/panel-grid';
-import {
-  applyVerticalMapToWorld,
-  buildVerticalTerrain,
-  generateVerticalMapLayout,
-} from '@/game/vertical-map';
 import { KeyboardHandler } from '@/input/keyboard';
 import { PointerHandler } from '@/input/pointer';
 import { canDockPanels } from '@/platform';
@@ -35,9 +27,6 @@ import type { ReplayRecorder } from '@/replay';
 import { loadAchievements, resetAchievementMatchState } from '@/systems/achievements';
 import type { SpriteId } from '@/types';
 import * as store from '@/ui/store';
-import * as storeV3 from '@/ui/store-v3';
-import { SeededRandom } from '@/utils/random';
-import { deploySpecialistsAtMatchStart } from './init-entities/specialist-init';
 
 // Re-export computeInitialZoom so game.ts can keep its existing import path
 export { computeInitialZoom } from '@/rendering/camera';
@@ -255,68 +244,9 @@ export function setupDockResize(resizeFn: () => void): () => void {
   });
 }
 
-/**
- * Generate and apply the v3 panel-based map, spawning all entities.
- *
- * Uses the 6-panel map system: creates PanelGrid from viewport,
- * generates biome terrain per panel, fills locked panels with ThornWall,
- * spawns Lodge/units/resources/enemies per panel config.
- */
-export function spawnVerticalWorld(world: GameWorld, unlockStage = 1): void {
-  const rng = new SeededRandom(world.mapSeed);
-
-  // Viewport dimensions (use defaults if not yet set)
-  const vpW = world.viewWidth || 960;
-  const vpH = world.viewHeight || 540;
-
-  // Create PanelGrid from viewport dimensions
-  const panelGrid = new PanelGrid(vpW, vpH, unlockStage);
-
-  // Use PRNG for 50/50 stage choices (stages 3 and 5)
-  if (unlockStage >= 3) {
-    const coinFlipStage3 = rng.next() < 0.5;
-    const coinFlipStage5 = rng.next() < 0.5;
-    panelGrid.computeUnlockedPanelsWithRng(unlockStage, coinFlipStage3, coinFlipStage5);
-  }
-
-  // Store panelGrid on world
-  world.panelGrid = panelGrid;
-
-  // Generate panel-aware layout
-  const prestigeState = storeV3.prestigeState.value;
-  const hasRareResourceAccess = isAutoBehaviorUnlocked(prestigeState, 'rare_resource_access');
-  const layout = generateVerticalMapLayout(panelGrid, rng, { hasRareResourceAccess });
-
-  // Build terrain grid (biomes for unlocked, ThornWall for locked)
-  const terrain = buildVerticalTerrain(layout, rng);
-
-  // Apply layout to world
-  applyVerticalMapToWorld(world, layout, terrain);
-  const dims = panelGrid.getWorldDimensions();
-  world.worldWidth = dims.width;
-  world.worldHeight = dims.height;
-
-  // Spawn entities
-  const lodgeEid = spawnVerticalEntities(world, layout, rng);
-
-  // v3 US11: Specialist auto-deploy from prestige state
-  deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
-
-  // Floating text announcing the map
-  const lodge = world.selection[0];
-  const textX = lodge != null ? Position.x[lodge] : layout.lodgeX;
-  const textY = lodge != null ? Position.y[lodge] - 80 : layout.lodgeY - 80;
-  world.floatingTexts.push({
-    x: textX,
-    y: textY,
-    text: 'MAP: Panel Grid',
-    color: '#38bdf8',
-    life: 180,
-  });
-}
-
 export { createGameWorld } from '@/ecs/world';
 export { applyDifficultyModifiers } from '@/game/difficulty';
 export { setupAudio } from '@/game/game-lifecycle';
 export { startGameLoop, wireWebGLHandlers } from '@/game/game-loop-setup';
 export { spawnInitialEntities } from '@/game/init-entities/index';
+export { spawnVerticalWorld } from '@/game/spawn-world';
