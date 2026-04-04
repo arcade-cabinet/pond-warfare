@@ -5,7 +5,7 @@
  * threat/objective syncing to focused sub-modules; keeps resource tracking,
  * peace timer, time display, and enemy-visibility logic here.
  *
- * v3: also syncs Lodge HP, wave number, and fortification state.
+ * v3: also syncs Lodge HP, wave number, wave-survival, and fortification state.
  *
  * Sub-modules:
  *   population-counter.ts - food/army/idle counts + Commander policy
@@ -136,8 +136,10 @@ export function syncPopulationAndTimers(
     syncLodgeHp(w);
   }
 
-  // --- v3: Wave number sync ---
+  // --- v3: Wave number + wave-survival mode sync ---
   storeV3.currentWaveNumber.value = w.waveNumber;
+  storeV3.waveSurvivalMode.value = w.waveSurvivalMode;
+  storeV3.waveSurvivalTarget.value = w.waveSurvivalTarget;
 
   // --- Population, army, idle counts (delegated) ---
   const popResult = computePopulation(w);

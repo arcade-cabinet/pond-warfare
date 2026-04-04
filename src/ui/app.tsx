@@ -26,6 +26,7 @@ import { AchievementToast } from './hud/AchievementToast';
 import { ConnectionStatus } from './hud/ConnectionStatus';
 import { CtrlGroups } from './hud/ctrl-groups';
 import { Overlays } from './hud/overlays';
+import { TopBar } from './hud/top-bar';
 import { WeatherEffects } from './hud/WeatherEffects';
 import { KeyboardReference } from './keyboard-reference';
 import { LoadingScreen } from './LoadingScreen';
@@ -168,6 +169,18 @@ export function App({ onMount }: AppProps) {
       </div>
       <SvgFilters />
       <ErrorOverlay />
+
+      {/* Resource HUD top bar */}
+      <TopBar
+        onSpeedClick={act(() => game.cycleSpeed())}
+        onMuteClick={act(() => audio.toggleMute())}
+        onPauseClick={act(() => {
+          game.world.paused = !game.world.paused;
+        })}
+        onSettingsClick={() => {
+          store.settingsOpen.value = true;
+        }}
+      />
 
       {/* Fullscreen game container */}
       <div

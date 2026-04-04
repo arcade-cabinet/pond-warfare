@@ -5,12 +5,14 @@
  * area in a CSS grid. Supports an optional title rendered over the top edge
  * and an expanded/collapsed state with a vine-green glow effect.
  *
- * Grid layout:
+ * Grid layout (default):
  *   60px  | 1fr  | 60px
  *   ------+------+------
  *   CTL   | Top  | CTR    (60px row)
  *   Left  | Body | Right  (auto or 0px row)
  *   CBL   | Bot  | CBR    (60px row)
+ *
+ * Compact mode (36px corners) for space-constrained layouts like comic panels.
  */
 
 import type { ComponentChildren } from 'preact';
@@ -30,13 +32,9 @@ export interface Frame9SliceProps {
   title?: string;
   /** Extra CSS class on the outermost wrapper */
   class?: string;
+  /** Use smaller 36px corners for space-constrained layouts */
+  compact?: boolean;
 }
-
-/** Inline styles that cannot be expressed in utility classes. */
-const GRID_STYLE = {
-  display: 'grid',
-  gridTemplateColumns: '60px 1fr 60px',
-};
 
 const TITLE_STYLE = {
   fontFamily: FONTS.header,
@@ -51,9 +49,12 @@ export function Frame9Slice({
   onClick,
   title,
   class: extraClass,
+  compact = false,
 }: Frame9SliceProps) {
+  const cornerSize = compact ? 36 : 60;
+  const cornerPx = `${cornerSize}px`;
   const clickable = typeof onClick === 'function';
-  const gridRows = `60px ${isExpanded ? 'auto' : '0px'} 60px`;
+  const gridRows = `${cornerPx} ${isExpanded ? 'auto' : '0px'} ${cornerPx}`;
   const expandedOpacity = isExpanded ? 'opacity-100' : 'opacity-0';
   const bodyTransform = isExpanded
     ? 'opacity-100 scale-y-100'
@@ -64,6 +65,12 @@ export function Frame9Slice({
 
   /** Stop content clicks from toggling the accordion. */
   const stopContentClick = clickable ? (e: Event) => e.stopPropagation() : undefined;
+
+  const gridStyle = {
+    display: 'grid' as const,
+    gridTemplateColumns: `${cornerPx} 1fr ${cornerPx}`,
+    gridTemplateRows: gridRows,
+  };
 
   return (
     <div
@@ -78,7 +85,7 @@ export function Frame9Slice({
       {/* 9-slice grid — single onClick at grid level prevents double-fire */}
       <div
         class="grid drop-shadow-[0_20px_30px_rgba(0,0,0,0.9)]"
-        style={{ ...GRID_STYLE, gridTemplateRows: gridRows }}
+        style={gridStyle}
         onClick={handleGridClick}
         {...(clickable
           ? {
@@ -96,10 +103,10 @@ export function Frame9Slice({
           : {})}
       >
         {/* Row 1: Top corners + top edge */}
-        <div class="w-[60px] h-[60px] z-20">
+        <div style={{ width: cornerPx, height: cornerPx }} class="z-20">
           <CornerTopLeft />
         </div>
-        <div class="h-[60px] z-10 relative">
+        <div style={{ height: cornerPx }} class="z-10 relative">
           <div class="absolute inset-0">
             <EdgeHorizontal top={true} />
           </div>
@@ -120,12 +127,15 @@ export function Frame9Slice({
             </div>
           )}
         </div>
-        <div class="w-[60px] h-[60px] z-20">
+        <div style={{ width: cornerPx, height: cornerPx }} class="z-20">
           <CornerTopRight />
         </div>
 
         {/* Row 2: Side edges + content body */}
-        <div class={`w-[60px] z-10 transition-all duration-700 ease-out ${expandedOpacity}`}>
+        <div
+          style={{ width: cornerPx }}
+          class={`z-10 transition-all duration-700 ease-out ${expandedOpacity}`}
+        >
           {isExpanded && <EdgeVertical left={true} />}
         </div>
         <div
@@ -134,20 +144,23 @@ export function Frame9Slice({
         >
           <CenterPanel>{children}</CenterPanel>
         </div>
-        <div class={`w-[60px] z-10 transition-all duration-700 ease-out ${expandedOpacity}`}>
+        <div
+          style={{ width: cornerPx }}
+          class={`z-10 transition-all duration-700 ease-out ${expandedOpacity}`}
+        >
           {isExpanded && <EdgeVertical left={false} />}
         </div>
 
         {/* Row 3: Bottom corners + bottom edge */}
-        <div class="w-[60px] h-[60px] z-20">
+        <div style={{ width: cornerPx, height: cornerPx }} class="z-20">
           <CornerBottomLeft />
         </div>
-        <div class="h-[60px] z-10 relative">
+        <div style={{ height: cornerPx }} class="z-10 relative">
           <div class="absolute inset-0">
             <EdgeHorizontal top={false} />
           </div>
         </div>
-        <div class="w-[60px] h-[60px] z-20">
+        <div style={{ width: cornerPx, height: cornerPx }} class="z-20">
           <CornerBottomRight />
         </div>
       </div>

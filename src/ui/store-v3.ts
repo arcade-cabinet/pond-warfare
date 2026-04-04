@@ -3,7 +3,7 @@
  *
  * New signals for v3 rearchitecture features: prestige, Pearl upgrades,
  * upgrade web screen, rewards screen, event-driven match flow, Lodge HP,
- * wave indicator.
+ * wave indicator, wave-survival mode.
  * Kept separate from store.ts to avoid growing that file beyond 300 LOC.
  */
 
@@ -92,3 +92,11 @@ export const currentWaveNumber = signal(0);
 
 /** Direction of the last wave spawn (for HUD indicator). */
 export const waveDirection = signal<'north' | 'east' | 'west' | 'south'>('north');
+
+// ── Wave-Survival Mode ──────────────────────────────────────────
+
+/** True when the match uses wave-survival win condition (no enemy nests). */
+export const waveSurvivalMode = signal(false);
+
+/** Number of waves to survive for victory. */
+export const waveSurvivalTarget = signal(5);

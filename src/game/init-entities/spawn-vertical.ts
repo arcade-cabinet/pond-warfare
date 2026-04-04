@@ -1,11 +1,15 @@
 /**
- * Panel-Aware Entity Spawner (v3.0 — 6-Panel Map System)
+ * Panel-Aware Entity Spawner (v3.0 -- 6-Panel Map System)
  *
  * Spawns entities based on the panel-aware vertical map layout:
  * - Lodge at PanelGrid.getLodgePosition() (center-bottom of panel 5)
  * - 4 starting generalist units near Lodge
  * - Resource nodes per panel biome
  * - Enemy nests at top edges of enemy-spawn panels
+ *
+ * When no enemy-spawn panels are active (stage 1), enables wave-survival
+ * mode so the match-event-runner handles enemy waves from the map edge
+ * and the win condition becomes survival-based instead of nest destruction.
  */
 
 import { getFactionConfig } from '@/config/factions';
@@ -22,6 +26,9 @@ const RESOURCE_KIND_MAP: Record<string, EntityKind> = {
   rock_deposit: EntityKind.PearlBed,
   tree_cluster: EntityKind.Cattail,
 };
+
+/** Default wave-survival target per progression level. */
+const WAVE_SURVIVAL_TARGET = 5;
 
 /**
  * Spawn all entities for a panel-aware vertical map match.
@@ -49,8 +56,15 @@ export function spawnVerticalEntities(
   // Resource nodes per panel biome
   spawnResourceNodes(world, layout, rng);
 
-  // Enemy nests at top edges of enemy-spawn panels
-  spawnEnemyNests(world, layout, rng);
+  // Enemy nests at top edges of enemy-spawn panels (if any)
+  const nestsSpawned = spawnEnemyNests(world, layout, rng);
+
+  // If no enemy nests were spawned (stage 1), enable wave-survival mode.
+  // Enemies will arrive via match-event-runner waves from the map edge.
+  if (nestsSpawned === 0) {
+    world.waveSurvivalMode = true;
+    world.waveSurvivalTarget = WAVE_SURVIVAL_TARGET;
+  }
 
   // Neutral wildlife
   spawnWildlife(world, layout, rng);
@@ -102,9 +116,12 @@ function spawnResourceNodes(world: GameWorld, layout: VerticalMapLayout, rng: Se
   }
 }
 
-/** Spawn enemy nests at top edges of enemy-spawn panels. */
-function spawnEnemyNests(world: GameWorld, layout: VerticalMapLayout, rng: SeededRandom): void {
-  if (layout.enemySpawnPositions.length === 0) return;
+/**
+ * Spawn enemy nests at top edges of enemy-spawn panels.
+ * Returns the number of nests spawned.
+ */
+function spawnEnemyNests(world: GameWorld, layout: VerticalMapLayout, rng: SeededRandom): number {
+  if (layout.enemySpawnPositions.length === 0) return 0;
 
   const aiFactionKey = world.playerFaction === 'otter' ? 'predator' : 'otter';
   const aiFactionCfg = getFactionConfig(
@@ -113,12 +130,14 @@ function spawnEnemyNests(world: GameWorld, layout: VerticalMapLayout, rng: Seede
 
   // Place a nest at each enemy spawn position
   const nestPositions = new Set<string>();
+  let count = 0;
   for (const spawn of layout.enemySpawnPositions) {
     const key = `${spawn.panelId}`;
     if (nestPositions.has(key)) continue;
     nestPositions.add(key);
 
     spawnEntity(world, aiFactionCfg.lodgeKind, spawn.x, spawn.y, Faction.Enemy);
+    count++;
 
     // Guard units near each nest
     for (let i = 0; i < 2; i++) {
@@ -131,6 +150,7 @@ function spawnEnemyNests(world: GameWorld, layout: VerticalMapLayout, rng: Seede
       );
     }
   }
+  return count;
 }
 
 /** Spawn neutral wildlife frogs across unlocked panels. */

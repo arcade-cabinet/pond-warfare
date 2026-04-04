@@ -1,5 +1,6 @@
 /**
- * Overlays - Pause overlay, attack-move banner, enemy economy display, objective bar.
+ * Overlays - Pause overlay, attack-move banner, enemy economy display,
+ * objective bar (nest destruction or wave survival).
  */
 
 import {
@@ -15,16 +16,23 @@ import {
   peaceWarningCountdown,
   totalEnemyNests,
 } from '../store';
+import { currentWaveNumber, waveSurvivalMode, waveSurvivalTarget } from '../store-v3';
 
 export function Overlays() {
   const total = totalEnemyNests.value;
   const destroyed = destroyedEnemyNests.value;
   const justDestroyed = nestJustDestroyed.value;
+  const isSurvival = waveSurvivalMode.value;
+  const waveNum = currentWaveNumber.value;
+  const waveTarget = waveSurvivalTarget.value;
+
+  // Show objective bar in either mode
+  const showObjective = isSurvival || total > 0;
 
   return (
     <>
       {/* Objective bar - persistent display at top-center */}
-      {total > 0 && (
+      {showObjective && (
         <div
           class={`absolute top-10 md:top-11 left-1/2 -translate-x-1/2 z-15 flex items-center gap-2 rounded px-3 py-1 text-[10px] md:text-xs whitespace-nowrap${justDestroyed ? ' animate-pulse' : ''}`}
           style={{
@@ -36,9 +44,11 @@ export function Overlays() {
             class="font-heading font-bold tracking-wide"
             style={{ color: justDestroyed ? 'var(--pw-accent)' : 'var(--pw-text-secondary)' }}
           >
-            {justDestroyed
-              ? `${destroyed}/${total} Nests Destroyed!`
-              : `Destroy Enemy Nests: ${destroyed}/${total}`}
+            {isSurvival
+              ? `Survive Waves: ${waveNum}/${waveTarget}`
+              : justDestroyed
+                ? `${destroyed}/${total} Nests Destroyed!`
+                : `Destroy Enemy Nests: ${destroyed}/${total}`}
           </span>
         </div>
       )}

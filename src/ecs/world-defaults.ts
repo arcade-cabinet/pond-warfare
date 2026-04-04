@@ -192,6 +192,8 @@ export function createGameWorld(): GameWorld {
     terrainGrid: new TerrainGrid(WORLD_WIDTH, WORLD_HEIGHT, TILE_SIZE),
     combatZones: [],
     waveNumber: 0,
+    waveSurvivalMode: false,
+    waveSurvivalTarget: 5,
     commanderAbilityCooldownUntil: 0,
     commanderAbilityActiveUntil: 0,
     demoralizedUnits: new Set(),

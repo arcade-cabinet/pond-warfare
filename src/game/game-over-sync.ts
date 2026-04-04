@@ -37,8 +37,15 @@ export function syncGameOverStats(world: GameWorld): void {
 
   store.goTitle.value = w.state === 'win' ? 'Victory' : 'Defeat';
   store.goTitleColor.value = w.state === 'win' ? 'text-amber-400' : 'text-red-500';
-  store.goDesc.value =
-    w.state === 'win' ? 'All predator nests destroyed!' : 'All lodges destroyed!';
+
+  // Description varies by game mode
+  if (w.waveSurvivalMode) {
+    store.goDesc.value =
+      w.state === 'win' ? `Survived all ${w.waveSurvivalTarget} waves!` : 'The Lodge has fallen!';
+  } else {
+    store.goDesc.value =
+      w.state === 'win' ? 'All predator nests destroyed!' : 'All lodges destroyed!';
+  }
 
   const days = Math.floor(w.frameCount / DAY_FRAMES);
   const remainFrames = w.frameCount % DAY_FRAMES;
@@ -89,7 +96,9 @@ export function syncGameOverStats(world: GameWorld): void {
     `Units lost: ${w.stats.unitsLost}`,
     `Buildings built: ${w.stats.buildingsBuilt}`,
     `Buildings lost: ${w.stats.buildingsLost}`,
-    `Nests destroyed: ${nestsDestroyed}`,
+    ...(w.waveSurvivalMode
+      ? [`Waves survived: ${w.waveNumber}/${w.waveSurvivalTarget}`]
+      : [`Nests destroyed: ${nestsDestroyed}`]),
     `Resources gathered: ${w.stats.resourcesGathered}`,
     `Techs researched: ${techSummary}`,
     `Peak army: ${w.stats.peakArmy}`,

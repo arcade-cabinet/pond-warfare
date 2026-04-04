@@ -4,6 +4,9 @@
  * Renders a Frame9Slice border containing a character on one side and a
  * SpeechBubble on the opposite side. Background has a subtle biome tint.
  * Characters use existing sprite components with CSS animation.
+ *
+ * Compact layout: all 3 panels + title must fit on one 1080p screen.
+ * Uses compact Frame9Slice (36px corners) to reduce frame chrome.
  */
 
 import { Frame9Slice } from '@/ui/components/frame/Frame9Slice';
@@ -39,11 +42,11 @@ const BIOME_TINTS: Record<Character, string> = {
   snake: 'rgba(100,110,120,0.08)', // foggy grey
 };
 
-/** Sprite size: Croc gets 1.2x for heavy feel */
+/** Sprite size: compact for single-screen layout; Croc gets 1.2x for heavy feel */
 const SPRITE_SIZES: Record<Character, { base: number; mobile: number }> = {
-  otter: { base: 140, mobile: 90 },
-  croc: { base: 168, mobile: 108 },
-  snake: { base: 140, mobile: 90 },
+  otter: { base: 90, mobile: 64 },
+  croc: { base: 108, mobile: 76 },
+  snake: { base: 90, mobile: 64 },
 };
 
 function CharacterSprite({ character, side }: { character: Character; side: Side }) {
@@ -95,8 +98,8 @@ function PanelButton({
       class="rts-btn font-heading tracking-wider min-h-[44px]"
       style={{
         fontSize: primary ? '1rem' : '0.8rem',
-        padding: primary ? '8px 20px' : '6px 14px',
-        minWidth: '100px',
+        padding: primary ? '6px 16px' : '4px 12px',
+        minWidth: '90px',
       }}
       onClick={onClick}
     >
@@ -119,7 +122,7 @@ function BubbleContent({
   return (
     <>
       <span
-        class="font-heading text-sm md:text-base leading-snug"
+        class="font-heading text-xs md:text-sm leading-snug"
         style={{ color: COLORS.sepiaText }}
       >
         {quote}
@@ -161,11 +164,11 @@ export function ComicPanel({
 
   return (
     <div class="w-full max-w-[600px]" style={{ filter: 'url(#grunge-heavy)' }}>
-      <Frame9Slice>
+      <Frame9Slice compact>
         {/* Biome tint overlay */}
         <div class="absolute inset-0 pointer-events-none" style={{ backgroundColor: tint }} />
-        {/* Panel content: character + bubble */}
-        <div class="relative flex items-center justify-center gap-2 md:gap-4 py-2 px-1 md:px-4">
+        {/* Panel content: character + bubble — compact padding */}
+        <div class="relative flex items-center justify-center gap-2 md:gap-3 py-1 px-1 md:px-3">
           {isCharLeft ? (
             <>
               {spriteEl}

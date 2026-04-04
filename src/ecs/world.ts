@@ -217,6 +217,14 @@ export interface GameWorld {
   combatZones: { x: number; y: number; life: number }[];
   waveNumber: number;
 
+  /**
+   * Wave-survival mode: when true, win condition is surviving all scheduled
+   * waves instead of destroying enemy nests (used at stage 1 with no nests).
+   */
+  waveSurvivalMode: boolean;
+  /** Number of waves to survive for victory in wave-survival mode. */
+  waveSurvivalTarget: number;
+
   // Commander active ability + morale
   commanderAbilityCooldownUntil: number;
   commanderAbilityActiveUntil: number;

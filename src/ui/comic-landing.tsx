@@ -6,6 +6,7 @@
  * Panel 3: Snake (left) — "Adjust your gear" [SETTINGS]
  *
  * SwampEcosystem canvas runs behind everything (rendered by app.tsx).
+ * All 3 panels + title fit on one 1080p screen without scrolling.
  */
 
 import { useCallback } from 'preact/hooks';
@@ -71,15 +72,15 @@ export function ComicLanding() {
   return (
     <div
       id="intro-overlay"
-      class="relative h-screen w-full flex flex-col items-center justify-start overflow-y-auto safe-area-pad"
+      class="relative h-screen w-full flex flex-col items-center justify-center overflow-y-auto safe-area-pad"
     >
       <MenuBackground />
 
       {/* Title */}
-      <div class="relative z-10 flex flex-col items-center mt-4 mb-2 md:mt-6 md:mb-4">
+      <div class="relative z-10 flex flex-col items-center mb-1 md:mb-2">
         <h1 class="font-heading mb-0 tracking-widest uppercase text-center">
           <span
-            class="block text-3xl md:text-6xl leading-tight"
+            class="block text-2xl md:text-5xl leading-tight"
             style={{
               color: COLORS.mossGreen,
               textShadow:
@@ -89,7 +90,7 @@ export function ComicLanding() {
             Pond
           </span>
           <span
-            class="block text-2xl md:text-5xl leading-tight mt-1"
+            class="block text-xl md:text-4xl leading-tight mt-0.5"
             style={{
               color: COLORS.grittyGold,
               textShadow:
@@ -101,8 +102,8 @@ export function ComicLanding() {
         </h1>
       </div>
 
-      {/* Comic panels */}
-      <div class="relative z-10 flex flex-col items-center gap-3 md:gap-5 px-3 pb-4 w-full">
+      {/* Comic panels — tight gap for single-screen fit */}
+      <div class="relative z-10 flex flex-col items-center gap-2 md:gap-3 px-3 pb-2 w-full">
         {/* Panel 1: Otter — Play */}
         <ComicPanel
           character="otter"
@@ -138,7 +139,7 @@ export function ComicLanding() {
       </div>
 
       {/* Version */}
-      <div class="relative z-10 pb-4">
+      <div class="relative z-10 pb-1">
         <span class="font-game text-[10px]" style={{ color: COLORS.weatheredSteel }}>
           v3.0 &middot; Defend the Pond
         </span>
