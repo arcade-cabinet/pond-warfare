@@ -46,15 +46,20 @@ Resources are finite. When a node is depleted, it is gone -- forcing expansion t
 | **Clams** | Earned post-match | Upgrade web purchases (240+ nodes) |
 | **Pearls** | Earned from prestige (Rank Up) | Pearl upgrades (auto-deploy, auto-behaviors, multipliers) |
 
-## Vertical Map
+## Vertical Map & 6-Panel Grid
 
-Maps are vertical: approximately one screen wide and 2-3 screens tall.
+Maps use a 6-panel grid system (`configs/panels.json`). Each panel has a unique biome, resource types, terrain features, and a progression unlock stage. The Lodge panel sits at the bottom center; enemy panels are at the top. Panels unlock as the player advances through progression stages.
 
-- **Bottom 15%**: Lodge zone -- player Lodge + initial buildings
-- **20% to 65%**: Resource zone -- fish nodes, rock deposits, tree clusters
-- **Top 15%**: Enemy spawn zone -- waves arrive from here
+| Panel | Biome | Resources | Unlock Stage |
+|-------|-------|-----------|--------------|
+| 1 | Rocky Marsh | Fish, Trees | 3 |
+| 2 | Muddy Forest | Trees | 2 |
+| 3 | Flooded Swamp | Fish, Trees | 3 |
+| 4 | Open Grassland | All | 1 (start) |
+| 5 | Sandy Shore | Fish, Rocks | 1 (start) |
+| 6 | Dense Thicket | Trees, Rocks | 2 |
 
-Map dimensions scale with progression level (from `configs/terrain.json`):
+Map dimensions also scale with progression level (from `configs/terrain.json`):
 
 | Progression | Map Size | Resource Nodes | Enemy Spawn Directions |
 |-------------|----------|----------------|------------------------|
@@ -303,6 +308,12 @@ Changes every 3-5 minutes, seeded from map seed for determinism:
 | **Fog** | -40% vision range, enemies wait longer to attack |
 | **Wind** | +-15px projectile drift |
 
+## Auto-Symbol Unit Autonomy
+
+After a player unit completes an order and is deselected, a themed icon (the auto-symbol) appears above its head for 4 seconds. If the player taps the icon, the unit's auto-behavior is confirmed and it loops its last action. If not tapped, the icon fades and the unit returns to idle.
+
+This provides a non-intrusive way to set up automated economy and defense without micro-managing every unit. Auto-symbols are rendered as PixiJS overlays (`src/rendering/pixi/auto-symbol-overlay.ts`) and driven by the `autoSymbolSystem` ECS system.
+
 ## Auto-Behaviors
 
 Toggled via the radial menu on the idle worker button:
@@ -339,6 +350,16 @@ Rapid consecutive kills within 5 seconds trigger announcements:
 | 3 | TRIPLE KILL | Gold floating text, screen shake |
 | 5 | RAMPAGE | Red floating text, heavy screen shake |
 
+## Comic Panel Landing Page
+
+The main menu uses a comic book landing page (`src/ui/comic-landing.tsx`) with three stacked panels, each featuring an SVG sprite character:
+
+- **Panel 1** (Otter, left): "Ready for battle?" -- PLAY + optional CONTINUE
+- **Panel 2** (Croc, right): "Power up, soldier" -- UPGRADES + optional PRESTIGE
+- **Panel 3** (Snake, left): "Adjust your gear" -- SETTINGS
+
+The SwampEcosystem canvas renders behind all panels with animated fog blobs and fireflies. Panels are staggered left/center/right in landscape and fill width in portrait.
+
 ## Sound Design
 
 Unit-specific SFX via Tone.js synthesis with spatial stereo panning. Effects include building placement, research complete, train complete, unit death, building destruction, heal, and error sounds. Music adapts between peaceful and combat states.
@@ -350,3 +371,7 @@ The game scales difficulty through progression level, not an explicit difficulty
 - More events with tougher enemy compositions
 - Enemies with scaled HP, damage, and speed
 - More resource nodes but more to defend
+
+## Persistence
+
+All metagame state (prestige rank, Pearls, Clams, upgrade purchases, settings) is persisted via SQLite using capacitor-sqlite + jeep-sqlite. The persistence layer is in `src/storage/` with queries in `src/ui/store-v3-persistence.ts`. There is no localStorage fallback.

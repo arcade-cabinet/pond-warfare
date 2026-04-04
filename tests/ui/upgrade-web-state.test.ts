@@ -297,12 +297,12 @@ describe('Active effect computation', () => {
     const w = freshWeb();
     const state = stateWithClams(10000);
 
-    purchaseNode(state, w, 'gathering_fish_gathering_t0'); // effect 0.05
-    purchaseNode(state, w, 'gathering_fish_gathering_t1'); // effect 0.10
+    purchaseNode(state, w, 'gathering_fish_gathering_t0'); // effect 0.10
+    purchaseNode(state, w, 'gathering_fish_gathering_t1'); // effect 0.20
 
     const effects = computeActiveEffects(state, w);
     const fishEffect = effects.get('gathering_fish_gathering');
-    expect(fishEffect).toBeCloseTo(0.15); // 0.05 + 0.10
+    expect(fishEffect).toBeCloseTo(0.3); // 0.10 + 0.20
   });
 
   it('should track effects across multiple paths', () => {

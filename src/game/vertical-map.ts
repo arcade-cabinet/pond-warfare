@@ -32,10 +32,17 @@ export interface VerticalMapLayout {
   panelGrid: PanelGrid;
 }
 
+/** Options for map layout generation. */
+export interface MapLayoutOptions {
+  /** Whether the player has unlocked rare resource nodes via prestige. */
+  hasRareResourceAccess?: boolean;
+}
+
 /** Generate a panel-aware map layout. */
 export function generateVerticalMapLayout(
   panelGrid: PanelGrid,
   rng: SeededRandom,
+  options: MapLayoutOptions = {},
 ): VerticalMapLayout {
   const { width: worldWidth, height: worldHeight } = panelGrid.getWorldDimensions();
   const cols = Math.ceil(worldWidth / TILE_SIZE);
@@ -72,6 +79,23 @@ export function generateVerticalMapLayout(
         enemySpawnPositions.push({
           x: bounds.x + bounds.width * fraction,
           y: bounds.y + 40,
+          panelId,
+        });
+      }
+    }
+  }
+
+  // Rare node spawning: 1-2 rare nodes per active panel when prestige unlocked
+  if (options.hasRareResourceAccess) {
+    for (const panelId of activePanels) {
+      const bounds = panelGrid.getPanelBounds(panelId);
+      const margin = 60;
+      const count = rng.int(1, 2);
+      for (let i = 0; i < count; i++) {
+        resourcePositions.push({
+          x: bounds.x + margin + rng.next() * (bounds.width - margin * 2),
+          y: bounds.y + margin + rng.next() * (bounds.height - margin * 2),
+          type: 'rare_node',
           panelId,
         });
       }

@@ -103,6 +103,13 @@
       "cost_per_rank": 12,
       "max_rank": 1,
       "effect": { "type": "auto_behavior", "behavior": "lodge_self_repair" }
+    },
+    "rare_resource_access": {
+      "label": "Rare Resources",
+      "description": "Rare resource nodes appear on the map",
+      "cost_per_rank": 15,
+      "max_rank": 1,
+      "effect": { "type": "auto_behavior", "behavior": "rare_resource_access" }
     }
   },
   "resets_on_prestige": ["clam_upgrades", "current_run"],

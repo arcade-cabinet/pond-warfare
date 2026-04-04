@@ -45,12 +45,7 @@ vi.mock('@/audio/audio-system', () => ({
   },
 }));
 
-function createBuilding(
-  world: GameWorld,
-  kind: EntityKind,
-  hp: number,
-  faction: Faction,
-): number {
+function createBuilding(world: GameWorld, kind: EntityKind, hp: number, faction: Faction): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

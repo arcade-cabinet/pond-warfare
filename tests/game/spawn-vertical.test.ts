@@ -16,7 +16,7 @@ const spawnedEntities: { kind: number; x: number; y: number; faction: number }[]
 let nextEid = 1;
 
 vi.mock('@/ecs/archetypes', () => ({
-  spawnEntity: vi.fn((world: unknown, kind: number, x: number, y: number, faction: number) => {
+  spawnEntity: vi.fn((_world: unknown, kind: number, x: number, y: number, faction: number) => {
     const eid = nextEid++;
     spawnedEntities.push({ kind, x, y, faction });
     return eid;
@@ -157,6 +157,22 @@ describe('spawnVerticalEntities', () => {
     const frogs = spawnedEntities.filter((e) => e.kind === 31); // Frog
     expect(frogs.length).toBeGreaterThanOrEqual(3);
     expect(frogs.length).toBeLessThanOrEqual(6);
+  });
+
+  it('spawns rare_node as a random resource kind (Clambed, PearlBed, or Cattail)', () => {
+    const world = makeWorld();
+    const layout = makeLayout();
+    // Add a rare_node to the layout
+    layout.resourcePositions.push({ x: 600, y: 800, type: 'rare_node', panelId: 5 as const });
+    spawnVerticalEntities(world as any, layout, new SeededRandom(42));
+
+    // 4 resource entities total now (3 normal + 1 rare)
+    const neutrals = spawnedEntities.filter((e) => e.faction === 2 && e.kind !== 31);
+    expect(neutrals.length).toBe(4); // 3 normal + 1 rare
+    // The rare node should be one of the resource kinds
+    const rareEntity = neutrals.find((e) => e.x === 600 && e.y === 800);
+    expect(rareEntity).toBeDefined();
+    expect([10, 11, 25]).toContain(rareEntity?.kind); // Cattail, Clambed, or PearlBed
   });
 
   it('sets world.selection to the Lodge entity', () => {

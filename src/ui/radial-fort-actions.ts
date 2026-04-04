@@ -83,10 +83,14 @@ export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY:
     return false;
   }
 
-  // Check distance -- must be within ~120px of a slot
+  // Check distance -- must be within ~120px of a slot (world space).
+  // At low zoom, ensure at least 22px screen-space tap target (44px diameter).
+  const zoom = world.zoomLevel;
+  const minWorldRadius = 22 / zoom; // 22 screen-px → world-px
+  const threshold = Math.max(120, minWorldRadius);
   const dx = slot.worldX - worldX;
   const dy = slot.worldY - worldY;
-  if (dx * dx + dy * dy > 120 * 120) {
+  if (dx * dx + dy * dy > threshold * threshold) {
     pushGameEvent('Too far from slot', COLORS.feedbackError, world.frameCount);
     return false;
   }

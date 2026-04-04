@@ -31,7 +31,7 @@ import {
   purchaseNode,
   type UpgradeWebPurchaseState,
 } from '@/ui/upgrade-web-state';
-import { stateColor, UpgradeNodeRow } from './UpgradeNodeRow';
+import { findCheapestAvailableNodeId, stateColor, UpgradeNodeRow } from './UpgradeNodeRow';
 
 export interface UpgradeWebScreenProps {
   clams: number;
@@ -57,6 +57,11 @@ export function UpgradeWebScreen({ clams, onClamsChange, onBack }: UpgradeWebScr
     () => getDiamondsForCategory(web, activeCat),
     [web, activeCat],
   );
+
+  const cheapestNodeId = useMemo(() => {
+    const allNodes = subcategories.flatMap(([subKey]) => getNodesForPath(web, activeCat, subKey));
+    return findCheapestAvailableNodeId(allNodes, purchaseState);
+  }, [subcategories, web, activeCat, purchaseState]);
 
   const handlePurchaseNode = useCallback(
     (nodeId: string) => {
@@ -155,6 +160,7 @@ export function UpgradeWebScreen({ clams, onClamsChange, onBack }: UpgradeWebScr
                       node={node}
                       state={getNodeDisplayState(purchaseState, node)}
                       onPurchase={handlePurchaseNode}
+                      isCheapest={node.id === cheapestNodeId}
                     />
                   ))}
                 </div>

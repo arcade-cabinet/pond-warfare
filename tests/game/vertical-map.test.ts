@@ -102,6 +102,44 @@ describe('generateVerticalMapLayout (panel-based)', () => {
   });
 });
 
+describe('rare node spawning', () => {
+  it('adds rare_node positions when hasRareResourceAccess is true', () => {
+    const grid = new PanelGrid(VP_W, VP_H, 1);
+    const layout = generateVerticalMapLayout(grid, new SeededRandom(42), {
+      hasRareResourceAccess: true,
+    });
+    const rareNodes = layout.resourcePositions.filter((r) => r.type === 'rare_node');
+    // Stage 1 has 1 active panel, 1-2 rare nodes per panel
+    expect(rareNodes.length).toBeGreaterThanOrEqual(1);
+    expect(rareNodes.length).toBeLessThanOrEqual(2);
+  });
+
+  it('does not add rare nodes when hasRareResourceAccess is false', () => {
+    const grid = new PanelGrid(VP_W, VP_H, 1);
+    const layout = generateVerticalMapLayout(grid, new SeededRandom(42), {
+      hasRareResourceAccess: false,
+    });
+    const rareNodes = layout.resourcePositions.filter((r) => r.type === 'rare_node');
+    expect(rareNodes.length).toBe(0);
+  });
+
+  it('does not add rare nodes by default (no options)', () => {
+    const layout = makeLayout(1);
+    const rareNodes = layout.resourcePositions.filter((r) => r.type === 'rare_node');
+    expect(rareNodes.length).toBe(0);
+  });
+
+  it('spawns more rare nodes with more active panels', () => {
+    const grid6 = new PanelGrid(VP_W, VP_H, 6);
+    const layout6 = generateVerticalMapLayout(grid6, new SeededRandom(42), {
+      hasRareResourceAccess: true,
+    });
+    const rareNodes6 = layout6.resourcePositions.filter((r) => r.type === 'rare_node');
+    // 6 panels * 1-2 each = 6-12 rare nodes
+    expect(rareNodes6.length).toBeGreaterThanOrEqual(6);
+  });
+});
+
 describe('buildVerticalTerrain (panel-based)', () => {
   it('creates a TerrainGrid with correct dimensions', () => {
     const layout = makeLayout(1);

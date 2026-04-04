@@ -67,6 +67,9 @@ export enum EntityKind {
   Berserker = 41,
   WallGate = 42,
   Shrine = 43,
+  // v3.0.0 entities
+  Sapper = 44,
+  Saboteur = 45,
 }
 
 /** Entity kinds that represent buildings (get larger vision radius, etc.). */
@@ -147,6 +150,9 @@ export enum SpriteId {
   Berserker = 41,
   WallGate = 42,
   Shrine = 43,
+  // v3.0.0 sprites
+  Sapper = 44,
+  Saboteur = 45,
   // Non-entity visual sprites
   Bones = 50,
   Rubble = 51,

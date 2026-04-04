@@ -21,13 +21,13 @@ describe('SpriteOtter', () => {
     render(h(SpriteOtter, null));
     const svg = document.querySelector('svg');
     expect(svg).toBeTruthy();
-    expect(svg!.getAttribute('viewBox')).toBe('0 0 100 100');
+    expect(svg?.getAttribute('viewBox')).toBe('0 0 100 100');
   });
 
   it('has aria-label="Otter Commando"', () => {
     render(h(SpriteOtter, null));
     const svg = document.querySelector('svg');
-    expect(svg!.getAttribute('aria-label')).toBe('Otter Commando');
+    expect(svg?.getAttribute('aria-label')).toBe('Otter Commando');
   });
 
   it('contains .sprite-frame-1 and .sprite-frame-2 groups', () => {
@@ -50,7 +50,7 @@ describe('SpriteCroc', () => {
     render(h(SpriteCroc, null));
     const svg = document.querySelector('svg');
     expect(svg).toBeTruthy();
-    expect(svg!.getAttribute('aria-label')).toBe('Gator Heavy');
+    expect(svg?.getAttribute('aria-label')).toBe('Gator Heavy');
   });
 });
 
@@ -59,6 +59,6 @@ describe('SpriteSnake', () => {
     render(h(SpriteSnake, null));
     const svg = document.querySelector('svg');
     expect(svg).toBeTruthy();
-    expect(svg!.getAttribute('aria-label')).toBe('Viper Sniper');
+    expect(svg?.getAttribute('aria-label')).toBe('Viper Sniper');
   });
 });

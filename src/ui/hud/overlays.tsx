@@ -89,6 +89,7 @@ export function Overlays() {
       {/* Enemy wave incoming warning banner */}
       {peaceWarningCountdown.value > 0 && (
         <div
+          aria-live="assertive"
           class="absolute top-20 md:top-22 left-1/2 -translate-x-1/2 z-25 px-4 py-1 rounded font-heading font-bold text-xs md:text-sm whitespace-nowrap animate-pulse"
           style={{
             background: 'var(--pw-wave-warning-bg)',

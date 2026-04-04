@@ -53,6 +53,20 @@ const LODGE_OPTIONS: RadialOption[] = [
     color: 'scout',
   },
   {
+    id: 'train_sapper',
+    label: 'Sapper',
+    icon: '\u{1F4A3}', // bomb
+    tooltip: 'Train Sapper (25 Fish, 15 Rocks)',
+    color: 'twig',
+  },
+  {
+    id: 'train_saboteur',
+    label: 'Saboteur',
+    icon: '\u{1F5E1}\uFE0F', // dagger
+    tooltip: 'Train Saboteur (20 Fish, 10 Rocks)',
+    color: 'moss-bright',
+  },
+  {
     id: 'fortify',
     label: 'Fortify',
     icon: '\u{1F9F1}', // brick
@@ -239,6 +253,10 @@ export function entityKindToRole(kind: number): string {
       return 'combat';
     case 35:
       return 'heal'; // Shaman
+    case 44:
+      return 'combat'; // Sapper
+    case 45:
+      return 'combat'; // Saboteur
     default:
       return 'combat';
   }

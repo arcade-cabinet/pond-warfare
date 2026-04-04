@@ -197,6 +197,33 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     twigCost: 80,
     foodCost: 1,
   },
+  // --- v3.0.0 new player units ---
+  [EntityKind.Sapper]: {
+    hp: 40,
+    speed: 1.5,
+    damage: 15,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 50,
+    twigCost: 0,
+    foodCost: 1,
+  },
+  [EntityKind.Saboteur]: {
+    hp: 30,
+    speed: 2.5,
+    damage: 5,
+    attackRange: 40,
+    isBuilding: false,
+    isResource: false,
+    spriteSize: 16,
+    spriteScale: 2.5,
+    clamCost: 60,
+    twigCost: 0,
+    foodCost: 1,
+  },
   // Ambient critters (no cost, no combat role)
   [EntityKind.Frog]: {
     hp: 5,

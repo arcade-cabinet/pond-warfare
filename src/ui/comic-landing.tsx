@@ -7,6 +7,9 @@
  *
  * SwampEcosystem canvas runs behind everything (rendered by app.tsx).
  * All 3 panels + title fit on one 1080p screen without scrolling.
+ *
+ * Panels are staggered left/center/right in landscape for visual dynamism.
+ * In portrait tablet mode, panels fill width without stagger.
  */
 
 import { useCallback } from 'preact/hooks';
@@ -102,39 +105,42 @@ export function ComicLanding() {
         </h1>
       </div>
 
-      {/* Comic panels — tight gap for single-screen fit */}
-      <div class="relative z-10 flex flex-col items-center gap-2 md:gap-3 px-3 pb-2 w-full">
-        {/* Panel 1: Otter — Play */}
+      {/* Comic panels — staggered for visual dynamism in landscape */}
+      <div class="relative z-10 flex flex-col items-center gap-2 md:gap-3 px-3 pb-2 w-full comic-panels-container">
+        {/* Panel 1: Otter — Play (stagger left) */}
         <ComicPanel
           character="otter"
           side="left"
           quote="Ready for battle?"
           buttonLabel="PLAY"
           onButtonClick={handlePlay}
+          stagger="left"
           secondaryButton={
             hasSaveGame.value ? { label: 'CONTINUE', onClick: handleContinue } : undefined
           }
         />
 
-        {/* Panel 2: Croc — Upgrades */}
+        {/* Panel 2: Croc — Upgrades (stagger center) */}
         <ComicPanel
           character="croc"
           side="right"
           quote="Power up, soldier"
           buttonLabel="UPGRADES"
           onButtonClick={handleUpgrades}
+          stagger="center"
           secondaryButton={
             showPrestige ? { label: 'PRESTIGE', onClick: handlePrestige } : undefined
           }
         />
 
-        {/* Panel 3: Snake — Settings */}
+        {/* Panel 3: Snake — Settings (stagger right) */}
         <ComicPanel
           character="snake"
           side="left"
           quote="Adjust your gear"
           buttonLabel="SETTINGS"
           onButtonClick={handleSettings}
+          stagger="right"
         />
       </div>
 

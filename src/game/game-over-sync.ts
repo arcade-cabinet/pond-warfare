@@ -13,6 +13,7 @@ import type { GameWorld } from '@/ecs/world';
 import { deleteSave, getLatestSave } from '@/storage';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
+import { persistCurrentRun, persistPrestigeState } from '@/ui/store-v3-persistence';
 import { processGameOverRewards, resetRewardsGuard } from './game-over-rewards';
 import { calculateMatchReward } from './match-rewards';
 
@@ -153,6 +154,18 @@ export function syncGameOverStats(world: GameWorld): void {
     storeV3.lastRewardBreakdown.value = breakdown;
     storeV3.matchEventsCompleted.value = eventsCompleted;
     storeV3.rewardsScreenOpen.value = true;
+
+    // T20: Increment progression level on win (0 for loss)
+    if (w.state === 'win') {
+      storeV3.progressionLevel.value += 1;
+    }
+
+    // T19: Add earned Clams to total and persist to SQLite
+    storeV3.totalClams.value += breakdown.totalClams;
+
+    // Persist prestige + current run state (async, best-effort)
+    persistPrestigeState().catch(() => {});
+    persistCurrentRun().catch(() => {});
   }
 
   // Process XP, match record, and daily challenge (async, best-effort)

@@ -28,6 +28,9 @@ import { enemyBuildingTick } from './enemy-building';
 import { enemyCombatTick } from './enemy-combat';
 import { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 import { enemyEconomyTick } from './enemy-economy';
+import { enemyHealerTick } from './enemy-healer';
+import { enemyRaiderTick } from './enemy-raider';
+import { enemySapperTick } from './enemy-sapper';
 import { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';
 
 export function aiSystem(world: GameWorld): void {
@@ -36,6 +39,9 @@ export function aiSystem(world: GameWorld): void {
   enemyTrainingTick(world);
   enemyTrainingQueueProcess(world);
   enemyCombatTick(world);
+  enemyRaiderTick(world);
+  enemyHealerTick(world);
+  enemySapperTick(world);
   nestDefenseReinforcement(world);
   bossWaveLogic(world);
 }
@@ -45,12 +51,19 @@ export { enemyCombatTick } from './enemy-combat';
 export { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 // Re-export sub-module functions for direct access if needed
 export { enemyEconomyTick } from './enemy-economy';
+export { enemyHealerTick } from './enemy-healer';
+export { enemyRaiderTick } from './enemy-raider';
+export { enemySapperTick } from './enemy-sapper';
 export { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';
 export {
   countEnemyArmy,
   countPlayerUnitsOfKind,
   findBuildPosition,
+  findDamagedEnemyUnits,
+  findNearestEntity,
+  findPlayerFortifications,
   findPlayerLodge,
+  findResourceNodes,
   findWeakestPlayerBuilding,
   getEnemyArmyUnits,
   getEnemyNests,

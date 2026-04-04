@@ -96,6 +96,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
       {/* Fish (clams internally) */}
       <div
         role="status"
+        aria-live="polite"
         class="flex items-center space-x-1 md:space-x-2"
         aria-label={`Fish: ${currentFish}`}
       >
@@ -140,6 +141,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
       {/* Rocks (pearls internally -- in-match stone resource) */}
       <div
         role="status"
+        aria-live="polite"
         class="flex items-center space-x-1 md:space-x-2"
         aria-label={`Rocks: ${currentRocks}`}
       >
@@ -167,6 +169,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
       {/* Logs (twigs internally) */}
       <div
         role="status"
+        aria-live="polite"
         class="flex items-center space-x-1 md:space-x-2"
         aria-label={`Logs: ${currentLogs}`}
       >
@@ -210,6 +213,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
       {/* Food */}
       <div
         role="status"
+        aria-live="polite"
         class="flex items-center space-x-1 md:space-x-2"
         aria-label={`Food: ${currentFood} / ${currentMaxFood}`}
       >

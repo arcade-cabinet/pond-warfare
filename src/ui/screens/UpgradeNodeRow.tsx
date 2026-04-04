@@ -5,13 +5,36 @@
  * Design bible: rts-btn, font-heading, design token colors.
  */
 
+import type { UpgradeNode } from '@/config/upgrade-web';
 import { COLORS } from '@/ui/design-tokens';
-import type { NodeDisplayState } from '@/ui/upgrade-web-state';
+import {
+  getNodeDisplayState,
+  type NodeDisplayState,
+  type UpgradeWebPurchaseState,
+} from '@/ui/upgrade-web-state';
 
 export interface UpgradeNodeRowProps {
   node: { id: string; name: string; cost: number; effect: number; tier: number };
   state: NodeDisplayState;
   onPurchase: (id: string) => void;
+  /** Whether this is the cheapest affordable node in the active category. */
+  isCheapest?: boolean;
+}
+
+/** Find the cheapest available (can afford) node ID among a list of nodes. */
+export function findCheapestAvailableNodeId(
+  nodes: UpgradeNode[],
+  state: UpgradeWebPurchaseState,
+): string | null {
+  let cheapest: { id: string; cost: number } | null = null;
+  for (const node of nodes) {
+    if (getNodeDisplayState(state, node) !== 'available') continue;
+    if (node.cost > state.clams) continue;
+    if (!cheapest || node.cost < cheapest.cost) {
+      cheapest = { id: node.id, cost: node.cost };
+    }
+  }
+  return cheapest?.id ?? null;
 }
 
 /** Color per node display state. */
@@ -21,13 +44,18 @@ export function stateColor(state: NodeDisplayState): string {
   return COLORS.weatheredSteel;
 }
 
-export function UpgradeNodeRow({ node, state: displayState, onPurchase }: UpgradeNodeRowProps) {
+export function UpgradeNodeRow({
+  node,
+  state: displayState,
+  onPurchase,
+  isCheapest,
+}: UpgradeNodeRowProps) {
   const isPurchased = displayState === 'purchased';
   const isAvailable = displayState === 'available';
 
   return (
     <div
-      class="flex items-center gap-2 py-1.5 px-2 rounded"
+      class={`flex items-center gap-2 py-1.5 px-2 rounded${isCheapest ? ' upgrade-node-affordable-pulse' : ''}`}
       style={{
         background: isPurchased
           ? 'rgba(90,107,58,0.08)'

@@ -225,6 +225,22 @@ function dispatchTargetCommand(
     UnitStateMachine.targetY[eid] = Position.y[target];
     UnitStateMachine.state[eid] = UnitState.ReturnMove;
   } else if (
+    tFaction === Faction.Player &&
+    !isTargetBuilding &&
+    !isTargetResource &&
+    kind === EntityKind.Healer &&
+    Health.current[target] > 0 &&
+    Health.current[target] < Health.max[target]
+  ) {
+    // Medic heal command: move to wounded ally so healer aura kicks in
+    UnitStateMachine.targetEntity[eid] = target;
+    UnitStateMachine.targetX[eid] = Position.x[target];
+    UnitStateMachine.targetY[eid] = Position.y[target];
+    UnitStateMachine.state[eid] = UnitState.Move;
+    if (!barkShown) {
+      barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'heal');
+    }
+  } else if (
     isTargetBuilding &&
     tFaction === Faction.Player &&
     Building.progress[target] >= 100 &&

@@ -168,7 +168,7 @@ describe('fortification slot system', () => {
     const state = initFortificationState(0, 400, 2000);
     const closest = findClosestSlot(state, 400, 2000, 'empty');
     expect(closest).not.toBeNull();
-    expect(closest!.status).toBe('empty');
+    expect(closest?.status).toBe('empty');
   });
 });
 

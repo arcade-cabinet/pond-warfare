@@ -7,7 +7,7 @@
  *
  * Design bible: vine-frame popup, gritty gold icons, wood plank button backgrounds,
  * design token colors from design-tokens.ts.
- * Auto-dismisses after 3 seconds if no selection.
+ * Auto-dismisses after 8 seconds if no selection.
  */
 
 import { useEffect, useRef } from 'preact/hooks';
@@ -27,7 +27,7 @@ export interface RadialMenuProps {
 }
 
 const RADIUS = 80;
-const AUTO_DISMISS_MS = 3000;
+const AUTO_DISMISS_MS = 8000;
 const ITEM_SIZE = 52; // 52px > 44px minimum touch target
 
 function closeMenu() {
@@ -81,7 +81,7 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
     0 as unknown as ReturnType<typeof setTimeout>,
   );
 
-  // Auto-dismiss after 3 seconds
+  // Auto-dismiss safety timeout
   useEffect(() => {
     if (radialMenuOpen.value) {
       timerRef.current = setTimeout(closeMenu, AUTO_DISMISS_MS);

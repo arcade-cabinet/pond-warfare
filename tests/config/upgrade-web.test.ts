@@ -60,13 +60,13 @@ describe('Upgrade catalog generation', () => {
 
   it('should generate correct effect formula: base_effect * (tier + 1)', () => {
     const catalog = generateUpgradeCatalog();
-    // fish_gathering: base_effect = 0.05
+    // fish_gathering: base_effect = 0.10
     const fishNodes = catalog.filter((n) => n.subcategory === 'fish_gathering');
 
-    expect(fishNodes[0].effect).toBeCloseTo(0.05); // 0.05 * 1
-    expect(fishNodes[1].effect).toBeCloseTo(0.1); // 0.05 * 2
-    expect(fishNodes[4].effect).toBeCloseTo(0.25); // 0.05 * 5
-    expect(fishNodes[9].effect).toBeCloseTo(0.5); // 0.05 * 10
+    expect(fishNodes[0].effect).toBeCloseTo(0.1); // 0.10 * 1
+    expect(fishNodes[1].effect).toBeCloseTo(0.2); // 0.10 * 2
+    expect(fishNodes[4].effect).toBeCloseTo(0.5); // 0.10 * 5
+    expect(fishNodes[9].effect).toBeCloseTo(1.0); // 0.10 * 10
   });
 
   it('should generate procedural names: "{prefix} {subcategory_label}"', () => {

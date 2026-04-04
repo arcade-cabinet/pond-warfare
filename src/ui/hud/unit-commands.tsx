@@ -1,6 +1,12 @@
 /**
- * UnitCommands - Army select button, attack-move button, halt button,
- * stance cycling, patrol mode, save-group UI.
+ * UnitCommands - Floating action buttons for unit commands.
+ *
+ * Attack-move, Stop, Patrol, and Stance buttons are always visible when
+ * units are selected (all screen sizes including mobile/tablet).
+ * Army select, idle worker, and save-group remain desktop-only.
+ *
+ * Buttons are positioned absolutely on the right side of the game screen,
+ * styled as floating command buttons with backdrop blur.
  */
 
 import { useState } from 'preact/hooks';
@@ -26,11 +32,54 @@ export interface UnitCommandsProps {
   onSaveCtrlGroup?: (group: number) => void;
 }
 
+/** Shared button styles for floating command buttons */
+function CmdButton({
+  id,
+  label,
+  shortcut,
+  borderColor,
+  textColor,
+  active,
+  onClick,
+  title,
+}: {
+  id: string;
+  label: string;
+  shortcut?: string;
+  borderColor: string;
+  textColor: string;
+  active?: boolean;
+  onClick?: () => void;
+  title: string;
+}) {
+  const mobile = screenClass.value === 'compact';
+  return (
+    <button
+      type="button"
+      id={id}
+      class={`floating-cmd-btn cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer ${active ? 'ring-2 ring-offset-1' : ''}`}
+      style={{
+        borderColor,
+        color: textColor,
+        background: 'rgba(26, 18, 8, 0.75)',
+      }}
+      title={title}
+      onClick={onClick}
+    >
+      <span class="font-heading text-xs md:text-sm">
+        {label}
+        {!mobile && shortcut ? ` (${shortcut})` : ''}
+      </span>
+    </button>
+  );
+}
+
 export function UnitCommands(props: UnitCommandsProps) {
   const [saveGroupOpen, setSaveGroupOpen] = useState(false);
 
   const totalIdle = idleWorkerCount.value;
   const mobile = screenClass.value === 'compact';
+  const hasSelection = hasPlayerUnits.value && selectionCount.value > 0;
 
   return (
     <>
@@ -68,72 +117,64 @@ export function UnitCommands(props: UnitCommandsProps) {
         </button>
       )}
 
-      {/* Attack-move button */}
-      {hasPlayerUnits.value && selectionCount.value > 0 && !attackMoveActive.value && (
-        <button
-          type="button"
-          id="attack-move-btn"
-          class="absolute top-36 md:top-40 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
-          style={{ borderColor: 'var(--pw-twig)', color: 'var(--pw-otter)' }}
-          title="Attack-Move (A)"
-          onClick={props.onAttackMoveClick}
+      {/* ── Floating action buttons — visible on ALL screen sizes ── */}
+      {hasSelection && (
+        <div
+          class="absolute right-2 md:right-6 z-20 flex flex-col gap-2"
+          style={{ top: mobile ? '60px' : '144px' }}
         >
-          <span class="font-heading text-xs md:text-sm">A-Move{!mobile && ' (A)'}</span>
-        </button>
-      )}
+          {/* Attack-move button */}
+          {!attackMoveActive.value && (
+            <CmdButton
+              id="attack-move-btn"
+              label="A-Move"
+              shortcut="A"
+              borderColor="var(--pw-twig)"
+              textColor="var(--pw-otter)"
+              onClick={props.onAttackMoveClick}
+              title="Attack-Move (A)"
+            />
+          )}
 
-      {/* Halt/Stop button */}
-      {hasPlayerUnits.value && selectionCount.value > 0 && (
-        <button
-          type="button"
-          id="halt-btn"
-          class="absolute top-48 md:top-52 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
-          style={{ borderColor: 'var(--pw-border)', color: 'var(--pw-text-secondary)' }}
-          title="Stop/Halt (H)"
-          onClick={props.onHaltClick}
-        >
-          <span class="font-heading text-xs md:text-sm">Stop{!mobile && ' (H)'}</span>
-        </button>
-      )}
+          {/* Stop button */}
+          <CmdButton
+            id="halt-btn"
+            label="Stop"
+            shortcut="H"
+            borderColor="var(--pw-border)"
+            textColor="var(--pw-text-secondary)"
+            onClick={props.onHaltClick}
+            title="Stop/Halt (H)"
+          />
 
-      {/* Stance cycle button */}
-      {hasPlayerUnits.value && selectionCount.value > 0 && selectionStance.value >= 0 && (
-        <button
-          type="button"
-          id="stance-btn"
-          class="absolute top-[232px] md:top-64 right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px]"
-          style={{ borderColor: 'var(--pw-moss-bright)', color: 'var(--pw-moss-bright)' }}
-          title={`Stance: ${STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)`}
-          onClick={() => cycleStance()}
-        >
-          <span class="font-heading text-xs md:text-sm">
-            {STANCE_TITLES[selectionStance.value] ?? 'Aggressive'}
-            {!mobile && ' (V)'}
-          </span>
-        </button>
-      )}
+          {/* Patrol button */}
+          <CmdButton
+            id="patrol-btn"
+            label={patrolModeActive.value ? 'Patrolling...' : 'Patrol'}
+            borderColor={
+              patrolModeActive.value ? 'var(--pw-vine-highlight)' : 'var(--pw-vine-base)'
+            }
+            textColor={patrolModeActive.value ? 'var(--pw-vine-highlight)' : 'var(--pw-vine-base)'}
+            active={patrolModeActive.value}
+            onClick={() => {
+              patrolModeActive.value = !patrolModeActive.value;
+            }}
+            title="Patrol: tap terrain to set waypoints"
+          />
 
-      {/* Patrol mode button */}
-      {hasPlayerUnits.value && selectionCount.value > 0 && (
-        <button
-          type="button"
-          id="patrol-btn"
-          class={`absolute top-[280px] md:top-[296px] right-2 md:right-6 cmd-btn border-2 px-3 md:px-4 py-2 rounded-full font-bold z-20 flex items-center gap-2 transition-colors shadow-lg cursor-pointer min-h-[44px] min-w-[44px] ${patrolModeActive.value ? 'ring-2 ring-offset-1' : ''}`}
-          style={{
-            borderColor: patrolModeActive.value
-              ? 'var(--pw-vine-highlight)'
-              : 'var(--pw-vine-base)',
-            color: patrolModeActive.value ? 'var(--pw-vine-highlight)' : 'var(--pw-vine-base)',
-          }}
-          title="Patrol: tap terrain to set waypoints"
-          onClick={() => {
-            patrolModeActive.value = !patrolModeActive.value;
-          }}
-        >
-          <span class="font-heading text-xs md:text-sm">
-            {patrolModeActive.value ? 'Patrolling...' : 'Patrol'}
-          </span>
-        </button>
+          {/* Stance cycle button */}
+          {selectionStance.value >= 0 && (
+            <CmdButton
+              id="stance-btn"
+              label={STANCE_TITLES[selectionStance.value] ?? 'Aggressive'}
+              shortcut="V"
+              borderColor="var(--pw-moss-bright)"
+              textColor="var(--pw-moss-bright)"
+              onClick={() => cycleStance()}
+              title={`Stance: ${STANCE_TITLES[selectionStance.value] ?? 'Aggressive'} (V)`}
+            />
+          )}
+        </div>
       )}
 
       {/* Save ctrl-group button (desktop only) */}

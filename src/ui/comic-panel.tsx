@@ -1,15 +1,17 @@
 /**
  * ComicPanel — Single comic book panel with character sprite and speech bubble.
  *
- * Renders a Frame9Slice border containing a character on one side and a
+ * Renders a lightweight bordered panel containing a character on one side and a
  * SpeechBubble on the opposite side. Background has a subtle biome tint.
- * Characters use existing sprite components with CSS animation.
  *
- * Compact layout: all 3 panels + title must fit on one 1080p screen.
- * Uses compact Frame9Slice (36px corners) to reduce frame chrome.
+ * Uses a 2px gold border with rounded corners and subtle grunge filter instead
+ * of Frame9Slice (too heavy for comic panels). Max height ~150-180px per panel.
+ *
+ * Panels are staggered in landscape: left-center-right offsets for visual
+ * dynamism. In portrait tablet, panels fill width.
  */
 
-import { Frame9Slice } from '@/ui/components/frame/Frame9Slice';
+import type { ComponentChildren } from 'preact';
 import { SpriteCroc } from '@/ui/components/sprites/SpriteCroc';
 import { SpriteOtter } from '@/ui/components/sprites/SpriteOtter';
 import { SpriteSnake } from '@/ui/components/sprites/SpriteSnake';
@@ -18,6 +20,9 @@ import { SpeechBubble } from './speech-bubble';
 
 type Character = 'otter' | 'croc' | 'snake';
 type Side = 'left' | 'right';
+
+/** Stagger offset direction per panel position. */
+export type StaggerPosition = 'left' | 'center' | 'right';
 
 interface SecondaryButton {
   label: string;
@@ -33,6 +38,8 @@ interface ComicPanelProps {
   secondaryButton?: SecondaryButton;
   /** Biome tint overlay color */
   biomeTint?: string;
+  /** Stagger position for landscape layout */
+  stagger?: StaggerPosition;
 }
 
 /** Biome tint defaults per character */
@@ -47,6 +54,20 @@ const SPRITE_SIZES: Record<Character, { base: number; mobile: number }> = {
   otter: { base: 90, mobile: 64 },
   croc: { base: 108, mobile: 76 },
   snake: { base: 90, mobile: 64 },
+};
+
+/** Landscape stagger offsets (panels overlap slightly) */
+const STAGGER_OFFSETS: Record<StaggerPosition, string> = {
+  left: '-3%',
+  center: '0%',
+  right: '3%',
+};
+
+/** Rotation per stagger position for visual dynamism */
+const STAGGER_ROTATIONS: Record<StaggerPosition, string> = {
+  left: '-0.8deg',
+  center: '0.3deg',
+  right: '-0.5deg',
 };
 
 function CharacterSprite({ character, side }: { character: Character; side: Side }) {
@@ -137,6 +158,33 @@ function BubbleContent({
   );
 }
 
+/**
+ * Lightweight panel frame: 2px gold border with rounded corners + subtle grunge.
+ * Replaces the heavy Frame9Slice (60px/36px SVG corners) with a simple CSS border.
+ */
+function LightFrame({ children, biomeTint }: { children: ComponentChildren; biomeTint: string }) {
+  return (
+    <div
+      class="comic-panel-frame relative overflow-hidden"
+      style={{
+        border: `2px solid ${COLORS.grittyGold}`,
+        borderRadius: '12px',
+        background: COLORS.bgPanel,
+        boxShadow: `0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(197,160,89,0.1)`,
+        maxHeight: '180px',
+        filter: 'url(#grunge-heavy)',
+      }}
+    >
+      {/* Biome tint overlay */}
+      <div class="absolute inset-0 pointer-events-none" style={{ backgroundColor: biomeTint }} />
+      {/* Panel content */}
+      <div class="relative flex items-center justify-center gap-2 md:gap-3 py-2 px-2 md:px-3">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function ComicPanel({
   character,
   side,
@@ -145,10 +193,12 @@ export function ComicPanel({
   onButtonClick,
   secondaryButton,
   biomeTint,
+  stagger,
 }: ComicPanelProps) {
   const tint = biomeTint ?? BIOME_TINTS[character];
   const bubbleSide: 'left' | 'right' = side === 'left' ? 'left' : 'right';
   const isCharLeft = side === 'left';
+  const staggerPos = stagger ?? 'center';
 
   const spriteEl = <CharacterSprite character={character} side={side} />;
   const bubbleEl = (
@@ -163,25 +213,26 @@ export function ComicPanel({
   );
 
   return (
-    <div class="w-full max-w-[600px]" style={{ filter: 'url(#grunge-heavy)' }}>
-      <Frame9Slice compact>
-        {/* Biome tint overlay */}
-        <div class="absolute inset-0 pointer-events-none" style={{ backgroundColor: tint }} />
-        {/* Panel content: character + bubble — compact padding */}
-        <div class="relative flex items-center justify-center gap-2 md:gap-3 py-1 px-1 md:px-3">
-          {isCharLeft ? (
-            <>
-              {spriteEl}
-              {bubbleEl}
-            </>
-          ) : (
-            <>
-              {bubbleEl}
-              {spriteEl}
-            </>
-          )}
-        </div>
-      </Frame9Slice>
+    <div
+      class="comic-panel-stagger w-full max-w-[600px]"
+      style={{
+        marginLeft: STAGGER_OFFSETS[staggerPos],
+        transform: `rotate(${STAGGER_ROTATIONS[staggerPos]})`,
+      }}
+    >
+      <LightFrame biomeTint={tint}>
+        {isCharLeft ? (
+          <>
+            {spriteEl}
+            {bubbleEl}
+          </>
+        ) : (
+          <>
+            {bubbleEl}
+            {spriteEl}
+          </>
+        )}
+      </LightFrame>
     </div>
   );
 }

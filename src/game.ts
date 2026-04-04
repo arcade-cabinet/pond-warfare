@@ -20,6 +20,7 @@ import { cycleSpeed as cycleSpeedFn, type GameLoopState } from '@/game/game-loop
 import { runGameSetup } from '@/game/game-setup';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
 import { playUnitSelectSound } from '@/game/unit-select-sound';
+import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
@@ -28,6 +29,8 @@ import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera'
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
 import type { SpriteId } from '@/types';
+import * as storeV3 from '@/ui/store-v3';
+import { createUpgradeWebState } from '@/ui/upgrade-web-state';
 
 export class Game {
   world: GameWorld;
@@ -82,6 +85,11 @@ export class Game {
 
     applyDifficultyModifiers(this.world);
     applyMapSeed(this.world);
+
+    // T39: Apply upgrade web effects from purchased nodes + Pearl multipliers
+    const upgradeState = createUpgradeWebState(storeV3.totalClams.value);
+    applyUpgradeEffects(this.world, upgradeState, storeV3.prestigeState.value);
+
     spawnVerticalWorld(this.world);
 
     // Initial zoom BEFORE resize (zoomLevel drives viewWidth/viewHeight)

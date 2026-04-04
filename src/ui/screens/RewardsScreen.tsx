@@ -139,7 +139,7 @@ export function RewardsScreen({
               {canRankUp && (
                 <button
                   type="button"
-                  class="rts-btn w-full py-2 font-heading text-sm"
+                  class="rts-btn w-full py-2 font-heading text-sm animate-rank-up-pulse"
                   style={{
                     color: COLORS.grittyGold,
                     borderColor: COLORS.grittyGold,

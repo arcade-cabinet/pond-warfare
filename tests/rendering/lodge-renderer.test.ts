@@ -108,8 +108,8 @@ describe('Prestige glow', () => {
   it('should return a glow for rank 1', () => {
     const glow = getPrestigeGlow(1);
     expect(glow).not.toBeNull();
-    expect(glow!.radius).toBeGreaterThan(0);
-    expect(glow!.alpha).toBeGreaterThan(0);
+    expect(glow?.radius).toBeGreaterThan(0);
+    expect(glow?.alpha).toBeGreaterThan(0);
   });
 
   it('should return brighter glow for higher ranks', () => {
@@ -126,10 +126,10 @@ describe('Prestige glow', () => {
     for (let rank = 1; rank <= 20; rank++) {
       const glow = getPrestigeGlow(rank);
       expect(glow).not.toBeNull();
-      expect(glow!.color).toBeTruthy();
-      expect(glow!.radius).toBeGreaterThan(0);
-      expect(glow!.alpha).toBeGreaterThan(0);
-      expect(glow!.alpha).toBeLessThanOrEqual(1);
+      expect(glow?.color).toBeTruthy();
+      expect(glow?.radius).toBeGreaterThan(0);
+      expect(glow?.alpha).toBeGreaterThan(0);
+      expect(glow?.alpha).toBeLessThanOrEqual(1);
     }
   });
 });

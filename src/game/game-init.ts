@@ -5,7 +5,9 @@
  */
 
 import { resetBarkState } from '@/config/barks';
+import { isAutoBehaviorUnlocked } from '@/config/prestige-logic';
 import { Position, Selectable } from '@/ecs/components';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
 import { initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import { resetRandomEvents } from '@/ecs/systems/random-events';
@@ -124,9 +126,10 @@ export async function initCanvases(
 }
 
 /** Reset world and session state for a new game. */
-export function resetSession(world: GameWorld): void {
+export function resetSession(_world: GameWorld): void {
   resetBarkState();
   resetAchievementMatchState();
+  resetAutoSymbol();
   resetRandomEvents();
   resetMatchEventRunner();
   loadAchievements().catch(() => {});
@@ -280,7 +283,9 @@ export function spawnVerticalWorld(world: GameWorld, unlockStage = 1): void {
   world.panelGrid = panelGrid;
 
   // Generate panel-aware layout
-  const layout = generateVerticalMapLayout(panelGrid, rng);
+  const prestigeState = storeV3.prestigeState.value;
+  const hasRareResourceAccess = isAutoBehaviorUnlocked(prestigeState, 'rare_resource_access');
+  const layout = generateVerticalMapLayout(panelGrid, rng, { hasRareResourceAccess });
 
   // Build terrain grid (biomes for unlocked, ThornWall for locked)
   const terrain = buildVerticalTerrain(layout, rng);
@@ -295,7 +300,6 @@ export function spawnVerticalWorld(world: GameWorld, unlockStage = 1): void {
   const lodgeEid = spawnVerticalEntities(world, layout, rng);
 
   // v3 US11: Specialist auto-deploy from prestige state
-  const prestigeState = storeV3.prestigeState.value;
   deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
 
   // Floating text announcing the map

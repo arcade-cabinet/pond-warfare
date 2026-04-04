@@ -4,7 +4,7 @@
 
 Pond Warfare is a mobile-first real-time strategy game where otters defend their Lodge from waves of predators in a pond ecosystem. One game mode: defend the Lodge at the bottom of a vertical map against escalating enemy waves from the top. Between matches, spend earned Clams on an upgrade web (240+ nodes) and Pearls on prestige upgrades.
 
-**Feature summary:** 14 unit types (4 generalists + 10 specialists), 6 enemy types with per-level scaling, vertical map that scales with progression level, 240+ procedural upgrade nodes across 6 categories, prestige system with Pearl upgrades (auto-deploy, auto-behaviors, multipliers), JSON-driven match events (waves, bosses, sabotage, escorts), post-match reward screen with Clam earnings, Lodge with visual wing evolution, fortification system (walls, towers), deterministic PRNG (zero Math.random in gameplay), unit-specific SFX with spatial panning, Yuka.js steering for all units, terrain system (4 types), weather system (4 types), fog of war, day/night cycle, veterancy ranks, formation movement, auto-behaviors (gather/build/defend/attack/heal/scout), kill streaks, minimap, ctrl groups, hotkeys, settings persistence, SVG 9-slice panel system with pond watercolor aesthetic, Android APK builds.
+**Feature summary:** 14 unit types (4 generalists + 10 specialists), 6 enemy types with role-based behaviors (raiders, healers, sappers) and per-level scaling, 6-panel map grid with progression-based unlock, auto-symbol unit autonomy mechanic, 240+ procedural upgrade nodes across 6 categories with Frontier Expansion diamond nodes, prestige system with Pearl upgrades (auto-deploy, auto-behaviors, multipliers), JSON-driven wave-survival match events (waves, bosses, sabotage, escorts), post-match reward screen with Clam earnings, Lodge with visual wing evolution, fortification system (walls, towers), deterministic PRNG (zero Math.random in gameplay), unit-specific SFX with spatial panning, Yuka.js steering for all units, terrain system (4 types), weather system (4 types), fog of war, day/night cycle, veterancy ranks, formation movement, auto-behaviors (gather/build/defend/attack/heal/scout), kill streaks, minimap, ctrl groups, hotkeys, comic panel landing page, SQLite persistence, SVG 9-slice panel system with pond watercolor aesthetic, Android APK builds.
 
 Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
 
@@ -23,7 +23,7 @@ pnpm lint:fix   # Biome auto-fix
 
 See [docs/architecture.md](docs/architecture.md) for the full system overview.
 
-**Key pattern:** ECS game state lives in `GameWorld` (src/ecs/world.ts). UI reads from reactive `signal()` values in `src/ui/store.ts` (core signals) + `src/ui/store-v3.ts` (prestige, upgrade web, rewards, events). The game orchestrator (`src/game.ts` + `src/game/`) syncs world -> store every 30 frames via `syncUIStore()`.
+**Key pattern:** ECS game state lives in `GameWorld` (src/ecs/world.ts). UI reads from reactive `signal()` values in `src/ui/store.ts` (core signals) + `src/ui/store-v3.ts` (prestige, upgrade web, rewards, events). The game orchestrator (`src/game.ts` + `src/game/`) syncs world -> store every 30 frames via `syncUIStore()`. Persistence via `src/ui/store-v3-persistence.ts` syncs v3 state to SQLite.
 
 **v3 routing:** Menu state uses `store.menuState` signal (`'main' | 'playing'`). v3 overlay screens use `store-v3.ts` signals:
 
@@ -169,9 +169,20 @@ Enemy stats scale with progression level: HP +5%/level, Damage +3%/level, Speed 
 
 Defined in `configs/fortifications.json`. Fort slots per level in `configs/lodge.json`.
 
-### Vertical Map
+### Vertical Map & 6-Panel Grid
 
-Maps are vertical: ~1 screen wide, 2-3 screens tall. Lodge at bottom center, resources in middle zone, enemies spawn from top. Map size scales with progression level via `configs/terrain.json`:
+Maps use a 6-panel grid system defined in `configs/panels.json`. Each panel has a unique biome, resources, terrain features, and unlock stage. Lodge panel at bottom center, enemy panels at top. Panel unlock is tied to progression stage.
+
+| Panel | Biome | Resources | Unlock Stage |
+|-------|-------|-----------|--------------|
+| 1 | Rocky Marsh | Fish, Trees | 3 |
+| 2 | Muddy Forest | Trees | 2 |
+| 3 | Flooded Swamp | Fish, Trees | 3 |
+| 4 | Open Grassland | All | 1 (start) |
+| 5 | Sandy Shore | Fish, Rocks | 1 (start) |
+| 6 | Dense Thicket | Trees, Rocks | 2 |
+
+Map size also scales with progression level via `configs/terrain.json`:
 
 | Progression | Map Size | Nodes | Spawn Dirs |
 |-------------|----------|-------|------------|
@@ -181,9 +192,9 @@ Maps are vertical: ~1 screen wide, 2-3 screens tall. Lodge at bottom center, res
 
 Resource types: fish_node, rock_deposit, tree_cluster. Terrain types: grass, water, rocks, mud.
 
-Generation in `src/game/vertical-map.ts`. Terrain painting in `src/terrain/`.
+Generation in `src/game/vertical-map.ts`. Panel grid in `src/game/panel-grid.ts`. Terrain painting in `src/terrain/`.
 
-### JSON Config System (10 files in configs/)
+### JSON Config System (11 files in configs/)
 
 All game balance data lives in `configs/*.json`, loaded via `src/config/config-loader.ts` with typed accessors. Types in `src/config/v3-types.ts`.
 
@@ -198,6 +209,7 @@ All game balance data lives in `configs/*.json`, loaded via `src/config/config-l
 | `terrain.json` | Map size scaling per level | Progression tiers with resource counts |
 | `fortifications.json` | Wall/tower stats | HP, cost, damage, range |
 | `lodge.json` | Lodge wings + fort slots | Diamond node unlock targets |
+| `panels.json` | 6-panel map grid | Biomes, resources, terrain features, unlock stages |
 | `prefixes.json` | Tier name prefixes | Basic, Super, Ultra, etc. (10 tiers) |
 
 ### Upgrade Web (240+ procedural nodes)
@@ -298,13 +310,19 @@ Changes every 3-5 minutes, seeded from map seed:
 | `src/game/systems-runner.ts` | ECS system execution order | |
 | `src/game/game-loop.ts` | Main update loop | |
 | `src/game/game-init.ts` | World initialization | |
+| `src/game/panel-grid.ts` | 6-panel grid system from panels.json | |
+| `src/game/upgrade-effects.ts` | Upgrade web + Pearl multiplier application | |
 | `src/v3-resources.ts` | Fish/Rocks/Logs aliases for v2 resource fields | ~60 |
 | `src/rendering/pixi/entity-renderer.ts` | PixiJS entity rendering, health bars | ~300 |
+| `src/rendering/pixi/auto-symbol-overlay.ts` | Auto-symbol icon rendering above units | |
+| `src/rendering/pixi/lodge-visuals.ts` | Lodge wing rendering in PixiJS | |
 | `src/rendering/camera.ts` | Camera system: pan, zoom, shake | ~81 |
 | `src/ecs/systems/match-event-runner.ts` | v3 event system from events.json | |
 | `src/ecs/systems/specialist-deploy.ts` | Auto-deploy specialists from prestige | |
 | `src/ecs/systems/fortification.ts` | Wall/tower fortification system | |
-| `src/ecs/systems/ai/*.ts` | Enemy AI: economy, training, combat, defense, building | ~1200 total |
+| `src/ecs/systems/wave-spawner.ts` | Role-based enemy spawning, panel-aware positions | |
+| `src/ecs/systems/auto-symbol.ts` | Auto-behavior icon overlay after order completion | |
+| `src/ecs/systems/ai/*.ts` | Enemy AI: economy, training, combat, defense, building, raider, healer, sapper | ~1500 total |
 | `src/ecs/systems/combat/*.ts` | Combat: melee, positional damage | |
 | `src/ecs/systems/health/*.ts` | Health: damage, death, healing, particles | |
 | `src/ecs/systems/movement/*.ts` | Movement: arrive, speed modifiers | |
@@ -321,10 +339,13 @@ Changes every 3-5 minutes, seeded from map seed:
 | `src/config/entity-defs/enemy-units.ts` | Enemy unit stat definitions | |
 | `src/config/entity-defs/buildings.ts` | Building stat definitions | |
 | `src/config/entity-defs/damage-multipliers.ts` | Counter table + getDamageMultiplier | |
+| `src/ui/comic-landing.tsx` | Comic book landing page (3 stacked panels) | |
+| `src/ui/comic-panel.tsx` | Reusable comic panel component | |
 | `src/ui/store.ts` | Core reactive signals (resources, selection, menu, settings) | ~300 |
 | `src/ui/store-v3.ts` | v3 signals (prestige, upgrade web, rewards, events, Lodge HP) | ~92 |
 | `src/ui/store-weather.ts` | Weather signals | ~20 |
 | `src/ui/store-gameplay.ts` | Game over, FPS, ability signals | ~73 |
+| `src/ui/store-v3-persistence.ts` | SQLite persistence for v3 metagame state | |
 | `src/ui/upgrade-web-state.ts` | Upgrade web purchase state management | |
 | `src/ui/app-v3-handlers.ts` | Signal transition handlers for v3 screens | |
 | `src/ui/screens/UpgradeWebScreen.tsx` | Upgrade web browsing screen | |
@@ -352,6 +373,7 @@ Changes every 3-5 minutes, seeded from map seed:
 | `configs/terrain.json` | Map size progression tiers |
 | `configs/fortifications.json` | Wall/tower stat definitions |
 | `configs/lodge.json` | Lodge wings + fort slot scaling |
+| `configs/panels.json` | 6-panel map grid definitions (biomes, resources, unlock stages) |
 | `configs/prefixes.json` | Tier name prefixes (Basic through Legendary) |
 
 ## File Organization
@@ -377,7 +399,7 @@ src/
   input/          -- Pointer, keyboard, selection handlers
   net/            -- P2P multiplayer (Trystero/WebRTC, retained from v2)
   platform/       -- Capacitor native detection
-  rendering/      -- PixiJS renderers (entity, effects, ui, background)
+  rendering/      -- PixiJS renderers (entity, effects, ui, background, auto-symbol, lodge)
   replay/         -- Replay system (retained from v2)
   storage/        -- SQLite persistence (schema, queries, settings)
   systems/        -- Achievements, daily challenges, player XP, leaderboard
@@ -388,7 +410,7 @@ src/
       sprites/    -- SVG unit sprites with idle/attack frames
     panel/        -- Command panel tabs
     overlays/     -- Modal overlays (settings, etc.)
-    hud/          -- HUD elements (abilities, ctrl-groups, weather)
+    hud/          -- HUD elements (event alerts, onboarding hints, ctrl-groups, weather)
     screens/      -- Full-screen views (UpgradeWeb, PearlUpgrade, Rewards, RankUp)
   styles/         -- CSS
 configs/          -- JSON game data (units, enemies, upgrades, prestige, events, etc.)
@@ -432,7 +454,7 @@ Note: bitECS SoA components are global typed arrays. When tests run in parallel,
 
 - **Mouse/touch first**: Every game action must have a clickable UI element. Mobile (Capacitor/Android) is a first-class target.
 - **Max 300 LOC per file**: Enforced by `.claude/hooks/file-size-guard.py`. Decompose before adding features.
-- **One game mode**: Defend the Lodge. No campaigns, puzzles, survival, or co-op modes in v3.
+- **Wave-survival mode**: One game mode — defend the Lodge from escalating events. No campaigns, puzzles, or co-op modes in v3.
 - **JSON configs for balance**: All unit stats, enemy scaling, events, upgrades, and prestige data live in `configs/*.json`. Content changes should never require TypeScript modifications.
 - **Vertical map**: Lodge at bottom, enemies from top, resources in middle. Map grows with progression level.
 - **Clams are metagame currency**: Earned post-match, spent on upgrade web between matches. Fish/Rocks/Logs are the in-match resources.

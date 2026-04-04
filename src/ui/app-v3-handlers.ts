@@ -9,6 +9,7 @@
 import type { PrestigeResult, PrestigeState } from '@/config/prestige-logic';
 import * as store from './store';
 import * as storeV3 from './store-v3';
+import { persistPrestigeState, resetCurrentRunOnPrestige } from './store-v3-persistence';
 
 export function handleUpgradesBack() {
   storeV3.upgradesScreenOpen.value = false;
@@ -39,6 +40,10 @@ export function handleRankUpConfirm(_result: PrestigeResult, newState: PrestigeS
   storeV3.rankUpModalOpen.value = false;
   storeV3.rewardsScreenOpen.value = false;
   store.menuState.value = 'main';
+
+  // Persist prestige state and reset current run in SQLite
+  resetCurrentRunOnPrestige().catch(() => {});
+  persistPrestigeState().catch(() => {});
 }
 
 export function handleRewardsRankUp() {

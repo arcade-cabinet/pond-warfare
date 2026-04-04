@@ -7,6 +7,7 @@
 import { type Container, type Graphics, Text, type TextStyleOptions } from 'pixi.js';
 import { CB_PALETTE } from '@/constants';
 import { EntityKind, type EntityKind as EntityKindType } from '@/types';
+import { cleanupAutoSymbols } from './auto-symbol-overlay';
 import {
   colorToHex,
   getUnitLabelTexts,
@@ -120,6 +121,7 @@ export function cleanupOverlayTexts(): void {
   idleZTexts.clear();
   for (const t of ctrlGroupTexts.values()) t.destroy();
   ctrlGroupTexts.clear();
+  cleanupAutoSymbols();
 }
 
 setDestroyOverlayTextsCallback(cleanupOverlayTexts);

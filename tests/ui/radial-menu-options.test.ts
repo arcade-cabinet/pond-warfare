@@ -23,16 +23,18 @@ function assertValidOption(opt: RadialOption): void {
 describe('getRadialOptions — Lodge mode', () => {
   const options = getRadialOptions('lodge', null);
 
-  it('returns all 6 Lodge options', () => {
-    expect(options).toHaveLength(6);
+  it('returns all 8 Lodge options', () => {
+    expect(options).toHaveLength(8);
   });
 
-  it('includes training options for all 4 generalists', () => {
+  it('includes training options for all 6 trainable units', () => {
     const ids = options.map((o) => o.id);
     expect(ids).toContain('train_gatherer');
     expect(ids).toContain('train_fighter');
     expect(ids).toContain('train_medic');
     expect(ids).toContain('train_scout');
+    expect(ids).toContain('train_sapper');
+    expect(ids).toContain('train_saboteur');
   });
 
   it('includes fortify and repair', () => {

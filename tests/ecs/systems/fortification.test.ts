@@ -300,7 +300,7 @@ describe('Fortification queries', () => {
 
     const closest = findClosestSlot(state, slot0X, slot0Y);
     expect(closest).not.toBeNull();
-    expect(closest!.index).toBe(0);
+    expect(closest?.index).toBe(0);
   });
 
   it('findClosestSlot with status filter', () => {
@@ -308,7 +308,7 @@ describe('Fortification queries', () => {
     // Find closest empty slot
     const empty = findClosestSlot(state, 500, 900, 'empty');
     expect(empty).not.toBeNull();
-    expect(empty!.status).toBe('empty');
+    expect(empty?.status).toBe('empty');
   });
 
   it('findClosestSlot returns null when no match', () => {

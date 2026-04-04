@@ -2135,3 +2135,98 @@ button:focus-visible,
   border-color: var(--pw-moss-bright);
   background: rgba(90, 107, 58, 0.3);
 }
+
+/* ================================================================
+   Comic Panel Stagger — responsive stagger layout for landing page.
+   Landscape: panels overlap slightly with left/center/right offsets.
+   Portrait tablet: panels fill width, no stagger.
+   ================================================================ */
+/* Portrait: full width, no stagger offset */
+@media (orientation: portrait) {
+  .comic-panel-stagger {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* Landscape narrow (< 1024px): stacked with alternating left/right margin */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+  .comic-panels-container {
+    gap: 4px !important;
+  }
+  .comic-panels-container > :nth-child(odd) {
+    margin-left: 1rem !important;
+    margin-right: 0 !important;
+  }
+  .comic-panels-container > :nth-child(even) {
+    margin-right: 1rem !important;
+    margin-left: 0 !important;
+  }
+  .comic-panels-container > :nth-child(2) {
+    margin-top: -6px;
+  }
+  .comic-panels-container > :nth-child(3) {
+    margin-top: -6px;
+  }
+}
+
+/* Landscape wide (>= 1024px): 3-column side-by-side grid */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .comic-panels-container {
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .comic-panel-stagger {
+    flex: 1 1 0 !important;
+    max-width: 360px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Floating command buttons — visible when units selected */
+.floating-cmd-btn {
+  min-height: 44px;
+  min-width: 44px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Onboarding hint fade animation */
+@keyframes hint-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes hint-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+.onboarding-hint-enter {
+  animation: hint-fade-in 0.4s ease-out forwards;
+}
+.onboarding-hint-exit {
+  animation: hint-fade-out 0.4s ease-in forwards;
+}
+
+/* Upgrade web pulsing affordable node highlight */
+@keyframes pulse-affordable {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.2); }
+}
+.upgrade-node-affordable-pulse {
+  animation: pulse-affordable 2s ease-in-out infinite;
+  border: 2px solid var(--pw-gold);
+  border-radius: 6px;
+}
+
+/* Rank-up button gold glow pulse */
+@keyframes pulse-gold-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(197, 160, 89, 0.4); }
+  50% { box-shadow: 0 0 18px rgba(197, 160, 89, 0.7), 0 0 4px rgba(197, 160, 89, 0.3); }
+}
+.animate-rank-up-pulse {
+  animation: pulse-gold-glow 1.8s ease-in-out infinite;
+}

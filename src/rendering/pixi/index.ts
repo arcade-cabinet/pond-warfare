@@ -12,10 +12,19 @@
  * (they rely on CSS mix-blend-mode compositing that PixiJS cannot replicate).
  */
 
-import { Position } from '@/ecs/components';
+import { Building, EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import type { LodgeVisualState } from '@/rendering/lodge-renderer';
 import { updateWaterRipples } from '@/rendering/water-ripple';
-import type { Corpse, FloatingText, GroundPing, Particle, SpriteId } from '@/types';
+import {
+  type Corpse,
+  EntityKind,
+  Faction,
+  type FloatingText,
+  type GroundPing,
+  type Particle,
+  type SpriteId,
+} from '@/types';
 import type { CameraShake } from '../camera';
 import type { ProjectileRenderData } from '../particles';
 import {
@@ -38,6 +47,7 @@ import {
   getUiGfx,
   isInitialised,
 } from './init';
+import { renderFortSlotMarkers, renderLodgeWings } from './lodge-visuals';
 import {
   hidePlacementGhost,
   renderPlacementPreview,
@@ -87,6 +97,10 @@ export interface PixiRenderFrameData {
     canPlace: boolean;
   } | null;
   isDragging: boolean;
+  /** Lodge visual state for wing rendering (T12). */
+  lodgeVisualState?: LodgeVisualState;
+  /** Progression level for fort slot count (T13). */
+  progressionLevel?: number;
 }
 
 /**
@@ -183,6 +197,15 @@ export function renderPixiFrame(
     }
   }
 
+  // --- Lodge wings (T12) + fort slot markers (T13) ---
+  const lodgePos = findPlayerLodgePosition(data.sortedEids);
+  if (lodgePos && data.lodgeVisualState) {
+    renderLodgeWings(lodgePos.x, lodgePos.y, data.lodgeVisualState);
+  }
+  if (lodgePos) {
+    renderFortSlotMarkers(lodgePos.x, lodgePos.y, world.fortifications, data.progressionLevel ?? 0);
+  }
+
   // --- Ground pings ---
   renderGroundPings(data.groundPings);
 
@@ -212,4 +235,20 @@ export function renderPixiFrame(
 
   // --- Tell PixiJS to render ---
   app.render();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+
+/** Find the player Lodge entity position from sorted entity IDs. */
+function findPlayerLodgePosition(sortedEids: number[]): { x: number; y: number } | null {
+  for (const eid of sortedEids) {
+    if (
+      (EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Lodge &&
+      FactionTag.faction[eid] === Faction.Player &&
+      Building.progress[eid] >= 100
+    ) {
+      return { x: Position.x[eid], y: Position.y[eid] };
+    }
+  }
+  return null;
 }

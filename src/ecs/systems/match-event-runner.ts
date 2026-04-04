@@ -11,6 +11,8 @@
  *
  * v3 Gap 6: Increments world.waveNumber on wave/swarm/siege events
  * so the HUD wave indicator stays current.
+ *
+ * v3 T7/T25: Role-based spawning delegated to wave-spawner.ts.
  */
 
 import { audio } from '@/audio/audio-system';
@@ -24,9 +26,18 @@ import {
   selectEvent,
   shouldFireEvent,
 } from '@/ecs/systems/event-selector';
+import {
+  getLastSpawnCenter,
+  resetSpawnedRoles,
+  spawnEventEnemies,
+} from '@/ecs/systems/wave-spawner';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
+import { eventAlert } from '@/ui/store-v3';
+
+// Re-export role tracking for external consumers
+export { clearEnemyUnitRole, getEnemyUnitRole } from '@/ecs/systems/wave-spawner';
 
 /** CHECK_INTERVAL: how often to poll for new events (every 2 seconds). */
 const CHECK_INTERVAL = 120;
@@ -56,6 +67,7 @@ export function resetMatchEventRunner(): void {
   matchStartFrame = 0;
   activeMatchEvents.length = 0;
   eventsCompleted = 0;
+  resetSpawnedRoles();
 }
 
 /** Get count of completed events (for rewards). */
@@ -127,8 +139,9 @@ function fireMatchEvent(world: GameWorld, event: EventEntry): void {
     world.waveNumber++;
   }
 
-  announceEvent(world, event.template);
+  // Spawn before announce so getLastSpawnCenter() has data for the alert
   spawnEventEnemies(world, event.template);
+  announceEvent(world, event.template);
   applyEventEffects(world, event.template);
 }
 
@@ -145,8 +158,6 @@ function announceEvent(world: GameWorld, template: EventTemplate): void {
   };
 
   const color = colorMap[template.type] ?? '#ffffff';
-
-  // Include wave number in announcement for wave events
   const wavePrefix = WAVE_EVENT_TYPES.has(template.type) ? `Wave ${world.waveNumber}: ` : '';
 
   world.floatingTexts.push({
@@ -159,30 +170,43 @@ function announceEvent(world: GameWorld, template: EventTemplate): void {
 
   pushGameEvent(`${wavePrefix}${template.description}`, color, world.frameCount);
   audio.alert();
+
+  // T24/T27: Push on-screen alert with direction + spawn position
+  const spawnCenter = getLastSpawnCenter();
+  const direction = computeSpawnDirection(world, spawnCenter);
+  const alertText = `${wavePrefix}${template.description}`.toUpperCase();
+  eventAlert.value = {
+    text: `${alertText} -- FROM ${direction.toUpperCase()}`,
+    direction,
+    spawnX: spawnCenter?.x ?? world.camX + world.viewWidth / 2,
+    spawnY: spawnCenter?.y ?? 40,
+    frame: world.frameCount,
+  };
 }
 
-// ── Enemy Spawning ───────────────────────────────────────────────
+/** Determine compass direction of spawn relative to Lodge / map center. */
+function computeSpawnDirection(
+  world: GameWorld,
+  spawn: { x: number; y: number } | null,
+): 'north' | 'east' | 'west' | 'south' {
+  if (!spawn) return 'north';
 
-function spawnEventEnemies(world: GameWorld, template: EventTemplate): void {
-  const composition = template.enemy_composition;
-  if (!composition || Object.keys(composition).length === 0) return;
-
-  // Use world dimensions (vertical map) instead of constants
-  const mapW = world.worldWidth || WORLD_WIDTH;
-
-  for (const [_enemyType, count] of Object.entries(composition)) {
-    for (let i = 0; i < count; i++) {
-      const x = mapW * 0.2 + Math.random() * mapW * 0.6;
-      const y = 20 + Math.random() * 40;
-      spawnEntity(world, EntityKind.Brawler, x, y, Faction.Enemy);
-    }
+  // Use Lodge position as reference (center of panel 5)
+  let refX = world.worldWidth / 2;
+  let refY = world.worldHeight / 2;
+  if (world.panelGrid) {
+    const lodgePos = world.panelGrid.getLodgePosition();
+    refX = lodgePos.x;
+    refY = lodgePos.y;
   }
 
-  if (template.boss) {
-    const bossX = mapW * 0.5;
-    const bossY = 30;
-    spawnEntity(world, EntityKind.Brawler, bossX, bossY, Faction.Enemy);
+  const dx = spawn.x - refX;
+  const dy = spawn.y - refY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx > 0 ? 'east' : 'west';
   }
+  return dy > 0 ? 'south' : 'north';
 }
 
 // ── Event Effects ────────────────────────────────────────────────

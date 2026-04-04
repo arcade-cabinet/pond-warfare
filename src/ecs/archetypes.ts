@@ -2,6 +2,7 @@ import { addComponent, addEntity } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
 import {
+  AutoSymbol,
   Building,
   Carrying,
   Collider,
@@ -71,6 +72,9 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.Berserker]: SpriteId.Berserker,
   [EntityKind.WallGate]: SpriteId.WallGate,
   [EntityKind.Shrine]: SpriteId.Shrine,
+  // v3.0.0
+  [EntityKind.Sapper]: SpriteId.Sapper,
+  [EntityKind.Saboteur]: SpriteId.Saboteur,
 };
 
 export function spawnEntity(
@@ -225,6 +229,13 @@ export function spawnEntity(
       kind === EntityKind.Gatherer || kind === EntityKind.Healer
         ? StanceMode.Defensive
         : StanceMode.Aggressive;
+
+    // Auto-symbol: tracks pending auto-behavior confirmation
+    addComponent(world.ecs, eid, AutoSymbol);
+    AutoSymbol.active[eid] = 0;
+    AutoSymbol.symbolType[eid] = 0;
+    AutoSymbol.timer[eid] = 0;
+    AutoSymbol.confirmed[eid] = 0;
   }
 
   return eid;

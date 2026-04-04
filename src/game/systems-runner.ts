@@ -5,6 +5,7 @@
 import { aiSystem } from '@/ecs/systems/ai';
 import { autoBuildSystem } from '@/ecs/systems/auto-build';
 import { autoRetreatSystem } from '@/ecs/systems/auto-retreat';
+import { autoSymbolSystem } from '@/ecs/systems/auto-symbol';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
 import { berserkerSystem } from '@/ecs/systems/berserker';
 import { branchCosmeticsSystem } from '@/ecs/systems/branch-cosmetics';
@@ -69,5 +70,6 @@ export function runSystems(
   branchCosmeticsSystem(world);
   matchEventRunnerSystem(world, progressionLevel.value);
   randomEventsSystem(world);
+  autoSymbolSystem(world);
   cleanupSystem(world);
 }

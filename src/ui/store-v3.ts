@@ -93,6 +93,22 @@ export const currentWaveNumber = signal(0);
 /** Direction of the last wave spawn (for HUD indicator). */
 export const waveDirection = signal<'north' | 'east' | 'west' | 'south'>('north');
 
+// ── Event Alert (T24 + T27) ────────────────────────────────────
+
+/** Data for the on-screen event alert banner. Null = no alert showing. */
+export interface EventAlertData {
+  text: string;
+  direction: 'north' | 'east' | 'west' | 'south';
+  /** Spawn position for zoom-to-action (T27). */
+  spawnX: number;
+  spawnY: number;
+  /** Frame when alert was pushed. */
+  frame: number;
+}
+
+/** Currently active event alert (auto-cleared after 3 seconds). */
+export const eventAlert = signal<EventAlertData | null>(null);
+
 // ── Wave-Survival Mode ──────────────────────────────────────────
 
 /** True when the match uses wave-survival win condition (no enemy nests). */

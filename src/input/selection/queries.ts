@@ -41,11 +41,15 @@ export function getEntityAt(world: GameWorld, x: number, y: number): number | nu
       return Position.y[b] - Position.y[a];
     });
 
+  // At low zoom, entities are tiny on screen. Ensure hit area is at least
+  // 22px in screen space (44px diameter touch target) by scaling up in world space.
+  const minWorldHit = 22 / world.zoomLevel;
+
   for (const eid of sorted) {
     const radius = hasComponent(world.ecs, eid, Collider) ? Collider.radius[eid] : 16;
     const height = hasComponent(world.ecs, eid, Sprite) ? Sprite.height[eid] : 32;
-    const hitW = Math.max(25, radius + 15);
-    const hitH = Math.max(25, height / 2 + 15);
+    const hitW = Math.max(minWorldHit, radius + 15);
+    const hitH = Math.max(minWorldHit, height / 2 + 15);
 
     if (Math.abs(Position.x[eid] - x) < hitW && Math.abs(Position.y[eid] - y) < hitH) {
       return eid;

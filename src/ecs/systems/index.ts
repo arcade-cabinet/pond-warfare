@@ -1,5 +1,6 @@
 export { aiSystem } from './ai';
 export { autoBuildSystem } from './auto-build';
+export { autoSymbolSystem, resetAutoSymbol } from './auto-symbol';
 export { autoTrainSystem } from './auto-train';
 export { buildingSystem } from './building';
 export { cleanupSystem } from './cleanup';

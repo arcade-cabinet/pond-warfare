@@ -38,8 +38,8 @@ import {
   validateEvents,
   validateUnits,
 } from '@/config/config-loader';
-
 import type { EnemiesConfig, EventsConfig, UnitsConfig } from '@/config/v3-types';
+import panelsConfig from '../../configs/panels.json';
 
 describe('Config Validation — US21', () => {
   // ── units.json ───────────────────────────────────────────────────
@@ -410,6 +410,122 @@ describe('Config Validation — US21', () => {
           config.tiers[i].multiplier,
           `Tier ${i} multiplier should be >= tier ${i - 1}`,
         ).toBeGreaterThanOrEqual(config.tiers[i - 1].multiplier);
+      }
+    });
+  });
+
+  // ── panels.json ──────────────────────────────��───────────────────
+
+  describe('panels.json validation', () => {
+    const panels = panelsConfig.panels as Record<
+      string,
+      {
+        row: number;
+        col: number;
+        biome: string;
+        resources: string[];
+        terrain_features: string[];
+        enemy_spawn: boolean;
+        lodge?: boolean;
+        unlock_stage: number;
+      }
+    >;
+    const stages = panelsConfig.progression_stages as Array<{
+      stage: number;
+      description: string;
+      panels?: number[];
+      panels_add_one_of?: number[];
+      panels_add_remaining_of?: number[];
+    }>;
+
+    it('should define exactly 6 panels', () => {
+      const panelIds = Object.keys(panels);
+      expect(panelIds.length).toBe(6);
+      expect(panelIds).toEqual(['1', '2', '3', '4', '5', '6']);
+    });
+
+    it('each panel should have required fields', () => {
+      for (const [id, panel] of Object.entries(panels)) {
+        expect(typeof panel.row, `${id}.row`).toBe('number');
+        expect(typeof panel.col, `${id}.col`).toBe('number');
+        expect(panel.biome, `${id}.biome`).toBeTruthy();
+        expect(Array.isArray(panel.resources), `${id}.resources`).toBe(true);
+        expect(panel.resources.length, `${id}.resources length`).toBeGreaterThan(0);
+        expect(Array.isArray(panel.terrain_features), `${id}.terrain_features`).toBe(true);
+        expect(panel.terrain_features.length, `${id}.terrain_features length`).toBeGreaterThan(0);
+        expect(typeof panel.enemy_spawn, `${id}.enemy_spawn`).toBe('boolean');
+        expect(panel.unlock_stage, `${id}.unlock_stage`).toBeGreaterThan(0);
+      }
+    });
+
+    it('panels should form a 3x2 grid (row 0-1, col 0-2)', () => {
+      for (const [id, panel] of Object.entries(panels)) {
+        expect(panel.row, `${id}.row`).toBeGreaterThanOrEqual(0);
+        expect(panel.row, `${id}.row`).toBeLessThanOrEqual(1);
+        expect(panel.col, `${id}.col`).toBeGreaterThanOrEqual(0);
+        expect(panel.col, `${id}.col`).toBeLessThanOrEqual(2);
+      }
+    });
+
+    it('panel 5 should be the Lodge panel', () => {
+      const panel5 = panels['5'];
+      expect(panel5.lodge).toBe(true);
+      expect(panel5.enemy_spawn).toBe(false);
+      expect(panel5.unlock_stage).toBe(1);
+    });
+
+    it('progression stages should be in ascending order', () => {
+      for (let i = 1; i < stages.length; i++) {
+        expect(stages[i].stage).toBeGreaterThan(stages[i - 1].stage);
+      }
+    });
+
+    it('progression stage 1 should unlock panel 5', () => {
+      const stage1 = stages.find((s) => s.stage === 1);
+      expect(stage1).toBeDefined();
+      expect(stage1?.panels).toContain(5);
+    });
+
+    it('all progression stages should reference valid panel IDs', () => {
+      const validIds = Object.keys(panels).map(Number);
+      for (const stage of stages) {
+        if (stage.panels) {
+          for (const id of stage.panels) {
+            expect(validIds, `stage ${stage.stage} panel ${id}`).toContain(id);
+          }
+        }
+        if (stage.panels_add_one_of) {
+          for (const id of stage.panels_add_one_of) {
+            expect(validIds, `stage ${stage.stage} add_one_of ${id}`).toContain(id);
+          }
+        }
+        if (stage.panels_add_remaining_of) {
+          for (const id of stage.panels_add_remaining_of) {
+            expect(validIds, `stage ${stage.stage} add_remaining_of ${id}`).toContain(id);
+          }
+        }
+      }
+    });
+
+    it('panel biomes should reference valid terrain biomes', () => {
+      const terrainConfig = getTerrainConfig();
+      const validBiomes = Object.keys(terrainConfig.biome_terrain_rules);
+      for (const [id, panel] of Object.entries(panels)) {
+        expect(validBiomes, `Panel ${id} biome "${panel.biome}" not in terrain.json`).toContain(
+          panel.biome,
+        );
+      }
+    });
+
+    it('panel resources should be valid resource types', () => {
+      const terrainConfig = getTerrainConfig();
+      for (const [id, panel] of Object.entries(panels)) {
+        for (const res of panel.resources) {
+          expect(
+            terrainConfig.resource_types,
+            `Panel ${id} resource "${res}" not in terrain.json resource_types`,
+          ).toContain(res);
+        }
       }
     });
   });

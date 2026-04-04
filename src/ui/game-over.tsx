@@ -130,6 +130,7 @@ export function GameOverBanner(props: GameOverProps) {
 
       <h1
         id="game-over-title"
+        aria-live="assertive"
         class={`font-heading text-4xl md:text-6xl mb-3 tracking-widest uppercase ${goTitleColor.value}`}
         style={{
           textShadow: isVictory

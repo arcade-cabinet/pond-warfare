@@ -7,7 +7,9 @@
  */
 
 import { showSelectBark } from '@/config/barks';
+import { AutoSymbol } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { hitTestAutoSymbol } from '@/rendering/pixi/auto-symbol-overlay';
 import { EntityKind, type EntityKind as EntityKindType } from '@/types';
 import { tryPlaceFortAtPosition } from '@/ui/radial-actions';
 import { entityKindToRole } from '@/ui/radial-menu-options';
@@ -28,6 +30,14 @@ export function handleClick(
   clickState: ClickState,
   isShiftDown: () => boolean,
 ): void {
+  // Auto-symbol tap: confirm a unit's auto-behavior icon
+  const symbolEid = hitTestAutoSymbol(mouse.worldX, mouse.worldY);
+  if (symbolEid !== -1 && AutoSymbol.active[symbolEid] === 1) {
+    AutoSymbol.confirmed[symbolEid] = 1;
+    cb.onUpdateUI();
+    return;
+  }
+
   // v3: Fortification slot placement mode
   if (world.placingBuilding?.startsWith('fort_')) {
     tryPlaceFortAtPosition(world, mouse.worldX, mouse.worldY);

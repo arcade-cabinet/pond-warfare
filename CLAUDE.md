@@ -47,14 +47,19 @@ Before any PR merge, ALL must pass:
 
 ## v3 Architecture
 
-- **One game mode**: Defend the Lodge against waves. No campaigns, puzzles, survival, or co-op.
-- **Vertical map**: Lodge at bottom, enemies from top, resources in middle. Map scales with progression level.
-- **JSON configs**: All balance data in `configs/*.json` -- units, enemies, events, upgrades, prestige, terrain, fortifications, lodge, rewards, prefixes.
-- **Upgrade web**: 240+ procedural nodes from 6 categories x 4 subcategories x 10 tiers, plus diamond nodes for Lodge wings and specialist unlocks.
+- **Wave-survival mode**: Defend the Lodge from escalating events. No campaigns, puzzles, or co-op.
+- **6-panel map grid**: Panels with unique biomes, resources, terrain features. Unlock tied to progression stage. Defined in `configs/panels.json`.
+- **Auto-symbol autonomy**: After completing an order, units show an icon that can be tapped to confirm auto-behavior looping.
+- **6 trainable units**: Gatherer, Fighter, Medic, Scout, Sapper, Saboteur.
+- **6 enemy types**: Raider, Fighter, Healer, Scout, Sapper, Saboteur -- with role-based behaviors.
+- **JSON configs**: All balance data in `configs/*.json` -- units, enemies, events, upgrades, prestige, terrain, fortifications, lodge, rewards, prefixes, panels.
+- **Upgrade web**: 240+ procedural nodes from 6 categories x 4 subcategories x 10 tiers, plus Frontier Expansion diamond nodes for Lodge wings and specialist unlocks.
 - **Prestige system**: Rank up to reset Clam upgrades and earn Pearls for permanent upgrades (auto-deploy specialists, auto-behaviors, stat multipliers).
 - **In-match resources**: Fish, Rocks, Logs (aliased to clams, pearls, twigs internally).
 - **Metagame currencies**: Clams (earned post-match, spent on upgrades) and Pearls (earned from prestige).
 - **Match events**: JSON-driven waves, bosses, sabotage, escorts with rewards.
+- **Comic panel landing**: Three stacked panels with SVG sprite characters.
+- **SQLite persistence**: All metagame state via capacitor-sqlite + jeep-sqlite.
 
 ## Architecture Principles
 
@@ -77,15 +82,15 @@ src/
   game/         -- Game orchestrator modules (vertical map, match rewards, etc.)
   input/        -- Pointer, keyboard, selection handlers
   platform/     -- Capacitor native detection
-  rendering/    -- PixiJS renderers (entity, effects, ui, background)
+  rendering/    -- PixiJS renderers (entity, effects, auto-symbol, lodge, background)
   ui/
     components/ -- Small reusable UI primitives (<100 LOC each)
     panel/      -- Command panel tabs
     overlays/   -- Modal overlays (settings, etc.)
-    hud/        -- HUD elements (abilities, ctrl-groups, weather)
+    hud/        -- HUD elements (event alerts, onboarding, ctrl-groups, weather)
     screens/    -- Full-screen views (UpgradeWeb, PearlUpgrade, Rewards, RankUp)
   styles/       -- CSS
-configs/        -- JSON game data (10 files)
+configs/        -- JSON game data (11 files)
 tests/
   ecs/systems/  -- System integration tests
   game/         -- Game module tests

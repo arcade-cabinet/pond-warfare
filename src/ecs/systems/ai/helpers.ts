@@ -197,3 +197,64 @@ export function findWeakestPlayerBuilding(world: GameWorld): number {
   }
   return weakest;
 }
+
+/** Find alive resource nodes (Cattails, Clambeds, PearlBeds). */
+export function findResourceNodes(world: GameWorld): number[] {
+  const resources = query(world.ecs, [Position, Health, IsResource]);
+  const result: number[] = [];
+  for (let i = 0; i < resources.length; i++) {
+    const eid = resources[i];
+    if (Health.current[eid] <= 0) continue;
+    result.push(eid);
+  }
+  return result;
+}
+
+/** Find nearest entity from a list to the given position. */
+export function findNearestEntity(x: number, y: number, entities: number[]): number {
+  let best = -1;
+  let bestDist = Infinity;
+  for (let i = 0; i < entities.length; i++) {
+    const eid = entities[i];
+    const dx = Position.x[eid] - x;
+    const dy = Position.y[eid] - y;
+    const dSq = dx * dx + dy * dy;
+    if (dSq < bestDist) {
+      bestDist = dSq;
+      best = eid;
+    }
+  }
+  return best;
+}
+
+/** Find alive player fortifications (Walls, Towers, Watchtowers). */
+export function findPlayerFortifications(world: GameWorld): number[] {
+  const buildings = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, IsBuilding]);
+  const result: number[] = [];
+  for (let i = 0; i < buildings.length; i++) {
+    const eid = buildings[i];
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    if (kind === EntityKind.Wall || kind === EntityKind.Tower || kind === EntityKind.Watchtower) {
+      result.push(eid);
+    }
+  }
+  return result;
+}
+
+/** Find alive damaged enemy units (non-building, non-resource). */
+export function findDamagedEnemyUnits(world: GameWorld): number[] {
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+  const result: number[] = [];
+  for (let i = 0; i < allUnits.length; i++) {
+    const eid = allUnits[i];
+    if (FactionTag.faction[eid] !== Faction.Enemy) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+    if (hasComponent(world.ecs, eid, IsResource)) continue;
+    if (Health.current[eid] <= 0) continue;
+    if (Health.current[eid] >= Health.max[eid]) continue;
+    result.push(eid);
+  }
+  return result;
+}

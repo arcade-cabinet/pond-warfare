@@ -8,6 +8,7 @@
 
 import { addComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { getFortDef, getUnitDef } from '@/config/config-loader';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { GATHER_AMOUNT } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
@@ -25,7 +26,7 @@ import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } from '@/types';
 
 /* ------------------------------------------------------------------ */
 /*  Helper factories                                                   */
@@ -228,6 +229,55 @@ describe('Economy', () => {
 
     expect(lodgeFoodProvided).toBe(8);
     expect(burrowFoodProvided).toBe(6);
+  });
+
+  // ── T31: Training cost uses Fish (world.resources.clams) ──────────
+  it('training cost reads fish from units.json and deducts clams', () => {
+    // units.json: gatherer.cost.fish = 10
+    // radial-actions.ts reads def.cost.fish and deducts world.resources.clams
+    const def = getUnitDef('gatherer') as import('@/config/v3-types').GeneralistDef;
+    expect(def.cost.fish).toBe(10);
+
+    const fighterDef = getUnitDef('fighter') as import('@/config/v3-types').GeneralistDef;
+    expect(fighterDef.cost.fish).toBe(20);
+  });
+
+  // ── T32: Fortification costs Rocks (world.resources.pearls) ──────
+  it('fortification costs use rocks from fortifications.json', () => {
+    const wallDef = getFortDef('wood_wall');
+    expect(wallDef.cost.rocks).toBe(15);
+
+    const stoneDef = getFortDef('stone_wall');
+    expect(stoneDef.cost.rocks).toBe(40);
+  });
+
+  // ── T34: nodeKindToResourceType maps correctly ───────────────────
+  it('nodeKindToResourceType maps Clambed→Fish, PearlBed→Rocks, Cattail→Logs', () => {
+    expect(nodeKindToResourceType(EntityKind.Clambed)).toBe(ResourceType.Fish);
+    expect(nodeKindToResourceType(EntityKind.PearlBed)).toBe(ResourceType.Rocks);
+    expect(nodeKindToResourceType(EntityKind.Cattail)).toBe(ResourceType.Logs);
+  });
+
+  // ── T34: Resource type aliases are numerically equal ─────────────
+  it('v3 resource aliases are numerically equal to v2 names', () => {
+    expect(ResourceType.Fish).toBe(ResourceType.Clams);
+    expect(ResourceType.Rocks).toBe(ResourceType.Pearls);
+    expect(ResourceType.Logs).toBe(ResourceType.Twigs);
+  });
+
+  // ── T33: Lodge repair deducts Logs (world.resources.twigs) ───────
+  it('cattail gathering yields Twigs (Logs) resource type', () => {
+    createLodge(world, 200, 200);
+    const cattail = createResource(world, EntityKind.Cattail, 100, 100, 500);
+    const gatherer = createGatherer(world, 100, 100);
+
+    UnitStateMachine.state[gatherer] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[gatherer] = cattail;
+    UnitStateMachine.gatherTimer[gatherer] = 1;
+
+    gatheringSystem(world);
+
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Twigs);
   });
 
   it('cannot train units when at food cap', () => {

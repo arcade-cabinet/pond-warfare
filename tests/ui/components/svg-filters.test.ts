@@ -19,7 +19,7 @@ describe('SvgFilters', () => {
     render(h(SvgFilters, null));
     const svg = document.querySelector('svg');
     expect(svg).toBeTruthy();
-    expect(svg!.getAttribute('aria-hidden')).toBe('true');
+    expect(svg?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('contains filter#grunge-heavy', () => {

@@ -38,6 +38,8 @@ const TRAIN_KIND_MAP: Record<string, EntityKind> = {
   train_fighter: EntityKind.Brawler,
   train_medic: EntityKind.Healer,
   train_scout: EntityKind.Scout,
+  train_sapper: EntityKind.Sapper,
+  train_saboteur: EntityKind.Saboteur,
 };
 
 /** v3 generalist names for config lookup. */
@@ -46,6 +48,8 @@ const TRAIN_CONFIG_MAP: Record<string, string> = {
   train_fighter: 'fighter',
   train_medic: 'medic',
   train_scout: 'scout',
+  train_sapper: 'sapper_unit',
+  train_saboteur: 'saboteur_unit',
 };
 
 /**
@@ -72,9 +76,15 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
 
   const def = getUnitDef(configKey) as GeneralistDef;
   const fishCost = def.cost.fish ?? 0;
+  const rocksCost = def.cost.rocks ?? 0;
 
   if (world.resources.clams < fishCost) {
     pushGameEvent('Not enough Fish!', COLORS.feedbackError, world.frameCount);
+    audio.error();
+    return false;
+  }
+  if (rocksCost > 0 && world.resources.pearls < rocksCost) {
+    pushGameEvent('Not enough Rocks!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
@@ -83,6 +93,7 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   if (lodgeEid < 0) return false;
 
   world.resources.clams -= fishCost;
+  if (rocksCost > 0) world.resources.pearls -= rocksCost;
 
   const slots = trainingQueueSlots.get(lodgeEid) ?? [];
   slots.push(unitKind);
@@ -98,6 +109,8 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
     train_fighter: 'Fighter',
     train_medic: 'Medic',
     train_scout: 'Scout',
+    train_sapper: 'Sapper',
+    train_saboteur: 'Saboteur',
   };
   pushGameEvent(`Training ${names[actionId]}`, COLORS.feedbackInfo, world.frameCount);
   audio.click();

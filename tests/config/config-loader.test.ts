@@ -37,7 +37,7 @@ import type {
 } from '@/config/v3-types';
 
 describe('Unit configs', () => {
-  const generalistIds = ['gatherer', 'fighter', 'medic', 'scout'];
+  const generalistIds = ['gatherer', 'fighter', 'medic', 'scout', 'sapper_unit', 'saboteur_unit'];
   const specialistIds = [
     'fisher',
     'digger',

@@ -78,7 +78,7 @@ function spawnStartingUnits(
   world: GameWorld,
   factionCfg: ReturnType<typeof getFactionConfig>,
   layout: VerticalMapLayout,
-  rng: SeededRandom,
+  _rng: SeededRandom,
 ): void {
   const offsets = [
     { dx: -40, dy: -40 },
@@ -104,14 +104,25 @@ function spawnStartingUnits(
   }
 }
 
+/** Possible entity kinds for rare nodes (random each spawn). */
+const RARE_NODE_KINDS: EntityKind[] = [EntityKind.Clambed, EntityKind.PearlBed, EntityKind.Cattail];
+
 /** Spawn resource nodes at positions determined by the layout. */
 function spawnResourceNodes(world: GameWorld, layout: VerticalMapLayout, rng: SeededRandom): void {
   for (const res of layout.resourcePositions) {
-    const kind = RESOURCE_KIND_MAP[res.type];
-    if (!kind) continue;
+    let kind: EntityKind | undefined;
+    let amount: number;
+
+    if (res.type === 'rare_node') {
+      kind = RARE_NODE_KINDS[rng.int(0, RARE_NODE_KINDS.length - 1)];
+      amount = rng.int(3000, 6000); // Rare nodes are richer
+    } else {
+      kind = RESOURCE_KIND_MAP[res.type];
+      if (!kind) continue;
+      amount = res.type === 'fish_node' ? rng.int(2000, 5000) : rng.int(300, 800);
+    }
 
     const eid = spawnEntity(world, kind, res.x, res.y, Faction.Neutral);
-    const amount = res.type === 'fish_node' ? rng.int(2000, 5000) : rng.int(300, 800);
     Resource.amount[eid] = amount;
   }
 }
