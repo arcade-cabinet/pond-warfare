@@ -154,6 +154,8 @@ export function createGameWorld(): GameWorld {
     isFirstGame: true,
     // @deprecated Advisor system removed in v3.0 -- kept for save compat
     advisorState: {},
+    commanderEntityId: -1,
+    enemyCommanderEntityId: -1,
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),
     commanderHpBuffApplied: new Set(),
@@ -204,6 +206,7 @@ export function createGameWorld(): GameWorld {
     gameEndFocusY: 0,
     gameEndSpectacleActive: false,
     gameEndPrevSpeed: 1,
+    gameOverReason: null,
     stealthEntities: new Set(),
     stealthAmbushReady: new Set(),
     wormBurrowTimers: new Map(),

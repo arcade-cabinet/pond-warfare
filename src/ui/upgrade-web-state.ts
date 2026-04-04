@@ -26,7 +26,7 @@ export interface UpgradeWebPurchaseState {
   highestTiers: Map<string, number>;
 }
 
-export type NodeDisplayState = 'locked' | 'available' | 'purchased';
+export type NodeDisplayState = 'locked' | 'available' | 'purchased' | 'prestige';
 
 export interface NodeDisplayInfo {
   id: string;
@@ -122,8 +122,12 @@ export function purchaseDiamondNode(
 export function getNodeDisplayState(
   state: UpgradeWebPurchaseState,
   node: UpgradeNode,
+  prestigeFilledNodes?: Set<string>,
 ): NodeDisplayState {
-  if (state.purchasedNodes.has(node.id)) return 'purchased';
+  if (state.purchasedNodes.has(node.id)) {
+    if (prestigeFilledNodes?.has(node.id)) return 'prestige';
+    return 'purchased';
+  }
   if (node.prerequisite && !state.purchasedNodes.has(node.prerequisite)) return 'locked';
   return 'available';
 }
@@ -133,6 +137,7 @@ export function getPathDisplayInfo(
   web: UpgradeWeb,
   category: string,
   subcategory: string,
+  prestigeFilledNodes?: Set<string>,
 ): NodeDisplayInfo[] {
   const nodes = getNodesForPath(web, category, subcategory);
   const categories = getUpgradeCategories();
@@ -146,7 +151,7 @@ export function getPathDisplayInfo(
     effectLabel: subDef
       ? `+${Math.round(node.effect * 100)}% ${subDef.label}`
       : `+${Math.round(node.effect * 100)}%`,
-    state: getNodeDisplayState(state, node),
+    state: getNodeDisplayState(state, node, prestigeFilledNodes),
     tier: node.tier,
     category: node.category,
     subcategory: node.subcategory,
@@ -214,6 +219,45 @@ export function countPurchased(state: UpgradeWebPurchaseState): {
   const linear = state.purchasedNodes.size;
   const diamond = state.purchasedDiamonds.size;
   return { linear, diamond, total: linear + diamond };
+}
+
+// ── Starting Tier Auto-Fill ─────────────────────────────────────
+
+/**
+ * Pre-fill all linear nodes up to the starting tier rank (free, no Clam cost).
+ * Nodes filled this way are marked as purchased in the state and should
+ * display as 'prestige' state (gold, not re-purchasable).
+ *
+ * @param state - The upgrade web purchase state to mutate
+ * @param web - The full upgrade web catalog
+ * @param startingTierRank - The prestige starting tier rank (0 = none, 1 = tier 0, etc.)
+ * @returns Set of node IDs that were auto-filled by prestige
+ */
+export function autoFillToStartingTier(
+  state: UpgradeWebPurchaseState,
+  web: UpgradeWeb,
+  startingTierRank: number,
+): Set<string> {
+  const filled = new Set<string>();
+  if (startingTierRank <= 0) return filled;
+
+  // Starting tier rank N means tiers 0..(N-1) are free
+  const maxTierIndex = startingTierRank - 1;
+
+  for (const node of web.nodes) {
+    if (node.tier <= maxTierIndex && !state.purchasedNodes.has(node.id)) {
+      state.purchasedNodes.add(node.id);
+      filled.add(node.id);
+
+      // Update highest tiers for diamond prereq tracking
+      const pathKey = `${node.category}_${node.subcategory}`;
+      const tierLevel = node.tier + 1;
+      const currentHighest = state.highestTiers.get(pathKey) ?? 0;
+      if (tierLevel > currentHighest) state.highestTiers.set(pathKey, tierLevel);
+    }
+  }
+
+  return filled;
 }
 
 // ── Internal Helpers ─────────────────────────────────────────────

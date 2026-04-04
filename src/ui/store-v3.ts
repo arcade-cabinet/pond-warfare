@@ -10,6 +10,7 @@
 import { computed, signal } from '@preact/signals';
 import type { PrestigeState } from '@/config/prestige-logic';
 import type { RewardBreakdown } from '@/game/match-rewards';
+import type { PlayerProfile } from '@/storage/database';
 import { COLORS } from './design-tokens';
 
 // ── Prestige ─────────────────────────────────────────────────────
@@ -26,12 +27,34 @@ export const totalClams = signal(0);
 /** Current progression level (determines event pool, map size). */
 export const progressionLevel = signal(0);
 
+/** Starting tier rank from Pearl upgrades (0 = none). Used at match init for auto-fill. */
+export const startingTierRank = signal(0);
+
 /** Full prestige state for UI components. */
 export const prestigeState = signal<PrestigeState>({
   rank: 0,
   pearls: 0,
   totalPearlsEarned: 0,
   upgradeRanks: {},
+});
+
+/** Cached player profile for UI (commander unlock checks). */
+export const playerProfile = signal<PlayerProfile>({
+  total_wins: 0,
+  total_losses: 0,
+  total_kills: 0,
+  total_games: 0,
+  total_playtime_seconds: 0,
+  highest_difficulty_won: '',
+  longest_survival_seconds: 0,
+  fastest_win_seconds: 0,
+  total_buildings_built: 0,
+  hero_units_earned: 0,
+  wins_commander_alive: 0,
+  total_pearls: 0,
+  wins_zero_losses: 0,
+  total_xp: 0,
+  player_level: 0,
 });
 
 // ── Screen Visibility ────────────────────────────────────────────
@@ -47,6 +70,9 @@ export const rankUpModalOpen = signal(false);
 
 /** True when rewards screen is showing (post-match). */
 export const rewardsScreenOpen = signal(false);
+
+/** True when Clam upgrade screen is showing (post-match, after rewards). */
+export const clamUpgradeScreenOpen = signal(false);
 
 // ── Rewards Screen ───────────────────────────────────────────────
 

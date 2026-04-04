@@ -11,6 +11,7 @@ import type { createWorld } from 'bitecs';
 import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
+import type { ExtendedStats } from '@/types';
 import type { WeatherState } from '@/config/weather';
 import type { FortificationState } from '@/ecs/systems/fortification';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
@@ -184,6 +185,10 @@ export interface GameWorld {
   advisorState: Record<string, unknown>;
 
   // Commander aura + selection
+  /** ECS entity ID of the player's Commander (or -1 if not yet spawned). */
+  commanderEntityId: number;
+  /** ECS entity ID of the enemy Commander boss (or -1 if none). */
+  enemyCommanderEntityId: number;
   commanderDamageBuff: Set<number>;
   commanderSpeedBuff: Set<number>;
   commanderHpBuffApplied: Set<number>;
@@ -239,6 +244,9 @@ export interface GameWorld {
   gameEndSpectacleActive: boolean;
   gameEndPrevSpeed: number;
 
+  /** Why the game ended: commander kill/death, extermination, or wave-survival. */
+  gameOverReason: 'commander-kill' | 'commander-death' | 'extermination' | 'wave-survival' | null;
+
   // Diver stealth: set of entity IDs currently in stealth
   stealthEntities: Set<number>;
   stealthAmbushReady: Set<number>;
@@ -277,20 +285,4 @@ export interface GameWorld {
   panelGrid: import('@/game/panel-grid').PanelGrid | null;
 }
 
-/** Extended game stats tracked per match for v2.1.0 achievements. */
-export interface ExtendedStats {
-  weatherTypesExperienced: number;
-  warshipKills: number;
-  bridgesBuilt: number;
-  diverAmbushKills: number;
-  marketTrades: number;
-  maxBerserkerKills: number;
-  shrineAbilitiesUsed: number;
-  coopMode: boolean;
-  dailyChallengesCompleted: number;
-  playerLevel: number;
-  perfectPuzzleCount: number;
-  randomEventsExperienced: number;
-  wallsBuilt: number;
-  enemiesBlockedByGates: number;
-}
+export type { ExtendedStats } from '@/types';

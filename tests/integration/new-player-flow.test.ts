@@ -26,6 +26,24 @@ vi.mock('@/ecs/archetypes', () => ({
 
 vi.mock('@/ecs/components', () => ({
   Resource: { amount: {} as Record<number, number> },
+  Commander: {
+    commanderType: {} as Record<number, number>,
+    auraRadius: {} as Record<number, number>,
+    auraDamageBonus: {} as Record<number, number>,
+    abilityTimer: {} as Record<number, number>,
+    abilityCooldown: {} as Record<number, number>,
+    isPlayerCommander: {} as Record<number, number>,
+  },
+  Health: {
+    max: {} as Record<number, number>,
+    current: {} as Record<number, number>,
+  },
+  Combat: {
+    damage: {} as Record<number, number>,
+  },
+  Velocity: {
+    speed: {} as Record<number, number>,
+  },
 }));
 
 vi.mock('@/config/factions', () => ({
@@ -55,6 +73,8 @@ function makeWorld(): any {
     yukaManager: {},
     waveSurvivalMode: false,
     waveSurvivalTarget: 5,
+    commanderId: 'marshal',
+    commanderEntityId: -1,
   };
 }
 
@@ -98,9 +118,9 @@ describe('New player first match — stage 1', () => {
     const lodges = spawnedEntities.filter((e) => e.kind === 5 && e.faction === Faction.Player);
     expect(lodges).toHaveLength(1);
 
-    // 4 starting units
+    // 4 starting units + 1 Commander
     const playerUnits = spawnedEntities.filter((e) => e.faction === Faction.Player && e.kind !== 5);
-    expect(playerUnits).toHaveLength(4);
+    expect(playerUnits).toHaveLength(5);
 
     // No enemy nests at stage 1 -> wave-survival mode
     const enemyNests = spawnedEntities.filter((e) => e.faction === Faction.Enemy && e.kind === 9);

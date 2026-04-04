@@ -36,6 +36,7 @@ function makeWorld(overrides: Record<string, unknown> = {}): Record<string, unkn
     difficulty: 'hard',
     commanderId: 'sage',
     permadeath: false,
+    gameOverReason: null,
     tech: {
       sharpSticks: true,
       cartography: true,
@@ -72,7 +73,7 @@ describe('syncGameOverStats', () => {
     syncGameOverStats(world as never);
 
     const lines = store.goStatLines.value;
-    expect(lines.length).toBeGreaterThanOrEqual(12);
+    expect(lines.length).toBeGreaterThanOrEqual(13);
 
     // Check each expected field is present
     expect(lines.some((l) => l.startsWith('Time:'))).toBe(true);
@@ -138,6 +139,36 @@ describe('syncGameOverStats', () => {
     syncGameOverStats(world as never);
 
     expect(store.goTitle.value).toBe('Defeat');
+  });
+
+  it('shows Commander death description when commander-death reason', () => {
+    const world = makeWorld({ state: 'lose', gameOverReason: 'commander-death' });
+    syncGameOverStats(world as never);
+
+    expect(store.goDesc.value).toBe('Commander Fallen — defeat!');
+  });
+
+  it('shows Commander kill description when commander-kill reason', () => {
+    const world = makeWorld({ state: 'win', gameOverReason: 'commander-kill' });
+    syncGameOverStats(world as never);
+
+    expect(store.goDesc.value).toBe('Enemy Commander Defeated — victory!');
+  });
+
+  it('shows Commander fate: Assassinated on commander-death', () => {
+    const world = makeWorld({ state: 'lose', gameOverReason: 'commander-death' });
+    syncGameOverStats(world as never);
+
+    const fateLine = store.goStatLines.value.find((l) => l.startsWith('Commander fate:'));
+    expect(fateLine).toBe('Commander fate: Assassinated');
+  });
+
+  it('shows Commander fate: Survived on commander-kill win', () => {
+    const world = makeWorld({ state: 'win', gameOverReason: 'commander-kill' });
+    syncGameOverStats(world as never);
+
+    const fateLine = store.goStatLines.value.find((l) => l.startsWith('Commander fate:'));
+    expect(fateLine).toBe('Commander fate: Survived');
   });
 
   it('does nothing when game is still playing', () => {

@@ -232,12 +232,22 @@ export interface AutoBehaviorEffect {
   behavior: string;
 }
 
-export type PearlUpgradeEffect = AutoDeployEffect | MultiplierEffect | AutoBehaviorEffect;
+export interface StartingTierEffect {
+  type: 'starting_tier';
+}
+
+export type PearlUpgradeEffect =
+  | AutoDeployEffect
+  | MultiplierEffect
+  | AutoBehaviorEffect
+  | StartingTierEffect;
 
 export interface PearlUpgradeDef {
   label: string;
   description: string;
   cost_per_rank: number;
+  /** Optional per-rank cost schedule. When present, cost for rank N = cost_schedule[N]. */
+  cost_schedule?: number[];
   max_rank: number;
   effect: PearlUpgradeEffect;
 }

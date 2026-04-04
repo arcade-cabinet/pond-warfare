@@ -1,12 +1,9 @@
 /**
- * Pearl Upgrade Screen (v3.0 — US15)
+ * Pearl Loadout Builder (v3.1 — US5)
  *
- * Full-screen screen accessible from main menu for spending Pearls.
- * Shows all Pearl upgrades from prestige.json with current rank and cost.
- * Categories: Auto-Deploy, Auto-Behavior, Multipliers.
- *
- * Design bible: Frame9Slice list wrapper, font-heading headers,
- * rts-btn buttons, design token colors.
+ * Full-screen loadout screen accessible from main menu.
+ * Sections: Commander Select, Auto-Deploy, Multipliers, Starting Tier.
+ * Design bible: Frame9Slice wrappers, design token colors, rts-btn buttons.
  */
 
 import { useCallback, useMemo, useState } from 'preact/hooks';
@@ -16,32 +13,39 @@ import {
   type PrestigeState,
   purchasePearlUpgrade,
 } from '@/config/prestige-logic';
+import type { PlayerProfile } from '@/storage/database';
 import { Frame9Slice } from '@/ui/components/frame';
 import { COLORS } from '@/ui/design-tokens';
+import { CommanderSelectSection } from './CommanderSelectSection';
+import { StartingTierSection } from './StartingTierSection';
 
 export interface PearlUpgradeScreenProps {
   prestigeState: PrestigeState;
   onStateChange: (newState: PrestigeState) => void;
   onBack: () => void;
+  selectedCommanderId: string;
+  onCommanderSelect: (commanderId: string) => void;
+  playerProfile: PlayerProfile;
 }
 
-type UpgradeCategory = 'auto_deploy' | 'auto_behavior' | 'multiplier';
+type LoadoutSection = 'commander' | 'auto_deploy' | 'multiplier' | 'starting_tier';
 
-interface CategoryInfo {
-  key: UpgradeCategory;
+interface SectionInfo {
+  key: LoadoutSection;
   label: string;
-  description: string;
 }
 
-const CATEGORIES: CategoryInfo[] = [
-  { key: 'auto_deploy', label: 'Auto-Deploy', description: 'Specialists spawn at match start' },
-  { key: 'auto_behavior', label: 'Automations', description: 'Permanent passive abilities' },
-  { key: 'multiplier', label: 'Multipliers', description: 'Permanent stat boosts' },
+const SECTIONS: SectionInfo[] = [
+  { key: 'commander', label: 'Commander' },
+  { key: 'auto_deploy', label: 'Auto-Deploy' },
+  { key: 'multiplier', label: 'Multipliers' },
+  { key: 'starting_tier', label: 'Starting Tier' },
 ];
 
-function categorizeUpgrade(upgrade: PearlUpgradeDisplay): UpgradeCategory {
+function categorizeUpgrade(upgrade: PearlUpgradeDisplay): string {
   if (upgrade.id.startsWith('auto_deploy_')) return 'auto_deploy';
-  if (upgrade.id.endsWith('_behavior')) return 'auto_behavior';
+  if (upgrade.id.endsWith('_behavior')) return 'auto_deploy';
+  if (upgrade.id === 'starting_tier') return 'starting_tier';
   return 'multiplier';
 }
 
@@ -65,7 +69,6 @@ function UpgradeRow({
             : 'transparent',
       }}
     >
-      {/* Info */}
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-1.5">
           <span class="font-heading text-sm truncate" style={{ color: COLORS.sepiaText }}>
@@ -80,7 +83,6 @@ function UpgradeRow({
         <div class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
           {upgrade.effectSummary || upgrade.description}
         </div>
-        {/* Rank bar */}
         <div class="mt-1 flex items-center gap-1.5">
           <div
             class="flex-1 h-1.5 rounded-full overflow-hidden"
@@ -94,16 +96,12 @@ function UpgradeRow({
               }}
             />
           </div>
-          <span
-            class="font-numbers text-[10px] whitespace-nowrap"
-            style={{ color: COLORS.weatheredSteel }}
-          >
+          <span class="font-numbers text-[10px]" style={{ color: COLORS.weatheredSteel }}>
             {upgrade.currentRank}/{upgrade.maxRank}
           </span>
         </div>
       </div>
 
-      {/* Purchase button — rts-btn */}
       {!upgrade.isMaxed && (
         <button
           type="button"
@@ -132,18 +130,19 @@ export function PearlUpgradeScreen({
   prestigeState,
   onStateChange,
   onBack,
+  selectedCommanderId,
+  onCommanderSelect,
+  playerProfile,
 }: PearlUpgradeScreenProps) {
-  const [activeCategory, setActiveCategory] = useState<UpgradeCategory>('auto_deploy');
+  const [activeSection, setActiveSection] = useState<LoadoutSection>('commander');
 
   const upgrades = useMemo(() => getPearlUpgradeDisplayList(prestigeState), [prestigeState]);
 
   const grouped = useMemo(() => {
-    const map = new Map<UpgradeCategory, PearlUpgradeDisplay[]>();
-    for (const cat of CATEGORIES) {
-      map.set(cat.key, []);
-    }
+    const map = new Map<string, PearlUpgradeDisplay[]>();
     for (const u of upgrades) {
       const cat = categorizeUpgrade(u);
+      if (!map.has(cat)) map.set(cat, []);
       map.get(cat)?.push(u);
     }
     return map;
@@ -152,15 +151,26 @@ export function PearlUpgradeScreen({
   const handlePurchase = useCallback(
     (upgradeId: string) => {
       const { state: newState, result } = purchasePearlUpgrade(prestigeState, upgradeId);
-      if (result.success) {
-        onStateChange(newState);
-      }
+      if (result.success) onStateChange(newState);
     },
     [prestigeState, onStateChange],
   );
 
-  const activeUpgrades = grouped.get(activeCategory) ?? [];
-  const activeCategoryInfo = CATEGORIES.find((c) => c.key === activeCategory);
+  const handleCommanderUnlock = useCallback(
+    (commanderId: string, cost: number) => {
+      if (prestigeState.pearls >= cost) {
+        const newState = {
+          ...prestigeState,
+          pearls: prestigeState.pearls - cost,
+        };
+        onStateChange(newState);
+        onCommanderSelect(commanderId);
+      }
+    },
+    [prestigeState, onStateChange, onCommanderSelect],
+  );
+
+  const sectionUpgrades = grouped.get(activeSection) ?? [];
 
   return (
     <div
@@ -179,7 +189,6 @@ export function PearlUpgradeScreen({
             color: COLORS.weatheredSteel,
             borderColor: COLORS.weatheredSteel,
             minHeight: '44px',
-            fontSize: '0.85rem',
           }}
           onClick={onBack}
         >
@@ -189,71 +198,66 @@ export function PearlUpgradeScreen({
           class="font-heading text-xl tracking-wider uppercase"
           style={{ color: 'var(--pw-pearl, #c4b5fd)' }}
         >
-          Pearl Upgrades
+          Loadout
         </h1>
         <div
           class="font-numbers text-lg font-bold px-3 py-1 rounded"
-          style={{
-            color: 'var(--pw-pearl, #c4b5fd)',
-            background: 'rgba(196,181,253,0.1)',
-          }}
+          style={{ color: 'var(--pw-pearl, #c4b5fd)', background: 'rgba(196,181,253,0.1)' }}
         >
           {prestigeState.pearls}P
         </div>
       </div>
 
-      {/* Rank badge */}
-      <div class="text-center pb-2 shrink-0">
-        <span class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
-          Prestige Rank {prestigeState.rank} — Total Pearls Earned:{' '}
-          {prestigeState.totalPearlsEarned}
-        </span>
+      {/* Section tabs */}
+      <div class="flex gap-1 px-4 pb-2 shrink-0 overflow-x-auto">
+        {SECTIONS.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            class={`rts-btn flex-1 py-2 font-heading text-xs whitespace-nowrap ${activeSection === s.key ? 'active' : ''}`}
+            style={{ minHeight: '44px', fontSize: '0.7rem' }}
+            onClick={() => setActiveSection(s.key)}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
 
-      {/* Category tabs — rts-btn style */}
-      <div class="flex gap-1 px-4 pb-2 shrink-0">
-        {CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat.key;
-          return (
-            <button
-              key={cat.key}
-              type="button"
-              class={`rts-btn flex-1 py-2 font-heading text-xs ${isActive ? 'active' : ''}`}
-              style={{
-                minHeight: '44px',
-                fontSize: '0.75rem',
-              }}
-              onClick={() => setActiveCategory(cat.key)}
-            >
-              {cat.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Category description */}
-      {activeCategoryInfo && (
-        <div class="px-4 pb-2 shrink-0">
-          <span class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
-            {activeCategoryInfo.description}
-          </span>
-        </div>
-      )}
-
-      {/* Upgrade list */}
+      {/* Section content */}
       <div class="flex-1 overflow-y-auto px-4 pb-4">
         <Frame9Slice>
-          <div class="px-2 py-2 flex flex-col gap-1">
-            {activeUpgrades.length === 0 ? (
-              <div class="text-center py-4">
-                <span class="font-game text-sm" style={{ color: COLORS.weatheredSteel }}>
-                  No upgrades in this category
-                </span>
+          <div class="px-3 py-3">
+            {activeSection === 'commander' && (
+              <CommanderSelectSection
+                selectedCommanderId={selectedCommanderId}
+                onSelect={onCommanderSelect}
+                playerProfile={playerProfile}
+                pearls={prestigeState.pearls}
+                onUnlock={handleCommanderUnlock}
+              />
+            )}
+
+            {activeSection === 'starting_tier' && (
+              <StartingTierSection
+                prestigeState={prestigeState}
+                onPurchase={() => handlePurchase('starting_tier')}
+              />
+            )}
+
+            {(activeSection === 'auto_deploy' || activeSection === 'multiplier') && (
+              <div class="flex flex-col gap-1">
+                {sectionUpgrades.length === 0 ? (
+                  <div class="text-center py-4">
+                    <span class="font-game text-sm" style={{ color: COLORS.weatheredSteel }}>
+                      No upgrades in this category
+                    </span>
+                  </div>
+                ) : (
+                  sectionUpgrades.map((u) => (
+                    <UpgradeRow key={u.id} upgrade={u} onPurchase={handlePurchase} />
+                  ))
+                )}
               </div>
-            ) : (
-              activeUpgrades.map((u) => (
-                <UpgradeRow key={u.id} upgrade={u} onPurchase={handlePurchase} />
-              ))
             )}
           </div>
         </Frame9Slice>

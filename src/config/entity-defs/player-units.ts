@@ -121,14 +121,14 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     foodCost: 1,
   },
   [EntityKind.Commander]: {
-    hp: 80,
-    speed: 2.0,
-    damage: 5,
+    hp: 150,
+    speed: 1.8,
+    damage: 8,
     attackRange: 60,
     isBuilding: false,
     isResource: false,
     spriteSize: 16,
-    spriteScale: 2.5,
+    spriteScale: 5.0,
   },
   // --- v1.5.0 new player units ---
   [EntityKind.Diver]: {

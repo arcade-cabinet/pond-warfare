@@ -110,6 +110,14 @@
       "cost_per_rank": 15,
       "max_rank": 1,
       "effect": { "type": "auto_behavior", "behavior": "rare_resource_access" }
+    },
+    "starting_tier": {
+      "label": "Starting Tier",
+      "description": "Start each run at a higher upgrade tier",
+      "cost_per_rank": 20,
+      "cost_schedule": [20, 40, 80, 160, 320, 640, 1280, 2560],
+      "max_rank": 8,
+      "effect": { "type": "starting_tier" }
     }
   },
   "resets_on_prestige": ["clam_upgrades", "current_run"],

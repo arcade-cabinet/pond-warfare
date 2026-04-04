@@ -25,6 +25,24 @@ vi.mock('@/ecs/archetypes', () => ({
 
 vi.mock('@/ecs/components', () => ({
   Resource: { amount: {} as Record<number, number> },
+  Commander: {
+    commanderType: {} as Record<number, number>,
+    auraRadius: {} as Record<number, number>,
+    auraDamageBonus: {} as Record<number, number>,
+    abilityTimer: {} as Record<number, number>,
+    abilityCooldown: {} as Record<number, number>,
+    isPlayerCommander: {} as Record<number, number>,
+  },
+  Health: {
+    max: {} as Record<number, number>,
+    current: {} as Record<number, number>,
+  },
+  Combat: {
+    damage: {} as Record<number, number>,
+  },
+  Velocity: {
+    speed: {} as Record<number, number>,
+  },
 }));
 
 vi.mock('@/config/factions', () => ({
@@ -67,12 +85,16 @@ function makeWorld(): {
   playerFaction: string;
   ecs: unknown;
   yukaManager: unknown;
+  commanderId: string;
+  commanderEntityId: number;
 } {
   return {
     selection: [],
     playerFaction: 'otter',
     ecs: {},
     yukaManager: {},
+    commanderId: 'marshal',
+    commanderEntityId: -1,
   };
 }
 
@@ -103,13 +125,14 @@ describe('spawnVerticalEntities', () => {
     const playerUnits = spawnedEntities.filter(
       (e) => e.faction === 0 && e.kind !== 5, // Player, not Lodge
     );
-    // Gatherer(0) + Brawler(1) + Healer(12) + Scout(16)
+    // Gatherer(0) + Brawler(1) + Healer(12) + Scout(16) + Commander(30)
     const kinds = playerUnits.map((e) => e.kind);
     expect(kinds).toContain(0); // Gatherer
     expect(kinds).toContain(1); // Brawler (Fighter)
     expect(kinds).toContain(12); // Healer (Medic)
     expect(kinds).toContain(16); // Scout
-    expect(playerUnits.length).toBe(4);
+    expect(kinds).toContain(30); // Commander
+    expect(playerUnits.length).toBe(5);
   });
 
   it('spawns resource nodes in the layout positions', () => {

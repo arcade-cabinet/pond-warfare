@@ -160,6 +160,7 @@ export async function initDatabase(): Promise<void> {
   await safeAddColumn(db, 'player_profile', 'total_matches', 'INTEGER DEFAULT 0');
   await safeAddColumn(db, 'player_profile', 'total_clams_earned', 'INTEGER DEFAULT 0');
   await safeAddColumn(db, 'player_profile', 'highest_progression', 'INTEGER DEFAULT 0');
+  await safeAddColumn(db, 'player_profile', 'selected_commander', "TEXT DEFAULT 'marshal'");
   await safeAddColumn(db, 'match_history', 'clams_earned', 'INTEGER DEFAULT 0');
   await safeAddColumn(db, 'match_history', 'events_completed', 'INTEGER DEFAULT 0');
   await safeAddColumn(db, 'match_history', 'progression_level', 'INTEGER DEFAULT 0');
@@ -266,6 +267,21 @@ export async function saveCurrentRun(state: V3CurrentRunRow): Promise<void> {
   await db.execute(
     `UPDATE current_run SET clams = ${state.clams}, upgrades_purchased = '${state.upgrades_purchased}', lodge_state = '${state.lodge_state}', progression_level = ${state.progression_level}, matches_this_run = ${state.matches_this_run} WHERE id = 1`,
   );
+  await persist();
+}
+
+/** Load selected commander from player_profile. */
+export async function loadSelectedCommander(): Promise<string> {
+  if (!_initialized) return 'marshal';
+  const result = await db.query('SELECT selected_commander FROM player_profile WHERE id = 1');
+  const row = result.values?.[0] as { selected_commander?: string } | undefined;
+  return row?.selected_commander || 'marshal';
+}
+
+/** Save selected commander to player_profile. */
+export async function saveSelectedCommander(commanderId: string): Promise<void> {
+  if (!_initialized) return;
+  await db.execute(`UPDATE player_profile SET selected_commander = '${commanderId}' WHERE id = 1`);
   await persist();
 }
 

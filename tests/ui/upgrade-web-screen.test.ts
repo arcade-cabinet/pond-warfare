@@ -78,7 +78,7 @@ describe('UpgradeWebScreen -- US12', () => {
       expect(node).toBeDefined();
       const costBefore = state.clams;
       purchaseNode(state, web, 'gathering_fish_gathering_t0');
-      expect(state.clams).toBe(costBefore - node!.cost);
+      expect(state.clams).toBe(costBefore - (node?.cost ?? 0));
     });
 
     it('should block purchase without prerequisite', () => {

@@ -15,10 +15,23 @@ import {
   getPrestigeConfig,
   getPrestigeThreshold,
 } from './config-loader';
-import type { AutoBehaviorEffect, AutoDeployEffect, MultiplierEffect } from './v3-types';
+import type {
+  AutoBehaviorEffect,
+  AutoDeployEffect,
+  MultiplierEffect,
+  PearlUpgradeDef,
+} from './v3-types';
 
 // Re-export display helpers so existing imports still work
 export { getPearlUpgradeDisplayList, type PearlUpgradeDisplay } from './prestige-display';
+
+/** Get the Pearl cost for purchasing a specific rank of an upgrade. */
+export function getCostForRank(def: PearlUpgradeDef, currentRank: number): number {
+  if (def.cost_schedule && currentRank < def.cost_schedule.length) {
+    return def.cost_schedule[currentRank];
+  }
+  return def.cost_per_rank;
+}
 
 // ── Player Prestige State ─────────────────────────────────────────
 
@@ -137,26 +150,52 @@ export function purchasePearlUpgrade(
 ): { state: PrestigeState; result: PurchaseResult } {
   const def = getPearlUpgrade(upgradeId);
   const currentRank = state.upgradeRanks[upgradeId] ?? 0;
+  const cost = getCostForRank(def, currentRank);
 
   if (currentRank >= def.max_rank) {
     return { state, result: { success: false, reason: 'Already at max rank' } };
   }
-  if (state.pearls < def.cost_per_rank) {
+  if (state.pearls < cost) {
     return {
       state,
-      result: { success: false, reason: `Need ${def.cost_per_rank} Pearls (have ${state.pearls})` },
+      result: { success: false, reason: `Need ${cost} Pearls (have ${state.pearls})` },
     };
   }
 
   const newState: PrestigeState = {
     ...state,
-    pearls: state.pearls - def.cost_per_rank,
+    pearls: state.pearls - cost,
     upgradeRanks: { ...state.upgradeRanks, [upgradeId]: currentRank + 1 },
   };
   return {
     state: newState,
     result: { success: true, newPearls: newState.pearls, newRank: currentRank + 1 },
   };
+}
+
+// ── Starting Tier ────────────────────────────────────────────────
+
+/** Get the current starting tier rank (0 = Basic/none, 1 = Enhanced, ..., 8 = Mythic). */
+export function getStartingTierRank(state: PrestigeState): number {
+  return state.upgradeRanks.starting_tier ?? 0;
+}
+
+/** Starting tier names indexed by rank (0-8). */
+export const STARTING_TIER_NAMES = [
+  'Basic',
+  'Enhanced',
+  'Super',
+  'Mega',
+  'Ultra',
+  'Seismic',
+  'Colossal',
+  'Legendary',
+  'Mythic',
+] as const;
+
+/** Get the display name for a starting tier rank. */
+export function getStartingTierName(rank: number): string {
+  return STARTING_TIER_NAMES[rank] ?? 'Basic';
 }
 
 // ── Prestige Execution ────────────────────────────────────────────

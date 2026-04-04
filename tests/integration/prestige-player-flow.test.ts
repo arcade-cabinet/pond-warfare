@@ -24,6 +24,24 @@ vi.mock('@/ecs/archetypes', () => ({
 
 vi.mock('@/ecs/components', () => ({
   Resource: { amount: {} as Record<number, number> },
+  Commander: {
+    commanderType: {} as Record<number, number>,
+    auraRadius: {} as Record<number, number>,
+    auraDamageBonus: {} as Record<number, number>,
+    abilityTimer: {} as Record<number, number>,
+    abilityCooldown: {} as Record<number, number>,
+    isPlayerCommander: {} as Record<number, number>,
+  },
+  Health: {
+    max: {} as Record<number, number>,
+    current: {} as Record<number, number>,
+  },
+  Combat: {
+    damage: {} as Record<number, number>,
+  },
+  Velocity: {
+    speed: {} as Record<number, number>,
+  },
 }));
 
 vi.mock('@/config/factions', () => ({
@@ -67,6 +85,8 @@ function makeWorld(): any {
     yukaManager: {},
     waveSurvivalMode: false,
     waveSurvivalTarget: 5,
+    commanderId: 'marshal',
+    commanderEntityId: -1,
   };
 }
 

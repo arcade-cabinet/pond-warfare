@@ -7,6 +7,8 @@ import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
 import {
   handleClamsChange,
+  handleClamUpgradeContinue,
+  handleCommanderSelect,
   handlePearlBack,
   handlePearlStateChange,
   handleRankUpCancel,
@@ -14,7 +16,6 @@ import {
   handleRewardsPlayAgain,
   handleRewardsRankUp,
   handleRewardsUpgrades,
-  handleUpgradesBack,
 } from './app-v3-handlers';
 import { SvgFilters } from './components/SvgFilters';
 import { SwampEcosystem } from './components/SwampEcosystem';
@@ -127,18 +128,14 @@ export function App({ onMount }: AppProps) {
         )}
 
         {/* v3 overlay screens -- rendered on top of main menu */}
-        {storeV3.upgradesScreenOpen.value && (
-          <UpgradeWebScreen
-            clams={storeV3.totalClams.value}
-            onClamsChange={handleClamsChange}
-            onBack={handleUpgradesBack}
-          />
-        )}
         {storeV3.pearlScreenOpen.value && (
           <PearlUpgradeScreen
             prestigeState={storeV3.prestigeState.value}
             onStateChange={handlePearlStateChange}
             onBack={handlePearlBack}
+            selectedCommanderId={store.selectedCommander.value}
+            onCommanderSelect={handleCommanderSelect}
+            playerProfile={storeV3.playerProfile.value}
           />
         )}
       </div>
@@ -268,6 +265,13 @@ export function App({ onMount }: AppProps) {
           onRankUp={handleRewardsRankUp}
           onUpgrades={handleRewardsUpgrades}
           onPlayAgain={handleRewardsPlayAgain}
+        />
+      )}
+      {storeV3.clamUpgradeScreenOpen.value && (
+        <UpgradeWebScreen
+          clams={storeV3.totalClams.value}
+          onClamsChange={handleClamsChange}
+          onBack={handleClamUpgradeContinue}
         />
       )}
       {storeV3.rankUpModalOpen.value && (

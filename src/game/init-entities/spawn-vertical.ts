@@ -12,13 +12,35 @@
  * and the win condition becomes survival-based instead of nest destruction.
  */
 
+import { COMMANDER_ABILITIES, getCommanderDef, getCommanderTypeIndex } from '@/config/commanders';
 import { getFactionConfig } from '@/config/factions';
 import { spawnEntity } from '@/ecs/archetypes';
-import { Resource } from '@/ecs/components';
+import { Combat, Commander, Health, Resource, Velocity } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { VerticalMapLayout } from '@/game/vertical-map';
 import { EntityKind, Faction } from '@/types';
+import { progressionLevel } from '@/ui/store-v3';
 import type { SeededRandom } from '@/utils/random';
+import enemiesConfig from '../../../configs/enemies.json';
+
+/** Enemy commander tier config loaded from enemies.json. */
+interface EnemyCommanderTier {
+  hp: number;
+  damage: number;
+  speed: number;
+  aura_radius: number;
+  aura_damage_bonus: number;
+  ability_interval: number;
+}
+
+/** Select enemy commander tier based on progression stage. */
+function getEnemyCommanderTier(stage: number): EnemyCommanderTier | null {
+  if (stage < 2) return null;
+  const commanders = enemiesConfig.commanders as Record<string, EnemyCommanderTier>;
+  if (stage <= 3) return commanders.basic;
+  if (stage <= 5) return commanders.mid;
+  return commanders.boss;
+}
 
 /** Resource node entity mapping (v3 names -> existing EntityKinds). */
 const RESOURCE_KIND_MAP: Record<string, EntityKind> = {
@@ -53,11 +75,19 @@ export function spawnVerticalEntities(
   // 4 starting generalist units near Lodge
   spawnStartingUnits(world, factionCfg, layout, rng);
 
+  // Player Commander next to Lodge
+  spawnPlayerCommander(world, layout);
+
   // Resource nodes per panel biome
   spawnResourceNodes(world, layout, rng);
 
   // Enemy nests at top edges of enemy-spawn panels (if any)
   const nestsSpawned = spawnEnemyNests(world, layout, rng);
+
+  // Enemy Commander boss near first enemy nest (stage 2+)
+  if (nestsSpawned > 0) {
+    spawnEnemyCommander(world, layout, rng);
+  }
 
   // If no enemy nests were spawned (stage 1), enable wave-survival mode.
   // Enemies will arrive via match-event-runner waves from the map edge.
@@ -71,6 +101,83 @@ export function spawnVerticalEntities(
 
   world.selection = [lodgeEid];
   return lodgeEid;
+}
+
+/** Spawn the player Commander entity adjacent to the Lodge. */
+function spawnPlayerCommander(world: GameWorld, layout: VerticalMapLayout): void {
+  const eid = spawnEntity(
+    world,
+    EntityKind.Commander,
+    layout.lodgeX + 50,
+    layout.lodgeY - 30,
+    Faction.Player,
+  );
+
+  // Populate Commander ECS component from config
+  const cmdDef = getCommanderDef(world.commanderId);
+  const typeIdx = getCommanderTypeIndex(world.commanderId);
+  const ability = COMMANDER_ABILITIES[world.commanderId];
+
+  Commander.commanderType[eid] = typeIdx;
+  Commander.auraRadius[eid] = 150;
+  Commander.auraDamageBonus[eid] = Math.round(cmdDef.auraDamageBonus * 100); // store as int %
+  Commander.abilityTimer[eid] = 0;
+  Commander.abilityCooldown[eid] = ability?.cooldownFrames ?? 5400;
+  Commander.isPlayerCommander[eid] = 1;
+
+  // Track on world for game-over checks
+  world.commanderEntityId = eid;
+}
+
+/** Spawn an enemy Commander boss near the first enemy spawn position. */
+function spawnEnemyCommander(world: GameWorld, layout: VerticalMapLayout, rng: SeededRandom): void {
+  const stage = progressionLevel.value;
+  const tier = getEnemyCommanderTier(stage);
+  if (!tier) return; // Stage 1: no enemy commander
+
+  // Spawn near the first enemy spawn position
+  const spawnPos = layout.enemySpawnPositions[0];
+  if (!spawnPos) return;
+
+  const eid = spawnEntity(
+    world,
+    EntityKind.Commander,
+    spawnPos.x + rng.float(-40, 40),
+    spawnPos.y + rng.float(20, 60),
+    Faction.Enemy,
+  );
+
+  // Override stats from tier config
+  Health.max[eid] = tier.hp;
+  Health.current[eid] = tier.hp;
+  Combat.damage[eid] = tier.damage;
+  Velocity.speed[eid] = tier.speed;
+
+  // Set Commander ECS component
+  Commander.commanderType[eid] = 0; // enemy commanders don't use player type index
+  Commander.auraRadius[eid] = tier.aura_radius;
+  Commander.auraDamageBonus[eid] = Math.round(tier.aura_damage_bonus * 100);
+  Commander.abilityTimer[eid] = 0;
+  Commander.abilityCooldown[eid] = tier.ability_interval;
+  Commander.isPlayerCommander[eid] = 0;
+
+  world.enemyCommanderEntityId = eid;
+
+  // Spawn 2-4 guard fighters near the commander
+  const aiFactionKey = world.playerFaction === 'otter' ? 'predator' : 'otter';
+  const aiFactionCfg = getFactionConfig(
+    aiFactionKey as import('@/config/factions').PlayableFaction,
+  );
+  const guardCount = stage <= 3 ? 2 : stage <= 5 ? 3 : 4;
+  for (let i = 0; i < guardCount; i++) {
+    spawnEntity(
+      world,
+      aiFactionCfg.meleeKind,
+      spawnPos.x + rng.float(-60, 60),
+      spawnPos.y + rng.float(30, 80),
+      Faction.Enemy,
+    );
+  }
 }
 
 /** Spawn the 4 starting generalist units near the Lodge. */

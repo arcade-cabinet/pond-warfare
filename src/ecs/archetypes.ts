@@ -7,6 +7,7 @@ import {
   Carrying,
   Collider,
   Combat,
+  Commander,
   EntityTypeTag,
   FactionTag,
   Health,
@@ -236,6 +237,17 @@ export function spawnEntity(
     AutoSymbol.symbolType[eid] = 0;
     AutoSymbol.timer[eid] = 0;
     AutoSymbol.confirmed[eid] = 0;
+
+    // Commander-specific ECS component (populated by caller via initCommanderComponent)
+    if (kind === EntityKind.Commander) {
+      addComponent(world.ecs, eid, Commander);
+      Commander.commanderType[eid] = 0;
+      Commander.auraRadius[eid] = 150;
+      Commander.auraDamageBonus[eid] = 0;
+      Commander.abilityTimer[eid] = 0;
+      Commander.abilityCooldown[eid] = 0;
+      Commander.isPlayerCommander[eid] = 0;
+    }
   }
 
   return eid;

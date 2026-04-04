@@ -165,6 +165,16 @@ export const SymbolType = {
   Scout: 4,
 } as const;
 
+// Commander component (one per commander entity)
+export const Commander = soa({
+  commanderType: [] as number[], // index into COMMANDERS array (0=marshal, 1=sage, etc.)
+  auraRadius: [] as number[],
+  auraDamageBonus: [] as number[], // fractional (0.15 = +15%)
+  abilityTimer: [] as number[], // frames until ability available (0 = ready)
+  abilityCooldown: [] as number[], // frames per cooldown cycle
+  isPlayerCommander: [] as number[], // 1=player, 0=enemy
+});
+
 // Projectile component
 export const ProjectileData = soa({
   targetEntity: [] as number[],

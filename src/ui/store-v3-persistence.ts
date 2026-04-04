@@ -5,15 +5,19 @@
  * provides save helpers called after match rewards and prestige.
  */
 
-import { createPrestigeState } from '@/config/prestige-logic';
+import { createPrestigeState, getStartingTierRank } from '@/config/prestige-logic';
+import { getPlayerProfile } from '@/storage/database';
 import {
   isDatabaseReady,
   loadCurrentRun,
   loadPrestigeState,
+  loadSelectedCommander,
   resetCurrentRun,
   saveCurrentRun,
   savePrestigeState,
+  saveSelectedCommander,
 } from '@/storage/schema';
+import { selectedCommander } from './store';
 import * as storeV3 from './store-v3';
 
 /**
@@ -35,12 +39,14 @@ export async function hydrateV3StoreFromDb(): Promise<void> {
       upgradeRanks = {};
     }
 
-    storeV3.prestigeState.value = {
+    const prestigeState = {
       rank: prestige.rank,
       pearls: prestige.pearls,
       totalPearlsEarned: prestige.total_clams_earned,
       upgradeRanks,
     };
+    storeV3.prestigeState.value = prestigeState;
+    storeV3.startingTierRank.value = getStartingTierRank(prestigeState);
   }
 
   const run = await loadCurrentRun();
@@ -48,6 +54,23 @@ export async function hydrateV3StoreFromDb(): Promise<void> {
     storeV3.totalClams.value = run.clams;
     storeV3.progressionLevel.value = run.progression_level;
   }
+
+  const commander = await loadSelectedCommander();
+  selectedCommander.value = commander;
+
+  try {
+    storeV3.playerProfile.value = await getPlayerProfile();
+  } catch {
+    // Non-critical -- default profile is fine
+  }
+}
+
+/**
+ * Persist selected commander to SQLite. Call when commander selection changes.
+ */
+export async function persistSelectedCommander(): Promise<void> {
+  if (!isDatabaseReady()) return;
+  await saveSelectedCommander(selectedCommander.value);
 }
 
 /**
@@ -75,12 +98,16 @@ export async function persistPrestigeState(): Promise<void> {
 export async function persistCurrentRun(): Promise<void> {
   if (!isDatabaseReady()) return;
 
+  // Load existing run to increment matches_this_run correctly
+  const existing = await loadCurrentRun();
+  const matchCount = existing ? existing.matches_this_run + 1 : 1;
+
   await saveCurrentRun({
     clams: storeV3.totalClams.value,
-    upgrades_purchased: '{}',
-    lodge_state: '{}',
+    upgrades_purchased: existing?.upgrades_purchased ?? '{}',
+    lodge_state: existing?.lodge_state ?? '{}',
     progression_level: storeV3.progressionLevel.value,
-    matches_this_run: 0,
+    matches_this_run: matchCount,
   });
 }
 

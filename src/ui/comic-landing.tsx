@@ -1,8 +1,8 @@
 /**
  * ComicLanding — Full comic book landing page with three stacked panels.
  *
- * Panel 1: Otter (left) — "Ready for battle?" [PLAY] + optional [CONTINUE]
- * Panel 2: Croc (right) — "Power up, soldier" [UPGRADES] + optional [PRESTIGE]
+ * Panel 1: Otter (left) — "Ready for battle?" [PLAY] (seamless: US7)
+ * Panel 2: Croc (right) — "Power up, soldier" [UPGRADES] (Pearl loadout, US9: hidden until rank/pearls > 0)
  * Panel 3: Snake (left) — "Adjust your gear" [SETTINGS]
  *
  * SwampEcosystem canvas runs behind everything (rendered by app.tsx).
@@ -17,19 +17,17 @@ import { COLORS } from '@/ui/design-tokens';
 import { ComicPanel } from './comic-panel';
 import { MenuBackground } from './menu-background';
 import {
-  continueRequested,
   customGameSettings,
   customMapSeed,
   DEFAULT_CUSTOM_SETTINGS,
   gameName,
   gameSeed,
-  hasSaveGame,
   menuState,
   permadeathEnabled,
   selectedDifficulty,
   settingsOpen,
 } from './store';
-import { pearlScreenOpen, prestigeRank, upgradesScreenOpen } from './store-v3';
+import { pearlScreenOpen, prestigeRank, totalPearls } from './store-v3';
 
 function generateName(): string {
   const adj = ['Murky', 'Still', 'Raging', 'Deep', 'Frozen', 'Verdant'];
@@ -42,6 +40,12 @@ function generateSeed(): number {
 }
 
 export function ComicLanding() {
+  // US7: Seamless PLAY — no modal, no "Continue vs New Game" choice.
+  // If an active run exists (progression > 0), start at that level with upgrades.
+  // Otherwise start fresh. In both cases, we start a NEW match (not mid-match resume).
+  // Run state (progressionLevel, totalClams, etc.) is already hydrated into store-v3
+  // signals at app startup via hydrateV3StoreFromDb(). Game.init() reads those signals
+  // to apply upgrade effects and set difficulty scaling.
   const handlePlay = useCallback(() => {
     selectedDifficulty.value = 'normal';
     permadeathEnabled.value = false;
@@ -53,16 +57,7 @@ export function ComicLanding() {
     menuState.value = 'playing';
   }, []);
 
-  const handleContinue = useCallback(() => {
-    continueRequested.value = true;
-    menuState.value = 'playing';
-  }, []);
-
   const handleUpgrades = useCallback(() => {
-    upgradesScreenOpen.value = true;
-  }, []);
-
-  const handlePrestige = useCallback(() => {
     pearlScreenOpen.value = true;
   }, []);
 
@@ -70,7 +65,8 @@ export function ComicLanding() {
     settingsOpen.value = true;
   }, []);
 
-  const showPrestige = prestigeRank.value > 0;
+  // US9: UPGRADES only visible when rank > 0 OR pearls > 0
+  const showUpgrades = prestigeRank.value > 0 || totalPearls.value > 0;
 
   return (
     <div
@@ -107,7 +103,7 @@ export function ComicLanding() {
 
       {/* Comic panels — staggered for visual dynamism in landscape */}
       <div class="relative z-10 flex flex-col items-center gap-2 md:gap-3 px-3 pb-2 w-full comic-panels-container">
-        {/* Panel 1: Otter — Play (stagger left) */}
+        {/* Panel 1: Otter — Play (stagger left). US7: single seamless button. */}
         <ComicPanel
           character="otter"
           side="left"
@@ -115,23 +111,19 @@ export function ComicLanding() {
           buttonLabel="PLAY"
           onButtonClick={handlePlay}
           stagger="left"
-          secondaryButton={
-            hasSaveGame.value ? { label: 'CONTINUE', onClick: handleContinue } : undefined
-          }
         />
 
-        {/* Panel 2: Croc — Upgrades (stagger center) */}
-        <ComicPanel
-          character="croc"
-          side="right"
-          quote="Power up, soldier"
-          buttonLabel="UPGRADES"
-          onButtonClick={handleUpgrades}
-          stagger="center"
-          secondaryButton={
-            showPrestige ? { label: 'PRESTIGE', onClick: handlePrestige } : undefined
-          }
-        />
+        {/* Panel 2: Croc — Upgrades / Pearl loadout (stagger center). US9: only when rank/pearls > 0. */}
+        {showUpgrades && (
+          <ComicPanel
+            character="croc"
+            side="right"
+            quote="Power up, soldier"
+            buttonLabel="UPGRADES"
+            onButtonClick={handleUpgrades}
+            stagger="center"
+          />
+        )}
 
         {/* Panel 3: Snake — Settings (stagger right) */}
         <ComicPanel

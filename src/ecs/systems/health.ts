@@ -6,16 +6,25 @@
  * - death.ts: entity death processing, stats, corpses
  * - healing.ts: passive healing, healer aura, herbalist hut
  *
- * Win/lose conditions:
- * - Normal mode: LOSE if Lodge destroyed, WIN if all enemy nests destroyed
- * - Wave-survival mode (stage 1, no nests): LOSE if Lodge destroyed,
- *   WIN if player survived waveSurvivalTarget waves
- * - Co-op: both-survive rules via coop-rules module
+ * Win/lose conditions (priority order):
+ * 1. Commander death: enemy Commander killed → WIN, player Commander killed → LOSE
+ * 2. Lodge + extermination: Lodge destroyed + no units → LOSE (Commander mode)
+ * 3. Legacy (no Commanders): Lodge destroyed → LOSE, all nests destroyed → WIN
+ * 4. Wave-survival (stage 1): survive N waves → WIN
+ * 5. Co-op: both-survive rules via coop-rules module
  */
 
 import { hasComponent, type QueryResult, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { Combat, EntityTypeTag, FactionTag, Health, IsResource, Position } from '@/ecs/components';
+import {
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  IsResource,
+  Position,
+} from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { checkCoopWinLose } from '@/net/coop-rules';
 import { EntityKind, Faction } from '@/types';
@@ -86,12 +95,55 @@ export function healthSystem(world: GameWorld): void {
 
 /** Check win/lose conditions based on game mode. */
 function checkWinLoseConditions(world: GameWorld, allLiving: QueryResult): void {
+  // --- Commander death checks (highest priority) ---
+  const playerCmdDead = checkCommanderDead(world.commanderEntityId);
+  const enemyCmdDead = checkCommanderDead(world.enemyCommanderEntityId);
+
+  // Both die same frame → player wins tiebreak
+  if (playerCmdDead && enemyCmdDead) {
+    const ex = world.enemyCommanderEntityId >= 0 ? Position.x[world.enemyCommanderEntityId] : 0;
+    const ey = world.enemyCommanderEntityId >= 0 ? Position.y[world.enemyCommanderEntityId] : 0;
+    world.gameOverReason = 'commander-kill';
+    triggerGameEnd(world, 'win', ex, ey);
+    return;
+  }
+
+  // Enemy Commander dead → instant win
+  if (enemyCmdDead) {
+    const ex = world.enemyCommanderEntityId >= 0 ? Position.x[world.enemyCommanderEntityId] : 0;
+    const ey = world.enemyCommanderEntityId >= 0 ? Position.y[world.enemyCommanderEntityId] : 0;
+    world.gameOverReason = 'commander-kill';
+    // Enemy Commander death visual (player Commander visual is in death.ts)
+    world.floatingTexts.push({
+      x: ex,
+      y: ey - 50,
+      text: 'ENEMY COMMANDER DEFEATED!',
+      color: '#C5A059', // grittyGold
+      life: 300,
+    });
+    world.shakeTimer = Math.max(world.shakeTimer, 30);
+    triggerGameEnd(world, 'win', ex, ey);
+    return;
+  }
+
+  // Player Commander dead → instant loss (visual already added by death.ts)
+  if (playerCmdDead) {
+    const px = world.commanderEntityId >= 0 ? Position.x[world.commanderEntityId] : 0;
+    const py = world.commanderEntityId >= 0 ? Position.y[world.commanderEntityId] : 0;
+    world.gameOverReason = 'commander-death';
+    triggerGameEnd(world, 'lose', px, py);
+    return;
+  }
+
+  // --- Scan living entities for Lodge/nest status ---
   let playerLodgeAlive = false;
   let nestsRemaining = false;
   let lodgeX = 0;
   let lodgeY = 0;
   let lastNestX = 0;
   let lastNestY = 0;
+  let playerUnitsAlive = false;
+  let enemyUnitsAlive = false;
 
   for (let i = 0; i < allLiving.length; i++) {
     const eid = allLiving[i];
@@ -108,6 +160,13 @@ function checkWinLoseConditions(world: GameWorld, allLiving: QueryResult): void 
       lastNestX = Position.x[eid];
       lastNestY = Position.y[eid];
     }
+    // Track living non-building units per faction (for extermination check)
+    if (faction === Faction.Player && !hasComponent(world.ecs, eid, IsBuilding)) {
+      playerUnitsAlive = true;
+    }
+    if (faction === Faction.Enemy && !hasComponent(world.ecs, eid, IsBuilding)) {
+      enemyUnitsAlive = true;
+    }
   }
 
   // Co-op: use both-survive rules when coopMode is active
@@ -121,10 +180,24 @@ function checkWinLoseConditions(world: GameWorld, allLiving: QueryResult): void 
     return;
   }
 
-  // Solo mode: Lodge destruction is always a loss
-  if (!playerLodgeAlive) {
-    triggerGameEnd(world, 'lose', lodgeX, lodgeY);
-    return;
+  // --- Non-Commander win/lose (Lodge + extermination fallback) ---
+  // When Commanders are in play, Lodge destruction only cuts off training;
+  // game continues as long as Commander is alive.
+  const hasCommanders = world.commanderEntityId >= 0 || world.enemyCommanderEntityId >= 0;
+
+  if (!hasCommanders) {
+    // No Commanders (stage 1 / legacy): Lodge destruction = loss
+    if (!playerLodgeAlive) {
+      triggerGameEnd(world, 'lose', lodgeX, lodgeY);
+      return;
+    }
+  } else {
+    // Commanders present: Lodge destroyed + all units dead = loss
+    if (!playerLodgeAlive && !playerUnitsAlive) {
+      world.gameOverReason = 'extermination';
+      triggerGameEnd(world, 'lose', lodgeX, lodgeY);
+      return;
+    }
   }
 
   // Wave-survival mode (stage 1, no enemy nests): win after surviving N waves
@@ -138,10 +211,18 @@ function checkWinLoseConditions(world: GameWorld, allLiving: QueryResult): void 
     return;
   }
 
-  // Normal mode: win when all enemy nests are destroyed
-  if (!nestsRemaining) {
+  // Normal mode: win when all enemy nests destroyed + all enemies dead
+  if (!nestsRemaining && !enemyUnitsAlive) {
+    world.gameOverReason = 'extermination';
     triggerGameEnd(world, 'win', lastNestX, lastNestY);
   }
+}
+
+/** Check if a Commander entity is dead (HP <= 0, including already-processed). */
+function checkCommanderDead(cmdEid: number): boolean {
+  if (cmdEid < 0) return false;
+  // HP <= 0 covers both fresh death (0) and already-processed (-1 from processDeath)
+  return Health.current[cmdEid] <= 0;
 }
 
 /** Trigger game end with spectacle animation. */

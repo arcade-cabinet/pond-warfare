@@ -6,6 +6,7 @@
  * Also sets v3 store signals for rewards screen display.
  */
 
+import { nextPrestigeThreshold } from '@/config/prestige-logic';
 import { TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { DAY_FRAMES } from '@/constants';
 import { getEventsCompletedCount } from '@/ecs/systems/match-event-runner';
@@ -15,7 +16,7 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { persistCurrentRun, persistPrestigeState } from '@/ui/store-v3-persistence';
 import { processGameOverRewards, resetRewardsGuard } from './game-over-rewards';
-import { calculateMatchReward } from './match-rewards';
+import { calculateMatchReward, checkRankUpAvailable } from './match-rewards';
 
 /** Module-level guard so permadeath deletion only fires once per loss. */
 let _permadeathDeleteFired = false;
@@ -39,8 +40,12 @@ export function syncGameOverStats(world: GameWorld): void {
   store.goTitle.value = w.state === 'win' ? 'Victory' : 'Defeat';
   store.goTitleColor.value = w.state === 'win' ? 'text-amber-400' : 'text-red-500';
 
-  // Description varies by game mode
-  if (w.waveSurvivalMode) {
+  // Description varies by game-over reason
+  if (w.gameOverReason === 'commander-death') {
+    store.goDesc.value = 'Commander Fallen — defeat!';
+  } else if (w.gameOverReason === 'commander-kill') {
+    store.goDesc.value = 'Enemy Commander Defeated — victory!';
+  } else if (w.waveSurvivalMode) {
     store.goDesc.value =
       w.state === 'win' ? `Survived all ${w.waveSurvivalTarget} waves!` : 'The Lodge has fallen!';
   } else {
@@ -88,10 +93,21 @@ export function syncGameOverStats(world: GameWorld): void {
 
   const nestsDestroyed = store.destroyedEnemyNests.value;
 
+  // Commander fate line
+  const commanderFate =
+    w.gameOverReason === 'commander-death'
+      ? 'Assassinated'
+      : w.gameOverReason === 'commander-kill'
+        ? 'Survived'
+        : w.state === 'lose'
+          ? 'Fallen'
+          : 'Survived';
+
   const statLines = [
     `Time: ${store.goTimeSurvived.value}`,
     `Difficulty: ${diffLabel}`,
     `Commander: ${cmdLabel}`,
+    `Commander fate: ${commanderFate}`,
     `Kills: ${w.stats.unitsKilled}`,
     `Units trained: ${w.stats.unitsTrained}`,
     `Units lost: ${w.stats.unitsLost}`,
@@ -159,6 +175,15 @@ export function syncGameOverStats(world: GameWorld): void {
     if (w.state === 'win') {
       storeV3.progressionLevel.value += 1;
     }
+
+    // US8: Check if Rank Up should be available after this match
+    const threshold = nextPrestigeThreshold(storeV3.prestigeRank.value);
+    const rankUpInfo = checkRankUpAvailable(
+      storeV3.progressionLevel.value,
+      storeV3.prestigeRank.value,
+      threshold,
+    );
+    storeV3.canRankUpAfterMatch.value = rankUpInfo.canRankUp;
 
     // T19: Add earned Clams to total and persist to SQLite
     storeV3.totalClams.value += breakdown.totalClams;
