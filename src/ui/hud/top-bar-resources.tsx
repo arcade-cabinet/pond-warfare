@@ -3,25 +3,25 @@
  * Directional flash: green/gold on increase, red on decrease.
  * Food flashes green/red on population change, orange at cap.
  *
- * v3 resource mapping: clams -> Fish, pearls -> Rocks, twigs -> Logs.
- * Internal signals still use v2 names for backward compat.
+ * TopBar Resources -- Fish, Rocks, Logs, and food display.
+ * Directional flash: green/gold on increase, red on decrease.
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
-  clams,
+  fish,
   food,
   foodAtCap,
   foodDisplay,
   lastFoodChange,
   lastResourceChange,
-  lowClams,
-  lowTwigs,
+  logs,
+  lowFish,
+  lowLogs,
   maxFood,
-  pearls,
-  rateClams,
-  rateTwigs,
-  twigs,
+  rateFish,
+  rateLogs,
+  rocks,
 } from '../store';
 import { waveNumber } from '../store-gameplay';
 
@@ -57,12 +57,12 @@ function flashClass(dir: FlashDir): string {
 }
 
 export function TopBarResources({ compact }: { compact: boolean }) {
-  const fishRate = rateClams.value;
-  const logsRate = rateTwigs.value;
+  const fishRate = rateFish.value;
+  const logsRate = rateLogs.value;
 
-  const currentFish = clams.value;
-  const currentRocks = pearls.value;
-  const currentLogs = twigs.value;
+  const currentFish = fish.value;
+  const currentRocks = rocks.value;
+  const currentLogs = logs.value;
   const currentFood = food.value;
   const currentMaxFood = maxFood.value;
   const currentWave = waveNumber.value;
@@ -70,9 +70,9 @@ export function TopBarResources({ compact }: { compact: boolean }) {
   const resChange = lastResourceChange.value;
   const foodChange = lastFoodChange.value;
 
-  const fishFlash = useDirectionalFlash(currentFish, 5, resChange.clams);
-  const rocksFlash = useDirectionalFlash(currentRocks, 5, resChange.pearls);
-  const logsFlash = useDirectionalFlash(currentLogs, 5, resChange.twigs);
+  const fishFlash = useDirectionalFlash(currentFish, 5, resChange.fish);
+  const rocksFlash = useDirectionalFlash(currentRocks, 5, resChange.rocks);
+  const logsFlash = useDirectionalFlash(currentLogs, 5, resChange.logs);
 
   // Food flash: directional + cap override
   const foodDir = useDirectionalFlash(currentFood, 1, foodChange.delta);
@@ -93,7 +93,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
 
   return (
     <div class="flex space-x-3 md:space-x-6">
-      {/* Fish (clams internally) */}
+      {/* Fish */}
       <div
         role="status"
         aria-live="polite"
@@ -114,12 +114,12 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(fishFlash)} ${lowClams.value ? 'animate-pulse' : ''}`}
-          style={{ color: lowClams.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
+          class={`font-numbers font-bold ${flashClass(fishFlash)} ${lowFish.value ? 'animate-pulse' : ''}`}
+          style={{ color: lowFish.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
         >
-          {clams}
+          {fish}
         </span>
-        {lowClams.value && (
+        {lowFish.value && (
           <span
             class="font-bold animate-pulse"
             style={{ color: 'var(--pw-warning)' }}
@@ -138,7 +138,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
         )}
       </div>
 
-      {/* Rocks (pearls internally -- in-match stone resource) */}
+      {/* Rocks */}
       <div
         role="status"
         aria-live="polite"
@@ -162,11 +162,11 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           class={`font-numbers font-bold ${flashClass(rocksFlash)}`}
           style={{ color: '#9ca3af' }}
         >
-          {pearls}
+          {rocks}
         </span>
       </div>
 
-      {/* Logs (twigs internally) */}
+      {/* Logs */}
       <div
         role="status"
         aria-live="polite"
@@ -186,12 +186,12 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(logsFlash)} ${lowTwigs.value ? 'animate-pulse' : ''}`}
-          style={{ color: lowTwigs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
+          class={`font-numbers font-bold ${flashClass(logsFlash)} ${lowLogs.value ? 'animate-pulse' : ''}`}
+          style={{ color: lowLogs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
         >
-          {twigs}
+          {logs}
         </span>
-        {lowTwigs.value && (
+        {lowLogs.value && (
           <span
             class="font-bold animate-pulse"
             style={{ color: 'var(--pw-warning)' }}

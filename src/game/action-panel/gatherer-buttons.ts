@@ -15,14 +15,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const lodgeDef = ENTITY_DEFS[EntityKind.Lodge];
   btns.push({
     title: 'Lodge',
-    cost: `${lodgeDef.clamCost}C ${lodgeDef.twigCost}T`,
+    cost: `${lodgeDef.fishCost}F ${lodgeDef.logCost}L`,
     hotkey: 'Q',
     affordable:
-      w.resources.clams >= (lodgeDef.clamCost ?? 0) &&
-      w.resources.twigs >= (lodgeDef.twigCost ?? 0),
+      w.resources.fish >= (lodgeDef.fishCost ?? 0) && w.resources.logs >= (lodgeDef.logCost ?? 0),
     description: 'Expansion building. +4 food cap, resource drop-off point.',
     category: 'build',
-    costBreakdown: { clams: lodgeDef.clamCost, twigs: lodgeDef.twigCost },
+    costBreakdown: { fish: lodgeDef.fishCost, logs: lodgeDef.logCost },
     onClick: () => {
       w.placingBuilding = 'lodge';
     },
@@ -30,12 +29,12 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const burrowDef = ENTITY_DEFS[EntityKind.Burrow];
   btns.push({
     title: 'Burrow',
-    cost: `${burrowDef.twigCost}T`,
+    cost: `${burrowDef.logCost}L`,
     hotkey: 'W',
-    affordable: w.resources.twigs >= (burrowDef.twigCost ?? 0),
+    affordable: w.resources.logs >= (burrowDef.logCost ?? 0),
     description: 'Housing structure. +4 food cap.',
     category: 'build',
-    costBreakdown: { clams: burrowDef.clamCost, twigs: burrowDef.twigCost },
+    costBreakdown: { fish: burrowDef.fishCost, logs: burrowDef.logCost },
     onClick: () => {
       w.placingBuilding = 'burrow';
     },
@@ -43,14 +42,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const armoryDef = ENTITY_DEFS[EntityKind.Armory];
   btns.push({
     title: 'Armory',
-    cost: `${armoryDef.clamCost}C ${armoryDef.twigCost}T`,
+    cost: `${armoryDef.fishCost}F ${armoryDef.logCost}L`,
     hotkey: 'E',
     affordable:
-      w.resources.clams >= (armoryDef.clamCost ?? 0) &&
-      w.resources.twigs >= (armoryDef.twigCost ?? 0),
+      w.resources.fish >= (armoryDef.fishCost ?? 0) && w.resources.logs >= (armoryDef.logCost ?? 0),
     description: 'Military production. Trains combat units and researches upgrades.',
     category: 'build',
-    costBreakdown: { clams: armoryDef.clamCost, twigs: armoryDef.twigCost },
+    costBreakdown: { fish: armoryDef.fishCost, logs: armoryDef.logCost },
     onClick: () => {
       w.placingBuilding = 'armory';
     },
@@ -58,14 +56,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const towerDef = ENTITY_DEFS[EntityKind.Tower];
   btns.push({
     title: 'Tower',
-    cost: `${towerDef.clamCost}C ${towerDef.twigCost}T`,
+    cost: `${towerDef.fishCost}F ${towerDef.logCost}L`,
     hotkey: 'R',
     affordable:
-      w.resources.clams >= (towerDef.clamCost ?? 0) &&
-      w.resources.twigs >= (towerDef.twigCost ?? 0),
+      w.resources.fish >= (towerDef.fishCost ?? 0) && w.resources.logs >= (towerDef.logCost ?? 0),
     description: 'Defensive structure. Attacks nearby enemies automatically.',
     category: 'build',
-    costBreakdown: { clams: towerDef.clamCost, twigs: towerDef.twigCost },
+    costBreakdown: { fish: towerDef.fishCost, logs: towerDef.logCost },
     onClick: () => {
       w.placingBuilding = 'tower';
     },
@@ -74,13 +71,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
     const wtDef = ENTITY_DEFS[EntityKind.Watchtower];
     btns.push({
       title: 'Watchtower',
-      cost: `${wtDef.clamCost}C ${wtDef.twigCost}T`,
+      cost: `${wtDef.fishCost}F ${wtDef.logCost}L`,
       hotkey: 'T',
       affordable:
-        w.resources.clams >= (wtDef.clamCost ?? 0) && w.resources.twigs >= (wtDef.twigCost ?? 0),
+        w.resources.fish >= (wtDef.fishCost ?? 0) && w.resources.logs >= (wtDef.logCost ?? 0),
       description: 'Extended-range defensive tower.',
       category: 'build',
-      costBreakdown: { clams: wtDef.clamCost, twigs: wtDef.twigCost },
+      costBreakdown: { fish: wtDef.fishCost, logs: wtDef.logCost },
       requires: 'Requires: Eagle Eye',
       onClick: () => {
         w.placingBuilding = 'watchtower';
@@ -90,12 +87,12 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const wallDef = ENTITY_DEFS[EntityKind.Wall];
   btns.push({
     title: 'Wall',
-    cost: `${wallDef.twigCost}T`,
+    cost: `${wallDef.logCost}L`,
     hotkey: 'Y',
-    affordable: w.resources.twigs >= (wallDef.twigCost ?? 0),
+    affordable: w.resources.logs >= (wallDef.logCost ?? 0),
     description: 'Defensive barrier. Blocks enemy movement.',
     category: 'build',
-    costBreakdown: { clams: wallDef.clamCost, twigs: wallDef.twigCost },
+    costBreakdown: { fish: wallDef.fishCost, logs: wallDef.logCost },
     onClick: () => {
       w.placingBuilding = 'wall';
     },
@@ -104,13 +101,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
     const spDef = ENTITY_DEFS[EntityKind.ScoutPost];
     btns.push({
       title: 'Scout Post',
-      cost: `${spDef.clamCost}C ${spDef.twigCost}T`,
+      cost: `${spDef.fishCost}F ${spDef.logCost}L`,
       hotkey: 'U',
       affordable:
-        w.resources.clams >= (spDef.clamCost ?? 0) && w.resources.twigs >= (spDef.twigCost ?? 0),
+        w.resources.fish >= (spDef.fishCost ?? 0) && w.resources.logs >= (spDef.logCost ?? 0),
       description: 'Reveals a large area of the map.',
       category: 'build',
-      costBreakdown: { clams: spDef.clamCost, twigs: spDef.twigCost },
+      costBreakdown: { fish: spDef.fishCost, logs: spDef.logCost },
       requires: 'Requires: Cartography',
       onClick: () => {
         w.placingBuilding = 'scout_post';
@@ -120,14 +117,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const marketDef = ENTITY_DEFS[EntityKind.Market];
   btns.push({
     title: 'Market',
-    cost: `${marketDef.clamCost}C ${marketDef.twigCost}T`,
+    cost: `${marketDef.fishCost}F ${marketDef.logCost}L`,
     hotkey: 'P',
     affordable:
-      w.resources.clams >= (marketDef.clamCost ?? 0) &&
-      w.resources.twigs >= (marketDef.twigCost ?? 0),
+      w.resources.fish >= (marketDef.fishCost ?? 0) && w.resources.logs >= (marketDef.logCost ?? 0),
     description: 'Trade building. Convert resources at favorable rates.',
     category: 'build',
-    costBreakdown: { clams: marketDef.clamCost, twigs: marketDef.twigCost },
+    costBreakdown: { fish: marketDef.fishCost, logs: marketDef.logCost },
     onClick: () => {
       w.placingBuilding = 'market';
     },
@@ -135,13 +131,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const fhDef = ENTITY_DEFS[EntityKind.FishingHut];
   btns.push({
     title: 'Fishing Hut',
-    cost: `${fhDef.clamCost}C ${fhDef.twigCost}T`,
+    cost: `${fhDef.fishCost}F ${fhDef.logCost}L`,
     hotkey: 'I',
     affordable:
-      w.resources.clams >= (fhDef.clamCost ?? 0) && w.resources.twigs >= (fhDef.twigCost ?? 0),
-    description: 'Passive income building. Generates +5 clams every 5 seconds. +2 food cap.',
+      w.resources.fish >= (fhDef.fishCost ?? 0) && w.resources.logs >= (fhDef.logCost ?? 0),
+    description: 'Passive income building. Generates +5 fish every 5 seconds. +2 food cap.',
     category: 'build',
-    costBreakdown: { clams: fhDef.clamCost, twigs: fhDef.twigCost },
+    costBreakdown: { fish: fhDef.fishCost, logs: fhDef.logCost },
     onClick: () => {
       w.placingBuilding = 'fishing_hut';
     },
@@ -149,13 +145,13 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
   const hhDef = ENTITY_DEFS[EntityKind.HerbalistHut];
   btns.push({
     title: 'Herbalist Hut',
-    cost: `${hhDef.clamCost}C ${hhDef.twigCost}T`,
+    cost: `${hhDef.fishCost}F ${hhDef.logCost}L`,
     hotkey: 'O',
     affordable:
-      w.resources.clams >= (hhDef.clamCost ?? 0) && w.resources.twigs >= (hhDef.twigCost ?? 0),
+      w.resources.fish >= (hhDef.fishCost ?? 0) && w.resources.logs >= (hhDef.logCost ?? 0),
     description: 'Heals all player units within range by 2 HP every 2 seconds.',
     category: 'build',
-    costBreakdown: { clams: hhDef.clamCost, twigs: hhDef.twigCost },
+    costBreakdown: { fish: hhDef.fishCost, logs: hhDef.logCost },
     onClick: () => {
       w.placingBuilding = 'herbalist_hut';
     },

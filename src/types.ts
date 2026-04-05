@@ -92,13 +92,6 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
 
 export enum ResourceType {
   None = 0,
-  /** v2 name retained for backward compat. v3 alias: Fish */
-  Clams = 1,
-  /** v2 name retained for backward compat. v3 alias: Logs */
-  Twigs = 2,
-  /** v2 name retained for backward compat. v3 alias: Rocks */
-  Pearls = 3,
-  /** v3 aliases -- identical numeric values so both names work. */
   Fish = 1,
   Logs = 2,
   Rocks = 3,
@@ -158,25 +151,17 @@ export enum SpriteId {
   Rubble = 51,
 }
 
-/** In-match resources. v3 mapping: clams=fish, twigs=logs, pearls=rocks. */
+/** In-match resources. v3: Fish, Logs, Rocks. */
 export interface GameResources {
-  clams: number;
-  twigs: number;
-  pearls: number;
+  fish: number;
+  logs: number;
+  rocks: number;
   food: number;
   maxFood: number;
 }
 
-/** Re-export v3 resource helpers from dedicated module. */
-export {
-  getFish,
-  getLogs,
-  getRocks,
-  nodeKindToResourceType,
-  setFish,
-  setLogs,
-  setRocks,
-} from './v3-resources';
+/** Re-export nodeKindToResourceType from dedicated module. */
+export { nodeKindToResourceType } from './v3-resources';
 
 export interface GameStats {
   unitsKilled: number;
@@ -187,7 +172,7 @@ export interface GameStats {
   buildingsLost: number;
   peakArmy: number;
   pearlsEarned: number;
-  totalClamsEarned: number;
+  totalFishEarned: number;
 }
 
 export interface Vec2 {
@@ -268,9 +253,27 @@ export interface TooltipData {
   cost: string;
   description: string;
   hotkey: string;
-  costBreakdown?: { clams?: number; twigs?: number; pearls?: number; food?: number };
+  costBreakdown?: { fish?: number; logs?: number; rocks?: number; food?: number };
   requires?: string;
   statLines?: { label: string; value: string }[];
   status?: string;
   statusColor?: string;
+}
+
+/** Extended game stats tracked per match for achievements. */
+export interface ExtendedStats {
+  weatherTypesExperienced: number;
+  warshipKills: number;
+  bridgesBuilt: number;
+  diverAmbushKills: number;
+  marketTrades: number;
+  maxBerserkerKills: number;
+  shrineAbilitiesUsed: number;
+  coopMode: boolean;
+  dailyChallengesCompleted: number;
+  playerLevel: number;
+  perfectPuzzleCount: number;
+  randomEventsExperienced: number;
+  wallsBuilt: number;
+  enemiesBlockedByGates: number;
 }

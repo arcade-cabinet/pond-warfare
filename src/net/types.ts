@@ -1,7 +1,10 @@
-/** Network types – P2P lockstep message protocol, player identity, connection state. */
+/** Network types -- P2P lockstep message protocol, player identity, connection state. */
 import type { DifficultyLevel, MapScenario } from '@/ui/store';
 
 export type PlayerId = 'host' | 'guest';
+
+/** Match mode for multiplayer games. */
+export type MatchMode = 'coop' | 'adversarial';
 
 export type SerializedCommand = {
   type: string;
@@ -17,6 +20,21 @@ export type JsonValue =
   | JsonValue[]
   | { [key: string]: JsonValue };
 
+/** Touch-first command types for lockstep serialization. */
+export type TouchCommandType = 'tap-position' | 'tap-entity' | 'radial-select';
+
+/** A touch command payload -- all interactions are touch events, zero keyboard. */
+export interface TouchCommand {
+  touchType: TouchCommandType;
+  /** World-space position for tap-position. */
+  x?: number;
+  y?: number;
+  /** Target entity ID for tap-entity. */
+  entityId?: number;
+  /** Radial option ID for radial-select. */
+  radialOptionId?: string;
+}
+
 export type NetMessage =
   | { type: 'cmd'; frame: number; commands: SerializedCommand[] }
   | { type: 'ack'; frame: number }
@@ -27,6 +45,7 @@ export type NetMessage =
       difficulty: string;
       scenario: string;
       commander: string;
+      matchMode: MatchMode;
     }
   | { type: 'ready' }
   | { type: 'pause' }
@@ -35,10 +54,13 @@ export type NetMessage =
   | { type: 'pong'; timestamp: number }
   | { type: 'disconnect' }
   // Co-op messages
-  | { type: 'coop-resource'; clams: number; twigs: number; pearls: number }
+  | { type: 'coop-resource'; fish: number; logs: number; rocks: number }
   | { type: 'coop-ping'; x: number; y: number }
   | { type: 'coop-fog'; tiles: number[] }
-  | { type: 'coop-lodge-destroyed' };
+  | { type: 'coop-lodge-destroyed' }
+  // Adversarial messages
+  | { type: 'adversarial-lodge-destroyed' }
+  | { type: 'adversarial-commander-destroyed' };
 
 export interface NetState {
   connected: boolean;
@@ -53,6 +75,7 @@ export interface HostSettings {
   scenario: MapScenario;
   difficulty: DifficultyLevel;
   mapSeed: number;
+  matchMode?: MatchMode;
 }
 
 /** Connection quality tiers for the HUD indicator. */

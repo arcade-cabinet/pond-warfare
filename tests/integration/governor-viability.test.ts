@@ -21,7 +21,7 @@ vi.mock('@/game', () => ({
   game: {
     world: {
       tech: {} as Record<string, boolean>,
-      resources: { clams: 500, twigs: 500, pearls: 0, food: 2, maxFood: 8 },
+      resources: { fish: 500, twigs: 500, pearls: 0, food: 2, maxFood: 8 },
       commanderModifiers: { passiveResearchSpeed: 0 },
     },
     syncUIStore: vi.fn(),
@@ -58,8 +58,8 @@ describe('Governor viability decisions', () => {
   beforeEach(() => {
     store.unitRoster.value = [];
     store.buildingRoster.value = [];
-    store.clams.value = 500;
-    store.twigs.value = 500;
+    store.fish.value = 500;
+    store.logs.value = 500;
     store.food.value = 2;
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;
@@ -72,8 +72,8 @@ describe('Governor viability decisions', () => {
       makeGroup('gatherer', [
         { eid: 1, task: 'idle', kind: EntityKind.Gatherer },
         { eid: 2, task: 'idle', kind: EntityKind.Gatherer },
-        { eid: 3, task: 'gathering-clams', kind: EntityKind.Gatherer },
-        { eid: 4, task: 'gathering-twigs', kind: EntityKind.Gatherer },
+        { eid: 3, task: 'gathering-fish', kind: EntityKind.Gatherer },
+        { eid: 4, task: 'gathering-logs', kind: EntityKind.Gatherer },
       ]),
     ];
     store.buildingRoster.value = [
@@ -93,13 +93,13 @@ describe('Governor viability decisions', () => {
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
     store.unitRoster.value = [
       makeGroup('gatherer', [
-        { eid: 1, task: 'gathering-clams', kind: EntityKind.Gatherer },
-        { eid: 2, task: 'gathering-clams', kind: EntityKind.Gatherer },
-        { eid: 3, task: 'gathering-twigs', kind: EntityKind.Gatherer },
-        { eid: 4, task: 'gathering-twigs', kind: EntityKind.Gatherer },
+        { eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer },
+        { eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer },
+        { eid: 3, task: 'gathering-logs', kind: EntityKind.Gatherer },
+        { eid: 4, task: 'gathering-logs', kind: EntityKind.Gatherer },
       ]),
     ];
-    store.clams.value = 200;
+    store.fish.value = 200;
 
     const gather = new GatherEvaluator().calculateDesirability(owner);
     const build = new BuildEvaluator().calculateDesirability(owner);

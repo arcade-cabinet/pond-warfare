@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * E2E Playtest Suite (v3.0 — US20)
  *
@@ -93,7 +94,7 @@ describe('E2E Playtest Suite — US20', () => {
     });
 
     it('fortifications cost Rocks', () => {
-      const wall = getFortDef('wall');
+      const wall = getFortDef('wood_wall');
       expect(wall.cost.rocks).toBeGreaterThan(0);
     });
   });

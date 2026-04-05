@@ -22,6 +22,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
+import { useCommanderAbility } from '@/game/commander-abilities';
 import type { KeyboardCallbacks } from '@/input/keyboard';
 import type { PointerCallbacks } from '@/input/pointer';
 import {
@@ -104,8 +105,11 @@ export function buildKeyboardCallbacks(deps: InputSetupDeps): KeyboardCallbacks 
       cycleStanceForSelection(world);
       syncUIStore();
     },
-    onActionHotkey: (_index: number) => {
-      // Action hotkeys handled by UI layer
+    onActionHotkey: (index: number) => {
+      // Q = Commander ability (action slot 0)
+      if (index === 0) {
+        useCommanderAbility(world);
+      }
     },
     onRallyCry: () => {
       useShadowSprint(world);

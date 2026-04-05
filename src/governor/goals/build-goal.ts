@@ -2,12 +2,13 @@
  * BuildGoal — Decides which building to construct next.
  *
  * Reads buildingRoster and resource signals to determine if the player
- * needs more buildings (Armory, Burrow for pop, Tower for defense).
- * Uses placeBuilding via the same path the UI uses.
+ * needs more buildings. Wing buildings (Armory, Burrow, etc.) are Lodge
+ * upgrades — the Governor treats their presence in the roster as the
+ * wing being unlocked. Non-wing buildings (Tower) are placed standalone.
  */
 
 import { Goal } from 'yuka';
-import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
+import { ENTITY_DEFS, entityKindName, isWingBuilding } from '@/config/entity-defs';
 import { Position } from '@/ecs/components';
 import { game } from '@/game';
 import { placeBuilding } from '@/input/selection';
@@ -29,6 +30,7 @@ function buildingCount(kind: EntityKind): number {
 }
 
 const BUILD_PRIORITIES: BuildNeed[] = [
+  // Armory is a Lodge wing — check if unlocked
   { kind: EntityKind.Armory, needed: () => !hasBuilding(EntityKind.Armory) },
   {
     kind: EntityKind.Burrow,
@@ -57,9 +59,9 @@ export class BuildGoal extends Goal {
     }
 
     const def = ENTITY_DEFS[need.kind];
-    const clamCost = def.clamCost ?? 0;
-    const twigCost = def.twigCost ?? 0;
-    if (store.clams.value < clamCost || store.twigs.value < twigCost) {
+    const fishCost = def.fishCost ?? 0;
+    const logCost = def.logCost ?? 0;
+    if (store.fish.value < fishCost || store.logs.value < logCost) {
       this.status = Goal.STATUS.FAILED;
       return;
     }
@@ -70,8 +72,8 @@ export class BuildGoal extends Goal {
       return;
     }
 
-    // Use the proper building placement system (collision detection, construction
-    // progress, gatherer assignment) — same path the UI uses
+    // Wing buildings are Lodge upgrades — still use placeBuilding path
+    // which handles spawning the ECS entity near the Lodge
     const w = game.world;
     const kindName = entityKindName(need.kind).toLowerCase().replace(/\s+/g, '_');
     w.placingBuilding = kindName;
@@ -85,8 +87,10 @@ export class BuildGoal extends Goal {
     }
 
     // Place near lodge with a random offset
-    const ox = (w.gameRng.next() - 0.5) * 200;
-    const oy = (w.gameRng.next() - 0.5) * 200;
+    // Wing buildings get placed closer to the Lodge since they're attached
+    const offsetScale = isWingBuilding(need.kind) ? 80 : 200;
+    const ox = (w.gameRng.next() - 0.5) * offsetScale;
+    const oy = (w.gameRng.next() - 0.5) * offsetScale;
     placeBuilding(w, lodge.x + ox, lodge.y + oy);
     w.placingBuilding = null;
 

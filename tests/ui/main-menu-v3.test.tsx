@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Simplified Main Menu Tests (v3.0 — US19)
  *

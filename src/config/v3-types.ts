@@ -139,6 +139,20 @@ export interface EventEffects {
   bonus_nodes?: number;
 }
 
+/** Spawn pattern for wave events — how enemies enter the map. */
+export type SpawnPattern =
+  | 'scatter' // Random positions (default)
+  | 'v_formation' // Arrowhead converging on Lodge
+  | 'pincer' // Split from two symmetric edges, converge center
+  | 'line' // March in a row from one edge
+  | 'wave' // Sine-wave staggered entry
+  | 'surround' // Spawn from all active panel edges simultaneously
+  // Topology-aware patterns (exploit specific panel configurations)
+  | 'l_sweep' // L/Γ-shape: sweep along the L from corner to Lodge
+  | 't_hammer' // T-shape: main force center, flankers from sides
+  | 'flank' // 5-panel: main from top, flankers from side panel
+  | 'funnel'; // Any multi-panel: converge from all edges into narrow corridor
+
 export interface EventTemplate {
   type: string;
   min_progression: number;
@@ -149,6 +163,8 @@ export interface EventTemplate {
   description: string;
   boss?: BossSpec;
   effects?: EventEffects;
+  /** How enemies enter the map. Defaults to 'scatter'. */
+  spawn_pattern?: SpawnPattern;
 }
 
 export interface EventTiming {
@@ -232,12 +248,22 @@ export interface AutoBehaviorEffect {
   behavior: string;
 }
 
-export type PearlUpgradeEffect = AutoDeployEffect | MultiplierEffect | AutoBehaviorEffect;
+export interface StartingTierEffect {
+  type: 'starting_tier';
+}
+
+export type PearlUpgradeEffect =
+  | AutoDeployEffect
+  | MultiplierEffect
+  | AutoBehaviorEffect
+  | StartingTierEffect;
 
 export interface PearlUpgradeDef {
   label: string;
   description: string;
   cost_per_rank: number;
+  /** Optional per-rank cost schedule. When present, cost for rank N = cost_schedule[N]. */
+  cost_schedule?: number[];
   max_rank: number;
   effect: PearlUpgradeEffect;
 }

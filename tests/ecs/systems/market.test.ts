@@ -22,56 +22,56 @@ describe('Market trading', () => {
   beforeEach(() => {
     world = createGameWorld();
     world.frameCount = 100;
-    world.resources.clams = 500;
-    world.resources.twigs = 500;
-    world.resources.pearls = 100;
+    world.resources.fish = 500;
+    world.resources.logs = 500;
+    world.resources.rocks = 100;
     resetMarketCooldowns();
   });
 
   it('should deduct sold resource and add bought resource (twigs -> clams)', () => {
     const trade = MARKET_TRADES[0]; // Sell 100T -> 60C
-    const prevClams = world.resources.clams;
-    const prevTwigs = world.resources.twigs;
+    const prevClams = world.resources.fish;
+    const prevTwigs = world.resources.logs;
 
     const success = executeTrade(world, MARKET_EID, trade);
 
     expect(success).toBe(true);
-    expect(world.resources.twigs).toBe(prevTwigs - 100);
-    expect(world.resources.clams).toBe(prevClams + 60);
+    expect(world.resources.logs).toBe(prevTwigs - 100);
+    expect(world.resources.fish).toBe(prevClams + 60);
   });
 
   it('should deduct sold resource and add bought resource (clams -> twigs)', () => {
     const trade = MARKET_TRADES[1]; // Sell 100C -> 60T
-    const prevClams = world.resources.clams;
-    const prevTwigs = world.resources.twigs;
+    const prevClams = world.resources.fish;
+    const prevTwigs = world.resources.logs;
 
     const success = executeTrade(world, MARKET_EID, trade);
 
     expect(success).toBe(true);
-    expect(world.resources.clams).toBe(prevClams - 100);
-    expect(world.resources.twigs).toBe(prevTwigs + 60);
+    expect(world.resources.fish).toBe(prevClams - 100);
+    expect(world.resources.logs).toBe(prevTwigs + 60);
   });
 
   it('should deduct sold resource and add bought resource (pearls -> clams)', () => {
     const trade = MARKET_TRADES[2]; // Sell 50P -> 100C
-    const prevClams = world.resources.clams;
-    const prevPearls = world.resources.pearls;
+    const prevClams = world.resources.fish;
+    const prevPearls = world.resources.rocks;
 
     const success = executeTrade(world, MARKET_EID, trade);
 
     expect(success).toBe(true);
-    expect(world.resources.pearls).toBe(prevPearls - 50);
-    expect(world.resources.clams).toBe(prevClams + 100);
+    expect(world.resources.rocks).toBe(prevPearls - 50);
+    expect(world.resources.fish).toBe(prevClams + 100);
   });
 
   it('should fail if player cannot afford the trade', () => {
-    world.resources.twigs = 50; // Not enough for 100T trade
+    world.resources.logs = 50; // Not enough for 100T trade
     const trade = MARKET_TRADES[0];
 
     const success = executeTrade(world, MARKET_EID, trade);
 
     expect(success).toBe(false);
-    expect(world.resources.twigs).toBe(50); // Unchanged
+    expect(world.resources.logs).toBe(50); // Unchanged
   });
 
   it('should set cooldown after a successful trade', () => {
@@ -88,11 +88,11 @@ describe('Market trading', () => {
     executeTrade(world, MARKET_EID, trade);
 
     // Try trading again immediately
-    const prevTwigs = world.resources.twigs;
+    const prevTwigs = world.resources.logs;
     const success = executeTrade(world, MARKET_EID, trade);
 
     expect(success).toBe(false);
-    expect(world.resources.twigs).toBe(prevTwigs); // Unchanged
+    expect(world.resources.logs).toBe(prevTwigs); // Unchanged
   });
 
   it('should allow trading after cooldown expires', () => {

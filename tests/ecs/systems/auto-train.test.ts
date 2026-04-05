@@ -90,8 +90,8 @@ describe('autoTrainSystem', () => {
     // Set frameCount to a multiple of 120 so the system actually runs
     world.frameCount = 120;
     // Give plenty of resources
-    world.resources.clams = 10000;
-    world.resources.twigs = 10000;
+    world.resources.fish = 10000;
+    world.resources.logs = 10000;
     world.resources.food = 0;
     world.resources.maxFood = 20;
     // Clear any leftover training queue slots from previous tests

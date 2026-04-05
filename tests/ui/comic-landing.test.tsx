@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Comic Landing Page Tests
  *

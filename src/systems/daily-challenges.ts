@@ -43,7 +43,7 @@ export interface GameEndStats {
   buildingsBuilt: number;
   techsResearched: number;
   nestsDestroyed: number;
-  totalClamsEarned: number;
+  totalFishEarned: number;
   unitsTrained: number;
   pearlsEarned: number;
   /** Number of distinct commander abilities used this game. */
@@ -119,11 +119,11 @@ const CHALLENGES: DailyChallenge[] = [
     xpReward: 250,
   },
   {
-    id: 'accumulate_clams',
-    title: 'Clam Hoarder',
-    description: 'Accumulate 3000 clams in a single game',
+    id: 'accumulate_fish',
+    title: 'Fish Hoarder',
+    description: 'Accumulate 3000 fish in a single game',
     type: 'economy',
-    objective: (s) => s.totalClamsEarned >= 3000,
+    objective: (s) => s.totalFishEarned >= 3000,
     xpReward: 150,
   },
   {

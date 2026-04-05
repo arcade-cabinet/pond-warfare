@@ -33,7 +33,7 @@ function createResourceNode(world: GameWorld, x: number, y: number): number {
   Health.max[eid] = 1;
   FactionTag.faction[eid] = Faction.Neutral;
   EntityTypeTag.kind[eid] = EntityKind.Cattail;
-  Resource.resourceType[eid] = ResourceType.Twigs;
+  Resource.resourceType[eid] = ResourceType.Logs;
   Resource.amount[eid] = 200;
 
   return eid;

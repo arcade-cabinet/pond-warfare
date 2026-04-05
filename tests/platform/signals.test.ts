@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /** Device Signals — Unit Tests */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

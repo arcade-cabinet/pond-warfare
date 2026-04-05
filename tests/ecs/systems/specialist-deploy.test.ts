@@ -200,7 +200,7 @@ describe('Generalist stat superiority', () => {
 
     const hpComp = result.comparison.find((c) => c.stat === 'hp');
     expect(hpComp).toBeDefined();
-    expect(hpComp!.generalist).toBeGreaterThanOrEqual(hpComp!.specialist);
+    expect(hpComp?.generalist ?? 0).toBeGreaterThanOrEqual(hpComp?.specialist ?? 0);
   });
 
   it('fighter should have >= HP than hunter', () => {

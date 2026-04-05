@@ -42,9 +42,9 @@ describe('Progression Integration', () => {
   });
 
   it('starts with correct resources', () => {
-    expect(world.resources.clams).toBe(300);
-    expect(world.resources.twigs).toBe(150);
-    expect(world.resources.pearls).toBe(0);
+    expect(world.resources.fish).toBe(300);
+    expect(world.resources.logs).toBe(150);
+    expect(world.resources.rocks).toBe(0);
   });
 
   it('lodge provides starting food cap', () => {

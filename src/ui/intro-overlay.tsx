@@ -131,6 +131,7 @@ export function IntroOverlay() {
               key={opt.key}
               type="button"
               class="action-btn"
+              aria-label={`${opt.label} difficulty`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDifficulty(opt.key);
@@ -211,6 +212,7 @@ export function IntroOverlay() {
       {/* Click to begin */}
       <button
         type="button"
+        aria-label="Start game"
         class="font-game text-sm md:text-lg mt-6 font-bold text-center px-6 py-3 relative z-10 animate-begin-glow"
         style={{
           color: 'var(--pw-accent)',

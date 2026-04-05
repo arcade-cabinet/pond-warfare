@@ -143,9 +143,9 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
     await delay(4500); // intro fade
     game.world.gameSpeed = 3;
     // Give plenty of resources so building tests never stall on costs
-    game.world.resources.clams = 50000;
-    game.world.resources.twigs = 50000;
-    game.world.resources.pearls = 5000;
+    game.world.resources.fish = 50000;
+    game.world.resources.logs = 50000;
+    game.world.resources.rocks = 5000;
     game.world.resources.maxFood = 200;
   }, 30_000);
 
@@ -388,26 +388,26 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   describe('11. Building costs', () => {
     it('Burrow costs match entity-defs (0 clams, 75 twigs)', () => {
       const def = ENTITY_DEFS[EntityKind.Burrow];
-      expect(def.clamCost).toBe(0);
-      expect(def.twigCost).toBe(75);
+      expect(def.fishCost).toBe(0);
+      expect(def.logCost).toBe(75);
     });
 
     it('Tower costs match entity-defs (200 clams, 250 twigs)', () => {
       const def = ENTITY_DEFS[EntityKind.Tower];
-      expect(def.clamCost).toBe(200);
-      expect(def.twigCost).toBe(250);
+      expect(def.fishCost).toBe(200);
+      expect(def.logCost).toBe(250);
     });
 
     it('Lodge costs match entity-defs (200 clams, 150 twigs)', () => {
       const def = ENTITY_DEFS[EntityKind.Lodge];
-      expect(def.clamCost).toBe(200);
-      expect(def.twigCost).toBe(150);
+      expect(def.fishCost).toBe(200);
+      expect(def.logCost).toBe(150);
     });
 
     it('Armory costs match entity-defs (180 clams, 120 twigs)', () => {
       const def = ENTITY_DEFS[EntityKind.Armory];
-      expect(def.clamCost).toBe(180);
-      expect(def.twigCost).toBe(120);
+      expect(def.fishCost).toBe(180);
+      expect(def.logCost).toBe(120);
     });
   });
 

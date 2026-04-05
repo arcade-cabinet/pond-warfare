@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * RewardsScreen Tests (v3.0 -- US13)
  *

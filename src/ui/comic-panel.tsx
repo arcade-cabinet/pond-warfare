@@ -171,7 +171,7 @@ function ComicFrame({
   biomeTint: string;
 }) {
   return (
-    <Frame9Slice size="sm" class="comic-panel-frame">
+    <Frame9Slice size="sm" class="comic-panel-frame w-fit mx-auto">
       <div class="relative">
         {/* Biome tint overlay */}
         <div class="absolute inset-0 pointer-events-none" style={{ backgroundColor: biomeTint }} />

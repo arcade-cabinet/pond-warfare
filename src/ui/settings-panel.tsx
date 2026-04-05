@@ -2,21 +2,20 @@
  * Settings Panel
  *
  * Full-screen modal overlay with tabbed organization:
- *   Audio   — volume sliders (master, music, SFX)
- *   Game    — game speed controls
- *   Options — color blind mode, auto-save toggles
- *   Access  — UI scale, screen shake, reduce visual noise
+ *   Audio   -- volume sliders (master, music, SFX)
+ *   Game    -- game speed controls
+ *   Options -- color blind mode, auto-save toggles
+ *   Access  -- UI scale, screen shake, reduce visual noise
  *
  * Accessible from the gear icon button in the HUD top bar.
  */
 
-// TODO: Focus management — on open, move focus to the close button or first
-// interactive element. On close, return focus to the trigger (e.g. gear icon button).
 import { useMemo } from 'preact/hooks';
 import { Frame9Slice } from './components/frame';
 import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';
 import {
+  autoPlayEnabled,
   autoSaveEnabled,
   colorBlindMode,
   gameSpeed,
@@ -38,6 +37,7 @@ export interface SettingsPanelProps {
   onUiScaleChange?: (scale: number) => void;
   onScreenShakeToggle?: () => void;
   onReduceVisualNoiseToggle?: () => void;
+  onAutoPlayToggle?: () => void;
   onClose: () => void;
 }
 
@@ -120,7 +120,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
       {
         key: 'gameplay',
         title: 'Gameplay',
-        summary: `Speed ${currentSpeed}x${autoSaveEnabled.value ? ', Auto-save ON' : ''}`,
+        summary: `Speed ${currentSpeed}x${autoSaveEnabled.value ? ', Auto-save ON' : ''}${autoPlayEnabled.value ? ', Auto-Play ON' : ''}`,
       },
       { key: 'accessibility', title: 'Accessibility' },
     ],
@@ -151,7 +151,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             {/* Close button */}
             <button
               type="button"
-              aria-label="Close Settings"
+              aria-label="Close settings"
               class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={props.onClose}
               title="Close Settings"
@@ -188,6 +188,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     <button
                       type="button"
                       key={`speed-${s}`}
+                      aria-label={`Game speed ${s}x`}
                       class="flex-1 py-1.5 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
                       style={{
                         background: currentSpeed === s ? 'var(--pw-glow-accent-10)' : undefined,
@@ -210,6 +211,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
                   active={autoSaveEnabled.value}
                   onToggle={props.onAutoSaveToggle}
                 />
+                <Toggle
+                  label="Auto-Play (Governor AI)"
+                  active={autoPlayEnabled.value}
+                  onToggle={() => props.onAutoPlayToggle?.()}
+                />
               </div>
 
               {/* Accessibility */}
@@ -223,6 +229,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                       <button
                         type="button"
                         key={`scale-${s}`}
+                        aria-label={`UI scale ${s}x`}
                         class="px-2 py-1 min-h-[44px] rounded font-numbers font-bold text-xs cursor-pointer transition-colors hud-btn"
                         style={{
                           background: uiScale.value === s ? 'var(--pw-glow-accent-10)' : undefined,

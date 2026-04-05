@@ -9,16 +9,16 @@ import { query } from 'bitecs';
 import { resolvePersonality } from '@/config/ai-personalities';
 import {
   ENEMY_BUILD_CHECK_INTERVAL,
-  ENEMY_BURROW_COST_CLAMS,
-  ENEMY_BURROW_COST_TWIGS,
+  ENEMY_BURROW_COST_FISH,
+  ENEMY_BURROW_COST_LOGS,
   ENEMY_LATE_BUILD_INTERVAL,
   ENEMY_LATE_GAME_FRAME,
   ENEMY_MAX_NESTS_LATE,
   ENEMY_MID_GAME_FRAME,
-  ENEMY_NEST_COST_CLAMS,
-  ENEMY_NEST_COST_TWIGS,
-  ENEMY_TOWER_COST_CLAMS,
-  ENEMY_TOWER_COST_TWIGS,
+  ENEMY_NEST_COST_FISH,
+  ENEMY_NEST_COST_LOGS,
+  ENEMY_TOWER_COST_FISH,
+  ENEMY_TOWER_COST_LOGS,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -78,15 +78,15 @@ export function enemyBuildingTick(world: GameWorld): void {
     if (
       world.frameCount >= ENEMY_MID_GAME_FRAME &&
       nearbyTowers < maxTowersNear &&
-      res.clams >= ENEMY_TOWER_COST_CLAMS &&
-      res.twigs >= ENEMY_TOWER_COST_TWIGS
+      res.fish >= ENEMY_TOWER_COST_FISH &&
+      res.logs >= ENEMY_TOWER_COST_LOGS
     ) {
       const pos = findBuildPosition(world, nestEid, EntityKind.Tower);
       if (pos) {
         const bEid = spawnEntity(world, EntityKind.Tower, pos.x, pos.y, Faction.Enemy);
         if (bEid < 0) return;
-        res.clams -= ENEMY_TOWER_COST_CLAMS;
-        res.twigs -= ENEMY_TOWER_COST_TWIGS;
+        res.fish -= ENEMY_TOWER_COST_FISH;
+        res.logs -= ENEMY_TOWER_COST_LOGS;
         startEnemyConstruction(world, bEid);
         return; // One build action per check
       }
@@ -109,15 +109,15 @@ export function enemyBuildingTick(world: GameWorld): void {
     if (
       !burrowUnderConstruction &&
       nearbyBurrows < 1 &&
-      res.clams >= ENEMY_BURROW_COST_CLAMS &&
-      res.twigs >= ENEMY_BURROW_COST_TWIGS
+      res.fish >= ENEMY_BURROW_COST_FISH &&
+      res.logs >= ENEMY_BURROW_COST_LOGS
     ) {
       const pos = findBuildPosition(world, nestEid, EntityKind.Burrow);
       if (pos) {
         const bEid = spawnEntity(world, EntityKind.Burrow, pos.x, pos.y, Faction.Enemy);
         if (bEid < 0) return;
-        res.clams -= ENEMY_BURROW_COST_CLAMS;
-        res.twigs -= ENEMY_BURROW_COST_TWIGS;
+        res.fish -= ENEMY_BURROW_COST_FISH;
+        res.logs -= ENEMY_BURROW_COST_LOGS;
         startEnemyConstruction(world, bEid);
         return;
       }
@@ -132,8 +132,8 @@ export function enemyBuildingTick(world: GameWorld): void {
   const maxNests = Math.max(1, Math.round(baseMaxNests * personalityExp.expansionRate));
   if (
     nestEids.length < maxNests &&
-    res.clams >= ENEMY_NEST_COST_CLAMS &&
-    res.twigs >= ENEMY_NEST_COST_TWIGS
+    res.fish >= ENEMY_NEST_COST_FISH &&
+    res.logs >= ENEMY_NEST_COST_LOGS
   ) {
     // Build near a random existing nest
     const sourceNest = nestEids[Math.floor(world.gameRng.next() * nestEids.length)];
@@ -141,8 +141,8 @@ export function enemyBuildingTick(world: GameWorld): void {
     if (pos) {
       const bEid = spawnEntity(world, EntityKind.PredatorNest, pos.x, pos.y, Faction.Enemy);
       if (bEid >= 0) {
-        res.clams -= ENEMY_NEST_COST_CLAMS;
-        res.twigs -= ENEMY_NEST_COST_TWIGS;
+        res.fish -= ENEMY_NEST_COST_FISH;
+        res.logs -= ENEMY_NEST_COST_LOGS;
         startEnemyConstruction(world, bEid);
       }
     }

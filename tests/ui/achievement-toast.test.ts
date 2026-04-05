@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Achievement Toast Queue Tests
  *

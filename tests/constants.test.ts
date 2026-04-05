@@ -33,8 +33,8 @@ import {
   PROJECTILE_SPEED,
   REPAIR_TIMER,
   SPEED_LEVELS,
-  STARTING_CLAMS,
-  STARTING_TWIGS,
+  STARTING_FISH,
+  STARTING_LOGS,
   TILE_SIZE,
   TIME_STOPS,
   TOWER_ATTACK_COOLDOWN,
@@ -134,16 +134,16 @@ describe('Game Timer Constants', () => {
 });
 
 describe('Starting Resources', () => {
-  it('STARTING_CLAMS is enough to train 3+ gatherers', () => {
-    expect(STARTING_CLAMS).toBeGreaterThanOrEqual(150);
+  it('STARTING_FISH is enough to train 3+ gatherers', () => {
+    expect(STARTING_FISH).toBeGreaterThanOrEqual(150);
   });
 
-  it('STARTING_TWIGS is enough to build early', () => {
-    expect(STARTING_TWIGS).toBeGreaterThanOrEqual(50);
+  it('STARTING_LOGS is enough to build early', () => {
+    expect(STARTING_LOGS).toBeGreaterThanOrEqual(50);
   });
 
   it('starting clams exceed starting twigs', () => {
-    expect(STARTING_CLAMS).toBeGreaterThan(STARTING_TWIGS);
+    expect(STARTING_FISH).toBeGreaterThan(STARTING_LOGS);
   });
 });
 

@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Upgrade Web State Tests (v3.0 — US12)
  *

@@ -18,11 +18,11 @@ export const TRAIN_TIMER = 120; // 2 seconds per unit (was 3) - army builds fast
 export const ATTACK_COOLDOWN = 50; // Slightly faster combat
 export const TOWER_ATTACK_COOLDOWN = 40; // Towers feel more impactful
 
-export const STARTING_CLAMS = 300; // More starting resources for faster early game
-export const STARTING_TWIGS = 150; // Enough to build an Armory (120T) immediately
+export const STARTING_FISH = 300; // More starting resources for faster early game
+export const STARTING_LOGS = 150; // Enough to build an Armory (120L) immediately
 
-export const ENEMY_STARTING_CLAMS = 500;
-export const ENEMY_STARTING_TWIGS = 200;
+export const ENEMY_STARTING_FISH = 500;
+export const ENEMY_STARTING_LOGS = 200;
 export const ENEMY_GATHERER_SPAWN_INTERVAL = 900; // Faster early eco (was 1200)
 export const ENEMY_GATHERER_COST = 50;
 export const ENEMY_MAX_GATHERERS_PER_NEST = 4; // More gatherers for stronger eco
@@ -30,20 +30,20 @@ export const ENEMY_GATHERER_RADIUS = 500;
 
 // Enemy AI building construction
 export const ENEMY_BUILD_CHECK_INTERVAL = 1800; // Check every 30 seconds
-export const ENEMY_TOWER_COST_CLAMS = 200;
-export const ENEMY_TOWER_COST_TWIGS = 250;
-export const ENEMY_BURROW_COST_CLAMS = 0;
-export const ENEMY_BURROW_COST_TWIGS = 100;
-export const ENEMY_NEST_COST_CLAMS = 400;
-export const ENEMY_NEST_COST_TWIGS = 300;
+export const ENEMY_TOWER_COST_FISH = 200;
+export const ENEMY_TOWER_COST_LOGS = 250;
+export const ENEMY_BURROW_COST_FISH = 0;
+export const ENEMY_BURROW_COST_LOGS = 100;
+export const ENEMY_NEST_COST_FISH = 400;
+export const ENEMY_NEST_COST_LOGS = 300;
 export const ENEMY_BUILD_RADIUS = 200; // Max distance from nest to place building
 
 // Enemy AI army training
 export const ENEMY_TRAIN_CHECK_INTERVAL = 300; // Check every 5 seconds
-export const ENEMY_GATOR_COST_CLAMS = 100;
-export const ENEMY_GATOR_COST_TWIGS = 50;
-export const ENEMY_SNAKE_COST_CLAMS = 80;
-export const ENEMY_SNAKE_COST_TWIGS = 30;
+export const ENEMY_GATOR_COST_FISH = 100;
+export const ENEMY_GATOR_COST_LOGS = 50;
+export const ENEMY_SNAKE_COST_FISH = 80;
+export const ENEMY_SNAKE_COST_LOGS = 30;
 export const ENEMY_TRAIN_TIME = 240; // Frames to train one unit
 
 // Enemy AI attack decision-making

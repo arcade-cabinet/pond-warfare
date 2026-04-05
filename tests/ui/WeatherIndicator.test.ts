@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * WeatherIndicator + WeatherEffects tests.
  * US3: Weather HUD indicator and US11: Weather visual effects.

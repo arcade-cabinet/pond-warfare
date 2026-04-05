@@ -144,11 +144,11 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     hasComponent(world.ecs, eid, EntityTypeTag) &&
     (EntityTypeTag.kind[eid] as EntityKind) === EntityKind.BossCroc
   ) {
-    world.resources.clams += 100;
+    world.resources.fish += 100;
     world.floatingTexts.push({
       x: ex,
       y: ey - 30,
-      text: '+100 Clams!',
+      text: '+100 Fish!',
       color: '#facc15',
       life: 60,
     });
@@ -173,7 +173,7 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
   processKillCredit(world, eid, ex, ey, attackerEid, isBuilding, isResource);
 
   // Clean up
-  world.yukaManager.removeEnemy(eid);
+  world.yukaManager.removeUnit(eid);
   world.championEnemies.delete(eid);
   trainingQueueSlots.delete(eid);
 

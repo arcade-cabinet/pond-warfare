@@ -1,6 +1,6 @@
 /**
  * Enemy/reptile sprites: gator, snake, boss_croc, armored_gator, venom_snake,
- * swamp_drake, siege_turtle, alpha_predator.
+ * swamp_drake, siege_turtle, alpha_predator, burrowing_worm, flying_heron.
  */
 
 import { PALETTE } from '@/constants';
@@ -181,4 +181,62 @@ export function drawAlphaPredator(d: DrawCtx): void {
   p(4, 10, '#e2e8f0');
   rect(6, 24, 4, 2, PALETTE.gatorLight);
   rect(22, 24, 4, 2, PALETTE.gatorLight);
+}
+
+/** BurrowingWorm -- brown segmented worm that tunnels underground. */
+export function drawBurrowingWorm(d: DrawCtx): void {
+  const { p, rect } = d;
+  // Body segments (worm coiling up from underground)
+  rect(3, 12, 4, 3, '#8B4513');
+  rect(6, 10, 4, 3, '#A0522D');
+  rect(9, 8, 4, 3, '#8B4513');
+  rect(11, 6, 3, 3, '#A0522D');
+  // Segment rings for definition
+  p(4, 12, '#6B3410');
+  p(7, 10, '#6B3410');
+  p(10, 8, '#6B3410');
+  p(12, 6, '#6B3410');
+  // Belly highlights
+  p(5, 13, '#D2B48C');
+  p(8, 11, '#D2B48C');
+  p(11, 9, '#D2B48C');
+  // Head with mandibles
+  rect(12, 4, 3, 3, '#A0522D');
+  p(13, 4, '#8B4513');
+  p(12, 5, PALETTE.black); // eye
+  p(14, 3, '#6B3410'); // mandible left
+  p(15, 3, '#6B3410'); // mandible right
+  p(14, 2, '#6B3410'); // mandible tip
+  // Dirt particles around emergence point
+  p(2, 14, PALETTE.mudLight);
+  p(4, 15, PALETTE.mudDark);
+  p(1, 13, PALETTE.mudLight);
+}
+
+/** FlyingHeron -- gray bird silhouette with outstretched wings. */
+export function drawFlyingHeron(d: DrawCtx): void {
+  const { p, rect } = d;
+  // Body (center mass)
+  rect(6, 7, 4, 4, '#6b7280');
+  rect(7, 8, 2, 2, '#9ca3af'); // lighter belly
+  // Head and beak
+  rect(5, 5, 3, 3, '#6b7280');
+  p(4, 5, '#9ca3af'); // crown
+  p(3, 6, '#f59e0b'); // beak base
+  p(2, 6, '#d97706'); // beak tip
+  p(5, 5, PALETTE.black); // eye
+  // Left wing (outstretched)
+  rect(1, 7, 5, 2, '#9ca3af');
+  rect(0, 8, 2, 1, '#6b7280');
+  p(0, 7, '#d1d5db'); // wing tip highlight
+  // Right wing (outstretched)
+  rect(10, 7, 5, 2, '#9ca3af');
+  rect(14, 8, 2, 1, '#6b7280');
+  p(15, 7, '#d1d5db'); // wing tip highlight
+  // Tail feathers
+  rect(8, 11, 3, 2, '#6b7280');
+  p(9, 13, '#9ca3af');
+  // Legs (tucked in flight)
+  p(7, 12, '#f59e0b');
+  p(8, 12, '#f59e0b');
 }

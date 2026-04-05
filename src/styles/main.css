@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Open+Sans:ital,wght@0,400;0,700;1,400&display=swap');
 @import 'tailwindcss';
 
 /* ====================================================================
@@ -289,18 +288,18 @@
    Typography
    ==================================================================== */
 .font-heading {
-  font-family: 'IM Fell English SC', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
 }
 .font-title {
-  font-family: 'IM Fell English SC', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
 }
 .font-game {
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 .font-numbers {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
 }
 
 /* ====================================================================
@@ -312,7 +311,7 @@ body {
   background-color: var(--pw-bg-deep);
   user-select: none;
   overscroll-behavior: none;
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   color: var(--pw-text-primary);
 }
 
@@ -415,20 +414,30 @@ body {
    DEPRECATED — use Frame9Slice from @/ui/components/frame
    ==================================================================== */
 .war-panel {
-  border-image:
-    url('/pond-warfare/assets/ui/panel/panel-9slice.png')
-    64 fill / 32px / 0 round;
-  background: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border: 3px solid var(--pw-wood-mid);
+  background:
+    linear-gradient(
+      180deg,
+      var(--pw-wood-highlight) 0%,
+      var(--pw-wood-mid) 8%,
+      var(--pw-wood-dark) 92%,
+      var(--pw-bark) 100%
+    );
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(107, 77, 40, 0.3);
 }
 
 /* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* Header bar with gritty gold section-header texture */
 .war-panel-header {
   background:
-    url('/pond-warfare/assets/ui/panel/section-header.png')
-    repeat-x center;
-  background-size: auto 100%;
+    linear-gradient(
+      90deg,
+      var(--pw-gold-dim) 0%,
+      var(--pw-gold) 50%,
+      var(--pw-gold-dim) 100%
+    );
   color: var(--pw-gold-bright);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
@@ -437,14 +446,21 @@ body {
 /* Wood button with pressed state */
 .war-btn {
   background:
-    url('/pond-warfare/assets/ui/panel/btn-wood.png')
-    no-repeat center;
-  background-size: 100% 100%;
-  border: none;
+    linear-gradient(
+      180deg,
+      var(--pw-wood-highlight) 0%,
+      var(--pw-wood-mid) 50%,
+      var(--pw-wood-dark) 100%
+    );
+  border: 2px solid var(--pw-wood-mid);
+  border-radius: 4px;
   color: var(--pw-gold-bright);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   cursor: pointer;
   transition: filter 0.12s ease, transform 0.12s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(107, 77, 40, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .war-btn:hover:not(:disabled) {
@@ -453,10 +469,16 @@ body {
 
 .war-btn:active:not(:disabled),
 .war-btn.pressed {
-  background-image:
-    url('/pond-warfare/assets/ui/panel/btn-wood-pressed.png');
+  background:
+    linear-gradient(
+      180deg,
+      var(--pw-wood-dark) 0%,
+      var(--pw-wood-mid) 50%,
+      var(--pw-wood-highlight) 100%
+    );
   transform: translateY(1px);
   filter: brightness(0.95);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .war-btn:disabled {
@@ -468,10 +490,7 @@ body {
 /* DEPRECATED — use Frame9Slice from @/ui/components/frame */
 /* Tiled wood center background for content areas */
 .war-panel-content {
-  background:
-    url('/pond-warfare/assets/ui/panel/panel-center.png')
-    repeat center;
-  background-size: 128px 128px;
+  background: var(--pw-wood-dark);
 }
 
 /* ====================================================================
@@ -488,7 +507,7 @@ body {
   border-color: var(--pw-border);
   border-radius: 8px;
   color: var(--pw-text-primary);
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-shadow:
     inset 0 1px 0 rgba(139, 105, 20, 0.06),
@@ -548,7 +567,7 @@ body {
   top: 2px;
   right: 3px;
   font-size: 0.5625rem;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
   color: var(--pw-accent-dim);
   background: rgba(0, 0, 0, 0.6);
   padding: 0 4px;
@@ -575,9 +594,9 @@ body {
 }
 
 /* DEPRECATED — use Frame9Slice from @/ui/components/frame */
-/* Swap primary button bg to pressed texture on :active */
+/* Darken primary button bg on :active (CSS-only, no PNGs) */
 .game-btn:active:not(:disabled) .game-btn-wood-bg {
-  content: url('/pond-warfare/assets/ui/panel/btn-wood-pressed.png');
+  filter: brightness(0.85);
 }
 
 /* ====================================================================
@@ -652,13 +671,19 @@ body {
    DEPRECATED — use Frame9Slice from @/ui/components/frame
    ==================================================================== */
 .parchment-panel {
-  border-image:
-    url('/pond-warfare/assets/ui/panel/panel-9slice.png')
-    64 fill / 32px / 0 round;
-  background: none;
+  border: 3px solid var(--pw-wood-mid);
+  background:
+    linear-gradient(
+      180deg,
+      var(--pw-wood-highlight) 0%,
+      var(--pw-wood-mid) 8%,
+      var(--pw-wood-dark) 92%,
+      var(--pw-bark) 100%
+    );
   border-radius: 0;
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.5);
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(107, 77, 40, 0.3);
 }
 
 /* ====================================================================
@@ -804,7 +829,7 @@ body {
   z-index: var(--pw-z-tooltip);
   white-space: nowrap;
   border-radius: 6px;
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
@@ -1072,17 +1097,6 @@ body {
   75%      { transform: translate(4px, 2px) rotate(1.5deg); }
 }
 
-/* DEPRECATED -- ripple-drift animations unused; pond scene removed */
-/* Water ripple overlay drift animations */
-@keyframes ripple-drift-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(-8px, 5px) scale(1.02); }
-}
-
-@keyframes ripple-drift-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(6px, -4px) scale(0.98); }
-}
 
 .lily-pad {
   position: absolute;
@@ -1230,51 +1244,6 @@ body {
 .firefly:nth-child(6)  { animation-delay: -3s; animation-duration: 8s, 2.7s; }
 .firefly:nth-child(7)  { animation-delay: -5s; animation-duration: 12s, 1.9s; }
 .firefly:nth-child(8)  { animation-delay: -7s; animation-duration: 6s, 2.4s; }
-
-/* DEPRECATED -- .water-shimmer class unused; pond scene removed */
-/* --- Water shimmer overlay --- */
-@keyframes water-shimmer {
-  0%   { background-position: 0% 0%; }
-  100% { background-position: 200% 200%; }
-}
-
-.water-shimmer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.04;
-  background:
-    repeating-linear-gradient(
-      110deg,
-      transparent 0px,
-      rgba(64, 200, 208, 0.3) 2px,
-      transparent 4px,
-      transparent 60px
-    );
-  background-size: 200% 200%;
-  animation: water-shimmer 20s linear infinite;
-}
-
-/* DEPRECATED -- .water-caustics class unused; pond scene removed */
-/* --- Water caustics (light patterns on the pond surface) --- */
-@keyframes caustic-drift {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.03; }
-  33%  { transform: translate(20px, -10px) scale(1.1); opacity: 0.05; }
-  66%  { transform: translate(-15px, 8px) scale(0.95); opacity: 0.03; }
-  100% { transform: translate(0, 0) scale(1); opacity: 0.03; }
-}
-
-.water-caustics {
-  position: absolute;
-  inset: -20%;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 80px 40px at 20% 30%, rgba(64, 200, 208, 0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 60px 50px at 60% 70%, rgba(64, 200, 208, 0.1) 0%, transparent 70%),
-    radial-gradient(ellipse 90px 35px at 80% 20%, rgba(64, 200, 208, 0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 50px 60px at 40% 80%, rgba(64, 200, 208, 0.08) 0%, transparent 70%);
-  animation: caustic-drift 15s ease-in-out infinite;
-}
 
 /* --- Title water reflection --- */
 .title-reflection {
@@ -1611,7 +1580,7 @@ body {
    Logo / Title Treatment
    ==================================================================== */
 .logo-pond {
-  font-family: 'IM Fell English SC', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 900;
   letter-spacing: 0.15em;
   color: var(--pw-accent);
@@ -1625,7 +1594,7 @@ body {
 }
 
 .logo-warfare {
-  font-family: 'IM Fell English SC', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 900;
   letter-spacing: 0.25em;
   color: var(--pw-otter-light);
@@ -1651,7 +1620,7 @@ body {
    Section Header - Used in settings and overlay panels
    ==================================================================== */
 .section-header {
-  font-family: 'IM Fell English SC', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1900,7 +1869,7 @@ input[type="range"]::-moz-range-thumb {
 
 .pond-accordion-title {
   flex: 1;
-  font-family: 'IM Fell English SC', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -1918,7 +1887,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .pond-accordion-summary {
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   font-size: 10px;
   color: var(--pw-steel);
   white-space: nowrap;
@@ -1942,10 +1911,7 @@ input[type="range"]::-moz-range-thumb {
 .pond-accordion-content {
   position: relative;
   overflow: hidden;
-  background:
-    url('/pond-warfare/assets/ui/panel/panel-center.png')
-    repeat center;
-  background-size: 128px 128px;
+  background: var(--pw-wood-dark);
   border-left: 1px solid rgba(139, 105, 20, 0.1);
   border-right: 1px solid rgba(139, 105, 20, 0.1);
   border-bottom: 1px solid rgba(139, 105, 20, 0.1);
@@ -1986,9 +1952,17 @@ input[type="range"]::-moz-range-thumb {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('/pond-warfare/assets/ui/panel/panel-center.png');
-  background-size: 128px 128px;
-  background-repeat: repeat;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(74, 51, 32, 0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(74, 51, 32, 0.15) 50%,
+      rgba(74, 51, 32, 0.15) 75%,
+      transparent 75%
+    );
+  background-size: 16px 16px;
   opacity: 0.12;
   pointer-events: none;
   z-index: 0;
@@ -2108,7 +2082,7 @@ button:focus-visible,
 /* ====================================================================
    RTS Button (Design Bible)
    Primary action button for in-game panels, modals, and HUD controls.
-   Dark translucent background with bark border, uppercase IM Fell text.
+   Dark translucent background with bark border, uppercase serif text.
    States: default, .active (gold-bordered moss bg), :hover (moss tint).
    Used by: MenuButton, CtrlGroups, modal close buttons, campaign CTA.
    ==================================================================== */
@@ -2118,7 +2092,7 @@ button:focus-visible,
   color: var(--pw-sepia-text, #E8DCC4);
   padding: 0.5rem 1rem;
   text-transform: uppercase;
-  font-family: 'IM Fell English SC', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.2rem;
   transition: all 0.2s;
   cursor: pointer;

@@ -35,7 +35,7 @@ Each match takes place on a vertical map. The player's Lodge sits at the bottom.
 | **Logs** | Tree clusters (Cattail) | Building construction, repairs |
 | **Food** | Population count vs housing cap | Limits unit count |
 
-Food works as a population system: each non-building player entity counts as 1 food. Max food comes from completed Lodges (+8) and Burrows (+6).
+Food works as a population system: each non-building player entity counts as 1 food. Max food comes from the Lodge (+8) and Burrow wings (+6).
 
 Resources are finite. When a node is depleted, it is gone -- forcing expansion toward fresh nodes. Both factions compete for the same resource nodes.
 
@@ -142,6 +142,7 @@ The central building. If it falls, the match is lost.
   - Barracks Wing (Combat category tier 5) -- faster unit training
   - Watchtower Wing (Defense category tier 5) -- early wave warning
   - Healing Pool Wing (Utility category tier 5) -- units near Lodge heal
+- **Building wings**: Armory, Burrow, FishingHut, HerbalistHut, Market, and Dock are Lodge wings rather than standalone structures. They appear as ECS entities for gameplay purposes but are conceptually attached to the Lodge.
 - **Prestige glow**: Visual effect based on prestige rank
 
 ## Match Events
