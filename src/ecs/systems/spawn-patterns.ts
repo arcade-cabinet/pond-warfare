@@ -40,8 +40,9 @@ export function patternVFormation(
   const result: SpawnPosition[] = [];
 
   for (let i = 0; i < count; i++) {
-    const row = Math.floor(i / 2);
-    const side = i % 2 === 0 ? -1 : 1;
+    // i=0 is the tip (row 0, center). i=1,2 are row 1 left/right, etc.
+    const row = i === 0 ? 0 : Math.floor((i - 1) / 2) + 1;
+    const side = i === 0 ? 0 : (i - 1) % 2 === 0 ? -1 : 1;
     const dx = target.x - origin.x;
     const dy = target.y - origin.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -150,8 +151,11 @@ export function patternLSweep(
   const midX = p2Bounds.x + p2Bounds.width * 0.5;
   const midY = p2Bounds.y + p2Bounds.height * 0.5;
 
+  // Cap t to 0.7 so enemies spawn along the path but NOT at the Lodge
+  const MAX_T = 0.7;
+
   return Array.from({ length: count }, (_, i) => {
-    const t = i / Math.max(count - 1, 1);
+    const t = (i / Math.max(count - 1, 1)) * MAX_T;
     const x =
       (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * midX + t * t * target.x + rng.float(-15, 15);
     const y =

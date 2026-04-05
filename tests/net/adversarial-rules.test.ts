@@ -25,17 +25,17 @@ describe('adversarial-rules', () => {
   // ---- Win/Lose Conditions ----
 
   describe('checkAdversarialWinLose', () => {
-    it('returns win when opponent Commander is destroyed', () => {
+    it('returns win when opponent Commander is destroyed and we are alive', () => {
       const result = checkAdversarialWinLose(true, true, false, true);
       expect(result).toBe('win');
     });
 
-    it('returns win when opponent Lodge is destroyed', () => {
+    it('returns win when opponent Lodge is destroyed and we are alive', () => {
       const result = checkAdversarialWinLose(true, true, true, false);
       expect(result).toBe('win');
     });
 
-    it('returns win when both opponent Commander and Lodge destroyed', () => {
+    it('returns win when both opponent Commander and Lodge destroyed and we are alive', () => {
       const result = checkAdversarialWinLose(true, true, true, true);
       expect(result).toBe('win');
     });
@@ -55,10 +55,32 @@ describe('adversarial-rules', () => {
       expect(result).toBeNull();
     });
 
-    it('returns win over lose when both commanders destroyed simultaneously', () => {
-      // Opponent destruction takes priority (win)
+    it('returns lose on mutual destruction (both commanders destroyed same tick)', () => {
+      // Both sides destroyed same tick = mutual destruction = lose (draw = both lose)
       const result = checkAdversarialWinLose(true, false, false, true);
-      expect(result).toBe('win');
+      expect(result).toBe('lose');
+    });
+
+    it('returns lose when both lodges destroyed same tick', () => {
+      const result = checkAdversarialWinLose(false, true, true, false);
+      expect(result).toBe('lose');
+    });
+
+    it('returns lose when all structures destroyed same tick', () => {
+      // Total mutual destruction
+      const result = checkAdversarialWinLose(false, false, true, true);
+      expect(result).toBe('lose');
+    });
+
+    it('returns lose when our lodge dead and their commander dead', () => {
+      const result = checkAdversarialWinLose(false, true, false, true);
+      expect(result).toBe('lose');
+    });
+
+    it('cannot win if our commander is dead', () => {
+      // Even if opponent lodge destroyed, we are also dead => lose
+      const result = checkAdversarialWinLose(true, false, true, false);
+      expect(result).toBe('lose');
     });
   });
 

@@ -12,10 +12,17 @@ describe('world-snapshot', () => {
   beforeEach(() => {
     storeV3.progressionLevel.value = 0;
     storeV3.totalClams.value = 0;
+    storeV3.matchEventsCompleted.value = 0;
+    storeV3.prestigeState.value = {
+      rank: 0,
+      pearls: 0,
+      totalPearlsEarned: 0,
+      upgradeRanks: {},
+    };
   });
 
   describe('getRunState', () => {
-    it('returns "fresh" when no progression', () => {
+    it('returns "fresh" when no progression and no clams', () => {
       expect(getRunState()).toBe('fresh');
     });
 
@@ -24,9 +31,9 @@ describe('world-snapshot', () => {
       expect(getRunState()).toBe('continue');
     });
 
-    it('returns "fresh" when progression is 0 even with clams', () => {
+    it('returns "continue" when clams > 0 (same predicate as hasActiveRun)', () => {
       storeV3.totalClams.value = 100;
-      expect(getRunState()).toBe('fresh');
+      expect(getRunState()).toBe('continue');
     });
   });
 
@@ -46,18 +53,46 @@ describe('world-snapshot', () => {
     });
   });
 
+  describe('getRunState and hasActiveRun consistency', () => {
+    it('getRunState returns "continue" iff hasActiveRun returns true', () => {
+      expect(getRunState() === 'continue').toBe(hasActiveRun());
+
+      storeV3.totalClams.value = 50;
+      expect(getRunState() === 'continue').toBe(hasActiveRun());
+
+      storeV3.totalClams.value = 0;
+      storeV3.progressionLevel.value = 3;
+      expect(getRunState() === 'continue').toBe(hasActiveRun());
+    });
+  });
+
   describe('captureRunSnapshot', () => {
-    it('captures current store state', () => {
+    it('captures current store state including matchEventsCompleted', () => {
       storeV3.totalClams.value = 200;
       storeV3.progressionLevel.value = 5;
+      storeV3.matchEventsCompleted.value = 3;
 
       const snap = captureRunSnapshot('sage');
 
       expect(snap.clams).toBe(200);
       expect(snap.progressionLevel).toBe(5);
       expect(snap.commanderId).toBe('sage');
-      expect(snap.matchesThisRun).toBe(0);
-      expect(snap.upgradesPurchased).toEqual([]);
+      expect(snap.matchesThisRun).toBe(3);
+    });
+
+    it('captures upgrade ranks from prestige state', () => {
+      storeV3.prestigeState.value = {
+        rank: 2,
+        pearls: 50,
+        totalPearlsEarned: 100,
+        upgradeRanks: { gather_speed: 1, army_size: 2 },
+      };
+
+      const snap = captureRunSnapshot('marshal');
+
+      expect(snap.upgradesPurchased).toContain('gather_speed');
+      expect(snap.upgradesPurchased).toContain('army_size');
+      expect(snap.upgradesPurchased).toHaveLength(2);
     });
 
     it('captures fresh state correctly', () => {
@@ -66,6 +101,8 @@ describe('world-snapshot', () => {
       expect(snap.clams).toBe(0);
       expect(snap.progressionLevel).toBe(0);
       expect(snap.commanderId).toBe('marshal');
+      expect(snap.matchesThisRun).toBe(0);
+      expect(snap.upgradesPurchased).toEqual([]);
     });
   });
 });

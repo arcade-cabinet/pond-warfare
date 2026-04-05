@@ -189,6 +189,13 @@ export async function closeDatabase(): Promise<void> {
   _initialized = false;
 }
 
+// ---- SQL Escaping ----
+
+/** Escape single quotes for safe SQL string interpolation. */
+function escapeSql(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
 // ---- v3 Prestige State Persistence ----
 
 export interface V3PrestigeRow {
@@ -213,8 +220,9 @@ export async function loadPrestigeState(): Promise<V3PrestigeRow | null> {
 /** Save prestige state to SQLite. */
 export async function savePrestigeState(state: V3PrestigeRow): Promise<void> {
   if (!_initialized) return;
+  const safeUpgrades = escapeSql(state.pearl_upgrades);
   await db.execute(
-    `UPDATE player_profile SET rank = ${state.rank}, pearls = ${state.pearls}, pearl_upgrades = '${state.pearl_upgrades}', total_matches = ${state.total_matches}, total_pearls_earned = ${state.total_pearls_earned}, highest_progression = ${state.highest_progression} WHERE id = 1`,
+    `UPDATE player_profile SET rank = ${state.rank}, pearls = ${state.pearls}, pearl_upgrades = '${safeUpgrades}', total_matches = ${state.total_matches}, total_pearls_earned = ${state.total_pearls_earned}, highest_progression = ${state.highest_progression} WHERE id = 1`,
   );
   await persist();
 }
@@ -238,8 +246,10 @@ export async function loadCurrentRun(): Promise<V3CurrentRunRow | null> {
 /** Save current run state. */
 export async function saveCurrentRun(state: V3CurrentRunRow): Promise<void> {
   if (!_initialized) return;
+  const safeUpgrades = escapeSql(state.upgrades_purchased);
+  const safeLodge = escapeSql(state.lodge_state);
   await db.execute(
-    `UPDATE current_run SET clams = ${state.clams}, upgrades_purchased = '${state.upgrades_purchased}', lodge_state = '${state.lodge_state}', progression_level = ${state.progression_level}, matches_this_run = ${state.matches_this_run} WHERE id = 1`,
+    `UPDATE current_run SET clams = ${state.clams}, upgrades_purchased = '${safeUpgrades}', lodge_state = '${safeLodge}', progression_level = ${state.progression_level}, matches_this_run = ${state.matches_this_run} WHERE id = 1`,
   );
   await persist();
 }
@@ -255,7 +265,8 @@ export async function loadSelectedCommander(): Promise<string> {
 /** Save selected commander to player_profile. */
 export async function saveSelectedCommander(commanderId: string): Promise<void> {
   if (!_initialized) return;
-  await db.execute(`UPDATE player_profile SET selected_commander = '${commanderId}' WHERE id = 1`);
+  const safeId = escapeSql(commanderId);
+  await db.execute(`UPDATE player_profile SET selected_commander = '${safeId}' WHERE id = 1`);
   await persist();
 }
 

@@ -30,8 +30,8 @@ export function captureRunSnapshot(commanderId: string): WorldSnapshot {
   return {
     clams: storeV3.totalClams.value,
     progressionLevel: storeV3.progressionLevel.value,
-    matchesThisRun: 0, // incremented by caller after match
-    upgradesPurchased: [], // upgrade web nodes tracked separately via store-v3-persistence
+    matchesThisRun: storeV3.matchEventsCompleted.value,
+    upgradesPurchased: Object.keys(storeV3.prestigeState.value.upgradeRanks),
     commanderId,
   };
 }
@@ -43,9 +43,9 @@ export function hasActiveRun(): boolean {
 
 /**
  * Determine whether PLAY should treat this as a fresh start or a continuation.
- * Returns 'continue' if the player has progression, 'fresh' otherwise.
+ * Returns 'continue' if the player has progression or clams, 'fresh' otherwise.
+ * Uses the same predicate as hasActiveRun() for consistency.
  */
 export function getRunState(): 'continue' | 'fresh' {
-  if (storeV3.progressionLevel.value > 0) return 'continue';
-  return 'fresh';
+  return hasActiveRun() ? 'continue' : 'fresh';
 }

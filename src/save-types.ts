@@ -25,7 +25,7 @@ export interface SavedEntity {
 }
 
 export interface SaveData {
-  version: 2;
+  version: 3;
   resources: {
     fish: number;
     logs: number;

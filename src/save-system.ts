@@ -52,7 +52,7 @@ export function saveGame(world: GameWorld): string {
   }));
 
   const data: SaveData = {
-    version: 2,
+    version: 3,
     resources: { ...world.resources },
     enemyResources: { ...world.enemyResources },
     autoBehaviors: { ...world.autoBehaviors },
@@ -78,7 +78,7 @@ export function saveGame(world: GameWorld): string {
 export function isValidSave(json: string): boolean {
   try {
     const data = JSON.parse(json);
-    return data?.version === 2 && Array.isArray(data?.entities);
+    return data?.version === 3 && Array.isArray(data?.entities);
   } catch {
     return false;
   }

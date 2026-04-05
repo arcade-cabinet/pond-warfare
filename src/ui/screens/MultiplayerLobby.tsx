@@ -160,25 +160,29 @@ export function MultiplayerLobby() {
           </div>
         )}
 
-        {/* Waiting for peer */}
+        {/* Waiting for peer -- show "Connecting..." until connection is established */}
         {view === 'lobby' && !connected && (
           <div class="flex flex-col items-center gap-3">
             <p class="font-game text-sm" style={{ color: COLORS.weatheredSteel }}>
-              Waiting for opponent...
+              {roomCode ? 'Waiting for opponent...' : 'Connecting...'}
             </p>
-            <div
-              class="font-numbers text-3xl tracking-[0.3em] text-center py-3 px-6 rounded"
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: `1px solid ${COLORS.grittyGold}`,
-                color: COLORS.grittyGold,
-              }}
-            >
-              {roomCode}
-            </div>
-            <p class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
-              Share this code with your opponent
-            </p>
+            {roomCode && (
+              <>
+                <div
+                  class="font-numbers text-3xl tracking-[0.3em] text-center py-3 px-6 rounded"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${COLORS.grittyGold}`,
+                    color: COLORS.grittyGold,
+                  }}
+                >
+                  {roomCode}
+                </div>
+                <p class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
+                  Share this code with your opponent
+                </p>
+              </>
+            )}
           </div>
         )}
 

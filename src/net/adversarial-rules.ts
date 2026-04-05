@@ -5,7 +5,8 @@
  * - Each player has own Lodge and Commander
  * - Enemy waves attack BOTH players
  * - Players CAN attack each other's Lodge and Commander
- * - Win = destroy opponent's Commander or Lodge
+ * - Win = destroy opponent's Commander or Lodge (while ours survives)
+ * - Mutual destruction = both lose (draw is not possible)
  * - Difficulty scaling: +25% enemy HP/damage (lighter than co-op)
  */
 
@@ -19,8 +20,9 @@ export const ADVERSARIAL_ENEMY_STAT_MULT = 1.25;
 
 /**
  * Check adversarial win/lose conditions:
- * - Win when opponent's Commander OR Lodge is destroyed
- * - Lose when our Commander OR Lodge is destroyed by opponent
+ * - Win when opponent's Commander OR Lodge is destroyed AND we're alive
+ * - Lose when our Commander OR Lodge is destroyed
+ * - Mutual destruction (same tick) = both lose (return 'lose')
  *
  * Returns 'win' | 'lose' | null (null = defer to normal check).
  */
@@ -30,11 +32,17 @@ export function checkAdversarialWinLose(
   opponentLodgeDestroyed: boolean,
   opponentCommanderDestroyed: boolean,
 ): 'win' | 'lose' | null {
-  // We destroyed opponent's Commander or Lodge -> win
-  if (opponentCommanderDestroyed || opponentLodgeDestroyed) return 'win';
+  const weAreDead = !playerLodgeAlive || !playerCommanderAlive;
+  const theyAreDead = opponentCommanderDestroyed || opponentLodgeDestroyed;
 
-  // Our Lodge or Commander destroyed -> lose
-  if (!playerLodgeAlive || !playerCommanderAlive) return 'lose';
+  // Mutual destruction (same tick): both lose — return 'lose'
+  if (weAreDead && theyAreDead) return 'lose';
+
+  // Check our state BEFORE declaring victory — can't win if we're also dead
+  if (weAreDead) return 'lose';
+
+  // Opponent destroyed and we're alive -> win
+  if (theyAreDead) return 'win';
 
   return null; // Still playing
 }

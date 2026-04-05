@@ -112,7 +112,7 @@ export function LobbyConnectedView({
         </div>
       )}
 
-      {/* Commander select */}
+      {/* Commander select -- show all commanders */}
       <div>
         <span
           class="font-heading text-xs uppercase tracking-wider"
@@ -121,7 +121,7 @@ export function LobbyConnectedView({
           Commander
         </span>
         <div class="flex gap-2 overflow-x-auto mt-2 pb-2">
-          {COMMANDERS.slice(0, 4).map((def) => (
+          {COMMANDERS.map((def) => (
             <LobbyCommanderCard
               key={def.id}
               id={def.id}
