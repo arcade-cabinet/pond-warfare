@@ -19,35 +19,35 @@ export const MARKET_COOLDOWN_FRAMES = 1800;
 export interface MarketTrade {
   title: string;
   hotkey: string;
-  sellResource: 'clams' | 'twigs' | 'pearls';
+  sellResource: 'fish' | 'logs' | 'rocks';
   sellAmount: number;
-  buyResource: 'clams' | 'twigs' | 'pearls';
+  buyResource: 'fish' | 'logs' | 'rocks';
   buyAmount: number;
 }
 
 export const MARKET_TRADES: MarketTrade[] = [
   {
-    title: 'Sell 100T → 60C',
+    title: 'Sell 100L → 60F',
     hotkey: 'Q',
-    sellResource: 'twigs',
+    sellResource: 'logs',
     sellAmount: 100,
-    buyResource: 'clams',
+    buyResource: 'fish',
     buyAmount: 60,
   },
   {
-    title: 'Sell 100C → 60T',
+    title: 'Sell 100F → 60L',
     hotkey: 'W',
-    sellResource: 'clams',
+    sellResource: 'fish',
     sellAmount: 100,
-    buyResource: 'twigs',
+    buyResource: 'logs',
     buyAmount: 60,
   },
   {
-    title: 'Sell 50P → 100C',
+    title: 'Sell 50R → 100F',
     hotkey: 'E',
-    sellResource: 'pearls',
+    sellResource: 'rocks',
     sellAmount: 50,
-    buyResource: 'clams',
+    buyResource: 'fish',
     buyAmount: 100,
   },
 ];

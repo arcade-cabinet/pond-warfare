@@ -13,6 +13,7 @@ import {
   drawFishingHut,
   drawHerbalistHut,
   drawLodge,
+  drawMarket,
   drawPredatorNest,
   drawScoutPost,
   drawTower,
@@ -24,6 +25,8 @@ import {
   drawAlphaPredator,
   drawArmoredGator,
   drawBossCroc,
+  drawBurrowingWorm,
+  drawFlyingHeron,
   drawGator,
   drawSiegeTurtle,
   drawSnake,
@@ -43,9 +46,14 @@ import {
 import {
   drawBrawler,
   drawCommander,
+  drawDiver,
+  drawEngineer,
   drawGatherer,
   drawHealer,
+  drawSaboteur,
+  drawSapper,
   drawScout,
+  drawShaman,
   drawShieldbearer,
   drawSniper,
   drawSwimmer,
@@ -90,12 +98,22 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'commander', id: SpriteId.Commander },
   { name: 'frog', id: SpriteId.Frog },
   { name: 'fish', id: SpriteId.Fish },
+  // v1.5.0
+  { name: 'diver', id: SpriteId.Diver },
+  { name: 'engineer', id: SpriteId.Engineer },
+  { name: 'shaman', id: SpriteId.Shaman },
+  { name: 'burrowing_worm', id: SpriteId.BurrowingWorm },
+  { name: 'flying_heron', id: SpriteId.FlyingHeron },
+  { name: 'market', id: SpriteId.Market },
   // v2.0.0
   { name: 'dock', id: SpriteId.Dock },
   { name: 'otter_warship', id: SpriteId.OtterWarship },
   { name: 'berserker', id: SpriteId.Berserker },
   { name: 'wall_gate', id: SpriteId.WallGate },
   { name: 'shrine', id: SpriteId.Shrine },
+  // v3.0.0
+  { name: 'sapper', id: SpriteId.Sapper },
+  { name: 'saboteur', id: SpriteId.Saboteur },
 ];
 
 const LARGE_TYPES = new Set([
@@ -114,6 +132,7 @@ const LARGE_TYPES = new Set([
   'alpha_predator',
   'fishing_hut',
   'herbalist_hut',
+  'market',
   // v2.0.0 large sprites
   'dock',
   'otter_warship',
@@ -158,12 +177,22 @@ const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   commander: drawCommander,
   frog: drawFrog,
   fish: drawFish,
+  // v1.5.0
+  diver: drawDiver,
+  engineer: drawEngineer,
+  shaman: drawShaman,
+  burrowing_worm: drawBurrowingWorm,
+  flying_heron: drawFlyingHeron,
+  market: drawMarket,
   // v2.0.0
   dock: drawDock,
   otter_warship: drawOtterWarship,
   berserker: drawBerserker,
   wall_gate: drawWallGate,
   shrine: drawShrine,
+  // v3.0.0
+  sapper: drawSapper,
+  saboteur: drawSaboteur,
 };
 
 /**

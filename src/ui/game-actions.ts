@@ -18,12 +18,6 @@ import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
 import { COLORS } from './design-tokens';
 import * as store from './store';
-import {
-  autoCombatEnabled,
-  autoGathererEnabled,
-  autoHealerEnabled,
-  autoScoutEnabled,
-} from './store-gameplay';
 
 /** Clear current selection. */
 export function deselect(): void {
@@ -200,34 +194,5 @@ export function openKeyboardRef(): void {
 /** Cycle unit stance for selected units (Aggressive -> Defensive -> Hold). */
 export function cycleStance(): void {
   cycleStanceForSelection(game.world);
-  game.syncUIStore();
-}
-
-/**
- * Toggle an auto-behavior by name.
- * Updates both the UI store signal and the game world autoBehaviors.
- * v3 note: auto-behaviors will be replaced by prestige auto-deploy,
- * but manual toggles still work during transition.
- */
-export function toggleAutoBehavior(name: string): void {
-  const w = game.world;
-  switch (name) {
-    case 'gatherer':
-      autoGathererEnabled.value = !autoGathererEnabled.value;
-      w.autoBehaviors.gatherer = autoGathererEnabled.value;
-      break;
-    case 'combat':
-      autoCombatEnabled.value = !autoCombatEnabled.value;
-      w.autoBehaviors.combat = autoCombatEnabled.value;
-      break;
-    case 'healer':
-      autoHealerEnabled.value = !autoHealerEnabled.value;
-      w.autoBehaviors.healer = autoHealerEnabled.value;
-      break;
-    case 'scout':
-      autoScoutEnabled.value = !autoScoutEnabled.value;
-      w.autoBehaviors.scout = autoScoutEnabled.value;
-      break;
-  }
   game.syncUIStore();
 }

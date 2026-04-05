@@ -43,10 +43,10 @@ export function computeChecksum(world: GameWorld): number {
   hash = fnvHash32(hash, world.frameCount);
 
   // Resources (player + enemy)
-  hash = fnvHash32(hash, world.resources.clams);
-  hash = fnvHash32(hash, world.resources.twigs);
-  hash = fnvHash32(hash, world.enemyResources.clams);
-  hash = fnvHash32(hash, world.enemyResources.twigs);
+  hash = fnvHash32(hash, world.resources.fish);
+  hash = fnvHash32(hash, world.resources.logs);
+  hash = fnvHash32(hash, world.enemyResources.fish);
+  hash = fnvHash32(hash, world.enemyResources.logs);
 
   // Entity positions and health — sorted by entity ID for determinism
   const entities = query(world.ecs, [Position, Health]);

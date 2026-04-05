@@ -27,15 +27,15 @@ import '@/styles/main.css';
 
 /** Reset all store signals to default/neutral state */
 function resetStore() {
-  store.clams.value = 200;
-  store.twigs.value = 50;
-  store.pearls.value = 0;
+  store.fish.value = 200;
+  store.logs.value = 50;
+  store.rocks.value = 0;
   store.food.value = 0;
   store.maxFood.value = 0;
-  store.rateClams.value = 0;
-  store.rateTwigs.value = 0;
-  store.enemyClams.value = 0;
-  store.enemyTwigs.value = 0;
+  store.rateFish.value = 0;
+  store.rateLogs.value = 0;
+  store.enemyFish.value = 0;
+  store.enemyLogs.value = 0;
   store.enemyEconomyVisible.value = false;
   store.selectionCount.value = 0;
   store.selectionName.value = 'No Selection';
@@ -59,8 +59,8 @@ function resetStore() {
   store.muted.value = false;
   store.paused.value = false;
   store.waveCountdown.value = -1;
-  store.lowClams.value = false;
-  store.lowTwigs.value = false;
+  store.lowFish.value = false;
+  store.lowLogs.value = false;
   store.attackMoveActive.value = false;
   store.idleWorkerCount.value = 0;
   store.armyCount.value = 0;
@@ -69,16 +69,9 @@ function resetStore() {
   store.idleCombatCount.value = 0;
   store.idleHealerCount.value = 0;
   store.idleScoutCount.value = 0;
-  store.autoMenuExpanded.value = false;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
-  store.autoGatherEnabled.value = false;
-  store.autoBuildEnabled.value = false;
-  store.autoDefendEnabled.value = false;
-  store.autoAttackEnabled.value = false;
-  store.autoHealEnabled.value = false;
-  store.autoScoutEnabled.value = false;
   store.goTitle.value = 'Victory';
   store.goTitleColor.value = 'text-amber-400';
   store.goDesc.value = '';
@@ -1059,7 +1052,7 @@ describe.skip('New Game Modal interactions (removed in v3.0)', () => {
 // ---------------------------------------------------------------------------
 describe('Pearl resource display', () => {
   it('pearl display hidden when pearls = 0', async () => {
-    store.pearls.value = 0;
+    store.rocks.value = 0;
 
     render(
       h(
@@ -1085,7 +1078,7 @@ describe('Pearl resource display', () => {
   });
 
   it('pearl display visible when pearls > 0', async () => {
-    store.pearls.value = 15;
+    store.rocks.value = 15;
 
     render(
       h(
@@ -1141,8 +1134,8 @@ describe('Enemy economy display', () => {
 
   it('enemy economy indicator visible after scouting with resource values', async () => {
     store.enemyEconomyVisible.value = true;
-    store.enemyClams.value = 350;
-    store.enemyTwigs.value = 200;
+    store.enemyFish.value = 350;
+    store.enemyLogs.value = 200;
 
     render(
       h(

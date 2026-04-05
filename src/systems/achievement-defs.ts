@@ -17,7 +17,7 @@ export interface AchievementSnapshot {
   techCount: number;
   maxBranchTechCount: number;
   totalPearls: number;
-  totalClams: number;
+  totalFish: number;
   buildingsBuilt: number;
   buildingsLost: number;
   onlyShadowTechs: boolean;
@@ -165,8 +165,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'eco_boom',
     name: 'Eco Boom',
-    desc: 'Accumulate 5000 total clams in a single game',
-    check: (s) => s.totalClams >= 5000,
+    desc: 'Accumulate 5000 total fish in a single game',
+    check: (s) => s.totalFish >= 5000,
   },
   {
     id: 'speedrun_10',

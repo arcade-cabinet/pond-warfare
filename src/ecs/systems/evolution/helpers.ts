@@ -33,7 +33,7 @@ export function sendToTarget(world: GameWorld, eid: number, targetEid: number): 
 
   const kind = EntityTypeTag.kind[eid] as EntityKind;
   const speed = Velocity.speed[eid] || ENTITY_DEFS[kind]?.speed || 1.5;
-  world.yukaManager.addEnemy(
+  world.yukaManager.addUnit(
     eid,
     Position.x[eid],
     Position.y[eid],
@@ -54,7 +54,7 @@ export function sendToPosition(world: GameWorld, eid: number, tx: number, ty: nu
 
   const kind = EntityTypeTag.kind[eid] as EntityKind;
   const speed = Velocity.speed[eid] || ENTITY_DEFS[kind]?.speed || 1.5;
-  world.yukaManager.addEnemy(eid, Position.x[eid], Position.y[eid], speed, tx, ty);
+  world.yukaManager.addUnit(eid, Position.x[eid], Position.y[eid], speed, tx, ty);
 }
 
 /** Spawn dust particles around a spawn point. */

@@ -39,15 +39,15 @@ import '@/styles/main.css';
 
 /** Reset all store signals to default/neutral state */
 function resetStore() {
-  store.clams.value = 200;
-  store.twigs.value = 50;
-  store.pearls.value = 0;
+  store.fish.value = 200;
+  store.logs.value = 50;
+  store.rocks.value = 0;
   store.food.value = 0;
   store.maxFood.value = 0;
-  store.rateClams.value = 0;
-  store.rateTwigs.value = 0;
-  store.enemyClams.value = 0;
-  store.enemyTwigs.value = 0;
+  store.rateFish.value = 0;
+  store.rateLogs.value = 0;
+  store.enemyFish.value = 0;
+  store.enemyLogs.value = 0;
   store.enemyEconomyVisible.value = false;
   store.selectionCount.value = 0;
   store.selectionName.value = 'No Selection';
@@ -71,8 +71,8 @@ function resetStore() {
   store.muted.value = false;
   store.paused.value = false;
   store.waveCountdown.value = -1;
-  store.lowClams.value = false;
-  store.lowTwigs.value = false;
+  store.lowFish.value = false;
+  store.lowLogs.value = false;
   store.attackMoveActive.value = false;
   store.idleWorkerCount.value = 0;
   store.armyCount.value = 0;
@@ -81,16 +81,9 @@ function resetStore() {
   store.idleCombatCount.value = 0;
   store.idleHealerCount.value = 0;
   store.idleScoutCount.value = 0;
-  store.autoMenuExpanded.value = false;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
-  store.autoGatherEnabled.value = false;
-  store.autoBuildEnabled.value = false;
-  store.autoDefendEnabled.value = false;
-  store.autoAttackEnabled.value = false;
-  store.autoHealEnabled.value = false;
-  store.autoScoutEnabled.value = false;
   store.goTitle.value = 'Victory';
   store.goTitleColor.value = 'text-amber-400';
   store.goDesc.value = '';
@@ -146,8 +139,8 @@ describe('HUD screenshots', () => {
   it('HUD - peaceful state, starting resources', async () => {
     store.isPeaceful.value = true;
     store.peaceCountdown.value = 180;
-    store.clams.value = 200;
-    store.twigs.value = 50;
+    store.fish.value = 200;
+    store.logs.value = 50;
     store.food.value = 3;
     store.maxFood.value = 8;
     store.gameTimeDisplay.value = 'Day 1 - 08:00';
@@ -166,10 +159,10 @@ describe('HUD screenshots', () => {
   it('HUD - hunting state with wave countdown', async () => {
     store.isPeaceful.value = false;
     store.waveCountdown.value = 15;
-    store.clams.value = 450;
-    store.twigs.value = 320;
-    store.rateClams.value = 12;
-    store.rateTwigs.value = -3;
+    store.fish.value = 450;
+    store.logs.value = 320;
+    store.rateFish.value = 12;
+    store.rateLogs.value = -3;
     store.food.value = 12;
     store.maxFood.value = 16;
     store.gameTimeDisplay.value = 'Day 5 - 14:30';
@@ -188,10 +181,10 @@ describe('HUD screenshots', () => {
 
   it('HUD - low resources warning', async () => {
     store.isPeaceful.value = false;
-    store.clams.value = 30;
-    store.twigs.value = 15;
-    store.lowClams.value = true;
-    store.lowTwigs.value = true;
+    store.fish.value = 30;
+    store.logs.value = 15;
+    store.lowFish.value = true;
+    store.lowLogs.value = true;
     store.food.value = 16;
     store.maxFood.value = 16;
     store.gameTimeDisplay.value = 'Day 8 - 22:00';
@@ -681,7 +674,6 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
     store.idleWorkerCount.value = 3;
-    store.autoGatherEnabled.value = true;
 
     render(
       h(
@@ -713,10 +705,6 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
     store.idleWorkerCount.value = 8;
-    store.autoGatherEnabled.value = true;
-    store.autoDefendEnabled.value = true;
-    store.autoAttackEnabled.value = true;
-    store.autoScoutEnabled.value = true;
 
     render(
       h(
@@ -990,7 +978,6 @@ describe('Contextual Idle Menu screenshots', () => {
     store.idleWorkerCount.value = 5;
     store.idleGathererCount.value = 5;
     store.idleCombatCount.value = 0;
-    store.autoMenuExpanded.value = true;
     store.gameTimeDisplay.value = 'Day 3 - 10:00';
 
     render(
@@ -1013,7 +1000,6 @@ describe('Contextual Idle Menu screenshots', () => {
     store.idleWorkerCount.value = 4;
     store.idleGathererCount.value = 0;
     store.idleCombatCount.value = 4;
-    store.autoMenuExpanded.value = true;
     store.gameTimeDisplay.value = 'Day 5 - 16:00';
 
     render(
@@ -1038,13 +1024,6 @@ describe('Contextual Idle Menu screenshots', () => {
     store.idleCombatCount.value = 3;
     store.idleHealerCount.value = 1;
     store.idleScoutCount.value = 1;
-    store.autoMenuExpanded.value = true;
-    store.autoGatherEnabled.value = true;
-    store.autoBuildEnabled.value = true;
-    store.autoAttackEnabled.value = true;
-    store.autoDefendEnabled.value = true;
-    store.autoHealEnabled.value = true;
-    store.autoScoutEnabled.value = true;
     store.gameTimeDisplay.value = 'Day 8 - 12:00';
 
     render(
@@ -1080,9 +1059,9 @@ describe('Pearl Resource HUD screenshots', () => {
   };
 
   it('HUD - pearls visible in resource bar', async () => {
-    store.clams.value = 800;
-    store.twigs.value = 600;
-    store.pearls.value = 25;
+    store.fish.value = 800;
+    store.logs.value = 600;
+    store.rocks.value = 25;
     store.food.value = 10;
     store.maxFood.value = 16;
     store.gameTimeDisplay.value = 'Day 10 - 14:00';
@@ -1119,8 +1098,8 @@ describe('Enemy Economy HUD screenshots', () => {
 
   it('HUD - enemy economy indicator after scouting', async () => {
     store.enemyEconomyVisible.value = true;
-    store.enemyClams.value = 450;
-    store.enemyTwigs.value = 300;
+    store.enemyFish.value = 450;
+    store.enemyLogs.value = 300;
     store.gameTimeDisplay.value = 'Day 7 - 11:00';
     store.isPeaceful.value = false;
 

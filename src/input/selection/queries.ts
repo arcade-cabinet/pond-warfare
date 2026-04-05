@@ -115,8 +115,8 @@ export function placeBuilding(world: GameWorld, worldX: number, worldY: number):
   }
 
   const def = ENTITY_DEFS[kind];
-  const clamCost = def.clamCost ?? 0;
-  const twigCost = def.twigCost ?? 0;
+  const fishCost = def.fishCost ?? 0;
+  const logCost = def.logCost ?? 0;
 
   const bx = Math.round(worldX / TILE_SIZE) * TILE_SIZE;
   const by = Math.round(worldY / TILE_SIZE) * TILE_SIZE;
@@ -136,9 +136,9 @@ export function placeBuilding(world: GameWorld, worldX: number, worldY: number):
     return;
   }
 
-  if (world.resources.clams >= clamCost && world.resources.twigs >= twigCost) {
-    world.resources.clams -= clamCost;
-    world.resources.twigs -= twigCost;
+  if (world.resources.fish >= fishCost && world.resources.logs >= logCost) {
+    world.resources.fish -= fishCost;
+    world.resources.logs -= logCost;
     const eid = spawnEntity(world, kind, bx, by, Faction.Player);
 
     for (const selEid of world.selection) {
@@ -163,8 +163,8 @@ export function train(
   world: GameWorld,
   buildingEid: number,
   kind: EntityKind,
-  clamCost: number,
-  twigCost: number,
+  fishCost: number,
+  logCost: number,
   foodCost: number,
 ): void {
   const count = TrainingQueue.count[buildingEid];
@@ -185,12 +185,12 @@ export function train(
   world.resources.food = Math.max(world.resources.food, queuedFood);
 
   if (
-    world.resources.clams >= clamCost &&
-    world.resources.twigs >= twigCost &&
+    world.resources.fish >= fishCost &&
+    world.resources.logs >= logCost &&
     world.resources.food + foodCost <= world.resources.maxFood
   ) {
-    world.resources.clams -= clamCost;
-    world.resources.twigs -= twigCost;
+    world.resources.fish -= fishCost;
+    world.resources.logs -= logCost;
     world.resources.food += foodCost;
 
     {
@@ -215,8 +215,8 @@ export function cancelTrain(world: GameWorld, buildingEid: number, index: number
   if (kind == null) return;
 
   const def = ENTITY_DEFS[kind];
-  world.resources.clams += def.clamCost ?? 0;
-  world.resources.twigs += def.twigCost ?? 0;
+  world.resources.fish += def.fishCost ?? 0;
+  world.resources.logs += def.logCost ?? 0;
   world.resources.food = Math.max(0, world.resources.food - (def.foodCost ?? 1));
 
   slots.splice(index, 1);

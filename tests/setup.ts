@@ -98,30 +98,32 @@ function makeMockContext2D() {
   };
 }
 
-// Patch HTMLCanvasElement if getContext doesn't work in jsdom
-// biome-ignore lint/complexity/noBannedTypes: need generic function type for canvas mock
-const originalGetContext = HTMLCanvasElement.prototype.getContext as Function;
-HTMLCanvasElement.prototype.getContext = function (
-  this: HTMLCanvasElement,
-  type: string,
-  options?: any,
-) {
-  if (type === '2d') {
-    try {
-      const result = originalGetContext.call(this, type, options);
-      if (result) return result;
-    } catch {
-      // jsdom throws "Not implemented" – fall through to mock
+// ── DOM Mocks (JSDOM only) ──────────────────────────────────────────
+// Guard: only patch DOM globals when they exist (JSDOM environment).
+if (typeof HTMLCanvasElement !== 'undefined') {
+  // biome-ignore lint/complexity/noBannedTypes: need generic function type for canvas mock
+  const originalGetContext = HTMLCanvasElement.prototype.getContext as Function;
+  HTMLCanvasElement.prototype.getContext = function (
+    this: HTMLCanvasElement,
+    type: string,
+    options?: any,
+  ) {
+    if (type === '2d') {
+      try {
+        const result = originalGetContext.call(this, type, options);
+        if (result) return result;
+      } catch {
+        // jsdom throws "Not implemented" – fall through to mock
+      }
+      return makeMockContext2D() as any;
     }
-    // Return a fresh mock context for each call to avoid state leakage between tests
-    return makeMockContext2D() as any;
-  }
-  try {
-    return originalGetContext.call(this, type, options) as any;
-  } catch {
-    return null;
-  }
-} as any;
+    try {
+      return originalGetContext.call(this, type, options) as any;
+    } catch {
+      return null;
+    }
+  } as any;
+}
 
 // Mock requestAnimationFrame if not available
 if (typeof globalThis.requestAnimationFrame === 'undefined') {
@@ -152,5 +154,23 @@ class MockAudioContext {
   }
 }
 
-(globalThis as any).AudioContext = MockAudioContext;
-(globalThis as any).webkitAudioContext = MockAudioContext;
+// ── AudioContext (Node polyfill) ────────────────────────────────────
+if (typeof (globalThis as any).AudioContext === 'undefined') {
+  (globalThis as any).AudioContext = MockAudioContext;
+  (globalThis as any).webkitAudioContext = MockAudioContext;
+}
+
+// ── localStorage (Node polyfill) ────────────────────────────────────
+if (typeof globalThis.localStorage === 'undefined') {
+  const store = new Map<string, string>();
+  (globalThis as any).localStorage = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => store.set(key, value),
+    removeItem: (key: string) => store.delete(key),
+    clear: () => store.clear(),
+    get length() {
+      return store.size;
+    },
+    key: (i: number) => [...store.keys()][i] ?? null,
+  };
+}

@@ -1,13 +1,13 @@
 /**
- * Panel-Aware Map Generator (v3.0 — 6-Panel Map System)
+ * Panel-Aware Map Generator (v3.0 -- 6-Panel Map System)
  *
  * Generates terrain for each panel based on biome rules from terrain.json.
  * Unlocked panels get biome-appropriate terrain; locked panels are filled
  * with ThornWall (impassable barrier).
  *
  * Panel layout (3x2):
- *   1 2 3   (top row — enemies, late game)
- *   4 5 6   (bottom row — player territory)
+ *   1 2 3   (top row -- enemies, late game)
+ *   4 5 6   (bottom row -- player territory)
  */
 
 import { getTerrainConfig } from '@/config/config-loader';
@@ -36,6 +36,22 @@ export interface VerticalMapLayout {
 export interface MapLayoutOptions {
   /** Whether the player has unlocked rare resource nodes via prestige. */
   hasRareResourceAccess?: boolean;
+}
+
+/** Map terrain type name strings from terrain.json to TerrainType enum values. */
+const TERRAIN_NAME_MAP: Record<string, TerrainType> = {
+  grass: TerrainType.Grass,
+  water: TerrainType.Water,
+  shallows: TerrainType.Shallows,
+  mud: TerrainType.Mud,
+  rocks: TerrainType.Rocks,
+  high_ground: TerrainType.HighGround,
+  thorn_wall: TerrainType.ThornWall,
+};
+
+/** Parse a terrain type name string into TerrainType enum. Defaults to Grass. */
+export function parseTerrainType(name: string): TerrainType {
+  return TERRAIN_NAME_MAP[name] ?? TerrainType.Grass;
 }
 
 /** Generate a panel-aware map layout. */
@@ -164,6 +180,13 @@ function paintBiome(
   const w = endCol - startCol + 1;
   const h = endRow - startRow + 1;
   const totalTiles = w * h;
+
+  // Fill with primary terrain type (default is Grass which is already the default,
+  // but biomes like flooded_swamp have primary="shallows")
+  const primaryType = parseTerrainType(rule.primary);
+  if (primaryType !== TerrainType.Grass) {
+    grid.fillRect(startCol, startRow, w, h, primaryType);
+  }
 
   if (rule.water_coverage) {
     const count = Math.floor(totalTiles * rule.water_coverage * 0.1);

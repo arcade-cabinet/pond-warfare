@@ -12,7 +12,7 @@ export const RESOURCE_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: true,
     spriteSize: 16,
     spriteScale: 2.5,
-    resourceType: ResourceType.Twigs,
+    resourceType: ResourceType.Logs,
     resourceAmount: 400,
   },
   [EntityKind.Clambed]: {
@@ -24,7 +24,7 @@ export const RESOURCE_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: true,
     spriteSize: 16,
     spriteScale: 2.5,
-    resourceType: ResourceType.Clams,
+    resourceType: ResourceType.Fish,
     resourceAmount: 4000,
   },
   [EntityKind.PearlBed]: {
@@ -36,7 +36,7 @@ export const RESOURCE_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: true,
     spriteSize: 16,
     spriteScale: 2.5,
-    resourceType: ResourceType.Pearls,
+    resourceType: ResourceType.Rocks,
     resourceAmount: 500,
   },
 };

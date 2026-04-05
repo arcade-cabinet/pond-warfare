@@ -37,6 +37,7 @@ export {
   entityKindFromString,
   entityKindName,
   getDamageMultiplier,
+  isWingBuilding,
   type UnitDef,
 } from './entity-defs';
 export {

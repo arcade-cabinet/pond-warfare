@@ -27,7 +27,7 @@ function makeStats(overrides: Partial<GameEndStats> = {}): GameEndStats {
     buildingsLost: 0,
     peakArmy: 0,
     pearlsEarned: 0,
-    totalClamsEarned: 0,
+    totalFishEarned: 0,
   };
   return {
     result: 'loss',
@@ -40,7 +40,7 @@ function makeStats(overrides: Partial<GameEndStats> = {}): GameEndStats {
     buildingsBuilt: 0,
     techsResearched: 0,
     nestsDestroyed: 0,
-    totalClamsEarned: 0,
+    totalFishEarned: 0,
     unitsTrained: 0,
     pearlsEarned: 0,
     commanderAbilitiesUsed: 0,

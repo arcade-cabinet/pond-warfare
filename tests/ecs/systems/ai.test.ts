@@ -57,7 +57,7 @@ function createResource(world: GameWorld, x: number, y: number): number {
 
   Position.x[eid] = x;
   Position.y[eid] = y;
-  Resource.resourceType[eid] = ResourceType.Clams;
+  Resource.resourceType[eid] = ResourceType.Fish;
   Resource.amount[eid] = 1000;
   Health.current[eid] = 1;
   Health.max[eid] = 1;
@@ -79,35 +79,35 @@ describe('enemyEconomyTick', () => {
 
   it('should not spawn gatherers during peace timer', () => {
     world.peaceTimer = 99999;
-    world.enemyResources.clams = 1000;
+    world.enemyResources.fish = 1000;
     createEnemyNest(world, 500, 500);
     createResource(world, 520, 500);
 
     enemyEconomyTick(world);
 
     // No clams should be spent
-    expect(world.enemyResources.clams).toBe(1000);
+    expect(world.enemyResources.fish).toBe(1000);
   });
 
   it('should not spawn gatherers when enemy lacks resources', () => {
-    world.enemyResources.clams = ENEMY_GATHERER_COST - 1;
+    world.enemyResources.fish = ENEMY_GATHERER_COST - 1;
     createEnemyNest(world, 500, 500);
     createResource(world, 520, 500);
 
-    const startClams = world.enemyResources.clams;
+    const startClams = world.enemyResources.fish;
     enemyEconomyTick(world);
 
-    expect(world.enemyResources.clams).toBe(startClams);
+    expect(world.enemyResources.fish).toBe(startClams);
   });
 
   it('should only run on the spawn interval frame', () => {
     world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL + 1; // Not on interval
-    world.enemyResources.clams = 1000;
+    world.enemyResources.fish = 1000;
     createEnemyNest(world, 500, 500);
     createResource(world, 520, 500);
 
     enemyEconomyTick(world);
 
-    expect(world.enemyResources.clams).toBe(1000);
+    expect(world.enemyResources.fish).toBe(1000);
   });
 });

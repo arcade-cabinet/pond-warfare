@@ -46,7 +46,8 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `gatheringSystem` - Resource collection and dropoff (both factions)
    - `buildingSystem` - Construction progress and repair
    - `engineerSystem` - Sapper siege mechanics
-   - `combatSystem` - Tower auto-attack, aggro, melee/ranged with damage multipliers
+   - `combatSystem` - Tower auto-attack, idle aggro (10-frame scan), melee/ranged with damage multipliers, immediate retarget after kill
+   - `fortificationTickSystem` - Fort slot towers attack nearest enemy in range
    - `commanderPassivesSystem` - Commander aura/passive bonuses
    - `berserkerSystem` - Berserker rage mechanic
    - `projectileSystem` - Projectile movement and impact
@@ -64,7 +65,7 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `veterancySystem` - Kill tracking, rank-up bonuses (HP/damage/speed)
    - `fogOfWarSystem` - Visibility based on unit positions
    - `branchCosmeticsSystem` - Visual branch unlocks
-   - `matchEventRunnerSystem` - Wave-survival event scheduling from events.json
+   - `matchEventRunnerSystem` - Wave-survival event scheduling from events.json with 10 spawn patterns (scatter, line, wave, v_formation, pincer, surround, l_sweep, t_hammer, flank, funnel)
    - `randomEventsSystem` - Environmental random events
    - `autoSymbolSystem` - Auto-behavior icon overlay after order completion
    - `cleanupSystem` - Particle/corpse/ping decay

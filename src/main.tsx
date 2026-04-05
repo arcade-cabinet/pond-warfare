@@ -13,8 +13,7 @@ import { loadKeymapFromStorage } from '@/config/keymap';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
 import { game } from '@/game';
 import { initDeviceSignals, initNativePlatform } from '@/platform';
-import { loadGame } from '@/save-system';
-import { getLatestSave, initDatabase } from '@/storage';
+import { initDatabase } from '@/storage';
 import { loadPersistedSettings } from '@/storage/settings-persistence';
 import { hydrateV3StoreFromDb } from '@/ui/store-v3-persistence';
 
@@ -22,7 +21,7 @@ import { hydrateV3StoreFromDb } from '@/ui/store-v3-persistence';
 installGlobalErrorHandlers();
 
 import { App } from '@/ui/app';
-import { continueRequested, hasSaveGame, menuState } from '@/ui/store';
+import { menuState } from '@/ui/store';
 
 /** Stored DOM refs from the App component, used to init the game later. */
 let storedRefs: {
@@ -34,21 +33,19 @@ let storedRefs: {
 
 let gameStarted = false;
 
-function startGame(isContinue: boolean) {
+// US7: Seamless PLAY — always starts a new match. Run state (progression,
+// clams, upgrades) is already in store-v3 signals from hydrateV3StoreFromDb().
+// Game.init() reads those signals to apply upgrade effects and difficulty.
+function startGame() {
   if (!storedRefs || gameStarted) return;
   gameStarted = true;
 
-  game
-    .init(storedRefs.container, storedRefs.gameCanvas, storedRefs.fogCanvas, storedRefs.lightCanvas)
-    .then(async () => {
-      if (isContinue) {
-        const save = await getLatestSave();
-        if (save?.data) {
-          loadGame(game.world, save.data);
-          game.syncUIStore();
-        }
-      }
-    });
+  game.init(
+    storedRefs.container,
+    storedRefs.gameCanvas,
+    storedRefs.fogCanvas,
+    storedRefs.lightCanvas,
+  );
 }
 
 // Initialize database then mount the Preact application
@@ -76,10 +73,6 @@ function startGame(isContinue: boolean) {
   // Load keymap from Capacitor Preferences
   await loadKeymapFromStorage();
 
-  // Check for existing saves in SQLite
-  const latestSave = await getLatestSave();
-  hasSaveGame.value = latestSave !== null;
-
   const root = document.getElementById('app');
   if (root) {
     render(
@@ -88,18 +81,17 @@ function startGame(isContinue: boolean) {
           storedRefs = refs;
           // If menu is already 'playing' (edge case), start immediately
           if (menuState.value === 'playing') {
-            startGame(false);
+            startGame();
           }
         }}
       />,
       root,
     );
 
-    // Subscribe to menu state changes
+    // Subscribe to menu state changes — US7: always new match, no continue flag
     menuState.subscribe((state) => {
       if (state === 'playing' && storedRefs && !gameStarted) {
-        const isContinue = continueRequested.value;
-        startGame(isContinue);
+        startGame();
       }
     });
   }

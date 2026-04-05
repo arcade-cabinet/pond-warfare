@@ -76,9 +76,9 @@ async function waitFrames(n: number) {
 
 /** Keep player alive by topping off resources and healing buildings. */
 function keepPlayerAlive() {
-  game.world.resources.clams = 5000;
-  game.world.resources.twigs = 5000;
-  game.world.resources.pearls = 500;
+  game.world.resources.fish = 5000;
+  game.world.resources.logs = 5000;
+  game.world.resources.rocks = 500;
   game.world.resources.food = 0;
   game.world.resources.maxFood = 200;
 
@@ -160,8 +160,8 @@ describe('Enemy AI systems', () => {
       }
 
       // Give enemy resources to afford gatherers
-      game.world.enemyResources.clams = 2000;
-      game.world.enemyResources.twigs = 1000;
+      game.world.enemyResources.fish = 2000;
+      game.world.enemyResources.logs = 1000;
 
       const gatherersBefore = getUnits(EntityKind.Gatherer, Faction.Enemy).length;
 
@@ -184,8 +184,8 @@ describe('Enemy AI systems', () => {
       // Enemy may have spent some by now, but started with 500C/200T
       // Just verify the resource object exists and has been interacted with
       expect(game.world.enemyResources).toBeDefined();
-      expect(typeof game.world.enemyResources.clams).toBe('number');
-      expect(typeof game.world.enemyResources.twigs).toBe('number');
+      expect(typeof game.world.enemyResources.fish).toBe('number');
+      expect(typeof game.world.enemyResources.logs).toBe('number');
     });
 
     it('enemy resources change over time as gatherers work', async () => {
@@ -195,9 +195,9 @@ describe('Enemy AI systems', () => {
       }
 
       // Give enemy ample resources to observe spending
-      game.world.enemyResources.clams = 3000;
-      game.world.enemyResources.twigs = 1500;
-      const startClams = game.world.enemyResources.clams;
+      game.world.enemyResources.fish = 3000;
+      game.world.enemyResources.logs = 1500;
+      const startClams = game.world.enemyResources.fish;
 
       // The enemy AI spends resources on gatherers, units, and buildings.
       // After enough frames, clams should have changed (either up from
@@ -206,7 +206,7 @@ describe('Enemy AI systems', () => {
 
       keepPlayerAlive();
 
-      const endClams = game.world.enemyResources.clams;
+      const endClams = game.world.enemyResources.fish;
       // Resources should have changed (spent on units/buildings)
       expect(endClams).not.toBe(startClams);
     });
@@ -228,8 +228,8 @@ describe('Enemy AI systems', () => {
       }
 
       // Give enemy resources for training
-      game.world.enemyResources.clams = 5000;
-      game.world.enemyResources.twigs = 3000;
+      game.world.enemyResources.fish = 5000;
+      game.world.enemyResources.logs = 3000;
 
       // Wait for training ticks to produce combat units (ENEMY_TRAIN_CHECK_INTERVAL=300,
       // ENEMY_TRAIN_TIME=240, so need at least 540+ frames per unit)
@@ -247,8 +247,8 @@ describe('Enemy AI systems', () => {
 
     it('enemy units enter AttackMove state toward player buildings', async () => {
       // Give enemy resources and wait for attack decision
-      game.world.enemyResources.clams = 8000;
-      game.world.enemyResources.twigs = 5000;
+      game.world.enemyResources.fish = 8000;
+      game.world.enemyResources.logs = 5000;
 
       // Wait for army to build and attack decision (ENEMY_ATTACK_CHECK_INTERVAL=600)
       await waitFrames(4800);
@@ -283,8 +283,8 @@ describe('Enemy AI systems', () => {
 
   describe('5. Wave units attack player buildings', () => {
     it('enemy attack-move targets a player building', async () => {
-      game.world.enemyResources.clams = 8000;
-      game.world.enemyResources.twigs = 5000;
+      game.world.enemyResources.fish = 8000;
+      game.world.enemyResources.logs = 5000;
 
       // Wait for several attack decision ticks
       await waitFrames(4800);
@@ -374,9 +374,9 @@ describe('Enemy AI systems', () => {
   describe('7. Enemy builds towers', () => {
     it('enemy constructs towers near nests after mid-game', async () => {
       // Tower building starts at ENEMY_MID_GAME_FRAME (18000 frames)
-      // and requires ENEMY_TOWER_COST_CLAMS=200 + ENEMY_TOWER_COST_TWIGS=250
-      game.world.enemyResources.clams = 5000;
-      game.world.enemyResources.twigs = 5000;
+      // and requires ENEMY_TOWER_COST_FISH=200 + ENEMY_TOWER_COST_LOGS=250
+      game.world.enemyResources.fish = 5000;
+      game.world.enemyResources.logs = 5000;
 
       // Ensure we are past mid-game frame
       const midGameFrame = 18000;
@@ -390,8 +390,8 @@ describe('Enemy AI systems', () => {
       const towersBefore = getEnemyBuildings(EntityKind.Tower).length;
 
       // Give enough resources and wait for building tick (ENEMY_BUILD_CHECK_INTERVAL=1800)
-      game.world.enemyResources.clams = 5000;
-      game.world.enemyResources.twigs = 5000;
+      game.world.enemyResources.fish = 5000;
+      game.world.enemyResources.logs = 5000;
       await waitFrames(4800);
 
       keepPlayerAlive();
@@ -411,8 +411,8 @@ describe('Enemy AI systems', () => {
       // The AI analyzes player army: if player has many Snipers, it
       // trains more Snakes (which counter snipers). If player has more
       // Brawlers, it trains more Gators.
-      game.world.enemyResources.clams = 8000;
-      game.world.enemyResources.twigs = 5000;
+      game.world.enemyResources.fish = 8000;
+      game.world.enemyResources.logs = 5000;
 
       // Wait for several training cycles
       await waitFrames(4800);

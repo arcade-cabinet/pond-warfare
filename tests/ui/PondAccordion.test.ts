@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * PondAccordion Tests -- rendering, toggle, summary, allowMultiple.
  *

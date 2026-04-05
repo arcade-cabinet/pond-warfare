@@ -129,14 +129,14 @@ describe('randomEventsSystem', () => {
   });
 
   it('supply drop should add resources', () => {
-    const beforeClams = world.resources.clams;
-    const beforeTwigs = world.resources.twigs;
+    const beforeClams = world.resources.fish;
+    const beforeTwigs = world.resources.logs;
 
-    world.resources.clams += 100;
-    world.resources.twigs += 50;
+    world.resources.fish += 100;
+    world.resources.logs += 50;
 
-    expect(world.resources.clams).toBe(beforeClams + 100);
-    expect(world.resources.twigs).toBe(beforeTwigs + 50);
+    expect(world.resources.fish).toBe(beforeClams + 100);
+    expect(world.resources.logs).toBe(beforeTwigs + 50);
   });
 
   it('predator frenzy should add an active event that expires', () => {

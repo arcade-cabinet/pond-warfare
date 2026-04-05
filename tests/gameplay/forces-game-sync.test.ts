@@ -39,7 +39,7 @@ describe('Forces roster sync', () => {
     UnitStateMachine.state[brawler] = UnitState.AttackMovePatrol;
     syncRosters(world);
     const roster = store.unitRoster.value;
-    expect(roster.find((g) => g.role === 'gatherer')?.units[0]?.task).toBe('gathering-clams');
+    expect(roster.find((g) => g.role === 'gatherer')?.units[0]?.task).toBe('gathering-fish');
     expect(roster.find((g) => g.role === 'combat')?.units[0]?.task).toBe('patrolling');
   });
 

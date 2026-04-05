@@ -86,25 +86,25 @@ describe('autoBuildSystem', () => {
 
   it('should not build when autoBehaviors.build is false', () => {
     world.autoBehaviors.gatherer = false;
-    world.resources.clams = 10000;
-    world.resources.twigs = 10000;
+    world.resources.fish = 10000;
+    world.resources.logs = 10000;
     world.resources.food = world.resources.maxFood; // Pop cap trigger
     world.resources.maxFood = 8;
 
     createBuilding(world, EntityKind.Lodge, 500, 500);
     createGatherer(world, 510, 500);
 
-    const clamsBefore = world.resources.clams;
+    const clamsBefore = world.resources.fish;
     autoBuildSystem(world);
 
     // Resources should not change
-    expect(world.resources.clams).toBe(clamsBefore);
+    expect(world.resources.fish).toBe(clamsBefore);
   });
 
   it('should not build when player cannot afford any candidate', () => {
     world.autoBehaviors.gatherer = true;
-    world.resources.clams = 0;
-    world.resources.twigs = 0;
+    world.resources.fish = 0;
+    world.resources.logs = 0;
     world.resources.food = world.resources.maxFood;
     world.resources.maxFood = 8;
 
@@ -119,8 +119,8 @@ describe('autoBuildSystem', () => {
 
   it('should not build when no idle gatherer is available', () => {
     world.autoBehaviors.gatherer = true;
-    world.resources.clams = 10000;
-    world.resources.twigs = 10000;
+    world.resources.fish = 10000;
+    world.resources.logs = 10000;
     world.resources.food = world.resources.maxFood;
     world.resources.maxFood = 8;
 
@@ -129,16 +129,16 @@ describe('autoBuildSystem', () => {
     const gid = createGatherer(world, 510, 500);
     UnitStateMachine.state[gid] = UnitState.GatherMove;
 
-    const clamsBefore = world.resources.clams;
+    const clamsBefore = world.resources.fish;
     autoBuildSystem(world);
 
-    expect(world.resources.clams).toBe(clamsBefore);
+    expect(world.resources.fish).toBe(clamsBefore);
   });
 
   it('should only run every 300 frames', () => {
     world.autoBehaviors.gatherer = true;
-    world.resources.clams = 10000;
-    world.resources.twigs = 10000;
+    world.resources.fish = 10000;
+    world.resources.logs = 10000;
     world.resources.food = world.resources.maxFood;
     world.resources.maxFood = 8;
 
@@ -147,16 +147,16 @@ describe('autoBuildSystem', () => {
 
     // frameCount not a multiple of 300
     world.frameCount = 301;
-    const clamsBefore = world.resources.clams;
+    const clamsBefore = world.resources.fish;
     autoBuildSystem(world);
 
-    expect(world.resources.clams).toBe(clamsBefore);
+    expect(world.resources.fish).toBe(clamsBefore);
   });
 
   it('should successfully auto-build when conditions are met', () => {
     world.autoBehaviors.gatherer = true;
-    world.resources.clams = 10000;
-    world.resources.twigs = 10000;
+    world.resources.fish = 10000;
+    world.resources.logs = 10000;
     // Pop cap reached triggers Burrow build pressure (score 100)
     world.resources.food = 8;
     world.resources.maxFood = 8;
@@ -170,11 +170,11 @@ describe('autoBuildSystem', () => {
 
     const gid = createGatherer(world, 810, 800);
 
-    const twigsBefore = world.resources.twigs;
+    const twigsBefore = world.resources.logs;
     autoBuildSystem(world);
 
     // Burrow costs 0 clams, 75 twigs - twigs should have been deducted
-    expect(world.resources.twigs).toBeLessThan(twigsBefore);
+    expect(world.resources.logs).toBeLessThan(twigsBefore);
     // Gatherer should be in BuildMove state
     expect(UnitStateMachine.state[gid]).toBe(UnitState.BuildMove);
     // A floating text should have been created

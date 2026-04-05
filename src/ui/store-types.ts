@@ -7,9 +7,9 @@ import type { MapScenario } from './store';
 /** Directional resource change tracking for HUD flash animations.
  *  delta > 0 = increase (green/gold), delta < 0 = decrease (red). */
 export interface ResourceChange {
-  clams: number;
-  twigs: number;
-  pearls: number;
+  fish: number;
+  logs: number;
+  rocks: number;
   frame: number;
 }
 

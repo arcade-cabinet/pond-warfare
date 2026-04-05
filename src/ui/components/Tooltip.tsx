@@ -23,19 +23,17 @@ export function Tooltip() {
       )}
       {d.costBreakdown ? (
         <div class="flex gap-2 font-numbers text-[10px]">
-          {d.costBreakdown.clams != null && d.costBreakdown.clams > 0 && (
-            <span style={{ color: 'var(--pw-clam)' }}>{d.costBreakdown.clams} Clams</span>
+          {d.costBreakdown.fish != null && d.costBreakdown.fish > 0 && (
+            <span style={{ color: 'var(--pw-clam)' }}>{d.costBreakdown.fish} Fish</span>
           )}
-          {d.costBreakdown.twigs != null && d.costBreakdown.twigs > 0 && (
-            <span style={{ color: 'var(--pw-twig)' }}>{d.costBreakdown.twigs} Twigs</span>
+          {d.costBreakdown.logs != null && d.costBreakdown.logs > 0 && (
+            <span style={{ color: 'var(--pw-twig)' }}>{d.costBreakdown.logs} Logs</span>
           )}
           {d.costBreakdown.food != null && d.costBreakdown.food > 0 && (
             <span style={{ color: 'var(--pw-food)' }}>{d.costBreakdown.food} Food</span>
           )}
-          {d.costBreakdown.pearls != null && d.costBreakdown.pearls > 0 && (
-            <span style={{ color: 'var(--pw-pearl, #e0b0ff)' }}>
-              {d.costBreakdown.pearls} Pearls
-            </span>
+          {d.costBreakdown.rocks != null && d.costBreakdown.rocks > 0 && (
+            <span style={{ color: 'var(--pw-pearl, #e0b0ff)' }}>{d.costBreakdown.rocks} Rocks</span>
           )}
         </div>
       ) : (

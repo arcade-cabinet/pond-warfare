@@ -6,10 +6,18 @@
  * rank-up modal, and rewards screen navigation.
  */
 
-import type { PrestigeResult, PrestigeState } from '@/config/prestige-logic';
+import {
+  getStartingTierRank,
+  type PrestigeResult,
+  type PrestigeState,
+} from '@/config/prestige-logic';
 import * as store from './store';
 import * as storeV3 from './store-v3';
-import { persistPrestigeState, resetCurrentRunOnPrestige } from './store-v3-persistence';
+import {
+  persistPrestigeState,
+  persistSelectedCommander,
+  resetCurrentRunOnPrestige,
+} from './store-v3-persistence';
 
 export function handleUpgradesBack() {
   storeV3.upgradesScreenOpen.value = false;
@@ -23,6 +31,11 @@ export function handlePearlBack() {
   storeV3.pearlScreenOpen.value = false;
 }
 
+export function handleCommanderSelect(commanderId: string) {
+  store.selectedCommander.value = commanderId;
+  persistSelectedCommander().catch(() => {});
+}
+
 export function handlePearlStateChange(newState: PrestigeState) {
   storeV3.prestigeState.value = newState;
   storeV3.totalPearls.value = newState.pearls;
@@ -34,14 +47,29 @@ export function handleRankUpCancel() {
 }
 
 export function handleRankUpConfirm(_result: PrestigeResult, newState: PrestigeState) {
+  // 1. Update prestige signals (rank incremented, Pearls awarded by executePrestige)
   storeV3.prestigeState.value = newState;
   storeV3.totalPearls.value = newState.pearls;
   storeV3.prestigeRank.value = newState.rank;
+
+  // 2. Reset Clam upgrades — clear current_run, zero out Clams + progression
+  storeV3.totalClams.value = 0;
+  storeV3.progressionLevel.value = 0;
+
+  // 3. Starting tier auto-fill rank is stored in Pearl upgradeRanks.
+  //    The actual auto-fill happens at match init when the Clam web is created,
+  //    reading getStartingTierRank(). We store it in a signal so game init can read it.
+  storeV3.startingTierRank.value = getStartingTierRank(newState);
+
+  // 4. Selected Commander persists from Pearl loadout (no action needed —
+  //    store.selectedCommander is untouched by prestige).
+
+  // 5. Close modals, return to main menu for fresh run
   storeV3.rankUpModalOpen.value = false;
   storeV3.rewardsScreenOpen.value = false;
   store.menuState.value = 'main';
 
-  // Persist prestige state and reset current run in SQLite
+  // 6. Persist prestige state and reset current run in SQLite
   resetCurrentRunOnPrestige().catch(() => {});
   persistPrestigeState().catch(() => {});
 }
@@ -52,11 +80,27 @@ export function handleRewardsRankUp() {
 
 export function handleRewardsUpgrades() {
   storeV3.rewardsScreenOpen.value = false;
-  storeV3.upgradesScreenOpen.value = true;
-  store.menuState.value = 'main';
+  // Show Clam upgrade screen inline (post-match flow)
+  storeV3.clamUpgradeScreenOpen.value = true;
 }
 
 export function handleRewardsPlayAgain() {
   storeV3.rewardsScreenOpen.value = false;
+  // Skip Clam upgrade screen if no Clams to spend (first match of a run)
+  if (storeV3.totalClams.value === 0) {
+    startNextMatch();
+    return;
+  }
+  storeV3.clamUpgradeScreenOpen.value = true;
+}
+
+/** Continue from Clam upgrade screen -> start next match. */
+export function handleClamUpgradeContinue() {
+  storeV3.clamUpgradeScreenOpen.value = false;
+  startNextMatch();
+}
+
+/** Start next match from post-match flow. */
+function startNextMatch() {
   store.menuState.value = 'main';
 }

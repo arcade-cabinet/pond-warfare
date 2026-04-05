@@ -1,6 +1,6 @@
 /**
  * Otter-type unit sprites: gatherer, brawler, sniper, healer, shieldbearer,
- * scout, swimmer, trapper, commander.
+ * scout, swimmer, trapper, commander, sapper, saboteur, shaman, diver, engineer.
  */
 
 import { PALETTE } from '@/constants';
@@ -162,4 +162,110 @@ export function drawCommander(d: DrawCtx): void {
   rect(12, 6, 2, 4, '#3b82f6');
   rect(13, 10, 1, 2, '#3b82f6');
   p(12, 7, '#60a5fa');
+}
+
+/** Sapper -- dark green otter with wrench/bomb icon for siege. */
+export function drawSapper(d: DrawCtx): void {
+  drawOtterBodyMinimal(d);
+  const { p, rect } = d;
+  // Dark green tint on body
+  rect(5, 4, 6, 8, '#1a4d1a');
+  rect(6, 5, 4, 6, '#2d6a2d');
+  rect(5, 2, 6, 4, '#1a4d1a');
+  // Face over tint
+  p(6, 3, PALETTE.black);
+  p(9, 3, PALETTE.black);
+  p(7, 4, PALETTE.otterNose);
+  p(8, 4, PALETTE.otterNose);
+  p(8, 4, OTTER_NOSE_HIGHLIGHT);
+  // Wrench in right hand
+  rect(12, 5, 1, 5, '#9ca3af');
+  rect(12, 4, 2, 2, '#9ca3af');
+  p(13, 5, '#6b7280');
+  // Bomb in left hand
+  rect(2, 6, 3, 3, '#374151');
+  p(3, 5, '#f97316');
+}
+
+/** Saboteur -- purple-tinted otter with mask for subversion. */
+export function drawSaboteur(d: DrawCtx): void {
+  drawOtterBodyMinimal(d);
+  const { p, rect } = d;
+  // Purple tint on body
+  rect(5, 4, 6, 8, '#581c87');
+  rect(6, 5, 4, 6, '#7e22ce');
+  rect(5, 2, 6, 4, '#581c87');
+  // Face over tint
+  p(6, 3, PALETTE.black);
+  p(9, 3, PALETTE.black);
+  p(7, 4, PALETTE.otterNose);
+  p(8, 4, PALETTE.otterNose);
+  p(8, 4, OTTER_NOSE_HIGHLIGHT);
+  // Mask band across eyes
+  rect(5, 3, 7, 1, '#1e1b4b');
+  p(6, 3, '#c4b5fd');
+  p(9, 3, '#c4b5fd');
+  // Dagger in right hand
+  rect(12, 5, 1, 4, '#9ca3af');
+  p(12, 4, '#d4d4d8');
+}
+
+/** Shaman -- green otter with glowing staff for healing variant. */
+export function drawShaman(d: DrawCtx): void {
+  drawOtterBodyMinimal(d);
+  const { p, rect } = d;
+  // Green robe tint
+  rect(5, 6, 6, 6, '#166534');
+  rect(6, 7, 4, 4, '#22c55e');
+  // Face (over base)
+  p(6, 3, PALETTE.black);
+  p(9, 3, PALETTE.black);
+  p(7, 4, PALETTE.otterNose);
+  p(8, 4, PALETTE.otterNose);
+  p(8, 4, OTTER_NOSE_HIGHLIGHT);
+  // Staff in right hand
+  rect(13, 2, 1, 10, '#92400e');
+  // Staff glow orb
+  p(12, 1, '#4ade80');
+  p(13, 1, '#86efac');
+  p(14, 1, '#4ade80');
+  p(13, 0, '#bbf7d0');
+}
+
+/** Diver -- blue-tinted otter with goggles for stealth. */
+export function drawDiver(d: DrawCtx): void {
+  drawOtterBodyMinimal(d);
+  const { p, rect } = d;
+  // Blue tint on body
+  rect(5, 4, 6, 8, '#1e3a5f');
+  rect(6, 5, 4, 6, '#2563eb');
+  rect(5, 2, 6, 4, '#1e3a5f');
+  // Face over tint
+  p(7, 4, PALETTE.otterNose);
+  p(8, 4, PALETTE.otterNose);
+  p(8, 4, OTTER_NOSE_HIGHLIGHT);
+  // Goggles
+  rect(5, 3, 3, 1, '#38bdf8');
+  rect(8, 3, 3, 1, '#38bdf8');
+  p(6, 3, '#0ea5e9');
+  p(9, 3, '#0ea5e9');
+  // Flippers on feet
+  rect(4, 13, 3, 1, '#0284c7');
+  rect(9, 13, 3, 1, '#0284c7');
+}
+
+/** Engineer -- brown otter with hammer for bridge building. */
+export function drawEngineer(d: DrawCtx): void {
+  drawOtterBase(d);
+  const { p, rect } = d;
+  // Tool belt across belly
+  rect(5, 8, 6, 1, '#92400e');
+  p(6, 8, '#f59e0b');
+  // Hammer in right hand
+  rect(12, 4, 1, 5, '#92400e');
+  rect(11, 3, 3, 2, '#6b7280');
+  p(12, 3, '#9ca3af');
+  // Hard hat
+  rect(5, 1, 6, 2, '#f59e0b');
+  rect(4, 2, 8, 1, '#d97706');
 }

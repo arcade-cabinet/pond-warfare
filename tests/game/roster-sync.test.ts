@@ -72,7 +72,7 @@ describe('syncRosters', () => {
     expect(findGroup('combat').units[0].task).toBe('idle');
   });
 
-  it('maps GatherMove to gathering-clams when targeting Clambed', () => {
+  it('maps GatherMove to gathering-fish when targeting Clambed', () => {
     const clambed = spawnEntity(world, EntityKind.Clambed, 150, 150, Faction.Neutral);
     const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     UnitStateMachine.state[gatherer] = UnitState.GatherMove;
@@ -80,18 +80,18 @@ describe('syncRosters', () => {
 
     syncRosters(world);
     const unit = findGroup('gatherer').units[0];
-    expect(unit.task).toBe('gathering-clams');
+    expect(unit.task).toBe('gathering-fish');
     expect(unit.targetName).toBe('Clambed');
   });
 
-  it('maps GatherMove to gathering-twigs when targeting Cattail', () => {
+  it('maps GatherMove to gathering-logs when targeting Cattail', () => {
     const cattail = spawnEntity(world, EntityKind.Cattail, 150, 150, Faction.Neutral);
     const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     UnitStateMachine.state[gatherer] = UnitState.GatherMove;
     UnitStateMachine.targetEntity[gatherer] = cattail;
 
     syncRosters(world);
-    expect(findGroup('gatherer').units[0].task).toBe('gathering-twigs');
+    expect(findGroup('gatherer').units[0].task).toBe('gathering-logs');
   });
 
   it('maps Attacking state to attacking task', () => {

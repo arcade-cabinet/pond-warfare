@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Pearl Upgrade Screen Tests (v3.0 — US15)
  *

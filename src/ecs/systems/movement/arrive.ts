@@ -84,15 +84,15 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
 
         // Floating text for returned resources
         const resName =
-          heldRes === ResourceType.Clams
-            ? 'Clams'
-            : heldRes === ResourceType.Pearls
-              ? 'Pearls'
-              : 'Twigs';
+          heldRes === ResourceType.Fish
+            ? 'Fish'
+            : heldRes === ResourceType.Rocks
+              ? 'Rocks'
+              : 'Logs';
         const color =
-          heldRes === ResourceType.Clams
+          heldRes === ResourceType.Fish
             ? '#fde047'
-            : heldRes === ResourceType.Pearls
+            : heldRes === ResourceType.Rocks
               ? '#a5b4fc'
               : '#f97316';
         world.floatingTexts.push({
@@ -122,9 +122,9 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
 
           // Particle burst to celebrate deposit
           const pColor =
-            heldRes === ResourceType.Clams
+            heldRes === ResourceType.Fish
               ? '#fde047'
-              : heldRes === ResourceType.Pearls
+              : heldRes === ResourceType.Rocks
                 ? '#a5b4fc'
                 : '#92400e';
           for (let p = 0; p < 6; p++) {
@@ -144,21 +144,21 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
 
         // Add resources to the correct faction's stockpile
         if (faction === Faction.Enemy) {
-          if (heldRes === ResourceType.Clams) {
-            world.enemyResources.clams += depositAmt;
-          } else if (heldRes === ResourceType.Twigs) {
-            world.enemyResources.twigs += depositAmt;
+          if (heldRes === ResourceType.Fish) {
+            world.enemyResources.fish += depositAmt;
+          } else if (heldRes === ResourceType.Logs) {
+            world.enemyResources.logs += depositAmt;
           }
           // Enemies don't gather pearls
         } else {
-          if (heldRes === ResourceType.Clams) {
-            world.resources.clams += depositAmt;
-            world.stats.totalClamsEarned += depositAmt;
-          } else if (heldRes === ResourceType.Pearls) {
-            world.resources.pearls += depositAmt;
+          if (heldRes === ResourceType.Fish) {
+            world.resources.fish += depositAmt;
+            world.stats.totalFishEarned += depositAmt;
+          } else if (heldRes === ResourceType.Rocks) {
+            world.resources.rocks += depositAmt;
             world.stats.pearlsEarned += depositAmt;
           } else {
-            world.resources.twigs += depositAmt;
+            world.resources.logs += depositAmt;
           }
         }
         Carrying.resourceType[eid] = ResourceType.None;

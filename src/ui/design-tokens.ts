@@ -49,10 +49,10 @@ export const COLORS = {
 } as const;
 
 export const FONTS = {
-  /** Rugged serif for all headings, titles, section labels */
-  header: '"IM Fell English SC", serif',
-  /** Clean sans-serif for body text, descriptions, stats */
-  body: '"Open Sans", sans-serif',
+  /** System serif for all headings, titles, section labels */
+  header: 'Georgia, "Times New Roman", serif',
+  /** System sans-serif for body text, descriptions, stats */
+  body: 'system-ui, -apple-system, sans-serif',
 } as const;
 
 /** Frame 9-slice dimensions (px) */

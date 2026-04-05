@@ -10,6 +10,7 @@
  * - Trigger state transitions on arrival (arrive logic)
  * - Update yOffset bob animation while moving
  * - Update facingLeft based on movement direction
+ * - Apply weather modifiers: rain slows grass movement, shallows become impassable
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -26,8 +27,10 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { arrive, MOVE_STATES } from './movement/arrive';
+import { areShallowsBlocked, getWeatherGrassSpeedMult } from './weather';
 
 export function movementSystem(world: GameWorld): void {
   const ents = query(world.ecs, [
@@ -116,11 +119,20 @@ export function movementSystem(world: GameWorld): void {
 
     // Terrain speed modifier: slow/block units based on terrain type
     const kind = EntityTypeTag.kind[eid] as EntityKind;
+    const terrainType = world.terrainGrid.getAt(Position.x[eid], Position.y[eid]);
     const terrainMult = world.terrainGrid.getSpeedMultiplier(
       Position.x[eid],
       Position.y[eid],
       kind,
     );
+
+    // Weather: rain makes shallows impassable
+    if (terrainType === TerrainType.Shallows && areShallowsBlocked(world)) {
+      UnitStateMachine.state[eid] = UnitState.Idle;
+      world.yukaManager.removeUnit(eid);
+      continue;
+    }
+
     if (terrainMult <= 0) {
       // Impassable terrain - stop movement, go idle
       UnitStateMachine.state[eid] = UnitState.Idle;
@@ -128,6 +140,11 @@ export function movementSystem(world: GameWorld): void {
       continue;
     }
     speed *= terrainMult;
+
+    // Weather: rain slows movement on grass by 15%
+    if (terrainType === TerrainType.Grass || terrainType === TerrainType.HighGround) {
+      speed *= getWeatherGrassSpeedMult(world);
+    }
 
     const dx = tx - Position.x[eid];
     const dy = ty - Position.y[eid];
