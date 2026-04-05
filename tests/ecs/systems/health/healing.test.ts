@@ -13,7 +13,6 @@ import {
   FactionTag,
   Health,
   IsBuilding,
-  IsResource,
   Position,
   UnitStateMachine,
 } from '@/ecs/components';

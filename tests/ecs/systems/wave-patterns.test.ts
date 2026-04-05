@@ -233,7 +233,7 @@ describe('Wave Spawn Patterns', () => {
       undefined,
     ]);
 
-    for (const [id, template] of Object.entries(events.templates)) {
+    for (const [_id, template] of Object.entries(events.templates)) {
       const t = template as EventTemplate;
       if (t.spawn_pattern !== undefined) {
         expect(validPatterns.has(t.spawn_pattern)).toBe(true);

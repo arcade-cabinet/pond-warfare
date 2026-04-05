@@ -411,7 +411,7 @@ describe('Governor Diagnostic Playthrough', () => {
 
     // ── ACTIVITY CHECKS ─────────────────────────────────────
     // After 30 seconds, SOMETHING should have happened
-    const anyActivity =
+    const _anyActivity =
       final.kills > 0 ||
       final.lost > 0 ||
       final.trained > 0 ||
@@ -468,7 +468,7 @@ describe('Governor Diagnostic Playthrough', () => {
       [EntityKind.Scout]: 'Scout',
     };
 
-    console.log('\n' + '═'.repeat(80));
+    console.log(`\n${'═'.repeat(80)}`);
     console.log('  SPAWN ROSTER BY TIER');
     console.log('═'.repeat(80));
 
@@ -501,7 +501,7 @@ describe('Governor Diagnostic Playthrough', () => {
         `     Fish: ${w.resources.fish}  Rocks: ${w.resources.rocks}  Logs: ${w.resources.logs}`,
       );
     }
-    console.log('═'.repeat(80) + '\n');
+    console.log(`${'═'.repeat(80)}\n`);
 
     // Sanity: tier 6 has more entities than tier 1
     progressionLevel.value = 1;

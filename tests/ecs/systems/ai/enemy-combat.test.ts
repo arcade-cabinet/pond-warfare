@@ -13,13 +13,7 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import {
-  ENEMY_ATTACK_CHECK_INTERVAL,
-  ENEMY_RETREAT_HP_PERCENT,
-  ENEMY_SCOUT_INTERVAL,
-  ENEMY_SNAKE_COST_FISH,
-  ENEMY_SNAKE_COST_LOGS,
-} from '@/constants';
+import { ENEMY_ATTACK_CHECK_INTERVAL, ENEMY_RETREAT_HP_PERCENT } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -369,7 +363,7 @@ describe('enemyCombatTick', () => {
         200,
         UnitState.Attacking,
       );
-      const maxHp = Health.max[damagedUnit];
+      const _maxHp = Health.max[damagedUnit];
       Health.current[damagedUnit] = 1;
 
       enemyCombatTick(world);

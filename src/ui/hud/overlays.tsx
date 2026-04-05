@@ -117,13 +117,13 @@ export function Overlays() {
 
       {/* Pause overlay */}
       {paused.value && (
-        <div
-          class="absolute inset-0 z-50 flex flex-col items-center justify-center cursor-pointer"
+        <button
+          type="button"
+          class="absolute inset-0 z-50 flex flex-col items-center justify-center cursor-pointer border-none"
           style={{ background: 'var(--pw-overlay-60)' }}
           onClick={() => {
             paused.value = false;
           }}
-          role="button"
           aria-label="Tap to resume"
         >
           <span
@@ -135,7 +135,7 @@ export function Overlays() {
           <span class="font-game text-sm mt-4" style={{ color: 'var(--pw-text-muted)' }}>
             Tap to resume
           </span>
-        </div>
+        </button>
       )}
 
       {/* FPS counter (toggle with F12) */}

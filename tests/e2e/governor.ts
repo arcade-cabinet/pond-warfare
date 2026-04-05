@@ -10,7 +10,6 @@ import { hasComponent } from 'bitecs';
 import { IsBuilding } from '@/ecs/components';
 import { game } from '@/game';
 import { EntityKind } from '@/types';
-import * as store from '@/ui/store';
 import { getEnemyNests, getPlayerArmyUnits, getPlayerEntities } from '../helpers/ecs-queries';
 
 // ---------------------------------------------------------------------------

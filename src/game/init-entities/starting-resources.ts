@@ -56,7 +56,7 @@ export function applyStartingResources(world: GameWorld, layout: VerticalMapLayo
     | Record<string, StageFormula>
     | undefined;
 
-  if (!formulas || !formulas[stageKey]) {
+  if (!formulas?.[stageKey]) {
     // Fallback: enough for 2 gatherers + 1 fighter
     world.resources.fish = 40;
     return;

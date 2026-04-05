@@ -520,7 +520,7 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
     const fmtFrame = (f: number): string =>
       f === NO_FRAME ? '    N/A' : `${String(f).padStart(7)}`;
 
-    console.log('\n' + '='.repeat(100));
+    console.log(`\n${'='.repeat(100)}`);
     console.log('  TAP-BASED PLAYTHROUGH PROFILING TABLE');
     console.log('='.repeat(100));
     console.log(
@@ -549,6 +549,6 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
     console.log('-'.repeat(100));
     console.log('  Frames @ 60 FPS. 13200 frames = ~220 seconds. Peace timer = 10800 (3 min).');
     console.log('  Player strategy: 4 gatherers -> fighters, defend Lodge, gather fish.');
-    console.log('='.repeat(100) + '\n');
+    console.log(`${'='.repeat(100)}\n`);
   });
 });

@@ -124,7 +124,6 @@ export function getSpawnPositions(
       return patternFlank(world, target, count, rng);
     case 'funnel':
       return patternFunnel(edges, target, count, rng);
-    case 'scatter':
     default:
       return patternScatter(edges, count, rng);
   }

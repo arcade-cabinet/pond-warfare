@@ -36,7 +36,7 @@ vi.mock('@/ecs/components', () => ({
 }));
 
 vi.mock('@/config/factions', () => ({
-  getFactionConfig: (faction: string) => ({
+  getFactionConfig: (_faction: string) => ({
     lodgeKind: EntityKind.Lodge,
     gathererKind: EntityKind.Gatherer,
     meleeKind: EntityKind.Brawler,

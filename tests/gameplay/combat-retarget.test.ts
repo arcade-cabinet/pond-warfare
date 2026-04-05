@@ -20,7 +20,6 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
-import { healthSystem } from '@/ecs/systems/health';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
 

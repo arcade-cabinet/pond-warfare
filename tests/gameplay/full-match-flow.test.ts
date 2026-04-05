@@ -116,7 +116,7 @@ describe('Full Match Flow', () => {
     UnitStateMachine.targetX[testGatherer] = rx;
     UnitStateMachine.targetY[testGatherer] = ry;
 
-    const fishBeforeGather = world.resources.fish;
+    const _fishBeforeGather = world.resources.fish;
     runFrames(world, 600); // Enough for walk + gather + return + deposit
 
     expect(world.stats.resourcesGathered).toBeGreaterThan(0);

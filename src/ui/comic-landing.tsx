@@ -26,7 +26,6 @@ import {
   menuState,
   permadeathEnabled,
   selectedDifficulty,
-  showSplashVideo,
 } from './store';
 import { multiplayerMenuOpen } from './store-multiplayer';
 import { pearlScreenOpen, prestigeRank, totalPearls } from './store-v3';

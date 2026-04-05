@@ -200,7 +200,7 @@ describe('Fortification System', () => {
 
     it('all fort types have HP and cost', () => {
       const config = getFortificationsConfig();
-      for (const [id, def] of Object.entries(config.types)) {
+      for (const [_id, def] of Object.entries(config.types)) {
         expect(def.hp).toBeGreaterThan(0);
         expect(def.cost.rocks).toBeGreaterThan(0);
       }

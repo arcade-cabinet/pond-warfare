@@ -10,11 +10,10 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { FactionTag, Health, Position, Velocity } from '@/ecs/components';
+import { Health, Velocity } from '@/ecs/components';
 import { swarmBuffOriginalSpeeds } from '@/ecs/systems/evolution/mega-wave';
 import { threatEscalationSystem } from '@/ecs/systems/evolution/threat-escalation';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { Faction } from '@/types';
 
 // Mock audio to avoid Tone.js initialization
 vi.mock('@/audio/audio-system', () => ({

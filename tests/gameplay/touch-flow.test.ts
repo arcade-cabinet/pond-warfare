@@ -11,17 +11,9 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  IsResource,
-  Position,
-  Selectable,
-  UnitStateMachine,
-} from '@/ecs/components';
+import { Selectable, UnitStateMachine } from '@/ecs/components';
 import { issueContextCommand } from '@/input/selection';
-import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { EntityKind, Faction, UnitState } from '@/types';
 import { getRadialOptions, type RadialGameState } from '@/ui/radial-menu-options';
 import { createTestWorld } from '../helpers/world-factory';
 

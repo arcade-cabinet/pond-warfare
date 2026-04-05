@@ -46,7 +46,7 @@ describe('Yuka Governor E2E — Game Loop Simulation', () => {
   it('starting resources scale with tier', () => {
     const resources: number[] = [];
     for (let stage = 1; stage <= 6; stage++) {
-      const world = createTestWorld({ stage });
+      const _world = createTestWorld({ stage });
       // Manually set resources since we can't call spawnVerticalEntities
       // without the full ECS mock. But the factory itself doesn't set resources.
       // Instead test the formula directly.

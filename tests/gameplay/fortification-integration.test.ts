@@ -41,8 +41,10 @@ describe('Fortification Integration', () => {
     spawnVerticalEntities(world, layout, new SeededRandom(99));
 
     expect(world.fortifications).not.toBeNull();
-    expect(world.fortifications!.slots.length).toBeGreaterThan(0);
-    expect(world.fortifications!.totalRockCost).toBe(0);
+    const forts = world.fortifications;
+    expect(forts).toBeDefined();
+    expect(forts!.slots.length).toBeGreaterThan(0);
+    expect(forts!.totalRockCost).toBe(0);
   });
 
   it('tower attacks nearest enemy in range via fortificationTickSystem', () => {
@@ -53,9 +55,12 @@ describe('Fortification Integration', () => {
     spawnVerticalEntities(world, layout, new SeededRandom(99));
 
     // Place a watchtower in the first slot
-    const result = placeFortification(world.fortifications!, 0, 'watchtower', 100);
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
+    const result = placeFortification(forts, 0, 'watchtower', 100);
     expect(result.success).toBe(true);
-    const tower = world.fortifications!.slots[0];
+    const tower = forts.slots[0];
+    expect(tower).toBeDefined();
 
     // Spawn an enemy within tower range
     const enemyEid = spawnEntity(
@@ -82,8 +87,11 @@ describe('Fortification Integration', () => {
   it('tower respects cooldown — no double attack in same window', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);
-    placeFortification(world.fortifications!, 0, 'watchtower', 100);
-    const tower = world.fortifications!.slots[0];
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
+    placeFortification(forts, 0, 'watchtower', 100);
+    const tower = forts.slots[0];
+    expect(tower).toBeDefined();
 
     const enemyEid = spawnEntity(
       world,
@@ -113,23 +121,28 @@ describe('Fortification Integration', () => {
   it('enemy sapper can damage fort slot to destroyed', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);
-    placeFortification(world.fortifications!, 0, 'wood_wall', 100);
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
+    placeFortification(forts, 0, 'wood_wall', 100);
 
-    expect(world.fortifications!.slots[0].status).toBe('active');
-    expect(world.fortifications!.slots[0].currentHp).toBe(100);
+    expect(forts.slots[0].status).toBe('active');
+    expect(forts.slots[0].currentHp).toBe(100);
 
     // Simulate sapper dealing lethal damage
-    damageFortification(world.fortifications!, 0, 100);
+    damageFortification(forts, 0, 100);
 
-    expect(world.fortifications!.slots[0].status).toBe('destroyed');
-    expect(world.fortifications!.slots[0].currentHp).toBe(0);
+    expect(forts.slots[0].status).toBe('destroyed');
+    expect(forts.slots[0].currentHp).toBe(0);
   });
 
   it('walls do NOT attack even with enemies nearby', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);
-    placeFortification(world.fortifications!, 0, 'wood_wall', 100);
-    const wall = world.fortifications!.slots[0];
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
+    placeFortification(forts, 0, 'wood_wall', 100);
+    const wall = forts.slots[0];
+    expect(wall).toBeDefined();
 
     const enemyEid = spawnEntity(
       world,
@@ -157,8 +170,11 @@ describe('Fortification Integration', () => {
   it('tower deals cumulative damage over 300 frames', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);
-    placeFortification(world.fortifications!, 0, 'watchtower', 100);
-    const tower = world.fortifications!.slots[0];
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
+    placeFortification(forts, 0, 'watchtower', 100);
+    const tower = forts.slots[0];
+    expect(tower).toBeDefined();
 
     const enemyEid = spawnEntity(
       world,
@@ -195,15 +211,17 @@ describe('Fortification Integration', () => {
   it('walls are reported by getBlockingForts', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
 
     // No blocking forts initially
-    expect(getBlockingForts(world.fortifications!)).toHaveLength(0);
+    expect(getBlockingForts(forts)).toHaveLength(0);
 
     // Place a wood wall
-    placeFortification(world.fortifications!, 0, 'wood_wall', 100);
+    placeFortification(forts, 0, 'wood_wall', 100);
 
     // Wall should be in blocking forts list
-    const blocking = getBlockingForts(world.fortifications!);
+    const blocking = getBlockingForts(forts);
     expect(blocking.length).toBeGreaterThan(0);
     expect(blocking[0].fortType).toBe('wood_wall');
     expect(blocking[0].status).toBe('active');
@@ -212,26 +230,30 @@ describe('Fortification Integration', () => {
   it('destroyed walls are not in blocking list', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
 
-    placeFortification(world.fortifications!, 0, 'wood_wall', 100);
-    expect(getBlockingForts(world.fortifications!).length).toBe(1);
+    placeFortification(forts, 0, 'wood_wall', 100);
+    expect(getBlockingForts(forts).length).toBe(1);
 
     // Destroy the wall
-    damageFortification(world.fortifications!, 0, 200);
-    expect(world.fortifications!.slots[0].status).toBe('destroyed');
+    damageFortification(forts, 0, 200);
+    expect(forts.slots[0].status).toBe('destroyed');
 
     // Destroyed wall should not be in blocking list
-    expect(getBlockingForts(world.fortifications!)).toHaveLength(0);
+    expect(getBlockingForts(forts)).toHaveLength(0);
   });
 
   it('towers are NOT in blocking forts list', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);
+    expect(world.fortifications).toBeDefined();
+    const forts = world.fortifications!;
 
-    placeFortification(world.fortifications!, 0, 'watchtower', 100);
+    placeFortification(forts, 0, 'watchtower', 100);
 
     // Tower should not block movement
-    const blocking = getBlockingForts(world.fortifications!);
+    const blocking = getBlockingForts(forts);
     const towerInBlocking = blocking.some((s) => s.fortType === 'watchtower');
     expect(towerInBlocking).toBe(false);
   });

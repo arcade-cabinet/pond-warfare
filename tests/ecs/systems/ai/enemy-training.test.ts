@@ -10,17 +10,10 @@
  * deduction and queue state rather than entity counting.
  */
 
-import { addComponent, addEntity, query } from 'bitecs';
+import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import {
-  ENEMY_GATOR_COST_FISH,
-  ENEMY_GATOR_COST_LOGS,
-  ENEMY_SNAKE_COST_FISH,
-  ENEMY_SNAKE_COST_LOGS,
-  ENEMY_TRAIN_CHECK_INTERVAL,
-  ENEMY_TRAIN_TIME,
-} from '@/constants';
+import { ENEMY_TRAIN_CHECK_INTERVAL } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -114,7 +107,7 @@ describe('enemyTrainingTick', () => {
     });
 
     it('should deduct training costs from enemy resources', () => {
-      const nest = createEnemyNest(world, 500, 500);
+      const _nest = createEnemyNest(world, 500, 500);
 
       const fishBefore = world.enemyResources.fish;
       const logsBefore = world.enemyResources.logs;
