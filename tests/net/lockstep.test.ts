@@ -114,10 +114,10 @@ describe('computeChecksum', () => {
   it('produces consistent hashes for same state', () => {
     const world = createGameWorld();
     world.frameCount = 100;
-    world.resources.clams = 50;
-    world.resources.twigs = 30;
-    world.enemyResources.clams = 20;
-    world.enemyResources.twigs = 10;
+    world.resources.fish = 50;
+    world.resources.logs = 30;
+    world.enemyResources.fish = 20;
+    world.enemyResources.logs = 10;
 
     const hash1 = computeChecksum(world);
     const hash2 = computeChecksum(world);
@@ -129,11 +129,11 @@ describe('computeChecksum', () => {
   it('produces different hashes for different state', () => {
     const world1 = createGameWorld();
     world1.frameCount = 100;
-    world1.resources.clams = 50;
+    world1.resources.fish = 50;
 
     const world2 = createGameWorld();
     world2.frameCount = 100;
-    world2.resources.clams = 51;
+    world2.resources.fish = 51;
 
     expect(computeChecksum(world1)).not.toBe(computeChecksum(world2));
   });

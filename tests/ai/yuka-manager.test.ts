@@ -30,14 +30,14 @@ describe('YukaManager', () => {
 
   it('should add enemy vehicles', () => {
     const eid = createEntityWithPosition(world, 100, 100);
-    yuka.addEnemy(eid, 100, 100, 2, 500, 500);
+    yuka.addUnit(eid, 100, 100, 2, 500, 500);
     expect(yuka.has(eid)).toBe(true);
   });
 
   it('should not add duplicate vehicles for the same entity', () => {
     const eid = createEntityWithPosition(world, 100, 100);
-    yuka.addEnemy(eid, 100, 100, 2, 500, 500);
-    yuka.addEnemy(eid, 200, 200, 3, 600, 600);
+    yuka.addUnit(eid, 100, 100, 2, 500, 500);
+    yuka.addUnit(eid, 200, 200, 3, 600, 600);
     expect(yuka.has(eid)).toBe(true);
     // Verify there is exactly one vehicle for this entity
     expect(yuka.getVehicleCount()).toBe(1);
@@ -46,8 +46,8 @@ describe('YukaManager', () => {
   it('should update without error', () => {
     const eid1 = createEntityWithPosition(world, 100, 100);
     const eid2 = createEntityWithPosition(world, 200, 200);
-    yuka.addEnemy(eid1, 100, 100, 2, 500, 500);
-    yuka.addEnemy(eid2, 200, 200, 3, 400, 400);
+    yuka.addUnit(eid1, 100, 100, 2, 500, 500);
+    yuka.addUnit(eid2, 200, 200, 3, 400, 400);
 
     expect(() => {
       yuka.update(1 / 60);
@@ -56,22 +56,22 @@ describe('YukaManager', () => {
 
   it('should remove enemies', () => {
     const eid = createEntityWithPosition(world, 100, 100);
-    yuka.addEnemy(eid, 100, 100, 2, 500, 500);
+    yuka.addUnit(eid, 100, 100, 2, 500, 500);
     expect(yuka.has(eid)).toBe(true);
 
-    yuka.removeEnemy(eid);
+    yuka.removeUnit(eid);
     expect(yuka.has(eid)).toBe(false);
   });
 
   it('should handle removing a non-existent enemy gracefully', () => {
     expect(() => {
-      yuka.removeEnemy(9999);
+      yuka.removeUnit(9999);
     }).not.toThrow();
   });
 
   it('should return velocity for registered entities', () => {
     const eid = createEntityWithPosition(world, 100, 100);
-    yuka.addEnemy(eid, 100, 100, 2, 500, 500);
+    yuka.addUnit(eid, 100, 100, 2, 500, 500);
 
     // Update so the vehicle starts moving toward target
     yuka.update(1 / 60);
@@ -88,8 +88,8 @@ describe('YukaManager', () => {
   it('should clear all vehicles', () => {
     const eid1 = createEntityWithPosition(world, 100, 100);
     const eid2 = createEntityWithPosition(world, 200, 200);
-    yuka.addEnemy(eid1, 100, 100, 2, 500, 500);
-    yuka.addEnemy(eid2, 200, 200, 3, 400, 400);
+    yuka.addUnit(eid1, 100, 100, 2, 500, 500);
+    yuka.addUnit(eid2, 200, 200, 3, 400, 400);
 
     yuka.clear();
     expect(yuka.has(eid1)).toBe(false);

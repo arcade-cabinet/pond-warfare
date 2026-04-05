@@ -7,7 +7,6 @@
  */
 
 import { nextPrestigeThreshold } from '@/config/prestige-logic';
-import { TECH_UPGRADES, type TechId } from '@/config/tech-tree';
 import { DAY_FRAMES } from '@/constants';
 import { getEventsCompletedCount } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
@@ -31,6 +30,28 @@ export function resetPermadeathGuard(): void {
   resetRewardsGuard();
 }
 
+/** Get the game-over description based on game-over reason. */
+function getGameOverDescription(w: GameWorld): string {
+  switch (w.gameOverReason) {
+    case 'commander-death':
+      return 'Commander Fallen \u2014 defeat!';
+    case 'commander-kill':
+      return 'Enemy Commander Defeated \u2014 victory!';
+    case 'adversarial-win':
+      return 'Opponent defeated \u2014 victory!';
+    case 'adversarial-loss':
+      return 'Your forces were overwhelmed \u2014 defeat!';
+    default:
+      break;
+  }
+  if (w.waveSurvivalMode) {
+    return w.state === 'win'
+      ? `Survived all ${w.waveSurvivalTarget} waves!`
+      : 'The Lodge has fallen!';
+  }
+  return w.state === 'win' ? 'All predator nests destroyed!' : 'All lodges destroyed!';
+}
+
 /** Sync game-over stats to UI store; handle permadeath save deletion. */
 export function syncGameOverStats(world: GameWorld): void {
   const w = world;
@@ -41,17 +62,7 @@ export function syncGameOverStats(world: GameWorld): void {
   store.goTitleColor.value = w.state === 'win' ? 'text-amber-400' : 'text-red-500';
 
   // Description varies by game-over reason
-  if (w.gameOverReason === 'commander-death') {
-    store.goDesc.value = 'Commander Fallen — defeat!';
-  } else if (w.gameOverReason === 'commander-kill') {
-    store.goDesc.value = 'Enemy Commander Defeated — victory!';
-  } else if (w.waveSurvivalMode) {
-    store.goDesc.value =
-      w.state === 'win' ? `Survived all ${w.waveSurvivalTarget} waves!` : 'The Lodge has fallen!';
-  } else {
-    store.goDesc.value =
-      w.state === 'win' ? 'All predator nests destroyed!' : 'All lodges destroyed!';
-  }
+  store.goDesc.value = getGameOverDescription(w);
 
   const days = Math.floor(w.frameCount / DAY_FRAMES);
   const remainFrames = w.frameCount % DAY_FRAMES;
@@ -60,16 +71,12 @@ export function syncGameOverStats(world: GameWorld): void {
   store.goFrameCount.value = w.frameCount;
   store.goMapSeed.value = w.mapSeed;
 
-  // Compute researched tech names (guard against empty TECH_UPGRADES stub)
-  const researchedTechs: string[] = [];
-  for (const [key, val] of Object.entries(w.tech)) {
-    if (val && key in TECH_UPGRADES) {
-      const upgrade = TECH_UPGRADES[key as TechId];
-      if (upgrade) researchedTechs.push(upgrade.name);
-    }
+  // Count researched tech flags (v3.0: in-game research removed).
+  let techCount = 0;
+  for (const val of Object.values(w.tech)) {
+    if (val) techCount++;
   }
-  const techSummary =
-    researchedTechs.length > 0 ? `${researchedTechs.length} (${researchedTechs.join(', ')})` : '0';
+  const techSummary = String(techCount);
 
   // Difficulty display label
   const diffLabels: Record<string, string> = {
@@ -95,17 +102,21 @@ export function syncGameOverStats(world: GameWorld): void {
 
   // Commander fate line
   const commanderFate =
-    w.gameOverReason === 'commander-death'
+    w.gameOverReason === 'commander-death' || w.gameOverReason === 'adversarial-loss'
       ? 'Assassinated'
-      : w.gameOverReason === 'commander-kill'
+      : w.gameOverReason === 'commander-kill' || w.gameOverReason === 'adversarial-win'
         ? 'Survived'
         : w.state === 'lose'
           ? 'Fallen'
           : 'Survived';
 
+  // Mode indicator
+  const modeLabel = w.adversarialMode ? 'Adversarial' : w.coopMode ? 'Co-op' : 'Solo';
+
   const statLines = [
     `Time: ${store.goTimeSurvived.value}`,
     `Difficulty: ${diffLabel}`,
+    `Mode: ${modeLabel}`,
     `Commander: ${cmdLabel}`,
     `Commander fate: ${commanderFate}`,
     `Kills: ${w.stats.unitsKilled}`,

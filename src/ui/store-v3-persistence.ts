@@ -42,7 +42,7 @@ export async function hydrateV3StoreFromDb(): Promise<void> {
     const prestigeState = {
       rank: prestige.rank,
       pearls: prestige.pearls,
-      totalPearlsEarned: prestige.total_clams_earned,
+      totalPearlsEarned: prestige.total_pearls_earned,
       upgradeRanks,
     };
     storeV3.prestigeState.value = prestigeState;
@@ -86,7 +86,7 @@ export async function persistPrestigeState(): Promise<void> {
     pearls: state.pearls,
     pearl_upgrades: JSON.stringify(state.upgradeRanks),
     total_matches: 0,
-    total_clams_earned: state.totalPearlsEarned,
+    total_pearls_earned: state.totalPearlsEarned,
     highest_progression: storeV3.progressionLevel.value,
   });
 }

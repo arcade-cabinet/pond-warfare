@@ -6,9 +6,9 @@
 import {
   attackMoveActive,
   destroyedEnemyNests,
-  enemyClams,
   enemyEconomyVisible,
-  enemyTwigs,
+  enemyFish,
+  enemyLogs,
   fpsCounterVisible,
   fpsDisplay,
   nestJustDestroyed,
@@ -71,7 +71,7 @@ export function Overlays() {
               style={{ background: 'var(--pw-clam)', border: '1px solid var(--pw-otter-light)' }}
             />
             <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
-              {enemyClams}
+              {enemyFish}
             </span>
           </div>
           <div class="flex items-center gap-1">
@@ -80,7 +80,7 @@ export function Overlays() {
               style={{ background: 'var(--pw-twig)', border: '1px solid var(--pw-otter)' }}
             />
             <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
-              {enemyTwigs}
+              {enemyLogs}
             </span>
           </div>
         </div>
@@ -132,10 +132,7 @@ export function Overlays() {
           >
             PAUSED
           </span>
-          <span
-            class="font-game text-sm mt-4"
-            style={{ color: 'var(--pw-text-muted)' }}
-          >
+          <span class="font-game text-sm mt-4" style={{ color: 'var(--pw-text-muted)' }}>
             Tap to resume
           </span>
         </div>

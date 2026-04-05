@@ -1,5 +1,5 @@
 /**
- * World Snapshot — Serialization for between-match save state.
+ * World Snapshot -- Serialization for between-match save state.
  *
  * Does NOT save mid-match entity positions. Instead captures the run-level
  * state needed to recreate a match at the correct progression/difficulty
@@ -12,7 +12,7 @@
 
 import * as storeV3 from '@/ui/store-v3';
 
-// ── Types ─────────────────────────────────────────────────────────
+// -- Types ----------------------------------------------------------------
 
 /** Snapshot of the data we persist between matches via current_run. */
 export interface WorldSnapshot {
@@ -23,7 +23,7 @@ export interface WorldSnapshot {
   commanderId: string;
 }
 
-// ── Serialization ─────────────────────────────────────────────────
+// -- Serialization --------------------------------------------------------
 
 /** Read current run state from store-v3 signals into a snapshot. */
 export function captureRunSnapshot(commanderId: string): WorldSnapshot {
@@ -31,7 +31,7 @@ export function captureRunSnapshot(commanderId: string): WorldSnapshot {
     clams: storeV3.totalClams.value,
     progressionLevel: storeV3.progressionLevel.value,
     matchesThisRun: 0, // incremented by caller after match
-    upgradesPurchased: [], // placeholder: upgrade web nodes not yet tracked per-run
+    upgradesPurchased: [], // upgrade web nodes tracked separately via store-v3-persistence
     commanderId,
   };
 }

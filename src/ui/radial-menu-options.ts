@@ -9,6 +9,9 @@
  * optional disabled state.
  */
 
+// Re-export entityKindToRole from extracted module for backward compatibility
+export { entityKindToRole } from './radial-entity-roles';
+
 export type RadialMenuMode = 'lodge' | 'unit';
 
 export interface RadialOption {
@@ -220,11 +223,11 @@ const ROLE_OPTIONS: Record<string, RadialOption[]> = {
 
 /** Game state used to filter Lodge radial options. */
 export interface RadialGameState {
-  /** Current fish (clams) available */
+  /** Current fish available */
   fish: number;
-  /** Current rocks (pearls) available */
+  /** Current rocks available */
   rocks: number;
-  /** Current logs (twigs) available */
+  /** Current logs available */
   logs: number;
   /** Which panel unlock stage the player is at (1-6) */
   unlockStage: number;
@@ -272,39 +275,4 @@ export function getRadialOptions(
   }
   if (unitRole && ROLE_OPTIONS[unitRole]) return ROLE_OPTIONS[unitRole];
   return GENERIC_OPTIONS;
-}
-
-/**
- * Map an EntityKind numeric value to a v3 role string.
- * Uses the existing entity kinds to determine role.
- */
-export function entityKindToRole(kind: number): string {
-  // EntityKind values from types.ts
-  switch (kind) {
-    case 0:
-      return 'gather'; // Gatherer
-    case 12:
-      return 'heal'; // Healer
-    case 16:
-      return 'scout'; // Scout
-    case 1: // Brawler
-    case 2: // Sniper
-    case 15: // Shieldbearer
-    case 17: // Catapult
-    case 28: // Swimmer
-    case 30: // Commander
-    case 33: // Diver
-    case 34: // Engineer
-    case 37: // FlyingHeron
-    case 41: // Berserker
-      return 'combat';
-    case 35:
-      return 'heal'; // Shaman
-    case 44:
-      return 'combat'; // Sapper
-    case 45:
-      return 'combat'; // Saboteur
-    default:
-      return 'combat';
-  }
 }

@@ -45,10 +45,10 @@ vi.mock('@/config/factions', () => ({
 }));
 
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { calculateMatchReward } from '@/game/match-rewards';
-import { createTestWorld, createTestPanelGrid } from '../helpers/world-factory';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { SeededRandom } from '@/utils/random';
+import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 beforeEach(() => {
   spawnedEntities.length = 0;
@@ -72,7 +72,7 @@ describe('New player first match — stage 1', () => {
     expect(world.waveSurvivalTarget).toBe(5);
 
     // Starting Fish from config formula
-    expect(world.resources.clams).toBeGreaterThan(0);
+    expect(world.resources.fish).toBeGreaterThan(0);
   });
 
   it('calculates rewards from match stats', () => {
@@ -122,6 +122,6 @@ describe('Progression across tiers', () => {
     spawnVerticalEntities(world, layout, new SeededRandom(42));
 
     // Higher tiers should have more starting Fish
-    expect(world.resources.clams).toBeGreaterThan(0);
+    expect(world.resources.fish).toBeGreaterThan(0);
   });
 });

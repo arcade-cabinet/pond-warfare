@@ -33,6 +33,7 @@ export class ErrorBoundary extends Component<{ children: any }, ErrorBoundarySta
           )}
           <button
             type="button"
+            aria-label="Retry"
             class="mt-4 px-4 py-2 bg-red-700 hover:bg-red-600 rounded"
             onClick={() => window.location.reload()}
           >

@@ -2,6 +2,7 @@ import { EntityKind } from '@/types';
 import type { UnitDef } from './unit-def';
 
 /** Stats for all player-trainable units plus ambient neutral critters. */
+// v3 costs aligned with configs/units.json (Fish-only for basic generalists)
 export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
   [EntityKind.Gatherer]: {
     hp: 30,
@@ -12,8 +13,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 50,
-    twigCost: 0,
+    fishCost: 10,
+    logCost: 0,
     foodCost: 1,
   },
   [EntityKind.Brawler]: {
@@ -25,8 +26,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 100,
-    twigCost: 50,
+    fishCost: 20,
+    logCost: 0,
     foodCost: 1,
   },
   [EntityKind.Sniper]: {
@@ -38,8 +39,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 80,
-    twigCost: 80,
+    fishCost: 20,
+    logCost: 0,
     foodCost: 1,
   },
   [EntityKind.Healer]: {
@@ -51,8 +52,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 50,
-    twigCost: 30,
+    fishCost: 15,
+    logCost: 0,
     foodCost: 1,
   },
   [EntityKind.Shieldbearer]: {
@@ -64,8 +65,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 150,
-    twigCost: 100,
+    fishCost: 150,
+    logCost: 100,
     foodCost: 1,
   },
   [EntityKind.Scout]: {
@@ -77,8 +78,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 35,
-    twigCost: 0,
+    fishCost: 8,
+    logCost: 0,
     foodCost: 1,
   },
   [EntityKind.Catapult]: {
@@ -90,8 +91,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 32,
     spriteScale: 3,
-    clamCost: 300,
-    twigCost: 200,
+    fishCost: 300,
+    logCost: 200,
     foodCost: 1,
   },
   [EntityKind.Swimmer]: {
@@ -103,8 +104,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 60,
-    twigCost: 30,
+    fishCost: 60,
+    logCost: 30,
     foodCost: 1,
   },
   [EntityKind.Trapper]: {
@@ -116,8 +117,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 80,
-    twigCost: 60,
+    fishCost: 80,
+    logCost: 60,
     foodCost: 1,
   },
   [EntityKind.Commander]: {
@@ -140,8 +141,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 60,
-    twigCost: 40,
+    fishCost: 60,
+    logCost: 40,
     foodCost: 1,
   },
   [EntityKind.Engineer]: {
@@ -153,8 +154,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 80,
-    twigCost: 60,
+    fishCost: 80,
+    logCost: 60,
     foodCost: 1,
   },
   [EntityKind.Shaman]: {
@@ -166,8 +167,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 70,
-    twigCost: 50,
+    fishCost: 70,
+    logCost: 50,
     foodCost: 1,
   },
   // --- v2.0.0 new player units ---
@@ -180,8 +181,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 32,
     spriteScale: 3,
-    clamCost: 200,
-    twigCost: 150,
+    fishCost: 200,
+    logCost: 150,
     foodCost: 1,
   },
   [EntityKind.Berserker]: {
@@ -193,8 +194,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 120,
-    twigCost: 80,
+    fishCost: 120,
+    logCost: 80,
     foodCost: 1,
   },
   // --- v3.0.0 new player units ---
@@ -207,8 +208,9 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 50,
-    twigCost: 0,
+    fishCost: 25,
+    rockCost: 15,
+    logCost: 0,
     foodCost: 1,
   },
   [EntityKind.Saboteur]: {
@@ -220,8 +222,9 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     isResource: false,
     spriteSize: 16,
     spriteScale: 2.5,
-    clamCost: 60,
-    twigCost: 0,
+    fishCost: 20,
+    rockCost: 10,
+    logCost: 0,
     foodCost: 1,
   },
   // Ambient critters (no cost, no combat role)

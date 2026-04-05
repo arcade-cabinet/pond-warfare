@@ -1,9 +1,5 @@
 /**
- * GameWorld Interface
- *
- * Central type definition for the game world state. All systems,
- * renderers, and UI operate on this shared structure.
- *
+ * GameWorld Interface -- central type for game world state.
  * Factory function and defaults live in world-defaults.ts.
  */
 
@@ -11,13 +7,13 @@ import type { createWorld } from 'bitecs';
 import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
-import type { ExtendedStats } from '@/types';
 import type { WeatherState } from '@/config/weather';
 import type { FortificationState } from '@/ecs/systems/fortification';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import type {
   Corpse,
   EntityKind,
+  ExtendedStats,
   Firefly,
   FloatingText,
   GameResources,
@@ -32,7 +28,6 @@ import type { SeededRandom } from '@/utils/random';
 import type { SpatialHash } from '@/utils/spatial-hash';
 import type { CommanderModifiers } from './world-defaults';
 
-// Re-export factory and CommanderModifiers so existing imports keep working
 export { type CommanderModifiers, createGameWorld } from './world-defaults';
 
 export interface GameWorld {
@@ -49,12 +44,8 @@ export interface GameWorld {
 
   // Game state
   resources: GameResources;
-  enemyResources: { clams: number; twigs: number };
-  /**
-   * Tech flags -- runtime boolean bag. In v3.0 these are set by
-   * commanders at game start, not through in-game research (which
-   * was removed). Combat systems still read these flags.
-   */
+  enemyResources: { fish: number; logs: number };
+  /** Tech flags -- runtime boolean bag set by commanders at game start. */
   tech: Record<string, boolean>;
   stats: GameStats;
   state: GameState;
@@ -143,10 +134,10 @@ export interface GameWorld {
 
   // Resource tracking
   resTracker: {
-    lastClams: number;
-    lastTwigs: number;
-    rateClams: number;
-    rateTwigs: number;
+    lastFish: number;
+    lastLogs: number;
+    rateFish: number;
+    rateLogs: number;
   };
 
   // Performance: spatial hash for proximity queries (rebuilt each frame)
@@ -180,9 +171,6 @@ export interface GameWorld {
 
   // First-game detection (used by tutorial hints)
   isFirstGame: boolean;
-
-  /** @deprecated Advisor system was removed in v3.0. Kept for save compatibility. */
-  advisorState: Record<string, unknown>;
 
   // Commander aura + selection
   /** ECS entity ID of the player's Commander (or -1 if not yet spawned). */
@@ -222,10 +210,7 @@ export interface GameWorld {
   combatZones: { x: number; y: number; life: number }[];
   waveNumber: number;
 
-  /**
-   * Wave-survival mode: when true, win condition is surviving all scheduled
-   * waves instead of destroying enemy nests (used at stage 1 with no nests).
-   */
+  /** Wave-survival mode: survive all scheduled waves instead of nest destruction. */
   waveSurvivalMode: boolean;
   /** Number of waves to survive for victory in wave-survival mode. */
   waveSurvivalTarget: number;
@@ -244,8 +229,15 @@ export interface GameWorld {
   gameEndSpectacleActive: boolean;
   gameEndPrevSpeed: number;
 
-  /** Why the game ended: commander kill/death, extermination, or wave-survival. */
-  gameOverReason: 'commander-kill' | 'commander-death' | 'extermination' | 'wave-survival' | null;
+  /** Why the game ended. */
+  gameOverReason:
+    | 'commander-kill'
+    | 'commander-death'
+    | 'extermination'
+    | 'wave-survival'
+    | 'adversarial-win'
+    | 'adversarial-loss'
+    | null;
 
   // Diver stealth: set of entity IDs currently in stealth
   stealthEntities: Set<number>;
@@ -273,14 +265,20 @@ export interface GameWorld {
   partnerUnitPositions: { x: number; y: number; isBuilding: boolean }[];
   coopResourceCallback: (() => void) | null;
 
+  // --- Adversarial multiplayer ---
+  /** True when players compete against each other (Lodge vs Lodge). */
+  adversarialMode: boolean;
+  /** ECS entity ID of the opponent's Lodge (-1 if not spawned). */
+  opponentLodgeEid: number;
+  /** ECS entity ID of the opponent's Commander (-1 if not spawned). */
+  opponentCommanderEid: number;
+
   // Patrol waypoints per entity (bitECS SoA can't store nested arrays)
   patrolWaypoints: Map<number, { x: number; y: number }[]>;
 
   // --- v3.0 ---
-
   /** Fortification slots around the Lodge (walls/towers). */
   fortifications: FortificationState | null;
-
   /** Panel grid for 6-panel map system. */
   panelGrid: import('@/game/panel-grid').PanelGrid | null;
 }

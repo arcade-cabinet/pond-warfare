@@ -77,6 +77,9 @@ export const musicVolume = signal(50);
 export const sfxVolume = signal(80);
 export const autoSaveEnabled = signal(false);
 
+// ---- Auto-play (Governor AI) ----
+export const autoPlayEnabled = signal(false);
+
 // ---- Match history / XP ----
 export const matchHistoryOpen = signal(false);
 /** XP earned in the just-completed game (shown in battle report). */
@@ -85,34 +88,6 @@ export const goXpEarned = signal(0);
 export const goLeveledUp = signal(false);
 /** Player's new level after the just-completed game. */
 export const goNewLevel = signal(0);
-
-// ---- Daily challenge (v3: stub signals, will be replaced by event system) ----
-export const goDailyChallengeCompleted = signal(false);
-export const dailyChallengeTitle = signal('');
-export const dailyChallengeDesc = signal('');
-export const dailyChallengeXp = signal(0);
-export const dailyChallengeAlreadyDone = signal(false);
-export const dailyChallengeStreak = signal(0);
-export const dailyChallengeHistory = signal<unknown[]>([]);
-
-// ---- Auto-behavior toggles (v3: stub signals, replaced by prestige auto-deploy) ----
-export const autoGathererEnabled = signal(false);
-export const autoCombatEnabled = signal(false);
-export const autoHealerEnabled = signal(false);
-export const autoScoutEnabled = signal(false);
-export const autoMenuExpanded = signal(false);
-
-// ---- Panel tab (v3: stub, panel removed) ----
-export type PanelTab = 'map' | 'forces' | 'buildings' | 'menu';
-export const activePanelTab = signal<PanelTab>('forces');
-
-// ---- Tech tree open (v3: stub, replaced by upgrade web) ----
-export const techTreeOpen = signal(false);
-// ---- Campaign (v3: stub, removed) ----
-export const campaignOpen = signal(false);
-export const campaignMissionId = signal<string | null>(null);
-// ---- Unlocks (v3: stub, removed) ----
-export const unlocksOpen = signal(false);
 
 // ---- Production queue ----
 export interface QueueItem {

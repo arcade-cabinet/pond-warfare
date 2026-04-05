@@ -8,13 +8,13 @@
 import { query } from 'bitecs';
 import { resolvePersonality } from '@/config/ai-personalities';
 import {
-  ENEMY_GATOR_COST_CLAMS,
-  ENEMY_GATOR_COST_TWIGS,
+  ENEMY_GATOR_COST_FISH,
+  ENEMY_GATOR_COST_LOGS,
   ENEMY_LATE_GAME_FRAME,
   ENEMY_LATE_TRAIN_INTERVAL,
   ENEMY_MID_GAME_FRAME,
-  ENEMY_SNAKE_COST_CLAMS,
-  ENEMY_SNAKE_COST_TWIGS,
+  ENEMY_SNAKE_COST_FISH,
+  ENEMY_SNAKE_COST_LOGS,
   ENEMY_TRAIN_CHECK_INTERVAL,
   ENEMY_TRAIN_TIME,
 } from '@/constants';
@@ -38,19 +38,19 @@ import { countPlayerUnitsOfKind, getEnemyNests } from './helpers';
 
 /** Resource costs for all enemy-trainable unit types. */
 const ENEMY_UNIT_COSTS: Partial<
-  Record<EntityKind, { clams: number; twigs: number; weight: number }>
+  Record<EntityKind, { fish: number; logs: number; weight: number }>
 > = {
-  [EntityKind.Gator]: { clams: ENEMY_GATOR_COST_CLAMS, twigs: ENEMY_GATOR_COST_TWIGS, weight: 10 },
+  [EntityKind.Gator]: { fish: ENEMY_GATOR_COST_FISH, logs: ENEMY_GATOR_COST_LOGS, weight: 10 },
   [EntityKind.Snake]: {
-    clams: ENEMY_SNAKE_COST_CLAMS,
-    twigs: ENEMY_SNAKE_COST_TWIGS,
+    fish: ENEMY_SNAKE_COST_FISH,
+    logs: ENEMY_SNAKE_COST_LOGS,
     weight: 10,
   },
-  [EntityKind.ArmoredGator]: { clams: 150, twigs: 80, weight: 6 },
-  [EntityKind.VenomSnake]: { clams: 100, twigs: 50, weight: 7 },
-  [EntityKind.SwampDrake]: { clams: 120, twigs: 60, weight: 5 },
-  [EntityKind.SiegeTurtle]: { clams: 300, twigs: 200, weight: 3 },
-  [EntityKind.AlphaPredator]: { clams: 500, twigs: 300, weight: 1 },
+  [EntityKind.ArmoredGator]: { fish: 150, logs: 80, weight: 6 },
+  [EntityKind.VenomSnake]: { fish: 100, logs: 50, weight: 7 },
+  [EntityKind.SwampDrake]: { fish: 120, logs: 60, weight: 5 },
+  [EntityKind.SiegeTurtle]: { fish: 300, logs: 200, weight: 3 },
+  [EntityKind.AlphaPredator]: { fish: 500, logs: 300, weight: 1 },
 };
 
 /** Melee-type enemy units (short range, high HP). */
@@ -163,14 +163,14 @@ export function enemyTrainingTick(world: GameWorld): void {
     );
     const costs = ENEMY_UNIT_COSTS[unitKind];
     if (!costs) continue;
-    const costClams = costs.clams;
-    const costTwigs = costs.twigs;
+    const costFish = costs.fish;
+    const costLogs = costs.logs;
 
-    if (res.clams < costClams || res.twigs < costTwigs) continue;
+    if (res.fish < costFish || res.logs < costLogs) continue;
 
     // Deduct cost and queue
-    res.clams -= costClams;
-    res.twigs -= costTwigs;
+    res.fish -= costFish;
+    res.logs -= costLogs;
 
     slots.push(unitKind);
     trainingQueueSlots.set(nestEid, slots);

@@ -11,7 +11,7 @@
  *   buildings.ts         – all buildings
  *   resources.ts         – harvestable resource nodes
  *   damage-multipliers.ts – counter table + getDamageMultiplier
- *   kind-helpers.ts      – entityKindFromString + entityKindName
+ *   kind-helpers.ts      – entityKindFromString + entityKindName + isWingBuilding
  */
 
 import type { EntityKind } from '@/types';
@@ -22,7 +22,7 @@ import {
   SIEGE_BUILDING_MULTIPLIER,
 } from './entity-defs/damage-multipliers';
 import { ENEMY_UNIT_DEFS } from './entity-defs/enemy-units';
-import { entityKindFromString, entityKindName } from './entity-defs/kind-helpers';
+import { entityKindFromString, entityKindName, isWingBuilding } from './entity-defs/kind-helpers';
 import { PLAYER_UNIT_DEFS } from './entity-defs/player-units';
 import { RESOURCE_DEFS } from './entity-defs/resources';
 import type { UnitDef } from './entity-defs/unit-def';
@@ -33,6 +33,7 @@ export {
   entityKindFromString,
   entityKindName,
   getDamageMultiplier,
+  isWingBuilding,
   SIEGE_BUILDING_MULTIPLIER,
 };
 

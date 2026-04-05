@@ -90,15 +90,15 @@ function setupTestEntities(world: GameWorld): void {
   addComponent(world.ecs, res, Sprite);
   Position.x[res] = 850;
   Position.y[res] = 850;
-  Resource.resourceType[res] = ResourceType.Clams;
+  Resource.resourceType[res] = ResourceType.Fish;
   Resource.amount[res] = 1000;
   Health.current[res] = 1;
   Health.max[res] = 1;
   FactionTag.faction[res] = Faction.Neutral;
   EntityTypeTag.kind[res] = EntityKind.Clambed;
 
-  world.enemyResources.clams = 5000;
-  world.enemyResources.twigs = 5000;
+  world.enemyResources.fish = 5000;
+  world.enemyResources.logs = 5000;
 }
 
 describe('Determinism', () => {

@@ -82,6 +82,6 @@ export function enemySapperTick(world: GameWorld): void {
     UnitStateMachine.state[eid] = UnitState.AttackMove;
 
     const speed = Velocity.speed[eid] || 1.0;
-    world.yukaManager.addEnemy(eid, ex, ey, speed, targetX, targetY);
+    world.yukaManager.addUnit(eid, ex, ey, speed, targetX, targetY);
   }
 }

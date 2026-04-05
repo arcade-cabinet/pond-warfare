@@ -23,7 +23,7 @@ vi.mock('@/game', () => ({
   game: {
     world: {
       tech: {} as Record<string, boolean>,
-      resources: { clams: 500, twigs: 500, pearls: 0, food: 2, maxFood: 8 },
+      resources: { fish: 500, twigs: 500, pearls: 0, food: 2, maxFood: 8 },
       commanderModifiers: { passiveResearchSpeed: 0 },
     },
     syncUIStore: vi.fn(),
@@ -66,7 +66,7 @@ describe('GatherEvaluator', () => {
 
   it('returns 0 when no idle gatherers', () => {
     store.unitRoster.value = [
-      makeGroup('gatherer', [{ eid: 1, task: 'gathering-clams', kind: EntityKind.Gatherer }]),
+      makeGroup('gatherer', [{ eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
     ];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
@@ -89,8 +89,8 @@ describe('BuildEvaluator', () => {
 
   beforeEach(() => {
     store.buildingRoster.value = [];
-    store.clams.value = 500;
-    store.twigs.value = 500;
+    store.fish.value = 500;
+    store.logs.value = 500;
     store.food.value = 2;
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;
@@ -116,15 +116,21 @@ describe('TrainEvaluator', () => {
   beforeEach(() => {
     store.unitRoster.value = [];
     store.buildingRoster.value = [];
-    store.clams.value = 200;
+    store.fish.value = 200;
     store.food.value = 2;
     store.maxFood.value = 8;
   });
 
-  it('returns high score when few gatherers', () => {
+  it('returns 0 when idle gatherers exist (Gather goal takes priority)', () => {
     store.unitRoster.value = [
       makeGroup('gatherer', [{ eid: 1, task: 'idle', kind: EntityKind.Gatherer }]),
     ];
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
+  });
+
+  it('returns high score when no gatherers at all', () => {
+    store.unitRoster.value = [];
+    store.fish.value = 50;
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.8);
   });
 
@@ -182,8 +188,8 @@ describe('Governor brain arbitration', () => {
     governor = new Governor();
     store.unitRoster.value = [];
     store.buildingRoster.value = [];
-    store.clams.value = 500;
-    store.twigs.value = 500;
+    store.fish.value = 500;
+    store.logs.value = 500;
     store.food.value = 2;
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;

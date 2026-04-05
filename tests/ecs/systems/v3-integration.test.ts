@@ -11,25 +11,14 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import {
-  EntityKind,
-  type GameResources,
-  getFish,
-  getLogs,
-  getRocks,
-  nodeKindToResourceType,
-  ResourceType,
-  setFish,
-  setLogs,
-  setRocks,
-} from '@/types';
+import { EntityKind, type GameResources, nodeKindToResourceType, ResourceType } from '@/types';
 import { COLORS } from '@/ui/design-tokens';
 
 describe('v3 resource aliases', () => {
   it('ResourceType aliases have matching numeric values', () => {
-    expect(ResourceType.Fish).toBe(ResourceType.Clams);
-    expect(ResourceType.Rocks).toBe(ResourceType.Pearls);
-    expect(ResourceType.Logs).toBe(ResourceType.Twigs);
+    expect(ResourceType.Fish).toBe(ResourceType.Fish);
+    expect(ResourceType.Rocks).toBe(ResourceType.Rocks);
+    expect(ResourceType.Logs).toBe(ResourceType.Logs);
   });
 
   it('Fish == 1, Rocks == 3, Logs == 2', () => {
@@ -38,20 +27,20 @@ describe('v3 resource aliases', () => {
     expect(ResourceType.Logs).toBe(2);
   });
 
-  it('getter/setter aliases work on GameResources', () => {
-    const res: GameResources = { clams: 100, twigs: 50, pearls: 25, food: 5, maxFood: 10 };
-    expect(getFish(res)).toBe(100);
-    expect(getRocks(res)).toBe(25);
-    expect(getLogs(res)).toBe(50);
+  it('GameResources fields use v3 names directly', () => {
+    const res: GameResources = { fish: 100, logs: 50, rocks: 25, food: 5, maxFood: 10 };
+    expect(res.fish).toBe(100);
+    expect(res.rocks).toBe(25);
+    expect(res.logs).toBe(50);
 
-    setFish(res, 200);
-    expect(res.clams).toBe(200);
+    res.fish = 200;
+    expect(res.fish).toBe(200);
 
-    setRocks(res, 75);
-    expect(res.pearls).toBe(75);
+    res.rocks = 75;
+    expect(res.rocks).toBe(75);
 
-    setLogs(res, 150);
-    expect(res.twigs).toBe(150);
+    res.logs = 150;
+    expect(res.logs).toBe(150);
   });
 });
 

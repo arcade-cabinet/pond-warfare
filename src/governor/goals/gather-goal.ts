@@ -12,18 +12,23 @@ import { EntityKind } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
 
-/** Resource tasks in priority order: clams first, then twigs, then pearls. */
+/** Resource tasks in priority order: fish first, then logs, then rocks. */
 const GATHER_TASKS = [
-  { task: 'gathering-clams' as const, signal: () => store.clams.value },
-  { task: 'gathering-twigs' as const, signal: () => store.twigs.value },
-  { task: 'gathering-pearls' as const, signal: () => store.pearls.value },
+  { task: 'gathering-fish' as const, signal: () => store.fish.value },
+  { task: 'gathering-logs' as const, signal: () => store.logs.value },
+  { task: 'gathering-rocks' as const, signal: () => store.rocks.value },
 ];
 
-/** Find all idle gatherers from the unit roster signal. */
+/**
+ * Find truly idle gatherers — those not yet assigned to any task.
+ * Gatherers with a TaskOverride are between gather trips (idle momentarily
+ * after depositing), not truly unassigned. Excluding them prevents
+ * GatherEval from blocking TrainEval when the economy is running.
+ */
 export function findIdleGatherers(): RosterUnit[] {
   return store.unitRoster.value
     .flatMap((g) => g.units)
-    .filter((u) => u.task === 'idle' && u.kind === EntityKind.Gatherer);
+    .filter((u) => u.task === 'idle' && u.kind === EntityKind.Gatherer && !u.hasOverride);
 }
 
 export class GatherGoal extends Goal {

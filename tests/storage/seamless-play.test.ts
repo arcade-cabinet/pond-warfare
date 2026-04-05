@@ -54,7 +54,7 @@ import {
   resetCurrentRunOnPrestige,
 } from '@/ui/store-v3-persistence';
 
-describe('seamless play — hydration', () => {
+describe('seamless play -- hydration', () => {
   beforeEach(() => {
     storeV3.progressionLevel.value = 0;
     storeV3.totalClams.value = 0;
@@ -86,7 +86,7 @@ describe('seamless play — hydration', () => {
       pearls: 50,
       pearl_upgrades: '{"gathering_speed": 1}',
       total_matches: 10,
-      total_clams_earned: 500,
+      total_pearls_earned: 500,
       highest_progression: 5,
     });
     vi.mocked(loadCurrentRun).mockResolvedValue({
@@ -117,7 +117,7 @@ describe('seamless play — hydration', () => {
   });
 });
 
-describe('seamless play — auto-save after match', () => {
+describe('seamless play -- auto-save after match', () => {
   beforeEach(() => {
     storeV3.progressionLevel.value = 0;
     storeV3.totalClams.value = 0;
@@ -166,7 +166,7 @@ describe('seamless play — auto-save after match', () => {
   });
 });
 
-describe('seamless play — prestige reset', () => {
+describe('seamless play -- prestige reset', () => {
   beforeEach(() => {
     storeV3.progressionLevel.value = 5;
     storeV3.totalClams.value = 300;

@@ -8,8 +8,8 @@
  * Parameterized by tier (1-6) for panel-aware tests.
  */
 
-import { createGameWorld } from '@/ecs/world-defaults';
 import type { GameWorld } from '@/ecs/world';
+import { createGameWorld } from '@/ecs/world-defaults';
 import { PanelGrid } from '@/game/panel-grid';
 import { SeededRandom } from '@/utils/random';
 
@@ -22,7 +22,7 @@ export interface TestWorldOptions {
   commanderId?: string;
   /** Player faction. Default: 'otter' */
   faction?: string;
-  /** Starting fish (clams). Default: from formula */
+  /** Starting fish. Default: from formula */
   fish?: number;
   /** Starting rocks (pearls). Default: 0 */
   rocks?: number;
@@ -78,10 +78,10 @@ export function createTestWorld(options: TestWorldOptions = {}): GameWorld {
 
   // Resources
   if (fish !== undefined) {
-    world.resources.clams = fish;
+    world.resources.fish = fish;
   }
-  world.resources.pearls = rocks;
-  world.resources.twigs = logs;
+  world.resources.rocks = rocks;
+  world.resources.logs = logs;
 
   return world;
 }
@@ -93,10 +93,7 @@ export function createTestWorld(options: TestWorldOptions = {}): GameWorld {
 export function createTieredWorlds(
   baseOptions: Omit<TestWorldOptions, 'stage'> = {},
 ): [number, GameWorld][] {
-  return [1, 2, 3, 4, 5, 6].map((stage) => [
-    stage,
-    createTestWorld({ ...baseOptions, stage }),
-  ]);
+  return [1, 2, 3, 4, 5, 6].map((stage) => [stage, createTestWorld({ ...baseOptions, stage })]);
 }
 
 /**

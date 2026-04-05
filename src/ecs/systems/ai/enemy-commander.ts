@@ -177,7 +177,7 @@ export function enemyCommanderTick(world: GameWorld): void {
     UnitStateMachine.state[cmdEid] = UnitState.AttackMove;
 
     const speed = Velocity.speed[cmdEid] || 1.0;
-    world.yukaManager.addEnemy(cmdEid, cx, cy, speed, tx, ty);
+    world.yukaManager.addUnit(cmdEid, cx, cy, speed, tx, ty);
   } else if (state === UnitState.Idle || state === UnitState.AttackMove) {
     // Return home when no targets
     const home = getHomePosition(world, cmdEid);
@@ -192,7 +192,7 @@ export function enemyCommanderTick(world: GameWorld): void {
       UnitStateMachine.state[cmdEid] = UnitState.Move;
 
       const speed = Velocity.speed[cmdEid] || 1.0;
-      world.yukaManager.addEnemy(cmdEid, cx, cy, speed, home.x, home.y);
+      world.yukaManager.addUnit(cmdEid, cx, cy, speed, home.x, home.y);
     }
   }
 }

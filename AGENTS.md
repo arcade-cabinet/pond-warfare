@@ -320,7 +320,12 @@ Changes every 3-5 minutes, seeded from map seed:
 | `src/ecs/systems/match-event-runner.ts` | v3 event system from events.json | |
 | `src/ecs/systems/specialist-deploy.ts` | Auto-deploy specialists from prestige | |
 | `src/ecs/systems/fortification.ts` | Wall/tower fortification system | |
-| `src/ecs/systems/wave-spawner.ts` | Role-based enemy spawning, panel-aware positions | |
+| `src/ecs/systems/wave-spawner.ts` | Role-based enemy spawning, panel-aware positions |
+| `src/ecs/systems/spawn-patterns.ts` | Wave spawn pattern functions (10 patterns) |
+| `src/ecs/systems/spawn-positions.ts` | Edge calculation, panel-aware spawn positioning |
+| `src/game/commander-abilities.ts` | Per-commander active abilities (Q key / tap button) |
+| `src/ui/hud/CommanderAbility.tsx` | Commander ability HUD button (hides hotkey on touch) |
+| `src/ui/hud/AbilityButtons.tsx` | Pond Blessing, Tidal Surge, Sprint tap buttons | |
 | `src/ecs/systems/auto-symbol.ts` | Auto-behavior icon overlay after order completion | |
 | `src/ecs/systems/ai/*.ts` | Enemy AI: economy, training, combat, defense, building, raider, healer, sapper | ~1500 total |
 | `src/ecs/systems/combat/*.ts` | Combat: melee, positional damage | |
@@ -417,9 +422,10 @@ configs/          -- JSON game data (units, enemies, upgrades, prestige, events,
 tests/
   ecs/systems/    -- System integration tests
   game/           -- Game module tests
-  ui/             -- Component tests
+  gameplay/       -- Gameplay loop integration tests (touch flow, fortifications, economy, combat)
+  input/          -- Pointer interaction tests (tap-to-select, tap-to-command, pinch-zoom)
+  ui/             -- Component tests (radial menu, settings, HUD)
   browser/        -- Browser interaction + screenshot tests
-  gameplay/       -- Gameplay loop integration tests
 ```
 
 ## Testing

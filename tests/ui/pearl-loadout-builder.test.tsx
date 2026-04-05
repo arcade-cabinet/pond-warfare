@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Pearl Loadout Builder Tests (v3.1 — US5, US6)
  *

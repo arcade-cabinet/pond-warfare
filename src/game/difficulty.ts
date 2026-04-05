@@ -6,10 +6,10 @@
 
 import { getCommanderDef } from '@/config/commanders';
 import {
-  ENEMY_STARTING_CLAMS,
-  ENEMY_STARTING_TWIGS,
-  STARTING_CLAMS,
-  STARTING_TWIGS,
+  ENEMY_STARTING_FISH,
+  ENEMY_STARTING_LOGS,
+  STARTING_FISH,
+  STARTING_LOGS,
 } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
 import { applyCoopDifficultyScaling } from '@/net/coop-rules';
@@ -30,12 +30,12 @@ export function applyDifficultyModifiers(world: GameWorld): void {
   world.peaceTimer = cfg.peaceMinutes * 3600;
 
   // Starting resources: multiply by startingResourcesMult
-  const baseClams = STARTING_CLAMS;
-  const baseTwigs = STARTING_TWIGS;
-  world.resources.clams = Math.round(baseClams * cfg.startingResourcesMult);
-  world.resources.twigs = Math.round(baseTwigs * cfg.startingResourcesMult);
-  world.resTracker.lastClams = world.resources.clams;
-  world.resTracker.lastTwigs = world.resources.twigs;
+  const baseFish = STARTING_FISH;
+  const baseLogs = STARTING_LOGS;
+  world.resources.fish = Math.round(baseFish * cfg.startingResourcesMult);
+  world.resources.logs = Math.round(baseLogs * cfg.startingResourcesMult);
+  world.resTracker.lastFish = world.resources.fish;
+  world.resTracker.lastLogs = world.resources.logs;
 
   // Enemy resources: scale by enemyEconomy
   const enemyEcoMult: Record<string, number> = {
@@ -45,8 +45,8 @@ export function applyDifficultyModifiers(world: GameWorld): void {
     overwhelming: 3.0,
   };
   const ecoMod = enemyEcoMult[cfg.enemyEconomy] ?? 1.0;
-  world.enemyResources.clams = Math.round(ENEMY_STARTING_CLAMS * ecoMod);
-  world.enemyResources.twigs = Math.round(ENEMY_STARTING_TWIGS * ecoMod);
+  world.enemyResources.fish = Math.round(ENEMY_STARTING_FISH * ecoMod);
+  world.enemyResources.logs = Math.round(ENEMY_STARTING_LOGS * ecoMod);
   world.enemyEconomyMod = ecoMod;
 
   // Nest count

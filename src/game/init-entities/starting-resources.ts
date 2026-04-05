@@ -52,19 +52,18 @@ export function applyStartingResources(world: GameWorld, layout: VerticalMapLayo
   const stage = layout.panelGrid?.getActivePanels().length ?? 1;
   const stageKey = String(Math.min(stage, 6));
 
-  const formulas =
-    (panelsConfig as Record<string, unknown>).starting_resources_formula as
-      | Record<string, StageFormula>
-      | undefined;
+  const formulas = (panelsConfig as Record<string, unknown>).starting_resources_formula as
+    | Record<string, StageFormula>
+    | undefined;
 
   if (!formulas || !formulas[stageKey]) {
     // Fallback: enough for 2 gatherers + 1 fighter
-    world.resources.clams = 40;
+    world.resources.fish = 40;
     return;
   }
 
   const formula = formulas[stageKey];
-  world.resources.clams = computeStartingFish(formula); // Fish = clams in v3
-  world.resources.pearls = formula.rocks; // Rocks = pearls in v3
-  world.resources.twigs = formula.logs; // Logs = twigs in v3
+  world.resources.fish = computeStartingFish(formula);
+  world.resources.rocks = formula.rocks;
+  world.resources.logs = formula.logs;
 }

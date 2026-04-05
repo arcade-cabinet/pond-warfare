@@ -13,14 +13,6 @@ vi.mock('@/storage', () => ({
   deleteSave: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/config/tech-tree', () => ({
-  TECH_UPGRADES: {
-    sharpSticks: { id: 'sharpSticks', name: 'Sharp Sticks', branch: 'warfare' },
-    cartography: { id: 'cartography', name: 'Cartography', branch: 'lodge' },
-    herbalMedicine: { id: 'herbalMedicine', name: 'Herbal Medicine', branch: 'nature' },
-  },
-}));
-
 vi.mock('@/constants', () => ({
   DAY_FRAMES: 3600,
 }));
@@ -51,7 +43,7 @@ function makeWorld(overrides: Record<string, unknown> = {}): Record<string, unkn
       buildingsLost: 1,
       peakArmy: 12,
       pearlsEarned: 20,
-      totalClamsEarned: 1000,
+      totalFishEarned: 1000,
     },
     ...overrides,
   };
@@ -106,15 +98,12 @@ describe('syncGameOverStats', () => {
     expect(cmdLine).toBe('Commander: Ironpaw');
   });
 
-  it('shows tech names in research summary', () => {
+  it('shows tech count in research summary', () => {
     const world = makeWorld();
     syncGameOverStats(world as never);
 
     const techLine = store.goStatLines.value.find((l) => l.startsWith('Techs researched:'));
-    expect(techLine).toContain('Sharp Sticks');
-    expect(techLine).toContain('Cartography');
-    expect(techLine).toContain('2');
-    expect(techLine).not.toContain('Herbal Medicine');
+    expect(techLine).toBe('Techs researched: 2');
   });
 
   it('shows nests destroyed from store signal', () => {

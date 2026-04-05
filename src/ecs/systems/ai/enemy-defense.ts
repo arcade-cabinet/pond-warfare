@@ -9,10 +9,10 @@ import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
-  ENEMY_GATOR_COST_CLAMS,
-  ENEMY_GATOR_COST_TWIGS,
-  ENEMY_SNAKE_COST_CLAMS,
-  ENEMY_SNAKE_COST_TWIGS,
+  ENEMY_GATOR_COST_FISH,
+  ENEMY_GATOR_COST_LOGS,
+  ENEMY_SNAKE_COST_FISH,
+  ENEMY_SNAKE_COST_LOGS,
   WAVE_INTERVAL,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
@@ -65,9 +65,9 @@ export function nestDefenseReinforcement(world: GameWorld): void {
 
     // Cost check: defenders still cost resources now
     const trainGator = world.gameRng.next() > 0.5;
-    const costClams = trainGator ? ENEMY_GATOR_COST_CLAMS : ENEMY_SNAKE_COST_CLAMS;
-    const costTwigs = trainGator ? ENEMY_GATOR_COST_TWIGS : ENEMY_SNAKE_COST_TWIGS;
-    if (world.enemyResources.clams < costClams || world.enemyResources.twigs < costTwigs) continue;
+    const costFish = trainGator ? ENEMY_GATOR_COST_FISH : ENEMY_SNAKE_COST_FISH;
+    const costLogs = trainGator ? ENEMY_GATOR_COST_LOGS : ENEMY_SNAKE_COST_LOGS;
+    if (world.enemyResources.fish < costFish || world.enemyResources.logs < costLogs) continue;
 
     const unitKind = trainGator ? EntityKind.Gator : EntityKind.Snake;
     const sx = nx + (world.gameRng.next() - 0.5) * 60;
@@ -79,8 +79,8 @@ export function nestDefenseReinforcement(world: GameWorld): void {
     triggerSpawnPop(defEid);
     spawnDustBurst(world, sx, sy);
 
-    world.enemyResources.clams -= costClams;
-    world.enemyResources.twigs -= costTwigs;
+    world.enemyResources.fish -= costFish;
+    world.enemyResources.logs -= costLogs;
 
     // Find nearest player unit to attack
     let closestTarget = -1;
@@ -107,7 +107,7 @@ export function nestDefenseReinforcement(world: GameWorld): void {
       UnitStateMachine.targetY[defEid] = Position.y[closestTarget];
       UnitStateMachine.state[defEid] = UnitState.AttackMove;
 
-      world.yukaManager.addEnemy(
+      world.yukaManager.addUnit(
         defEid,
         sx,
         sy,
@@ -116,7 +116,7 @@ export function nestDefenseReinforcement(world: GameWorld): void {
         Position.y[closestTarget],
       );
     } else {
-      world.yukaManager.addEnemy(defEid, sx, sy, defSpeed, nx, ny);
+      world.yukaManager.addUnit(defEid, sx, sy, defSpeed, nx, ny);
     }
   }
 }
@@ -160,7 +160,7 @@ export function bossWaveLogic(world: GameWorld): void {
       UnitStateMachine.state[eid] = UnitState.AttackMove;
 
       const speed = Velocity.speed[eid] || ENTITY_DEFS[EntityKind.BossCroc]?.speed || 1.2;
-      world.yukaManager.addEnemy(eid, sx, sy, speed, Position.x[lodgeEid], Position.y[lodgeEid]);
+      world.yukaManager.addUnit(eid, sx, sy, speed, Position.x[lodgeEid], Position.y[lodgeEid]);
     }
   }
 }

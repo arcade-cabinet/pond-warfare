@@ -2,8 +2,8 @@
  * Passive Income
  *
  * Handles resource generation from completed player buildings:
- *   - Trade Routes tech: completed Markets produce +2 clams every 60 frames (1/sec)
- *   - Fishing Huts: produce +5 clams every 300 frames unconditionally
+ *   - Trade Routes tech: completed Markets produce +2 fish every 60 frames (1/sec)
+ *   - Fishing Huts: produce +5 fish every 300 frames unconditionally
  */
 
 import { query } from 'bitecs';
@@ -15,15 +15,15 @@ export function applyPassiveIncome(world: GameWorld): void {
   const buildings = query(world.ecs, [Position, Building, FactionTag, EntityTypeTag, Health]);
 
   // ---- Trade Routes passive income ----
-  // Every 60 frames (~1 sec), completed player-owned Markets generate +2 clams each
+  // Every 60 frames (~1 sec), completed player-owned Markets generate +2 fish each
   if (world.tech.tradeRoutes && world.frameCount % 60 === 0) {
     for (let i = 0; i < buildings.length; i++) {
       const bid = buildings[i];
       if (EntityTypeTag.kind[bid] !== EntityKind.Market) continue;
       if (FactionTag.faction[bid] !== Faction.Player) continue;
       if (Health.current[bid] <= 0 || Building.progress[bid] < 100) continue;
-      world.resources.clams += 2;
-      world.stats.totalClamsEarned += 2;
+      world.resources.fish += 2;
+      world.stats.totalFishEarned += 2;
       world.particles.push({
         x: Position.x[bid] + (world.gameRng.next() - 0.5) * 16,
         y: Position.y[bid] - 8,
@@ -37,15 +37,15 @@ export function applyPassiveIncome(world: GameWorld): void {
   }
 
   // ---- Fishing Hut passive income ----
-  // Every 300 frames, completed player-owned FishingHuts generate +5 clams
+  // Every 300 frames, completed player-owned FishingHuts generate +5 fish
   if (world.frameCount % 300 === 0) {
     for (let i = 0; i < buildings.length; i++) {
       const bid = buildings[i];
       if (EntityTypeTag.kind[bid] !== EntityKind.FishingHut) continue;
       if (FactionTag.faction[bid] !== Faction.Player) continue;
       if (Health.current[bid] <= 0 || Building.progress[bid] < 100) continue;
-      world.resources.clams += 5;
-      world.stats.totalClamsEarned += 5;
+      world.resources.fish += 5;
+      world.stats.totalFishEarned += 5;
       world.particles.push({
         x: Position.x[bid] + (world.gameRng.next() - 0.5) * 20,
         y: Position.y[bid] - 5,

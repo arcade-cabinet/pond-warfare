@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Tests: Radial Menu Store (v3.0 — US9)
  *

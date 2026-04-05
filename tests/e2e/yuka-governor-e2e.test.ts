@@ -8,10 +8,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { createTestWorld, createTestPanelGrid } from '../helpers/world-factory';
-import { generateVerticalMapLayout, buildVerticalTerrain } from '@/game/vertical-map';
-import { SeededRandom } from '@/utils/random';
+import { buildVerticalTerrain, generateVerticalMapLayout } from '@/game/vertical-map';
 import { TerrainType } from '@/terrain/terrain-grid';
+import { SeededRandom } from '@/utils/random';
+import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 describe('Yuka Governor E2E — Game Loop Simulation', () => {
   it('creates a valid world at each tier', () => {

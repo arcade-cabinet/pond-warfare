@@ -69,9 +69,9 @@ export function takeSnapshot(): GovernorSnapshot {
   return {
     gameSeconds: Math.round(gameSeconds()),
     phase: currentPhase(),
-    clams: w.resources.clams,
-    twigs: w.resources.twigs,
-    pearls: w.resources.pearls,
+    clams: w.resources.fish,
+    twigs: w.resources.logs,
+    pearls: w.resources.rocks,
     food: w.resources.food,
     maxFood: w.resources.maxFood,
     gatherers: getPlayerEntities(w, EntityKind.Gatherer).length,
@@ -83,11 +83,6 @@ export function takeSnapshot(): GovernorSnapshot {
       .map(([k]) => k),
     evolutionTier: w.enemyEvolution.tier,
     champions: w.championEnemies.size,
-    autoBehaviors: {
-      gatherer: store.autoGathererEnabled.value,
-      combat: store.autoCombatEnabled.value,
-      healer: store.autoHealerEnabled.value,
-      scout: store.autoScoutEnabled.value,
-    },
+    autoBehaviors: w.autoBehaviors,
   };
 }

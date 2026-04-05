@@ -1,22 +1,21 @@
 /**
- * Wave Spawner (T7/T25)
+ * Wave Spawner
  *
- * Role-based enemy spawning and panel-aware spawn positions.
- * Extracted from match-event-runner.ts for 300 LOC compliance.
+ * Role-based enemy spawning orchestrator. Maps enemies.json role keys
+ * to EntityKinds, tracks spawned unit roles for behavior systems, and
+ * delegates position calculation to spawn-positions.ts.
  *
- * - Maps enemies.json role keys to EntityKinds
- * - Tracks spawned unit roles for behavior systems (raider, healer, sapper)
- * - Computes spawn positions from panel progression
+ * Pattern functions live in spawn-patterns.ts (10 patterns).
+ * Position/edge logic lives in spawn-positions.ts.
  */
 
 import type { EventTemplate } from '@/config/v3-types';
-import { WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import type { GameWorld } from '@/ecs/world';
-import type { PanelId } from '@/game/panel-grid';
 import { EntityKind, Faction } from '@/types';
+import { getSpawnPositions } from './spawn-positions';
 
-// ── Enemy Role to EntityKind Mapping ─────────────────────────────
+// -- Enemy Role to EntityKind Mapping -------------------------------------
 
 /** Maps enemies.json role keys to the EntityKind used to spawn that unit. */
 const ENEMY_ROLE_TO_KIND: Record<string, EntityKind> = {
@@ -27,6 +26,8 @@ const ENEMY_ROLE_TO_KIND: Record<string, EntityKind> = {
   sapper_enemy: EntityKind.SiegeTurtle,
   saboteur_enemy: EntityKind.SwampDrake,
 };
+
+// -- Role Tracking --------------------------------------------------------
 
 /** Tag spawned units with their role for behavior systems. */
 const spawnedUnitRoles = new Map<number, string>();
@@ -47,7 +48,9 @@ export function resetSpawnedRoles(): void {
   lastSpawnCenter = null;
 }
 
-/** Last spawn center for event alert zoom-to-action (T27). */
+// -- Spawn Center Tracking ------------------------------------------------
+
+/** Last spawn center for event alert zoom-to-action. */
 let lastSpawnCenter: { x: number; y: number } | null = null;
 
 /** Get the centroid of the last wave spawn for camera zoom-to-action. */
@@ -55,93 +58,7 @@ export function getLastSpawnCenter(): { x: number; y: number } | null {
   return lastSpawnCenter;
 }
 
-// ── Spawn Position Calculation (T25) ─────────────────────────────
-
-interface SpawnPosition {
-  x: number;
-  y: number;
-}
-
-/**
- * Get spawn positions based on panel progression (T25).
- * Stage 1: top of panel 5 only.
- * Stage 2-3: top of unlocked top-row panels (1, 2, 3).
- * Stage 4+: top of panels 1, 2, 3.
- * Stage 5+: also sides of panels 4 and 6.
- */
-function getSpawnPositions(world: GameWorld, count: number): SpawnPosition[] {
-  const grid = world.panelGrid;
-  if (!grid) {
-    const mapW = world.worldWidth || WORLD_WIDTH;
-    return Array.from({ length: count }, () => ({
-      x: mapW * 0.2 + Math.random() * mapW * 0.6,
-      y: 20 + Math.random() * 40,
-    }));
-  }
-
-  const activePanels = grid.getActivePanels();
-  const spawnEdges: SpawnPosition[] = [];
-
-  const topRowPanels: PanelId[] = [1, 2, 3];
-  const sideLeftPanel: PanelId = 4;
-  const sideRightPanel: PanelId = 6;
-
-  // Top edges of unlocked top-row panels
-  for (const pid of topRowPanels) {
-    if (activePanels.includes(pid)) {
-      const bounds = grid.getPanelBounds(pid);
-      for (let i = 0; i < 3; i++) {
-        spawnEdges.push({
-          x: bounds.x + bounds.width * 0.2 + Math.random() * bounds.width * 0.6,
-          y: bounds.y + 20 + Math.random() * 30,
-        });
-      }
-    }
-  }
-
-  // If no top-row panels are unlocked, spawn from top of panel 5
-  if (spawnEdges.length === 0) {
-    const bounds = grid.getPanelBounds(5);
-    for (let i = 0; i < 3; i++) {
-      spawnEdges.push({
-        x: bounds.x + bounds.width * 0.2 + Math.random() * bounds.width * 0.6,
-        y: bounds.y + 20 + Math.random() * 30,
-      });
-    }
-  }
-
-  // Side edges of panels 4 and 6 (stage 5+)
-  if (activePanels.includes(sideLeftPanel)) {
-    const bounds = grid.getPanelBounds(sideLeftPanel);
-    for (let i = 0; i < 2; i++) {
-      spawnEdges.push({
-        x: bounds.x + 20 + Math.random() * 30,
-        y: bounds.y + bounds.height * 0.2 + Math.random() * bounds.height * 0.6,
-      });
-    }
-  }
-  if (activePanels.includes(sideRightPanel)) {
-    const bounds = grid.getPanelBounds(sideRightPanel);
-    for (let i = 0; i < 2; i++) {
-      spawnEdges.push({
-        x: bounds.x + bounds.width - 20 - Math.random() * 30,
-        y: bounds.y + bounds.height * 0.2 + Math.random() * bounds.height * 0.6,
-      });
-    }
-  }
-
-  const result: SpawnPosition[] = [];
-  for (let i = 0; i < count; i++) {
-    const edge = spawnEdges[i % spawnEdges.length];
-    result.push({
-      x: edge.x + (Math.random() - 0.5) * 40,
-      y: edge.y + (Math.random() - 0.5) * 20,
-    });
-  }
-  return result;
-}
-
-// ── Role-Based Enemy Spawning ────────────────────────────────────
+// -- Event Spawning -------------------------------------------------------
 
 /**
  * Spawn enemies for an event using role-based composition from enemies.json,
@@ -159,9 +76,9 @@ export function spawnEventEnemies(world: GameWorld, template: EventTemplate): vo
     }
   }
 
-  const positions = getSpawnPositions(world, unitsToSpawn.length);
+  const positions = getSpawnPositions(world, unitsToSpawn.length, template.spawn_pattern);
 
-  // Record spawn centroid for event alert zoom-to-action (T27)
+  // Record spawn centroid for event alert zoom-to-action
   if (positions.length > 0) {
     let cx = 0;
     let cy = 0;

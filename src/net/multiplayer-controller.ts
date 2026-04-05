@@ -9,6 +9,10 @@
 import { game } from '@/game';
 import { mapScenario, menuState, selectedCommander, selectedDifficulty } from '@/ui/store';
 import * as mp from '@/ui/store-multiplayer';
+import {
+  buildAdversarialCommanderDestroyedMessage,
+  buildAdversarialLodgeDestroyedMessage,
+} from './adversarial-rules';
 import { createRoom, generateRoomCode, type PeerConnection } from './connection';
 import {
   applyCoopPing,
@@ -17,7 +21,7 @@ import {
   buildResourceSyncMessage,
 } from './coop-rules';
 import { LockstepSync } from './lockstep';
-import type { NetMessage, PlayerId } from './types';
+import type { MatchMode, NetMessage, PlayerId } from './types';
 
 let connection: PeerConnection | null = null;
 let lockstep: LockstepSync | null = null;
@@ -64,7 +68,7 @@ export function sendReady(): void {
 }
 
 /** Host broadcasts current game settings to the guest. */
-export function sendSettings(): void {
+export function sendSettings(matchMode: MatchMode = 'coop'): void {
   if (!connection) return;
   const seed = Math.floor(Math.random() * 2_147_483_647);
   const msg: NetMessage = {
@@ -73,19 +77,21 @@ export function sendSettings(): void {
     difficulty: selectedDifficulty.value,
     scenario: mapScenario.value,
     commander: selectedCommander.value,
+    matchMode,
   };
   connection.sendMeta(msg);
   mp.multiplayerHostSettings.value = {
     scenario: mapScenario.value,
     difficulty: selectedDifficulty.value,
     mapSeed: seed,
+    matchMode,
   };
 }
 
 // ---- Start Game ----
 
 /** Transition from lobby to active gameplay with lockstep sync. */
-export function startMultiplayerGame(): void {
+export function startMultiplayerGame(matchMode: MatchMode = 'coop'): void {
   if (!connection) return;
   const playerId: PlayerId = mp.multiplayerIsHost.value ? 'host' : 'guest';
   lockstep = new LockstepSync(playerId, 3);
@@ -105,14 +111,20 @@ export function startMultiplayerGame(): void {
   mp.multiplayerDisconnected.value = false;
   menuState.value = 'playing';
 
-  // Enable co-op mode on the world and wire up resource sync callback
+  // Enable the chosen mode on the world
   const world = game.world;
   if (world) {
-    world.coopMode = true;
-    world.coopResourceCallback = () => {
-      if (!connection) return;
-      connection.sendMeta(buildResourceSyncMessage(world));
-    };
+    if (matchMode === 'adversarial') {
+      world.adversarialMode = true;
+      world.coopMode = false;
+    } else {
+      world.coopMode = true;
+      world.adversarialMode = false;
+      world.coopResourceCallback = () => {
+        if (!connection) return;
+        connection.sendMeta(buildResourceSyncMessage(world));
+      };
+    }
   }
 }
 
@@ -126,6 +138,18 @@ export function sendCoopPing(x: number, y: number): void {
 /** Notify partner that our Lodge was destroyed. */
 export function sendLodgeDestroyed(): void {
   connection?.sendMeta(buildLodgeDestroyedMessage());
+}
+
+// ---- Adversarial: Notify opponent ----
+
+/** Notify opponent that we destroyed their Lodge. */
+export function sendAdversarialLodgeDestroyed(): void {
+  connection?.sendMeta(buildAdversarialLodgeDestroyedMessage());
+}
+
+/** Notify opponent that we destroyed their Commander. */
+export function sendAdversarialCommanderDestroyed(): void {
+  connection?.sendMeta(buildAdversarialCommanderDestroyedMessage());
 }
 
 // ---- Disconnect ----
@@ -172,6 +196,7 @@ function handleMetaMessage(msg: NetMessage): void {
         scenario: msg.scenario as import('@/ui/store').MapScenario,
         difficulty: msg.difficulty as import('@/ui/store').DifficultyLevel,
         mapSeed: msg.seed,
+        matchMode: msg.matchMode,
       };
       break;
     case 'ready': {
@@ -208,6 +233,22 @@ function handleMetaMessage(msg: NetMessage): void {
       if (world?.coopMode) {
         world.partnerLodgeDestroyed = true;
         mp.coopPartnerLodgeDestroyed.value = true;
+      }
+      break;
+    }
+    // Adversarial messages
+    case 'adversarial-lodge-destroyed': {
+      const world = game.world;
+      if (world?.adversarialMode && world.opponentLodgeEid >= 0) {
+        // Opponent reports our Lodge was destroyed from their perspective
+        mp.adversarialOpponentLodgeDestroyed.value = true;
+      }
+      break;
+    }
+    case 'adversarial-commander-destroyed': {
+      const world = game.world;
+      if (world?.adversarialMode && world.opponentCommanderEid >= 0) {
+        mp.adversarialOpponentCommanderDestroyed.value = true;
       }
       break;
     }

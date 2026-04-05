@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Modal Responsive Design -- Unit Tests
  *

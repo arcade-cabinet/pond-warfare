@@ -1,7 +1,8 @@
 /**
  * Water Ripple Overlay
  *
- * Loads two ripple PNG frames and cycles between them as a semi-transparent
+ * Generates two procedural ripple frames using Canvas2D concentric circles
+ * with alpha gradients, then cycles between them as a semi-transparent
  * overlay on Water and Shallows terrain tiles.
  *
  * - Shallows: cycle every 60 frames (~1s), 30% opacity
@@ -9,6 +10,8 @@
  *
  * Performance: pre-renders each frame to an offscreen canvas at terrain-grid
  * resolution, then draws the active canvas as a single drawImage() per frame.
+ *
+ * Fully procedural — zero PNG dependencies.
  */
 
 import { Sprite, Texture } from 'pixi.js';
@@ -45,22 +48,79 @@ const SHALLOWS_CYCLE = 60;
 const WATER_ALPHA = 0.5;
 const SHALLOWS_ALPHA = 0.3;
 
+// Ripple tile size for procedural generation
+const RIPPLE_TILE = 128;
+
+// ---------------------------------------------------------------------------
+// Procedural ripple tile generation
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a single ripple tile as an offscreen canvas.
+ * Draws concentric circles with alpha gradients to simulate water surface.
+ *
+ * @param phase - 0 or 1, shifts circle positions for animation variety
+ */
+function generateRippleTile(phase: number): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = RIPPLE_TILE;
+  canvas.height = RIPPLE_TILE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return canvas;
+
+  // Two ripple centers per tile, offset by phase
+  const centers = [
+    { x: RIPPLE_TILE * 0.3 + phase * 12, y: RIPPLE_TILE * 0.3 + phase * 8 },
+    { x: RIPPLE_TILE * 0.7 - phase * 10, y: RIPPLE_TILE * 0.7 - phase * 6 },
+  ];
+
+  for (const center of centers) {
+    const maxRadius = RIPPLE_TILE * 0.4;
+    const ringCount = 4 + phase;
+
+    for (let r = ringCount; r >= 1; r--) {
+      const radius = (r / ringCount) * maxRadius;
+      const alpha = 0.15 * (1 - r / (ringCount + 1));
+
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(120, 180, 200, ${alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  // Add a subtle radial gradient fill for overall shimmer
+  const grad = ctx.createRadialGradient(
+    RIPPLE_TILE * 0.5,
+    RIPPLE_TILE * 0.5,
+    0,
+    RIPPLE_TILE * 0.5,
+    RIPPLE_TILE * 0.5,
+    RIPPLE_TILE * 0.6,
+  );
+  grad.addColorStop(0, `rgba(140, 200, 220, ${0.06 + phase * 0.02})`);
+  grad.addColorStop(1, 'rgba(140, 200, 220, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, RIPPLE_TILE, RIPPLE_TILE);
+
+  return canvas;
+}
+
 // ---------------------------------------------------------------------------
 // Initialization
 // ---------------------------------------------------------------------------
 
 /**
- * Load ripple PNGs and pre-render overlay canvases for each terrain type.
- * Returns a promise that resolves when both images have loaded.
+ * Generate procedural ripple tiles and pre-render overlay canvases for each
+ * terrain type. Returns a promise for API compatibility with callers.
  */
 export async function initWaterRipples(terrainGrid: TerrainGrid): Promise<void> {
-  const [img1, img2] = await Promise.all([
-    loadImage('assets/ui/Flowing_Serenity_Water Ripples 1.png'),
-    loadImage('assets/ui/Flowing_Serenity_Water ripples 2.png'),
-  ]);
+  const tile1 = generateRippleTile(0);
+  const tile2 = generateRippleTile(1);
 
-  const waterOverlays = buildOverlayPair(img1, img2, terrainGrid, TerrainType.Water);
-  const shallowOverlays = buildOverlayPair(img1, img2, terrainGrid, TerrainType.Shallows);
+  const waterOverlays = buildOverlayPair(tile1, tile2, terrainGrid, TerrainType.Water);
+  const shallowOverlays = buildOverlayPair(tile1, tile2, terrainGrid, TerrainType.Shallows);
 
   frames = { water: waterOverlays, shallows: shallowOverlays };
 
@@ -74,33 +134,24 @@ export async function initWaterRipples(terrainGrid: TerrainGrid): Promise<void> 
   ];
 }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
 /**
  * Build two overlay canvases (one per ripple frame) for a single terrain type.
  * Canvas dimensions are derived from the terrain grid (cols * tileSize x rows * tileSize).
  */
 function buildOverlayPair(
-  img1: HTMLImageElement,
-  img2: HTMLImageElement,
+  tile1: HTMLCanvasElement,
+  tile2: HTMLCanvasElement,
   terrainGrid: TerrainGrid,
   terrainType: TerrainType,
 ): [HTMLCanvasElement, HTMLCanvasElement] {
   return [
-    buildSingleOverlay(img1, terrainGrid, terrainType),
-    buildSingleOverlay(img2, terrainGrid, terrainType),
+    buildSingleOverlay(tile1, terrainGrid, terrainType),
+    buildSingleOverlay(tile2, terrainGrid, terrainType),
   ];
 }
 
 function buildSingleOverlay(
-  img: HTMLImageElement,
+  tile: HTMLCanvasElement,
   terrainGrid: TerrainGrid,
   terrainType: TerrainType,
 ): HTMLCanvasElement {
@@ -112,16 +163,16 @@ function buildSingleOverlay(
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
 
-  // Draw the ripple image tiled across water/shallows tiles
+  // Draw the ripple tile tiled across water/shallows tiles
   for (let row = 0; row < terrainGrid.rows; row++) {
     for (let col = 0; col < terrainGrid.cols; col++) {
       if (terrainGrid.get(col, row) !== terrainType) continue;
       const x = col * TILE_SIZE;
       const y = row * TILE_SIZE;
       ctx.drawImage(
-        img,
-        x % img.width,
-        y % img.height,
+        tile,
+        x % tile.width,
+        y % tile.height,
         TILE_SIZE,
         TILE_SIZE,
         x,

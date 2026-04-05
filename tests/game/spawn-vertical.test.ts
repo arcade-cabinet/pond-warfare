@@ -47,8 +47,8 @@ vi.mock('@/config/factions', () => ({
 
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
-import { createTestWorld, createTestPanelGrid } from '../helpers/world-factory';
 import { SeededRandom } from '@/utils/random';
+import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 beforeEach(() => {
   spawnedEntities.length = 0;
@@ -93,7 +93,7 @@ describe('spawnVerticalEntities', () => {
     spawnVerticalEntities(world, layout, new SeededRandom(42));
 
     // Starting fish should be > 0 (computed from panels.json formula × units.json costs)
-    expect(world.resources.clams).toBeGreaterThan(0);
+    expect(world.resources.fish).toBeGreaterThan(0);
   });
 
   it('spawns resource nodes per panel biome', () => {
@@ -103,7 +103,9 @@ describe('spawnVerticalEntities', () => {
 
     spawnVerticalEntities(world, layout, new SeededRandom(42));
 
-    const resources = spawnedEntities.filter((e) => e.faction === Faction.Neutral && e.kind !== EntityKind.Frog);
+    const resources = spawnedEntities.filter(
+      (e) => e.faction === Faction.Neutral && e.kind !== EntityKind.Frog,
+    );
     expect(resources.length).toBeGreaterThan(0);
   });
 
@@ -159,18 +161,24 @@ describe('spawnVerticalEntities', () => {
     spawnVerticalEntities(world, layout, new SeededRandom(42));
 
     // Always has a Lodge
-    const lodges = spawnedEntities.filter((e) => e.kind === EntityKind.Lodge && e.faction === Faction.Player);
+    const lodges = spawnedEntities.filter(
+      (e) => e.kind === EntityKind.Lodge && e.faction === Faction.Player,
+    );
     expect(lodges).toHaveLength(1);
 
     // Always has a Commander
-    const cmdr = spawnedEntities.filter((e) => e.kind === EntityKind.Commander && e.faction === Faction.Player);
+    const cmdr = spawnedEntities.filter(
+      (e) => e.kind === EntityKind.Commander && e.faction === Faction.Player,
+    );
     expect(cmdr).toHaveLength(1);
 
     // Always has resources
-    const resources = spawnedEntities.filter((e) => e.faction === Faction.Neutral && e.kind !== EntityKind.Frog);
+    const resources = spawnedEntities.filter(
+      (e) => e.faction === Faction.Neutral && e.kind !== EntityKind.Frog,
+    );
     expect(resources.length).toBeGreaterThan(0);
 
     // Starting Fish > 0
-    expect(world.resources.clams).toBeGreaterThan(0);
+    expect(world.resources.fish).toBeGreaterThan(0);
   });
 });

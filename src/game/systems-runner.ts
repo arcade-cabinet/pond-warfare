@@ -19,6 +19,7 @@ import { diverStealthSystem } from '@/ecs/systems/diver-stealth';
 import { engineerSystem } from '@/ecs/systems/engineer';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem } from '@/ecs/systems/fog-of-war';
+import { fortificationTickSystem } from '@/ecs/systems/fortification';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
 import { matchEventRunnerSystem } from '@/ecs/systems/match-event-runner';
@@ -51,6 +52,7 @@ export function runSystems(
   buildingSystem(world);
   engineerSystem(world);
   combatSystem(world);
+  fortificationTickSystem(world);
   commanderPassivesSystem(world);
   berserkerSystem(world);
   projectileSystem(world);

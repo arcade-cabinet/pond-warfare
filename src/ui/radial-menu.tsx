@@ -14,8 +14,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { COLORS } from '@/ui/design-tokens';
 import type { RadialGameState, RadialOption } from './radial-menu-options';
 import { getRadialOptions } from './radial-menu-options';
-import { clams, pearls, twigs } from './store';
-import { progressionLevel } from './store-v3';
+import { fish, logs, rocks } from './store';
 import {
   radialMenuMode,
   radialMenuOpen,
@@ -23,6 +22,7 @@ import {
   radialMenuX,
   radialMenuY,
 } from './store-radial';
+import * as storeV3 from './store-v3';
 
 export interface RadialMenuProps {
   onAction: (actionId: string) => void;
@@ -105,11 +105,11 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
   const mode = radialMenuMode.value;
   const role = radialMenuUnitRole.value;
   const gameState: RadialGameState = {
-    fish: clams.value,
-    rocks: pearls.value,
-    logs: twigs.value,
-    unlockStage: Math.min(6, Math.floor(progressionLevel.value / 10) + 1),
-    lodgeDamaged: false, // TODO: read from Lodge HP signal
+    fish: fish.value,
+    rocks: rocks.value,
+    logs: logs.value,
+    unlockStage: Math.min(6, Math.floor(storeV3.progressionLevel.value / 10) + 1),
+    lodgeDamaged: storeV3.lodgeHp.value < storeV3.lodgeMaxHp.value,
   };
   const options = getRadialOptions(mode, role, gameState);
 

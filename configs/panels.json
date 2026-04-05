@@ -69,7 +69,7 @@
     "2": { "fish": { "gatherer": 3, "fighter": 2, "medic": 1, "buffer": 10 }, "rocks": 0, "logs": 0 },
     "3": { "fish": { "gatherer": 3, "fighter": 2, "medic": 1, "scout": 1, "buffer": 10 }, "rocks": 0, "logs": 0 },
     "4": { "fish": { "gatherer": 4, "fighter": 3, "medic": 1, "scout": 1, "buffer": 15 }, "rocks": 0, "logs": 0 },
-    "5": { "fish": { "gatherer": 4, "fighter": 3, "medic": 1, "scout": 1, "buffer": 15 }, "rocks": 30, "logs": 0 },
+    "5": { "fish": { "gatherer": 5, "fighter": 3, "medic": 2, "scout": 1, "buffer": 20 }, "rocks": 30, "logs": 0 },
     "6": { "fish": { "gatherer": 5, "fighter": 4, "medic": 2, "scout": 1, "buffer": 20 }, "rocks": 50, "logs": 30 }
   },
   "thorn_wall_terrain": "thorn_wall",

@@ -137,6 +137,7 @@ export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
             {/* Close button */}
             <button
               type="button"
+              aria-label="Close keyboard reference"
               class="absolute top-0 right-0 rts-btn text-xl leading-none cursor-pointer px-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={onClose}
               title="Close"

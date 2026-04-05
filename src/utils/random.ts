@@ -9,7 +9,12 @@ export class SeededRandom {
   private state: number;
 
   constructor(seed: number) {
+    // Warm up: LCG outputs are nearly identical for small sequential seeds.
+    // Running 3 iterations disperses the internal state before first use.
     this.state = seed;
+    for (let i = 0; i < 3; i++) {
+      this.state = (this.state * 1664525 + 1013904223) & 0xffffffff;
+    }
   }
 
   /** Returns a float in [0, 1) — drop-in replacement for Math.random(). */

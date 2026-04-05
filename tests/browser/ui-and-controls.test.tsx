@@ -200,8 +200,8 @@ describe('UI panels and keyboard controls', () => {
       expect(text).toMatch(/\d+/);
 
       // Verify specific resource signals have non-negative values
-      expect(store.clams.value).toBeGreaterThanOrEqual(0);
-      expect(store.twigs.value).toBeGreaterThanOrEqual(0);
+      expect(store.fish.value).toBeGreaterThanOrEqual(0);
+      expect(store.logs.value).toBeGreaterThanOrEqual(0);
       expect(store.food.value).toBeGreaterThanOrEqual(0);
 
       await page.screenshot({ path: 'tests/browser/screenshots/ui-02-map-tab.png' });

@@ -149,8 +149,8 @@ describe('Event-driven match flow — US16', () => {
     it('first event delay should be positive', () => {
       const delay = getFirstEventDelayFrames();
       expect(delay).toBeGreaterThan(0);
-      // 60 seconds * 60fps = 3600 frames
-      expect(delay).toBe(3600);
+      // 35 seconds * 60fps = 2100 frames (reduced from 60s for better T1 pacing)
+      expect(delay).toBe(2100);
     });
 
     it('should not fire events before min interval', () => {

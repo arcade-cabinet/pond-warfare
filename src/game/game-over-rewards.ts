@@ -45,11 +45,9 @@ export async function processGameOverRewards(world: GameWorld): Promise<void> {
   const challengeKey = dailyChallengeKey();
   const alreadyDone = (await getSetting(challengeKey)) === 'completed';
   let dailyXp = 0;
-  let challengeCompleted = false;
 
   if (!alreadyDone && challenge.objective(stats)) {
     dailyXp = challenge.xpReward;
-    challengeCompleted = true;
     await setSetting(challengeKey, 'completed');
 
     // --- Streak tracking ---
@@ -92,7 +90,6 @@ export async function processGameOverRewards(world: GameWorld): Promise<void> {
   store.goXpEarned.value = xpBreakdown.total;
   store.goLeveledUp.value = newLevel > oldLevel;
   store.goNewLevel.value = newLevel;
-  store.goDailyChallengeCompleted.value = challengeCompleted;
 }
 
 /** Calculate and persist the updated streak, returning any bonus XP. */
@@ -109,14 +106,6 @@ async function updateStreak(): Promise<number> {
   const history = buildRecentHistory(completedDates, now);
   const streak = calculateStreak(history, now);
   await setSetting(STREAK_KEY, String(streak));
-
-  // Update store signals
-  store.dailyChallengeStreak.value = streak;
-  store.dailyChallengeHistory.value = history.map((h) => ({
-    date: h.date,
-    challengeTitle: h.challengeTitle,
-    completed: h.completed,
-  }));
 
   const bonus = getStreakBonus(streak);
   return bonus ? bonus.xp : 0;
@@ -138,7 +127,7 @@ function buildGameEndStats(world: GameWorld): GameEndStats {
     buildingsBuilt: world.stats.buildingsBuilt,
     techsResearched: techCount,
     nestsDestroyed: store.destroyedEnemyNests.value,
-    totalClamsEarned: world.stats.totalClamsEarned,
+    totalFishEarned: world.stats.totalFishEarned,
     unitsTrained: world.stats.unitsTrained,
     pearlsEarned: world.stats.pearlsEarned,
     commanderAbilitiesUsed: 0, // tracked separately if needed

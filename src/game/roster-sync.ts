@@ -32,9 +32,9 @@ function roleFor(kind: EntityKind): UnitRole {
 }
 
 const GATHER_TASK: Partial<Record<EntityKind, UnitTask>> = {
-  [EntityKind.Clambed]: 'gathering-clams',
-  [EntityKind.Cattail]: 'gathering-twigs',
-  [EntityKind.PearlBed]: 'gathering-pearls',
+  [EntityKind.Clambed]: 'gathering-fish',
+  [EntityKind.Cattail]: 'gathering-logs',
+  [EntityKind.PearlBed]: 'gathering-rocks',
 };
 
 const STATIC_TASK: Partial<Record<UnitState, UnitTask>> = {
@@ -58,7 +58,7 @@ function deriveTask(eid: number, state: UnitState): UnitTask {
     state === UnitState.ReturnMove
   ) {
     const t = UnitStateMachine.targetEntity[eid];
-    return (t > 0 && GATHER_TASK[EntityTypeTag.kind[t] as EntityKind]) || 'gathering-clams';
+    return (t > 0 && GATHER_TASK[EntityTypeTag.kind[t] as EntityKind]) || 'gathering-fish';
   }
   return 'idle';
 }

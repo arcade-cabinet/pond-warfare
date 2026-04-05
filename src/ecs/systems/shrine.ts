@@ -208,7 +208,7 @@ function activateMeteor(world: GameWorld, tx: number, ty: number): void {
   });
 }
 
-/** Flood: expand water tiles by 1 for 30 seconds (placeholder visual effect). */
+/** Flood: expand water tiles by 1 for 30 seconds. */
 function activateFlood(world: GameWorld, shrineEid: number): void {
   world.floatingTexts.push({
     x: Position.x[shrineEid],
@@ -231,7 +231,7 @@ function activateFlood(world: GameWorld, shrineEid: number): void {
   }
 }
 
-/** Stone Wall: build ring of walls around the Lodge (placeholder). */
+/** Stone Wall: build ring of walls around the Lodge. */
 function activateStoneWall(world: GameWorld, shrineEid: number): void {
   world.floatingTexts.push({
     x: Position.x[shrineEid],

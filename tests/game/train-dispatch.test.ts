@@ -51,8 +51,8 @@ describe('train dispatch', () => {
   beforeEach(() => {
     world = createGameWorld();
     // Give player enough resources
-    world.resources.clams = 500;
-    world.resources.twigs = 500;
+    world.resources.fish = 500;
+    world.resources.logs = 500;
     world.resources.food = 0;
     world.resources.maxFood = 20;
     trainingQueueSlots.clear();
@@ -66,12 +66,12 @@ describe('train dispatch', () => {
       world,
       lodge,
       EntityKind.Gatherer,
-      def.clamCost ?? 0,
-      def.twigCost ?? 0,
+      def.fishCost ?? 0,
+      def.logCost ?? 0,
       def.foodCost ?? 1,
     );
 
-    expect(world.resources.clams).toBe(500 - (def.clamCost ?? 0));
+    expect(world.resources.fish).toBe(500 - (def.fishCost ?? 0));
     expect(TrainingQueue.count[lodge]).toBe(1);
     const slots = trainingQueueSlots.get(lodge) ?? [];
     expect(slots[0]).toBe(EntityKind.Gatherer);
@@ -79,13 +79,13 @@ describe('train dispatch', () => {
 
   it('does not enqueue when resources insufficient', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
-    world.resources.clams = 0;
-    world.resources.twigs = 0;
+    world.resources.fish = 0;
+    world.resources.logs = 0;
 
     train(world, lodge, EntityKind.Brawler, 100, 50, 1);
 
     expect(TrainingQueue.count[lodge]).toBe(0);
-    expect(world.resources.clams).toBe(0);
+    expect(world.resources.fish).toBe(0);
   });
 
   it('adds to TrainingQueue with correct timer on first enqueue', () => {

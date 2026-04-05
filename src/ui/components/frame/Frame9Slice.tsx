@@ -26,10 +26,9 @@ import { EdgeHorizontal } from './EdgeHorizontal';
 import { EdgeVertical } from './EdgeVertical';
 
 /** Frame size presets */
-export type FrameSize = 'lg' | 'md' | 'sm';
+export type FrameSize = 'md' | 'sm';
 
 const SIZE_MAP: Record<FrameSize, number> = {
-  lg: 60, // Full modals, settings, upgrade web
   md: 36, // Cards, comic panels, rewards
   sm: 20, // Speech bubbles, small containers, tooltips
 };
@@ -41,10 +40,8 @@ export interface Frame9SliceProps {
   title?: string;
   /** Extra CSS class on the outermost wrapper */
   class?: string;
-  /** Frame size: 'lg' (60px corners), 'md' (36px), 'sm' (20px). Default: 'lg' */
+  /** Frame size: 'md' (36px corners), 'sm' (20px). Default: 60px (full modals). */
   size?: FrameSize;
-  /** @deprecated Use size='md' instead */
-  compact?: boolean;
 }
 
 const TITLE_STYLE = {
@@ -61,9 +58,8 @@ export function Frame9Slice({
   title,
   class: extraClass,
   size,
-  compact = false,
 }: Frame9SliceProps) {
-  const cornerSize = size ? SIZE_MAP[size] : compact ? 36 : 60;
+  const cornerSize = size ? SIZE_MAP[size] : 60;
   const cornerPx = `${cornerSize}px`;
   const clickable = typeof onClick === 'function';
   const gridRows = `${cornerPx} ${isExpanded ? 'auto' : '0px'} ${cornerPx}`;
@@ -72,7 +68,7 @@ export function Frame9Slice({
     ? 'opacity-100 scale-y-100'
     : 'opacity-0 scale-y-0 h-0 overflow-hidden';
 
-  /** Handler on the grid — content cell uses stopPropagation to prevent toggle. */
+  /** Handler on the grid -- content cell uses stopPropagation to prevent toggle. */
   const handleGridClick = clickable ? () => onClick() : undefined;
 
   /** Stop content clicks from toggling the accordion. */
@@ -94,7 +90,7 @@ export function Frame9Slice({
         style={{ backgroundColor: COLORS.vineHighlight }}
       />
 
-      {/* 9-slice grid — single onClick at grid level prevents double-fire */}
+      {/* 9-slice grid -- single onClick at grid level prevents double-fire */}
       <div
         class="grid drop-shadow-[0_20px_30px_rgba(0,0,0,0.9)]"
         style={gridStyle}

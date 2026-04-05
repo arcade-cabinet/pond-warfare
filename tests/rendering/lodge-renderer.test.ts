@@ -269,7 +269,7 @@ describe('Lodge config integration', () => {
   it('getLodgeBaseHp matches config', () => {
     const config = getLodgeConfig();
     expect(getLodgeBaseHp()).toBe(config.base_hp);
-    expect(getLodgeBaseHp()).toBe(500);
+    expect(getLodgeBaseHp()).toBe(1500);
   });
 
   it('config defines all four Lodge wings', () => {

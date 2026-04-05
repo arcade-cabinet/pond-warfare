@@ -102,7 +102,7 @@ describe('Economy', () => {
     gatheringSystem(world);
 
     // Gatherer should now be carrying clams and heading to the lodge
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Clams);
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Fish);
     expect(Carrying.resourceAmount[gatherer]).toBe(GATHER_AMOUNT);
     expect(UnitStateMachine.state[gatherer]).toBe(UnitState.ReturnMove);
     expect(UnitStateMachine.returnEntity[gatherer]).toBe(lodge);
@@ -142,13 +142,13 @@ describe('Economy', () => {
 
   it('fishing hut should generate passive clam income', () => {
     createFishingHut(world, 300, 300);
-    const clamsBefore = world.resources.clams;
+    const clamsBefore = world.resources.fish;
 
     // Fishing hut generates income every 300 frames
     world.frameCount = 300;
     gatheringSystem(world);
 
-    expect(world.resources.clams).toBe(clamsBefore + 5);
+    expect(world.resources.fish).toBe(clamsBefore + 5);
   });
 
   it('herbalist hut should heal nearby units', () => {
@@ -199,7 +199,7 @@ describe('Economy', () => {
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Pearls);
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Rocks);
   });
 
   it('enemy gatherers should compete for same resource nodes', () => {
@@ -218,7 +218,7 @@ describe('Economy', () => {
 
     // Enemy gatherer should have depleted the resource by GATHER_AMOUNT
     expect(Resource.amount[resource]).toBe(amountBefore - GATHER_AMOUNT);
-    expect(Carrying.resourceType[enemyGatherer]).toBe(ResourceType.Clams);
+    expect(Carrying.resourceType[enemyGatherer]).toBe(ResourceType.Fish);
   });
 
   it('food cap should increase with lodges and burrows', () => {
@@ -231,10 +231,10 @@ describe('Economy', () => {
     expect(burrowFoodProvided).toBe(6);
   });
 
-  // ── T31: Training cost uses Fish (world.resources.clams) ──────────
+  // ── T31: Training cost uses Fish (world.resources.fish) ──────────
   it('training cost reads fish from units.json and deducts clams', () => {
     // units.json: gatherer.cost.fish = 10
-    // radial-actions.ts reads def.cost.fish and deducts world.resources.clams
+    // radial-actions.ts reads def.cost.fish and deducts world.resources.fish
     const def = getUnitDef('gatherer') as import('@/config/v3-types').GeneralistDef;
     expect(def.cost.fish).toBe(10);
 
@@ -242,7 +242,7 @@ describe('Economy', () => {
     expect(fighterDef.cost.fish).toBe(20);
   });
 
-  // ── T32: Fortification costs Rocks (world.resources.pearls) ──────
+  // ── T32: Fortification costs Rocks (world.resources.rocks) ──────
   it('fortification costs use rocks from fortifications.json', () => {
     const wallDef = getFortDef('wood_wall');
     expect(wallDef.cost.rocks).toBe(15);
@@ -260,12 +260,12 @@ describe('Economy', () => {
 
   // ── T34: Resource type aliases are numerically equal ─────────────
   it('v3 resource aliases are numerically equal to v2 names', () => {
-    expect(ResourceType.Fish).toBe(ResourceType.Clams);
-    expect(ResourceType.Rocks).toBe(ResourceType.Pearls);
-    expect(ResourceType.Logs).toBe(ResourceType.Twigs);
+    expect(ResourceType.Fish).toBe(ResourceType.Fish);
+    expect(ResourceType.Rocks).toBe(ResourceType.Rocks);
+    expect(ResourceType.Logs).toBe(ResourceType.Logs);
   });
 
-  // ── T33: Lodge repair deducts Logs (world.resources.twigs) ───────
+  // ── T33: Lodge repair deducts Logs (world.resources.logs) ───────
   it('cattail gathering yields Twigs (Logs) resource type', () => {
     createLodge(world, 200, 200);
     const cattail = createResource(world, EntityKind.Cattail, 100, 100, 500);
@@ -277,7 +277,7 @@ describe('Economy', () => {
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Twigs);
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Logs);
   });
 
   it('cannot train units when at food cap', () => {

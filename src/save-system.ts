@@ -23,7 +23,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { SaveData, SavedEntity } from '@/save-types';
-import { EntityKind, type Faction, UnitState } from '@/types';
+import { type EntityKind, type Faction, UnitState } from '@/types';
 
 /** Serialize the current game state to a JSON string. */
 export function saveGame(world: GameWorld): string {
@@ -78,7 +78,7 @@ export function saveGame(world: GameWorld): string {
 export function isValidSave(json: string): boolean {
   try {
     const data = JSON.parse(json);
-    return (data?.version === 1 || data?.version === 2) && Array.isArray(data?.entities);
+    return data?.version === 2 && Array.isArray(data?.entities);
   } catch {
     return false;
   }
@@ -105,52 +105,30 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.selection.length = 0;
   world.yukaManager.clear();
 
-  // Restore game state
-  world.resources.clams = data.resources.clams;
-  world.resources.twigs = data.resources.twigs;
-  world.resources.pearls = data.resources.pearls ?? 0;
+  // Restore game state -- v3 fields only, no fallbacks
+  world.resources.fish = data.resources.fish;
+  world.resources.logs = data.resources.logs;
+  world.resources.rocks = data.resources.rocks;
   world.resources.food = data.resources.food;
   world.resources.maxFood = data.resources.maxFood;
 
-  // Restore enemy resources (v2+)
-  if (data.enemyResources) {
-    world.enemyResources.clams = data.enemyResources.clams;
-    world.enemyResources.twigs = data.enemyResources.twigs;
-  }
+  // Restore enemy resources
+  world.enemyResources.fish = data.enemyResources.fish;
+  world.enemyResources.logs = data.enemyResources.logs;
 
-  // Restore auto-behaviors with migration from old per-action to new per-role format
+  // Restore auto-behaviors (per-role format only)
   if (data.autoBehaviors) {
-    if (typeof data.autoBehaviors.gatherer === 'boolean') {
-      // New per-role format
-      world.autoBehaviors.gatherer = data.autoBehaviors.gatherer;
-      world.autoBehaviors.combat = data.autoBehaviors.combat ?? false;
-      world.autoBehaviors.healer = data.autoBehaviors.healer ?? false;
-      world.autoBehaviors.scout = data.autoBehaviors.scout ?? false;
-    } else if (typeof data.autoBehaviors.gather === 'boolean') {
-      // Legacy per-action format: migrate to per-role
-      world.autoBehaviors.gatherer =
-        data.autoBehaviors.gather || (data.autoBehaviors.build ?? false);
-      world.autoBehaviors.combat =
-        (data.autoBehaviors.attack ?? false) || (data.autoBehaviors.defend ?? false);
-      world.autoBehaviors.healer = data.autoBehaviors.heal ?? false;
-      world.autoBehaviors.scout = false; // old format didn't persist scout
-    }
+    world.autoBehaviors.gatherer = data.autoBehaviors.gatherer;
+    world.autoBehaviors.combat = data.autoBehaviors.combat;
+    world.autoBehaviors.healer = data.autoBehaviors.healer;
+    world.autoBehaviors.scout = data.autoBehaviors.scout;
   }
 
-  // Restore peace timer (v2+)
-  if (data.peaceTimer !== undefined) {
-    world.peaceTimer = data.peaceTimer;
-  }
+  // Restore peace timer
+  world.peaceTimer = data.peaceTimer;
 
   // Restore tech
   for (const key of Object.keys(data.tech)) {
-    // Migrate removed siegeEngineering -> siegeWorks
-    if (key === 'siegeEngineering') {
-      if (data.tech[key]) {
-        (world.tech as Record<string, boolean>).siegeWorks = true;
-      }
-      continue;
-    }
     if (key in world.tech) {
       (world.tech as Record<string, boolean>)[key] = data.tech[key];
     }
@@ -159,13 +137,13 @@ export function loadGame(world: GameWorld, json: string): boolean {
   // Restore stats
   world.stats.unitsKilled = data.stats.unitsKilled;
   world.stats.unitsLost = data.stats.unitsLost;
-  world.stats.unitsTrained = data.stats.unitsTrained ?? 0;
+  world.stats.unitsTrained = data.stats.unitsTrained;
   world.stats.resourcesGathered = data.stats.resourcesGathered;
   world.stats.buildingsBuilt = data.stats.buildingsBuilt;
   world.stats.peakArmy = data.stats.peakArmy;
-  world.stats.pearlsEarned = data.stats.pearlsEarned ?? 0;
-  world.stats.buildingsLost = data.stats.buildingsLost ?? 0;
-  world.stats.totalClamsEarned = data.stats.totalClamsEarned ?? 0;
+  world.stats.pearlsEarned = data.stats.pearlsEarned;
+  world.stats.buildingsLost = data.stats.buildingsLost;
+  world.stats.totalFishEarned = data.stats.totalFishEarned;
 
   // Restore enemy evolution state
   if (data.enemyEvolution) {
@@ -174,11 +152,6 @@ export function loadGame(world: GameWorld, json: string): boolean {
       (k) => k as EntityKind,
     );
     world.enemyEvolution.lastEvolutionFrame = data.enemyEvolution.lastEvolutionFrame;
-  } else {
-    // Old save without evolution data - reset to defaults
-    world.enemyEvolution.tier = 0;
-    world.enemyEvolution.unlockedUnits = [EntityKind.Gator, EntityKind.Snake];
-    world.enemyEvolution.lastEvolutionFrame = 0;
   }
 
   // Restore poison timers

@@ -56,8 +56,8 @@ vi.mock('@/config/factions', () => ({
 
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
-import { createTestWorld, createTestPanelGrid } from '../helpers/world-factory';
 import { SeededRandom } from '@/utils/random';
+import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 beforeEach(() => {
   spawnedEntities.length = 0;
@@ -114,7 +114,7 @@ describe('Prestige player — multiple panels unlocked', () => {
     spawnVerticalEntities(world, layout, new SeededRandom(42));
 
     // Stage 5 formula includes rocks
-    expect(world.resources.pearls).toBeGreaterThan(0);
+    expect(world.resources.rocks).toBeGreaterThan(0);
   });
 
   it('stage 6 gives starting Logs', () => {
@@ -124,6 +124,6 @@ describe('Prestige player — multiple panels unlocked', () => {
 
     spawnVerticalEntities(world, layout, new SeededRandom(42));
 
-    expect(world.resources.twigs).toBeGreaterThan(0);
+    expect(world.resources.logs).toBeGreaterThan(0);
   });
 });

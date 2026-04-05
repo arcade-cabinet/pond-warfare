@@ -19,6 +19,7 @@ const SETTINGS_KEYS = {
   screenShakeEnabled: 'setting-screen-shake',
   reduceVisualNoise: 'setting-reduce-noise',
   selectedCommander: 'setting-commander',
+  autoPlayEnabled: 'setting-auto-play',
 } as const;
 
 export type SettingKey = keyof typeof SETTINGS_KEYS;
@@ -58,7 +59,9 @@ export async function loadPersistedSettings(): Promise<void> {
         const n = Number(raw);
         if (!Number.isNaN(n) && [1, 1.5, 2].includes(n)) {
           store.uiScale.value = n;
-          document.documentElement.style.fontSize = `${16 * n}px`;
+          if (typeof document !== 'undefined') {
+            document.documentElement.style.fontSize = `${16 * n}px`;
+          }
         }
         break;
       }
@@ -76,6 +79,9 @@ export async function loadPersistedSettings(): Promise<void> {
         break;
       case 'selectedCommander':
         store.selectedCommander.value = raw;
+        break;
+      case 'autoPlayEnabled':
+        store.autoPlayEnabled.value = raw === 'true';
         break;
     }
   }

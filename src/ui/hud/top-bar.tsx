@@ -1,8 +1,8 @@
 /**
- * TopBar - Resource display (clams, twigs, food), weather indicator,
+ * TopBar - Resource display (fish, logs, food), weather indicator,
  * status text (peaceful/hunting), speed/pause/mute/CB/save/load/settings buttons.
  *
- * Wood panel background with carved-stone buttons and JetBrains Mono resource numbers.
+ * Wood panel background with carved-stone buttons and monospace resource numbers.
  */
 
 import { screenClass } from '@/platform';

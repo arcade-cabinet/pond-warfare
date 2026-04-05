@@ -12,6 +12,7 @@
  * In portrait tablet mode, panels fill width without stagger.
  */
 
+import { signal } from '@preact/signals';
 import { useCallback } from 'preact/hooks';
 import { COLORS } from '@/ui/design-tokens';
 import { ComicPanel } from './comic-panel';
@@ -25,8 +26,14 @@ import {
   menuState,
   permadeathEnabled,
   selectedDifficulty,
+  showSplashVideo,
 } from './store';
+import { multiplayerMenuOpen } from './store-multiplayer';
 import { pearlScreenOpen, prestigeRank, totalPearls } from './store-v3';
+
+/** Which view of the landing page is showing. */
+type LandingView = 'main' | 'play-mode';
+const landingView = signal<LandingView>('main');
 
 function generateName(): string {
   const adj = ['Murky', 'Still', 'Raging', 'Deep', 'Frozen', 'Verdant'];
@@ -39,13 +46,7 @@ function generateSeed(): number {
 }
 
 export function ComicLanding() {
-  // US7: Seamless PLAY — no modal, no "Continue vs New Game" choice.
-  // If an active run exists (progression > 0), start at that level with upgrades.
-  // Otherwise start fresh. In both cases, we start a NEW match (not mid-match resume).
-  // Run state (progressionLevel, totalClams, etc.) is already hydrated into store-v3
-  // signals at app startup via hydrateV3StoreFromDb(). Game.init() reads those signals
-  // to apply upgrade effects and set difficulty scaling.
-  const handlePlay = useCallback(() => {
+  const startSinglePlayer = useCallback(() => {
     selectedDifficulty.value = 'normal';
     permadeathEnabled.value = false;
     customGameSettings.value = { ...DEFAULT_CUSTOM_SETTINGS };
@@ -54,15 +55,28 @@ export function ComicLanding() {
     gameSeed.value = seed;
     customMapSeed.value = String(seed);
     menuState.value = 'playing';
+    landingView.value = 'main'; // reset for next time
+  }, []);
+
+  const handlePlay = useCallback(() => {
+    landingView.value = 'play-mode';
+  }, []);
+
+  const handleMultiplayer = useCallback(() => {
+    multiplayerMenuOpen.value = true;
+    landingView.value = 'main'; // reset so back returns to main
+  }, []);
+
+  const handleBack = useCallback(() => {
+    landingView.value = 'main';
   }, []);
 
   const handleUpgrades = useCallback(() => {
     pearlScreenOpen.value = true;
   }, []);
 
-
-  // US9: UPGRADES only visible when rank > 0 OR pearls > 0
   const showUpgrades = prestigeRank.value > 0 || totalPearls.value > 0;
+  const view = landingView.value;
 
   return (
     <div
@@ -75,40 +89,63 @@ export function ComicLanding() {
       <div class="relative z-10 flex flex-col items-center mb-1 md:mb-2">
         <h1
           class="font-heading mb-0 tracking-widest uppercase text-center text-2xl md:text-5xl leading-tight"
-          style={{ textShadow: '3px 3px 0 #050505, -1px -1px 0 #050505, 1px -1px 0 #050505, -1px 1px 0 #050505, 0 0 15px rgba(0,0,0,0.6)' }}
+          style={{
+            textShadow:
+              '3px 3px 0 #050505, -1px -1px 0 #050505, 1px -1px 0 #050505, -1px 1px 0 #050505, 0 0 15px rgba(0,0,0,0.6)',
+          }}
         >
           <span style={{ color: COLORS.mossGreen }}>Pond</span>{' '}
           <span style={{ color: COLORS.grittyGold }}>Warfare</span>
         </h1>
       </div>
 
-      {/* Comic panels — staggered for visual dynamism in landscape */}
       <div class="relative z-10 flex flex-col items-center gap-2 md:gap-3 px-3 pb-2 w-full comic-panels-container">
-        {/* Panel 1: Otter — Play (stagger left). US7: single seamless button. */}
-        <ComicPanel
-          character="otter"
-          side="left"
-          quote="Ready for battle?"
-          buttonLabel="PLAY"
-          onButtonClick={handlePlay}
-          stagger="left"
-        />
-
-        {/* Panel 2: Croc — Upgrades / Pearl loadout (stagger center). US9: only when rank/pearls > 0. */}
-        {showUpgrades && (
-          <ComicPanel
-            character="croc"
-            side="right"
-            quote="Power up, soldier"
-            buttonLabel="UPGRADES"
-            onButtonClick={handleUpgrades}
-            stagger="center"
-          />
+        {view === 'main' && (
+          <>
+            <ComicPanel
+              character="otter"
+              side="left"
+              quote="Ready for battle?"
+              buttonLabel="PLAY"
+              onButtonClick={handlePlay}
+              stagger="left"
+            />
+            {showUpgrades && (
+              <ComicPanel
+                character="croc"
+                side="right"
+                quote="Power up, soldier"
+                buttonLabel="UPGRADES"
+                onButtonClick={handleUpgrades}
+                stagger="center"
+              />
+            )}
+          </>
         )}
 
+        {view === 'play-mode' && (
+          <>
+            <ComicPanel
+              character="otter"
+              side="left"
+              quote="Just me and the pond..."
+              buttonLabel="SINGLE PLAYER"
+              onButtonClick={startSinglePlayer}
+              stagger="left"
+              secondaryButton={{ label: 'BACK', onClick: handleBack }}
+            />
+            <ComicPanel
+              character="croc"
+              side="right"
+              quote="Lodge versus Lodge!"
+              buttonLabel="MULTIPLAYER"
+              onButtonClick={handleMultiplayer}
+              stagger="center"
+            />
+          </>
+        )}
       </div>
 
-      {/* Version */}
       <div class="relative z-10 pb-1">
         <span class="font-game text-[10px]" style={{ color: COLORS.weatheredSteel }}>
           v3.0 &middot; Defend the Pond

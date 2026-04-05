@@ -65,8 +65,7 @@ function createResource(world: GameWorld, x: number, y: number, kind: EntityKind
 
   Position.x[eid] = x;
   Position.y[eid] = y;
-  Resource.resourceType[eid] =
-    kind === EntityKind.Cattail ? ResourceType.Twigs : ResourceType.Clams;
+  Resource.resourceType[eid] = kind === EntityKind.Cattail ? ResourceType.Logs : ResourceType.Fish;
   Resource.amount[eid] = 1000;
   Health.current[eid] = 1;
   Health.max[eid] = 1;
@@ -123,6 +122,6 @@ describe('gatheringSystem', () => {
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Twigs);
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Logs);
   });
 });

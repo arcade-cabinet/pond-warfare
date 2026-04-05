@@ -178,8 +178,8 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     // 3. Toggle auto-gatherer ON -> idle gatherers assigned to auto-build
     it('toggle auto-gatherer ON -> idle gatherers assigned to auto-build', async () => {
       // Give resources for auto-build to work
-      game.world.resources.clams = 500;
-      game.world.resources.twigs = 500;
+      game.world.resources.fish = 500;
+      game.world.resources.logs = 500;
 
       // Ensure population cap is reached (triggers auto-build Burrow priority)
       game.world.resources.food = game.world.resources.maxFood;

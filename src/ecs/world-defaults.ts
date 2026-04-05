@@ -9,10 +9,10 @@ import { createWorld } from 'bitecs';
 import { YukaManager } from '@/ai/yuka-manager';
 import { createWeatherState } from '@/config/weather';
 import {
-  ENEMY_STARTING_CLAMS,
-  ENEMY_STARTING_TWIGS,
-  STARTING_CLAMS,
-  STARTING_TWIGS,
+  ENEMY_STARTING_FISH,
+  ENEMY_STARTING_LOGS,
+  STARTING_FISH,
+  STARTING_LOGS,
   TILE_SIZE,
   WORLD_HEIGHT,
   WORLD_WIDTH,
@@ -54,15 +54,15 @@ export function createGameWorld(): GameWorld {
     groundPings: [],
     fireflies: [],
     resources: {
-      clams: STARTING_CLAMS,
-      twigs: STARTING_TWIGS,
-      pearls: 0,
+      fish: STARTING_FISH,
+      logs: STARTING_LOGS,
+      rocks: 0,
       food: 0,
       maxFood: 0,
     },
     enemyResources: {
-      clams: ENEMY_STARTING_CLAMS,
-      twigs: ENEMY_STARTING_TWIGS,
+      fish: ENEMY_STARTING_FISH,
+      logs: ENEMY_STARTING_LOGS,
     },
     // v3.0: tech flags set by commanders, not in-game research
     tech: {},
@@ -75,7 +75,7 @@ export function createGameWorld(): GameWorld {
       buildingsLost: 0,
       peakArmy: 0,
       pearlsEarned: 0,
-      totalClamsEarned: 0,
+      totalFishEarned: 0,
     },
     state: 'playing',
     frameCount: 0,
@@ -125,10 +125,10 @@ export function createGameWorld(): GameWorld {
     attackMoveMode: false,
     idleWorkerIdx: 0,
     resTracker: {
-      lastClams: STARTING_CLAMS,
-      lastTwigs: STARTING_TWIGS,
-      rateClams: 0,
-      rateTwigs: 0,
+      lastFish: STARTING_FISH,
+      lastLogs: STARTING_LOGS,
+      rateFish: 0,
+      rateLogs: 0,
     },
     spatialHash: new SpatialHash(200),
     particlePool: new ObjectPool<Particle>(
@@ -152,8 +152,6 @@ export function createGameWorld(): GameWorld {
     alphaDamageBuff: new Map(),
     championEnemies: new Set(),
     isFirstGame: true,
-    // @deprecated Advisor system removed in v3.0 -- kept for save compat
-    advisorState: {},
     commanderEntityId: -1,
     enemyCommanderEntityId: -1,
     commanderDamageBuff: new Set(),
@@ -224,6 +222,10 @@ export function createGameWorld(): GameWorld {
     partnerLodgeDestroyed: false,
     partnerUnitPositions: [],
     coopResourceCallback: null,
+    // Adversarial multiplayer
+    adversarialMode: false,
+    opponentLodgeEid: -1,
+    opponentCommanderEid: -1,
     // Patrol waypoints (entity ID -> waypoint array)
     patrolWaypoints: new Map(),
     // v3.0: fortification slots

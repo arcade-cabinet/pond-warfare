@@ -35,7 +35,7 @@ describe('Economy Integration', () => {
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Clams);
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Fish);
     expect(Carrying.resourceAmount[gatherer]).toBe(GATHER_AMOUNT);
     expect(UnitStateMachine.state[gatherer]).toBe(UnitState.ReturnMove);
     expect(UnitStateMachine.returnEntity[gatherer]).toBe(lodge);
@@ -53,7 +53,7 @@ describe('Economy Integration', () => {
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Twigs);
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Logs);
   });
 
   it('resource depletes to zero and marks for death', () => {
@@ -135,7 +135,7 @@ describe('Economy Integration', () => {
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Pearls);
+    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Rocks);
   });
 
   it('tidal harvest tech applies to gather amount', () => {
@@ -180,6 +180,6 @@ describe('Economy Integration', () => {
     gatheringSystem(world);
 
     expect(Resource.amount[resource]).toBe(GATHER_AMOUNT);
-    expect(Carrying.resourceType[enemyGatherer]).toBe(ResourceType.Clams);
+    expect(Carrying.resourceType[enemyGatherer]).toBe(ResourceType.Fish);
   });
 });

@@ -12,7 +12,7 @@ import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
 
 /** Minimum army size before considering attack. */
-export const MIN_ATTACK_ARMY = 6;
+export const MIN_ATTACK_ARMY = 3;
 
 /** Find combat units available for an attack mission. */
 function availableAttackers(): RosterUnit[] {
