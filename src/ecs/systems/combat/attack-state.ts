@@ -32,6 +32,37 @@ import { EntityKind, Faction, UnitState } from '@/types';
 import { executeBossCrocAttack, executeMeleeAttack } from './melee-attacks';
 import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
+/** Scan for the closest enemy within aggro radius after a kill. */
+function findNextTarget(
+  world: GameWorld,
+  eid: number,
+  ex: number,
+  ey: number,
+  faction: Faction,
+  hasSpatial: boolean,
+  allTargetable: ArrayLike<number>,
+): number {
+  const scanRadius = Combat.attackRange[eid] * 2.5; // Generous scan after kill
+  const candidates = hasSpatial ? world.spatialHash.query(ex, ey, scanRadius) : allTargetable;
+  let best = -1;
+  let bestDist = scanRadius * scanRadius;
+  for (let i = 0; i < candidates.length; i++) {
+    const t = candidates[i];
+    if (!hasComponent(world.ecs, t, FactionTag)) continue;
+    if (FactionTag.faction[t] === faction || FactionTag.faction[t] === Faction.Neutral) continue;
+    if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
+    if (hasComponent(world.ecs, t, IsResource)) continue;
+    const dx = Position.x[t] - ex;
+    const dy = Position.y[t] - ey;
+    const d = dx * dx + dy * dy;
+    if (d < bestDist) {
+      bestDist = d;
+      best = t;
+    }
+  }
+  return best;
+}
+
 /**
  * Process one unit in the Attacking state. Returns true if the unit was
  * handled (so the caller can `continue` the outer loop).
@@ -49,7 +80,17 @@ export function processAttackState(
 ): boolean {
   const tEnt = UnitStateMachine.targetEntity[eid];
   if (tEnt === -1 || !hasComponent(world.ecs, tEnt, Health) || Health.current[tEnt] <= 0) {
-    UnitStateMachine.state[eid] = UnitState.Idle;
+    // Immediate retarget: scan for next enemy instead of going idle.
+    // Eliminates the 30-frame aggro re-check delay between kills.
+    const nextTarget = findNextTarget(world, eid, ex, ey, faction, hasSpatial, allTargetable);
+    if (nextTarget !== -1) {
+      UnitStateMachine.targetEntity[eid] = nextTarget;
+      UnitStateMachine.targetX[eid] = Position.x[nextTarget];
+      UnitStateMachine.targetY[eid] = Position.y[nextTarget];
+      UnitStateMachine.state[eid] = UnitState.AttackMove;
+    } else {
+      UnitStateMachine.state[eid] = UnitState.Idle;
+    }
     return true;
   }
 

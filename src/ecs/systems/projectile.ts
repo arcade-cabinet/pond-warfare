@@ -6,6 +6,7 @@
  * Responsibilities:
  * - Move projectile entities toward their target position
  * - Apply homing: if target entity is alive, update target coordinates to track it
+ * - Apply weather: wind drifts projectiles off course
  * - Check if projectile has arrived (distance < speed) and deal damage on hit
  * - Add trail particles to world.particles while in flight
  * - Remove projectile entity on hit
@@ -18,6 +19,7 @@ import { Health, IsProjectile, Position, ProjectileData } from '@/ecs/components
 import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind } from '@/types';
+import { getWeatherProjectileOffset } from './weather';
 
 /**
  * Helper to spawn a projectile entity. Used by combat system for snipers and towers.
@@ -58,6 +60,9 @@ export function spawnProjectile(
 export function projectileSystem(world: GameWorld): void {
   const projectiles = query(world.ecs, [Position, ProjectileData, IsProjectile]);
 
+  // Weather: wind drifts projectiles off course
+  const windOffset = getWeatherProjectileOffset(world);
+
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const eid = projectiles[i];
 
@@ -74,8 +79,9 @@ export function projectileSystem(world: GameWorld): void {
       ProjectileData.targetY[eid] = Position.y[targetEnt];
     }
 
-    const tx = ProjectileData.targetX[eid];
-    const ty = ProjectileData.targetY[eid];
+    // Apply wind drift to effective target position
+    const tx = ProjectileData.targetX[eid] + windOffset.dx;
+    const ty = ProjectileData.targetY[eid] + windOffset.dy;
     const px = Position.x[eid];
     const py = Position.y[eid];
 
@@ -123,7 +129,7 @@ export function projectileSystem(world: GameWorld): void {
       size: 2,
     });
 
-    // Move toward target
+    // Move toward target (including wind drift)
     Position.x[eid] += (dx / dist) * speed;
     Position.y[eid] += (dy / dist) * speed;
   }

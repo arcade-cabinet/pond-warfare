@@ -78,12 +78,12 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const fishCost = def.cost.fish ?? 0;
   const rocksCost = def.cost.rocks ?? 0;
 
-  if (world.resources.clams < fishCost) {
+  if (world.resources.fish < fishCost) {
     pushGameEvent('Not enough Fish!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
-  if (rocksCost > 0 && world.resources.pearls < rocksCost) {
+  if (rocksCost > 0 && world.resources.rocks < rocksCost) {
     pushGameEvent('Not enough Rocks!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
@@ -92,8 +92,8 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const lodgeEid = findPlayerLodge(world);
   if (lodgeEid < 0) return false;
 
-  world.resources.clams -= fishCost;
-  if (rocksCost > 0) world.resources.pearls -= rocksCost;
+  world.resources.fish -= fishCost;
+  if (rocksCost > 0) world.resources.rocks -= rocksCost;
 
   const slots = trainingQueueSlots.get(lodgeEid) ?? [];
   slots.push(unitKind);
@@ -118,13 +118,13 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   return true;
 }
 
-/** Repair the Lodge using Logs (mapped to twigs). */
+/** Repair the Lodge using Logs. */
 function handleRepairAction(world: GameWorld): boolean {
   const lodgeEid = findPlayerLodge(world);
   if (lodgeEid < 0) return false;
 
   const logCost = 30;
-  if (world.resources.twigs < logCost) {
+  if (world.resources.logs < logCost) {
     pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
@@ -137,7 +137,7 @@ function handleRepairAction(world: GameWorld): boolean {
     return false;
   }
 
-  world.resources.twigs -= logCost;
+  world.resources.logs -= logCost;
   const healAmount = Math.min(100, max - current);
   Health.current[lodgeEid] = current + healAmount;
   pushGameEvent(`Lodge repaired (+${healAmount} HP)`, COLORS.feedbackSuccess, world.frameCount);

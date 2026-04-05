@@ -9,6 +9,9 @@
  * optional disabled state.
  */
 
+// Re-export entityKindToRole from extracted module for backward compatibility
+export { entityKindToRole } from './radial-entity-roles';
+
 export type RadialMenuMode = 'lodge' | 'unit';
 
 export interface RadialOption {
@@ -218,46 +221,58 @@ const ROLE_OPTIONS: Record<string, RadialOption[]> = {
   scout: SCOUT_OPTIONS,
 };
 
-/**
- * Get the appropriate radial options for the current context.
- */
-export function getRadialOptions(mode: RadialMenuMode, unitRole: string | null): RadialOption[] {
-  if (mode === 'lodge') return LODGE_OPTIONS;
-  if (unitRole && ROLE_OPTIONS[unitRole]) return ROLE_OPTIONS[unitRole];
-  return GENERIC_OPTIONS;
+/** Game state used to filter Lodge radial options. */
+export interface RadialGameState {
+  /** Current fish available */
+  fish: number;
+  /** Current rocks available */
+  rocks: number;
+  /** Current logs available */
+  logs: number;
+  /** Which panel unlock stage the player is at (1-6) */
+  unlockStage: number;
+  /** Whether Lodge is damaged (for repair option) */
+  lodgeDamaged: boolean;
 }
 
 /**
- * Map an EntityKind numeric value to a v3 role string.
- * Uses the existing entity kinds to determine role.
+ * Get the appropriate radial options for the current context.
+ * Lodge options are filtered by resource availability and progression.
  */
-export function entityKindToRole(kind: number): string {
-  // EntityKind values from types.ts
-  switch (kind) {
-    case 0:
-      return 'gather'; // Gatherer
-    case 12:
-      return 'heal'; // Healer
-    case 16:
-      return 'scout'; // Scout
-    case 1: // Brawler
-    case 2: // Sniper
-    case 15: // Shieldbearer
-    case 17: // Catapult
-    case 28: // Swimmer
-    case 30: // Commander
-    case 33: // Diver
-    case 34: // Engineer
-    case 37: // FlyingHeron
-    case 41: // Berserker
-      return 'combat';
-    case 35:
-      return 'heal'; // Shaman
-    case 44:
-      return 'combat'; // Sapper
-    case 45:
-      return 'combat'; // Saboteur
-    default:
-      return 'combat';
+export function getRadialOptions(
+  mode: RadialMenuMode,
+  unitRole: string | null,
+  gameState?: RadialGameState,
+): RadialOption[] {
+  if (mode === 'lodge') {
+    if (!gameState) return LODGE_OPTIONS;
+    return LODGE_OPTIONS.filter((opt) => {
+      switch (opt.id) {
+        case 'train_gatherer':
+          return gameState.fish >= 10;
+        case 'train_fighter':
+          return gameState.fish >= 20;
+        case 'train_medic':
+          return gameState.fish >= 15;
+        case 'train_scout':
+          return gameState.fish >= 8;
+        case 'train_sapper':
+          // Sapper needs rocks (panel 4/6 unlock = stage 5+)
+          return gameState.unlockStage >= 5 && gameState.fish >= 25 && gameState.rocks >= 15;
+        case 'train_saboteur':
+          // Saboteur needs rocks
+          return gameState.unlockStage >= 5 && gameState.fish >= 20 && gameState.rocks >= 10;
+        case 'fortify':
+          // Fortify needs rocks (panel 4/6)
+          return gameState.unlockStage >= 5 && gameState.rocks >= 15;
+        case 'repair':
+          // Repair needs logs (panel 2+) and Lodge must be damaged
+          return gameState.unlockStage >= 2 && gameState.logs >= 10 && gameState.lodgeDamaged;
+        default:
+          return true;
+      }
+    });
   }
+  if (unitRole && ROLE_OPTIONS[unitRole]) return ROLE_OPTIONS[unitRole];
+  return GENERIC_OPTIONS;
 }

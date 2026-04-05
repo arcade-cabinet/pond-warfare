@@ -15,11 +15,14 @@
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
+import { COMMANDER_ABILITIES } from '@/config/commanders';
 import { DAY_FRAMES, EXPLORED_SCALE } from '@/constants';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { canUseCommanderAbility, getAbilityCooldownSeconds } from '@/game/commander-abilities';
 import { EntityKind, Faction } from '@/types';
 import * as store from '@/ui/store';
+import * as storeGameplay from '@/ui/store-gameplay';
 import * as storeV3 from '@/ui/store-v3';
 import { resetPermadeathGuard, syncGameOverStats } from './game-over-sync';
 import { computePopulation, type PopulationResult } from './population-counter';
@@ -28,14 +31,14 @@ import { syncThreatAndObjectives } from './threat-sync';
 export type { PopulationResult };
 
 /** Track previous low-resource state to fire alert only on threshold crossing. */
-let _prevLowClams = false;
-let _prevLowTwigs = false;
+let _prevLowFish = false;
+let _prevLowLogs = false;
 let _prevPeaceWarningPlayed = false;
 
 /** Previous resource values for detecting directional changes. */
-let _prevClams = 200;
-let _prevTwigs = 50;
-let _prevPearls = 0;
+let _prevFish = 200;
+let _prevLogs = 50;
+let _prevRocks = 0;
 let _prevFood = 0;
 
 /**
@@ -47,39 +50,39 @@ export function syncPopulationAndTimers(
   exploredCtx: CanvasRenderingContext2D | null,
 ): PopulationResult {
   const w = world;
-  store.clams.value = w.resources.clams;
-  store.twigs.value = w.resources.twigs;
-  store.pearls.value = w.resources.pearls;
+  store.fish.value = w.resources.fish;
+  store.logs.value = w.resources.logs;
+  store.rocks.value = w.resources.rocks;
 
   // Directional resource change tracking for HUD flash
-  const dClams = w.resources.clams - _prevClams;
-  const dTwigs = w.resources.twigs - _prevTwigs;
-  const dPearls = w.resources.pearls - _prevPearls;
-  if (dClams !== 0 || dTwigs !== 0 || dPearls !== 0) {
+  const dFish = w.resources.fish - _prevFish;
+  const dLogs = w.resources.logs - _prevLogs;
+  const dRocks = w.resources.rocks - _prevRocks;
+  if (dFish !== 0 || dLogs !== 0 || dRocks !== 0) {
     store.lastResourceChange.value = {
-      clams: dClams,
-      twigs: dTwigs,
-      pearls: dPearls,
+      fish: dFish,
+      logs: dLogs,
+      rocks: dRocks,
       frame: w.frameCount,
     };
   }
-  _prevClams = w.resources.clams;
-  _prevTwigs = w.resources.twigs;
-  _prevPearls = w.resources.pearls;
+  _prevFish = w.resources.fish;
+  _prevLogs = w.resources.logs;
+  _prevRocks = w.resources.rocks;
 
   // Resource income rate tracking: compute per-second deltas every 60 frames
   if (w.frameCount > 0 && w.frameCount % 60 === 0) {
-    w.resTracker.rateClams = w.resources.clams - w.resTracker.lastClams;
-    w.resTracker.rateTwigs = w.resources.twigs - w.resTracker.lastTwigs;
-    w.resTracker.lastClams = w.resources.clams;
-    w.resTracker.lastTwigs = w.resources.twigs;
+    w.resTracker.rateFish = w.resources.fish - w.resTracker.lastFish;
+    w.resTracker.rateLogs = w.resources.logs - w.resTracker.lastLogs;
+    w.resTracker.lastFish = w.resources.fish;
+    w.resTracker.lastLogs = w.resources.logs;
   }
-  store.rateClams.value = w.resTracker.rateClams;
-  store.rateTwigs.value = w.resTracker.rateTwigs;
+  store.rateFish.value = w.resTracker.rateFish;
+  store.rateLogs.value = w.resTracker.rateLogs;
 
   // Enemy economy: sync resource counts
-  store.enemyClams.value = w.enemyResources.clams;
-  store.enemyTwigs.value = w.enemyResources.twigs;
+  store.enemyFish.value = w.enemyResources.fish;
+  store.enemyLogs.value = w.enemyResources.logs;
 
   // Enemy economy visibility: check if any PredatorNest is in an explored area
   if (!store.enemyEconomyVisible.value && exploredCtx) {
@@ -108,18 +111,18 @@ export function syncPopulationAndTimers(
   store.paused.value = w.paused;
   store.attackMoveActive.value = w.attackMoveMode;
 
-  const nowLowClams = w.resources.clams < 100;
-  const nowLowTwigs = w.resources.twigs < 50;
-  store.lowClams.value = nowLowClams;
-  store.lowTwigs.value = nowLowTwigs;
-  if (nowLowClams && !_prevLowClams) {
+  const nowLowFish = w.resources.fish < 100;
+  const nowLowLogs = w.resources.logs < 50;
+  store.lowFish.value = nowLowFish;
+  store.lowLogs.value = nowLowLogs;
+  if (nowLowFish && !_prevLowFish) {
     audio.alert();
   }
-  if (nowLowTwigs && !_prevLowTwigs) {
+  if (nowLowLogs && !_prevLowLogs) {
     audio.alert();
   }
-  _prevLowClams = nowLowClams;
-  _prevLowTwigs = nowLowTwigs;
+  _prevLowFish = nowLowFish;
+  _prevLowLogs = nowLowLogs;
 
   // --- Control group counts ---
   const groupCounts: Record<number, number> = {};
@@ -131,10 +134,20 @@ export function syncPopulationAndTimers(
   }
   store.ctrlGroupCounts.value = groupCounts;
 
-  // --- v3: Lodge HP sync (every 30 frames to avoid per-frame query cost) ---
+  // --- v3: Lodge HP + fortification sync (every 30 frames to avoid per-frame query cost) ---
   if (w.frameCount % 30 === 0) {
     syncLodgeHp(w);
+    if (w.fortifications) {
+      storeV3.fortificationSlots.value = w.fortifications.slots;
+    }
   }
+
+  // --- Commander ability state (for HUD button) ---
+  const ability = COMMANDER_ABILITIES[w.commanderId];
+  storeGameplay.commanderAbilityReady.value = canUseCommanderAbility(w);
+  storeGameplay.commanderAbilityCooldown.value = getAbilityCooldownSeconds(w);
+  storeGameplay.commanderAbilityActive.value = w.commanderAbilityActiveUntil > w.frameCount;
+  storeGameplay.commanderAbilityName.value = ability?.name ?? '';
 
   // --- v3: Wave number + wave-survival mode sync ---
   storeV3.currentWaveNumber.value = w.waveNumber;

@@ -58,7 +58,7 @@ export function clampWorld(v: number, max: number, margin = 60): number {
 
 /**
  * Spawn a cattail with a randomised resource amount.
- * Normal: 200-600 twigs. Rich: 600-1200 twigs.
+ * Normal: 200-600 logs. Rich: 600-1200 logs.
  */
 export function spawnCattail(
   world: GameWorld,
@@ -80,7 +80,7 @@ export function spawnCattail(
 
 /**
  * Spawn a clambed with a randomised resource amount.
- * Normal: 2000-6000 clams. Rich: 6000-12000 clams.
+ * Normal: 2000-6000 fish. Rich: 6000-12000 fish.
  */
 export function spawnClambed(
   world: GameWorld,

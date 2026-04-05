@@ -152,18 +152,6 @@ export class YukaManager {
     return this.fleeTimers.has(eid);
   }
 
-  /** @deprecated Use addUnit() instead. */
-  addEnemy(
-    eid: number,
-    x: number,
-    y: number,
-    speed: number,
-    targetX: number,
-    targetY: number,
-  ): void {
-    this.addUnit(eid, x, y, speed, targetX, targetY);
-  }
-
   removeUnit(eid: number): void {
     const vehicle = this.vehicles.get(eid);
     if (!vehicle) return;
@@ -173,11 +161,6 @@ export class YukaManager {
     this.wanderBehaviors.delete(eid);
     this.formationEids.delete(eid);
     this.pursuitTargets.delete(eid);
-  }
-
-  /** @deprecated Use removeUnit() instead. */
-  removeEnemy(eid: number): void {
-    this.removeUnit(eid);
   }
 
   has(eid: number): boolean {

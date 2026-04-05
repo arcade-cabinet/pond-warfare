@@ -17,6 +17,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import { TRAIN_TIMER, WORLD_HEIGHT, WORLD_WIDTH } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -512,6 +513,12 @@ describe('selectArmy()', () => {
 // train()
 // ---------------------------------------------------------------------------
 
+// Training cost constants (from ENTITY_DEFS — aligned with configs/units.json)
+const GC = ENTITY_DEFS[EntityKind.Gatherer].fishCost ?? 0;
+const GT = ENTITY_DEFS[EntityKind.Gatherer].logCost ?? 0;
+const BC = ENTITY_DEFS[EntityKind.Brawler].fishCost ?? 0;
+const BT = ENTITY_DEFS[EntityKind.Brawler].logCost ?? 0;
+
 describe('train()', () => {
   let world: GameWorld;
   let lodgeEid: number;
@@ -524,71 +531,80 @@ describe('train()', () => {
     world.resources.maxFood = 10;
     world.resources.food = 0;
     // Reset resources to known values
-    world.resources.clams = 200;
-    world.resources.twigs = 50;
+    world.resources.fish = 200;
+    world.resources.logs = 50;
     // Clear the queue slot map
     trainingQueueSlots.delete(lodgeEid);
     TrainingQueue.count[lodgeEid] = 0;
     TrainingQueue.timer[lodgeEid] = 0;
   });
 
-  it('deducts clam cost when queuing a unit', () => {
-    const before = world.resources.clams;
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    expect(world.resources.clams).toBe(before - 50);
+  it('deducts fish cost when queuing a unit', () => {
+    const before = world.resources.fish;
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    expect(world.resources.fish).toBe(before - GC);
   });
 
-  it('deducts twig cost when queuing a unit', () => {
-    world.resources.clams = 200;
-    world.resources.twigs = 100;
-    train(world, lodgeEid, EntityKind.Brawler, 100, 50, 1);
-    expect(world.resources.twigs).toBe(50);
+  it('deducts log cost when queuing a unit', () => {
+    world.resources.fish = 200;
+    world.resources.logs = 100;
+    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1);
+    expect(world.resources.logs).toBe(100 - BT);
   });
 
   it('eagerly reserves food so consecutive train calls respect the cap', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     // Food is eagerly incremented so subsequent train() calls see the reservation
     expect(world.resources.food).toBe(1);
   });
 
   it('adds unit to training queue', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
     const slots = trainingQueueSlots.get(lodgeEid);
     expect(slots?.[0]).toBe(EntityKind.Gatherer);
   });
 
   it('initializes timer for first queued unit', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     expect(TrainingQueue.timer[lodgeEid]).toBe(TRAIN_TIMER);
   });
 
   it('does not reset timer when second unit is queued', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     TrainingQueue.timer[lodgeEid] = 90; // Simulate partial progress
-    world.resources.clams = 200;
+    world.resources.fish = 200;
 
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     expect(TrainingQueue.timer[lodgeEid]).toBe(90); // Timer unchanged
   });
 
-  it('does not queue when insufficient clams', () => {
-    world.resources.clams = 10; // Not enough for gatherer (costs 50)
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+  it('does not queue when insufficient fish', () => {
+    world.resources.fish = GC - 1; // 1 short of Gatherer cost
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
-  it('does not queue when insufficient twigs', () => {
-    world.resources.twigs = 0; // Not enough for brawler (costs 50 twigs)
-    world.resources.clams = 200;
-    train(world, lodgeEid, EntityKind.Brawler, 100, 50, 1);
-    expect(TrainingQueue.count[lodgeEid]).toBe(0);
+  it('does not queue when insufficient logs', () => {
+    // Use Sniper which costs logs, or verify fish-gated rejection
+    const SC = ENTITY_DEFS[EntityKind.Sniper].fishCost ?? 0;
+    const SL = ENTITY_DEFS[EntityKind.Sniper].logCost ?? 0;
+    world.resources.fish = 200;
+    world.resources.logs = SL > 0 ? SL - 1 : 0;
+    if (SL > 0) {
+      train(world, lodgeEid, EntityKind.Sniper, SC, SL, 1);
+      expect(TrainingQueue.count[lodgeEid]).toBe(0);
+    } else {
+      world.resources.fish = GC - 1;
+      train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+      expect(TrainingQueue.count[lodgeEid]).toBe(0);
+    }
   });
 
   it('does not queue when food limit reached', () => {
     world.resources.food = 10;
     world.resources.maxFood = 10;
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
@@ -596,23 +612,23 @@ describe('train()', () => {
     // Fill up to 8
     world.resources.maxFood = 20;
     for (let i = 0; i < 8; i++) {
-      world.resources.clams = 200;
-      train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+      world.resources.fish = 200;
+      train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     }
     expect(TrainingQueue.count[lodgeEid]).toBe(8);
 
-    world.resources.clams = 200;
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    world.resources.fish = 200;
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(8); // Still 8, not 9
   });
 
   it('queues multiple different unit types', () => {
-    world.resources.clams = 300;
-    world.resources.twigs = 200;
+    world.resources.fish = 300;
+    world.resources.logs = 200;
     world.resources.maxFood = 5;
 
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    train(world, lodgeEid, EntityKind.Brawler, 100, 50, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1);
 
     expect(TrainingQueue.count[lodgeEid]).toBe(2);
     const slots = trainingQueueSlots.get(lodgeEid);
@@ -634,33 +650,33 @@ describe('cancelTrain()', () => {
     lodgeEid = spawnEntity(world, EntityKind.Lodge, 1280, 1280, Faction.Player);
     world.resources.maxFood = 10;
     world.resources.food = 0;
-    world.resources.clams = 200;
-    world.resources.twigs = 50;
+    world.resources.fish = 200;
+    world.resources.logs = 50;
     trainingQueueSlots.delete(lodgeEid);
     TrainingQueue.count[lodgeEid] = 0;
     TrainingQueue.timer[lodgeEid] = 0;
   });
 
-  it('refunds clam cost when canceling a gatherer', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    const clamsBefore = world.resources.clams;
+  it('refunds fish cost when canceling a gatherer', () => {
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    const fishBefore = world.resources.fish;
 
     cancelTrain(world, lodgeEid, 0);
-    expect(world.resources.clams).toBe(clamsBefore + 50);
+    expect(world.resources.fish).toBe(fishBefore + GC);
   });
 
-  it('refunds twig cost when canceling a brawler', () => {
-    world.resources.clams = 200;
-    world.resources.twigs = 100;
-    train(world, lodgeEid, EntityKind.Brawler, 100, 50, 1);
-    const twigsBefore = world.resources.twigs;
+  it('refunds log cost when canceling a brawler', () => {
+    world.resources.fish = 200;
+    world.resources.logs = 100;
+    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1);
+    const logsBefore = world.resources.logs;
 
     cancelTrain(world, lodgeEid, 0);
-    expect(world.resources.twigs).toBe(twigsBefore + 50);
+    expect(world.resources.logs).toBe(logsBefore + BT);
   });
 
   it('eagerly releases food reservation on cancellation', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     expect(world.resources.food).toBe(1);
 
     cancelTrain(world, lodgeEid, 0);
@@ -668,21 +684,21 @@ describe('cancelTrain()', () => {
   });
 
   it('removes the unit from the queue', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     cancelTrain(world, lodgeEid, 0);
     expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
   it('resets timer to 0 when last queued unit is canceled', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
     cancelTrain(world, lodgeEid, 0);
     expect(TrainingQueue.timer[lodgeEid]).toBe(0);
   });
 
   it('resets timer to TRAIN_TIMER when active item canceled with items remaining', () => {
-    world.resources.clams = 300;
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    world.resources.fish = 300;
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
 
     TrainingQueue.timer[lodgeEid] = 90; // Simulate partial progress
     cancelTrain(world, lodgeEid, 0); // Cancel the active (first) item
@@ -690,9 +706,9 @@ describe('cancelTrain()', () => {
   });
 
   it('does not change timer when canceling a non-active item', () => {
-    world.resources.clams = 300;
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
+    world.resources.fish = 300;
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
 
     TrainingQueue.timer[lodgeEid] = 90;
     cancelTrain(world, lodgeEid, 1); // Cancel second item (not active)
@@ -700,33 +716,33 @@ describe('cancelTrain()', () => {
   });
 
   it('does nothing for out-of-range index', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    const clamsBefore = world.resources.clams;
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    const clamsBefore = world.resources.fish;
 
     cancelTrain(world, lodgeEid, 5); // Out of range
-    expect(world.resources.clams).toBe(clamsBefore);
+    expect(world.resources.fish).toBe(clamsBefore);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
   });
 
   it('does nothing for negative index', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1);
-    const clamsBefore = world.resources.clams;
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    const clamsBefore = world.resources.fish;
 
     cancelTrain(world, lodgeEid, -1);
-    expect(world.resources.clams).toBe(clamsBefore);
+    expect(world.resources.fish).toBe(clamsBefore);
   });
 
   it('does nothing when queue is empty', () => {
-    const clamsBefore = world.resources.clams;
+    const clamsBefore = world.resources.fish;
     cancelTrain(world, lodgeEid, 0);
-    expect(world.resources.clams).toBe(clamsBefore);
+    expect(world.resources.fish).toBe(clamsBefore);
   });
 
   it('shifts remaining items down after cancellation of first item', () => {
-    world.resources.clams = 300;
-    world.resources.twigs = 200;
-    train(world, lodgeEid, EntityKind.Gatherer, 50, 0, 1); // index 0
-    train(world, lodgeEid, EntityKind.Brawler, 100, 50, 1); // index 1
+    world.resources.fish = 300;
+    world.resources.logs = 200;
+    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1); // index 0
+    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1); // index 1
 
     cancelTrain(world, lodgeEid, 0);
 

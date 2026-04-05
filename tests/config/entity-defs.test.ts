@@ -12,6 +12,7 @@ import {
   entityKindFromString,
   entityKindName,
   getDamageMultiplier,
+  isWingBuilding,
 } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 
@@ -84,6 +85,33 @@ describe('ENTITY_DEFS', () => {
     const sniper = ENTITY_DEFS[EntityKind.Sniper];
     const brawler = ENTITY_DEFS[EntityKind.Brawler];
     expect(sniper.attackRange).toBeGreaterThan(brawler.attackRange);
+  });
+});
+
+describe('isWingBuilding', () => {
+  it('should return true for Lodge wing buildings', () => {
+    expect(isWingBuilding(EntityKind.Armory)).toBe(true);
+    expect(isWingBuilding(EntityKind.Burrow)).toBe(true);
+    expect(isWingBuilding(EntityKind.FishingHut)).toBe(true);
+    expect(isWingBuilding(EntityKind.HerbalistHut)).toBe(true);
+    expect(isWingBuilding(EntityKind.Market)).toBe(true);
+    expect(isWingBuilding(EntityKind.Dock)).toBe(true);
+  });
+
+  it('should return false for standalone buildings', () => {
+    expect(isWingBuilding(EntityKind.Lodge)).toBe(false);
+    expect(isWingBuilding(EntityKind.Tower)).toBe(false);
+    expect(isWingBuilding(EntityKind.Watchtower)).toBe(false);
+    expect(isWingBuilding(EntityKind.Wall)).toBe(false);
+    expect(isWingBuilding(EntityKind.ScoutPost)).toBe(false);
+    expect(isWingBuilding(EntityKind.PredatorNest)).toBe(false);
+  });
+
+  it('should return false for non-building entities', () => {
+    expect(isWingBuilding(EntityKind.Gatherer)).toBe(false);
+    expect(isWingBuilding(EntityKind.Brawler)).toBe(false);
+    expect(isWingBuilding(EntityKind.Gator)).toBe(false);
+    expect(isWingBuilding(EntityKind.Cattail)).toBe(false);
   });
 });
 

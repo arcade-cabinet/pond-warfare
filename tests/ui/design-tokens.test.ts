@@ -49,12 +49,21 @@ describe('COLORS', () => {
 });
 
 describe('FONTS', () => {
-  it('header contains "IM Fell English SC"', () => {
-    expect(FONTS.header).toContain('IM Fell English SC');
+  it('header uses system serif stack (no external fonts)', () => {
+    expect(FONTS.header).toContain('Georgia');
+    expect(FONTS.header).toContain('serif');
   });
 
-  it('body contains "Open Sans"', () => {
-    expect(FONTS.body).toContain('Open Sans');
+  it('body uses system sans stack (no external fonts)', () => {
+    expect(FONTS.body).toContain('system-ui');
+    expect(FONTS.body).toContain('sans-serif');
+  });
+
+  it('does not reference any external font families', () => {
+    const allFonts = `${FONTS.header} ${FONTS.body}`;
+    expect(allFonts).not.toContain('IM Fell');
+    expect(allFonts).not.toContain('Open Sans');
+    expect(allFonts).not.toContain('JetBrains');
   });
 });
 

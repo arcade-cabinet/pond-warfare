@@ -67,7 +67,7 @@ function createTestWorld(): GameWorld {
     floatingTexts: [] as unknown[],
     particles: [] as unknown[],
     tech: {},
-    resources: { clams: 500, twigs: 300, pearls: 0 },
+    resources: { fish: 500, twigs: 300, pearls: 0 },
     placingBuilding: null,
     groundPings: [] as unknown[],
     attackMoveMode: false,
@@ -154,7 +154,7 @@ function spawnResource(
   world: GameWorld,
   x: number,
   y: number,
-  type: ResourceType = ResourceType.Clams,
+  type: ResourceType = ResourceType.Fish,
 ): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
@@ -170,7 +170,7 @@ function spawnResource(
   Health.current[eid] = 500;
   Health.max[eid] = 500;
   Collider.radius[eid] = 15;
-  EntityTypeTag.kind[eid] = type === ResourceType.Clams ? EntityKind.Clambed : EntityKind.Cattail;
+  EntityTypeTag.kind[eid] = type === ResourceType.Fish ? EntityKind.Clambed : EntityKind.Cattail;
   FactionTag.faction[eid] = Faction.Neutral;
   Resource.resourceType[eid] = type;
   Resource.amount[eid] = 500;
@@ -325,7 +325,7 @@ describe('issueContextCommand -> movement', () => {
 
   it('right-click resource sets GatherMove for gatherer', () => {
     const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
-    const resource = spawnResource(world, 300, 300, ResourceType.Clams);
+    const resource = spawnResource(world, 300, 300, ResourceType.Fish);
     world.selection = [gatherer];
     Selectable.selected[gatherer] = 1;
 
@@ -337,7 +337,7 @@ describe('issueContextCommand -> movement', () => {
 
   it('right-click resource -> gatherer walks toward it', () => {
     const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
-    const resource = spawnResource(world, 300, 300, ResourceType.Clams);
+    const resource = spawnResource(world, 300, 300, ResourceType.Fish);
     world.selection = [gatherer];
     Selectable.selected[gatherer] = 1;
 
@@ -417,7 +417,7 @@ describe('Gather loop', () => {
 
   it('gatherer transitions from GatherMove -> Gathering on arrival', () => {
     const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
-    const resource = spawnResource(world, 130, 100, ResourceType.Clams);
+    const resource = spawnResource(world, 130, 100, ResourceType.Fish);
 
     UnitStateMachine.state[gatherer] = UnitState.GatherMove;
     UnitStateMachine.targetEntity[gatherer] = resource;

@@ -18,7 +18,7 @@ vi.mock('@/game', () => ({
       gameSpeed: 1,
       ecs: {},
       yukaManager: { removeUnit: vi.fn(), clearFormationBehaviors: vi.fn() },
-      resources: { clams: 500, twigs: 300 },
+      resources: { fish: 500, twigs: 300 },
       floatingTexts: [] as unknown[],
       camX: 0,
       camY: 0,
@@ -90,7 +90,6 @@ import {
   haltSelection,
   selectAllUnits,
   selectArmyUnits,
-  toggleAutoBehavior,
   toggleColorBlind,
   toggleMute,
   togglePanel,
@@ -107,10 +106,6 @@ beforeEach(() => {
   store.mobilePanelOpen.value = false;
   store.colorBlindMode.value = false;
   store.muted.value = false;
-  store.autoGathererEnabled.value = false;
-  store.autoCombatEnabled.value = false;
-  store.autoHealerEnabled.value = false;
-  store.autoScoutEnabled.value = false;
   vi.clearAllMocks();
 });
 
@@ -193,30 +188,5 @@ describe('game-actions', () => {
   it('toggleMute calls audio.toggleMute', () => {
     toggleMute();
     expect(audio.toggleMute).toHaveBeenCalled();
-  });
-
-  describe('toggleAutoBehavior', () => {
-    // v3.0: auto-behaviors are now prestige-earned; stub only toggles store signals
-    it('toggles gatherer store signal', () => {
-      toggleAutoBehavior('gatherer');
-      expect(store.autoGathererEnabled.value).toBe(true);
-      toggleAutoBehavior('gatherer');
-      expect(store.autoGathererEnabled.value).toBe(false);
-    });
-
-    it('toggles combat store signal', () => {
-      toggleAutoBehavior('combat');
-      expect(store.autoCombatEnabled.value).toBe(true);
-    });
-
-    it('toggles healer store signal', () => {
-      toggleAutoBehavior('healer');
-      expect(store.autoHealerEnabled.value).toBe(true);
-    });
-
-    it('toggles scout store signal', () => {
-      toggleAutoBehavior('scout');
-      expect(store.autoScoutEnabled.value).toBe(true);
-    });
   });
 });

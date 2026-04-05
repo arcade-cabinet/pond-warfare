@@ -1,6 +1,6 @@
 /**
  * Building sprites: lodge, burrow, armory, tower, watchtower, predator_nest,
- * wall, scout_post, fishing_hut, herbalist_hut.
+ * wall, scout_post, fishing_hut, herbalist_hut, market.
  */
 
 import { PALETTE } from '@/constants';
@@ -145,4 +145,32 @@ export function drawHerbalistHut(d: DrawCtx): void {
   p(22, 16, '#22c55e');
   p(11, 18, '#4ade80');
   p(21, 18, '#4ade80');
+}
+
+/** Market -- wooden stall with striped awning. */
+export function drawMarket(d: DrawCtx): void {
+  const { p, rect } = d;
+  // Stall base (wooden counter)
+  rect(4, 16, 24, 10, PALETTE.reedBrown);
+  for (let i = 0; i < 15; i++) p(5 + Math.random() * 22, 17 + Math.random() * 8, PALETTE.otterBase);
+  // Counter top
+  rect(4, 14, 24, 3, PALETTE.mudDark);
+  for (let i = 0; i < 10; i++) p(5 + Math.random() * 22, 14 + Math.random() * 2, '#5c2d0a');
+  // Support posts
+  rect(6, 4, 2, 14, PALETTE.reedBrown);
+  rect(24, 4, 2, 14, PALETTE.reedBrown);
+  // Striped awning (red and cream stripes)
+  rect(4, 2, 24, 4, '#dc2626');
+  rect(4, 3, 24, 1, '#fef3c7');
+  rect(4, 5, 24, 1, '#fef3c7');
+  // Awning overhang shadow
+  rect(4, 6, 24, 1, PALETTE.mudDark);
+  // Wares on counter (fish, clams, etc.)
+  p(10, 15, PALETTE.clamShell);
+  p(12, 15, PALETTE.clamMeat);
+  p(16, 15, '#38bdf8');
+  p(18, 15, PALETTE.clamShell);
+  p(20, 15, '#38bdf8');
+  // Ground detail
+  rect(4, 26, 24, 2, PALETTE.mudLight);
 }

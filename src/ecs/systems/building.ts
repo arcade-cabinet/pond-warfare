@@ -6,7 +6,7 @@
  *
  * Responsibilities:
  * - Build state: progress building HP toward max, update progress percentage
- * - Repair state: repair damaged buildings at cost of 1 twig per 5 HP
+ * - Repair state: repair damaged buildings at cost of 1 log per 5 HP
  * - SFX calls (build sound every 20 frames)
  * - Particle effects at target building
  * - Timer management for both build and repair cycles
@@ -174,9 +174,9 @@ export function buildingSystem(world: GameWorld): void {
       // Timer countdown
       UnitStateMachine.gatherTimer[eid]--;
       if (UnitStateMachine.gatherTimer[eid] <= 0) {
-        // Repair costs 1 twig per 5 HP
-        if (world.resources.twigs >= 1) {
-          world.resources.twigs -= 1;
+        // Repair costs 1 log per 5 HP
+        if (world.resources.logs >= 1) {
+          world.resources.logs -= 1;
           Health.current[tEnt] = Math.min(Health.max[tEnt], Health.current[tEnt] + 5);
           if (Health.current[tEnt] >= Health.max[tEnt]) {
             UnitStateMachine.state[eid] = UnitState.Idle;
@@ -188,7 +188,7 @@ export function buildingSystem(world: GameWorld): void {
           world.floatingTexts.push({
             x: Position.x[eid],
             y: Position.y[eid] - 20,
-            text: 'No twigs!',
+            text: 'No logs!',
             color: '#ef4444',
             life: 40,
           });

@@ -6,9 +6,14 @@
  * configs/fortifications.json and configs/lodge.json.
  */
 
+import { hasComponent } from 'bitecs';
 import { getFortDef } from '@/config/config-loader';
 import type { FortDef } from '@/config/v3-types';
+import { FactionTag, Health, Position } from '@/ecs/components';
+import { takeDamage } from '@/ecs/systems/health';
+import type { GameWorld } from '@/ecs/world';
 import { generateFortSlotPositions, getFortSlotCount } from '@/rendering/lodge-renderer';
+import { Faction } from '@/types';
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -256,4 +261,36 @@ export function findClosestSlot(
   }
 
   return closest;
+}
+
+/**
+ * Per-frame tick: active towers find the nearest enemy in range and attack.
+ * Called from systems-runner after combatSystem.
+ */
+export function fortificationTickSystem(world: GameWorld): void {
+  if (!world.fortifications) return;
+  const towers = getActiveTowers(world.fortifications);
+  for (const tower of towers) {
+    if (!canTowerAttack(tower, world.frameCount)) continue;
+    // Find nearest enemy in range using spatialHash
+    const candidates = world.spatialHash.query(tower.worldX, tower.worldY, tower.range);
+    let bestEid = -1;
+    let bestDist = tower.range * tower.range;
+    for (const eid of candidates) {
+      if (!hasComponent(world.ecs, eid, FactionTag)) continue;
+      if (FactionTag.faction[eid] !== Faction.Enemy) continue;
+      if (!hasComponent(world.ecs, eid, Health) || Health.current[eid] <= 0) continue;
+      const dx = Position.x[eid] - tower.worldX;
+      const dy = Position.y[eid] - tower.worldY;
+      const d = dx * dx + dy * dy;
+      if (d < bestDist) {
+        bestDist = d;
+        bestEid = eid;
+      }
+    }
+    if (bestEid !== -1) {
+      takeDamage(world, bestEid, tower.damage, -1);
+      recordTowerAttack(tower, world.frameCount);
+    }
+  }
 }

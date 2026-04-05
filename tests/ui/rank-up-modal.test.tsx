@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Rank Up Modal Tests (v3.0 — US14)
  *

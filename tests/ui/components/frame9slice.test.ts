@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Frame9Slice Tests
  *

@@ -46,6 +46,8 @@ describe('fogOfWarSystem', () => {
     world = createGameWorld();
     // System runs every 10 frames
     world.frameCount = 10;
+    // Ensure clear weather so vision multiplier is 1.0
+    if (world.weather) world.weather.current = 'clear';
 
     // Create a mock canvas context
     mockCtx = {
@@ -97,7 +99,7 @@ describe('fogOfWarSystem', () => {
     const arcCalls = mockCtx.arc.mock.calls;
     expect(arcCalls.length).toBeGreaterThanOrEqual(1);
     const lastArc = arcCalls[arcCalls.length - 1];
-    // arc(x, y, radius, startAngle, endAngle) — radius is arg index 2
+    // arc(x, y, radius, startAngle, endAngle) -- radius is arg index 2
     expect(lastArc[2]).toBe(16);
   });
 
@@ -161,5 +163,18 @@ describe('fogOfWarSystem', () => {
     const lastArc = arcCalls[arcCalls.length - 1];
     // 16 * 1.25 = 20, ceil = 20
     expect(lastArc[2]).toBe(20);
+  });
+
+  it('should reduce vision radius during fog weather', () => {
+    if (world.weather) world.weather.current = 'fog';
+    createPlayerUnit(world, EntityKind.Scout, 320, 320);
+
+    fogOfWarSystem(world);
+
+    const arcCalls = mockCtx.arc.mock.calls;
+    expect(arcCalls.length).toBeGreaterThanOrEqual(1);
+    const lastArc = arcCalls[arcCalls.length - 1];
+    // Scout base=16, fog vision mult=0.6: ceil(16*0.6) = 10
+    expect(lastArc[2]).toBe(10);
   });
 });

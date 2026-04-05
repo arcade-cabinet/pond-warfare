@@ -11,7 +11,7 @@
  * - Predator Frenzy: all enemies get +20% speed for 30 seconds
  * - Healing Spring: temporary healing zone heals nearby units
  * - Fog Bank: fog of war closes in by 30% for 60 seconds
- * - Supply Drop: clams + twigs appear at a random explored location
+ * - Supply Drop: fish + logs appear at a random explored location
  * - Earthquake: all buildings take 10% damage, screen shake
  * - Blessing of the Pond: all player units get +10% speed for 60 seconds
  */
@@ -213,8 +213,8 @@ function doFogBank(world: GameWorld): void {
 }
 
 function doSupplyDrop(world: GameWorld, rng: () => number): void {
-  world.resources.clams += 100;
-  world.resources.twigs += 50;
+  world.resources.fish += 100;
+  world.resources.logs += 50;
   const x = world.camX + rng() * world.viewWidth;
   const y = world.camY + rng() * world.viewHeight;
   announce(world, 'Supplies wash ashore!', '#a78bfa');

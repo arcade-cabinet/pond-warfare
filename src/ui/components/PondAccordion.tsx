@@ -1,5 +1,5 @@
 /**
- * PondAccordion -- Collapsible accordion with Button.png header backgrounds.
+ * PondAccordion -- Collapsible accordion with CSS-styled headers.
  *
  * Replaces tab-based navigation across the UI. Each section has a painted
  * teal header, chevron indicator, optional summary, and lily-pad watermark

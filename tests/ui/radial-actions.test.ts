@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Tests: Radial Action Dispatcher (v3.0 -- US9/US10)
  *
@@ -25,7 +26,7 @@ vi.mock('bitecs', async () => {
 vi.mock('@/game', () => ({
   game: {
     world: {
-      resources: { clams: 500, twigs: 200, pearls: 100, food: 0, maxFood: 0 },
+      resources: { fish: 500, twigs: 200, pearls: 100, food: 0, maxFood: 0 },
       frameCount: 100,
       placingBuilding: null as string | null,
       attackMoveMode: false,
@@ -87,9 +88,9 @@ import { dispatchRadialAction } from '@/ui/radial-actions';
 
 beforeEach(() => {
   vi.clearAllMocks();
-  game.world.resources.clams = 500;
-  game.world.resources.twigs = 200;
-  game.world.resources.pearls = 100;
+  game.world.resources.fish = 500;
+  game.world.resources.logs = 200;
+  game.world.resources.rocks = 100;
   game.world.placingBuilding = null;
   game.world.attackMoveMode = false;
   game.world.selection = [];
@@ -104,14 +105,14 @@ describe('dispatchRadialAction -- training', () => {
   });
 
   it('does not deduct resources when Lodge not found', () => {
-    const initialClams = game.world.resources.clams;
+    const initialClams = game.world.resources.fish;
     dispatchRadialAction('train_gatherer');
     // Resources should NOT be deducted because Lodge isn't found
-    expect(game.world.resources.clams).toBe(initialClams);
+    expect(game.world.resources.fish).toBe(initialClams);
   });
 
   it('returns false and shows error for insufficient resources', () => {
-    game.world.resources.clams = 0;
+    game.world.resources.fish = 0;
     const result = dispatchRadialAction('train_gatherer');
     expect(result).toBe(false);
     expect(audio.error).toHaveBeenCalled();
@@ -126,7 +127,7 @@ describe('dispatchRadialAction -- training', () => {
 
 describe('dispatchRadialAction -- fortify', () => {
   it('enters fort placement mode when Rocks available', () => {
-    game.world.resources.pearls = 100; // Rocks mapped to pearls
+    game.world.resources.rocks = 100; // Rocks mapped to pearls
     const result = dispatchRadialAction('fortify');
     expect(result).toBe(true);
     expect(game.world.placingBuilding).toBe('fort_wood_wall');
@@ -134,7 +135,7 @@ describe('dispatchRadialAction -- fortify', () => {
   });
 
   it('fails when not enough Rocks (pearls internally)', () => {
-    game.world.resources.pearls = 0;
+    game.world.resources.rocks = 0;
     const result = dispatchRadialAction('fortify');
     expect(result).toBe(false);
     expect(audio.error).toHaveBeenCalled();

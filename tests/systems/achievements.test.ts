@@ -33,7 +33,7 @@ describe('achievements', () => {
       techCount: 0,
       maxBranchTechCount: 0,
       totalPearls: 0,
-      totalClams: 0,
+      totalFish: 0,
       buildingsBuilt: 0,
       buildingsLost: 0,
       onlyShadowTechs: false,

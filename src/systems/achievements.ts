@@ -7,7 +7,6 @@
  */
 
 import { query } from 'bitecs';
-import { TECH_UPGRADES, type TechBranch, type TechState } from '@/config/tech-tree';
 import { EntityTypeTag, FactionTag, Health, Veterancy } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { getSetting, isDatabaseReady, setSetting } from '@/storage';
@@ -86,22 +85,13 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     peakKillStreak = world.killStreak.count;
   }
 
-  // Count researched techs and branch stats.
-  // v3.0: TECH_UPGRADES is empty, so only keys present in both world.tech
-  // AND TECH_UPGRADES are counted. Commander-set flags are skipped safely.
+  // Count researched techs (v3.0: in-game research removed, count whatever is truthy).
   let techCount = 0;
-  const branchCounts: Record<string, number> = {};
-  let hasNonShadowTech = false;
-  for (const [key, val] of Object.entries(world.tech as TechState)) {
-    if (!val) continue;
-    const upgrade = TECH_UPGRADES[key as keyof typeof TECH_UPGRADES];
-    if (!upgrade) continue; // Skip tech flags not in TECH_UPGRADES (e.g. commander-set)
-    techCount++;
-    const branch: TechBranch = upgrade.branch;
-    branchCounts[branch] = (branchCounts[branch] ?? 0) + 1;
-    if (branch !== 'shadow') hasNonShadowTech = true;
+  for (const val of Object.values(world.tech)) {
+    if (val) techCount++;
   }
-  const maxBranchTechCount = Math.max(0, ...Object.values(branchCounts));
+  const maxBranchTechCount = 0;
+  const hasNonShadowTech = false;
 
   // Find max veterancy rank among player units
   let maxVetRank = 0;
@@ -177,7 +167,7 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     techCount,
     maxBranchTechCount,
     totalPearls: totalPearlsThisMatch,
-    totalClams: world.stats.totalClamsEarned,
+    totalFish: world.stats.totalFishEarned,
     buildingsBuilt: world.stats.buildingsBuilt,
     buildingsLost: world.stats.buildingsLost,
     onlyShadowTechs: techCount > 0 && !hasNonShadowTech,

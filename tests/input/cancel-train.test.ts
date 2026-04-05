@@ -77,11 +77,11 @@ describe('cancelTrain', () => {
   it('refunds clam and twig costs', () => {
     const armory = createTrainingBuilding(world, EntityKind.Armory);
     const brawlerDef = ENTITY_DEFS[EntityKind.Brawler];
-    const clamCost = brawlerDef.clamCost ?? 0;
-    const twigCost = brawlerDef.twigCost ?? 0;
+    const fishCost = brawlerDef.fishCost ?? 0;
+    const logCost = brawlerDef.logCost ?? 0;
 
-    world.resources.clams = 100;
-    world.resources.twigs = 50;
+    world.resources.fish = 100;
+    world.resources.logs = 50;
 
     trainingQueueSlots.set(armory, [EntityKind.Brawler]);
     TrainingQueue.count[armory] = 1;
@@ -89,8 +89,8 @@ describe('cancelTrain', () => {
 
     cancelTrain(world, armory, 0);
 
-    expect(world.resources.clams).toBe(100 + clamCost);
-    expect(world.resources.twigs).toBe(50 + twigCost);
+    expect(world.resources.fish).toBe(100 + fishCost);
+    expect(world.resources.logs).toBe(50 + logCost);
   });
 
   it('resets timer when cancelling the active (index 0) item with remaining queue', () => {
@@ -125,11 +125,11 @@ describe('cancelTrain', () => {
     TrainingQueue.count[armory] = 1;
     TrainingQueue.timer[armory] = TRAIN_TIMER;
 
-    const clamsBefore = world.resources.clams;
+    const clamsBefore = world.resources.fish;
 
     cancelTrain(world, armory, 5);
 
     expect(TrainingQueue.count[armory]).toBe(1);
-    expect(world.resources.clams).toBe(clamsBefore);
+    expect(world.resources.fish).toBe(clamsBefore);
   });
 });

@@ -1,0 +1,108 @@
+{
+  "title": "Pond Warfare v3 — Complete Remaining Implementation",
+  "stories": [
+    {
+      "id": "US1",
+      "title": "Governor Auto-Play Mode",
+      "priority": "medium",
+      "status": "in_progress",
+      "acceptance_criteria": [
+        "store-gameplay.ts has autoPlayEnabled signal",
+        "Settings panel has Auto-Play toggle",
+        "game.ts instantiates Governor when auto-play enabled",
+        "Governor.enabled set to true on match start",
+        "Auto-play test passes within 3600 frames"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US2",
+      "title": "Combat Subsystem Tests",
+      "priority": "high",
+      "status": "in_progress",
+      "acceptance_criteria": [
+        "positional-damage.test.ts covers flanking + elevation",
+        "take-damage.test.ts covers damage application + tech modifiers",
+        "healing.test.ts covers heal caps + area healing",
+        "commander-aura.test.ts covers buff radius + damage bonus",
+        "All tests use real ECS entities"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US3",
+      "title": "Enemy AI Tests",
+      "priority": "high",
+      "status": "in_progress",
+      "acceptance_criteria": [
+        "enemy-economy.test.ts covers gatherer spawn + peace timer",
+        "enemy-training.test.ts covers unit training + cost deduction",
+        "enemy-combat.test.ts covers attack targeting"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US4",
+      "title": "Input System Tests",
+      "priority": "high",
+      "status": "in_progress",
+      "acceptance_criteria": [
+        "keyboard.test.ts covers WASD, Ctrl groups, Q ability, Escape, Tab",
+        "All keymap entries have test assertions"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US5",
+      "title": "Evolution & Threat Escalation Tests",
+      "priority": "medium",
+      "status": "in_progress",
+      "acceptance_criteria": [
+        "threat-escalation.test.ts covers threat progression + tier thresholds",
+        "passive-income.test.ts covers fishing hut income rate"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US6",
+      "title": "Fortification Integration Tests",
+      "priority": "high",
+      "status": "pending",
+      "acceptance_criteria": [
+        "Tower attacks nearest enemy in range",
+        "Wall blocks movement",
+        "Enemy sapper damages fort slot to destroyed",
+        "Tests use real spawned world"
+      ],
+      "dependencies": ["US2"]
+    },
+    {
+      "id": "US7",
+      "title": "Resource Naming Consistency Pass",
+      "priority": "high",
+      "status": "pending",
+      "acceptance_criteria": [
+        "Zero clamCost/twigCost in src/",
+        "Zero store.clams/store.twigs in src/",
+        "Zero resources.clams/resources.twigs except save compat",
+        "Zero gathering-clams/gathering-twigs task names",
+        "CLAUDE.md says no aliases",
+        "Grep verification confirms zero stale refs"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US8",
+      "title": "Documentation Update",
+      "priority": "low",
+      "status": "pending",
+      "acceptance_criteria": [
+        "CLAUDE.md resource section accurate",
+        "CLAUDE.md test count updated",
+        "docs/architecture.md lists fortification + spawn patterns",
+        "docs/gameplay.md reflects v3 unit costs"
+      ],
+      "dependencies": ["US7"]
+    }
+  ]
+}

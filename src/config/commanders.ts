@@ -285,3 +285,9 @@ export const COMMANDER_ABILITIES: Record<string, ActiveAbilityDef> = {
 export function getCommanderDef(id: string): CommanderDef {
   return COMMANDERS.find((c) => c.id === id) ?? COMMANDERS[0];
 }
+
+/** Get the COMMANDERS array index for a given commander id. Returns 0 (marshal) as fallback. */
+export function getCommanderTypeIndex(id: string): number {
+  const idx = COMMANDERS.findIndex((c) => c.id === id);
+  return idx >= 0 ? idx : 0;
+}

@@ -3,6 +3,9 @@
  *
  * Reads buildingRoster to find buildings with available queue slots,
  * then calls the same train() function the BuildingsTab uses.
+ *
+ * The Lodge trains basic units (Gatherer, Brawler, Scout).
+ * The Armory wing (Lodge upgrade) trains advanced units (Sniper, Healer, Shieldbearer).
  */
 
 import { Goal } from 'yuka';
@@ -14,8 +17,9 @@ import * as store from '@/ui/store';
 
 /** What each building type can train, in priority order. */
 const BUILDING_TRAINS: Record<number, EntityKind[]> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer],
-  [EntityKind.Armory]: [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Shieldbearer],
+  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Scout],
+  // Armory is a Lodge wing — trains advanced units when unlocked
+  [EntityKind.Armory]: [EntityKind.Sniper, EntityKind.Healer, EntityKind.Shieldbearer],
 };
 
 /** Count of combat units (non-gatherer, non-healer, non-scout). */
@@ -44,12 +48,12 @@ export class TrainGoal extends Goal {
       if (unitKind === null) continue;
 
       const def = ENTITY_DEFS[unitKind];
-      const clamCost = def.clamCost ?? 0;
-      const twigCost = def.twigCost ?? 0;
+      const fishCost = def.fishCost ?? 0;
+      const logCost = def.logCost ?? 0;
       const foodCost = def.foodCost ?? 1;
 
-      if (store.clams.value >= clamCost && store.twigs.value >= twigCost) {
-        train(game.world, b.eid, unitKind, clamCost, twigCost, foodCost);
+      if (store.fish.value >= fishCost && store.logs.value >= logCost) {
+        train(game.world, b.eid, unitKind, fishCost, logCost, foodCost);
         trained = true;
         break;
       }
@@ -60,8 +64,11 @@ export class TrainGoal extends Goal {
 
   private pickUnit(buildingKind: EntityKind): EntityKind | null {
     if (buildingKind === EntityKind.Lodge) {
-      return gathererCount() < 4 ? EntityKind.Gatherer : null;
+      if (gathererCount() < 4) return EntityKind.Gatherer;
+      if (armySize() < 6) return EntityKind.Brawler;
+      return EntityKind.Scout;
     }
+    // Armory wing trains advanced units
     if (buildingKind === EntityKind.Armory) {
       return armySize() % 2 === 0 ? EntityKind.Brawler : EntityKind.Sniper;
     }

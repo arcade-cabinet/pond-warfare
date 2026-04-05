@@ -116,8 +116,8 @@ describe('Training & Building', () => {
     await delay(4500);
     game.world.gameSpeed = 3;
     // Give resources for testing
-    game.world.resources.clams = 2000;
-    game.world.resources.twigs = 1000;
+    game.world.resources.fish = 2000;
+    game.world.resources.logs = 1000;
   }, 30_000);
 
   it('lodge can be selected', async () => {
@@ -128,7 +128,7 @@ describe('Training & Building', () => {
   });
 
   it('resources exist for training', () => {
-    expect(game.world.resources.clams).toBeGreaterThan(0);
+    expect(game.world.resources.fish).toBeGreaterThan(0);
     expect(getUnits(EntityKind.Lodge).length).toBeGreaterThan(0);
   });
 
@@ -246,8 +246,8 @@ describe('Combat', () => {
 
 describe('Tech Research', () => {
   it('research Sturdy Mud from lodge tech tab', async () => {
-    game.world.resources.clams = 2000;
-    game.world.resources.twigs = 2000;
+    game.world.resources.fish = 2000;
+    game.world.resources.logs = 2000;
 
     const lodge = getUnits(EntityKind.Lodge)[0];
     await selectEntity(lodge);

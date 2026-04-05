@@ -94,7 +94,7 @@ export function enemyHealerTick(world: GameWorld): void {
     UnitStateMachine.state[hEid] = UnitState.Move;
 
     const speed = Velocity.speed[hEid] || 1.5;
-    world.yukaManager.addEnemy(hEid, hx, hy, speed, tx, ty);
+    world.yukaManager.addUnit(hEid, hx, hy, speed, tx, ty);
   }
 }
 

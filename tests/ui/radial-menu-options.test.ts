@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Tests: Radial Menu Options (v3.0 — US9)
  *

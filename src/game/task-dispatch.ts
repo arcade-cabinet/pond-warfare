@@ -24,9 +24,9 @@ import type { UnitTask } from '@/ui/roster-types';
 /** Map UnitTask strings to UnitState values. */
 const TASK_TO_STATE: Record<UnitTask, UnitState> = {
   idle: UnitState.Idle,
-  'gathering-clams': UnitState.GatherMove,
-  'gathering-twigs': UnitState.GatherMove,
-  'gathering-pearls': UnitState.GatherMove,
+  'gathering-fish': UnitState.GatherMove,
+  'gathering-logs': UnitState.GatherMove,
+  'gathering-rocks': UnitState.GatherMove,
   building: UnitState.Building,
   moving: UnitState.Move,
   attacking: UnitState.AttackMove,
@@ -39,9 +39,9 @@ const TASK_TO_STATE: Record<UnitTask, UnitState> = {
 
 /** Map gathering task names to the EntityKind of the resource they target. */
 const GATHER_TASK_TO_KIND: Partial<Record<UnitTask, EntityKind>> = {
-  'gathering-clams': EntityKind.Clambed,
-  'gathering-twigs': EntityKind.Cattail,
-  'gathering-pearls': EntityKind.PearlBed,
+  'gathering-fish': EntityKind.Clambed,
+  'gathering-logs': EntityKind.Cattail,
+  'gathering-rocks': EntityKind.PearlBed,
 };
 
 /** Dispatch a task override for a unit from the Forces tab. */
@@ -55,36 +55,40 @@ export function dispatchTaskOverride(world: GameWorld, eid: number, task: UnitTa
     return;
   }
 
-  // Set TaskOverride so auto-behavior system skips this unit
-  TaskOverride.active[eid] = 1;
-  TaskOverride.task[eid] = TASK_TO_STATE[task];
-
-  // Set the actual unit state
-  UnitStateMachine.state[eid] = TASK_TO_STATE[task];
-
-  // For gathering tasks, find nearest resource of the right type
+  // For gathering tasks, find nearest resource BEFORE changing state.
+  // If no resource exists, stay idle instead of walking to (0,0).
   const gatherKind = GATHER_TASK_TO_KIND[task];
   if (gatherKind !== undefined) {
     const target = findNearestResource(world, eid, gatherKind);
-    if (target !== -1) {
-      TaskOverride.targetEntity[eid] = target;
-      UnitStateMachine.targetEntity[eid] = target;
-      UnitStateMachine.targetX[eid] = Position.x[target];
-      UnitStateMachine.targetY[eid] = Position.y[target];
-    }
+    if (target === -1) return; // No resource available — stay in current state
+    TaskOverride.active[eid] = 1;
+    TaskOverride.task[eid] = TASK_TO_STATE[task];
+    TaskOverride.targetEntity[eid] = target;
+    UnitStateMachine.state[eid] = UnitState.GatherMove;
+    UnitStateMachine.targetEntity[eid] = target;
+    UnitStateMachine.targetX[eid] = Position.x[target];
+    UnitStateMachine.targetY[eid] = Position.y[target];
     return;
   }
 
-  // For attacking, find nearest enemy
+  // For attacking, find nearest enemy BEFORE changing state
   if (task === 'attacking') {
     const enemy = findNearestEnemy(world, eid);
-    if (enemy !== -1) {
-      TaskOverride.targetEntity[eid] = enemy;
-      UnitStateMachine.targetEntity[eid] = enemy;
-      UnitStateMachine.targetX[eid] = Position.x[enemy];
-      UnitStateMachine.targetY[eid] = Position.y[enemy];
-    }
+    if (enemy === -1) return; // No enemy available — stay in current state
+    TaskOverride.active[eid] = 1;
+    TaskOverride.task[eid] = TASK_TO_STATE[task];
+    TaskOverride.targetEntity[eid] = enemy;
+    UnitStateMachine.state[eid] = UnitState.AttackMove;
+    UnitStateMachine.targetEntity[eid] = enemy;
+    UnitStateMachine.targetX[eid] = Position.x[enemy];
+    UnitStateMachine.targetY[eid] = Position.y[enemy];
+    return;
   }
+
+  // All other tasks: set state directly
+  TaskOverride.active[eid] = 1;
+  TaskOverride.task[eid] = TASK_TO_STATE[task];
+  UnitStateMachine.state[eid] = TASK_TO_STATE[task];
 }
 
 /** Clear task override, returning unit to auto-behavior pool. */

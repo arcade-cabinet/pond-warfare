@@ -7,6 +7,7 @@
       "duration_seconds": 60,
       "enemy_composition": { "fighter": 3, "raider": 2 },
       "reward_clams": 5,
+      "spawn_pattern": "line",
       "description": "A wave of enemies approaches from the north"
     },
     "raider_wave": {
@@ -16,6 +17,7 @@
       "duration_seconds": 45,
       "enemy_composition": { "raider": 5 },
       "reward_clams": 4,
+      "spawn_pattern": "wave",
       "description": "Raiders target your resource nodes"
     },
     "heavy_assault": {
@@ -25,7 +27,8 @@
       "duration_seconds": 90,
       "enemy_composition": { "fighter": 5, "sapper_enemy": 2 },
       "reward_clams": 8,
-      "description": "A heavy assault force with wall-breakers"
+      "spawn_pattern": "v_formation",
+      "description": "A heavy assault force in arrow formation"
     },
     "healer_squad": {
       "type": "wave",
@@ -34,6 +37,7 @@
       "duration_seconds": 75,
       "enemy_composition": { "fighter": 4, "healer": 2 },
       "reward_clams": 7,
+      "spawn_pattern": "v_formation",
       "description": "Enemy healers support an assault force"
     },
     "scout_incursion": {
@@ -43,6 +47,7 @@
       "duration_seconds": 30,
       "enemy_composition": { "scout_enemy": 4 },
       "reward_clams": 3,
+      "spawn_pattern": "scatter",
       "description": "Enemy scouts probe your defenses"
     },
     "sabotage_raid": {
@@ -52,6 +57,7 @@
       "duration_seconds": 60,
       "enemy_composition": { "saboteur_enemy": 3 },
       "reward_clams": 6,
+      "spawn_pattern": "scatter",
       "description": "Saboteurs attempt to corrupt your resource nodes"
     },
     "boss_croc": {
@@ -62,6 +68,7 @@
       "enemy_composition": { "fighter": 6, "sapper_enemy": 2 },
       "boss": { "type": "fighter", "hp_multiplier": 5, "damage_multiplier": 3 },
       "reward_clams": 15,
+      "spawn_pattern": "v_formation",
       "description": "A massive boss croc leads an assault"
     },
     "storm": {
@@ -81,7 +88,8 @@
       "duration_seconds": 120,
       "enemy_composition": { "fighter": 4, "sapper_enemy": 4 },
       "reward_clams": 10,
-      "description": "Siege forces target your fortifications"
+      "spawn_pattern": "pincer",
+      "description": "Siege forces pincer your fortifications"
     },
     "swarm": {
       "type": "swarm",
@@ -90,7 +98,8 @@
       "duration_seconds": 45,
       "enemy_composition": { "raider": 8, "scout_enemy": 4 },
       "reward_clams": 6,
-      "description": "A swarm of fast enemies floods the map"
+      "spawn_pattern": "surround",
+      "description": "A swarm floods from all directions"
     },
     "resource_surge": {
       "type": "resource_surge",
@@ -109,11 +118,72 @@
       "duration_seconds": 90,
       "enemy_composition": { "fighter": 3, "raider": 3 },
       "reward_clams": 12,
+      "spawn_pattern": "line",
       "description": "Protect a friendly caravan crossing the map"
+    },
+    "pincer_assault": {
+      "type": "wave",
+      "min_progression": 8,
+      "max_progression": 999,
+      "duration_seconds": 75,
+      "enemy_composition": { "fighter": 4, "raider": 4 },
+      "reward_clams": 9,
+      "spawn_pattern": "pincer",
+      "description": "Enemies split and attack from both flanks"
+    },
+    "wave_rush": {
+      "type": "wave",
+      "min_progression": 3,
+      "max_progression": 999,
+      "duration_seconds": 45,
+      "enemy_composition": { "raider": 6 },
+      "reward_clams": 5,
+      "spawn_pattern": "wave",
+      "description": "Raiders rush in a serpentine wave pattern"
+    },
+    "l_sweep_raid": {
+      "type": "wave",
+      "min_progression": 5,
+      "max_progression": 15,
+      "duration_seconds": 60,
+      "enemy_composition": { "fighter": 4, "raider": 3 },
+      "reward_clams": 7,
+      "spawn_pattern": "l_sweep",
+      "description": "Enemies sweep along the shoreline in a curved assault"
+    },
+    "t_hammer_strike": {
+      "type": "wave",
+      "min_progression": 8,
+      "max_progression": 999,
+      "duration_seconds": 75,
+      "enemy_composition": { "fighter": 6, "raider": 2, "sapper_enemy": 1 },
+      "reward_clams": 10,
+      "spawn_pattern": "t_hammer",
+      "description": "Center hammer force with flanking raiders"
+    },
+    "flank_ambush": {
+      "type": "wave",
+      "min_progression": 12,
+      "max_progression": 999,
+      "duration_seconds": 60,
+      "enemy_composition": { "raider": 4, "scout_enemy": 3, "saboteur_enemy": 2 },
+      "reward_clams": 9,
+      "spawn_pattern": "flank",
+      "description": "Ambush from the side — scouts lead, saboteurs follow"
+    },
+    "funnel_of_doom": {
+      "type": "wave",
+      "min_progression": 15,
+      "max_progression": 999,
+      "duration_seconds": 90,
+      "enemy_composition": { "fighter": 8, "healer": 2, "sapper_enemy": 2 },
+      "reward_clams": 14,
+      "spawn_pattern": "funnel",
+      "description": "All forces converge through a narrow chokepoint"
     }
   },
   "timing": {
-    "first_event_delay_seconds": 60,
+    "first_event_delay_seconds": 35,
     "min_interval_seconds": 45,
     "max_interval_seconds": 120,
     "max_concurrent_events": 2

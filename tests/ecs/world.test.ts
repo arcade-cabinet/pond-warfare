@@ -5,15 +5,15 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { STARTING_CLAMS, STARTING_TWIGS } from '@/constants';
+import { STARTING_FISH, STARTING_LOGS } from '@/constants';
 import { createGameWorld } from '@/ecs/world';
 
 describe('createGameWorld', () => {
   it('should return a world with correct initial resources', () => {
     const world = createGameWorld();
 
-    expect(world.resources.clams).toBe(STARTING_CLAMS);
-    expect(world.resources.twigs).toBe(STARTING_TWIGS);
+    expect(world.resources.fish).toBe(STARTING_FISH);
+    expect(world.resources.logs).toBe(STARTING_LOGS);
   });
 
   it('should start in playing state with no selection', () => {

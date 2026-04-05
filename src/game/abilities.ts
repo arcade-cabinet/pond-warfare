@@ -131,8 +131,8 @@ export function useAirdrop(world: GameWorld): boolean {
   if (!foundLodge) return false;
 
   // Grant resources
-  world.resources.clams += 200;
-  world.resources.twigs += 100;
+  world.resources.fish += 200;
+  world.resources.logs += 100;
 
   // Spawn units near Lodge
   const offsets = [

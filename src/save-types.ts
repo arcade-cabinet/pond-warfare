@@ -1,5 +1,5 @@
 /**
- * Save System Types – Serialization interfaces for save/load.
+ * Save System Types -- Serialization interfaces for save/load.
  */
 
 export interface SavedEntity {
@@ -25,33 +25,32 @@ export interface SavedEntity {
 }
 
 export interface SaveData {
-  version: 2;
-  resources: { clams: number; twigs: number; pearls?: number; food: number; maxFood: number };
-  enemyResources: { clams: number; twigs: number };
+  version: 3;
+  resources: {
+    fish: number;
+    logs: number;
+    rocks: number;
+    food: number;
+    maxFood: number;
+  };
+  enemyResources: { fish: number; logs: number };
   autoBehaviors: {
-    // New per-role format (v3+)
-    gatherer?: boolean;
-    combat?: boolean;
-    healer?: boolean;
-    scout?: boolean;
-    // Legacy per-action format (v2, migrated on load)
-    gather?: boolean;
-    defend?: boolean;
-    attack?: boolean;
-    build?: boolean;
-    heal?: boolean;
+    gatherer: boolean;
+    combat: boolean;
+    healer: boolean;
+    scout: boolean;
   };
   tech: Record<string, boolean>;
   stats: {
     unitsKilled: number;
     unitsLost: number;
-    unitsTrained?: number;
+    unitsTrained: number;
     resourcesGathered: number;
     buildingsBuilt: number;
-    buildingsLost?: number;
+    buildingsLost: number;
     peakArmy: number;
-    pearlsEarned?: number;
-    totalClamsEarned?: number;
+    pearlsEarned: number;
+    totalFishEarned: number;
   };
   frameCount: number;
   timeOfDay: number;

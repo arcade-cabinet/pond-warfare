@@ -35,42 +35,42 @@ describe('coop-rules', () => {
 
   describe('shared resource pool', () => {
     it('buildResourceSyncMessage returns correct message format', () => {
-      world.resources.clams = 500;
-      world.resources.twigs = 200;
-      world.resources.pearls = 10;
+      world.resources.fish = 500;
+      world.resources.logs = 200;
+      world.resources.rocks = 10;
 
       const msg = buildResourceSyncMessage(world);
 
       expect(msg).toEqual({
         type: 'coop-resource',
-        clams: 500,
-        twigs: 200,
-        pearls: 10,
+        fish: 500,
+        logs: 200,
+        rocks: 10,
       });
     });
 
     it('applyResourceSync takes max of local and remote resources', () => {
-      world.resources.clams = 300;
-      world.resources.twigs = 100;
-      world.resources.pearls = 5;
+      world.resources.fish = 300;
+      world.resources.logs = 100;
+      world.resources.rocks = 5;
 
-      applyResourceSync(world, { clams: 500, twigs: 50, pearls: 10 });
+      applyResourceSync(world, { fish: 500, logs: 50, rocks: 10 });
 
-      expect(world.resources.clams).toBe(500); // Remote was higher
-      expect(world.resources.twigs).toBe(100); // Local was higher
-      expect(world.resources.pearls).toBe(10); // Remote was higher
+      expect(world.resources.fish).toBe(500); // Remote was higher
+      expect(world.resources.logs).toBe(100); // Local was higher
+      expect(world.resources.rocks).toBe(10); // Remote was higher
     });
 
     it('applyResourceSync does not decrease resources', () => {
-      world.resources.clams = 1000;
-      world.resources.twigs = 500;
-      world.resources.pearls = 20;
+      world.resources.fish = 1000;
+      world.resources.logs = 500;
+      world.resources.rocks = 20;
 
-      applyResourceSync(world, { clams: 100, twigs: 50, pearls: 5 });
+      applyResourceSync(world, { fish: 100, logs: 50, rocks: 5 });
 
-      expect(world.resources.clams).toBe(1000);
-      expect(world.resources.twigs).toBe(500);
-      expect(world.resources.pearls).toBe(20);
+      expect(world.resources.fish).toBe(1000);
+      expect(world.resources.logs).toBe(500);
+      expect(world.resources.rocks).toBe(20);
     });
   });
 

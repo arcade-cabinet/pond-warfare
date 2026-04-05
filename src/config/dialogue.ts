@@ -80,12 +80,7 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
     select_repeat: ['More work?', 'Alright, alright.', 'I was on break!'],
     select_spam: ["I'm not a machine!", 'Union rules say I get a break!', 'STOP. CLICKING. ME.'],
     move: ['On it.', 'Going!', 'Right away.', 'Off I go.'],
-    gather: [
-      'Ooh, shiny clams!',
-      'Timber!',
-      "These twigs won't gather themselves.",
-      'Heavy load...',
-    ],
+    gather: ['Ooh, shiny fish!', 'Timber!', "These logs won't gather themselves.", 'Heavy load...'],
     build: ['Hammer time!', 'Building away!', 'Brick by brick.', "This'll look great."],
     idle: ['*whistles*', '*yawns*', 'Sooo... what now?', 'I could be gathering, just saying.'],
     combat: ["I'm a worker, not a fighter!", 'Aaah!', 'Why me?!'],

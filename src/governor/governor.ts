@@ -19,7 +19,6 @@ import {
   BuildEvaluator,
   DefendEvaluator,
   GatherEvaluator,
-  ResearchEvaluator,
   TrainEvaluator,
 } from './evaluators';
 
@@ -38,7 +37,6 @@ class GovernorBrain extends Think {
     this.addEvaluator(new GatherEvaluator());
     this.addEvaluator(new BuildEvaluator());
     this.addEvaluator(new TrainEvaluator());
-    this.addEvaluator(new ResearchEvaluator());
     this.addEvaluator(new DefendEvaluator());
     this.addEvaluator(new AttackEvaluator());
   }

@@ -28,9 +28,9 @@ export const COOP_ENEMY_STAT_MULT = 1.5;
 export function buildResourceSyncMessage(world: GameWorld): NetMessage {
   return {
     type: 'coop-resource',
-    clams: world.resources.clams,
-    twigs: world.resources.twigs,
-    pearls: world.resources.pearls,
+    fish: world.resources.fish,
+    logs: world.resources.logs,
+    rocks: world.resources.rocks,
   };
 }
 
@@ -40,11 +40,11 @@ export function buildResourceSyncMessage(world: GameWorld): NetMessage {
  */
 export function applyResourceSync(
   world: GameWorld,
-  msg: { clams: number; twigs: number; pearls: number },
+  msg: { fish: number; logs: number; rocks: number },
 ): void {
-  world.resources.clams = Math.max(world.resources.clams, msg.clams);
-  world.resources.twigs = Math.max(world.resources.twigs, msg.twigs);
-  world.resources.pearls = Math.max(world.resources.pearls, msg.pearls);
+  world.resources.fish = Math.max(world.resources.fish, msg.fish);
+  world.resources.logs = Math.max(world.resources.logs, msg.logs);
+  world.resources.rocks = Math.max(world.resources.rocks, msg.rocks);
 }
 
 // ---- Co-op Minimap Ping ----

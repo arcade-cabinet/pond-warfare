@@ -5,6 +5,8 @@
  * from '@/ui/hud' or './hud' continue to work.
  */
 
+import { AbilityButtons } from './AbilityButtons';
+import { CommanderAbility } from './CommanderAbility';
 import { CtrlGroups } from './ctrl-groups';
 import { EventAlert } from './EventAlert';
 import { EventFeed } from './EventFeed';
@@ -14,6 +16,7 @@ import { ProductionQueue } from './production-queue';
 import { TopBar } from './top-bar';
 import { UnitCommands } from './unit-commands';
 
+export { AbilityButtons } from './AbilityButtons';
 export { CtrlGroups, type CtrlGroupsProps } from './ctrl-groups';
 export { EventAlert } from './EventAlert';
 export { EventFeed } from './EventFeed';
@@ -59,6 +62,10 @@ export interface HUDProps {
   onSettingsClick?: () => void;
   onKeyboardRefClick?: () => void;
   onPanelToggle?: () => void;
+  onCommanderAbility?: () => void;
+  onRallyCry?: () => void;
+  onPondBlessing?: () => void;
+  onTidalSurge?: () => void;
 }
 
 export function HUD(props: HUDProps) {
@@ -74,6 +81,12 @@ export function HUD(props: HUDProps) {
         onSettingsClick={props.onSettingsClick}
         onKeyboardRefClick={props.onKeyboardRefClick}
         onPanelToggle={props.onPanelToggle}
+      />
+      <CommanderAbility onActivate={props.onCommanderAbility ?? (() => {})} />
+      <AbilityButtons
+        onRallyCry={props.onRallyCry}
+        onPondBlessing={props.onPondBlessing}
+        onTidalSurge={props.onTidalSurge}
       />
       <ProductionQueue />
       <Overlays />

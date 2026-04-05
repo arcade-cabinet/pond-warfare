@@ -1,19 +1,26 @@
+// @vitest-environment jsdom
 /**
- * UpgradeWebScreen Tests (v3.0 -- US12)
+ * UpgradeWebScreen Tests (v3.1 -- US12)
  *
- * Validates the upgrade web screen component:
- * - Renders with category tabs
- * - Shows subcategory paths with nodes
- * - Purchase updates state
- * - Back button calls onBack
- * - Diamond nodes section appears
+ * Validates the compact Clam upgrade modal:
+ * - Generates 240+ nodes across 6 categories
+ * - Next-available-node logic per category
+ * - Purchase updates state and deducts clams
+ * - Category completion detection
+ * - findCheapestAvailableNodeId helper
+ * - Diamond node display info
  */
 
 import { signal } from '@preact/signals';
 import { describe, expect, it } from 'vitest';
 import { getUpgradeCategories } from '@/config/config-loader';
-import { generateUpgradeWeb, getDiamondsForCategory, getNodesForPath } from '@/config/upgrade-web';
-import { stateColor } from '@/ui/screens/UpgradeNodeRow';
+import {
+  generateUpgradeWeb,
+  getDiamondsForCategory,
+  getNodesForCategory,
+  getNodesForPath,
+} from '@/config/upgrade-web';
+import { findCheapestAvailableNodeId, stateColor } from '@/ui/screens/UpgradeNodeRow';
 import {
   createUpgradeWebState,
   getDiamondDisplayInfo,
@@ -56,6 +63,76 @@ describe('UpgradeWebScreen -- US12', () => {
     });
   });
 
+  describe('Next-available-node per category', () => {
+    it('should find tier 0 nodes as next available when none purchased', () => {
+      const web = generateUpgradeWeb();
+      const state = createUpgradeWebState(500);
+      const nodes = getNodesForCategory(web, 'gathering');
+      const cheapest = findCheapestAvailableNodeId(nodes, state);
+      expect(cheapest).toBeTruthy();
+      const node = web.nodeMap.get(cheapest!);
+      expect(node?.tier).toBe(0);
+    });
+
+    it('should find tier 1 node after purchasing all tier 0 in a category', () => {
+      const web = generateUpgradeWeb();
+      const state = createUpgradeWebState(50000);
+      const categories = getUpgradeCategories();
+      const subcats = Object.keys(categories.gathering.subcategories);
+
+      // Purchase all tier 0 nodes in gathering
+      for (const sub of subcats) {
+        purchaseNode(state, web, `gathering_${sub}_t0`);
+      }
+
+      const nodes = getNodesForCategory(web, 'gathering');
+      const cheapest = findCheapestAvailableNodeId(nodes, state);
+      expect(cheapest).toBeTruthy();
+      const node = web.nodeMap.get(cheapest!);
+      expect(node?.tier).toBe(1);
+    });
+
+    it('should return null when all nodes are purchased', () => {
+      const web = generateUpgradeWeb();
+      const state = createUpgradeWebState(999999);
+      const categories = getUpgradeCategories();
+      const subcats = Object.keys(categories.gathering.subcategories);
+
+      // Purchase all 10 tiers for all gathering subcategories
+      for (const sub of subcats) {
+        for (let t = 0; t < 10; t++) {
+          purchaseNode(state, web, `gathering_${sub}_t${t}`);
+        }
+      }
+
+      const nodes = getNodesForCategory(web, 'gathering');
+      const cheapest = findCheapestAvailableNodeId(nodes, state);
+      expect(cheapest).toBeNull();
+    });
+
+    it('should detect category completion', () => {
+      const web = generateUpgradeWeb();
+      const state = createUpgradeWebState(999999);
+      const categories = getUpgradeCategories();
+      const subcats = Object.keys(categories.gathering.subcategories);
+
+      const nodes = getNodesForCategory(web, 'gathering');
+
+      // Not complete initially
+      expect(nodes.every((n) => state.purchasedNodes.has(n.id))).toBe(false);
+
+      // Purchase all
+      for (const sub of subcats) {
+        for (let t = 0; t < 10; t++) {
+          purchaseNode(state, web, `gathering_${sub}_t${t}`);
+        }
+      }
+
+      // Now complete
+      expect(nodes.every((n) => state.purchasedNodes.has(n.id))).toBe(true);
+    });
+  });
+
   describe('Purchase state management', () => {
     it('should start with all nodes unpurchased', () => {
       const state = createUpgradeWebState(500);
@@ -78,7 +155,7 @@ describe('UpgradeWebScreen -- US12', () => {
       expect(node).toBeDefined();
       const costBefore = state.clams;
       purchaseNode(state, web, 'gathering_fish_gathering_t0');
-      expect(state.clams).toBe(costBefore - node!.cost);
+      expect(state.clams).toBe(costBefore - (node?.cost ?? 0));
     });
 
     it('should block purchase without prerequisite', () => {

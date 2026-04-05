@@ -16,7 +16,6 @@ import { COLORS } from '@/ui/design-tokens';
 import { Frame9Slice } from './components/frame';
 import {
   gameState,
-  goDailyChallengeCompleted,
   goDesc,
   goLeveledUp,
   goMapSeed,
@@ -192,11 +191,6 @@ export function GameOverBanner(props: GameOverProps) {
               style={{ color: 'var(--pw-clam)', textShadow: '0 0 8px var(--pw-victory-glow-40)' }}
             >
               Level Up! Level {goNewLevel.value}
-            </span>
-          )}
-          {goDailyChallengeCompleted.value && (
-            <span class="font-game text-xs" style={{ color: COLORS.grittyGold }}>
-              Daily Challenge Complete!
             </span>
           )}
         </div>

@@ -17,8 +17,8 @@ import {
   ENEMY_RALLY_RADIUS,
   ENEMY_RETREAT_HP_PERCENT,
   ENEMY_SCOUT_INTERVAL,
-  ENEMY_SNAKE_COST_CLAMS,
-  ENEMY_SNAKE_COST_TWIGS,
+  ENEMY_SNAKE_COST_FISH,
+  ENEMY_SNAKE_COST_LOGS,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
@@ -131,7 +131,7 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
     UnitStateMachine.state[eid] = UnitState.AttackMove;
 
     const speed = Velocity.speed[eid] || 1.5;
-    world.yukaManager.addEnemy(eid, Position.x[eid], Position.y[eid], speed, targetX, targetY);
+    world.yukaManager.addUnit(eid, Position.x[eid], Position.y[eid], speed, targetX, targetY);
   }
 }
 
@@ -187,7 +187,7 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
   if (nestEids.length === 0) return;
 
   const res = world.enemyResources;
-  if (res.clams < ENEMY_SNAKE_COST_CLAMS || res.twigs < ENEMY_SNAKE_COST_TWIGS) return;
+  if (res.fish < ENEMY_SNAKE_COST_FISH || res.logs < ENEMY_SNAKE_COST_LOGS) return;
 
   // Pick a random nest to spawn from
   const sourceNest = nestEids[Math.floor(world.gameRng.next() * nestEids.length)];
@@ -215,8 +215,8 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
     });
   }
 
-  res.clams -= ENEMY_SNAKE_COST_CLAMS;
-  res.twigs -= ENEMY_SNAKE_COST_TWIGS;
+  res.fish -= ENEMY_SNAKE_COST_FISH;
+  res.logs -= ENEMY_SNAKE_COST_LOGS;
 
   // Send scout to a random location on the map, biased toward player lodge
   const lodgeEid = findPlayerLodge(world);
@@ -241,5 +241,5 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
   UnitStateMachine.attackMoveTargetY[scoutEid] = scoutY;
 
   const speed = Velocity.speed[scoutEid] || ENTITY_DEFS[EntityKind.Snake]?.speed || 2.0;
-  world.yukaManager.addEnemy(scoutEid, sx, sy, speed, scoutX, scoutY);
+  world.yukaManager.addUnit(scoutEid, sx, sy, speed, scoutX, scoutY);
 }

@@ -1,4 +1,5 @@
 import { EntityKind } from '@/types';
+import { BUILDING_DEFS } from './buildings';
 
 export function entityKindFromString(name: string): EntityKind {
   const map: Record<string, EntityKind> = {
@@ -110,4 +111,14 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.Saboteur]: 'Saboteur',
   };
   return names[kind];
+}
+
+/**
+ * Check whether a given EntityKind is a Lodge wing (not a standalone building).
+ * Wings are buildings that conceptually attach to the Lodge and are unlocked
+ * via the upgrade web rather than placed as standalone structures.
+ */
+export function isWingBuilding(kind: EntityKind): boolean {
+  const def = BUILDING_DEFS[kind];
+  return def?.isWing === true;
 }

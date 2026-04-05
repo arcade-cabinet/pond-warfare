@@ -21,7 +21,7 @@ import { runGameSetup } from '@/game/game-setup';
 import { syncUIStore as syncUIStoreFn } from '@/game/game-ui-sync';
 import { playUnitSelectSound } from '@/game/unit-select-sound';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
-import type { Governor } from '@/governor/governor';
+import { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
@@ -29,6 +29,7 @@ import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera'
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
 import type { SpriteId } from '@/types';
+import { autoPlayEnabled } from '@/ui/store-gameplay';
 import * as storeV3 from '@/ui/store-v3';
 import { createUpgradeWebState } from '@/ui/upgrade-web-state';
 
@@ -94,6 +95,14 @@ export class Game {
 
     // Initial zoom BEFORE resize (zoomLevel drives viewWidth/viewHeight)
     this.world.zoomLevel = computeInitialZoom(this.world.worldWidth, container.clientWidth);
+
+    // Auto-play: instantiate Governor AI when enabled
+    if (autoPlayEnabled.value) {
+      this.governor = new Governor();
+      this.governor.enabled = true;
+    } else {
+      this.governor = null;
+    }
 
     // Delegate the remaining setup pipeline to game-setup module
     const out = await runGameSetup({

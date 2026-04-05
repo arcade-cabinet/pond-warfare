@@ -6,9 +6,9 @@
 import {
   attackMoveActive,
   destroyedEnemyNests,
-  enemyClams,
   enemyEconomyVisible,
-  enemyTwigs,
+  enemyFish,
+  enemyLogs,
   fpsCounterVisible,
   fpsDisplay,
   nestJustDestroyed,
@@ -71,7 +71,7 @@ export function Overlays() {
               style={{ background: 'var(--pw-clam)', border: '1px solid var(--pw-otter-light)' }}
             />
             <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
-              {enemyClams}
+              {enemyFish}
             </span>
           </div>
           <div class="flex items-center gap-1">
@@ -80,7 +80,7 @@ export function Overlays() {
               style={{ background: 'var(--pw-twig)', border: '1px solid var(--pw-otter)' }}
             />
             <span class="font-numbers" style={{ color: 'var(--pw-text-muted)' }}>
-              {enemyTwigs}
+              {enemyLogs}
             </span>
           </div>
         </div>
@@ -117,9 +117,14 @@ export function Overlays() {
 
       {/* Pause overlay */}
       {paused.value && (
-        <div
-          class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+        <button
+          type="button"
+          class="absolute inset-0 z-50 flex flex-col items-center justify-center cursor-pointer border-none"
           style={{ background: 'var(--pw-overlay-60)' }}
+          onClick={() => {
+            paused.value = false;
+          }}
+          aria-label="Tap to resume"
         >
           <span
             class="font-title text-6xl font-bold tracking-widest"
@@ -127,7 +132,10 @@ export function Overlays() {
           >
             PAUSED
           </span>
-        </div>
+          <span class="font-game text-sm mt-4" style={{ color: 'var(--pw-text-muted)' }}>
+            Tap to resume
+          </span>
+        </button>
       )}
 
       {/* FPS counter (toggle with F12) */}

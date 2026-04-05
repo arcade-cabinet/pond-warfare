@@ -1,5 +1,5 @@
 {
-  "base_hp": 500,
+  "base_hp": 1500,
   "wings": {
     "dock": { "unlock": "gathering_category_tier_5", "description": "Dock wing — faster fish gathering", "visual": "dock_wing" },
     "barracks": { "unlock": "combat_category_tier_5", "description": "Barracks wing — faster unit training", "visual": "barracks_wing" },

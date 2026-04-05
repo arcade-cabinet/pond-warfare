@@ -76,6 +76,6 @@ export function enemyRaiderTick(world: GameWorld): void {
     UnitStateMachine.state[eid] = UnitState.AttackMove;
 
     const speed = Velocity.speed[eid] || 2.5;
-    world.yukaManager.addEnemy(eid, ex, ey, speed, targetX, targetY);
+    world.yukaManager.addUnit(eid, ex, ey, speed, targetX, targetY);
   }
 }

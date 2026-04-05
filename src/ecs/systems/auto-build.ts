@@ -39,9 +39,9 @@ interface BuildCandidate {
 /** Check if the player can afford a building of the given kind. */
 function canAfford(world: GameWorld, kind: EntityKind): boolean {
   const def = ENTITY_DEFS[kind];
-  const clamCost = def.clamCost ?? 0;
-  const twigCost = def.twigCost ?? 0;
-  return world.resources.clams >= clamCost && world.resources.twigs >= twigCost;
+  const fishCost = def.fishCost ?? 0;
+  const logCost = def.logCost ?? 0;
+  return world.resources.fish >= fishCost && world.resources.logs >= logCost;
 }
 
 /** Find the player Lodge entity (first alive one). Returns -1 if none. */
@@ -217,12 +217,12 @@ export function autoBuildSystem(world: GameWorld): void {
   if (!pos) return;
 
   const def = ENTITY_DEFS[best.kind];
-  const clamCost = def.clamCost ?? 0;
-  const twigCost = def.twigCost ?? 0;
+  const fishCost = def.fishCost ?? 0;
+  const logCost = def.logCost ?? 0;
 
   // Deduct resources and spawn the building
-  world.resources.clams -= clamCost;
-  world.resources.twigs -= twigCost;
+  world.resources.fish -= fishCost;
+  world.resources.logs -= logCost;
   const buildingEid = spawnEntity(world, best.kind, pos.x, pos.y, Faction.Player);
 
   // Send the gatherer to build it

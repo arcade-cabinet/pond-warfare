@@ -34,8 +34,8 @@ export function handleFortifyAction(world: GameWorld): boolean {
     }
   }
 
-  // v3: Rocks mapped to pearls internally
-  if (world.resources.pearls < 15) {
+  // Rocks resource check
+  if (world.resources.rocks < 15) {
     pushGameEvent('Not enough Rocks!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
@@ -95,12 +95,12 @@ export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY:
     return false;
   }
 
-  // Rocks are stored in pearls field
+  // Deduct Rocks cost from resources
   const result = placeFortification(
     world.fortifications,
     slot.index,
     fortTypeRaw,
-    world.resources.pearls,
+    world.resources.rocks,
   );
 
   if (!result.success) {
@@ -111,7 +111,7 @@ export function tryPlaceFortAtPosition(world: GameWorld, worldX: number, worldY:
 
   // Deduct rocks
   if (result.rockCost) {
-    world.resources.pearls -= result.rockCost;
+    world.resources.rocks -= result.rockCost;
   }
 
   pushGameEvent(`Built ${fortTypeRaw.replace('_', ' ')}`, COLORS.feedbackSuccess, world.frameCount);

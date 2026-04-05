@@ -31,6 +31,8 @@ describe('projectileSystem', () => {
   beforeEach(() => {
     world = createGameWorld();
     world.frameCount = 1;
+    // Ensure clear weather so wind drift doesn't offset projectiles
+    world.weather.current = 'clear';
   });
 
   it('should move projectile toward target position', () => {

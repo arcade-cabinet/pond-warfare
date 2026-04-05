@@ -106,12 +106,12 @@ describe('dispatchTaskOverride', () => {
     expect(UnitStateMachine.state[eid]).toBe(UnitState.Idle);
   });
 
-  it('gathering-clams sets GatherMove and finds nearest clambed', () => {
+  it('gathering-fish sets GatherMove and finds nearest clambed', () => {
     const eid = createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
-    const farClam = createResource(world, EntityKind.Clambed, ResourceType.Clams, 500, 500);
-    const nearClam = createResource(world, EntityKind.Clambed, ResourceType.Clams, 120, 110);
+    const farClam = createResource(world, EntityKind.Clambed, ResourceType.Fish, 500, 500);
+    const nearClam = createResource(world, EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
-    dispatchTaskOverride(world, eid, 'gathering-clams');
+    dispatchTaskOverride(world, eid, 'gathering-fish');
 
     expect(TaskOverride.active[eid]).toBe(1);
     expect(TaskOverride.task[eid]).toBe(UnitState.GatherMove);
@@ -122,13 +122,13 @@ describe('dispatchTaskOverride', () => {
     expect(UnitStateMachine.targetEntity[eid]).not.toBe(farClam);
   });
 
-  it('gathering-twigs targets Cattail resources', () => {
+  it('gathering-logs targets Cattail resources', () => {
     const eid = createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
     // Create a clambed (wrong type) and a cattail (right type)
-    createResource(world, EntityKind.Clambed, ResourceType.Clams, 110, 100);
-    const cattail = createResource(world, EntityKind.Cattail, ResourceType.Twigs, 200, 200);
+    createResource(world, EntityKind.Clambed, ResourceType.Fish, 110, 100);
+    const cattail = createResource(world, EntityKind.Cattail, ResourceType.Logs, 200, 200);
 
-    dispatchTaskOverride(world, eid, 'gathering-twigs');
+    dispatchTaskOverride(world, eid, 'gathering-logs');
 
     expect(UnitStateMachine.targetEntity[eid]).toBe(cattail);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.GatherMove);
@@ -183,7 +183,9 @@ describe('TaskOverride integration with auto-behavior', () => {
     addComponent(world.ecs, eid, TaskOverride);
 
     // Create a resource that auto-gather would normally target
-    createResource(world, EntityKind.Cattail, ResourceType.Twigs, 120, 100);
+    createResource(world, EntityKind.Cattail, ResourceType.Logs, 120, 100);
+    // Create an enemy so attacking dispatch finds a valid target
+    createEnemy(world, 300, 300);
 
     // Dispatch a manual "attacking" task override
     dispatchTaskOverride(world, eid, 'attacking');

@@ -57,6 +57,10 @@ export function SettingsOverlay() {
         store.reduceVisualNoise.value = !store.reduceVisualNoise.value;
         persistSetting('reduceVisualNoise', store.reduceVisualNoise.value);
       }}
+      onAutoPlayToggle={() => {
+        store.autoPlayEnabled.value = !store.autoPlayEnabled.value;
+        persistSetting('autoPlayEnabled', store.autoPlayEnabled.value);
+      }}
       onClose={() => {
         store.settingsOpen.value = false;
       }}

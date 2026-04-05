@@ -11,9 +11,9 @@ import type { EntityKind } from '@/types';
 /** Describes what a unit is currently doing, derived from UnitState + context. */
 export type UnitTask =
   | 'idle'
-  | 'gathering-clams'
-  | 'gathering-twigs'
-  | 'gathering-pearls'
+  | 'gathering-fish'
+  | 'gathering-logs'
+  | 'gathering-rocks'
   | 'building'
   | 'moving'
   | 'attacking'

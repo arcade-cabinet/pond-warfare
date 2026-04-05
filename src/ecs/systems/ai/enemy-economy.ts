@@ -61,7 +61,7 @@ export function enemyEconomyTick(world: GameWorld): void {
   const resourceNodes = query(world.ecs, [Position, Resource, IsResource]);
 
   for (const nestEid of nestEids) {
-    if (world.enemyResources.clams < ENEMY_GATHERER_COST) continue;
+    if (world.enemyResources.fish < ENEMY_GATHERER_COST) continue;
 
     const nx = Position.x[nestEid];
     const ny = Position.y[nestEid];
@@ -118,7 +118,7 @@ export function enemyEconomyTick(world: GameWorld): void {
     triggerSpawnPop(gEid);
     spawnDustBurst(world, sx, sy);
 
-    world.enemyResources.clams -= ENEMY_GATHERER_COST;
+    world.enemyResources.fish -= ENEMY_GATHERER_COST;
 
     UnitStateMachine.targetEntity[gEid] = closestResource;
     UnitStateMachine.targetX[gEid] = Position.x[closestResource];

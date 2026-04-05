@@ -88,17 +88,17 @@ function findTrainableBuildings(world: GameWorld, kind: EntityKind): number[] {
 /** Try to train a unit at the first available building. Returns true if queued. */
 function tryTrain(world: GameWorld, buildingEid: number, unitKind: EntityKind): boolean {
   const def = ENTITY_DEFS[unitKind];
-  const clamCost = def.clamCost ?? 0;
-  const twigCost = def.twigCost ?? 0;
+  const fishCost = def.fishCost ?? 0;
+  const logCost = def.logCost ?? 0;
   const foodCost = def.foodCost ?? 1;
 
   // Check affordability before calling train() (train handles it too, but early-out is cheaper)
-  if (world.resources.clams < clamCost) return false;
-  if (world.resources.twigs < twigCost) return false;
+  if (world.resources.fish < fishCost) return false;
+  if (world.resources.logs < logCost) return false;
   if (world.resources.food + foodCost > world.resources.maxFood) return false;
 
   const prevCount = TrainingQueue.count[buildingEid];
-  train(world, buildingEid, unitKind, clamCost, twigCost, foodCost);
+  train(world, buildingEid, unitKind, fishCost, logCost, foodCost);
   return TrainingQueue.count[buildingEid] > prevCount;
 }
 

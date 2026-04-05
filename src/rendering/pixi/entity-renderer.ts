@@ -250,7 +250,7 @@ export function renderEntity(eid: number, frameCount: number): void {
 
   const carriedRes = Carrying.resourceType[eid] as ResourceType;
   if (carriedRes !== ResourceType.None) {
-    const color = carriedRes === ResourceType.Clams ? PALETTE.clamShell : PALETTE.reedBrown;
+    const color = carriedRes === ResourceType.Fish ? PALETTE.clamShell : PALETTE.reedBrown;
     entityOverlayGfx.rect(ex + 5, ey - 20, 6, 6);
     entityOverlayGfx.fill(colorToHex(color));
     if (frameCount % 20 < 5) {

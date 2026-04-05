@@ -7,6 +7,11 @@
     "sapper_enemy": { "hp": 50, "damage": 20, "speed": 1.0, "role": "breach_walls", "description": "Destroys fortifications" },
     "saboteur_enemy": { "hp": 25, "damage": 3, "speed": 2.5, "role": "corrupt_nodes", "description": "Poisons resource nodes" }
   },
+  "commanders": {
+    "basic": { "hp": 200, "damage": 12, "speed": 1.0, "aura_radius": 150, "aura_damage_bonus": 0.1, "ability_interval": 600 },
+    "mid": { "hp": 400, "damage": 20, "speed": 1.2, "aura_radius": 200, "aura_damage_bonus": 0.15, "ability_interval": 450 },
+    "boss": { "hp": 800, "damage": 35, "speed": 1.5, "aura_radius": 300, "aura_damage_bonus": 0.25, "ability_interval": 300 }
+  },
   "scaling": {
     "hp_per_level": 0.05,
     "damage_per_level": 0.03,

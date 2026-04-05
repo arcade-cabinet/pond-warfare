@@ -12,25 +12,25 @@ import type { FoodChange, ResourceChange } from './store-types';
 export type { FoodChange, GameEvent, ResourceChange } from './store-types';
 
 // ---- Resources ----
-export const clams = signal(200);
-export const twigs = signal(50);
-export const pearls = signal(0);
+export const fish = signal(200);
+export const logs = signal(50);
+export const rocks = signal(0);
 export const food = signal(0);
 export const maxFood = signal(0);
-export const rateClams = signal(0);
-export const rateTwigs = signal(0);
+export const rateFish = signal(0);
+export const rateLogs = signal(0);
 
 export const lastResourceChange = signal<ResourceChange>({
-  clams: 0,
-  twigs: 0,
-  pearls: 0,
+  fish: 0,
+  logs: 0,
+  rocks: 0,
   frame: -999,
 });
 export const lastFoodChange = signal<FoodChange>({ delta: 0, frame: -999 });
 
 // ---- Enemy economy ----
-export const enemyClams = signal(0);
-export const enemyTwigs = signal(0);
+export const enemyFish = signal(0);
+export const enemyLogs = signal(0);
 export const enemyEconomyVisible = signal(false);
 
 // ---- Selection info ----
@@ -62,8 +62,8 @@ export const gameSpeed = signal(1);
 export const muted = signal(false);
 export const paused = signal(false);
 export const waveCountdown = signal(-1);
-export const lowClams = signal(false);
-export const lowTwigs = signal(false);
+export const lowFish = signal(false);
+export const lowLogs = signal(false);
 export const attackMoveActive = signal(false);
 /** When true, next terrain tap adds a patrol waypoint instead of a move command */
 export const patrolModeActive = signal(false);
@@ -206,44 +206,24 @@ export {
   peaceStatusText,
   speedLabel,
 } from './store-derived';
-// ---- Legacy aliases (v3: backward compat for tests, will be removed) ----
 export {
   type AchievementToast,
   achievementsOpen,
   activeAchievementToast,
-  activePanelTab,
   airdropCooldown,
   airdropsRemaining,
-  autoCombatEnabled,
-  autoCombatEnabled as autoDefendEnabled,
-  autoCombatEnabled as autoAttackEnabled,
-  autoGathererEnabled,
-  autoGathererEnabled as autoGatherEnabled,
-  autoGathererEnabled as autoBuildEnabled,
-  autoHealerEnabled,
-  autoHealerEnabled as autoHealEnabled,
-  autoMenuExpanded,
+  autoPlayEnabled,
   autoSaveEnabled,
-  autoScoutEnabled,
-  campaignMissionId,
-  campaignOpen,
   checkpointCount,
   commanderAbilityActive,
   commanderAbilityCooldown,
   commanderAbilityName,
   commanderAbilityReady,
   cosmeticsOpen,
-  dailyChallengeAlreadyDone,
-  dailyChallengeDesc,
-  dailyChallengeHistory,
-  dailyChallengeStreak,
-  dailyChallengeTitle,
-  dailyChallengeXp,
   evacuationActive,
   fpsCounterVisible,
   fpsDisplay,
   gameEvents,
-  goDailyChallengeCompleted,
   goDesc,
   goFrameCount,
   goLeveledUp,
@@ -262,7 +242,6 @@ export {
   matchHistoryOpen,
   mobilePanelOpen,
   musicVolume,
-  type PanelTab,
   pondBlessingAvailable,
   rallyCryActive,
   rallyCryAvailable,
@@ -275,9 +254,7 @@ export {
   settingsOpen,
   sfxVolume,
   showSplashVideo,
-  techTreeOpen,
   tidalSurgeAvailable,
-  unlocksOpen,
   waveNumber,
 } from './store-gameplay';
 export {

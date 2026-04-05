@@ -134,32 +134,40 @@ function spawnWeatherParticles(world: GameWorld): void {
 /**
  * Get the current weather speed modifier for Grass terrain.
  * Called by movement system to apply weather-based speed penalty.
+ * Returns 1.0 (no effect) if weather state is not initialized.
  */
 export function getWeatherGrassSpeedMult(world: GameWorld): number {
+  if (!world.weather) return 1.0;
   return WEATHER_CONFIGS[world.weather.current].grassSpeedMult;
 }
 
 /**
  * Check if shallows are blocked by current weather (rain flooding).
  * Called by terrain grid speed calculations.
+ * Returns false (passable) if weather state is not initialized.
  */
 export function areShallowsBlocked(world: GameWorld): boolean {
+  if (!world.weather) return false;
   return WEATHER_CONFIGS[world.weather.current].shallowsBlocked;
 }
 
 /**
  * Get the vision multiplier for the current weather.
  * Called by fog-of-war system to reduce reveal radius.
+ * Returns 1.0 (no effect) if weather state is not initialized.
  */
 export function getWeatherVisionMult(world: GameWorld): number {
+  if (!world.weather) return 1.0;
   return WEATHER_CONFIGS[world.weather.current].visionMult;
 }
 
 /**
  * Get projectile drift offset for wind weather.
  * Returns {dx, dy} offset to apply to projectile targets.
+ * Returns zero offset if weather state is not initialized.
  */
 export function getWeatherProjectileOffset(world: GameWorld): { dx: number; dy: number } {
+  if (!world.weather) return { dx: 0, dy: 0 };
   const config = WEATHER_CONFIGS[world.weather.current];
   if (config.projectileOffset === 0) return { dx: 0, dy: 0 };
   const dir = world.weather.windDirection;

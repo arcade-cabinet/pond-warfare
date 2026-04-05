@@ -1,8 +1,8 @@
 /**
  * Database Schema & Initialization
  *
- * SQLite connection setup, schema migrations, and persistence helpers.
- * v3: adds player_profile v3 columns and current_run table.
+ * SQLite connection setup and schema definition.
+ * v3: fresh DB with v3-only column names. No migrations needed.
  */
 
 import { Capacitor } from '@capacitor/core';
@@ -13,7 +13,7 @@ import {
 } from '@capacitor-community/sqlite';
 
 const DB_NAME = 'pond_warfare';
-const DB_VERSION = 2;
+const DB_VERSION = 3; // v3 schema — fresh start, no v2 compat
 
 let sqlite: SQLiteConnection;
 let db: SQLiteDBConnection;
@@ -53,7 +53,11 @@ export async function initDatabase(): Promise<void> {
 
   await db.open();
 
-  // Legacy v1/v2 tables (kept for save compatibility)
+  // Run additive schema migrations (ALTER TABLE, never destructive)
+  const { runMigrations } = await import('./migrations');
+  await runMigrations(db);
+
+  // Core tables
   await db.execute(`
     CREATE TABLE IF NOT EXISTS saves (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,7 +101,7 @@ export async function initDatabase(): Promise<void> {
       pearls INTEGER DEFAULT 0,
       pearl_upgrades TEXT DEFAULT '{}',
       total_matches INTEGER DEFAULT 0,
-      total_clams_earned INTEGER DEFAULT 0,
+      total_pearls_earned INTEGER DEFAULT 0,
       highest_progression INTEGER DEFAULT 0,
       total_wins INTEGER DEFAULT 0,
       total_losses INTEGER DEFAULT 0,
@@ -113,7 +117,8 @@ export async function initDatabase(): Promise<void> {
       total_pearls INTEGER DEFAULT 0,
       wins_zero_losses INTEGER DEFAULT 0,
       total_xp INTEGER DEFAULT 0,
-      player_level INTEGER DEFAULT 0
+      player_level INTEGER DEFAULT 0,
+      selected_commander TEXT DEFAULT 'marshal'
     );
   `);
 
@@ -129,7 +134,7 @@ export async function initDatabase(): Promise<void> {
     );
   `);
 
-  // v3 match_history: enhanced schema
+  // v3 match_history
   await db.execute(`
     CREATE TABLE IF NOT EXISTS match_history (
       id TEXT PRIMARY KEY,
@@ -144,26 +149,12 @@ export async function initDatabase(): Promise<void> {
       buildings_built INTEGER DEFAULT 0,
       techs_researched INTEGER DEFAULT 0,
       xp_earned INTEGER DEFAULT 0,
-      clams_earned INTEGER DEFAULT 0,
+      fish_earned INTEGER DEFAULT 0,
       events_completed INTEGER DEFAULT 0,
       progression_level INTEGER DEFAULT 0,
       rank INTEGER DEFAULT 0
     );
   `);
-
-  // Migration: add v3 columns to existing tables
-  await safeAddColumn(db, 'player_profile', 'total_xp', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'player_profile', 'player_level', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'player_profile', 'rank', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'player_profile', 'pearls', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'player_profile', 'pearl_upgrades', "TEXT DEFAULT '{}'");
-  await safeAddColumn(db, 'player_profile', 'total_matches', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'player_profile', 'total_clams_earned', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'player_profile', 'highest_progression', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'match_history', 'clams_earned', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'match_history', 'events_completed', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'match_history', 'progression_level', 'INTEGER DEFAULT 0');
-  await safeAddColumn(db, 'match_history', 'rank', 'INTEGER DEFAULT 0');
 
   // Ensure default rows exist
   await db.execute(`
@@ -172,22 +163,6 @@ export async function initDatabase(): Promise<void> {
   `);
 
   _initialized = true;
-}
-
-/**
- * Safely add a column to a table. Ignores errors if the column already exists.
- */
-async function safeAddColumn(
-  conn: SQLiteDBConnection,
-  table: string,
-  column: string,
-  typedef: string,
-): Promise<void> {
-  try {
-    await conn.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${typedef}`);
-  } catch {
-    // Column already exists -- safe to ignore
-  }
 }
 
 export function isDatabaseReady(): boolean {
@@ -214,6 +189,13 @@ export async function closeDatabase(): Promise<void> {
   _initialized = false;
 }
 
+// ---- SQL Escaping ----
+
+/** Escape single quotes for safe SQL string interpolation. */
+function escapeSql(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
 // ---- v3 Prestige State Persistence ----
 
 export interface V3PrestigeRow {
@@ -221,7 +203,7 @@ export interface V3PrestigeRow {
   pearls: number;
   pearl_upgrades: string;
   total_matches: number;
-  total_clams_earned: number;
+  total_pearls_earned: number;
   highest_progression: number;
 }
 
@@ -229,7 +211,7 @@ export interface V3PrestigeRow {
 export async function loadPrestigeState(): Promise<V3PrestigeRow | null> {
   if (!_initialized) return null;
   const result = await db.query(
-    'SELECT rank, pearls, pearl_upgrades, total_matches, total_clams_earned, highest_progression FROM player_profile WHERE id = 1',
+    'SELECT rank, pearls, pearl_upgrades, total_matches, total_pearls_earned, highest_progression FROM player_profile WHERE id = 1',
   );
   if (!result.values || result.values.length === 0) return null;
   return result.values[0] as V3PrestigeRow;
@@ -238,8 +220,9 @@ export async function loadPrestigeState(): Promise<V3PrestigeRow | null> {
 /** Save prestige state to SQLite. */
 export async function savePrestigeState(state: V3PrestigeRow): Promise<void> {
   if (!_initialized) return;
+  const safeUpgrades = escapeSql(state.pearl_upgrades);
   await db.execute(
-    `UPDATE player_profile SET rank = ${state.rank}, pearls = ${state.pearls}, pearl_upgrades = '${state.pearl_upgrades}', total_matches = ${state.total_matches}, total_clams_earned = ${state.total_clams_earned}, highest_progression = ${state.highest_progression} WHERE id = 1`,
+    `UPDATE player_profile SET rank = ${state.rank}, pearls = ${state.pearls}, pearl_upgrades = '${safeUpgrades}', total_matches = ${state.total_matches}, total_pearls_earned = ${state.total_pearls_earned}, highest_progression = ${state.highest_progression} WHERE id = 1`,
   );
   await persist();
 }
@@ -263,9 +246,27 @@ export async function loadCurrentRun(): Promise<V3CurrentRunRow | null> {
 /** Save current run state. */
 export async function saveCurrentRun(state: V3CurrentRunRow): Promise<void> {
   if (!_initialized) return;
+  const safeUpgrades = escapeSql(state.upgrades_purchased);
+  const safeLodge = escapeSql(state.lodge_state);
   await db.execute(
-    `UPDATE current_run SET clams = ${state.clams}, upgrades_purchased = '${state.upgrades_purchased}', lodge_state = '${state.lodge_state}', progression_level = ${state.progression_level}, matches_this_run = ${state.matches_this_run} WHERE id = 1`,
+    `UPDATE current_run SET clams = ${state.clams}, upgrades_purchased = '${safeUpgrades}', lodge_state = '${safeLodge}', progression_level = ${state.progression_level}, matches_this_run = ${state.matches_this_run} WHERE id = 1`,
   );
+  await persist();
+}
+
+/** Load selected commander from player_profile. */
+export async function loadSelectedCommander(): Promise<string> {
+  if (!_initialized) return 'marshal';
+  const result = await db.query('SELECT selected_commander FROM player_profile WHERE id = 1');
+  const row = result.values?.[0] as { selected_commander?: string } | undefined;
+  return row?.selected_commander || 'marshal';
+}
+
+/** Save selected commander to player_profile. */
+export async function saveSelectedCommander(commanderId: string): Promise<void> {
+  if (!_initialized) return;
+  const safeId = escapeSql(commanderId);
+  await db.execute(`UPDATE player_profile SET selected_commander = '${safeId}' WHERE id = 1`);
   await persist();
 }
 

@@ -142,8 +142,8 @@ export function combatSystem(world: GameWorld): void {
       continue;
     }
 
-    // Idle auto-aggro (respects unit stance for player units)
-    if (state === UnitState.Idle && dmg > 0 && world.frameCount % 30 === 0) {
+    // Idle auto-aggro: scan every 10 frames for snappier combat response
+    if (state === UnitState.Idle && dmg > 0 && world.frameCount % 10 === 0) {
       const stanceMode = (Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive;
       // Hold stance: never auto-aggro
       if (faction === Faction.Player && stanceMode === StanceMode.Hold) continue;

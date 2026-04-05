@@ -22,6 +22,7 @@ export function MenuButton({
   return (
     <button
       type="button"
+      aria-label={label}
       class={`rts-btn font-heading flex items-center justify-center min-h-[44px] tracking-wider ${disabledCls} ${extraClass ?? ''}`}
       style={{
         width: wide ? '190px' : '150px',

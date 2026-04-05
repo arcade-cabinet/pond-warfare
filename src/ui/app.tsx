@@ -7,6 +7,8 @@ import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
 import {
   handleClamsChange,
+  handleClamUpgradeContinue,
+  handleCommanderSelect,
   handlePearlBack,
   handlePearlStateChange,
   handleRankUpCancel,
@@ -14,7 +16,6 @@ import {
   handleRewardsPlayAgain,
   handleRewardsRankUp,
   handleRewardsUpgrades,
-  handleUpgradesBack,
 } from './app-v3-handlers';
 import { SvgFilters } from './components/SvgFilters';
 import { SwampEcosystem } from './components/SwampEcosystem';
@@ -22,7 +23,9 @@ import { Tooltip } from './components/Tooltip';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
 import { GameOverBanner } from './game-over';
+import { AbilityButtons } from './hud/AbilityButtons';
 import { AchievementToast } from './hud/AchievementToast';
+import { CommanderAbility } from './hud/CommanderAbility';
 import { ConnectionStatus } from './hud/ConnectionStatus';
 import { CtrlGroups } from './hud/ctrl-groups';
 import { EventAlert } from './hud/EventAlert';
@@ -38,11 +41,13 @@ import { SettingsOverlay } from './overlays/SettingsOverlay';
 import { dispatchRadialAction } from './radial-actions';
 import { RadialMenu } from './radial-menu';
 import { SplashVideo } from './SplashVideo';
+import { MultiplayerLobby } from './screens/MultiplayerLobby';
 import { PearlUpgradeScreen } from './screens/PearlUpgradeScreen';
 import { RankUpModal } from './screens/RankUpModal';
 import { RewardsScreen } from './screens/RewardsScreen';
 import { UpgradeWebScreen } from './screens/UpgradeWebScreen';
 import * as store from './store';
+import * as mp from './store-multiplayer';
 import * as storeV3 from './store-v3';
 
 export interface AppProps {
@@ -117,7 +122,6 @@ export function App({ onMount }: AppProps) {
         <SvgFilters />
         <ErrorOverlay />
         <MainMenu />
-        <SettingsOverlay />
         {store.keyboardRefOpen.value && (
           <KeyboardReference
             onClose={() => {
@@ -127,20 +131,19 @@ export function App({ onMount }: AppProps) {
         )}
 
         {/* v3 overlay screens -- rendered on top of main menu */}
-        {storeV3.upgradesScreenOpen.value && (
-          <UpgradeWebScreen
-            clams={storeV3.totalClams.value}
-            onClamsChange={handleClamsChange}
-            onBack={handleUpgradesBack}
-          />
-        )}
         {storeV3.pearlScreenOpen.value && (
           <PearlUpgradeScreen
             prestigeState={storeV3.prestigeState.value}
             onStateChange={handlePearlStateChange}
             onBack={handlePearlBack}
+            selectedCommanderId={store.selectedCommander.value}
+            onCommanderSelect={handleCommanderSelect}
+            playerProfile={storeV3.playerProfile.value}
           />
         )}
+
+        {/* Multiplayer lobby overlay */}
+        {mp.multiplayerMenuOpen.value && <MultiplayerLobby />}
       </div>
     );
   }
@@ -240,6 +243,12 @@ export function App({ onMount }: AppProps) {
       <ConnectionStatus />
       <AchievementToast />
       <EventAlert />
+      <CommanderAbility onActivate={() => game.useCommanderAbility()} />
+      <AbilityButtons
+        onRallyCry={() => game.useRallyCry()}
+        onPondBlessing={() => game.usePondBlessing()}
+        onTidalSurge={() => game.useTidalSurge()}
+      />
       <OnboardingHint />
 
       {/* Modal overlays -- siblings of #game-container for proper touch-action */}
@@ -268,6 +277,13 @@ export function App({ onMount }: AppProps) {
           onRankUp={handleRewardsRankUp}
           onUpgrades={handleRewardsUpgrades}
           onPlayAgain={handleRewardsPlayAgain}
+        />
+      )}
+      {storeV3.clamUpgradeScreenOpen.value && (
+        <UpgradeWebScreen
+          clams={storeV3.totalClams.value}
+          onClamsChange={handleClamsChange}
+          onBack={handleClamUpgradeContinue}
         />
       )}
       {storeV3.rankUpModalOpen.value && (
