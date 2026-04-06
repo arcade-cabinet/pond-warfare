@@ -3,8 +3,7 @@
  * Directional flash: green/gold on increase, red on decrease.
  * Food flashes green/red on population change, orange at cap.
  *
- * TopBar Resources -- Fish, Rocks, Logs, and food display.
- * Directional flash: green/gold on increase, red on decrease.
+ * Font sizes: 14px on desktop (md:), 12px on mobile for readability.
  */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
@@ -109,19 +108,19 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           }}
         />
         {!compact && (
-          <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+          <span class="font-game text-xs md:text-sm" style={{ color: 'var(--pw-text-secondary)' }}>
             Fish:{' '}
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(fishFlash)} ${lowFish.value ? 'animate-pulse' : ''}`}
+          class={`font-numbers font-bold text-xs md:text-sm ${flashClass(fishFlash)} ${lowFish.value ? 'animate-pulse' : ''}`}
           style={{ color: lowFish.value ? 'var(--pw-warning)' : 'var(--pw-clam)' }}
         >
           {fish}
         </span>
         {lowFish.value && (
           <span
-            class="font-bold animate-pulse"
+            class="font-bold animate-pulse text-xs md:text-sm"
             style={{ color: 'var(--pw-warning)' }}
             title="Low fish!"
           >
@@ -130,7 +129,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
         )}
         {!compact && fishRate !== 0 && (
           <span
-            class="text-[10px] font-numbers"
+            class="text-[10px] md:text-xs font-numbers"
             style={{ color: fishRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
           >
             {fishRate >= 0 ? `+${fishRate}` : fishRate}
@@ -154,12 +153,12 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           }}
         />
         {!compact && (
-          <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+          <span class="font-game text-xs md:text-sm" style={{ color: 'var(--pw-text-secondary)' }}>
             Rocks:{' '}
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(rocksFlash)}`}
+          class={`font-numbers font-bold text-xs md:text-sm ${flashClass(rocksFlash)}`}
           style={{ color: '#9ca3af' }}
         >
           {rocks}
@@ -181,19 +180,19 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           }}
         />
         {!compact && (
-          <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+          <span class="font-game text-xs md:text-sm" style={{ color: 'var(--pw-text-secondary)' }}>
             Logs:{' '}
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(logsFlash)} ${lowLogs.value ? 'animate-pulse' : ''}`}
+          class={`font-numbers font-bold text-xs md:text-sm ${flashClass(logsFlash)} ${lowLogs.value ? 'animate-pulse' : ''}`}
           style={{ color: lowLogs.value ? 'var(--pw-warning)' : 'var(--pw-twig)' }}
         >
           {logs}
         </span>
         {lowLogs.value && (
           <span
-            class="font-bold animate-pulse"
+            class="font-bold animate-pulse text-xs md:text-sm"
             style={{ color: 'var(--pw-warning)' }}
             title="Low logs!"
           >
@@ -202,7 +201,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
         )}
         {!compact && logsRate !== 0 && (
           <span
-            class="text-[10px] font-numbers"
+            class="text-[10px] md:text-xs font-numbers"
             style={{ color: logsRate >= 0 ? 'var(--pw-success)' : 'var(--pw-enemy-light)' }}
           >
             {logsRate >= 0 ? `+${logsRate}` : logsRate}
@@ -225,12 +224,12 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           }}
         />
         {!compact && (
-          <span class="font-game" style={{ color: 'var(--pw-text-secondary)' }}>
+          <span class="font-game text-xs md:text-sm" style={{ color: 'var(--pw-text-secondary)' }}>
             Food:{' '}
           </span>
         )}
         <span
-          class={`font-numbers font-bold ${flashClass(foodFlash)}`}
+          class={`font-numbers font-bold text-xs md:text-sm ${flashClass(foodFlash)}`}
           style={{ color: foodAtCap.value ? 'var(--pw-enemy)' : 'var(--pw-food)' }}
         >
           {foodDisplay}
@@ -244,7 +243,7 @@ export function TopBarResources({ compact }: { compact: boolean }) {
           class="flex items-center space-x-1 md:space-x-2"
           aria-label={`Wave ${currentWave}`}
         >
-          <span class="font-game text-[10px] md:text-xs" style={{ color: 'var(--pw-enemy-light)' }}>
+          <span class="font-game text-xs md:text-sm" style={{ color: 'var(--pw-enemy-light)' }}>
             Wave {currentWave}
           </span>
         </div>

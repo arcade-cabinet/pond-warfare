@@ -2,7 +2,7 @@
  * ComicLanding — Full comic book landing page with three stacked panels.
  *
  * Panel 1: Otter (left) — "Ready for battle?" [PLAY] (seamless: US7)
- * Panel 2: Croc (right) — "Power up, soldier" [UPGRADES] (Pearl loadout, US9: hidden until rank/pearls > 0)
+ * Panel 2: Croc (right) — "Power up, soldier" [UPGRADES] (always visible: commander + pearl loadout)
  * Panel 3: Snake (left) — "Adjust your gear" [SETTINGS]
  *
  * SwampEcosystem canvas runs behind everything (rendered by app.tsx).
@@ -28,7 +28,7 @@ import {
   selectedDifficulty,
 } from './store';
 import { multiplayerMenuOpen } from './store-multiplayer';
-import { pearlScreenOpen, prestigeRank, totalPearls } from './store-v3';
+import { pearlScreenOpen } from './store-v3';
 
 /** Which view of the landing page is showing. */
 type LandingView = 'main' | 'play-mode';
@@ -74,7 +74,6 @@ export function ComicLanding() {
     pearlScreenOpen.value = true;
   }, []);
 
-  const showUpgrades = prestigeRank.value > 0 || totalPearls.value > 0;
   const view = landingView.value;
 
   return (
@@ -109,16 +108,14 @@ export function ComicLanding() {
               onButtonClick={handlePlay}
               stagger="left"
             />
-            {showUpgrades && (
-              <ComicPanel
-                character="croc"
-                side="right"
-                quote="Power up, soldier"
-                buttonLabel="UPGRADES"
-                onButtonClick={handleUpgrades}
-                stagger="center"
-              />
-            )}
+            <ComicPanel
+              character="croc"
+              side="right"
+              quote="Power up, soldier"
+              buttonLabel="UPGRADES"
+              onButtonClick={handleUpgrades}
+              stagger="center"
+            />
           </>
         )}
 

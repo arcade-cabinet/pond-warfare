@@ -4,6 +4,9 @@
  * Single-click, double-click, attack-move, and shift-click logic.
  * Also opens the radial menu on Lodge or selected-unit taps.
  * v3: handles fortification slot placement when placingBuilding starts with "fort_".
+ *
+ * Fix: when re-tapping a selected gatherer near a resource node, dispatch
+ * a gather command instead of opening the radial menu.
  */
 
 import { showSelectBark } from '@/config/barks';
@@ -80,8 +83,25 @@ export function handleClick(
       for (const eid of world.selection) cb.selectEntity(eid);
       world.isTracking = true;
     } else if (cb.isPlayerUnit(clicked)) {
-      // Check if this unit was already selected -> open radial menu
+      // Check if this unit was already selected
       const wasAlreadySelected = world.selection.includes(clicked);
+
+      // When re-tapping an already-selected unit, check for a resource
+      // underneath. If the selection contains gatherers, prefer gathering
+      // over opening the radial menu -- this is the core gameplay loop.
+      if (wasAlreadySelected && !isShiftDown()) {
+        const resourceUnder = cb.getResourceAt(mouse.worldX, mouse.worldY);
+        const hasGatherer = world.selection.some(
+          (eid) => cb.getEntityKind(eid) === EntityKind.Gatherer,
+        );
+        if (resourceUnder !== null && hasGatherer) {
+          cb.issueContextCommand(resourceUnder);
+          clickState.lastClickTime = now;
+          clickState.lastClickEntity = clicked;
+          cb.onUpdateUI();
+          return;
+        }
+      }
 
       if (isShiftDown()) {
         const idx = world.selection.indexOf(clicked);

@@ -67,10 +67,21 @@ export interface BiomeTerrainRule {
   vision_blocking?: boolean;
 }
 
+export interface ClusterTuning {
+  max_clusters: number;
+  coverage_cluster_scale: number;
+  base_radius_offset: number;
+  coverage_radius_scale: number;
+  sub_circle_min: number;
+  sub_circle_max: number;
+  margin_tiles: number;
+}
+
 export interface TerrainConfig {
   panel_based: boolean;
   note: string;
   biome_terrain_rules: Record<string, BiomeTerrainRule>;
+  cluster_tuning?: ClusterTuning;
   resource_types: string[];
   terrain_types: string[];
 }

@@ -1,10 +1,6 @@
 /**
- * PixiJS Entity Renderer
- *
- * Handles renderEntity(), sprite management, veterancy recoloring, and
- * status effect tints. Overlay drawing (brackets, health, labels, progress)
- * is in entity-overlays.ts. Status tints are in entity-tints.ts.
- * Idle indicators and ctrl group badges are in entity-status-overlays.ts.
+ * PixiJS Entity Renderer -- sprite management, veterancy recoloring, status
+ * effect tints. Overlays in entity-overlays.ts, aura/glow in entity-aura-glow.ts.
  */
 
 import { Sprite, Texture } from 'pixi.js';
@@ -15,6 +11,7 @@ import {
   Building,
   Carrying,
   EntityTypeTag,
+  FactionTag,
   Health,
   Position,
   Resource,
@@ -26,6 +23,7 @@ import type { GameWorld } from '@/ecs/world';
 import {
   EntityKind,
   type EntityKind as EntityKindType,
+  Faction,
   ResourceType,
   type SpriteId,
 } from '@/types';
@@ -33,6 +31,7 @@ import { entityScales } from '../animations';
 import { getRecoloredSprite, type RecolorPreset, veterancyPreset } from '../recolor';
 import { getAnimVisuals, tickAnimation } from '../sprite-animation';
 import { renderAutoSymbol } from './auto-symbol-overlay';
+import { drawCommanderAura, drawNestGlow } from './entity-aura-glow';
 import {
   drawHealthBar,
   drawSelectionBrackets,
@@ -54,7 +53,6 @@ import {
   setDestroyRecoloredTexturesCallback,
 } from './init';
 
-// Building construction stages
 const FOUNDATION_TINT = 0xb08050;
 
 export interface BuildingStage {
@@ -69,7 +67,6 @@ export function getBuildingStage(progress: number): BuildingStage {
   return { alpha: 0.9, tint: 0xffffff };
 }
 
-// Recolored texture cache
 const recoloredTextureCache = new Map<string, Texture>();
 
 function getRecoloredTexture(
@@ -87,7 +84,6 @@ function getRecoloredTexture(
   return tex;
 }
 
-// Sprite pool
 const spritePool: Sprite[] = [];
 
 export function acquireSprite(tex: Texture): Sprite {
@@ -110,7 +106,6 @@ export function releaseSprite(spr: Sprite): void {
   spritePool.push(spr);
 }
 
-// World reference
 let _world: GameWorld | null = null;
 let _spriteCanvases: Map<SpriteId, HTMLCanvasElement> | null = null;
 
@@ -177,7 +172,6 @@ export function renderEntity(eid: number, frameCount: number): void {
   }
 
   spr.zIndex = ey;
-
   const animScale = entityScales.get(eid);
   let scaleX = 1;
   let scaleY = 1;
@@ -186,7 +180,6 @@ export function renderEntity(eid: number, frameCount: number): void {
     scaleY = animScale.scaleY;
   }
 
-  // Apply sprite animation (walk/attack/idle) for non-building, non-resource entities
   let animYOff = 0;
   let animRotation = 0;
   if (!isBuilding && !isResource) {
@@ -198,7 +191,6 @@ export function renderEntity(eid: number, frameCount: number): void {
     animRotation = anim.rotation;
   }
 
-  // Flying Heron: render slightly above ground (-10px)
   const heronYOff = kind === EntityKind.FlyingHeron ? -10 : 0;
   spr.position.set(ex, ey + yOff + animYOff + heronYOff);
   if (facingLeft && !isBuilding) scaleX = -scaleX;
@@ -213,13 +205,10 @@ export function renderEntity(eid: number, frameCount: number): void {
     spr.tint = getStatusTint(eid, kind, _world);
   }
 
-  // Stealthed Diver: render at 20% opacity for the owning player
   if (_world?.stealthEntities.has(eid)) {
     spr.alpha = 0.2;
     spr.tint = lerpTint(0xffffff, 0x60a5fa, 0.3);
   }
-
-  // Burrowing Worm underground phase: invisible
   if (_world?.wormBurrowTimers.has(eid)) {
     spr.alpha = 0.15;
     spr.tint = 0x92400e;
@@ -234,7 +223,6 @@ export function renderEntity(eid: number, frameCount: number): void {
     const maxAmount = def.resourceAmount ?? 1;
     const resRatio = Math.max(0, Resource.amount[eid] / maxAmount);
     spr.alpha = 0.3 + 0.7 * resRatio;
-    // Subtle pulse when resource is running low (< 20%)
     if (resRatio > 0 && resRatio < 0.2) {
       const pulse = 0.5 + 0.5 * Math.sin(frameCount * 0.15);
       spr.alpha = Math.max(0.2, spr.alpha * (0.6 + 0.4 * pulse));
@@ -242,7 +230,14 @@ export function renderEntity(eid: number, frameCount: number): void {
     }
   }
 
-  // Shadow
+  // Commander aura + enemy nest glow for visual distinctiveness
+  if (kind === EntityKind.Commander && FactionTag.faction[eid] === Faction.Player) {
+    drawCommanderAura(entityOverlayGfx, ex, ey, frameCount);
+  }
+  if (kind === EntityKind.PredatorNest) {
+    drawNestGlow(entityOverlayGfx, ex, ey, frameCount);
+  }
+
   entityOverlayGfx.ellipse(ex, ey + sh / 2 - 2, sw / 2.5, sw / 2.5 / 2);
   entityOverlayGfx.fill({ color: 0x000000, alpha: 0.4 });
 
@@ -271,11 +266,9 @@ export function renderEntity(eid: number, frameCount: number): void {
     }
   }
 
-  // Idle indicator + ctrl group badge (delegated to entity-status-overlays)
   updateIdleOverlay(eid, isBuilding, isResource, ex, ey, sh, yOff, frameCount, entityLayer);
   updateCtrlGroupOverlay(eid, isResource, ex, ey, sh, yOff, entityLayer, _world);
 
-  // Auto-symbol icon (unit autonomy confirmation)
   if (!isBuilding && !isResource) {
     renderAutoSymbol(eid, ex, ey, sh, yOff, frameCount, entityLayer);
   }

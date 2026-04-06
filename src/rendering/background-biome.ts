@@ -4,6 +4,10 @@
  * Per-biome color palette overrides for terrain types, and ThornWall
  * procedural rendering. Used by buildBackground() to give each panel
  * a distinct visual character.
+ *
+ * Tile-edge blending: near tile boundaries, samples all four neighboring
+ * tile centers and bilinearly blends so terrain transitions are smooth
+ * instead of showing a hard grid edge every 32 pixels.
  */
 
 import type { PanelGrid, PanelId } from '@/game/panel-grid';
@@ -91,8 +95,48 @@ function getBiomeAt(panelGrid: PanelGrid, x: number, y: number): string | null {
   return panelGrid.getPanelDef(panelId).biome;
 }
 
+/** Apply a single terrain tint entry to a base color. */
+function applyTintEntry(base: RGB, entry: { color: RGB; strength: number }): RGB {
+  const { color: tint, strength } = entry;
+  return {
+    r: Math.max(0, Math.min(255, Math.round(base.r * (1 - strength) + tint.r * strength))),
+    g: Math.max(0, Math.min(255, Math.round(base.g * (1 - strength) + tint.g * strength))),
+    b: Math.max(0, Math.min(255, Math.round(base.b * (1 - strength) + tint.b * strength))),
+  };
+}
+
+/** Linearly interpolate two colors. */
+function lerpRGB(a: RGB, b: RGB, t: number): RGB {
+  return {
+    r: Math.round(a.r + (b.r - a.r) * t),
+    g: Math.round(a.g + (b.g - a.g) * t),
+    b: Math.round(a.b + (b.b - a.b) * t),
+  };
+}
+
+/** Get tint table for a position, considering biome overrides. */
+function getTintTable(
+  panelGrid: PanelGrid | null | undefined,
+  x: number,
+  y: number,
+): BiomeTintTable {
+  if (panelGrid) {
+    const biome = getBiomeAt(panelGrid, x, y);
+    if (biome && BIOME_TINTS[biome]) return BIOME_TINTS[biome];
+  }
+  return DEFAULT_TINTS;
+}
+
+/** Exported for testing. */
+export { applyTintEntry, lerpRGB };
+
 /**
  * Apply biome-aware terrain tinting to a base color.
+ *
+ * Near tile boundaries, bilinearly blends the tinted colors from
+ * neighboring tiles so terrain transitions are smooth instead of
+ * showing a hard grid edge every 32 pixels.
+ *
  * If no PanelGrid is provided, falls back to the default tint table.
  */
 export function applyBiomeTint(
@@ -108,26 +152,64 @@ export function applyBiomeTint(
     return thornWallColor(x, y);
   }
 
-  // Grass with no biome override = untouched (matches old behavior)
-  let tintTable = DEFAULT_TINTS;
-  if (panelGrid) {
-    const biome = getBiomeAt(panelGrid, x, y);
-    if (biome && BIOME_TINTS[biome]) {
-      tintTable = BIOME_TINTS[biome];
+  const tileSize = 32; // matches TILE_SIZE constant
+  const tileX = x % tileSize;
+  const tileY = y % tileSize;
+  const half = tileSize / 2;
+
+  // Distance from the nearest tile edge (0 = on edge, half = center)
+  const edgeDistX = Math.min(tileX, tileSize - tileX);
+  const edgeDistY = Math.min(tileY, tileSize - tileY);
+  // Blend zone covers full half-tile so transitions span the entire edge
+  const blendRadius = half;
+
+  // If pixel is well inside the tile, use the fast single-tile path
+  if (edgeDistX >= blendRadius && edgeDistY >= blendRadius) {
+    const tintTable = getTintTable(panelGrid, x, y);
+    if (type === TerrainType.Grass && !panelGrid) return base;
+    const entry = tintTable[type as keyof BiomeTintTable];
+    if (!entry) return base;
+    return applyTintEntry(base, entry);
+  }
+
+  // Near a tile edge: bilinear blend between this tile and neighbor(s)
+  const col = terrainGrid.worldToCol(x);
+  const row = terrainGrid.worldToRow(y);
+
+  // Determine which neighbor columns/rows to blend with
+  const leftCol = tileX < half ? Math.max(0, col - 1) : col;
+  const rightCol = tileX < half ? col : Math.min(terrainGrid.cols - 1, col + 1);
+  const topRow = tileY < half ? Math.max(0, row - 1) : row;
+  const bottomRow = tileY < half ? row : Math.min(terrainGrid.rows - 1, row + 1);
+
+  // Fractional position within the blending quadrant (0..1)
+  const fx = tileX < half ? 0.5 + (tileX / half) * 0.5 : 0.5 - ((tileX - half) / half) * 0.5;
+  const fy = tileY < half ? 0.5 + (tileY / half) * 0.5 : 0.5 - ((tileY - half) / half) * 0.5;
+
+  // Sample all 4 tile corners
+  const tintTable = getTintTable(panelGrid, x, y);
+  const corners: [number, number][] = [
+    [leftCol, topRow],
+    [rightCol, topRow],
+    [leftCol, bottomRow],
+    [rightCol, bottomRow],
+  ];
+
+  const samples: RGB[] = [];
+  for (const [c, r] of corners) {
+    const t = terrainGrid.get(c, r);
+    if (t === TerrainType.ThornWall) {
+      samples.push(thornWallColor(c * tileSize + half, r * tileSize + half));
+    } else {
+      const entry = tintTable[t as keyof BiomeTintTable];
+      samples.push(entry ? applyTintEntry(base, entry) : base);
     }
   }
 
-  if (type === TerrainType.Grass && !panelGrid) return base;
-
-  const entry = tintTable[type as keyof BiomeTintTable];
-  if (!entry) return base;
-
-  const { color: tint, strength } = entry;
-  return {
-    r: Math.max(0, Math.min(255, Math.round(base.r * (1 - strength) + tint.r * strength))),
-    g: Math.max(0, Math.min(255, Math.round(base.g * (1 - strength) + tint.g * strength))),
-    b: Math.max(0, Math.min(255, Math.round(base.b * (1 - strength) + tint.b * strength))),
-  };
+  // Bilinear interpolation
+  const top = lerpRGB(samples[0], samples[1], fx);
+  const bottom = lerpRGB(samples[2], samples[3], fx);
+  return lerpRGB(top, bottom, fy);
 }
 
 // --- Thorn Wall procedural color ---

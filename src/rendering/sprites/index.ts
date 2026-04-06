@@ -138,6 +138,8 @@ const LARGE_TYPES = new Set([
   'otter_warship',
   'wall_gate',
   'shrine',
+  // Resource nodes (large for visibility)
+  'clambed',
 ]);
 
 /** Map sprite type names to their draw functions. */

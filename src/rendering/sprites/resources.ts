@@ -1,6 +1,10 @@
 /**
  * Resource and misc sprites: cattail, clambed, bones, rubble, pearl_bed,
  * catapult, frog, fish.
+ *
+ * Clambed is now drawn on a 32x32 canvas (LARGE_TYPES) for better
+ * visibility. Includes a bright shimmer ring so fish nodes visually
+ * pop against any terrain background.
  */
 
 import { PALETTE } from '@/constants';
@@ -16,14 +20,54 @@ export function drawCattail(d: DrawCtx): void {
   p(9, 11, PALETTE.reedGreen);
 }
 
+/**
+ * Clambed (fish node) -- 32x32 large sprite.
+ *
+ * Draws a bright pond with shimmer highlights and visible clam shells
+ * so the resource node is obvious against any terrain.
+ */
 export function drawClambed(d: DrawCtx): void {
   const { p, rect, circle } = d;
-  circle(8, 10, 6, PALETTE.waterShallow);
-  rect(5, 9, 2, 2, PALETTE.clamShell);
-  p(6, 9, PALETTE.stone);
-  rect(9, 11, 3, 2, PALETTE.clamShell);
-  p(10, 11, PALETTE.stone);
-  rect(7, 13, 2, 2, PALETTE.clamShell);
+
+  // Outer glow ring (cyan/white highlight)
+  circle(16, 16, 14, '#0ea5e9');
+  circle(16, 16, 12, '#0284c7');
+
+  // Water pool
+  circle(16, 16, 10, PALETTE.waterMid);
+  circle(16, 16, 8, PALETTE.waterShallow);
+
+  // Shimmer highlights -- bright sparkle dots
+  p(10, 10, '#e0f2fe');
+  p(11, 10, '#bae6fd');
+  p(20, 12, '#e0f2fe');
+  p(21, 13, '#bae6fd');
+  p(14, 8, '#ffffff');
+  p(19, 9, '#ffffff');
+
+  // Clam shells (larger, more prominent)
+  rect(9, 17, 4, 3, PALETTE.clamShell);
+  p(10, 17, PALETTE.stone);
+  p(11, 18, '#e2e8f0');
+
+  rect(17, 19, 5, 3, PALETTE.clamShell);
+  p(18, 19, PALETTE.stone);
+  p(19, 20, '#e2e8f0');
+
+  rect(13, 21, 3, 3, PALETTE.clamShell);
+  p(14, 21, PALETTE.stone);
+
+  // Central bright fish icon hint
+  rect(14, 14, 4, 2, '#38bdf8');
+  p(13, 14, '#60a5fa');
+  p(18, 14, '#60a5fa');
+  p(17, 15, '#e2e8f0');
+
+  // Corner sparkle accents
+  p(8, 8, '#ffffff');
+  p(23, 9, '#ffffff');
+  p(9, 22, '#ffffff');
+  p(22, 22, '#ffffff');
 }
 
 export function drawBones(d: DrawCtx): void {

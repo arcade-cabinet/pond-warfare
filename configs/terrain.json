@@ -9,6 +9,15 @@
     "stone_quarry": { "primary": "grass", "rock_coverage": 0.35, "narrow_paths": true },
     "dense_thicket": { "primary": "grass", "tree_density": 0.35, "vision_blocking": true }
   },
+  "cluster_tuning": {
+    "max_clusters": 4,
+    "coverage_cluster_scale": 10,
+    "base_radius_offset": 3,
+    "coverage_radius_scale": 8,
+    "sub_circle_min": 2,
+    "sub_circle_max": 4,
+    "margin_tiles": 3
+  },
   "resource_types": ["fish_node", "rock_deposit", "tree_cluster", "rare_node"],
   "terrain_types": ["grass", "water", "shallows", "mud", "rocks", "high_ground", "thorn_wall"]
 }

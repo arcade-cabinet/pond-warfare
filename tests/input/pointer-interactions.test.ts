@@ -6,12 +6,13 @@
  * - Tap unit = select it
  * - Tap enemy with unit selected = attack command
  * - Tap resource with gatherer selected = gather command
+ * - Re-tap selected gatherer near resource = gather command (not radial)
  * - Double-tap empty ground = deselect
  *
  * Zero keyboard references in this file.
  */
 
-import { addComponent, addEntity } from 'bitecs';
+import { addComponent, addEntity, hasComponent } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import {
   Carrying,
@@ -112,10 +113,25 @@ function makeMouse(worldX: number, worldY: number): PointerState {
 function makeCallbacks(world: GameWorld, entityMap: Map<string, number>): PointerCallbacks {
   return {
     getEntityAt: (wx, wy) => {
-      for (const [, eid] of entityMap) {
+      // Prioritize non-resource entities (same as real getEntityAt)
+      const sorted = [...entityMap.values()].sort((a, b) => {
+        const aRes = hasComponent(world.ecs, a, IsResource) ? 1 : 0;
+        const bRes = hasComponent(world.ecs, b, IsResource) ? 1 : 0;
+        return aRes - bRes;
+      });
+      for (const eid of sorted) {
         const dx = Position.x[eid] - wx;
         const dy = Position.y[eid] - wy;
         if (Math.sqrt(dx * dx + dy * dy) < Collider.radius[eid]) return eid;
+      }
+      return null;
+    },
+    getResourceAt: (wx, wy) => {
+      for (const [, eid] of entityMap) {
+        if (!hasComponent(world.ecs, eid, IsResource)) continue;
+        const dx = Position.x[eid] - wx;
+        const dy = Position.y[eid] - wy;
+        if (Math.sqrt(dx * dx + dy * dy) < Collider.radius[eid] + 20) return eid;
       }
       return null;
     },
@@ -227,6 +243,61 @@ describe('Pointer Interactions (tap-only)', () => {
     handleClick(world, mouse, cb, clickState, () => false);
 
     expect(cb.issueContextCommand).toHaveBeenCalledWith(resource);
+  });
+
+  it('re-tap selected gatherer near resource dispatches gather instead of radial', () => {
+    const world = createGameWorld();
+    world.state = 'playing';
+    const entities = new Map<string, number>();
+
+    // Gatherer and resource at same position (gatherer standing on fish node)
+    const gatherer = createUnit(world, 200, 200, EntityKind.Gatherer, Faction.Player);
+    const resource = createResource(world, 200, 200);
+    entities.set('gatherer', gatherer);
+    entities.set('resource', resource);
+
+    // Gatherer is already selected
+    Selectable.selected[gatherer] = 1;
+    world.selection = [gatherer];
+
+    const cb = makeCallbacks(world, entities);
+    const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
+
+    // Tap on the same position (gatherer + resource overlap)
+    // getEntityAt returns gatherer (non-resource priority), but getResourceAt
+    // finds the resource underneath.
+    const mouse = makeMouse(200, 200);
+    handleClick(world, mouse, cb, clickState, () => false);
+
+    // Should dispatch gather command with the resource entity, not open radial
+    expect(cb.issueContextCommand).toHaveBeenCalledWith(resource);
+  });
+
+  it('non-gatherer selected unit re-tapping resource does NOT dispatch gather', () => {
+    const world = createGameWorld();
+    world.state = 'playing';
+    const entities = new Map<string, number>();
+
+    // Brawler (non-gatherer) and resource at same position
+    const brawler = createUnit(world, 200, 200, EntityKind.Brawler, Faction.Player);
+    const resource = createResource(world, 200, 200);
+    entities.set('brawler', brawler);
+    entities.set('resource', resource);
+
+    // Brawler is already selected
+    Selectable.selected[brawler] = 1;
+    world.selection = [brawler];
+
+    const cb = makeCallbacks(world, entities);
+    const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
+
+    // Tap on the brawler/resource overlap position
+    const mouse = makeMouse(200, 200);
+    handleClick(world, mouse, cb, clickState, () => false);
+
+    // Should NOT dispatch gather -- Brawler cannot gather.
+    // The resource shortcut only activates when a Gatherer is selected.
+    expect(cb.issueContextCommand).not.toHaveBeenCalledWith(resource);
   });
 
   it('tap on nothing with no selection is a no-op', () => {

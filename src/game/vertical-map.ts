@@ -14,6 +14,7 @@ import { getTerrainConfig } from '@/config/config-loader';
 import type { BiomeTerrainRule } from '@/config/v3-types';
 import type { GameWorld } from '@/ecs/world';
 import type { PanelGrid, PanelId } from '@/game/panel-grid';
+import { paintClusters } from '@/game/terrain-clusters';
 import { TerrainGrid, TerrainType } from '@/terrain/terrain-grid';
 import type { SeededRandom } from '@/utils/random';
 
@@ -167,7 +168,13 @@ export function buildVerticalTerrain(layout: VerticalMapLayout, rng: SeededRando
   return grid;
 }
 
-/** Paint biome terrain within a panel's grid region. */
+/**
+ * Paint biome terrain within a panel's grid region.
+ *
+ * Strategy: fill with dominant terrain first, then place a FEW large
+ * coherent clusters for features (water ponds, mud banks, rock outcrops).
+ * Each cluster is a group of overlapping circles to create natural blobs.
+ */
 function paintBiome(
   grid: TerrainGrid,
   startCol: number,
@@ -179,62 +186,45 @@ function paintBiome(
 ): void {
   const w = endCol - startCol + 1;
   const h = endRow - startRow + 1;
-  const totalTiles = w * h;
 
-  // Fill with primary terrain type (default is Grass which is already the default,
-  // but biomes like flooded_swamp have primary="shallows")
+  // Step 1: Fill entire panel with primary terrain type
   const primaryType = parseTerrainType(rule.primary);
   if (primaryType !== TerrainType.Grass) {
     grid.fillRect(startCol, startRow, w, h, primaryType);
   }
 
+  // Step 2: Paint coherent clusters for each feature type.
   if (rule.water_coverage) {
-    const count = Math.floor(totalTiles * rule.water_coverage * 0.1);
-    for (let i = 0; i < count; i++) {
-      const col = startCol + rng.int(1, w - 1);
-      const row = startRow + rng.int(1, h - 1);
-      const radius = rng.int(2, 5);
-      grid.fillCircle(col, row, radius, TerrainType.Shallows);
-      if (rng.next() < 0.4) {
-        grid.fillCircle(col, row, Math.max(1, radius - 2), TerrainType.Water);
+    paintClusters(startCol, startRow, w, h, rule.water_coverage, rng, (col, row, r) => {
+      grid.fillCircle(col, row, r, TerrainType.Shallows);
+      if (r >= 3) {
+        grid.fillCircle(col, row, Math.max(1, r - 2), TerrainType.Water);
       }
-    }
+    });
   }
 
   if (rule.mud_coverage) {
-    const count = Math.floor(totalTiles * rule.mud_coverage * 0.1);
-    for (let i = 0; i < count; i++) {
-      const col = startCol + rng.int(1, w - 1);
-      const row = startRow + rng.int(1, h - 1);
-      grid.fillCircle(col, row, rng.int(2, 4), TerrainType.Mud);
-    }
+    paintClusters(startCol, startRow, w, h, rule.mud_coverage, rng, (col, row, r) => {
+      grid.fillCircle(col, row, r, TerrainType.Mud);
+    });
   }
 
   if (rule.rock_coverage) {
-    const count = Math.floor(totalTiles * rule.rock_coverage * 0.08);
-    for (let i = 0; i < count; i++) {
-      const col = startCol + rng.int(1, w - 1);
-      const row = startRow + rng.int(1, h - 1);
-      grid.fillCircle(col, row, rng.int(2, 4), TerrainType.Rocks);
-    }
+    paintClusters(startCol, startRow, w, h, rule.rock_coverage, rng, (col, row, r) => {
+      grid.fillCircle(col, row, r, TerrainType.Rocks);
+    });
   }
 
   if (rule.high_ground_coverage) {
-    const count = Math.floor(totalTiles * rule.high_ground_coverage * 0.08);
-    for (let i = 0; i < count; i++) {
-      const col = startCol + rng.int(1, w - 1);
-      const row = startRow + rng.int(1, h - 1);
-      grid.fillCircle(col, row, rng.int(2, 3), TerrainType.HighGround);
-    }
+    paintClusters(startCol, startRow, w, h, rule.high_ground_coverage, rng, (col, row, r) => {
+      grid.fillCircle(col, row, r, TerrainType.HighGround);
+    });
   }
 
   if (rule.tree_density) {
-    const count = Math.floor(totalTiles * rule.tree_density * 0.06);
-    for (let i = 0; i < count; i++) {
-      const col = startCol + rng.int(2, w - 2);
-      const row = startRow + rng.int(2, h - 2);
-      grid.fillCircle(col, row, rng.int(1, 3), TerrainType.HighGround);
-    }
+    paintClusters(startCol, startRow, w, h, rule.tree_density, rng, (col, row, r) => {
+      grid.fillCircle(col, row, r, TerrainType.HighGround);
+    });
   }
 }
 
