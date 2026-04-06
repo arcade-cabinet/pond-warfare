@@ -58,6 +58,32 @@ export function getEntityAt(world: GameWorld, x: number, y: number): number | nu
   return null;
 }
 
+/**
+ * Find a resource entity at (x, y) specifically. Used when a unit overlaps
+ * a resource node so the resource can be targeted through the unit.
+ */
+export function getResourceAt(world: GameWorld, x: number, y: number): number | null {
+  const ents = query(world.ecs, [Position, IsResource, EntityTypeTag]);
+  const minWorldHit = 22 / world.zoomLevel;
+
+  for (let i = 0; i < ents.length; i++) {
+    const eid = ents[i];
+    // Skip depleted resources (0 HP means fully gathered)
+    if (hasComponent(world.ecs, eid, Health) && Health.current[eid] <= 0) continue;
+
+    const radius = hasComponent(world.ecs, eid, Collider) ? Collider.radius[eid] : 16;
+    const height = hasComponent(world.ecs, eid, Sprite) ? Sprite.height[eid] : 32;
+    // Use a generous hit area for resources to make them easier to tap
+    const hitW = Math.max(minWorldHit, radius + 20);
+    const hitH = Math.max(minWorldHit, height / 2 + 20);
+
+    if (Math.abs(Position.x[eid] - x) < hitW && Math.abs(Position.y[eid] - y) < hitH) {
+      return eid;
+    }
+  }
+  return null;
+}
+
 /** Check if any selected entity is a player-owned non-building unit. */
 export function hasPlayerUnitsSelected(world: GameWorld): boolean {
   return (

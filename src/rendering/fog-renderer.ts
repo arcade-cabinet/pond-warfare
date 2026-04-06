@@ -5,8 +5,11 @@
  *
  * Draws an animated drifting fog pattern (using a tiling noise texture),
  * then punches out vision circles around player entities using
- * destination-out compositing with radial gradients. Buildings get a
+ * destination-out compositing with wide radial gradients. Buildings get a
  * larger vision radius (250) than units (150).
+ *
+ * The gradient transition zone is 60% of the radius (from 40% to 100%)
+ * so the fog edge is a gradual fade rather than a hard circle.
  */
 
 import { BUILDING_SIGHT_RADIUS, FOG_TEXTURE_SIZE, UNIT_SIGHT_RADIUS } from '@/constants';
@@ -85,9 +88,14 @@ export function drawFog(
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const rad = BUILDING_KINDS.has(kind) ? BUILDING_SIGHT_RADIUS : UNIT_SIGHT_RADIUS;
 
-    const grad = fc.createRadialGradient(sx, sy, rad * 0.2, sx, sy, rad);
+    // Wide radial gradient: full visibility in center, gradual fade to fog.
+    // Inner radius at 15% gives a small fully-clear core.
+    // Stop at 40% begins the fade, 70% is half-transparent, 100% is fully fogged.
+    const grad = fc.createRadialGradient(sx, sy, rad * 0.15, sx, sy, rad);
     grad.addColorStop(0, 'rgba(0,0,0,1)');
-    grad.addColorStop(0.6, 'rgba(0,0,0,0.8)');
+    grad.addColorStop(0.4, 'rgba(0,0,0,0.9)');
+    grad.addColorStop(0.7, 'rgba(0,0,0,0.4)');
+    grad.addColorStop(0.9, 'rgba(0,0,0,0.1)');
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     fc.fillStyle = grad;
     fc.beginPath();

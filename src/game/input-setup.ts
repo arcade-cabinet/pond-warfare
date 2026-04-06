@@ -1,5 +1,5 @@
 /**
- * Input Setup – builds keyboard and pointer callback objects.
+ * Input Setup -- builds keyboard and pointer callback objects.
  *
  * Factored out of Game.init() so the orchestrator stays concise.
  * Each builder returns the typed callback object ready to pass
@@ -27,6 +27,7 @@ import type { KeyboardCallbacks } from '@/input/keyboard';
 import type { PointerCallbacks } from '@/input/pointer';
 import {
   getEntityAt,
+  getResourceAt,
   hasPlayerUnitsSelected,
   issueContextCommand,
   placeBuilding,
@@ -159,6 +160,7 @@ export function buildPointerCallbacks(deps: PointerSetupDeps): PointerCallbacks 
   const { world, recorder, syncUIStore, playUnitSelectSound, getPointerMouse } = deps;
   return {
     getEntityAt: (wx, wy) => getEntityAt(world, wx, wy),
+    getResourceAt: (wx, wy) => getResourceAt(world, wx, wy),
     hasPlayerUnitsSelected: () => hasPlayerUnitsSelected(world),
     issueContextCommand: (target, shiftDown) => {
       for (const eid of world.selection) {

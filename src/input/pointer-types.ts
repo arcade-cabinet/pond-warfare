@@ -1,5 +1,5 @@
 /**
- * Pointer Types – Shared interfaces and constants for pointer handling.
+ * Pointer Types -- Shared interfaces and constants for pointer handling.
  */
 
 export interface PointerState {
@@ -19,6 +19,7 @@ export interface PointerState {
 
 export interface PointerCallbacks {
   getEntityAt: (wx: number, wy: number) => number | null;
+  getResourceAt: (wx: number, wy: number) => number | null;
   hasPlayerUnitsSelected: () => boolean;
   issueContextCommand: (target: number | null, shiftDown?: boolean) => void;
   onUpdateUI: () => void;

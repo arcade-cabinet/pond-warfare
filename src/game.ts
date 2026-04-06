@@ -91,7 +91,7 @@ export class Game {
     const upgradeState = createUpgradeWebState(storeV3.totalClams.value);
     applyUpgradeEffects(this.world, upgradeState, storeV3.prestigeState.value);
 
-    spawnVerticalWorld(this.world);
+    spawnVerticalWorld(this.world, storeV3.progressionLevel.value ?? 1);
 
     // Initial zoom BEFORE resize (zoomLevel drives viewWidth/viewHeight)
     this.world.zoomLevel = computeInitialZoom(this.world.worldWidth, container.clientWidth);

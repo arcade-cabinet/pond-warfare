@@ -10,6 +10,7 @@ export {
   cancelTrain,
   canPlaceBuilding,
   getEntityAt,
+  getResourceAt,
   hasPlayerUnitsSelected,
   placeBuilding,
   train,

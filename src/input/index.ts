@@ -8,6 +8,7 @@ export {
   cancelTrain,
   canPlaceBuilding,
   getEntityAt,
+  getResourceAt,
   hasPlayerUnitsSelected,
   issueContextCommand,
   placeBuilding,
