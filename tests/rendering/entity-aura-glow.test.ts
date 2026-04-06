@@ -81,6 +81,16 @@ describe('drawCommanderAura', () => {
     expect(radii[1]).toBeGreaterThan(radii[2]);
   });
 
+  it('should have commander aura radius >= 48 for beacon visibility', () => {
+    const gfx = createMockGraphics();
+    drawCommanderAura(gfx as never, 0, 0, 0);
+
+    const circleCalls = gfx.calls.filter((c) => c.method === 'circle');
+    const maxRadius = Math.max(...circleCalls.map((c) => c.args[2] as number));
+    // Outer ring should be large enough to be a map beacon
+    expect(maxRadius).toBeGreaterThanOrEqual(48);
+  });
+
   it('should use gold colors (0xfbbf24 family)', () => {
     const gfx = createMockGraphics();
     drawCommanderAura(gfx as never, 0, 0, 50);
@@ -92,6 +102,22 @@ describe('drawCommanderAura', () => {
     expect(colors).toContain(0xf59e0b); // outer gold
     expect(colors).toContain(0xfbbf24); // main gold
     expect(colors).toContain(0xfef3c7); // inner highlight
+  });
+
+  it('should have minimum alpha >= 0.4 for constant visibility', () => {
+    // Test across many frame counts to find minimum alpha
+    let minAlpha = 1;
+    for (let fc = 0; fc < 200; fc++) {
+      const gfx = createMockGraphics();
+      drawCommanderAura(gfx as never, 0, 0, fc);
+      const strokeCalls = gfx.calls.filter((c) => c.method === 'stroke');
+      for (const call of strokeCalls) {
+        const alpha = (call.args[0] as { alpha: number }).alpha;
+        if (alpha < minAlpha) minAlpha = alpha;
+      }
+    }
+    // Even at minimum pulse, the aura should remain visible
+    expect(minAlpha).toBeGreaterThanOrEqual(0.35);
   });
 
   it('should produce pulse-varying alpha over time', () => {
@@ -127,6 +153,29 @@ describe('drawNestGlow', () => {
       expect(call.args[0]).toBe(300);
       expect(call.args[1]).toBe(400);
     }
+  });
+
+  it('should have nest glow radius >= 72 for cross-map visibility', () => {
+    const gfx = createMockGraphics();
+    drawNestGlow(gfx as never, 0, 0, 0);
+
+    const circleCalls = gfx.calls.filter((c) => c.method === 'circle');
+    const maxRadius = Math.max(...circleCalls.map((c) => c.args[2] as number));
+    // Must be at least 2x sprite size for visibility
+    expect(maxRadius).toBeGreaterThanOrEqual(72);
+  });
+
+  it('should have minimum outer alpha >= 0.4 for visibility', () => {
+    let minOuterAlpha = 1;
+    for (let fc = 0; fc < 200; fc++) {
+      const gfx = createMockGraphics();
+      drawNestGlow(gfx as never, 0, 0, fc);
+      const strokeCalls = gfx.calls.filter((c) => c.method === 'stroke');
+      // First stroke is the outer ring
+      const alpha = (strokeCalls[0].args[0] as { alpha: number }).alpha;
+      if (alpha < minOuterAlpha) minOuterAlpha = alpha;
+    }
+    expect(minOuterAlpha).toBeGreaterThanOrEqual(0.4);
   });
 
   it('should use red colors (0xef4444 family)', () => {

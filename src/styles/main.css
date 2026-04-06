@@ -308,7 +308,7 @@
 body {
   margin: 0;
   overflow: hidden;
-  background-color: var(--pw-bg-deep);
+  background-color: #0f2032;
   user-select: none;
   overscroll-behavior: none;
   font-family: system-ui, -apple-system, sans-serif;
