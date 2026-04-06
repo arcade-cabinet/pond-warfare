@@ -61,12 +61,23 @@ export function buildBackground(
   const w = mapW + padX * 2;
   const h = mapH + padY * 2;
 
+  // Paint at half resolution then upscale for performance.
+  // Halves pixel count 4x with negligible visual difference on terrain.
+  const RENDER_SCALE = 0.5;
+  const renderW = Math.ceil(w * RENDER_SCALE);
+  const renderH = Math.ceil(h * RENDER_SCALE);
+  const invScale = 1 / RENDER_SCALE;
+
+  const smallCanvas = document.createElement('canvas');
+  smallCanvas.width = renderW;
+  smallCanvas.height = renderH;
+  const ctx = require2DContext(smallCanvas, { alpha: false });
+
   const bgCanvas = document.createElement('canvas');
   bgCanvas.width = w;
   bgCanvas.height = h;
-  const ctx = require2DContext(bgCanvas, { alpha: false });
 
-  const imageData = ctx.createImageData(w, h);
+  const imageData = ctx.createImageData(renderW, renderH);
   const pixels = imageData.data;
 
   const seed = 42;
@@ -94,12 +105,14 @@ export function buildBackground(
   // Deep water base color for out-of-bounds pixels
   const DEEP_WATER: RGB = { r: 15, g: 32, b: 50 };
 
-  // Render pixels
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      // Convert canvas coords to map-space coords
-      const mx = x - padX;
-      const my = y - padY;
+  // Render pixels at reduced resolution
+  for (let y = 0; y < renderH; y++) {
+    for (let x = 0; x < renderW; x++) {
+      // Convert small canvas coords to full-res map-space coords
+      const fullX = x * invScale;
+      const fullY = y * invScale;
+      const mx = fullX - padX;
+      const my = fullY - padY;
 
       // Out-of-bounds: fill with deep water noise
       if (mx < 0 || mx >= mapW || my < 0 || my >= mapH) {
@@ -107,7 +120,7 @@ export function buildBackground(
         const detailNy = y * noiseScale * 2;
         const detail = valueNoise(detailNx, detailNy, detailSeed);
         const offset = (detail - 0.5) * 12;
-        const idx = (y * w + x) * 4;
+        const idx = (y * renderW + x) * 4;
         pixels[idx] = Math.max(0, Math.min(255, DEEP_WATER.r + offset));
         pixels[idx + 1] = Math.max(0, Math.min(255, DEEP_WATER.g + offset));
         pixels[idx + 2] = Math.max(0, Math.min(255, DEEP_WATER.b + offset));
@@ -176,7 +189,7 @@ export function buildBackground(
         color = applyBiomeTint(color, terrainGrid, mx, my, panelGrid);
       }
 
-      const idx = (y * w + x) * 4;
+      const idx = (y * renderW + x) * 4;
       pixels[idx] = color.r;
       pixels[idx + 1] = color.g;
       pixels[idx + 2] = color.b;
@@ -185,6 +198,12 @@ export function buildBackground(
   }
 
   ctx.putImageData(imageData, 0, 0);
+
+  // Upscale to full resolution with smooth interpolation
+  const bgCtx = require2DContext(bgCanvas, { alpha: false });
+  bgCtx.imageSmoothingEnabled = true;
+  bgCtx.imageSmoothingQuality = 'high';
+  bgCtx.drawImage(smallCanvas, 0, 0, w, h);
 
   // Store padding offset on the canvas element so the renderer can
   // position the background sprite correctly (shifted by -padX, -padY).
