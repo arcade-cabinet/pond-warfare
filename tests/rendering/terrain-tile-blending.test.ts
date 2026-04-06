@@ -2,7 +2,8 @@
  * Terrain Tile Blending Tests
  *
  * Validates that the biome tinting system blends colors at tile
- * boundaries instead of showing hard grid edges.
+ * boundaries instead of showing hard grid edges, and that
+ * ThornWall has a gradient fade near playable terrain.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -109,17 +110,40 @@ describe('applyBiomeTint tile-edge blending', () => {
     expect(isExactWater || isExactMud).toBe(false);
   });
 
-  it('should return ThornWall color for ThornWall tiles', () => {
+  it('should return pure ThornWall color deep inside a ThornWall block', () => {
+    // Fill a large block of ThornWall tiles so the center pixel has no
+    // non-ThornWall neighbors within the fade distance
+    const grid = new TerrainGrid(256, 256, 32);
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        grid.set(c, r, TerrainType.ThornWall);
+      }
+    }
+
+    const base = { r: 200, g: 200, b: 200 };
+    // Center of tile (4, 4) = pixel (128+16, 128+16) = well inside thorn block
+    const result = applyBiomeTint(base, grid, 144, 144);
+
+    // Pure ThornWall is dark green, not the bright base color
+    expect(result.r).toBeLessThan(60);
+    expect(result.g).toBeGreaterThan(result.r); // Green-shifted
+    expect(result.b).toBeLessThan(result.g);
+  });
+
+  it('should fade ThornWall near playable terrain boundary', () => {
+    // Single ThornWall tile surrounded by Grass -- the gradient fade
+    // should blend toward the neighboring terrain
     const grid = new TerrainGrid(128, 128, 32);
     grid.set(0, 0, TerrainType.ThornWall);
 
     const base = { r: 200, g: 200, b: 200 };
     const result = applyBiomeTint(base, grid, 16, 16);
 
-    // ThornWall produces dark green, not the bright base color
-    expect(result.r).toBeLessThan(60);
-    expect(result.g).toBeGreaterThan(result.r); // Green-shifted
-    expect(result.b).toBeLessThan(result.g);
+    // With fade, this pixel is near a Grass neighbor, so it will be
+    // blended (brighter than pure thorn). Not pure base either.
+    expect(result).toBeDefined();
+    // Should be different from the bright base (200, 200, 200)
+    expect(result.r !== 200 || result.g !== 200 || result.b !== 200).toBe(true);
   });
 
   it('should return base for grass tiles without panel grid', () => {
@@ -142,13 +166,13 @@ describe('applyBiomeTint tile-edge blending', () => {
     }
 
     const base = { r: 100, g: 100, b: 100 };
-    // At a tile center and at a tile edge, colors should be the same
-    // because all neighbors have the same terrain type
+    // With noise variation, center and edge differ slightly (±6 per channel)
+    // but both should be close to the same tinted value
     const center = applyBiomeTint(base, grid, 48, 48);
     const edge = applyBiomeTint(base, grid, 32, 48);
 
-    expect(center.r).toBe(edge.r);
-    expect(center.g).toBe(edge.g);
-    expect(center.b).toBe(edge.b);
+    expect(Math.abs(center.r - edge.r)).toBeLessThanOrEqual(12);
+    expect(Math.abs(center.g - edge.g)).toBeLessThanOrEqual(12);
+    expect(Math.abs(center.b - edge.b)).toBeLessThanOrEqual(12);
   });
 });

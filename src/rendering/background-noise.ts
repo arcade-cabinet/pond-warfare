@@ -5,14 +5,14 @@
  * for procedural terrain generation.
  */
 
-// --- Biome palette ---
+// --- Biome palette (brightened for an inviting look) ---
 export const BIOME_COLORS = {
-  deepWater: { r: 10, g: 29, b: 34 },
-  shallowWater: { r: 17, g: 82, b: 92 },
-  shoreMud: { r: 69, g: 26, b: 3 },
-  lightMud: { r: 113, g: 63, b: 18 },
-  reedGreen: { r: 45, g: 106, b: 79 },
-  denseMud: { r: 61, g: 32, b: 0 },
+  deepWater: { r: 15, g: 42, b: 55 },
+  shallowWater: { r: 30, g: 115, b: 130 },
+  shoreMud: { r: 100, g: 55, b: 25 },
+  lightMud: { r: 145, g: 95, b: 50 },
+  reedGreen: { r: 65, g: 135, b: 100 },
+  denseMud: { r: 95, g: 60, b: 20 },
 } as const;
 
 export type RGB = { r: number; g: number; b: number };
