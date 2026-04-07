@@ -24,4 +24,15 @@ describe('buildActionPanel', () => {
 
     expect(actionButtons.value.map((button) => button.title)).toEqual(['Mudpaw']);
   });
+
+  it('does not expose obsolete Armory training actions', () => {
+    const armory = spawnEntity(world, EntityKind.Armory, 320, 400, Faction.Player);
+    Building.progress[armory] = 100;
+    world.selection = [armory];
+
+    buildActionPanel(world);
+
+    expect(actionButtons.value).toEqual([]);
+    expect(queueItems.value).toEqual([]);
+  });
 });

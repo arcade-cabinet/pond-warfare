@@ -147,9 +147,9 @@ describe('syncRosters', () => {
     expect(bldgs[0].queueProgress).toBeCloseTo(0.5, 1);
     expect(bldgs[0].canTrain).toEqual([
       EntityKind.Gatherer,
-      EntityKind.Brawler,
       EntityKind.Healer,
-      EntityKind.Scout,
+      EntityKind.Sapper,
+      EntityKind.Saboteur,
     ]);
 
     trainingQueueSlots.delete(lodge);

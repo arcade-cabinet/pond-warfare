@@ -1,8 +1,8 @@
 /**
  * Auto-Train System Tests
  *
- * Validates that auto-training queues units when auto-behaviors are enabled,
- * respects army composition priority, and enforces queue limits.
+ * Validates that auto-training queues canonical manual units from the Lodge
+ * when auto-behaviors are enabled and respects queue limits.
  */
 
 import { addComponent, addEntity } from 'bitecs';
@@ -101,48 +101,47 @@ describe('autoTrainSystem', () => {
   it('should do nothing when auto-behaviors are disabled', () => {
     world.autoBehaviors.combat = false;
 
-    const armory = createPlayerBuilding(world, EntityKind.Armory, 500, 500);
+    const lodge = createPlayerBuilding(world, EntityKind.Lodge, 500, 500);
 
     autoTrainSystem(world);
 
-    expect(TrainingQueue.count[armory]).toBe(0);
+    expect(TrainingQueue.count[lodge]).toBe(0);
   });
 
-  it('should queue Brawler at Armory when combat units < gatherers', () => {
+  it('should queue Mudpaw at Lodge when frontline pressure needs more manual bodies', () => {
     world.autoBehaviors.combat = true;
 
-    const armory = createPlayerBuilding(world, EntityKind.Armory, 500, 500);
+    const lodge = createPlayerBuilding(world, EntityKind.Lodge, 500, 500);
 
-    // Create 3 gatherers and 0 combat units
+    // One Mudpaw plus nearby enemies should trigger another Mudpaw train.
     createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
-    createPlayerUnit(world, EntityKind.Gatherer, 110, 100);
-    createPlayerUnit(world, EntityKind.Gatherer, 120, 100);
+    const enemy = createPlayerUnit(world, EntityKind.Gator, 300, 100);
+    FactionTag.faction[enemy] = Faction.Enemy;
 
     autoTrainSystem(world);
 
-    // Should have queued a Brawler
-    expect(TrainingQueue.count[armory]).toBe(1);
-    const slots = trainingQueueSlots.get(armory) ?? [];
-    expect(slots[0]).toBe(EntityKind.Brawler);
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    const slots = trainingQueueSlots.get(lodge) ?? [];
+    expect(slots[0]).toBe(EntityKind.Gatherer);
   });
 
   it('should not overfill queue (max 8)', () => {
     world.autoBehaviors.combat = true;
 
-    const armory = createPlayerBuilding(world, EntityKind.Armory, 500, 500);
+    const lodge = createPlayerBuilding(world, EntityKind.Lodge, 500, 500);
 
     // Manually fill the queue to 8
-    const fullSlots = Array(8).fill(EntityKind.Brawler);
-    trainingQueueSlots.set(armory, fullSlots);
-    TrainingQueue.count[armory] = 8;
+    const fullSlots = Array(8).fill(EntityKind.Gatherer);
+    trainingQueueSlots.set(lodge, fullSlots);
+    TrainingQueue.count[lodge] = 8;
 
-    // Create gatherers to trigger training desire
     createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
-    createPlayerUnit(world, EntityKind.Gatherer, 110, 100);
+    const enemy = createPlayerUnit(world, EntityKind.Gator, 300, 100);
+    FactionTag.faction[enemy] = Faction.Enemy;
 
     autoTrainSystem(world);
 
     // Queue should still be at 8 (not exceeded)
-    expect(TrainingQueue.count[armory]).toBe(8);
+    expect(TrainingQueue.count[lodge]).toBe(8);
   });
 });

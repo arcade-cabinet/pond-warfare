@@ -46,7 +46,7 @@ export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
     hotkey: 'E',
     affordable:
       w.resources.fish >= (armoryDef.fishCost ?? 0) && w.resources.logs >= (armoryDef.logCost ?? 0),
-    description: 'Military production. Trains combat units and researches upgrades.',
+    description: 'Military logistics wing. Unlocks late-run battlefield support and fortification pressure.',
     category: 'build',
     costBreakdown: { fish: armoryDef.fishCost, logs: armoryDef.logCost },
     onClick: () => {

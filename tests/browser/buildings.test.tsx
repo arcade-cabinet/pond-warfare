@@ -188,7 +188,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   });
 
   // ========================================================================
-  // 3. Armory -- 500 HP, trains Brawler/Sniper/Healer/Shieldbearer/Catapult/Trapper
+  // 3. Armory -- 500 HP, military wing / logistics support
   // ========================================================================
 
   describe('3. Armory', () => {

@@ -4,8 +4,7 @@
  * Reads buildingRoster to find buildings with available queue slots,
  * then calls the same train() function the BuildingsTab uses.
  *
- * The Lodge trains the four baseline generalists.
- * The Armory wing (Lodge upgrade) trains the heavier follow-up roster.
+ * The Lodge trains the full manual run roster.
  */
 
 import { Goal } from 'yuka';
@@ -21,13 +20,6 @@ import {
   getGovernorGathererTarget,
   shouldTrainSupportUnit,
 } from '../train-policy';
-
-/** What each building type can train, in priority order. */
-const BUILDING_TRAINS: Record<number, EntityKind[]> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper, EntityKind.Saboteur],
-  // Armory is a Lodge wing — trains heavier follow-up units when unlocked
-  [EntityKind.Armory]: [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Healer, EntityKind.Shieldbearer],
-};
 
 /** Count of combat units (non-gatherer, non-healer, non-scout). */
 function armySize(): number {
@@ -53,8 +45,7 @@ function trainableUnits(buildingKind: EntityKind, canTrain: EntityKind[]): Entit
     if (stage >= 6) manualUnits.push(EntityKind.Saboteur);
     return manualUnits;
   }
-  if (canTrain.length > 0) return canTrain;
-  return BUILDING_TRAINS[buildingKind] ?? [];
+  return canTrain;
 }
 
 export class TrainGoal extends Goal {
@@ -100,8 +91,6 @@ export class TrainGoal extends Goal {
     if (trainable.includes(EntityKind.Sapper) && armySize() >= Math.max(2, getGovernorCombatTarget() - 1)) {
       return EntityKind.Sapper;
     }
-    if (trainable.includes(EntityKind.Sniper) && armySize() >= 3) return EntityKind.Sniper;
-    if (trainable.includes(EntityKind.Brawler)) return EntityKind.Brawler;
     if (trainable.includes(EntityKind.Healer)) return EntityKind.Healer;
     return trainable[0] ?? null;
   }

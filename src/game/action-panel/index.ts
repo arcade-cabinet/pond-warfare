@@ -24,7 +24,6 @@ import {
   queueItems,
 } from '@/ui/action-panel';
 
-import { buildArmoryButtons } from './armory-buttons';
 import { buildGathererButtons } from './gatherer-buttons';
 import { buildLodgeButtons } from './lodge-buttons';
 import { buildMarketButtons } from './market-buttons';
@@ -73,16 +72,11 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
         btns.push(...buildLodgeButtons(w, selEid));
       }
 
-      if (selKind === EntityKind.Armory && Building.progress[selEid] >= 100) {
-        btns.push(...buildArmoryButtons(w, selEid, recorder));
-        buildTrainingQueueItems(w, selEid, qItems);
-      }
-
       if (selKind === EntityKind.Market && Building.progress[selEid] >= 100) {
         btns.push(...buildMarketButtons(w, selEid));
       }
 
-      if (selKind === EntityKind.Lodge || selKind === EntityKind.Burrow) {
+      if (selKind === EntityKind.Lodge) {
         buildTrainingQueueItems(w, selEid, qItems);
       }
     }

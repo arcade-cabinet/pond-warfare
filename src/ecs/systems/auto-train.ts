@@ -1,15 +1,14 @@
 /**
  * Auto-Training System
  *
- * When auto-attack or auto-defend is enabled, automatically queues unit
- * training at completed player Armories and Lodges every 120 frames (~2 sec).
+ * When auto-attack or auto-defend is enabled, automatically queues manual
+ * Lodge training every 120 frames (~2 sec).
  *
  * Priority logic:
- * - If no combat units and enemies exist: queue Brawler at Armory
- * - If combat units < gatherers: queue Brawler at Armory
- * - If snipers < brawlers / 2: queue Sniper at Armory
- * - If no healer and army > 6: queue Healer at Armory
- * - If gatherers < 4: queue Gatherer at Lodge
+ * - If Mudpaws are below the current target: queue Mudpaw at Lodge
+ * - If stage >= 2 and support is missing: queue Medic
+ * - If stage >= 5 and siege support is missing: queue Sapper
+ * - If stage >= 6 and disruption support is missing: queue Saboteur
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -111,50 +110,17 @@ export function autoTrainSystem(world: GameWorld): void {
   if (world.frameCount % AUTO_TRAIN_INTERVAL !== 0) return;
 
   // Count player army composition
-  const gatherers = countPlayerKind(world, EntityKind.Gatherer);
-  const brawlers = countPlayerKind(world, EntityKind.Brawler);
-  const snipers = countPlayerKind(world, EntityKind.Sniper);
-  const healers = countPlayerKind(world, EntityKind.Healer);
-  const combatUnits = brawlers + snipers + healers;
+  const mudpaws = countPlayerKind(world, EntityKind.Gatherer);
+  const medics = countPlayerKind(world, EntityKind.Healer);
+  const sappers = countPlayerKind(world, EntityKind.Sapper);
+  const saboteurs = countPlayerKind(world, EntityKind.Saboteur);
   const enemies = countEnemyUnits(world);
+  const stage = world.panelGrid?.getActivePanels().length ?? 1;
 
   // Find available production buildings
-  const armories = findTrainableBuildings(world, EntityKind.Armory);
   const lodges = findTrainableBuildings(world, EntityKind.Lodge);
 
-  // --- Train combat units at Armories ---
-  if (armories.length > 0 && world.resources.food < world.resources.maxFood) {
-    // Pick the armory with the shortest queue
-    let bestArmory = armories[0];
-    let bestCount = TrainingQueue.count[armories[0]];
-    for (let i = 1; i < armories.length; i++) {
-      const c = TrainingQueue.count[armories[i]];
-      if (c < bestCount) {
-        bestCount = c;
-        bestArmory = armories[i];
-      }
-    }
-
-    if (combatUnits === 0 && enemies > 0) {
-      // Emergency: no combat units but enemies exist - train Brawler
-      tryTrain(world, bestArmory, EntityKind.Brawler);
-    } else if (combatUnits < gatherers) {
-      // Army is smaller than worker count - train Brawler
-      tryTrain(world, bestArmory, EntityKind.Brawler);
-    } else if (snipers < Math.floor(brawlers / 2)) {
-      // Need ranged support - train Sniper
-      tryTrain(world, bestArmory, EntityKind.Sniper);
-    } else if (healers === 0 && combatUnits > 6) {
-      // No healer and army is large enough to justify one
-      tryTrain(world, bestArmory, EntityKind.Healer);
-    } else if (brawlers <= snipers) {
-      // Default: keep brawler count at least equal to snipers
-      tryTrain(world, bestArmory, EntityKind.Brawler);
-    }
-  }
-
-  // --- Train gatherers at Lodges ---
-  if (lodges.length > 0 && gatherers < 4 && world.resources.food < world.resources.maxFood) {
+  if (lodges.length > 0 && world.resources.food < world.resources.maxFood) {
     // Pick the lodge with the shortest queue
     let bestLodge = lodges[0];
     let bestCount = TrainingQueue.count[lodges[0]];
@@ -166,6 +132,28 @@ export function autoTrainSystem(world: GameWorld): void {
       }
     }
 
-    tryTrain(world, bestLodge, EntityKind.Gatherer);
+    const mudpawTarget =
+      enemies >= 3 ? (stage >= 5 ? 4 : 3) : stage >= 6 ? 2 : stage >= 4 ? 3 : 4;
+    const frontline = mudpaws + sappers + saboteurs;
+
+    if (mudpaws < mudpawTarget) {
+      tryTrain(world, bestLodge, EntityKind.Gatherer);
+      return;
+    }
+    if (stage >= 2 && medics === 0 && frontline >= 4) {
+      tryTrain(world, bestLodge, EntityKind.Healer);
+      return;
+    }
+    if (stage >= 6 && saboteurs === 0 && frontline >= 6) {
+      tryTrain(world, bestLodge, EntityKind.Saboteur);
+      return;
+    }
+    if (stage >= 5 && sappers === 0 && frontline >= 4) {
+      tryTrain(world, bestLodge, EntityKind.Sapper);
+      return;
+    }
+    if (enemies > 0 && mudpaws < mudpawTarget + 1) {
+      tryTrain(world, bestLodge, EntityKind.Gatherer);
+    }
   }
 }

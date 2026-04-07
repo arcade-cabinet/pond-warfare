@@ -36,8 +36,6 @@ export { tryPlaceFortAtPosition } from './radial-fort-actions';
 /** Unit kind mapping for training commands. */
 const TRAIN_KIND_MAP: Record<string, EntityKind> = {
   train_mudpaw: EntityKind.Gatherer,
-  train_gatherer: EntityKind.Gatherer,
-  train_fighter: EntityKind.Brawler,
   train_medic: EntityKind.Healer,
   train_sapper: EntityKind.Sapper,
   train_saboteur: EntityKind.Saboteur,
@@ -46,8 +44,6 @@ const TRAIN_KIND_MAP: Record<string, EntityKind> = {
 /** v3 generalist names for config lookup. */
 const TRAIN_CONFIG_MAP: Record<string, string> = {
   train_mudpaw: 'gatherer',
-  train_gatherer: 'gatherer',
-  train_fighter: 'fighter',
   train_medic: 'medic',
   train_sapper: 'sapper_unit',
   train_saboteur: 'saboteur_unit',
@@ -104,8 +100,6 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
 
   const names: Record<string, string> = {
     train_mudpaw: 'Mudpaw',
-    train_gatherer: 'Gatherer',
-    train_fighter: 'Fighter',
     train_medic: 'Medic',
     train_sapper: 'Sapper',
     train_saboteur: 'Saboteur',

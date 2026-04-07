@@ -275,9 +275,7 @@ function tapTrainFromRadial(w: GameWorld, lodgeEid: number, unitKind: EntityKind
 
   const kindToRadialId: Partial<Record<EntityKind, string>> = {
     [EntityKind.Gatherer]: 'train_mudpaw',
-    [EntityKind.Brawler]: 'train_fighter',
     [EntityKind.Healer]: 'train_medic',
-    [EntityKind.Scout]: 'train_scout',
     [EntityKind.Sapper]: 'train_sapper',
     [EntityKind.Saboteur]: 'train_saboteur',
   };
