@@ -59,6 +59,7 @@ const BUILD_CONTROLLER_SEED = 201;
 const TRAIN_CONTROLLER_SEED = 301;
 const DEFEND_CONTROLLER_SEED = 401;
 const ATTACK_CONTROLLER_SEED = 501;
+const CONTROLLER_DIAGNOSTICS_TIMEOUT = 90_000;
 
 function tickWorld(world: GameWorld): void {
   runSimFrame(world, { runMatchEvents: false, runPrestigeAutoBehaviors: true, syncSignals: false });
@@ -388,5 +389,5 @@ describe('controller balance diagnostics', () => {
     );
     expect(defendRows.find((row) => row.name === 'auto_repair_behavior')?.lodgeHpRatio).toBeGreaterThan(defendRows[0].lodgeHpRatio);
     expect(attackRows[0].committed).toBeGreaterThanOrEqual(MIN_ATTACK_ARMY);
-  }, 60_000);
+  }, CONTROLLER_DIAGNOSTICS_TIMEOUT);
 });

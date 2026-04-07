@@ -26,6 +26,7 @@ import { game } from '@/game';
 import { ENEMY_HARVESTER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { runSimFrame } from '../helpers/run-sim-frame';
 import { mountCurrentGame } from './helpers/mount-current-game';
 
 const ENEMY_AI_BROWSER_TIMEOUT = 60_000;
@@ -72,8 +73,19 @@ function getPlayerBuildings(kind?: EntityKind) {
 }
 
 async function waitFrames(n: number) {
-  const start = game.world.frameCount;
-  while (game.world.frameCount - start < n) await delay(16);
+  const batchSize = 600;
+  let remaining = n;
+  while (remaining > 0) {
+    const step = Math.min(batchSize, remaining);
+    for (let i = 0; i < step; i += 1) {
+      runSimFrame(game.world);
+    }
+    keepPlayerAlive();
+    remaining -= step;
+    await delay(0);
+  }
+  game.syncUIStore();
+  await delay(20);
 }
 
 /** Keep player alive by topping off resources and healing buildings. */

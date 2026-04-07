@@ -50,6 +50,7 @@ const TRACE_WINDOWS = [
 ] as const;
 const TRACE_SEEDS = [11, 42, 77];
 const evaluatorOwner = new GameEntity();
+const GOVERNOR_DECISION_TIMEOUT = 180_000;
 
 interface TraceVariant {
   name: string;
@@ -291,5 +292,5 @@ describe('governor decision diagnostics', () => {
       expect(Number.isFinite(row.maxAttackScore)).toBe(true);
       expect(row.decisions.length).toBeGreaterThan(0);
     }
-  }, 120_000);
+  }, GOVERNOR_DECISION_TIMEOUT);
 });

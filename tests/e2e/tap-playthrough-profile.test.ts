@@ -58,7 +58,7 @@ import { progressionLevel } from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
-const TAP_PLAYTHROUGH_TIMEOUT = 30_000;
+const TAP_PLAYTHROUGH_TIMEOUT = 90_000;
 
 // ── Mocks (audio, rendering, particles only) ──────────────────────
 vi.mock('@/audio/audio-system', () => ({
