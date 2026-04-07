@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { COSMETICS, getCosmeticById, getCosmeticsForKind } from '@/config/cosmetics';
+import { LOOKOUT_KIND, MUDPAW_KIND, SHAMAN_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 const CANONICAL_UNIT_SKIN_TARGETS = new Set([
-  EntityKind.Gatherer,
+  MUDPAW_KIND,
   EntityKind.Healer,
   EntityKind.Sapper,
   EntityKind.Saboteur,
-  EntityKind.Scout,
-  EntityKind.Shaman,
+  LOOKOUT_KIND,
+  SHAMAN_KIND,
 ]);
 
 describe('cosmetics config', () => {
@@ -31,19 +32,19 @@ describe('cosmetics config', () => {
   });
 
   it('supports lookup by canonical skin id', () => {
-    expect(getCosmeticById('skin_elite_mudpaw')?.targetKind).toBe(EntityKind.Gatherer);
+    expect(getCosmeticById('skin_elite_mudpaw')?.targetKind).toBe(MUDPAW_KIND);
     expect(getCosmeticById('skin_shadow_saboteur')?.targetKind).toBe(EntityKind.Saboteur);
-    expect(getCosmeticById('skin_storm_shaman')?.targetKind).toBe(EntityKind.Shaman);
+    expect(getCosmeticById('skin_storm_shaman')?.targetKind).toBe(SHAMAN_KIND);
   });
 
   it('returns canonical skins for the live unit chassis', () => {
-    expect(getCosmeticsForKind(EntityKind.Gatherer).map((entry) => entry.id)).toContain(
+    expect(getCosmeticsForKind(MUDPAW_KIND).map((entry) => entry.id)).toContain(
       'skin_elite_mudpaw',
     );
     expect(getCosmeticsForKind(EntityKind.Sapper).map((entry) => entry.id)).toContain(
       'skin_bog_sapper',
     );
-    expect(getCosmeticsForKind(EntityKind.Scout).map((entry) => entry.id)).toContain(
+    expect(getCosmeticsForKind(LOOKOUT_KIND).map((entry) => entry.id)).toContain(
       'skin_venom_lookout',
     );
   });

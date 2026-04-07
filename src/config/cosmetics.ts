@@ -8,6 +8,14 @@
 
 import type { RecolorPreset } from '@/rendering/recolor';
 import type { PlayerProfile } from '@/storage/database';
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+  SHAMAN_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 export interface CosmeticDef {
@@ -42,7 +50,7 @@ export const COSMETICS: CosmeticDef[] = [
     category: 'unit_skin',
     name: 'Elite Mudpaw',
     description: 'Gold-tinted veteran finish for the Mudpaw',
-    targetKind: EntityKind.Gatherer,
+    targetKind: MUDPAW_KIND,
     recolorPreset: 'elite',
     unlock: {
       requirement: 'Play 10 games',
@@ -54,7 +62,7 @@ export const COSMETICS: CosmeticDef[] = [
     category: 'unit_skin',
     name: 'Crystal Medic',
     description: 'Ice-blue restorative glow for the Medic',
-    targetKind: EntityKind.Healer,
+    targetKind: MEDIC_KIND,
     recolorPreset: 'shielded',
     unlock: {
       requirement: 'Win on Hard difficulty',
@@ -66,7 +74,7 @@ export const COSMETICS: CosmeticDef[] = [
     category: 'unit_skin',
     name: 'Bog Sapper',
     description: 'Marsh-green siege finish for the Sapper chassis',
-    targetKind: EntityKind.Sapper,
+    targetKind: SAPPER_KIND,
     recolorPreset: 'hero',
     unlock: {
       requirement: 'Win 5 games',
@@ -78,7 +86,7 @@ export const COSMETICS: CosmeticDef[] = [
     category: 'unit_skin',
     name: 'Shadow Saboteur',
     description: 'Dark purple covert finish for the Saboteur',
-    targetKind: EntityKind.Saboteur,
+    targetKind: SABOTEUR_KIND,
     recolorPreset: 'champion',
     unlock: {
       requirement: 'Kill 100 enemies total',
@@ -90,7 +98,7 @@ export const COSMETICS: CosmeticDef[] = [
     category: 'unit_skin',
     name: 'Venom Lookout',
     description: 'Poison-tinged vision palette for the Lookout chassis',
-    targetKind: EntityKind.Scout,
+    targetKind: LOOKOUT_KIND,
     recolorPreset: 'poisoned',
     unlock: {
       requirement: 'Kill 200 enemies total',
@@ -102,7 +110,7 @@ export const COSMETICS: CosmeticDef[] = [
     category: 'unit_skin',
     name: 'Storm Shaman',
     description: 'Charged blue-green glow for the Shaman',
-    targetKind: EntityKind.Shaman,
+    targetKind: SHAMAN_KIND,
     recolorPreset: 'enraged',
     unlock: {
       requirement: 'Win 10 games',
