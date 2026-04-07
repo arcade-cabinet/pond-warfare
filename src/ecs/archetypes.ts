@@ -3,10 +3,17 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   isMudpawKind,
   LEGACY_SABOTEUR_CHASSIS_KIND,
+  LEGACY_SABOTEUR_CHASSIS_SPRITE_ID,
   LEGACY_SAPPER_CHASSIS_KIND,
+  LEGACY_SAPPER_CHASSIS_SPRITE_ID,
   LOOKOUT_KIND,
+  LOOKOUT_SPRITE_ID,
   MEDIC_KIND,
+  MEDIC_SPRITE_ID,
   MUDPAW_KIND,
+  MUDPAW_SPRITE_ID,
+  SABOTEUR_SPRITE_ID,
+  SAPPER_SPRITE_ID,
 } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
 import {
@@ -37,9 +44,9 @@ import {
 import type { GameWorld } from './world';
 
 const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
-  [MUDPAW_KIND]: SpriteId.Gatherer,
-  [LEGACY_SAPPER_CHASSIS_KIND]: SpriteId.Brawler,
-  [LEGACY_SABOTEUR_CHASSIS_KIND]: SpriteId.Sniper,
+  [MUDPAW_KIND]: MUDPAW_SPRITE_ID,
+  [LEGACY_SAPPER_CHASSIS_KIND]: LEGACY_SAPPER_CHASSIS_SPRITE_ID,
+  [LEGACY_SABOTEUR_CHASSIS_KIND]: LEGACY_SABOTEUR_CHASSIS_SPRITE_ID,
   [EntityKind.Gator]: SpriteId.Gator,
   [EntityKind.Snake]: SpriteId.Snake,
   [EntityKind.Lodge]: SpriteId.Lodge,
@@ -49,11 +56,11 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.PredatorNest]: SpriteId.PredatorNest,
   [EntityKind.Cattail]: SpriteId.Cattail,
   [EntityKind.Clambed]: SpriteId.Clambed,
-  [MEDIC_KIND]: SpriteId.Healer,
+  [MEDIC_KIND]: MEDIC_SPRITE_ID,
   [EntityKind.Watchtower]: SpriteId.Watchtower,
   [EntityKind.BossCroc]: SpriteId.BossCroc,
   [EntityKind.Shieldbearer]: SpriteId.Shieldbearer,
-  [LOOKOUT_KIND]: SpriteId.Scout,
+  [LOOKOUT_KIND]: LOOKOUT_SPRITE_ID,
   [EntityKind.Catapult]: SpriteId.Catapult,
   [EntityKind.Wall]: SpriteId.Wall,
   [EntityKind.ScoutPost]: SpriteId.ScoutPost,
@@ -83,8 +90,8 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.WallGate]: SpriteId.WallGate,
   [EntityKind.Shrine]: SpriteId.Shrine,
   // v3.0.0
-  [EntityKind.Sapper]: SpriteId.Sapper,
-  [EntityKind.Saboteur]: SpriteId.Saboteur,
+  [EntityKind.Sapper]: SAPPER_SPRITE_ID,
+  [EntityKind.Saboteur]: SABOTEUR_SPRITE_ID,
 };
 
 export function spawnEntity(

@@ -5,6 +5,15 @@
  * to PixiJS Textures. Every pixel placement matches the original exactly.
  */
 
+import {
+  LEGACY_SABOTEUR_CHASSIS_SPRITE_ID,
+  LEGACY_SAPPER_CHASSIS_SPRITE_ID,
+  LOOKOUT_SPRITE_ID,
+  MEDIC_SPRITE_ID,
+  MUDPAW_SPRITE_ID,
+  SABOTEUR_SPRITE_ID,
+  SAPPER_SPRITE_ID,
+} from '@/game/live-unit-kinds';
 import { SpriteId } from '@/types';
 import { registerSpriteTexture } from '../pixi-app';
 import {
@@ -64,15 +73,15 @@ import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } f
 /**
  * Names used internally to map to SpriteId enum values.
  *
- * These are compatibility-oriented debug/registry keys, not the canonical
- * player-facing roster names. For example:
- * - `gatherer` is the Mudpaw / economy-specialist chassis
- * - `scout` is the Lookout chassis
+ * These are local sprite-registry keys, not the canonical shared enum names.
+ * Live roster units use canonical keys where possible, while compatibility-only
+ * chassis keep explicit `legacy_*` names so the registry stops teaching the
+ * dead split roster by default.
  */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
-  { name: 'gatherer', id: SpriteId.Gatherer },
-  { name: 'brawler', id: SpriteId.Brawler },
-  { name: 'sniper', id: SpriteId.Sniper },
+  { name: 'mudpaw', id: MUDPAW_SPRITE_ID },
+  { name: 'legacy_sapper_chassis', id: LEGACY_SAPPER_CHASSIS_SPRITE_ID },
+  { name: 'legacy_saboteur_chassis', id: LEGACY_SABOTEUR_CHASSIS_SPRITE_ID },
   { name: 'gator', id: SpriteId.Gator },
   { name: 'snake', id: SpriteId.Snake },
   { name: 'lodge', id: SpriteId.Lodge },
@@ -84,11 +93,11 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'clambed', id: SpriteId.Clambed },
   { name: 'bones', id: SpriteId.Bones },
   { name: 'rubble', id: SpriteId.Rubble },
-  { name: 'healer', id: SpriteId.Healer },
+  { name: 'medic', id: MEDIC_SPRITE_ID },
   { name: 'watchtower', id: SpriteId.Watchtower },
   { name: 'boss_croc', id: SpriteId.BossCroc },
   { name: 'shieldbearer', id: SpriteId.Shieldbearer },
-  { name: 'scout', id: SpriteId.Scout },
+  { name: 'lookout', id: LOOKOUT_SPRITE_ID },
   { name: 'catapult', id: SpriteId.Catapult },
   { name: 'wall', id: SpriteId.Wall },
   { name: 'scout_post', id: SpriteId.ScoutPost },
@@ -119,8 +128,8 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'wall_gate', id: SpriteId.WallGate },
   { name: 'shrine', id: SpriteId.Shrine },
   // v3.0.0
-  { name: 'sapper', id: SpriteId.Sapper },
-  { name: 'saboteur', id: SpriteId.Saboteur },
+  { name: 'sapper', id: SAPPER_SPRITE_ID },
+  { name: 'saboteur', id: SABOTEUR_SPRITE_ID },
 ];
 
 const LARGE_TYPES = new Set([
@@ -151,9 +160,9 @@ const LARGE_TYPES = new Set([
 
 /** Map sprite type names to their draw functions. */
 const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
-  gatherer: drawGatherer,
-  brawler: drawBrawler,
-  sniper: drawSniper,
+  mudpaw: drawGatherer,
+  legacy_sapper_chassis: drawBrawler,
+  legacy_saboteur_chassis: drawSniper,
   gator: drawGator,
   snake: drawSnake,
   lodge: drawLodge,
@@ -165,11 +174,11 @@ const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   clambed: drawClambed,
   bones: drawBones,
   rubble: drawRubble,
-  healer: drawHealer,
+  medic: drawHealer,
   watchtower: drawWatchtower,
   boss_croc: drawBossCroc,
   shieldbearer: drawShieldbearer,
-  scout: drawScout,
+  lookout: drawScout,
   catapult: drawCatapult,
   wall: drawWall,
   scout_post: drawScoutPost,

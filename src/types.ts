@@ -21,6 +21,13 @@ export enum UnitState {
   PatrolMove = 13,
 }
 
+/**
+ * Shared compatibility-stable entity ids.
+ *
+ * Some older chassis names remain here to preserve saved data, sprite ids,
+ * and broad ECS compatibility. Canonical live player-facing aliases live in
+ * `src/game/live-unit-kinds.ts`.
+ */
 export enum EntityKind {
   Gatherer = 0,
   Brawler = 1,
@@ -97,6 +104,12 @@ export enum ResourceType {
   Rocks = 3,
 }
 
+/**
+ * Shared compatibility-stable sprite ids.
+ *
+ * Like `EntityKind`, these ids retain historical names for stability even
+ * when the live roster uses canonical aliases such as Mudpaw and Lookout.
+ */
 export enum SpriteId {
   Gatherer = 0,
   Brawler = 1,

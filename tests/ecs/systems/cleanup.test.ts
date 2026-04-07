@@ -7,7 +7,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { SpriteId } from '@/types';
+import { LEGACY_SAPPER_CHASSIS_SPRITE_ID, MUDPAW_SPRITE_ID } from '@/game/live-unit-kinds';
 
 describe('cleanupSystem', () => {
   let world: GameWorld;
@@ -54,7 +54,7 @@ describe('cleanupSystem', () => {
       id: 1,
       x: 100,
       y: 100,
-      spriteId: SpriteId.Gatherer,
+      spriteId: MUDPAW_SPRITE_ID,
       life: 1,
       maxLife: 120,
     });
@@ -64,7 +64,7 @@ describe('cleanupSystem', () => {
       id: 2,
       x: 200,
       y: 200,
-      spriteId: SpriteId.Brawler,
+      spriteId: LEGACY_SAPPER_CHASSIS_SPRITE_ID,
       life: 50,
       maxLife: 120,
     });

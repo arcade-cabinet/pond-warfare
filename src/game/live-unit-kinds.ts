@@ -1,4 +1,4 @@
-import { EntityKind } from '@/types';
+import { EntityKind, SpriteId } from '@/types';
 
 /**
  * Canonical live player-facing unit mappings.
@@ -14,6 +14,13 @@ export const SAPPER_KIND = EntityKind.Sapper;
 export const SABOTEUR_KIND = EntityKind.Saboteur;
 export const LEGACY_SAPPER_CHASSIS_KIND = EntityKind.Brawler;
 export const LEGACY_SABOTEUR_CHASSIS_KIND = EntityKind.Sniper;
+export const MUDPAW_SPRITE_ID = SpriteId.Gatherer;
+export const MEDIC_SPRITE_ID = SpriteId.Healer;
+export const LOOKOUT_SPRITE_ID = SpriteId.Scout;
+export const SAPPER_SPRITE_ID = SpriteId.Sapper;
+export const SABOTEUR_SPRITE_ID = SpriteId.Saboteur;
+export const LEGACY_SAPPER_CHASSIS_SPRITE_ID = SpriteId.Brawler;
+export const LEGACY_SABOTEUR_CHASSIS_SPRITE_ID = SpriteId.Sniper;
 export const FISHER_KIND = MUDPAW_KIND;
 export const LOGGER_KIND = MUDPAW_KIND;
 export const DIGGER_KIND = MUDPAW_KIND;
