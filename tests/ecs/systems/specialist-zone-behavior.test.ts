@@ -15,6 +15,7 @@ import {
 import { specialistZoneBehaviorSystem } from '@/ecs/systems/specialist-zone-behavior';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { registerSpecialistEntity } from '@/game/specialist-assignment';
+import { LOOKOUT_KIND, MUDPAW_KIND, SABOTEUR_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createUnit(world: GameWorld, x: number, y: number, kind: EntityKind): number {
@@ -67,7 +68,7 @@ describe('specialistZoneBehaviorSystem', () => {
   it('sends gather specialists toward resources inside their assigned area', () => {
     const world = createGameWorld();
     world.frameCount = 20;
-    const fisher = createUnit(world, 100, 100, EntityKind.Gatherer);
+    const fisher = createUnit(world, 100, 100, MUDPAW_KIND);
     registerSpecialistEntity(world, fisher, 'fisher');
     const assignment = world.specialistAssignments.get(fisher);
     if (!assignment) throw new Error('missing assignment');
@@ -86,7 +87,7 @@ describe('specialistZoneBehaviorSystem', () => {
   it('starts a patrol for area specialists like lookout', () => {
     const world = createGameWorld();
     world.frameCount = 20;
-    const lookout = createUnit(world, 100, 100, EntityKind.Scout);
+    const lookout = createUnit(world, 100, 100, LOOKOUT_KIND);
     registerSpecialistEntity(world, lookout, 'lookout');
 
     specialistZoneBehaviorSystem(world);
@@ -99,7 +100,7 @@ describe('specialistZoneBehaviorSystem', () => {
   it('returns dual-zone specialists to their anchor area when they drift too far', () => {
     const world = createGameWorld();
     world.frameCount = 20;
-    const ranger = createUnit(world, 320, 120, EntityKind.Saboteur);
+    const ranger = createUnit(world, 320, 120, SABOTEUR_KIND);
     registerSpecialistEntity(world, ranger, 'ranger');
     const assignment = world.specialistAssignments.get(ranger);
     if (!assignment) throw new Error('missing assignment');

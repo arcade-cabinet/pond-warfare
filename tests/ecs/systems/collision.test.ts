@@ -8,6 +8,7 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WORLD_BOUNDS_MARGIN } from '@/constants';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -45,7 +46,7 @@ function createUnit(world: GameWorld, x: number, y: number): number {
   Health.max[eid] = 30;
   Velocity.speed[eid] = 2.0;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Gatherer;
+  EntityTypeTag.kind[eid] = MUDPAW_KIND;
 
   return eid;
 }

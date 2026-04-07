@@ -19,7 +19,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { LEGACY_SABOTEUR_CHASSIS_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { mountCurrentGame } from './helpers/mount-current-game';
@@ -118,7 +118,7 @@ describe('Damage counter system', () => {
   it('legacy ranged compatibility chassis still deals damage from range', async () => {
     const { x: baseX, y: baseY } = nextScenarioOrigin();
     const defender = spawnTestUnit(EntityKind.Gator, Faction.Enemy, baseX, baseY);
-    spawnTestUnit(EntityKind.Sniper, Faction.Player, baseX + 80, baseY, defender);
+    spawnTestUnit(LEGACY_SABOTEUR_CHASSIS_KIND, Faction.Player, baseX + 80, baseY, defender);
     const hpBefore = Health.current[defender];
     await waitFrames(240);
     const hpAfter = Health.current[defender];

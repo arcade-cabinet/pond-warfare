@@ -8,6 +8,7 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   Carrying,
@@ -114,7 +115,7 @@ describe('autoTrainSystem', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge, 500, 500);
 
     // One Mudpaw plus nearby enemies should trigger another Mudpaw train.
-    createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
+    createPlayerUnit(world, MUDPAW_KIND, 100, 100);
     const enemy = createPlayerUnit(world, EntityKind.Gator, 300, 100);
     FactionTag.faction[enemy] = Faction.Enemy;
 
@@ -122,7 +123,7 @@ describe('autoTrainSystem', () => {
 
     expect(TrainingQueue.count[lodge]).toBe(1);
     const slots = trainingQueueSlots.get(lodge) ?? [];
-    expect(slots[0]).toBe(EntityKind.Gatherer);
+    expect(slots[0]).toBe(MUDPAW_KIND);
   });
 
   it('should not overfill queue (max 8)', () => {
@@ -131,11 +132,11 @@ describe('autoTrainSystem', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge, 500, 500);
 
     // Manually fill the queue to 8
-    const fullSlots = Array(8).fill(EntityKind.Gatherer);
+    const fullSlots = Array(8).fill(MUDPAW_KIND);
     trainingQueueSlots.set(lodge, fullSlots);
     TrainingQueue.count[lodge] = 8;
 
-    createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
+    createPlayerUnit(world, MUDPAW_KIND, 100, 100);
     const enemy = createPlayerUnit(world, EntityKind.Gator, 300, 100);
     FactionTag.faction[enemy] = Faction.Enemy;
 
