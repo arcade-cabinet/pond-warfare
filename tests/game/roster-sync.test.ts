@@ -40,6 +40,7 @@ describe('syncRosters', () => {
     spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     spawnEntity(world, EntityKind.Brawler, 200, 200, Faction.Player);
     spawnEntity(world, EntityKind.Healer, 300, 300, Faction.Player);
+    spawnEntity(world, EntityKind.Shaman, 350, 350, Faction.Player);
     spawnEntity(world, EntityKind.Scout, 400, 400, Faction.Player);
     spawnEntity(world, EntityKind.Commander, 500, 500, Faction.Player);
 
@@ -48,7 +49,7 @@ describe('syncRosters', () => {
     expect(roles).toEqual(['gatherer', 'combat', 'support', 'scout', 'commander']);
     expect(findGroup('gatherer').units).toHaveLength(1);
     expect(findGroup('combat').units).toHaveLength(1);
-    expect(findGroup('support').units).toHaveLength(1);
+    expect(findGroup('support').units).toHaveLength(2);
   });
 
   it('sorts idle units to top within a group', () => {

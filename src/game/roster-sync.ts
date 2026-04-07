@@ -26,7 +26,7 @@ import * as store from '@/ui/store';
 function roleFor(kind: EntityKind): UnitRole {
   if (kind === EntityKind.Gatherer) return 'gatherer';
   if (kind === EntityKind.Commander) return 'commander';
-  if (kind === EntityKind.Healer) return 'support';
+  if (kind === EntityKind.Healer || kind === EntityKind.Shaman) return 'support';
   if (kind === EntityKind.Scout) return 'scout';
   return 'combat';
 }

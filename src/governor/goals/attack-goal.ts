@@ -19,7 +19,9 @@ function availableAttackers(): RosterUnit[] {
   return store.unitRoster.value
     .filter((g) => g.role === 'combat')
     .flatMap((g) => g.units)
-    .filter((u) => u.task === 'idle' || u.task === 'defending' || u.task === 'patrolling');
+    .filter(
+      (u) => !u.hasOverride && (u.task === 'idle' || u.task === 'defending' || u.task === 'patrolling'),
+    );
 }
 
 export class AttackGoal extends Goal {

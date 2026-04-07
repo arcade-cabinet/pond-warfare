@@ -54,6 +54,9 @@ function createUnit(kind: EntityKind, x = 100, y = 100): number {
   FactionTag.faction[eid] = Faction.Player;
   EntityTypeTag.kind[eid] = kind;
   UnitStateMachine.state[eid] = UnitState.Idle;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = 0;
   return eid;
 }
 
@@ -74,11 +77,26 @@ function createResource(kind: EntityKind, resType: ResourceType, x: number, y: n
   return eid;
 }
 
+function createEnemy(kind = EntityKind.Gator, x = 200, y = 200): number {
+  const eid = addEntity(world.ecs);
+  addComponent(world.ecs, eid, Position);
+  addComponent(world.ecs, eid, Health);
+  addComponent(world.ecs, eid, FactionTag);
+  addComponent(world.ecs, eid, EntityTypeTag);
+  Position.x[eid] = x;
+  Position.y[eid] = y;
+  Health.current[eid] = 40;
+  Health.max[eid] = 40;
+  FactionTag.faction[eid] = Faction.Enemy;
+  EntityTypeTag.kind[eid] = kind;
+  return eid;
+}
+
 function rosterUnit(eid: number, kind: EntityKind, task: string): RosterUnit {
   return { eid, kind, task: task as 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false };
 }
 
-function rosterGroup(role: 'gatherer' | 'combat', units: RosterUnit[]): RosterGroup {
+function rosterGroup(role: RosterGroup['role'], units: RosterUnit[]): RosterGroup {
   return {
     role,
     idleCount: units.filter((u) => u.task === 'idle').length,
@@ -217,5 +235,83 @@ describe('TrainGoal', () => {
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
+  });
+});
+
+describe('DefendGoal', () => {
+  beforeEach(() => {
+    world = createGameWorld();
+    store.unitRoster.value = [];
+  });
+
+  it('skips locked specialist units with overrides', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = addEntity(world.ecs);
+    addComponent(world.ecs, lodge, Position);
+    addComponent(world.ecs, lodge, Health);
+    addComponent(world.ecs, lodge, FactionTag);
+    addComponent(world.ecs, lodge, EntityTypeTag);
+    Position.x[lodge] = 200;
+    Position.y[lodge] = 200;
+    Health.current[lodge] = 500;
+    Health.max[lodge] = 500;
+    FactionTag.faction[lodge] = Faction.Player;
+    EntityTypeTag.kind[lodge] = EntityKind.Lodge;
+
+    const regular = createUnit(EntityKind.Brawler);
+    const specialist = createUnit(EntityKind.Brawler, 120, 120);
+
+    store.unitRoster.value = [
+      rosterGroup('combat', [
+        rosterUnit(regular, EntityKind.Brawler, 'idle'),
+        { ...rosterUnit(specialist, EntityKind.Brawler, 'patrolling'), hasOverride: true },
+      ]),
+    ];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(TaskOverride.active[regular]).toBe(1);
+    expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
+    expect(TaskOverride.active[specialist]).toBe(0);
+    expect(UnitStateMachine.state[specialist]).toBe(UnitState.Idle);
+  });
+});
+
+describe('AttackGoal', () => {
+  beforeEach(() => {
+    world = createGameWorld();
+    store.unitRoster.value = [];
+  });
+
+  it('does not retask locked specialist units during an attack order', async () => {
+    const { AttackGoal, MIN_ATTACK_ARMY } = await import('@/governor/goals/attack-goal');
+
+    const regularA = createUnit(EntityKind.Brawler, 100, 100);
+    const regularB = createUnit(EntityKind.Brawler, 120, 100);
+    const regularC = createUnit(EntityKind.Brawler, 140, 100);
+    const specialist = createUnit(EntityKind.Brawler, 160, 100);
+    createEnemy();
+
+    store.unitRoster.value = [
+      rosterGroup('combat', [
+        rosterUnit(regularA, EntityKind.Brawler, 'idle'),
+        rosterUnit(regularB, EntityKind.Brawler, 'idle'),
+        rosterUnit(regularC, EntityKind.Brawler, 'defending'),
+        { ...rosterUnit(specialist, EntityKind.Brawler, 'patrolling'), hasOverride: true },
+      ]),
+    ];
+
+    expect(MIN_ATTACK_ARMY).toBe(3);
+    const goal = new AttackGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(TaskOverride.active[regularA]).toBe(1);
+    expect(TaskOverride.active[regularB]).toBe(1);
+    expect(TaskOverride.active[regularC]).toBe(1);
+    expect(TaskOverride.active[specialist]).toBe(0);
   });
 });

@@ -16,7 +16,7 @@ function availableDefenders(): RosterUnit[] {
   return store.unitRoster.value
     .filter((g) => g.role === 'combat')
     .flatMap((g) => g.units)
-    .filter((u) => u.task === 'idle' || u.task === 'patrolling');
+    .filter((u) => !u.hasOverride && (u.task === 'idle' || u.task === 'patrolling'));
 }
 
 export class DefendGoal extends Goal {

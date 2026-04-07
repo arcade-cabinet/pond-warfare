@@ -113,11 +113,15 @@ export function combatSystem(world: GameWorld): void {
     const ey = Position.y[eid];
     const dmg = Combat.damage[eid];
 
-    // Healer auto-follow
-    if (kind === EntityKind.Healer && state === UnitState.Idle && world.frameCount % 30 === 0) {
+    // Support units move toward wounded allies so their healing auras matter.
+    const isSupportUnit = kind === EntityKind.Healer || kind === EntityKind.Shaman;
+    if (isSupportUnit && state === UnitState.Idle && world.frameCount % 30 === 0) {
+      const supportRadius = kind === EntityKind.Shaman ? 220 : 150;
       let bestAlly = -1;
-      let bestDistSq = 150 * 150;
-      const healCands = hasSpatial ? world.spatialHash.query(ex, ey, 150) : allTargetable;
+      let bestDistSq = supportRadius * supportRadius;
+      const healCands = hasSpatial
+        ? world.spatialHash.query(ex, ey, supportRadius)
+        : allTargetable;
       for (let j = 0; j < healCands.length; j++) {
         const t = healCands[j];
         if (t === eid) continue;

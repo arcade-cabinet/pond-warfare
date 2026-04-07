@@ -205,4 +205,20 @@ describe('combatSystem', () => {
     expect(UnitStateMachine.targetEntity[gatherer]).toBe(-1);
     expect(enemy).toBeGreaterThanOrEqual(0);
   });
+
+  it('moves shamans toward wounded allies while idle', () => {
+    world.frameCount = 30;
+    const shaman = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Shaman);
+    const ally = createCombatUnit(world, 140, 100, Faction.Player, EntityKind.Brawler);
+
+    Combat.damage[shaman] = 0;
+    Health.current[ally] = 40;
+
+    combatSystem(world);
+
+    expect(UnitStateMachine.state[shaman]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[shaman]).toBe(ally);
+    expect(UnitStateMachine.targetX[shaman]).toBe(Position.x[ally]);
+    expect(UnitStateMachine.targetY[shaman]).toBe(Position.y[ally]);
+  });
 });
