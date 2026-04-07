@@ -49,7 +49,7 @@ export function getEnemyNests(world: GameWorld): number[] {
   );
 }
 
-export function getIdleGatherers(world: GameWorld): number[] {
+export function getIdleMudpaws(world: GameWorld): number[] {
   return getPlayerEntities(world, EntityKind.Gatherer).filter(
     (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
   );

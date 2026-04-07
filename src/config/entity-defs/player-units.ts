@@ -1,9 +1,16 @@
 import { EntityKind } from '@/types';
 import type { UnitDef } from './unit-def';
 
-/** Stats for all player-trainable units plus ambient neutral critters. */
-// v3 costs aligned with configs/units.json (Fish-only for basic generalists)
+/**
+ * Stats for player-side and compatibility otter units plus ambient neutral critters.
+ *
+ * Important:
+ * - The live player-facing manual roster is `Mudpaw / Medic / Sapper / Saboteur`.
+ * - Some older internal entity kinds such as `Brawler` and `Sniper` still exist
+ *   for historical scenarios, balance tables, and compatibility tests.
+ */
 export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
+  // Canonical live manual generalist chassis (`Mudpaw` display label).
   [EntityKind.Gatherer]: {
     hp: 30,
     speed: 2.0,
@@ -17,6 +24,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
+  // Historical internal otter combat kinds retained for compatibility.
   [EntityKind.Brawler]: {
     hp: 60,
     speed: 1.8,
@@ -69,6 +77,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 100,
     foodCost: 1,
   },
+  // Historical internal scout chassis. The live autonomous recon specialist is
+  // `Lookout`, which currently rides this lower-level entity kind.
   [EntityKind.Scout]: {
     hp: 20,
     speed: 3.0,
@@ -198,7 +208,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 80,
     foodCost: 1,
   },
-  // --- v3.0.0 new player units ---
+  // --- Canonical live late-stage manual units ---
   [EntityKind.Sapper]: {
     hp: 40,
     speed: 1.5,

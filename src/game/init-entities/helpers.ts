@@ -125,7 +125,13 @@ export interface SpawnContext {
   resourceMultiplier: number;
 }
 
-/** Spawn the player lodge, commander, gatherers, and scout. Returns commander eid. */
+/**
+ * Spawn the player lodge, commander, and baseline Mudpaws.
+ *
+ * Legacy horizontal scenarios still use this helper, but they should boot the
+ * same canonical manual baseline as the live vertical game: no free starter
+ * scout, just the reusable Mudpaw chassis plus the Commander.
+ */
 export function spawnPlayerBase(ctx: SpawnContext): number {
   const { world, sx, sy } = ctx;
   const factionCfg = getFactionConfig(world.playerFaction);
@@ -152,14 +158,20 @@ export function spawnPlayerBase(ctx: SpawnContext): number {
   let dirY = mapCenterY - sy;
   const dirLen = Math.sqrt(dirX * dirX + dirY * dirY);
   if (dirLen < 1) {
-    // Player is at map center (island scenario) — send scout in a random direction
+    // Player is at map center (island scenario) — point the third Mudpaw east
     dirX = 1;
     dirY = 0;
   } else {
     dirX /= dirLen;
     dirY /= dirLen;
   }
-  spawnEntity(world, EntityKind.Scout, sx + dirX * 60, sy + dirY * 60, Faction.Player);
+  spawnEntity(
+    world,
+    factionCfg.gathererKind,
+    sx + dirX * 60,
+    sy + dirY * 60,
+    Faction.Player,
+  );
 
   // Center camera on Commander
   world.camX = sx - world.viewWidth / 2;

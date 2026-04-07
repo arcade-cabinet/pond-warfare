@@ -32,7 +32,8 @@ export interface FactionConfig {
  * Otter faction: legacy compatibility mapping for the original player side.
  *
  * Important: the live vertical-mode roster no longer exposes
- * `Brawler/Sniper/Shieldbearer/Catapult` as player-facing manual units.
+ * `Brawler/Sniper/Shieldbearer/Catapult` as player-facing manual units, and
+ * older helpers should treat `gathererKind` as the canonical Mudpaw chassis.
  * Those older entity kinds remain here only for historical scenario support
  * until the horizontal/adversarial layer is fully reauthored.
  */

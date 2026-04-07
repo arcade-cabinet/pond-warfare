@@ -13,7 +13,7 @@ import { Carrying, Health, Resource, UnitStateMachine } from '@/ecs/components';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
-import { getIdleGatherers } from '../helpers/ecs-queries';
+import { getIdleMudpaws } from '../helpers/ecs-queries';
 
 describe('Economy Integration', () => {
   let world: GameWorld;
@@ -155,14 +155,14 @@ describe('Economy Integration', () => {
     expect(Carrying.resourceAmount[gatherer]).toBe(19);
   });
 
-  it('idle gatherers are detected by query helper', () => {
+  it('idle Mudpaws are detected by query helper', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const g1 = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     const g2 = spawnEntity(world, EntityKind.Gatherer, 150, 100, Faction.Player);
     UnitStateMachine.state[g1] = UnitState.Idle;
     UnitStateMachine.state[g2] = UnitState.Gathering;
 
-    const idles = getIdleGatherers(world);
+    const idles = getIdleMudpaws(world);
     expect(idles).toContain(g1);
     expect(idles).not.toContain(g2);
   });

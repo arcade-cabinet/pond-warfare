@@ -48,10 +48,11 @@ describe('ENTITY_DEFS', () => {
     }
   });
 
-  it('player units should have food cost', () => {
+  it('live manual player roster should have food cost', () => {
     expect(ENTITY_DEFS[EntityKind.Gatherer].foodCost).toBe(1);
-    expect(ENTITY_DEFS[EntityKind.Brawler].foodCost).toBe(1);
-    expect(ENTITY_DEFS[EntityKind.Sniper].foodCost).toBe(1);
+    expect(ENTITY_DEFS[EntityKind.Healer].foodCost).toBe(1);
+    expect(ENTITY_DEFS[EntityKind.Sapper].foodCost).toBe(1);
+    expect(ENTITY_DEFS[EntityKind.Saboteur].foodCost).toBe(1);
   });
 
   it('buildings should be marked as isBuilding', () => {
@@ -81,7 +82,7 @@ describe('ENTITY_DEFS', () => {
     expect(tower.attackRange).toBe(200);
   });
 
-  it('sniper should have longest attack range', () => {
+  it('historical ranged compatibility unit should outrange historical melee compatibility unit', () => {
     const sniper = ENTITY_DEFS[EntityKind.Sniper];
     const brawler = ENTITY_DEFS[EntityKind.Brawler];
     expect(sniper.attackRange).toBeGreaterThan(brawler.attackRange);
