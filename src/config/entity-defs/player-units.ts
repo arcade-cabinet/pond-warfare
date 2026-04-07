@@ -1,3 +1,12 @@
+import {
+  LEGACY_SABOTEUR_CHASSIS_KIND,
+  LEGACY_SAPPER_CHASSIS_KIND,
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { UnitDef } from './unit-def';
 
@@ -11,7 +20,7 @@ import type { UnitDef } from './unit-def';
  */
 export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
   // Canonical live manual generalist chassis (`Mudpaw` display label).
-  [EntityKind.Gatherer]: {
+  [MUDPAW_KIND]: {
     hp: 30,
     speed: 2.0,
     damage: 2,
@@ -25,7 +34,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     foodCost: 1,
   },
   // Historical internal otter combat kinds retained for compatibility.
-  [EntityKind.Brawler]: {
+  [LEGACY_SAPPER_CHASSIS_KIND]: {
     hp: 60,
     speed: 1.8,
     damage: 6,
@@ -38,7 +47,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [EntityKind.Sniper]: {
+  [LEGACY_SABOTEUR_CHASSIS_KIND]: {
     hp: 40,
     speed: 1.6,
     damage: 8,
@@ -51,7 +60,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [EntityKind.Healer]: {
+  [MEDIC_KIND]: {
     hp: 35,
     speed: 1.8,
     damage: 0,
@@ -79,7 +88,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
   },
   // Historical internal scout chassis. The live autonomous recon specialist is
   // `Lookout`, which currently rides this lower-level entity kind.
-  [EntityKind.Scout]: {
+  [LOOKOUT_KIND]: {
     hp: 20,
     speed: 3.0,
     damage: 1,
@@ -209,7 +218,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     foodCost: 1,
   },
   // --- Canonical live late-stage manual units ---
-  [EntityKind.Sapper]: {
+  [SAPPER_KIND]: {
     hp: 40,
     speed: 1.5,
     damage: 15,
@@ -223,7 +232,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [EntityKind.Saboteur]: {
+  [SABOTEUR_KIND]: {
     hp: 30,
     speed: 2.5,
     damage: 5,

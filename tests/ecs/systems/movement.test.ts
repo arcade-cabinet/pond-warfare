@@ -8,6 +8,7 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GATHER_TIMER } from '@/constants';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -46,7 +47,7 @@ function createTestUnit(world: GameWorld, x: number, y: number): number {
   UnitStateMachine.state[eid] = UnitState.Idle;
   Collider.radius[eid] = 16;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Gatherer;
+  EntityTypeTag.kind[eid] = MUDPAW_KIND;
   Combat.attackRange[eid] = 40;
   Carrying.resourceType[eid] = ResourceType.None;
   Carrying.resourceAmount[eid] = 0;

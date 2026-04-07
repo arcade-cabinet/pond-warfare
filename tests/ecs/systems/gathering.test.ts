@@ -6,6 +6,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -26,7 +27,7 @@ import { createGameWorld, type GameWorld } from '@/ecs/world';
 import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
-function createGatherer(world: GameWorld, x: number, y: number): number {
+function createMudpaw(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
@@ -45,7 +46,7 @@ function createGatherer(world: GameWorld, x: number, y: number): number {
   Health.current[eid] = 30;
   Health.max[eid] = 30;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Gatherer;
+  EntityTypeTag.kind[eid] = MUDPAW_KIND;
   Velocity.speed[eid] = 2.0;
   Collider.radius[eid] = 16;
   Carrying.resourceType[eid] = ResourceType.None;
@@ -92,7 +93,7 @@ describe('gatheringSystem', () => {
   });
 
   it('should count down gather timer', () => {
-    const gatherer = createGatherer(world, 100, 100);
+    const gatherer = createMudpaw(world, 100, 100);
     const resource = createResource(world, 100, 100, EntityKind.Cattail);
 
     UnitStateMachine.state[gatherer] = UnitState.Gathering;
@@ -105,7 +106,7 @@ describe('gatheringSystem', () => {
   });
 
   it('should go idle if target resource is depleted', () => {
-    const gatherer = createGatherer(world, 100, 100);
+    const gatherer = createMudpaw(world, 100, 100);
     const resource = createResource(world, 100, 100, EntityKind.Cattail);
 
     Resource.amount[resource] = 0;
@@ -120,7 +121,7 @@ describe('gatheringSystem', () => {
   });
 
   it('should pick up resource when timer hits zero', () => {
-    const gatherer = createGatherer(world, 100, 100);
+    const gatherer = createMudpaw(world, 100, 100);
     const resource = createResource(world, 100, 100, EntityKind.Cattail);
 
     UnitStateMachine.state[gatherer] = UnitState.Gathering;
@@ -133,7 +134,7 @@ describe('gatheringSystem', () => {
   });
 
   it('retargets a gather override to another same-type node when the first is depleted', () => {
-    const gatherer = createGatherer(world, 100, 100);
+    const gatherer = createMudpaw(world, 100, 100);
     const depleted = createResource(world, 100, 100, EntityKind.Cattail);
     const backup = createResource(world, 500, 100, EntityKind.Cattail);
 
@@ -156,7 +157,7 @@ describe('gatheringSystem', () => {
   });
 
   it('keeps specialist gather overrides inside the assigned area', () => {
-    const gatherer = createGatherer(world, 100, 100);
+    const gatherer = createMudpaw(world, 100, 100);
     const depleted = createResource(world, 100, 100, EntityKind.Cattail);
     const outside = createResource(world, 500, 100, EntityKind.Cattail);
     const inside = createResource(world, 180, 160, EntityKind.Cattail);
