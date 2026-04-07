@@ -7,7 +7,7 @@ export function isMudpawUnit(unit: Pick<RosterUnit, 'kind' | 'label'>): boolean 
 
 export function getGovernorGatherUnits(groups: RosterGroup[]): RosterUnit[] {
   return groups
-    .filter((group) => group.role === 'gatherer')
+    .filter((group) => group.role === 'generalist')
     .flatMap((group) => group.units)
     .filter(isMudpawUnit);
 }

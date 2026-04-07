@@ -21,6 +21,13 @@ import * as store from './store';
 type PanelTab = 'map' | 'forces' | 'buildings' | 'act' | 'menu';
 
 const activePanelTab = signal<PanelTab>('map');
+const FORCE_ROLE_LABELS = {
+  generalist: 'Generalist',
+  combat: 'Combat',
+  support: 'Support',
+  recon: 'Recon',
+  commander: 'Commander',
+} as const;
 
 interface CommandPanelProps {
   onClose: () => void;
@@ -122,7 +129,7 @@ function ForcesTab() {
         >
           <div class="mb-2 flex items-center justify-between text-xs">
             <span class="font-heading uppercase" style={{ color: 'var(--pw-text-primary)' }}>
-              {group.role}
+              {FORCE_ROLE_LABELS[group.role]}
             </span>
             <span style={{ color: 'var(--pw-text-muted)' }}>
               {group.units.length} total, {group.idleCount} idle

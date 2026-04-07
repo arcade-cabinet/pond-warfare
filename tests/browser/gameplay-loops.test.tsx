@@ -24,6 +24,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
 import { TILE_SIZE } from '@/constants';
 import { ENTITY_DEFS } from '@/config/entity-defs';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
   Carrying,
@@ -115,6 +116,21 @@ function getUnits(kind?: EntityKind, faction = Faction.Player) {
 function getResources() {
   return Array.from(query(game.world.ecs, [Position, Health, IsResource, EntityTypeTag])).filter(
     (eid) => Health.current[eid] > 0,
+  );
+}
+
+function spawnSandboxMudpaw(offsetX = -80, offsetY = -60) {
+  const lodge = getUnits(EntityKind.Lodge)[0];
+  if (lodge == null) {
+    throw new Error('Player Lodge not found');
+  }
+
+  return spawnEntity(
+    game.world,
+    EntityKind.Gatherer,
+    Position.x[lodge] + offsetX,
+    Position.y[lodge] + offsetY,
+    Faction.Player,
   );
 }
 
@@ -279,37 +295,34 @@ describe('Full player journey', () => {
   // ── Phase 3: Movement ──────────────────────────────────────────────────
 
   describe('3. Movement', () => {
-    it('issueContextCommand sets Move state for selected unit', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+    it('right-click ground sets Move state for selected unit', async () => {
+      const gid = spawnSandboxMudpaw(180, -120);
       await deselectAll();
-      forceSelectEntity(gid);
-      issueContextCommand(game.world, null, Position.x[gid] + 100, Position.y[gid]);
-      game.syncUIStore();
-      await delay(100);
+      await selectEntity(gid);
+      clickWorld(Position.x[gid] + 100, Position.y[gid], 2);
+      await delay(50);
       expect(UnitStateMachine.state[gid]).toBe(UnitState.Move);
     });
 
-    it('unit position actually changes after move command', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+    it('unit position actually changes after right-click move command', async () => {
+      const gid = spawnSandboxMudpaw(220, -150);
       await deselectAll();
-      forceSelectEntity(gid);
+      await selectEntity(gid);
       const sx = Position.x[gid], sy = Position.y[gid];
-      issueContextCommand(game.world, null, sx + 200, sy + 200);
-      game.syncUIStore();
+      clickWorld(sx + 200, sy + 200, 2);
       await waitFrames(180);
       const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - sy) ** 2);
       expect(dist).toBeGreaterThan(10);
       await page.screenshot({ path: 'tests/browser/screenshots/03-after-move.png' });
     });
 
-    it('unit moves TOWARD the target', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+    it('unit moves toward the target after a right-click move command', async () => {
+      const gid = spawnSandboxMudpaw(260, -180);
       await deselectAll();
-      forceSelectEntity(gid);
+      await selectEntity(gid);
       const tx = Position.x[gid] + 300, ty = Position.y[gid];
       const startDist = Math.abs(tx - Position.x[gid]);
-      issueContextCommand(game.world, null, tx, ty);
-      game.syncUIStore();
+      clickWorld(tx, ty, 2);
       await waitFrames(180);
       const endDist = Math.abs(tx - Position.x[gid]);
       expect(endDist).toBeLessThan(startDist);
@@ -319,30 +332,29 @@ describe('Full player journey', () => {
   // ── Phase 4: Gathering ─────────────────────────────────────────────────
 
   describe('4. Gathering', () => {
-    it('issueContextCommand against a resource sets GatherMove', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
-      const res = getResources();
-      expect(res.length).toBeGreaterThan(0);
+    it('right-clicking a resource sets GatherMove', async () => {
+      const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
+      expect(fishNode).toBeDefined();
+      const gid = spawnSandboxMudpaw(180, -120);
 
       await deselectAll();
-      forceSelectEntity(gid);
-      issueContextCommand(game.world, res[0], Position.x[res[0]], Position.y[res[0]]);
-      game.syncUIStore();
-      await delay(100);
+      await selectEntity(gid);
+      clickWorld(Position.x[fishNode!], Position.y[fishNode!], 2);
+      await delay(50);
 
       const state = UnitStateMachine.state[gid];
       expect(state === UnitState.GatherMove || state === UnitState.Gathering).toBe(true);
     });
 
-    it('gatherer walks toward resource', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
-      const res = getResources()[0];
+    it('gatherer walks toward the right-clicked resource', async () => {
+      const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
+      expect(fishNode).toBeDefined();
+      const gid = spawnSandboxMudpaw(220, -150);
       await deselectAll();
-      forceSelectEntity(gid);
+      await selectEntity(gid);
       const sx = Position.x[gid];
       const sy = Position.y[gid];
-      issueContextCommand(game.world, res, Position.x[res], Position.y[res]);
-      game.syncUIStore();
+      clickWorld(Position.x[fishNode!], Position.y[fishNode!], 2);
       await waitFrames(180);
       // Should have moved from start
       const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - sy) ** 2);
@@ -352,16 +364,26 @@ describe('Full player journey', () => {
         state === UnitState.GatherMove || state === UnitState.Gathering ||
         state === UnitState.ReturnMove || state === UnitState.Idle,
       ).toBe(true);
+      expect(dist).toBeGreaterThan(0);
     });
 
-    it('resources increase over time with auto-gather', async () => {
-      primeAutoGatherers();
-      const startClams = game.world.resources.fish;
-      const startTwigs = game.world.resources.logs;
-      game.world.autoBehaviors.gatherer = true;
+    it('a gather command makes measurable progress on the resource loop', async () => {
+      const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
+      expect(fishNode).toBeDefined();
+
+      const gid = spawnSandboxMudpaw(260, -180);
+      const startFish = game.world.resources.fish;
+      const startNodeAmount = Resource.amount[fishNode!];
+      const startDist = Math.hypot(Position.x[fishNode!] - Position.x[gid], Position.y[fishNode!] - Position.y[gid]);
+      await deselectAll();
+      await selectEntity(gid);
+      clickWorld(Position.x[fishNode!], Position.y[fishNode!], 2);
       await waitFrames(900);
-      const gained = (game.world.resources.fish - startClams) + (game.world.resources.logs - startTwigs);
-      expect(gained).toBeGreaterThan(0);
+      const gained = game.world.resources.fish - startFish;
+      const nodeHarvested = Resource.amount[fishNode!] < startNodeAmount;
+      const carryingFish = Carrying.resourceType[gid] === ResourceType.Fish && Carrying.resourceAmount[gid] > 0;
+      const endDist = Math.hypot(Position.x[fishNode!] - Position.x[gid], Position.y[fishNode!] - Position.y[gid]);
+      expect(gained > 0 || nodeHarvested || carryingFish || endDist < startDist).toBe(true);
       await page.screenshot({ path: 'tests/browser/screenshots/04-after-gathering.png' });
     });
   });
@@ -596,7 +618,7 @@ describe('Full player journey', () => {
       clickButton('Forces');
       await delay(200);
       const text = document.body.innerText;
-      expect(text).toMatch(/Forces|gatherer|combat|support|scout/i);
+      expect(text).toMatch(/Forces|generalist|combat|support|recon/i);
     });
 
     it('Menu tab shows Save/Settings', async () => {

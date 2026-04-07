@@ -209,7 +209,7 @@ describe('UI panels and keyboard controls', () => {
 
       const text = document.body.innerText;
       expect(text).toMatch(/FORCES/i);
-      expect(text).toMatch(/gatherer|combat|support|scout|commander/i);
+      expect(text).toMatch(/generalist|combat|support|recon|commander/i);
       await page.screenshot({ path: 'tests/browser/screenshots/ui-03-forces-tab.png' });
     });
   });

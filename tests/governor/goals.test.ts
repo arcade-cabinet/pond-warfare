@@ -105,7 +105,7 @@ describe('GatherGoal', () => {
     createResource(EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
     store.unitRoster.value = [
-      rosterGroup('gatherer', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+      rosterGroup('generalist', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
     ];
     store.fish.value = 100;
     store.logs.value = 200;
@@ -127,7 +127,7 @@ describe('GatherGoal', () => {
     const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
     store.unitRoster.value = [
-      rosterGroup('gatherer', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+      rosterGroup('generalist', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
     ];
     store.fish.value = 100;
     store.logs.value = 0;
@@ -150,7 +150,7 @@ describe('GatherGoal', () => {
     const nearFish = createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
 
     store.unitRoster.value = [
-      rosterGroup('gatherer', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+      rosterGroup('generalist', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
     ];
     store.fish.value = 200;
     store.logs.value = 0;
@@ -208,7 +208,7 @@ describe('TrainGoal', () => {
       } satisfies RosterBuilding,
     ];
     store.unitRoster.value = [
-      rosterGroup('gatherer', [rosterUnit(1, EntityKind.Gatherer, 'gathering-fish')]),
+      rosterGroup('generalist', [rosterUnit(1, EntityKind.Gatherer, 'gathering-fish')]),
     ];
     store.food.value = 2;
     store.maxFood.value = 8;
@@ -243,7 +243,7 @@ describe('TrainGoal', () => {
       } satisfies RosterBuilding,
     ];
     store.unitRoster.value = [
-      rosterGroup('gatherer', [
+      rosterGroup('generalist', [
         rosterUnit(1, EntityKind.Gatherer, 'gathering-fish'),
         rosterUnit(2, EntityKind.Gatherer, 'gathering-fish'),
       ]),

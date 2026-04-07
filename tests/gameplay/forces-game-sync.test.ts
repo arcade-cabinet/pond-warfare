@@ -26,7 +26,7 @@ describe('Forces roster sync', () => {
 
     const roster = store.unitRoster.value;
     expect(roster.length).toBe(2);
-    const gatherers = roster.find((g) => g.role === 'gatherer');
+    const gatherers = roster.find((g) => g.role === 'generalist');
     const combat = roster.find((g) => g.role === 'combat');
     expect(gatherers?.units.length).toBe(2);
     expect(combat?.units.length).toBe(1);
@@ -39,7 +39,7 @@ describe('Forces roster sync', () => {
     UnitStateMachine.state[brawler] = UnitState.AttackMovePatrol;
     syncRosters(world);
     const roster = store.unitRoster.value;
-    expect(roster.find((g) => g.role === 'gatherer')?.units[0]?.task).toBe('gathering-fish');
+    expect(roster.find((g) => g.role === 'generalist')?.units[0]?.task).toBe('gathering-fish');
     expect(roster.find((g) => g.role === 'combat')?.units[0]?.task).toBe('patrolling');
   });
 
@@ -51,7 +51,7 @@ describe('Forces roster sync', () => {
 
     syncRosters(world);
 
-    const gatherers = store.unitRoster.value.find((g) => g.role === 'gatherer');
+    const gatherers = store.unitRoster.value.find((g) => g.role === 'generalist');
     expect(gatherers?.idleCount).toBe(1);
   });
 
@@ -98,7 +98,7 @@ describe('Forces roster sync', () => {
     const g = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     TaskOverride.active[g] = 1;
     syncRosters(world);
-    const unit = store.unitRoster.value.find((r) => r.role === 'gatherer')?.units[0];
+    const unit = store.unitRoster.value.find((r) => r.role === 'generalist')?.units[0];
     expect(unit?.hasOverride).toBe(true);
   });
 

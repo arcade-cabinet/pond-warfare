@@ -36,7 +36,7 @@ export interface RosterUnit {
 }
 
 /** Logical role grouping for the Forces tab. */
-export type UnitRole = 'gatherer' | 'combat' | 'support' | 'scout' | 'commander';
+export type UnitRole = 'generalist' | 'combat' | 'support' | 'recon' | 'commander';
 
 /** A group of units sharing the same role, with aggregate idle count. */
 export interface RosterGroup {

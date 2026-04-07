@@ -32,7 +32,7 @@ function mudpawCount(): number {
 
 function scoutCount(): number {
   return store.unitRoster.value
-    .filter((g) => g.role === 'scout')
+    .filter((g) => g.role === 'recon')
     .reduce((sum, g) => sum + g.units.length, 0);
 }
 

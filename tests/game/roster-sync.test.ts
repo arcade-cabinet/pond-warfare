@@ -46,8 +46,8 @@ describe('syncRosters', () => {
 
     syncRosters(world);
     const roles = store.unitRoster.value.map((g) => g.role);
-    expect(roles).toEqual(['gatherer', 'combat', 'support', 'scout', 'commander']);
-    expect(findGroup('gatherer').units).toHaveLength(1);
+    expect(roles).toEqual(['generalist', 'combat', 'support', 'recon', 'commander']);
+    expect(findGroup('generalist').units).toHaveLength(1);
     expect(findGroup('combat').units).toHaveLength(1);
     expect(findGroup('support').units).toHaveLength(2);
   });
@@ -61,7 +61,7 @@ describe('syncRosters', () => {
     UnitStateMachine.state[g3] = UnitState.Gathering;
 
     syncRosters(world);
-    const group = findGroup('gatherer');
+    const group = findGroup('generalist');
     expect(group.units[0].task).toBe('idle');
     expect(group.idleCount).toBe(1);
   });
@@ -80,7 +80,7 @@ describe('syncRosters', () => {
     UnitStateMachine.targetEntity[gatherer] = clambed;
 
     syncRosters(world);
-    const unit = findGroup('gatherer').units[0];
+    const unit = findGroup('generalist').units[0];
     expect(unit.label).toBe('Mudpaw');
     expect(unit.task).toBe('gathering-fish');
     expect(unit.targetName).toBe('Clambed');
@@ -93,7 +93,7 @@ describe('syncRosters', () => {
     UnitStateMachine.targetEntity[gatherer] = cattail;
 
     syncRosters(world);
-    expect(findGroup('gatherer').units[0].task).toBe('gathering-logs');
+    expect(findGroup('generalist').units[0].task).toBe('gathering-logs');
   });
 
   it('maps Attacking state to attacking task', () => {
@@ -121,7 +121,7 @@ describe('syncRosters', () => {
     spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     world.autoBehaviors.gatherer = true;
     syncRosters(world);
-    expect(findGroup('gatherer').autoEnabled).toBe(true);
+    expect(findGroup('generalist').autoEnabled).toBe(true);
   });
 
   it('excludes enemy units from roster', () => {
@@ -129,7 +129,7 @@ describe('syncRosters', () => {
     spawnEntity(world, EntityKind.Gatherer, 200, 200, Faction.Player);
     syncRosters(world);
     expect(store.unitRoster.value).toHaveLength(1);
-    expect(store.unitRoster.value[0].role).toBe('gatherer');
+    expect(store.unitRoster.value[0].role).toBe('generalist');
   });
 
   it('includes player buildings with queue data', () => {
@@ -193,6 +193,6 @@ describe('syncRosters', () => {
 
     syncRosters(world);
 
-    expect(findGroup('gatherer').units.map((unit) => unit.label)).toEqual(['Fisher', 'Logger']);
+    expect(findGroup('generalist').units.map((unit) => unit.label)).toEqual(['Fisher', 'Logger']);
   });
 });

@@ -57,7 +57,7 @@ describe('BuildGoal', () => {
     ];
     store.unitRoster.value = [
       {
-        role: 'gatherer',
+        role: 'generalist',
         idleCount: 1,
         autoEnabled: false,
         units: [{ eid: gatherer, kind: EntityKind.Gatherer, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false }],

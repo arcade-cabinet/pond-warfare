@@ -35,7 +35,7 @@ vi.mock('@/game', () => ({
 const dummyOwner = new GameEntity();
 
 function makeGroup(
-  role: 'gatherer' | 'combat' | 'support' | 'scout' | 'commander',
+  role: 'generalist' | 'combat' | 'support' | 'recon' | 'commander',
   units: Array<{ eid: number; task: string; kind: EntityKind; hasOverride?: boolean }>,
 ): RosterGroup {
   return {
@@ -67,14 +67,14 @@ describe('GatherEvaluator', () => {
 
   it('returns 0 when no idle gatherers', () => {
     store.unitRoster.value = [
-      makeGroup('gatherer', [{ eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
     ];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
 
   it('returns high score when idle gatherers exist', () => {
     store.unitRoster.value = [
-      makeGroup('gatherer', [
+      makeGroup('generalist', [
         { eid: 1, task: 'idle', kind: EntityKind.Gatherer },
         { eid: 2, task: 'idle', kind: EntityKind.Gatherer },
       ]),
@@ -128,7 +128,7 @@ describe('TrainEvaluator', () => {
 
   it('returns 0 when idle gatherers exist (Gather goal takes priority)', () => {
     store.unitRoster.value = [
-      makeGroup('gatherer', [{ eid: 1, task: 'idle', kind: EntityKind.Gatherer }]),
+      makeGroup('generalist', [{ eid: 1, task: 'idle', kind: EntityKind.Gatherer }]),
     ];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
@@ -151,7 +151,7 @@ describe('TrainEvaluator', () => {
       { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
     ];
     store.unitRoster.value = [
-      makeGroup('gatherer', Array.from({ length: 4 }, (_, i) => ({
+      makeGroup('generalist', Array.from({ length: 4 }, (_, i) => ({
         eid: i + 1,
         task: 'gathering-fish',
         kind: EntityKind.Gatherer,
@@ -169,7 +169,7 @@ describe('TrainEvaluator', () => {
   it('opens stage-6 combat training once the first gatherer is online', () => {
     storeV3.progressionLevel.value = 6;
     store.unitRoster.value = [
-      makeGroup('gatherer', [
+      makeGroup('generalist', [
         { eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer },
       ]),
     ];
@@ -182,7 +182,7 @@ describe('TrainEvaluator', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 1;
     store.unitRoster.value = [
-      makeGroup('gatherer', [{ eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.75);
@@ -374,7 +374,7 @@ describe('Governor brain arbitration', () => {
         task: 'idle',
         kind: EntityKind.Brawler,
       }))),
-      makeGroup('gatherer', [{ eid: 20, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+      makeGroup('generalist', [{ eid: 20, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
     ];
 
     governor.brain.arbitrate();
@@ -385,7 +385,7 @@ describe('Governor brain arbitration', () => {
   it('does not tick when disabled', () => {
     governor.enabled = false;
     store.unitRoster.value = [
-      makeGroup('gatherer', [{ eid: 1, task: 'idle', kind: EntityKind.Gatherer }]),
+      makeGroup('generalist', [{ eid: 1, task: 'idle', kind: EntityKind.Gatherer }]),
     ];
     governor.tick();
     expect(governor.brain.subgoals.length).toBe(0);

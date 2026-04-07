@@ -32,7 +32,7 @@ vi.mock('@/game', () => ({
 const owner = new GameEntity();
 
 function makeGroup(
-  role: 'gatherer' | 'combat',
+  role: 'generalist' | 'combat',
   units: Array<{ eid: number; task: string; kind: EntityKind }>,
 ): RosterGroup {
   return {
@@ -72,7 +72,7 @@ describe('Governor viability decisions', () => {
     // 4 total gatherers (2 idle, 2 busy) — enough that TrainEvaluator
     // won't prioritize gatherer production (it checks gatherers < 4).
     store.unitRoster.value = [
-      makeGroup('gatherer', [
+      makeGroup('generalist', [
         { eid: 1, task: 'idle', kind: EntityKind.Gatherer },
         { eid: 2, task: 'idle', kind: EntityKind.Gatherer },
         { eid: 3, task: 'gathering-fish', kind: EntityKind.Gatherer },
@@ -95,7 +95,7 @@ describe('Governor viability decisions', () => {
   it('with no armory and enough resources, BuildEvaluator scores highest', () => {
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
     store.unitRoster.value = [
-      makeGroup('gatherer', [
+      makeGroup('generalist', [
         { eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer },
         { eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer },
         { eid: 3, task: 'gathering-logs', kind: EntityKind.Gatherer },
@@ -117,7 +117,7 @@ describe('Governor viability decisions', () => {
     store.baseThreatCount.value = 3;
     store.unitRoster.value = [
       makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
-      makeGroup('gatherer', [{ eid: 2, task: 'idle', kind: EntityKind.Gatherer }]),
+      makeGroup('generalist', [{ eid: 2, task: 'idle', kind: EntityKind.Gatherer }]),
     ];
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
 
@@ -136,7 +136,7 @@ describe('Governor viability decisions', () => {
     store.baseThreatCount.value = 1;
     store.unitRoster.value = [
       makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
-      makeGroup('gatherer', [{ eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+      makeGroup('generalist', [{ eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
     ];
     store.buildingRoster.value = [{ eid: 10, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] }];
 

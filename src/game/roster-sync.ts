@@ -24,10 +24,10 @@ import type {
 import * as store from '@/ui/store';
 
 function roleFor(kind: EntityKind): UnitRole {
-  if (kind === EntityKind.Gatherer) return 'gatherer';
+  if (kind === EntityKind.Gatherer) return 'generalist';
   if (kind === EntityKind.Commander) return 'commander';
   if (kind === EntityKind.Healer || kind === EntityKind.Shaman) return 'support';
-  if (kind === EntityKind.Scout) return 'scout';
+  if (kind === EntityKind.Scout) return 'recon';
   return 'combat';
 }
 
@@ -70,14 +70,14 @@ function targetNameFor(world: GameWorld, eid: number): string {
 }
 
 const AUTO_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
-  gatherer: 'gatherer',
+  generalist: 'gatherer',
   combat: 'combat',
   support: 'healer',
-  scout: 'scout',
+  recon: 'scout',
   commander: null,
 };
 
-const ROLE_ORDER: UnitRole[] = ['gatherer', 'combat', 'support', 'scout', 'commander'];
+const ROLE_ORDER: UnitRole[] = ['generalist', 'combat', 'support', 'recon', 'commander'];
 
 const BUILDING_TRAIN_MAP: Partial<Record<EntityKind, EntityKind[]>> = {
   [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper, EntityKind.Saboteur],

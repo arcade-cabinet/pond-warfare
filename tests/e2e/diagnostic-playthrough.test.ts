@@ -291,7 +291,7 @@ function runFrame(w: GameWorld, governor: Governor): void {
       const lodge = store.buildingRoster.value.find((b) => b.kind === EntityKind.Lodge);
       if (lodge && lodge.queueItems.length < 2) {
         const gatherers = store.unitRoster.value
-          .filter((g) => g.role === 'gatherer')
+          .filter((g) => g.role === 'generalist')
           .reduce((sum, g) => sum + g.units.length, 0);
         const army = store.unitRoster.value
           .filter((g) => g.role === 'combat')

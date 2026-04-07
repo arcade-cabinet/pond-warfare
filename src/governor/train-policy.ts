@@ -3,10 +3,10 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { getGovernorCombatUnits, getGovernorGatherUnits } from './roster-units';
 
-type GovernorUnitRole = 'gatherer' | 'combat' | 'support' | 'scout';
+type GovernorUnitRole = 'generalist' | 'combat' | 'support' | 'recon';
 
 function unitCount(role: GovernorUnitRole): number {
-  if (role === 'gatherer') return getGovernorGatherUnits(store.unitRoster.value).length;
+  if (role === 'generalist') return getGovernorGatherUnits(store.unitRoster.value).length;
   if (role === 'combat') return getGovernorCombatUnits(store.unitRoster.value).length;
   return store.unitRoster.value
     .filter((group) => group.role === role)
@@ -59,6 +59,6 @@ export function shouldTrainSupportUnit(): boolean {
 }
 
 export function shouldTrainScoutUnit(): boolean {
-  if (unitCount('scout') > 0) return false;
+  if (unitCount('recon') > 0) return false;
   return unitCount('combat') >= Math.max(3, getGovernorCombatTarget() - 1);
 }
