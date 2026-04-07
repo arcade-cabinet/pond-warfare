@@ -4,6 +4,8 @@ export interface BalanceSnapshot {
   kills: number;
   playerUnits: number;
   lodgeHpRatio: number;
+  playerUnitHpPool?: number;
+  playerUnitHpRatio?: number;
   matchClamsEarned?: number;
 }
 
@@ -60,6 +62,22 @@ export function getCombatPressureScore(snapshot: BalanceSnapshot): number {
   const army = Math.log2(snapshot.playerUnits + 1) * 0.2;
   const lodge = clamp(snapshot.lodgeHpRatio, 0, 1) * 0.45;
   return resources + training + kills + army + lodge;
+}
+
+/**
+ * Scenario-specific score for developed defensive holds.
+ *
+ * This is used for mid-run sustain diagnostics where the player already has an
+ * army on the field and the question is whether a Pearl track helps that army
+ * stay alive while the Lodge holds repeated pressure.
+ */
+export function getSustainScore(snapshot: BalanceSnapshot): number {
+  const kills = Math.log2(snapshot.kills + 1) * 0.15;
+  const army = Math.log2(snapshot.playerUnits + 1) * 0.1;
+  const hpPool = Math.log2((snapshot.playerUnitHpPool ?? 0) + 1) * 0.2;
+  const armyHealthRatio = clamp(snapshot.playerUnitHpRatio ?? 0, 0, 1) * 0.2;
+  const lodge = clamp(snapshot.lodgeHpRatio, 0, 1) * 0.35;
+  return kills + army + hpPool + armyHealthRatio + lodge;
 }
 
 /**

@@ -55,6 +55,19 @@ A governor-run scenario is converted into a normalized player-power score from:
 
 Large raw counts are compressed with logarithms so one metric does not dominate the result.
 
+There is also now a scenario-specific sustain score for developed defensive
+holds. That score weights:
+
+- enemy kills
+- surviving player unit count
+- retained player-unit HP ratio
+- remaining Lodge HP ratio
+
+This is intentionally narrower than the general power score. It exists for
+Pearl tracks like `hp_multiplier`, `auto_heal_behavior`, and
+`auto_repair_behavior`, whose value is easy to under-read if the scenario ends
+before a real defending army is already established.
+
 ### 3. Observed Economy Score
 
 The model separately tracks post-match Clam output from the same run:
@@ -117,9 +130,9 @@ override persistence, specialist governor lockout, prestige population
 accounting, the combat counter-scaling fix, governor attack-party reuse, safer
 governor attack pacing, bottom-row-only rare resource placement, deterministic
 match-event bonus-node placement, transient training-queue reset on fresh world
-creation, and a shared mocked `game.world` reference across the balance harness
-files. Those fixes removed multiple false negatives from the progression
-reports.
+creation, deterministic seeded weather in `createTestWorld()`, and a shared
+mocked `game.world` reference across the balance harness files. Those fixes
+removed multiple false negatives from the progression reports.
 
 ## Exhaustive Broad Reports
 
@@ -179,6 +192,22 @@ This is not a tuning success. It is a diagnostic finding:
 - this still confirms the direct combat runtime and local defensive expression are working better than the blended stage-6 exhaustive report suggests, even though the gains are now more modest under the safer governor pacing
 - the remaining negative blended full-run rows now point more strongly at governor pathing and long-window decision policy than at missing damage/heal consumers
 
+## Sustain Diagnostic
+
+From [pearl-sustain-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/pearl-sustain-diagnostics.test.ts), a developed home-defense hold with a pre-existing wounded army and repeated enemy assault waves:
+
+This harness is intentionally not a release-budget baseline. It is an
+expression harness that answers a narrower question: once the player already
+has a damaged defending army near the Lodge, do the sustain-oriented Pearl
+tracks actually help?
+
+Current reading:
+
+- `auto_repair_behavior` and `auto_heal_behavior` are clearly real and strongly expressed in the scenario they are meant to help. Sample runs regularly show them beating baseline by wide margins once the hold turns into a war of attrition.
+- `combat_multiplier` is only modestly positive on mean and can swing a lot across seeds, which makes sense for a sustain scenario that is not primarily about raw DPS
+- `hp_multiplier` is still only near-neutral to low-single-digit positive here, which means it now registers as real durability but still does not dominate the sustain picture
+- this closes the biggest remaining ambiguity from the broad Pearl scan: `hp_multiplier` and `auto_heal_behavior` are not missing runtime consumers, they are just poorly represented by the opening-window and general long-run reports
+
 ## Controller Diagnostics
 
 From [controller-balance-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/controller-balance-diagnostics.test.ts):
@@ -217,8 +246,9 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - The isolated broad scans are now trustworthy enough to use as a release-budget input, but they still show two real limitations: many Clam categories remain tightly clustered, and some Pearl tracks are only near-neutral in the short 1200-frame window even when targeted diagnostics show clear local value.
 - The targeted governor trace now makes the 1200-frame limitation explicit: the sampled stage-6 run averages only about `1.2` ready combat units at arbitration time, and `attack` never has a nonzero scoring window in that opening slice. That means the short Pearl scan was under-reading several tracks simply because the governor had not built an army yet.
 - The new dual-window Pearl report fixes most of that under-read. `combat_multiplier` is no longer negative once the run is allowed to breathe to 2400 frames, while `rare_resource_access` becomes roughly neutral and `clam_earnings_multiplier` remains correctly economy-led.
+- The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, and `hp_multiplier` reads as small-but-positive instead of looking inert.
 - The rare-resource prestige path is no longer a map-generation trap. Its opening-window wobble now looks like ordinary governor valuation noise rather than a fundamentally harmful spawn pattern.
-- The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the prestige population fix, but attack still fails to cash in its orders over the longer governor run, and `hp_multiplier` / `auto_heal_behavior` still need a scenario that actually stresses their intended value after the army exists.
+- The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the prestige population fix, but attack still fails to cash in its orders over the longer governor run.
 
 ## How To Use This
 
@@ -232,7 +262,7 @@ Short-term tuning heuristic:
 ## Next Steps
 
 1. Investigate the remaining attack-controller conversion gap, since the governor still spends most of the sampled stage-6 run on train/defend and still does not convert later army strength into enough kills.
-2. Add a long-run or role-targeted expression harness for `hp_multiplier` and `auto_heal_behavior`, since the 2400-frame broad scan still leaves those rows flat even though the immediate-pressure harness shows they work.
+2. Bridge the new sustain harness back into the broader Pearl budgeting view, since `hp_multiplier` and `auto_heal_behavior` now have confirmed local expression but still read flat in the general long-run scan.
 3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
 4. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
 5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

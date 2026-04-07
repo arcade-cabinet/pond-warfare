@@ -7,6 +7,7 @@ import {
   getPerformanceScore,
   getPowerScore,
   getRewardScore,
+  getSustainScore,
   summarizeShiftPercents,
 } from '@/balance/progression-model';
 
@@ -83,6 +84,29 @@ describe('progression model', () => {
 
     expect(getPowerScore(riskyEconomy)).toBeGreaterThan(0);
     expect(getCombatPressureScore(stableDefense)).toBeGreaterThan(getCombatPressureScore(riskyEconomy));
+  });
+
+  it('captures retained army health for sustain scenarios', () => {
+    const brittleHold = {
+      resourcesGathered: 0,
+      unitsTrained: 0,
+      kills: 4,
+      playerUnits: 5,
+      playerUnitHpPool: 95,
+      playerUnitHpRatio: 0.22,
+      lodgeHpRatio: 0.62,
+    };
+    const stableHold = {
+      resourcesGathered: 0,
+      unitsTrained: 0,
+      kills: 3,
+      playerUnits: 5,
+      playerUnitHpPool: 220,
+      playerUnitHpRatio: 0.78,
+      lodgeHpRatio: 0.68,
+    };
+
+    expect(getSustainScore(stableHold)).toBeGreaterThan(getSustainScore(brittleHold));
   });
 
   it('summarizes min/mean/max difficulty shifts', () => {

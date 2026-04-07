@@ -9,6 +9,7 @@
  */
 
 import type { GameWorld } from '@/ecs/world';
+import { createWeatherState } from '@/config/weather';
 import { createGameWorld } from '@/ecs/world-defaults';
 import { PanelGrid } from '@/game/panel-grid';
 import { SeededRandom } from '@/utils/random';
@@ -58,6 +59,7 @@ export function createTestWorld(options: TestWorldOptions = {}): GameWorld {
   // Core state
   world.mapSeed = seed;
   world.gameRng = new SeededRandom(seed);
+  world.weather = createWeatherState(seed, 0);
   world.commanderId = commanderId;
   world.playerFaction = faction as 'otter' | 'predator';
 
