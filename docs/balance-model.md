@@ -168,7 +168,11 @@ Current isolated readout:
     - the three basic gather rows land around `0.25%`
     - `economy_clam_bonus_t0` lands around `0.15%` with about `1.26%` `economy_mean_pct`
   - most other T1 rows are currently flat in this harness instead of falsely negative, which is a better read but still tells us many categories are not expressing enough value in the immediate next-match window
-  - current interpretation: this is a better release-budget input for first-step Clam purchases than the old frame-zero scan, but it still is not the final pane-transition harness for Frontier Expansion purchases
+- Frontier Expansion path:
+  - [frontier-progression-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/frontier-progression-report.test.ts) now runs the actual prestige-cycle frontier ladder: earn Clams at the current stage, buy the next required path and Frontier diamond when affordable, then score the first match at the newly unlocked stage
+  - the current 30-second match lens says the path is stable but badly paced: mean total matches to first exposure are about `21` for stage 2, `60.33` for stage 3, `119.67` for stage 4, `237` for stage 5, and `361.33` for stage 6
+  - stage-entry relief is uneven as well: `Frontier Expansion I` lands around `+1.25%` `meta_mean_pct`, `II` around `-7.86%`, `III` around `+9.58%`, `IV` around `-10.04%`, and `V` around `+0.83%`
+  - all five stage-entry rows still survive the next match at `100%` across seeds, so the baseline rule is intact; the problem is pacing and relief budget, not hard progression failure
 - Pearl rank 1:
   - opening window, 1200 frames:
     - the opening slice is still not a release-budget signal; it is a fast early-expression check
@@ -254,7 +258,8 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - Under forced early combat pressure, all four tested Pearl combat/repair tracks are now positive, with `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` showing the strongest gains.
 - The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
 - Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.
-- The Pearl broad scan is now trustworthy enough to use as one release-budget input, and the Clam scan is no longer directionally wrong now that it uses a post-match purchase loop. The remaining missing Clam lens is Frontier Expansion and pane-transition purchases, not basic T1 current-run relief.
+- The Pearl broad scan is now trustworthy enough to use as one release-budget input, and the Clam scan is no longer directionally wrong now that it uses a post-match purchase loop.
+- The missing Frontier lens is no longer missing. The new frontier ladder report says the current cost curve is too steep for the short-match reward lens, and the stage-3 and stage-5 entry packages are under-delivering compared with a fresh same-stage baseline.
 - The targeted governor trace is now healthier: the stage-6 opening window reaches an attack scoring window at about `14s`, the opening slice averages about `2.2` ready combat units instead of `1.2`, and the 2400-frame trace averages about `3.1` ready combat units. That means the short Pearl scan is no longer dominated by a pure gatherer bootstrap stall.
 - The dual-window Pearl report moved materially after the score-model fix as well as the governor/bootstrap fixes. The 2400-frame scan is now mostly positive: `auto_deploy_fisher` lands around `6.42% meta_mean_pct`, `auto_deploy_digger` around `3.33%`, `rare_resource_access` around `1.20%`, `hp_multiplier` around `0.68%`, and `combat_multiplier` around `0.50%`.
 - The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, and `hp_multiplier` reads as small-but-positive instead of looking inert.
@@ -273,9 +278,9 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Add the missing Frontier Expansion pane-transition harness, so Clam diamonds are measured on the actual `one-panel -> two-panel -> ... -> six-panel` progression path instead of only on basic post-match T1 purchases.
-2. Investigate the remaining attack-controller conversion gap, since the governor now reaches attack windows earlier but still does not convert later army strength into enough kills.
-3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
-4. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under budget in the long-run broad scan.
-5. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
+1. Tune Frontier Expansion pacing against the new report: either raise Clam payouts, lower the frontier package costs, or both, because the current short-match lens is landing at roughly `21/60/120/237/361` matches to first exposure.
+2. Investigate why the `Frontier Expansion II` and `IV` prereq packages are negative on stage entry even though the corresponding baseline stages remain survivable.
+3. Investigate the remaining attack-controller conversion gap, since the governor now reaches attack windows earlier but still does not convert later army strength into enough kills.
+4. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
+5. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under budget in the long-run broad scan.
 6. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.
