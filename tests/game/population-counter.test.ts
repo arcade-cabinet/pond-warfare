@@ -10,6 +10,7 @@ import {
 } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { computePopulation } from '@/game/population-counter';
 import { EntityKind, Faction } from '@/types';
 
@@ -17,7 +18,7 @@ describe('computePopulation', () => {
   it('does not count legacy snapshot specialists against food cap', () => {
     const world = createGameWorld();
     const lodge = spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
-    spawnEntity(world, EntityKind.Gatherer, 280, 540, Faction.Player);
+    spawnEntity(world, MUDPAW_KIND, 280, 540, Faction.Player);
     spawnEntity(world, EntityKind.Clambed, 320, 420, Faction.Neutral);
 
     deploySpecialistsAtMatchStart(
@@ -34,7 +35,7 @@ describe('computePopulation', () => {
     const fisher = Array.from(query(world.ecs, [FactionTag, EntityTypeTag, Health])).find(
       (eid) =>
         FactionTag.faction[eid] === Faction.Player &&
-        EntityTypeTag.kind[eid] === EntityKind.Gatherer &&
+        EntityTypeTag.kind[eid] === MUDPAW_KIND &&
         hasComponent(world.ecs, eid, LegacySpecialistSnapshot),
     );
 
@@ -49,7 +50,7 @@ describe('computePopulation', () => {
   it('counts in-match autonomous specialists against food cap', () => {
     const world = createGameWorld();
     spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
-    const specialist = spawnEntity(world, EntityKind.Gatherer, 280, 540, Faction.Player);
+    const specialist = spawnEntity(world, MUDPAW_KIND, 280, 540, Faction.Player);
     addAutonomousSpecialist(world, specialist);
 
     computePopulation(world);

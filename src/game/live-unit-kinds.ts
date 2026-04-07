@@ -12,6 +12,8 @@ export const MEDIC_KIND = EntityKind.Healer;
 export const LOOKOUT_KIND = EntityKind.Scout;
 export const SAPPER_KIND = EntityKind.Sapper;
 export const SABOTEUR_KIND = EntityKind.Saboteur;
+export const LEGACY_SAPPER_CHASSIS_KIND = EntityKind.Brawler;
+export const LEGACY_SABOTEUR_CHASSIS_KIND = EntityKind.Sniper;
 export const FISHER_KIND = MUDPAW_KIND;
 export const LOGGER_KIND = MUDPAW_KIND;
 export const DIGGER_KIND = MUDPAW_KIND;
@@ -30,4 +32,12 @@ export function isMedicKind(kind: EntityKind | number): boolean {
 
 export function isLookoutKind(kind: EntityKind | number): boolean {
   return kind === LOOKOUT_KIND;
+}
+
+export function isLegacySapperChassisKind(kind: EntityKind | number): boolean {
+  return kind === LEGACY_SAPPER_CHASSIS_KIND;
+}
+
+export function isLegacySaboteurChassisKind(kind: EntityKind | number): boolean {
+  return kind === LEGACY_SABOTEUR_CHASSIS_KIND;
 }

@@ -27,6 +27,7 @@ import {
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
+import { isLegacySaboteurChassisKind, LEGACY_SABOTEUR_CHASSIS_KIND } from '@/game/live-unit-kinds';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { isStealthed } from '../diver-stealth';
@@ -142,7 +143,7 @@ function executeAttack(
   hasSpatial: boolean,
   allTargetable: ArrayLike<number>,
 ): void {
-  if (kind === EntityKind.Sniper) {
+  if (isLegacySaboteurChassisKind(kind)) {
     executeSniperAttack(world, eid, tEnt, ex, ey, dmg, kind);
   } else if (kind === EntityKind.Catapult) {
     executeCatapultAttack(world, eid, tEnt, ex, ey, dmg, faction, hasSpatial, allTargetable);
@@ -227,7 +228,7 @@ function executeSniperAttack(
     sniperDmg,
     eid,
     mult,
-    EntityKind.Sniper,
+    LEGACY_SABOTEUR_CHASSIS_KIND,
   );
 
   // Emit positional bonus text

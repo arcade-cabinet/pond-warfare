@@ -15,6 +15,7 @@ import {
   initializeSpecialistBlueprintCaps,
   initializeSpecialistProgression,
 } from '@/game/specialist-blueprints';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { computePopulation } from '@/game/population-counter';
 import { EntityKind, Faction } from '@/types';
 import { actionButtons } from '@/ui/action-panel';
@@ -67,7 +68,7 @@ describe('specialist blueprints', () => {
     const fisher = Array.from(query(world.ecs, [FactionTag, EntityTypeTag, Health])).find(
       (eid) =>
         FactionTag.faction[eid] === Faction.Player &&
-        EntityTypeTag.kind[eid] === EntityKind.Gatherer &&
+        EntityTypeTag.kind[eid] === MUDPAW_KIND &&
         hasComponent(world.ecs, eid, AutonomousSpecialist),
     );
 

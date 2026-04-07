@@ -20,6 +20,7 @@ import {
 import { combatSystem } from '@/ecs/systems/combat';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { LEGACY_SABOTEUR_CHASSIS_KIND, LEGACY_SAPPER_CHASSIS_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /* ------------------------------------------------------------------ */
@@ -34,13 +35,13 @@ describe('Combat', () => {
     world.frameCount = 0;
   });
 
-  it('brawler should deal 1.5x damage to sniper', () => {
-    const mult = getDamageMultiplier(EntityKind.Brawler, EntityKind.Sniper);
+  it('legacy sapper chassis should deal 1.5x damage to legacy saboteur chassis', () => {
+    const mult = getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, LEGACY_SABOTEUR_CHASSIS_KIND);
     expect(mult).toBe(1.5);
   });
 
-  it('sniper should deal 0.75x damage to brawler', () => {
-    const mult = getDamageMultiplier(EntityKind.Sniper, EntityKind.Brawler);
+  it('legacy saboteur chassis should deal 0.75x damage to legacy sapper chassis', () => {
+    const mult = getDamageMultiplier(LEGACY_SABOTEUR_CHASSIS_KIND, LEGACY_SAPPER_CHASSIS_KIND);
     expect(mult).toBe(0.75);
   });
 
@@ -66,7 +67,7 @@ describe('Combat', () => {
 
   it('melee counter multipliers are applied once, not twice', () => {
     const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, EntityKind.Brawler, 140, 100, Faction.Player);
+    const brawler = spawnEntity(world, LEGACY_SAPPER_CHASSIS_KIND, 140, 100, Faction.Player);
     Sprite.facingLeft[gator] = 0;
 
     UnitStateMachine.state[brawler] = UnitState.Attacking;
@@ -117,7 +118,7 @@ describe('Combat', () => {
 
   it('boss croc should enrage below 30% HP', () => {
     const boss = spawnEntity(world, EntityKind.BossCroc, 100, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, EntityKind.Brawler, 120, 100, Faction.Player);
+    const brawler = spawnEntity(world, LEGACY_SAPPER_CHASSIS_KIND, 120, 100, Faction.Player);
 
     // Set boss to low HP (below 30%)
     Health.current[boss] = Math.floor(Health.max[boss] * 0.2);
@@ -164,7 +165,7 @@ describe('Combat', () => {
 
   it('venom snake should apply poison DoT', () => {
     const snake = spawnEntity(world, EntityKind.VenomSnake, 100, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, EntityKind.Brawler, 120, 100, Faction.Player);
+    const brawler = spawnEntity(world, LEGACY_SAPPER_CHASSIS_KIND, 120, 100, Faction.Player);
 
     UnitStateMachine.state[snake] = UnitState.Attacking;
     UnitStateMachine.targetEntity[snake] = brawler;

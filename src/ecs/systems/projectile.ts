@@ -18,6 +18,7 @@ import { PROJECTILE_SPEED } from '@/constants';
 import { Health, IsProjectile, Position, ProjectileData } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
+import { isLegacySaboteurChassisKind } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import { getWeatherProjectileOffset } from './weather';
 
@@ -104,7 +105,7 @@ export function projectileSystem(world: GameWorld): void {
 
       // Play differentiated impact sound based on source unit kind
       const kind = ProjectileData.sourceKind[eid];
-      if (kind === EntityKind.Sniper) {
+      if (isLegacySaboteurChassisKind(kind)) {
         audio.sniperHit(tx);
       } else if (kind === EntityKind.Catapult) {
         audio.catapultImpact(tx);

@@ -18,6 +18,7 @@ import {
   getAbilityCooldownSeconds,
   useCommanderAbility,
 } from '@/game/commander-abilities';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 describe('Commander Active Abilities', () => {
@@ -98,7 +99,7 @@ describe('Commander Active Abilities', () => {
     expect(useCommanderAbility(world)).toBe(false);
     expect(world.commanderAbilityCooldownUntil).toBe(0);
 
-    const unit = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const unit = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
     world.selection = [unit];
 
     expect(useCommanderAbility(world)).toBe(true);
@@ -143,7 +144,7 @@ describe('Commander Active Abilities', () => {
     world.viewWidth = 1280;
     world.viewHeight = 720;
 
-    const player = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const player = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
     const enemy = spawnEntity(world, EntityKind.Gator, 130, 100, Faction.Enemy);
     UnitStateMachine.state[enemy] = UnitState.Idle;
 
@@ -161,7 +162,7 @@ describe('Commander Active Abilities', () => {
     world.viewWidth = 1280;
     world.viewHeight = 720;
 
-    const unit = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const unit = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
     const hpBefore = Health.current[unit];
 
     expect(useCommanderAbility(world)).toBe(true);

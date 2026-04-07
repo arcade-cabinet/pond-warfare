@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { LOOKOUT_KIND, MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import { entityKindToRole, getRadialOptions, type RadialOption } from '@/ui/radial-menu-options';
 
@@ -135,19 +136,19 @@ describe('getRadialOptions — unknown role', () => {
 
 describe('entityKindToRole', () => {
   it('maps Mudpaw chassis to generalist', () => {
-    expect(entityKindToRole(EntityKind.Gatherer)).toBe('generalist');
+    expect(entityKindToRole(MUDPAW_KIND)).toBe('generalist');
   });
 
   it('maps Sapper to combat', () => {
-    expect(entityKindToRole(EntityKind.Sapper)).toBe('combat');
+    expect(entityKindToRole(SAPPER_KIND)).toBe('combat');
   });
 
   it('maps Medic chassis to heal', () => {
-    expect(entityKindToRole(EntityKind.Healer)).toBe('heal');
+    expect(entityKindToRole(MEDIC_KIND)).toBe('heal');
   });
 
   it('maps Lookout chassis to scout', () => {
-    expect(entityKindToRole(EntityKind.Scout)).toBe('scout');
+    expect(entityKindToRole(LOOKOUT_KIND)).toBe('scout');
   });
 
   it('maps Shaman to heal', () => {

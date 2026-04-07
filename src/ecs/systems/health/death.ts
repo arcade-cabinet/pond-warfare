@@ -22,7 +22,7 @@ import {
 } from '@/ecs/components';
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES } from '@/ecs/systems/morale';
 import type { GameWorld } from '@/ecs/world';
-import { isLookoutKind } from '@/game/live-unit-kinds';
+import { isLegacySaboteurChassisKind, isLookoutKind } from '@/game/live-unit-kinds';
 import { getEntityDisplayName } from '@/game/unit-display';
 import { createCorpseId, EntityKind, Faction, SpriteId } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
@@ -31,7 +31,7 @@ import { spawnDeathParticles } from './death-particles';
 
 /** Ranged or recon bodies that get a "cry" death sound instead of a grunt. */
 function isRangedDeathKind(kind: EntityKind): boolean {
-  return kind === EntityKind.Sniper || kind === EntityKind.Catapult || isLookoutKind(kind);
+  return isLegacySaboteurChassisKind(kind) || kind === EntityKind.Catapult || isLookoutKind(kind);
 }
 
 export function processDeath(world: GameWorld, eid: number, attackerEid?: number): void {

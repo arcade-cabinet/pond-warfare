@@ -27,7 +27,7 @@ import {
 } from '@/ecs/components';
 import { movementSystem } from '@/ecs/systems/movement';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 // Spy on audio methods
@@ -284,10 +284,10 @@ describe('Repeat-click escalation', () => {
   });
 
   it('showSelectBark plays voice audio for each bark', () => {
-    const eid = createUnit(world, EntityKind.Gatherer);
+    const eid = createUnit(world, MUDPAW_KIND);
 
-    showSelectBark(world, eid, 100, 100, EntityKind.Gatherer);
+    showSelectBark(world, eid, 100, 100, MUDPAW_KIND);
 
-    expect(audio.playSelectionVoice).toHaveBeenCalledWith(EntityKind.Gatherer, 'otter');
+    expect(audio.playSelectionVoice).toHaveBeenCalledWith(MUDPAW_KIND, 'otter');
   });
 });
