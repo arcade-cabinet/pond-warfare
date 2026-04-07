@@ -3,7 +3,7 @@
  *
  * Contextual circular menu that appears on tap:
  * - Tap Lodge -> Train Mudpaw/Medic/Sapper/Saboteur, field specialists, Fortify, Repair
- * - Tap selected manual unit -> role-specific actions (Gather, Attack, Heal, Scout, Hold, Patrol)
+ * - Tap selected manual unit -> role-specific actions (Gather, Attack, Heal, Recon, Hold, Patrol)
  * - Tap selected specialist -> assign area or zones, then let autonomy handle local work
  *
  * Design bible: vine-frame popup, gritty gold icons, wood plank button backgrounds,
@@ -56,6 +56,24 @@ function getSpecialistAssignOption(mode: 'single_zone' | 'dual_zone'): RadialOpt
         tooltip: 'Assign operating area',
         color: 'scout',
       };
+}
+
+function getHubLabel(mode: 'lodge' | 'unit', role: string | null): string {
+  if (mode === 'lodge') return 'Lodge';
+  switch (role) {
+    case 'generalist':
+      return 'Mudpaw';
+    case 'gather':
+      return 'Gather';
+    case 'combat':
+      return 'Combat';
+    case 'heal':
+      return 'Heal';
+    case 'scout':
+      return 'Recon';
+    default:
+      return 'Unit';
+  }
 }
 
 /**
@@ -192,7 +210,7 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
             class="font-heading font-bold text-[10px] text-center leading-tight"
             style={{ color: COLORS.grittyGold }}
           >
-            {mode === 'lodge' ? 'Lodge' : (role ?? 'Unit')}
+            {getHubLabel(mode, role)}
           </span>
         </div>
 

@@ -118,6 +118,10 @@ describe('getRadialOptions — Unit mode (scout)', () => {
     expect(ids).toContain('cmd_hold');
     expect(ids).toContain('cmd_patrol');
   });
+
+  it('uses Recon as the player-facing label', () => {
+    expect(options.find((o) => o.id === 'cmd_scout')?.label).toBe('Recon');
+  });
 });
 
 describe('getRadialOptions — unknown role', () => {

@@ -24,7 +24,7 @@ TAP "PLAY"
 
 When progression slows → "RANK UP" button pulses
   → Prestige: reset upgrades, earn Pearls (secondary currency)
-  → Pearl upgrades = permanent multipliers that survive prestige
+  → Pearl upgrades = permanent blueprint unlocks, autonomy tuning, and multipliers that survive prestige
   → Start fresh but FASTER → reach further → prestige again
 ```
 
@@ -212,7 +212,7 @@ configs/
   units.json          — unit definitions (stats, role, cost, auto-behavior)
   events.json         — event templates (type, difficulty range, rewards, enemy composition)
   upgrades.json       — upgrade web definition (categories, subs, scaling formulas, diamond nodes)
-  prestige.json       — prestige upgrades (auto-deploy, auto-behavior, multipliers)
+  prestige.json       — prestige upgrades (specialist blueprints, autonomy tuning, multipliers)
   lodge.json          — Lodge wing definitions (visual, gameplay effect, unlock condition)
   terrain.json        — map generation params per progression level
   enemies.json        — enemy unit types + scaling formulas

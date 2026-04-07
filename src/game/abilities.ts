@@ -134,33 +134,23 @@ export function useAirdrop(world: GameWorld): boolean {
   world.resources.fish += 200;
   world.resources.logs += 100;
 
-  // Spawn units near Lodge
+  // Spawn a canonical manual relief bundle near the Lodge.
   const offsets = [
     { x: -40, y: 60 },
     { x: 40, y: 60 },
     { x: 0, y: 80 },
   ];
-  spawnEntity(
-    world,
-    EntityKind.Brawler,
-    lodgeX + offsets[0].x,
-    lodgeY + offsets[0].y,
-    Faction.Player,
-  );
-  spawnEntity(
-    world,
-    EntityKind.Brawler,
-    lodgeX + offsets[1].x,
-    lodgeY + offsets[1].y,
-    Faction.Player,
-  );
-  spawnEntity(
-    world,
-    EntityKind.Healer,
-    lodgeX + offsets[2].x,
-    lodgeY + offsets[2].y,
-    Faction.Player,
-  );
+  const airdropKinds = [EntityKind.Gatherer, EntityKind.Gatherer, EntityKind.Healer] as const;
+  for (let i = 0; i < airdropKinds.length; i++) {
+    const offset = offsets[i];
+    spawnEntity(
+      world,
+      airdropKinds[i],
+      lodgeX + offset.x,
+      lodgeY + offset.y,
+      Faction.Player,
+    );
+  }
 
   // Decrement and set cooldown
   world.airdropsRemaining--;

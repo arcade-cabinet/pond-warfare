@@ -3,7 +3,7 @@
  *
  * Handles actions dispatched from the radial menu:
  * - Lodge actions: queue unit training, fortify, repair
- * - Unit actions: gather, attack, heal, scout, hold, patrol, move
+ * - Unit actions: gather, attack, heal, recon, hold, patrol, move
  *
  * Fort placement logic extracted to radial-fort-actions.ts (300 LOC).
  */
@@ -165,11 +165,19 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
     case 'cmd_assign_area':
       return beginSpecialistAreaAssignment(world);
     case 'cmd_gather':
+      pushGameEvent('Tap resource node...', COLORS.feedbackInfo, world.frameCount);
+      return true;
     case 'cmd_attack':
+      pushGameEvent('Tap enemy...', COLORS.feedbackInfo, world.frameCount);
+      return true;
     case 'cmd_heal':
+      pushGameEvent('Tap wounded ally...', COLORS.feedbackInfo, world.frameCount);
+      return true;
     case 'cmd_scout':
+      pushGameEvent('Tap terrain to recon...', COLORS.feedbackInfo, world.frameCount);
+      return true;
     case 'cmd_move':
-      pushGameEvent('Tap target...', COLORS.feedbackInfo, world.frameCount);
+      pushGameEvent('Tap terrain to move...', COLORS.feedbackInfo, world.frameCount);
       return true;
     default:
       return false;

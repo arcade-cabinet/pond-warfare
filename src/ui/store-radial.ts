@@ -21,7 +21,7 @@ export const radialMenuY = signal(0);
 /** Current menu mode: 'lodge' for Lodge tap, 'unit' for unit tap. */
 export const radialMenuMode = signal<RadialMenuMode>('lodge');
 
-/** The v3 role of the selected unit (gather/combat/heal/scout), null for Lodge. */
+/** The v3 role of the selected unit (generalist/gather/combat/heal/scout), null for Lodge. */
 export const radialMenuUnitRole = signal<string | null>(null);
 export const radialMenuTargetEntityId = signal(-1);
 export const radialMenuSpecialistMode = signal<SpecialistZoneMode | null>(null);

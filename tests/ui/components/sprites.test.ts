@@ -56,10 +56,10 @@ describe('SpriteCroc', () => {
 });
 
 describe('SpriteSnake', () => {
-  it('renders with aria-label="Viper Sniper"', () => {
+  it('renders with aria-label="Viper Ranger"', () => {
     render(h(SpriteSnake, null));
     const svg = document.querySelector('svg');
     expect(svg).toBeTruthy();
-    expect(svg?.getAttribute('aria-label')).toBe('Viper Sniper');
+    expect(svg?.getAttribute('aria-label')).toBe('Viper Ranger');
   });
 });

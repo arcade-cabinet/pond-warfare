@@ -343,7 +343,7 @@ export default function App() {
   const units = {
     otter: { name: 'Otter Commando', role: 'Assault Infantry', Sprite: SpriteOtter, desc: 'High mobility. Equipped with standard tactical bandana and auto-rifle.' },
     croc: { name: 'Gator Heavy', role: 'Siege & Armor', Sprite: SpriteCroc, desc: 'Slow, heavily armored. Carries a back-mounted Gatling cannon for suppressing fire.' },
-    snake: { name: 'Viper Sniper', role: 'Specialist', Sprite: SpriteSnake, desc: 'Stealth coils. Uses cyber-optics and a high-energy back-mounted laser rifle.' }
+    snake: { name: 'Viper Ranger', role: 'Specialist', Sprite: SpriteSnake, desc: 'Stealth coils. Uses cyber-optics and a high-energy back-mounted laser rifle.' }
   };
 
   return (

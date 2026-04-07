@@ -62,7 +62,7 @@ Panel dimensions MUST be computed from actual viewport size at game start, not h
 - Visual: dark murky green with thick thorny vine silhouettes, matching the SVG vine strokes from the reference JSX
 - Completely impassable — units, projectiles, and vision stop at the thorn wall
 - When a panel unlocks: thorn wall recedes (animation: vines pull back over 2-3 seconds)
-- Behind the receded thorns: fog of war (black). Player must send Scout to reveal.
+- Behind the receded thorns: fog of war (black). Player must send a Mudpaw or Lookout to reveal.
 
 ---
 

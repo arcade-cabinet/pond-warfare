@@ -132,7 +132,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   }, 30_000);
 
   // ========================================================================
-  // 1. Lodge -- 1500 HP, provides +8 food, trains Gatherer/Scout
+  // 1. Lodge -- 1500 HP, provides +8 food, trains the canonical manual roster
   // ========================================================================
 
   describe('1. Lodge', () => {
@@ -154,7 +154,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       expect(def.foodProvided).toBe(8);
     });
 
-    it('Lodge has training queue (can train Gatherer/Scout)', () => {
+    it('Lodge has training queue for the canonical manual roster', () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
       expect(hasComponent(game.world.ecs, lodge, TrainingQueue)).toBe(true);
     });

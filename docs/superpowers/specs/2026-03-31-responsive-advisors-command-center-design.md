@@ -139,14 +139,14 @@ A unit roster — single pane of glass for your entire force.
 ```
 
 **Behaviors:**
-- Units grouped by role: Gatherers, Combat, Support, Scouts. Commander shown separately (never auto-assigned).
+- Units grouped by role: Generalists, Combat, Support, Recon. Commander shown separately (never auto-assigned).
 - Idle units sorted to top within each group, highlighted with warning color.
 - Each unit row shows: unit type name, current task as inline picker pill.
 - Tap task pill → dropdown with available tasks for that unit type:
-  - Gatherer: Idle, Gather (nearest), Gather Clams, Gather Twigs, Build
+  - Generalist: Idle, Gather, Build, Recon
   - Combat: Idle, Patrol, Defend Lodge, Attack (nearest enemy)
-  - Healer: Idle, Heal (nearest wounded)
-  - Scout: Idle, Scout (random explore)
+  - Support: Idle, Heal (nearest wounded)
+  - Recon: Idle, Recon (random explore)
 - Group header has auto-behavior toggle for that role (replaces global toggles).
 - Tap unit name → camera pans to unit on game board, unit gets selected.
 - Unit health bar shown as thin colored bar under each row.

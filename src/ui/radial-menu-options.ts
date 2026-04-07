@@ -90,9 +90,9 @@ const GENERALIST_OPTIONS: RadialOption[] = [
   },
   {
     id: 'cmd_scout',
-    label: 'Scout',
+    label: 'Recon',
     icon: '\u{1F441}\uFE0F',
-    tooltip: 'Explore area',
+    tooltip: 'Survey area',
     color: 'scout',
   },
   { id: 'cmd_hold', label: 'Hold', icon: '\u270B', tooltip: 'Hold position', color: 'warning' },
@@ -197,9 +197,9 @@ const HEAL_OPTIONS: RadialOption[] = [
 const SCOUT_OPTIONS: RadialOption[] = [
   {
     id: 'cmd_scout',
-    label: 'Scout',
+    label: 'Recon',
     icon: '\u{1F441}\uFE0F',
-    tooltip: 'Explore area',
+    tooltip: 'Survey area',
     color: 'scout',
   },
   { id: 'cmd_hold', label: 'Hold', icon: '\u270B', tooltip: 'Hold position', color: 'warning' },

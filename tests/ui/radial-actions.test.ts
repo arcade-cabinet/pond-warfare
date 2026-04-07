@@ -171,28 +171,31 @@ describe('dispatchRadialAction -- unit commands', () => {
   it('cmd_gather shows tap target message', () => {
     const result = dispatchRadialAction('cmd_gather');
     expect(result).toBe(true);
-    expect(pushGameEvent).toHaveBeenCalledWith('Tap target...', '#38bdf8', 100);
+    expect(pushGameEvent).toHaveBeenCalledWith('Tap resource node...', '#38bdf8', 100);
   });
 
   it('cmd_attack shows tap target message', () => {
     const result = dispatchRadialAction('cmd_attack');
     expect(result).toBe(true);
-    expect(pushGameEvent).toHaveBeenCalledWith('Tap target...', '#38bdf8', 100);
+    expect(pushGameEvent).toHaveBeenCalledWith('Tap enemy...', '#38bdf8', 100);
   });
 
   it('cmd_heal shows tap target message', () => {
     const result = dispatchRadialAction('cmd_heal');
     expect(result).toBe(true);
+    expect(pushGameEvent).toHaveBeenCalledWith('Tap wounded ally...', '#38bdf8', 100);
   });
 
   it('cmd_scout shows tap target message', () => {
     const result = dispatchRadialAction('cmd_scout');
     expect(result).toBe(true);
+    expect(pushGameEvent).toHaveBeenCalledWith('Tap terrain to recon...', '#38bdf8', 100);
   });
 
   it('cmd_move shows tap target message', () => {
     const result = dispatchRadialAction('cmd_move');
     expect(result).toBe(true);
+    expect(pushGameEvent).toHaveBeenCalledWith('Tap terrain to move...', '#38bdf8', 100);
   });
 
   it('cmd_return returns true (even if no Lodge)', () => {
