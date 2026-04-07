@@ -6,6 +6,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 // Track spawned entities
@@ -39,9 +40,9 @@ vi.mock('@/ecs/components', () => ({
 vi.mock('@/config/factions', () => ({
   getFactionConfig: (_faction: string) => ({
     lodgeKind: EntityKind.Lodge,
-    gathererKind: EntityKind.Gatherer,
-    meleeKind: EntityKind.Gatherer,
-    supportKind: EntityKind.Healer,
+    gathererKind: MUDPAW_KIND,
+    meleeKind: SAPPER_KIND,
+    supportKind: MEDIC_KIND,
     heroKind: EntityKind.Commander,
   }),
 }));

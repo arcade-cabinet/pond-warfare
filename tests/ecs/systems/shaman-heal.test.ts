@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction } from '@/types';
 
@@ -47,7 +48,7 @@ describe('shamanHealSystem', () => {
 
   it('should heal friendly units within range', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    const ally = createUnit(world, 150, 100, Faction.Player, EntityKind.Brawler, 40, 60);
+    const ally = createUnit(world, 150, 100, Faction.Player, SAPPER_KIND, 40, 60);
 
     shamanHealSystem(world);
 
@@ -65,7 +66,7 @@ describe('shamanHealSystem', () => {
 
   it('should NOT overheal past max HP', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    const ally = createUnit(world, 150, 100, Faction.Player, EntityKind.Brawler, 59, 60);
+    const ally = createUnit(world, 150, 100, Faction.Player, SAPPER_KIND, 59, 60);
 
     shamanHealSystem(world);
 
@@ -74,7 +75,7 @@ describe('shamanHealSystem', () => {
 
   it('should NOT heal units outside range', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    const farAlly = createUnit(world, 500, 500, Faction.Player, EntityKind.Brawler, 40, 60);
+    const farAlly = createUnit(world, 500, 500, Faction.Player, SAPPER_KIND, 40, 60);
 
     shamanHealSystem(world);
 
@@ -83,7 +84,7 @@ describe('shamanHealSystem', () => {
 
   it('should NOT heal units already at full HP', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    const fullAlly = createUnit(world, 150, 100, Faction.Player, EntityKind.Brawler, 60, 60);
+    const fullAlly = createUnit(world, 150, 100, Faction.Player, SAPPER_KIND, 60, 60);
 
     shamanHealSystem(world);
 
@@ -92,8 +93,8 @@ describe('shamanHealSystem', () => {
 
   it('should heal multiple nearby units', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    const ally1 = createUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 40, 60);
-    const ally2 = createUnit(world, 100, 130, Faction.Player, EntityKind.Sniper, 30, 40);
+    const ally1 = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 40, 60);
+    const ally2 = createUnit(world, 100, 130, Faction.Player, SABOTEUR_KIND, 30, 40);
 
     shamanHealSystem(world);
 
@@ -103,7 +104,7 @@ describe('shamanHealSystem', () => {
 
   it('should only run on correct frame interval', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    const ally = createUnit(world, 150, 100, Faction.Player, EntityKind.Brawler, 40, 60);
+    const ally = createUnit(world, 150, 100, Faction.Player, SAPPER_KIND, 40, 60);
 
     world.frameCount = 15; // Not multiple of 300
     shamanHealSystem(world);
@@ -116,7 +117,7 @@ describe('shamanHealSystem', () => {
 
   it('should spawn green particles when healing', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    createUnit(world, 150, 100, Faction.Player, EntityKind.Brawler, 40, 60);
+    createUnit(world, 150, 100, Faction.Player, SAPPER_KIND, 40, 60);
 
     shamanHealSystem(world);
 
@@ -125,8 +126,8 @@ describe('shamanHealSystem', () => {
 
   it('respects the shaman assigned area when healing', () => {
     const shaman = createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
-    const inside = createUnit(world, 140, 100, Faction.Player, EntityKind.Brawler, 40, 60);
-    const outside = createUnit(world, 260, 100, Faction.Player, EntityKind.Brawler, 40, 60);
+    const inside = createUnit(world, 140, 100, Faction.Player, SAPPER_KIND, 40, 60);
+    const outside = createUnit(world, 260, 100, Faction.Player, SAPPER_KIND, 40, 60);
 
     world.specialistAssignments.set(shaman, {
       runtimeId: 'shaman',

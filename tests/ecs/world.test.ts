@@ -6,9 +6,9 @@
 
 import { describe, expect, it } from 'vitest';
 import { STARTING_FISH, STARTING_LOGS } from '@/constants';
-import { EntityKind } from '@/types';
 import { trainingQueueSlots } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 
 describe('createGameWorld', () => {
   it('should return a world with correct initial resources', () => {
@@ -36,7 +36,7 @@ describe('createGameWorld', () => {
   });
 
   it('should clear transient training queues for a fresh world', () => {
-    trainingQueueSlots.set(7, [EntityKind.Gatherer]);
+    trainingQueueSlots.set(7, [MUDPAW_KIND]);
 
     createGameWorld();
 

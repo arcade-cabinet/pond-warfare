@@ -5,7 +5,12 @@
  * When the player picks a faction, the other faction is controlled by the AI.
  */
 
-import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
+import {
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 export type PlayableFaction = 'otter' | 'predator';
@@ -33,20 +38,19 @@ export interface FactionConfig {
  * Otter faction: legacy compatibility mapping for the original player side.
  *
  * Important: the live vertical-mode roster no longer exposes the old internal
- * combat archetype split as player-facing manual units, and older helpers
- * should treat `gathererKind` as the canonical Mudpaw chassis. Those older
- * entity kinds remain here only for historical scenario support until the
- * horizontal/adversarial layer is fully reauthored.
+ * combat archetype split as player-facing manual units. Older helpers should
+ * treat the compatibility slots here as the closest canonical live roster
+ * equivalents until the horizontal/adversarial layer is fully reauthored.
  */
 export const OTTER_FACTION: FactionConfig = {
   name: 'Otters',
   lodgeKind: EntityKind.Lodge,
   gathererKind: MUDPAW_KIND,
-  meleeKind: EntityKind.Brawler,
-  rangedKind: EntityKind.Sniper,
-  tankKind: EntityKind.Shieldbearer,
+  meleeKind: SAPPER_KIND,
+  rangedKind: SABOTEUR_KIND,
+  tankKind: SAPPER_KIND,
   supportKind: MEDIC_KIND,
-  siegeKind: EntityKind.Catapult,
+  siegeKind: SAPPER_KIND,
   heroKind: EntityKind.Commander,
   techTree: ['gathering', 'combat', 'defense', 'utility', 'economy', 'siege'],
 };

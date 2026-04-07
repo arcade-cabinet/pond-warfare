@@ -26,6 +26,7 @@ import {
   Veterancy,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 describe('spawnEntity', () => {
@@ -36,7 +37,7 @@ describe('spawnEntity', () => {
   });
 
   it('should create a unit with combat, velocity, and carrying components', () => {
-    const eid = spawnEntity(world, EntityKind.Brawler, 100, 200, Faction.Player);
+    const eid = spawnEntity(world, SAPPER_KIND, 100, 200, Faction.Player);
 
     expect(hasComponent(world.ecs, eid, Position)).toBe(true);
     expect(hasComponent(world.ecs, eid, Health)).toBe(true);
@@ -49,7 +50,7 @@ describe('spawnEntity', () => {
     expect(Position.x[eid]).toBe(100);
     expect(Position.y[eid]).toBe(200);
     expect(FactionTag.faction[eid]).toBe(Faction.Player);
-    expect(EntityTypeTag.kind[eid]).toBe(EntityKind.Brawler);
+    expect(EntityTypeTag.kind[eid]).toBe(SAPPER_KIND);
   });
 
   it('should create a building with IsBuilding and Building components', () => {

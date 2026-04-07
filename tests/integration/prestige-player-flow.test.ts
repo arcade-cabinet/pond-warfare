@@ -5,7 +5,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 const spawnedEntities: { kind: number; x: number; y: number; faction: number }[] = [];
@@ -49,8 +49,8 @@ vi.mock('@/config/factions', () => ({
     return {
       lodgeKind: EntityKind.Lodge,
       gathererKind: MUDPAW_KIND,
-      meleeKind: MUDPAW_KIND,
-      supportKind: EntityKind.Healer,
+      meleeKind: SAPPER_KIND,
+      supportKind: MEDIC_KIND,
       heroKind: EntityKind.Commander,
     };
   },
