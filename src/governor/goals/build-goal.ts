@@ -86,12 +86,14 @@ export class BuildGoal extends Goal {
       w.selection = [gatherers[0].eid];
     }
 
-    // Place near lodge with a random offset
-    // Wing buildings get placed closer to the Lodge since they're attached
-    const offsetScale = isWingBuilding(need.kind) ? 80 : 200;
-    const ox = (w.gameRng.next() - 0.5) * offsetScale;
-    const oy = (w.gameRng.next() - 0.5) * offsetScale;
-    placeBuilding(w, lodge.x + ox, lodge.y + oy);
+    // Place near the lodge, but keep wing buildings outside the lodge's own
+    // footprint so the placement check does not reject every attempt.
+    const isWing = isWingBuilding(need.kind);
+    const angle = w.gameRng.next() * Math.PI * 2;
+    const baseRadius = isWing ? 140 : 200;
+    const radiusJitter = isWing ? 24 : 80;
+    const radius = baseRadius + (w.gameRng.next() - 0.5) * radiusJitter;
+    placeBuilding(w, lodge.x + Math.cos(angle) * radius, lodge.y + Math.sin(angle) * radius);
     w.placingBuilding = null;
 
     this.status = Goal.STATUS.COMPLETED;

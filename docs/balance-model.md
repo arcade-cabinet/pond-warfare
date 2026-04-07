@@ -99,13 +99,13 @@ From [balance-track-shifts.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfa
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| clam_gather_t1 | -0.01 | 4.38 | 12.00 |
-| clam_yield_t1 | 0.66 | 4.14 | 10.67 |
-| clam_clam_bonus_t1 | -0.01 | 3.57 | 10.02 |
-| pearl_clam_earnings_rank_1 | 0.27 | 1.22 | 3.07 |
-| pearl_gather_rank_2 | -0.49 | 1.30 | 4.60 |
-| pearl_auto_deploy_fisher | -0.01 | 0.92 | 2.78 |
-| pearl_starting_tier_1 | -0.08 | 2.04 | 5.47 |
+| clam_gather_t1 | -1.62 | 4.75 | 11.14 |
+| clam_yield_t1 | -0.94 | 5.33 | 11.79 |
+| clam_clam_bonus_t1 | -1.62 | 4.77 | 11.19 |
+| pearl_clam_earnings_rank_1 | -0.98 | 3.25 | 10.44 |
+| pearl_gather_rank_2 | 0.46 | 4.55 | 8.48 |
+| pearl_auto_deploy_fisher | -1.24 | 2.97 | 10.16 |
+| pearl_starting_tier_1 | 1.09 | 5.37 | 9.37 |
 
 These sampled Pearl rows now compare against a rank-matched Pearl baseline, so
 the shifts represent the upgrade itself instead of accidentally including the
@@ -148,26 +148,48 @@ From [pearl-combat-pressure-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabin
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| combat_multiplier | 0.43 | 0.43 | 0.43 |
-| hp_multiplier | -13.66 | -13.66 | -13.66 |
-| auto_heal_behavior | -13.73 | -13.73 | -13.73 |
-| auto_repair_behavior | 3.22 | 3.22 | 3.22 |
+| combat_multiplier | -13.27 | -13.27 | -13.27 |
+| hp_multiplier | -12.04 | -12.04 | -12.04 |
+| auto_heal_behavior | -11.85 | -11.85 | -11.85 |
+| auto_repair_behavior | 2.78 | 2.78 | 2.78 |
 
 This is not a tuning success. It is a diagnostic finding:
 
-- `combat_multiplier` is now barely positive and `auto_repair_behavior` is meaningfully positive in the immediate-pressure scenario
-- `hp_multiplier` and `auto_heal_behavior` are still materially negative under the same pressure setup
-- this narrows the investigation: the blanket "all Pearl combat tracks are broken" diagnosis is no longer true, but the HP/heal expression path is still not helping the governor survive early pressure
+- `auto_repair_behavior` is still meaningfully positive in the immediate-pressure scenario
+- `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` are all still materially negative under the same pressure setup
+- this keeps the investigation focused on defensive expression under pressure rather than on pure economy or progression wiring
+
+## Controller Diagnostics
+
+From [controller-balance-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/controller-balance-diagnostics.test.ts):
+
+- Gather controller:
+  - `gather_multiplier` massively increases gather-loop output in isolation
+  - `auto_deploy_digger` and `auto_deploy_logger` do increase rock/log collection when the gather controller is forced to care about those tracks
+  - `rare_resource_access` increases rock intake in the gather-only slice, which confirms the runtime consumer exists even though the blended governor score still undervalues it
+- Build controller:
+  - the new controller slice exposed a real bug: wing-building placement offsets were too small, so the build controller could repeatedly fail to place Armory wings near the Lodge
+  - after fixing [build-goal.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/src/governor/goals/build-goal.ts), the build controller now reaches Armory within a few controller cycles instead of stalling indefinitely
+- Train controller:
+  - short-window training throughput is still bottlenecked by food/queue behavior more than raw fish income
+  - `auto_deploy_fisher` can explode fish stockpile in the isolated slice without turning that into more trained units over the same window
+- Defend controller:
+  - `auto_repair_behavior`, `hp_multiplier`, and `auto_heal_behavior` all improve raw Lodge survival in the defend-only slice
+  - that means the strongly negative blended pressure scores are not purely missing runtime effects; they are interactions inside the full governor loop
+- Attack controller:
+  - the attack controller now clearly issues orders and commits at least `4` units
+  - it still converts that into only trivial or zero kills in the short skirmish slice, which makes the attack path a concrete remaining gap rather than a scoring artifact
 
 ## Interpretation
 
-- Cheap first-rank Clam tracks are currently landing around **3.6% to 4.4% sampled mean relief** in the smaller report.
-- Early Pearl tracks are much smaller, roughly **0.9% to 2.0% sampled mean relief** in the sampled report, with several still negative in the exhaustive stage-6 report.
-- Under forced early combat pressure, `hp_multiplier` and `auto_heal_behavior` are still negative on average, while `combat_multiplier` and `auto_repair_behavior` are now at least directionally positive.
+- Cheap first-rank Clam tracks are currently landing around **4.7% to 5.3% sampled mean relief** in the smaller report.
+- Early Pearl tracks are much larger in the sampled report now, roughly **3.0% to 5.4% sampled mean relief** for the selected rows, but several are still negative in the exhaustive stage-6 report.
+- Under forced early combat pressure, only `auto_repair_behavior` is directionally positive; `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` are still negative on average.
 - The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
 - Basic Clam gather/yield/clam-bonus tracks are now confirmed as positive again after the gather-override persistence fix.
 - The exhaustive report still shows a second issue beyond raw tuning: many Clam categories remain too tightly clustered, and several Pearl tracks are still either inert or actively harmful in governor play.
 - Some of the remaining Pearl negatives are now clearly diagnostic-quality problems rather than missing runtime consumers: the blended governor harness still overweights fish-economy pressure and under-reads non-fish gathering plus specialist role value.
+- The controller split makes the attack and train paths the next highest-signal controller problems: build and gather now express their upgrades, but attack still fails to cash in its orders and train still fails to turn extra economy into faster army growth.
 
 ## How To Use This
 
@@ -180,8 +202,9 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Add controller-level diagnostics for the Yuka layer so Gather/Build/Train/Defend/Attack are measured separately instead of only through one blended governor run.
-2. Investigate the still-negative Pearl tracks, especially `hp_multiplier`, `auto_heal_behavior`, `rare_resource_access`, and the non-worker auto-deploy set.
-3. Expand the diagnostics from sampled tracks to every Clam subcategory and every Pearl upgrade.
-4. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
-5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.
+1. Investigate the attack controller path, since it now clearly issues attack orders but still produces `0` kills in the isolated skirmish slice.
+2. Investigate the train controller throughput bottleneck, since extra economy is not reliably converting into faster unit output.
+3. Reconcile the blended negative pressure scores for `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` against the controller-only defend slice that shows those effects do help raw Lodge survival.
+4. Expand the diagnostics from sampled tracks to every Clam subcategory and every Pearl upgrade.
+5. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
+6. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.
