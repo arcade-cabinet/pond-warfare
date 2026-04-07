@@ -7,8 +7,8 @@ import {
   FactionTag,
   Health,
   IsResource,
+  LegacySpecialistSnapshot,
   Position,
-  PrestigeAutoDeploy,
   Resource,
   Stance,
   StanceMode,
@@ -30,7 +30,7 @@ import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { spawnEntity } from '@/ecs/archetypes';
 import { EntityKind, Faction, UnitState } from '@/types';
 
-export type SpecialistSpawnMode = 'blueprint' | 'prestige_auto_deploy';
+export type SpecialistSpawnMode = 'blueprint' | 'legacy_snapshot';
 
 const SPECIALIST_KIND_MAP: Record<string, EntityKind> = {
   fisher: EntityKind.Gatherer,
@@ -74,8 +74,8 @@ export function spawnSpecialistUnit(
   if (kind == null) return null;
 
   const eid = spawnEntity(world, kind, x, y, Faction.Player);
-  if (mode === 'prestige_auto_deploy') {
-    addComponent(world.ecs, eid, PrestigeAutoDeploy);
+  if (mode === 'legacy_snapshot') {
+    addComponent(world.ecs, eid, LegacySpecialistSnapshot);
   } else {
     addComponent(world.ecs, eid, AutonomousSpecialist);
   }

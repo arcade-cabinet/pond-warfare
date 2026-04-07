@@ -26,8 +26,8 @@ describe('specialist blueprints', () => {
       pearls: 0,
       totalPearlsEarned: 10,
       upgradeRanks: {
-        auto_deploy_fisher: 2,
-        auto_deploy_shaman: 1,
+        blueprint_fisher: 2,
+        blueprint_shaman: 1,
       },
     });
 
@@ -48,7 +48,7 @@ describe('specialist blueprints', () => {
       rank: 1,
       pearls: 0,
       totalPearlsEarned: 10,
-      upgradeRanks: { auto_deploy_fisher: 1 },
+      upgradeRanks: { blueprint_fisher: 1 },
     });
     computePopulation(world);
 

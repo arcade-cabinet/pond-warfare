@@ -6,7 +6,7 @@ import {
   EntityTypeTag,
   FactionTag,
   Health,
-  PrestigeAutoDeploy,
+  LegacySpecialistSnapshot,
 } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
@@ -14,7 +14,7 @@ import { computePopulation } from '@/game/population-counter';
 import { EntityKind, Faction } from '@/types';
 
 describe('computePopulation', () => {
-  it('does not count prestige auto-deploy specialists against food cap', () => {
+  it('does not count legacy snapshot specialists against food cap', () => {
     const world = createGameWorld();
     const lodge = spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
     spawnEntity(world, EntityKind.Gatherer, 280, 540, Faction.Player);
@@ -26,7 +26,7 @@ describe('computePopulation', () => {
         rank: 1,
         pearls: 0,
         totalPearlsEarned: 10,
-        upgradeRanks: { auto_deploy_fisher: 1 },
+        upgradeRanks: { blueprint_fisher: 1 },
       },
       lodge,
     );
@@ -35,7 +35,7 @@ describe('computePopulation', () => {
       (eid) =>
         FactionTag.faction[eid] === Faction.Player &&
         EntityTypeTag.kind[eid] === EntityKind.Gatherer &&
-        hasComponent(world.ecs, eid, PrestigeAutoDeploy),
+        hasComponent(world.ecs, eid, LegacySpecialistSnapshot),
     );
 
     expect(fisher).toBeDefined();

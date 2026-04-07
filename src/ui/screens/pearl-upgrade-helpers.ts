@@ -22,7 +22,7 @@ export const COMMANDER_PEARL_COSTS: Record<string, number> = {
 
 /** Categorize a Pearl upgrade into a display group. */
 export function categorizeUpgrade(upgrade: PearlUpgradeDisplay): string {
-  if (upgrade.id.startsWith('auto_deploy_')) return 'Specialists';
+  if (upgrade.id.startsWith('blueprint_')) return 'Specialists';
   if (upgrade.id.endsWith('_behavior')) return 'Behaviors';
   if (upgrade.id === 'starting_tier') return 'Starting Tier';
   return 'Multipliers';

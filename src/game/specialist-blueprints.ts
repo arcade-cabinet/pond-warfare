@@ -1,7 +1,7 @@
 import { Health } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { PrestigeState } from '@/config/prestige-logic';
-import { getAutoDeployUnits } from '@/config/prestige-logic';
+import { getSpecialistBlueprints } from '@/config/prestige-logic';
 
 export interface SpecialistBlueprintCap {
   unitId: string;
@@ -12,9 +12,9 @@ export interface SpecialistBlueprintCap {
 export function getSpecialistBlueprintCaps(
   prestigeState: PrestigeState,
 ): SpecialistBlueprintCap[] {
-  return getAutoDeployUnits(prestigeState).map((entry) => ({
+  return getSpecialistBlueprints(prestigeState).map((entry) => ({
     unitId: entry.unitId,
-    cap: entry.count,
+    cap: entry.cap,
     upgradeId: entry.upgradeId,
   }));
 }

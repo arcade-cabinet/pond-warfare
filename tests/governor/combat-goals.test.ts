@@ -12,8 +12,8 @@ import {
   EntityTypeTag,
   FactionTag,
   Health,
+  LegacySpecialistSnapshot,
   Position,
-  PrestigeAutoDeploy,
   TaskOverride,
   UnitStateMachine,
   Velocity,
@@ -111,7 +111,7 @@ describe('DefendGoal', () => {
     createPlayerLodge();
     const regular = createUnit(EntityKind.Brawler);
     const specialist = createUnit(EntityKind.Brawler, 120, 120);
-    addComponent(world.ecs, specialist, PrestigeAutoDeploy);
+    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
 
     store.unitRoster.value = [
       rosterGroup('combat', [
@@ -140,7 +140,7 @@ describe('DefendGoal', () => {
     UnitStateMachine.state[regular] = UnitState.AttackMove;
 
     const specialist = createUnit(EntityKind.Brawler, 120, 120);
-    addComponent(world.ecs, specialist, PrestigeAutoDeploy);
+    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
     TaskOverride.active[specialist] = 1;
     TaskOverride.task[specialist] = UnitState.AttackMove;
     UnitStateMachine.state[specialist] = UnitState.AttackMove;
@@ -176,7 +176,7 @@ describe('AttackGoal', () => {
     const regularB = createUnit(EntityKind.Brawler, 120, 100);
     const regularC = createUnit(EntityKind.Brawler, 140, 100);
     const specialist = createUnit(EntityKind.Brawler, 160, 100);
-    addComponent(world.ecs, specialist, PrestigeAutoDeploy);
+    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
     const closeEnemy = createEnemy(EntityKind.Gator, 200, 200);
     createEnemy(EntityKind.Snake, 260, 220);
 
@@ -215,7 +215,7 @@ describe('AttackGoal', () => {
     TaskOverride.task[regularB] = UnitState.AttackMovePatrol;
 
     const specialist = createUnit(EntityKind.Brawler, 160, 100);
-    addComponent(world.ecs, specialist, PrestigeAutoDeploy);
+    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
     TaskOverride.active[specialist] = 1;
     TaskOverride.task[specialist] = UnitState.AttackMove;
 

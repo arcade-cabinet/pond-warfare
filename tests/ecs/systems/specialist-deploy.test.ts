@@ -1,9 +1,9 @@
 /**
- * Specialist Auto-Deploy Tests (v3.0 — US11)
+ * Specialist Blueprint Snapshot Tests (v3.0 — US11)
  *
- * Validates specialist auto-deploy from prestige state:
- * - Deploy count matches prestige rank
- * - Auto-behavior resolves correctly per specialist
+ * Validates the legacy specialist snapshot helper from prestige state:
+ * - Field cap matches prestige rank
+ * - Area-autonomy metadata resolves correctly per specialist
  * - Generalists are stat-superior to specialists
  * - Spawn positions are near Lodge
  */
@@ -30,12 +30,12 @@ describe('Specialist deploy plan', () => {
     expect(plan.summary).toHaveLength(0);
   });
 
-  it('should deploy fishers based on auto_deploy_fisher rank', () => {
+  it('should resolve fishers based on blueprint_fisher rank', () => {
     const state: PrestigeState = {
       rank: 1,
       pearls: 0,
       totalPearlsEarned: 10,
-      upgradeRanks: { auto_deploy_fisher: 3 },
+      upgradeRanks: { blueprint_fisher: 3 },
     };
 
     const plan = computeSpecialistDeployPlan(state);
@@ -54,9 +54,9 @@ describe('Specialist deploy plan', () => {
       pearls: 0,
       totalPearlsEarned: 50,
       upgradeRanks: {
-        auto_deploy_fisher: 5,
-        auto_deploy_digger: 2,
-        auto_deploy_guard: 1,
+        blueprint_fisher: 5,
+        blueprint_digger: 2,
+        blueprint_guard: 1,
       },
     };
 
@@ -76,8 +76,8 @@ describe('Specialist deploy plan', () => {
       pearls: 0,
       totalPearlsEarned: 20,
       upgradeRanks: {
-        auto_deploy_fisher: 2,
-        auto_deploy_logger: 1,
+        blueprint_fisher: 2,
+        blueprint_logger: 1,
       },
     };
 
@@ -105,7 +105,7 @@ describe('Specialist deploy plan', () => {
 
   it('should resolve correct auto-targets for all specialist types', () => {
     const allDeploy = getAllPearlUpgradeEntries().filter(
-      (e) => e.def.effect.type === 'auto_deploy',
+      (e) => e.def.effect.type === 'specialist_blueprint',
     );
 
     for (const { id } of allDeploy) {
@@ -275,13 +275,13 @@ describe('Specialist config completeness', () => {
     }
   });
 
-  it('all auto-deploy Pearl upgrades reference valid specialist IDs', () => {
+  it('all specialist blueprint Pearl upgrades reference valid specialist IDs', () => {
     const deployUpgrades = getAllPearlUpgradeEntries().filter(
-      (e) => e.def.effect.type === 'auto_deploy',
+      (e) => e.def.effect.type === 'specialist_blueprint',
     );
 
     for (const { id, def } of deployUpgrades) {
-      if (def.effect.type !== 'auto_deploy') continue;
+      if (def.effect.type !== 'specialist_blueprint') continue;
       const unitId = def.effect.unit;
       expect(isSpecialistUnit(unitId), `${id} -> ${unitId} should be specialist`).toBe(true);
     }

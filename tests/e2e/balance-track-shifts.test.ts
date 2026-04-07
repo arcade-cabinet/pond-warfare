@@ -173,12 +173,12 @@ describe('balance track shifts', () => {
         },
       },
       {
-        name: 'pearl_auto_deploy_fisher',
+        name: 'pearl_blueprint_fisher',
         prestigeState: {
           rank: 1,
           pearls: 0,
           totalPearlsEarned: 3,
-          upgradeRanks: { auto_deploy_fisher: 1 },
+          upgradeRanks: { blueprint_fisher: 1 },
         },
       },
       {
@@ -221,7 +221,7 @@ describe('balance track shifts', () => {
     expect(rows.find((row) => row.track === 'clam_yield_t1')?.mean_pct).toBeGreaterThan(0);
     // A blueprint-only Pearl unlock should be near-neutral until the player
     // actually fields that specialist in-match.
-    expect(rows.find((row) => row.track === 'pearl_auto_deploy_fisher')?.mean_pct).toBeGreaterThanOrEqual(-0.1);
+    expect(rows.find((row) => row.track === 'pearl_blueprint_fisher')?.mean_pct).toBeGreaterThanOrEqual(-0.1);
     expect(rows.find((row) => row.track === 'pearl_clam_earnings_rank_1')?.mean_pct).toBeGreaterThan(0);
   });
 });

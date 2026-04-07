@@ -242,7 +242,7 @@ describe('progression meta loop', () => {
     await delay(100);
     clickButtonText('Confirm', { exact: true, preferLast: true });
     await waitFor(() => !storeV3.pearlScreenOpen.value);
-    expect(storeV3.prestigeState.value.upgradeRanks.auto_deploy_fisher).toBe(1);
+    expect(storeV3.prestigeState.value.upgradeRanks.blueprint_fisher).toBe(1);
 
     await startSinglePlayer(shell.waitForInit);
     const blueprintGathererCount = countPlayerUnits(EntityKind.Gatherer);

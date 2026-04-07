@@ -3,7 +3,7 @@
  *
  * Tests for all v3 integration gaps:
  * - Resource economy v3 aliases (fish/rocks/logs)
- * - Specialist auto-deploy from prestige state
+ * - Specialist blueprint snapshot from prestige state
  * - Fortification slot system
  * - Lodge HP + game over
  * - Wave indicator from match events
@@ -63,7 +63,7 @@ describe('nodeKindToResourceType', () => {
   });
 });
 
-describe('specialist auto-deploy plan', () => {
+describe('specialist blueprint snapshot plan', () => {
   it('produces empty plan for fresh prestige state', async () => {
     const { computeSpecialistDeployPlan } = await import('@/ecs/systems/specialist-deploy');
     const plan = computeSpecialistDeployPlan({
@@ -82,7 +82,7 @@ describe('specialist auto-deploy plan', () => {
       rank: 1,
       pearls: 10,
       totalPearlsEarned: 20,
-      upgradeRanks: { auto_deploy_fisher: 2 },
+      upgradeRanks: { blueprint_fisher: 2 },
     });
     expect(plan.totalCount).toBe(2);
     expect(plan.spawns.length).toBe(1);

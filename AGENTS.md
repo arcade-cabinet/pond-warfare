@@ -212,7 +212,7 @@ All game balance data lives in `configs/*.json`, loaded via `src/config/config-l
 | `unit-model.json` | Canonical unit-model design | Manual roster, Pearl specialists, radius/autonomy rules |
 | `enemies.json` | Enemy unit stats + scaling | Types (6) + per-level scaling |
 | `upgrades.json` | Upgrade web categories | 6 categories, 4 subcats each, 10 tiers = 240 nodes |
-| `prestige.json` | Pearl upgrades + prestige formula | Auto-deploy, auto-behavior, multiplier upgrades |
+| `prestige.json` | Pearl upgrades + prestige formula | Specialist blueprints, auto-behaviors, multipliers |
 | `events.json` | Match event templates + timing | Waves, bosses, sabotage, escorts, storms |
 | `rewards.json` | Post-match Clam reward formula | base + kill + event + survival bonuses |
 | `terrain.json` | Map size scaling per level | Progression tiers with resource counts |
@@ -473,7 +473,7 @@ Note: bitECS SoA components are global typed arrays. When tests run in parallel,
 - **Max 300 LOC per file**: Enforced by `.claude/hooks/file-size-guard.py`. Decompose before adding features.
 - **Wave-survival mode**: One game mode — defend the Lodge from escalating events. No campaigns, puzzles, or co-op modes in v3.
 - **JSON configs for balance**: All unit stats, enemy scaling, events, upgrades, and prestige data live in `configs/*.json`. Content changes should never require TypeScript modifications.
-- **Canonical unit model**: Use `docs/unit-model.md` and `configs/unit-model.json` for intended roster and specialist autonomy behavior, even when transitional runtime code still says `Gatherer` or `auto_deploy`.
+- **Canonical unit model**: Use `docs/unit-model.md` and `configs/unit-model.json` for intended roster and specialist autonomy behavior, even when transitional runtime code still uses historical internal entity names like `Gatherer`.
 - **Vertical map**: Lodge at bottom, enemies from top, resources in middle. Map grows with progression level.
 - **Clams are metagame currency**: Earned post-match, spent on upgrade web between matches. Fish/Rocks/Logs are the in-match resources.
 - **Pearl specialists are trainable autonomous units**: Pearls unlock specialist blueprints and radius/autonomy growth, but the player still pays in-match resources to field them.

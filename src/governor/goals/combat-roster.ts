@@ -1,5 +1,5 @@
 import { hasComponent } from 'bitecs';
-import { AutonomousSpecialist, PrestigeAutoDeploy } from '@/ecs/components';
+import { AutonomousSpecialist, LegacySpecialistSnapshot } from '@/ecs/components';
 import { game } from '@/game';
 import type { RosterUnit, UnitTask } from '@/ui/roster-types';
 
@@ -11,7 +11,7 @@ function isPrestigeLocked(unit: RosterUnit): boolean {
   const ecs = game.world?.ecs;
   if (!ecs) return false;
   return (
-    hasComponent(ecs, unit.eid, PrestigeAutoDeploy) ||
+    hasComponent(ecs, unit.eid, LegacySpecialistSnapshot) ||
     hasComponent(ecs, unit.eid, AutonomousSpecialist)
   );
 }

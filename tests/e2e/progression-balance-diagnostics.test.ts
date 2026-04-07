@@ -143,13 +143,13 @@ function runVariant(variant: DiagnosticVariant): VariantMetrics {
 describe('progression balance diagnostics', () => {
   it('compares baseline runs against progression variants', () => {
     const baseline = runVariant({ name: 'baseline' });
-    const autoDeployFisher = runVariant({
-      name: 'auto_deploy_fisher',
+    const blueprintFisher = runVariant({
+      name: 'blueprint_fisher',
       prestigeState: {
         rank: 1,
         pearls: 0,
         totalPearlsEarned: 3,
-        upgradeRanks: { auto_deploy_fisher: 1 },
+        upgradeRanks: { blueprint_fisher: 1 },
       },
     });
     const pearlGather = runVariant({
@@ -187,14 +187,14 @@ describe('progression balance diagnostics', () => {
 
     console.table([
       baseline,
-      autoDeployFisher,
+      blueprintFisher,
       pearlGather,
       clamFishTier,
       rareResources,
       startingTier,
     ]);
 
-    expect(autoDeployFisher.startingGatherers).toBeGreaterThan(baseline.startingGatherers);
+    expect(blueprintFisher.startingGatherers).toBeGreaterThan(baseline.startingGatherers);
     expect(pearlGather.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
     expect(clamFishTier.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
     expect(rareResources.rareNodeCount).toBeGreaterThan(baseline.rareNodeCount);

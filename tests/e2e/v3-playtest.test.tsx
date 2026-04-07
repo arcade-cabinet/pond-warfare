@@ -172,12 +172,12 @@ describe('E2E Playtest Suite — US20', () => {
       expect(result.newRank).toBe(1);
       expect(result.pearlsEarned).toBeGreaterThan(0);
 
-      const { state: afterBuy } = purchasePearlUpgrade(postPrestige, 'auto_deploy_fisher');
-      expect(afterBuy.upgradeRanks.auto_deploy_fisher).toBe(1);
+      const { state: afterBuy } = purchasePearlUpgrade(postPrestige, 'blueprint_fisher');
+      expect(afterBuy.upgradeRanks.blueprint_fisher).toBe(1);
 
       const { state: afterSecondPrestige } = executePrestige(afterBuy, 35);
       expect(afterSecondPrestige.rank).toBe(2);
-      expect(afterSecondPrestige.upgradeRanks.auto_deploy_fisher).toBe(1);
+      expect(afterSecondPrestige.upgradeRanks.blueprint_fisher).toBe(1);
     });
   });
 

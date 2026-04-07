@@ -50,8 +50,8 @@ export function getPearlUpgradeDisplayList(state: PrestigeState): PearlUpgradeDi
 function formatEffectSummary(def: PearlUpgradeDef, rank: number): string {
   const effect = def.effect;
   switch (effect.type) {
-    case 'auto_deploy':
-      return formatBlueprintCapSummary(effect.unit, effect.count_per_rank * rank);
+    case 'specialist_blueprint':
+      return formatBlueprintCapSummary(effect.unit, effect.cap_per_rank * rank);
     case 'multiplier':
       return `+${Math.round(effect.value_per_rank * rank * 100)}% ${effect.stat}`;
     case 'auto_behavior':

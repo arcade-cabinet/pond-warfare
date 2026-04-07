@@ -121,7 +121,7 @@ From [balance-track-shifts.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfa
 | clam_clam_bonus_t1 | 0.16 | 0.16 | 0.16 |
 | pearl_clam_earnings_rank_1 | 0.36 | 0.38 | 0.42 |
 | pearl_gather_rank_2 | 0.00 | 0.14 | 0.33 |
-| pearl_auto_deploy_fisher | 0.00 | 0.00 | 0.00 |
+| pearl_blueprint_fisher | 0.00 | 0.00 | 0.00 |
 | pearl_starting_tier_1 | 0.44 | 0.88 | 1.57 |
 
 These sampled Pearl rows now compare against a rank-matched Pearl baseline, so
@@ -189,17 +189,17 @@ Current isolated readout:
 - Pearl rank 1:
   - opening window, 1200 frames:
     - the opening slice is still not a release-budget signal; it is a fast early-expression check
-    - the strongest early specialist-cap rows are now the frontline Pearl specialists, with `auto_deploy_guard` leading and `auto_deploy_fisher` also positive
+    - the strongest early specialist-cap rows are now the frontline Pearl specialists, with `blueprint_guard` leading and `blueprint_fisher` also positive
     - `hp_multiplier` is mildly positive around `0.54%`
     - `gather_multiplier`, `combat_multiplier`, and `auto_heal_behavior` are still effectively flat here
-    - the worst opening-window Pearl rows are now `auto_deploy_logger` and `auto_deploy_digger`, both materially negative in this short slice
+    - the worst opening-window Pearl rows are now `blueprint_logger` and `blueprint_digger`, both materially negative in this short slice
   - long-run window, 2400 frames:
-    - the strongest long-run Pearl specialist rows are now `auto_deploy_guard`, `auto_deploy_ranger`, and `auto_deploy_shaman`
+    - the strongest long-run Pearl specialist rows are now `blueprint_guard`, `blueprint_ranger`, and `blueprint_shaman`
     - `starting_tier` is about `0.70%`
     - `hp_multiplier` is about `0.47%`, `gather_multiplier` about `0.38%`, `combat_multiplier` about `0.32%`, and `auto_heal_behavior` about `0.14%`
     - `clam_earnings_multiplier` remains economy-led, with about `2.19%` `economy_mean_pct` and about `0.35%` `meta_mean_pct`
-    - `auto_deploy_fisher` is only near-neutral in the long-run broad scan at about `0.04%`
-    - the main still-negative long-run Pearl rows are `auto_deploy_logger` around `-3.60%`, `auto_deploy_digger` around `-3.88%`, plus smaller negatives on `rare_resource_access` and `auto_deploy_lookout`
+    - `blueprint_fisher` is only near-neutral in the long-run broad scan at about `0.04%`
+    - the main still-negative long-run Pearl rows are `blueprint_logger` around `-3.60%`, `blueprint_digger` around `-3.88%`, plus smaller negatives on `rare_resource_access` and `blueprint_lookout`
 
 ## Combat-Pressure Diagnostic
 
@@ -246,19 +246,19 @@ was incorrectly reporting a deleted Pearl combat specialist instead of the real 
 
 - Gather controller:
   - `gather_multiplier` now cleanly shows up as a higher `gatherSpeedMod`, but the fixed-seed short window is still travel-bound enough that raw gathered output stays flat in that slice
-  - `auto_deploy_digger` and `auto_deploy_logger` do increase rock/log collection when the gather controller is forced to care about those tracks
+  - `blueprint_digger` and `blueprint_logger` do increase rock/log collection when the gather controller is forced to care about those tracks
   - `rare_resource_access` now adds rare nodes only in the bottom-row panels, which keeps the runtime consumer active without luring gatherers into the hostile top row
 - Build controller:
   - the wing-placement bug is fixed: the build controller now reaches Armory around frame `360` in the baseline slice and around frame `240` in the stronger variants instead of stalling indefinitely
   - standalone tower/burrow follow-up is still weak in that slice, with `buildingsBuilt` staying at `0` after the Armory step
 - Train controller:
-  - the prestige population fix removed a real false-negative path: `auto_deploy_fisher` no longer steals a training slot by consuming baseline food
+  - the prestige population fix removed a real false-negative path: `blueprint_fisher` no longer steals a training slot by consuming baseline food
   - short-window training throughput is still bottlenecked by queue timing and building cadence more than raw fish income
 - Defend controller:
   - `auto_repair_behavior`, `hp_multiplier`, and `auto_heal_behavior` all improve raw Lodge survival in the defend-only slice, with `auto_heal_behavior` currently showing the largest kill-side bump there
   - that means the strongly negative blended pressure scores are not purely missing runtime effects; they are interactions inside the full governor loop
 - Attack controller:
-  - the attack controller does convert better in the micro slice now, and that attack-specific diagnostic now uses the canonical `auto_deploy_guard` specialist instead of the obsolete Hunter path
+  - the attack controller does convert better in the micro slice now, and that attack-specific diagnostic now uses the canonical `blueprint_guard` specialist instead of the obsolete Hunter path
   - the full-governor stage-6 trace is still the bigger issue: it opens `0` committed attack windows, so the remaining blocker is sustained safety under siege, not shared-target contact conversion
 
 ## Interpretation
@@ -292,6 +292,6 @@ Short-term tuning heuristic:
 
 1. Investigate why the full-governor stage-6 run stays under heavy siege pressure even when `readyForAttackPct` reaches `75%`, with special focus on tower/burrow follow-up after the Armory step.
 2. Improve the weak Frontier edge steps, especially `Frontier Expansion I` and `IV`, which are still slightly negative in the short-match lens.
-3. Improve the sampled and controller gather slices so `gather_multiplier`, `auto_deploy_fisher`, `auto_deploy_digger`, and `auto_deploy_logger` are measured in a window that is less dominated by travel time and panel mix.
+3. Improve the sampled and controller gather slices so `gather_multiplier`, `blueprint_fisher`, `blueprint_digger`, and `blueprint_logger` are measured in a window that is less dominated by travel time and panel mix.
 4. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under-expressed in both the broad and sustain reports.
 5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

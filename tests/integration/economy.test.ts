@@ -97,7 +97,7 @@ describe('Economy Integration', () => {
     const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     UnitStateMachine.state[gatherer] = UnitState.Idle;
 
-    // Auto-behavior system removed in v3.0 (replaced by prestige auto-deploy)
+    // Legacy auto-behavior toggle system removed in v3.0 and replaced by Pearl blueprint/autonomy progression.
     // Idle gatherers no longer auto-assign; player must manually command them
     expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
   });

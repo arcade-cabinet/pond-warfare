@@ -19,8 +19,8 @@ import {
   Health,
   IsBuilding,
   IsResource,
+  LegacySpecialistSnapshot,
   Position,
-  PrestigeAutoDeploy,
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
@@ -63,7 +63,7 @@ export function computePopulation(world: GameWorld): PopulationResult {
         if (def.foodProvided) maxFoodCap += def.foodProvided;
       }
     } else if (!hasComponent(w.ecs, eid, IsResource)) {
-      if (!hasComponent(w.ecs, eid, PrestigeAutoDeploy)) {
+      if (!hasComponent(w.ecs, eid, LegacySpecialistSnapshot)) {
         curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
       }
       const isAutonomousSpecialist = hasComponent(w.ecs, eid, AutonomousSpecialist);

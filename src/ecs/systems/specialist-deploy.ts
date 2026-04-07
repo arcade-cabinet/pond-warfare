@@ -1,15 +1,15 @@
 /**
- * Specialist Auto-Deploy System (v3.0 — US11)
+ * Specialist Blueprint Snapshot System (v3.0 — US11)
  *
  * Legacy diagnostic helper used by simulation/test harnesses that still
- * want an immediate specialist snapshot from prestige state. The live
- * player-facing runtime now uses blueprint caps plus in-match specialist
- * training from the Lodge.
+ * want an immediate specialist field-cap snapshot from prestige state.
+ * The live player-facing runtime now uses blueprint caps plus in-match
+ * specialist training from the Lodge.
  */
 
 import { getUnitDef } from '@/config/config-loader';
 import type { PrestigeState } from '@/config/prestige-logic';
-import { type AutoDeploySpec, getAutoDeployUnits } from '@/config/prestige-logic';
+import { type SpecialistBlueprintSpec, getSpecialistBlueprints } from '@/config/prestige-logic';
 import type { SpecialistDef } from '@/config/v3-types';
 
 // ── Types ─────────────────────────────────────────────────────────
@@ -43,11 +43,11 @@ export interface SpecialistDeployPlan {
 // ── Core Logic ────────────────────────────────────────────────────
 
 /**
- * Compute the full specialist deploy plan from prestige state.
- * Call this once at match start to determine what to spawn.
+ * Compute the full specialist snapshot plan from prestige state.
+ * Harnesses can call this to derive immediate specialist counts.
  */
 export function computeSpecialistDeployPlan(prestigeState: PrestigeState): SpecialistDeployPlan {
-  const autoDeploySpecs = getAutoDeployUnits(prestigeState);
+  const autoDeploySpecs = getSpecialistBlueprints(prestigeState);
 
   if (autoDeploySpecs.length === 0) {
     return { spawns: [], totalCount: 0, summary: [] };
@@ -70,10 +70,10 @@ export function computeSpecialistDeployPlan(prestigeState: PrestigeState): Speci
 }
 
 /**
- * Resolve a single auto-deploy spec into a spawn request.
+ * Resolve a single blueprint-cap spec into a spawn request.
  * Returns null if the specialist isn't found in config.
  */
-function resolveSpecialistSpawn(spec: AutoDeploySpec): SpecialistSpawnRequest | null {
+function resolveSpecialistSpawn(spec: SpecialistBlueprintSpec): SpecialistSpawnRequest | null {
   try {
     const def = getUnitDef(spec.unitId);
     // Specialists are in the specialists section, which has autoTarget
@@ -82,7 +82,7 @@ function resolveSpecialistSpawn(spec: AutoDeploySpec): SpecialistSpawnRequest | 
     const specDef = def as SpecialistDef;
     return {
       unitId: spec.unitId,
-      count: spec.count,
+      count: spec.cap,
       autoTarget: specDef.autoTarget,
       role: specDef.role,
       hp: specDef.hp,

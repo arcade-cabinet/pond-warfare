@@ -5,10 +5,6 @@
  * determine specialist blueprint caps per rank, and resolve
  * which permanent auto-behaviors are unlocked at the current prestige state.
  *
- * The underlying config ids still use the historical `auto_deploy_*` prefix,
- * but in the live player-facing runtime those ranks now initialize
- * in-match specialist field caps rather than free match-start units.
- *
  * Display helpers live in prestige-display.ts (extracted for 300 LOC limit).
  */
 
@@ -21,9 +17,9 @@ import {
 } from './config-loader';
 import type {
   AutoBehaviorEffect,
-  AutoDeployEffect,
   MultiplierEffect,
   PearlUpgradeDef,
+  SpecialistBlueprintEffect,
 } from './v3-types';
 
 // Re-export display helpers so existing imports still work
@@ -68,28 +64,27 @@ export function nextPrestigeThreshold(currentRank: number): number {
 
 // ── Specialist Blueprint Cap Calculations ────────────────────────
 
-export interface AutoDeploySpec {
+export interface SpecialistBlueprintSpec {
   unitId: string;
-  count: number;
+  cap: number;
   upgradeId: string;
 }
 
-/** Historical helper name retained for config/test stability. */
-export function getAutoDeployUnits(state: PrestigeState): AutoDeploySpec[] {
-  const result: AutoDeploySpec[] = [];
+export function getSpecialistBlueprints(state: PrestigeState): SpecialistBlueprintSpec[] {
+  const result: SpecialistBlueprintSpec[] = [];
   for (const { id, def } of getAllPearlUpgradeEntries()) {
-    if (def.effect.type !== 'auto_deploy') continue;
-    const effect = def.effect as AutoDeployEffect;
+    if (def.effect.type !== 'specialist_blueprint') continue;
+    const effect = def.effect as SpecialistBlueprintEffect;
     const rank = state.upgradeRanks[id] ?? 0;
     if (rank <= 0) continue;
-    result.push({ unitId: effect.unit, count: effect.count_per_rank * rank, upgradeId: id });
+    result.push({ unitId: effect.unit, cap: effect.cap_per_rank * rank, upgradeId: id });
   }
   return result;
 }
 
-export function getAutoDeployCount(state: PrestigeState, unitId: string): number {
-  const match = getAutoDeployUnits(state).find((d) => d.unitId === unitId);
-  return match?.count ?? 0;
+export function getSpecialistBlueprintCap(state: PrestigeState, unitId: string): number {
+  const match = getSpecialistBlueprints(state).find((d) => d.unitId === unitId);
+  return match?.cap ?? 0;
 }
 
 // ── Auto-Behavior Unlocks ─────────────────────────────────────────

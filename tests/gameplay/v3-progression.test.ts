@@ -4,7 +4,7 @@
  * T38: Rewards Clam calculation matches formula
  * T39: Upgrade effects apply in-game
  * T40: Prestige flow verification (buy upgrades, prestige, verify reset)
- * T41: Specialist auto-deploy at match start from Pearl upgrades
+ * T41: Specialist blueprint caps from Pearl upgrades
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -12,7 +12,7 @@ import {
   canPrestige,
   createPrestigeState,
   executePrestige,
-  getAutoDeployUnits,
+  getSpecialistBlueprints,
   nextPrestigeThreshold,
   type PrestigeState,
   purchasePearlUpgrade,
@@ -234,20 +234,20 @@ describe('T40: Prestige flow', () => {
       upgradeRanks: {},
     };
 
-    // 2. Buy 3 upgrades: auto_deploy_fisher (cost 3 each)
-    let result = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    // 2. Buy 3 upgrades: blueprint_fisher (cost 3 each)
+    let result = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.result.success).toBe(true);
     state = result.state;
 
-    result = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    result = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.result.success).toBe(true);
     state = result.state;
 
-    result = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    result = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.result.success).toBe(true);
     state = result.state;
 
-    expect(state.upgradeRanks.auto_deploy_fisher).toBe(3);
+    expect(state.upgradeRanks.blueprint_fisher).toBe(3);
     expect(state.pearls).toBe(50 - 9); // 3 * 3 = 9
 
     // 3. Execute prestige at progression level 25
@@ -263,7 +263,7 @@ describe('T40: Prestige flow', () => {
     expect(newState.pearls).toBe(41 + 12); // previous pearls + earned
 
     // 6. Verify Pearl upgrades PRESERVED (not reset)
-    expect(newState.upgradeRanks.auto_deploy_fisher).toBe(3);
+    expect(newState.upgradeRanks.blueprint_fisher).toBe(3);
 
     // 7. Verify what resets vs persists is documented
     expect(prestigeResult.resets).toContain('clam_upgrades');
@@ -289,22 +289,22 @@ describe('T40: Prestige flow', () => {
   });
 });
 
-// ── T41: Specialist auto-deploy from Pearl upgrades ─────────────
+// ── T41: Specialist blueprint caps from Pearl upgrades ──────────
 
-describe('T41: Specialist auto-deploy', () => {
+describe('T41: Specialist blueprints', () => {
   let _world: GameWorld;
 
   beforeEach(() => {
     _world = createGameWorld();
   });
 
-  it('spawns 3 fishers when auto_deploy_fisher rank is 3', () => {
-    // Set up prestige state with auto_deploy_fisher rank 3
+  it('computes 3 fisher field slots when blueprint_fisher rank is 3', () => {
+    // Set up prestige state with blueprint_fisher rank 3
     const prestigeState: PrestigeState = {
       rank: 1,
       pearls: 20,
       totalPearlsEarned: 50,
-      upgradeRanks: { auto_deploy_fisher: 3 },
+      upgradeRanks: { blueprint_fisher: 3 },
     };
 
     // Verify the deploy plan
@@ -328,27 +328,27 @@ describe('T41: Specialist auto-deploy', () => {
     }
   });
 
-  it('auto-deploy units from prestige state resolve to correct kinds', () => {
+  it('blueprint units from prestige state resolve to correct kinds', () => {
     const prestigeState: PrestigeState = {
       rank: 2,
       pearls: 30,
       totalPearlsEarned: 80,
       upgradeRanks: {
-        auto_deploy_fisher: 2,
-        auto_deploy_guard: 1,
+        blueprint_fisher: 2,
+        blueprint_guard: 1,
       },
     };
 
-    const deploySpecs = getAutoDeployUnits(prestigeState);
+    const deploySpecs = getSpecialistBlueprints(prestigeState);
     expect(deploySpecs.length).toBe(2);
 
     const fisher = deploySpecs.find((s) => s.unitId === 'fisher');
     expect(fisher).toBeTruthy();
-    expect(fisher?.count).toBe(2);
+    expect(fisher?.cap).toBe(2);
 
     const guard = deploySpecs.find((s) => s.unitId === 'guard');
     expect(guard).toBeTruthy();
-    expect(guard?.count).toBe(1);
+    expect(guard?.cap).toBe(1);
   });
 
   it('no specialists deployed with empty prestige state', () => {
@@ -359,16 +359,16 @@ describe('T41: Specialist auto-deploy', () => {
     expect(plan.spawns.length).toBe(0);
   });
 
-  it('multiple auto-deploy upgrades combine correctly', () => {
+  it('multiple blueprint upgrades combine correctly', () => {
     const prestigeState: PrestigeState = {
       rank: 3,
       pearls: 50,
       totalPearlsEarned: 100,
       upgradeRanks: {
-        auto_deploy_fisher: 3,
-        auto_deploy_digger: 2,
-        auto_deploy_guard: 1,
-        auto_deploy_shaman: 1,
+        blueprint_fisher: 3,
+        blueprint_digger: 2,
+        blueprint_guard: 1,
+        blueprint_shaman: 1,
       },
     };
 

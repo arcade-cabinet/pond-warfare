@@ -244,10 +244,10 @@ export interface PearlFormula {
   rank_multiplier: number;
 }
 
-export interface AutoDeployEffect {
-  type: 'auto_deploy';
+export interface SpecialistBlueprintEffect {
+  type: 'specialist_blueprint';
   unit: string;
-  count_per_rank: number;
+  cap_per_rank: number;
 }
 
 export interface MultiplierEffect {
@@ -266,7 +266,7 @@ export interface StartingTierEffect {
 }
 
 export type PearlUpgradeEffect =
-  | AutoDeployEffect
+  | SpecialistBlueprintEffect
   | MultiplierEffect
   | AutoBehaviorEffect
   | StartingTierEffect;

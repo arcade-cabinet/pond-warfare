@@ -93,10 +93,10 @@ describe('Rank Up Flow - US14', () => {
       const stateWithUpgrades: PrestigeState = {
         ...baseState,
         rank: 1,
-        upgradeRanks: { auto_deploy_fisher: 3, combat_multiplier: 2 },
+        upgradeRanks: { blueprint_fisher: 3, combat_multiplier: 2 },
       };
       const { state: newState } = executePrestige(stateWithUpgrades, 40);
-      expect(newState.upgradeRanks.auto_deploy_fisher).toBe(3);
+      expect(newState.upgradeRanks.blueprint_fisher).toBe(3);
       expect(newState.upgradeRanks.combat_multiplier).toBe(2);
     });
 

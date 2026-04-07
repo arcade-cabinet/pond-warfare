@@ -41,7 +41,7 @@ describe('deploySpecialistsAtMatchStart', () => {
         rank: 1,
         pearls: 0,
         totalPearlsEarned: 10,
-        upgradeRanks: { auto_deploy_fisher: 1 },
+        upgradeRanks: { blueprint_fisher: 1 },
       },
       lodge,
     );
@@ -69,7 +69,7 @@ describe('deploySpecialistsAtMatchStart', () => {
         rank: 1,
         pearls: 0,
         totalPearlsEarned: 10,
-        upgradeRanks: { auto_deploy_guard: 1 },
+        upgradeRanks: { blueprint_guard: 1 },
       },
       lodge,
     );
@@ -95,7 +95,7 @@ describe('deploySpecialistsAtMatchStart', () => {
         rank: 1,
         pearls: 0,
         totalPearlsEarned: 10,
-        upgradeRanks: { auto_deploy_lookout: 1 },
+        upgradeRanks: { blueprint_lookout: 1 },
       },
       lodge,
     );

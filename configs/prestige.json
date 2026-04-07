@@ -6,61 +6,61 @@
   "rank_threshold_base": 20,
   "rank_threshold_formula": "rank_threshold_base * (1 + current_rank * 0.5)",
   "pearl_upgrades": {
-    "auto_deploy_fisher": {
+    "blueprint_fisher": {
       "label": "Fisher Blueprint",
       "description": "Raises your in-match Fisher field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
-      "effect": { "type": "auto_deploy", "unit": "fisher", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "fisher", "cap_per_rank": 1 }
     },
-    "auto_deploy_digger": {
+    "blueprint_digger": {
       "label": "Digger Blueprint",
       "description": "Raises your in-match Digger field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
-      "effect": { "type": "auto_deploy", "unit": "digger", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "digger", "cap_per_rank": 1 }
     },
-    "auto_deploy_logger": {
+    "blueprint_logger": {
       "label": "Logger Blueprint",
       "description": "Raises your in-match Logger field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
-      "effect": { "type": "auto_deploy", "unit": "logger", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "logger", "cap_per_rank": 1 }
     },
-    "auto_deploy_guard": {
+    "blueprint_guard": {
       "label": "Guard Blueprint",
       "description": "Raises your in-match Guard field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "guard", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "guard", "cap_per_rank": 1 }
     },
-    "auto_deploy_bombardier": {
+    "blueprint_bombardier": {
       "label": "Bombardier Blueprint",
       "description": "Raises your in-match Bombardier field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "bombardier", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "bombardier", "cap_per_rank": 1 }
     },
-    "auto_deploy_ranger": {
+    "blueprint_ranger": {
       "label": "Ranger Blueprint",
       "description": "Raises your in-match Ranger field cap",
       "cost_per_rank": 4,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "ranger", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "ranger", "cap_per_rank": 1 }
     },
-    "auto_deploy_shaman": {
+    "blueprint_shaman": {
       "label": "Shaman Blueprint",
       "description": "Raises your in-match Shaman field cap",
       "cost_per_rank": 4,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "shaman", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "shaman", "cap_per_rank": 1 }
     },
-    "auto_deploy_lookout": {
+    "blueprint_lookout": {
       "label": "Lookout Blueprint",
       "description": "Raises your in-match Lookout field cap",
       "cost_per_rank": 3,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "lookout", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "lookout", "cap_per_rank": 1 }
     },
     "gather_multiplier": {
       "label": "Gathering Multiplier",

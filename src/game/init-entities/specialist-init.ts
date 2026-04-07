@@ -39,7 +39,7 @@ export function deploySpecialistsAtMatchStart(
         lodgeEid,
         pos.x,
         pos.y,
-        'prestige_auto_deploy',
+        'legacy_snapshot',
       );
       positionIndex++;
     }
