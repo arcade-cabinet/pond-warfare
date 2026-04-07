@@ -228,13 +228,13 @@ describe('Combat', () => {
   });
 
   it('combat unit attacks enemy and deals damage', async () => {
-    const brawlers = getUnits(EntityKind.Brawler);
+    const sappers = getUnits(EntityKind.Sapper);
     const enemies = getUnits(undefined, Faction.Enemy).filter(
       (e) => !hasComponent(game.world.ecs, e, IsBuilding),
     );
-    if (brawlers.length === 0 || enemies.length === 0) return;
+    if (sappers.length === 0 || enemies.length === 0) return;
 
-    const bid = brawlers[0];
+    const bid = sappers[0];
     const eid = enemies[0];
     const enemyHpBefore = Health.current[eid];
 

@@ -167,10 +167,10 @@ describe('Selection interactions', () => {
       (e) => !hasComponent(game.world.ecs, e, IsBuilding),
     );
     if (enemies.length === 0) { await waitFrames(300); } // wait for wave
-    const brawlers = getUnits(EntityKind.Brawler);
-    if (brawlers.length === 0 || enemies.length === 0) return;
+    const sappers = getUnits(EntityKind.Sapper);
+    if (sappers.length === 0 || enemies.length === 0) return;
 
-    const bid = brawlers[0];
+    const bid = sappers[0];
     clickWorld(Position.x[bid], Position.y[bid], 0);
     await delay(150);
 

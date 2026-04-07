@@ -223,14 +223,14 @@ describe('Current flow captures', () => {
 
     spawnEntity(
       game.world,
-      EntityKind.Brawler,
+      EntityKind.Sapper,
       Position.x[lodge] + 40,
       Position.y[lodge] - 80,
       Faction.Player,
     );
     spawnEntity(
       game.world,
-      EntityKind.Brawler,
+      EntityKind.Sapper,
       Position.x[lodge] + 40,
       Position.y[lodge] - 150,
       Faction.Enemy,

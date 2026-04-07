@@ -69,14 +69,14 @@ function ensureBrowserTestRoster(): void {
   const lodgeX = Position.x[lodge];
   const lodgeY = Position.y[lodge];
   const gatherers = getPlayerUnitIds(EntityKind.Gatherer);
-  const brawlers = getPlayerUnitIds(EntityKind.Brawler);
+  const sappers = getPlayerUnitIds(EntityKind.Sapper);
 
   for (let i = gatherers.length; i < 2; i += 1) {
     spawnEntity(game.world, EntityKind.Gatherer, lodgeX - 90 + i * 36, lodgeY - 70, Faction.Player);
   }
 
-  if (brawlers.length === 0) {
-    spawnEntity(game.world, EntityKind.Brawler, lodgeX + 70, lodgeY - 90, Faction.Player);
+  if (sappers.length === 0) {
+    spawnEntity(game.world, EntityKind.Sapper, lodgeX + 70, lodgeY - 90, Faction.Player);
   }
 }
 
@@ -110,6 +110,7 @@ export async function mountCurrentGame(): Promise<void> {
   if ((game as unknown as { running?: boolean }).running) {
     game.destroy();
   }
+  await delay(50);
 
   store.menuState.value = 'main';
   store.continueRequested.value = false;
@@ -124,12 +125,15 @@ export async function mountCurrentGame(): Promise<void> {
   storeV3.clamUpgradeScreenOpen.value = false;
   storeV3.rankUpModalOpen.value = false;
 
-  let root = document.getElementById('app');
-  if (!root) {
-    root = document.createElement('div');
-    root.id = 'app';
-    document.body.appendChild(root);
+  const existingRoot = document.getElementById('app');
+  if (existingRoot) {
+    render(null, existingRoot);
+    existingRoot.remove();
   }
+  document.body.innerHTML = '';
+  const root = document.createElement('div');
+  root.id = 'app';
+  document.body.appendChild(root);
   document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
 
   const ready = new Promise<void>((resolve) => {

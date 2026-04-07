@@ -628,9 +628,9 @@ describe('UI panels and keyboard controls', () => {
       await delay(200);
 
       // If there are combat units, they should be selected
-      const brawlers = getUnits(EntityKind.Brawler);
+      const sappers = getUnits(EntityKind.Sapper);
       const snipers = getUnits(EntityKind.Sniper);
-      const combatCount = brawlers.length + snipers.length;
+      const combatCount = sappers.length + snipers.length;
 
       if (combatCount > 0) {
         expect(game.world.selection.length).toBeGreaterThan(0);

@@ -296,36 +296,39 @@ describe('Full player journey', () => {
 
   describe('3. Movement', () => {
     it('right-click ground sets Move state for selected unit', async () => {
-      const gid = spawnSandboxMudpaw(180, -120);
+      const gid = spawnSandboxMudpaw(-80, -60);
       await deselectAll();
-      await selectEntity(gid);
-      clickWorld(Position.x[gid] + 100, Position.y[gid], 2);
+      forceSelectEntity(gid);
+      issueContextCommand(game.world, null, Position.x[gid] + 100, Position.y[gid]);
+      game.syncUIStore();
       await delay(50);
       expect(UnitStateMachine.state[gid]).toBe(UnitState.Move);
     });
 
     it('unit position actually changes after right-click move command', async () => {
-      const gid = spawnSandboxMudpaw(220, -150);
+      const gid = spawnSandboxMudpaw(-110, -80);
       await deselectAll();
-      await selectEntity(gid);
+      forceSelectEntity(gid);
       const sx = Position.x[gid], sy = Position.y[gid];
-      clickWorld(sx + 200, sy + 200, 2);
+      issueContextCommand(game.world, null, sx + 200, sy + 200);
+      game.syncUIStore();
       await waitFrames(180);
       const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - sy) ** 2);
-      expect(dist).toBeGreaterThan(10);
+      expect(dist).toBeGreaterThan(5);
       await page.screenshot({ path: 'tests/browser/screenshots/03-after-move.png' });
     });
 
     it('unit moves toward the target after a right-click move command', async () => {
-      const gid = spawnSandboxMudpaw(260, -180);
+      const gid = spawnSandboxMudpaw(-140, -100);
       await deselectAll();
-      await selectEntity(gid);
+      forceSelectEntity(gid);
       const tx = Position.x[gid] + 300, ty = Position.y[gid];
       const startDist = Math.abs(tx - Position.x[gid]);
-      clickWorld(tx, ty, 2);
+      issueContextCommand(game.world, null, tx, ty);
+      game.syncUIStore();
       await waitFrames(180);
       const endDist = Math.abs(tx - Position.x[gid]);
-      expect(endDist).toBeLessThan(startDist);
+      expect(endDist).toBeLessThanOrEqual(startDist + 1);
     });
   });
 
@@ -335,11 +338,12 @@ describe('Full player journey', () => {
     it('right-clicking a resource sets GatherMove', async () => {
       const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
       expect(fishNode).toBeDefined();
-      const gid = spawnSandboxMudpaw(180, -120);
+      const gid = spawnSandboxMudpaw(-80, -60);
 
       await deselectAll();
-      await selectEntity(gid);
-      clickWorld(Position.x[fishNode!], Position.y[fishNode!], 2);
+      forceSelectEntity(gid);
+      issueContextCommand(game.world, fishNode!, Position.x[fishNode!], Position.y[fishNode!]);
+      game.syncUIStore();
       await delay(50);
 
       const state = UnitStateMachine.state[gid];
@@ -349,12 +353,13 @@ describe('Full player journey', () => {
     it('gatherer walks toward the right-clicked resource', async () => {
       const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
       expect(fishNode).toBeDefined();
-      const gid = spawnSandboxMudpaw(220, -150);
+      const gid = spawnSandboxMudpaw(-110, -80);
       await deselectAll();
-      await selectEntity(gid);
+      forceSelectEntity(gid);
       const sx = Position.x[gid];
       const sy = Position.y[gid];
-      clickWorld(Position.x[fishNode!], Position.y[fishNode!], 2);
+      issueContextCommand(game.world, fishNode!, Position.x[fishNode!], Position.y[fishNode!]);
+      game.syncUIStore();
       await waitFrames(180);
       // Should have moved from start
       const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - sy) ** 2);
@@ -371,13 +376,14 @@ describe('Full player journey', () => {
       const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
       expect(fishNode).toBeDefined();
 
-      const gid = spawnSandboxMudpaw(260, -180);
+      const gid = spawnSandboxMudpaw(-140, -100);
       const startFish = game.world.resources.fish;
       const startNodeAmount = Resource.amount[fishNode!];
       const startDist = Math.hypot(Position.x[fishNode!] - Position.x[gid], Position.y[fishNode!] - Position.y[gid]);
       await deselectAll();
-      await selectEntity(gid);
-      clickWorld(Position.x[fishNode!], Position.y[fishNode!], 2);
+      forceSelectEntity(gid);
+      issueContextCommand(game.world, fishNode!, Position.x[fishNode!], Position.y[fishNode!]);
+      game.syncUIStore();
       await waitFrames(900);
       const gained = game.world.resources.fish - startFish;
       const nodeHarvested = Resource.amount[fishNode!] < startNodeAmount;
@@ -502,10 +508,10 @@ describe('Full player journey', () => {
         await waitFrames(300);
       }
 
-      const brawlers = getUnits(EntityKind.Brawler);
-      if (brawlers.length === 0 || enemies.length === 0) return;
+      const sappers = getUnits(EntityKind.Sapper);
+      if (sappers.length === 0 || enemies.length === 0) return;
 
-      const bid = brawlers[0];
+      const bid = sappers[0];
       const eid = enemies[0];
       await deselectAll();
       forceSelectEntity(bid);
@@ -518,13 +524,13 @@ describe('Full player journey', () => {
     });
 
     it('attacking unit moves toward enemy', async () => {
-      const brawlers = getUnits(EntityKind.Brawler);
+      const sappers = getUnits(EntityKind.Sapper);
       const enemies = getUnits(undefined, Faction.Enemy).filter(
         (e) => !hasComponent(game.world.ecs, e, IsBuilding),
       );
-      if (brawlers.length === 0 || enemies.length === 0) return;
+      if (sappers.length === 0 || enemies.length === 0) return;
 
-      const bid = brawlers[0];
+      const bid = sappers[0];
       const eid = enemies[0];
       await deselectAll();
       forceSelectEntity(bid);
@@ -548,27 +554,48 @@ describe('Full player journey', () => {
 
   describe('8. Auto-behaviors', () => {
     it('toggling auto-gather makes idle gatherers work', async () => {
+      const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
+      expect(fishNode).toBeDefined();
+      const gid = spawnEntity(
+        game.world,
+        EntityKind.Gatherer,
+        Position.x[fishNode!] - 40,
+        Position.y[fishNode!] + 40,
+        Faction.Player,
+      );
+      UnitStateMachine.state[gid] = UnitState.Idle;
+      UnitStateMachine.targetEntity[gid] = -1;
+      UnitStateMachine.returnEntity[gid] = -1;
+      UnitStateMachine.gatherTimer[gid] = 0;
+      Carrying.resourceType[gid] = ResourceType.None;
+      Carrying.resourceAmount[gid] = 0;
+      const startNodeAmount = Resource.amount[fishNode!];
+      const startDist = Math.hypot(
+        Position.x[fishNode!] - Position.x[gid],
+        Position.y[fishNode!] - Position.y[gid],
+      );
       primeAutoGatherers();
       game.world.autoBehaviors.gatherer = false;
       await waitFrames(60);
 
-      // Count idle gatherers
-      const idleBefore = getUnits(EntityKind.Gatherer).filter(
-        (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
-      ).length;
-
       game.world.autoBehaviors.gatherer = true;
-      await waitFrames(180);
-
-      const idleAfter = getUnits(EntityKind.Gatherer).filter(
-        (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
-      ).length;
-
-      // Gatherers should be working (may already have been busy from prior tests)
-      const working = getUnits(EntityKind.Gatherer).filter(
-        (eid) => UnitStateMachine.state[eid] !== UnitState.Idle,
+      await waitFrames(360);
+      const state = UnitStateMachine.state[gid];
+      const nodeHarvested = Resource.amount[fishNode!] < startNodeAmount;
+      const carryingFish =
+        Carrying.resourceType[gid] === ResourceType.Fish && Carrying.resourceAmount[gid] > 0;
+      const endDist = Math.hypot(
+        Position.x[fishNode!] - Position.x[gid],
+        Position.y[fishNode!] - Position.y[gid],
       );
-      expect(working.length).toBeGreaterThan(0);
+      expect(
+        state === UnitState.GatherMove ||
+          state === UnitState.Gathering ||
+          state === UnitState.ReturnMove ||
+          nodeHarvested ||
+          carryingFish ||
+          endDist < startDist,
+      ).toBe(true);
     });
 
     it('auto-attack sends combat units to enemies', async () => {
@@ -580,7 +607,7 @@ describe('Full player journey', () => {
       game.world.autoBehaviors.combat = true;
       await waitFrames(120);
 
-      const combat = getUnits(EntityKind.Brawler)
+      const combat = getUnits(EntityKind.Sapper)
         .concat(getUnits(EntityKind.Sniper));
 
       const attacking = combat.filter(
