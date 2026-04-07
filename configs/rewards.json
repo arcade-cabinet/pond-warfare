@@ -1,7 +1,8 @@
 {
-  "base_clams": 10,
-  "kill_bonus": 1,
-  "event_bonus": 5,
-  "survival_bonus_per_minute": 2,
+  "base_clams": 20,
+  "kill_bonus": 2,
+  "event_bonus": 6,
+  "resource_bonus_per_100": 8,
+  "survival_bonus_per_minute": 4,
   "prestige_multiplier_per_rank": 0.1
 }

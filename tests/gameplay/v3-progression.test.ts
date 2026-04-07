@@ -32,9 +32,9 @@ import { createUpgradeWebState, purchaseNode } from '@/ui/upgrade-web-state';
 describe('T38: Rewards Clam calculation', () => {
   it('calculates correct Clams for known match stats', () => {
     // Formula from rewards.json:
-    // base_clams=10, kill_bonus=1, event_bonus=5, survival_bonus_per_minute=2
+    // base_clams=20, kill_bonus=2, event_bonus=6, resource_bonus_per_100=8, survival_bonus_per_minute=4
     // 10 kills, 5 events, 3 minutes = 180 seconds, rank 0
-    // Expected: 10 + (10 * 1) + (5 * 5) + (3 * 2) = 10 + 10 + 25 + 6 = 51
+    // Expected: 20 + (10 * 2) + (5 * 6) + floor(500/100) * 8 + (3 * 4) = 122
     const stats: MatchStats = {
       result: 'win',
       durationSeconds: 180,
@@ -46,13 +46,14 @@ describe('T38: Rewards Clam calculation', () => {
 
     const breakdown = calculateMatchReward(stats);
 
-    expect(breakdown.base).toBe(10);
-    expect(breakdown.killBonus).toBe(10);
-    expect(breakdown.eventBonus).toBe(25);
-    expect(breakdown.survivalBonus).toBe(6);
-    expect(breakdown.subtotal).toBe(51);
+    expect(breakdown.base).toBe(20);
+    expect(breakdown.killBonus).toBe(20);
+    expect(breakdown.eventBonus).toBe(30);
+    expect(breakdown.resourceBonus).toBe(40);
+    expect(breakdown.survivalBonus).toBe(12);
+    expect(breakdown.subtotal).toBe(122);
     expect(breakdown.prestigeMultiplier).toBe(1.0);
-    expect(breakdown.totalClams).toBe(51);
+    expect(breakdown.totalClams).toBe(122);
     expect(breakdown.isWin).toBe(true);
   });
 
@@ -70,8 +71,8 @@ describe('T38: Rewards Clam calculation', () => {
 
     // Prestige multiplier: 1 + 2 * 0.1 = 1.2
     expect(breakdown.prestigeMultiplier).toBe(1.2);
-    // 51 * 1.2 = 61.2, floored to 61
-    expect(breakdown.totalClams).toBe(61);
+    // 122 * 1.2 = 146.4, floored to 146
+    expect(breakdown.totalClams).toBe(146);
   });
 
   it('applies loss penalty (x0.5)', () => {
@@ -87,8 +88,8 @@ describe('T38: Rewards Clam calculation', () => {
     const breakdown = calculateMatchReward(stats);
 
     expect(breakdown.isWin).toBe(false);
-    // 51 * 0.5 = 25.5, floored to 25
-    expect(breakdown.totalClams).toBe(25);
+    // 122 * 0.5 = 61
+    expect(breakdown.totalClams).toBe(61);
   });
 
   it('handles zero stats (base clams only)', () => {
@@ -103,11 +104,12 @@ describe('T38: Rewards Clam calculation', () => {
 
     const breakdown = calculateMatchReward(stats);
 
-    expect(breakdown.base).toBe(10);
+    expect(breakdown.base).toBe(20);
     expect(breakdown.killBonus).toBe(0);
     expect(breakdown.eventBonus).toBe(0);
+    expect(breakdown.resourceBonus).toBe(0);
     expect(breakdown.survivalBonus).toBe(0);
-    expect(breakdown.totalClams).toBe(10);
+    expect(breakdown.totalClams).toBe(20);
   });
 });
 

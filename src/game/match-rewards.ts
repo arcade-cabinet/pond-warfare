@@ -3,7 +3,8 @@
  *
  * Computes post-match Clam rewards from configs/rewards.json.
  * Formula: base_clams + (kills * kill_bonus) + (events * event_bonus)
- *          + (duration_minutes * survival_bonus) * (1 + rank * prestige_multiplier)
+ *          + (resources / 100 * resource_bonus) + (duration_minutes * survival_bonus)
+ *          all scaled by (1 + rank * prestige_multiplier)
  *
  * Display logic is separate (rewards-screen.tsx).
  */
@@ -38,6 +39,8 @@ export interface RewardBreakdown {
   killBonus: number;
   /** Bonus from events completed. */
   eventBonus: number;
+  /** Bonus from gathered resources. */
+  resourceBonus: number;
   /** Bonus from survival time. */
   survivalBonus: number;
   /** Subtotal before prestige multiplier. */
@@ -82,10 +85,12 @@ export function calculateMatchReward(stats: MatchStats): RewardBreakdown {
   const base = config.base_clams;
   const killBonus = stats.kills * config.kill_bonus;
   const eventBonus = stats.eventsCompleted * config.event_bonus;
+  const resourceBonus =
+    Math.floor(Math.max(0, stats.resourcesGathered) / 100) * config.resource_bonus_per_100;
   const durationMinutes = stats.durationSeconds / 60;
   const survivalBonus = Math.floor(durationMinutes * config.survival_bonus_per_minute);
 
-  const subtotal = base + killBonus + eventBonus + survivalBonus;
+  const subtotal = base + killBonus + eventBonus + resourceBonus + survivalBonus;
 
   const prestigeMultiplier = 1 + stats.prestigeRank * config.prestige_multiplier_per_rank;
   const earningsMultiplier = stats.earningsMultiplier ?? 1;
@@ -102,6 +107,7 @@ export function calculateMatchReward(stats: MatchStats): RewardBreakdown {
     base,
     killBonus,
     eventBonus,
+    resourceBonus,
     survivalBonus,
     subtotal,
     prestigeMultiplier,
@@ -130,6 +136,9 @@ export function generateRewardStatLines(stats: MatchStats, breakdown: RewardBrea
   }
   if (breakdown.eventBonus > 0) {
     lines.push(`Event Bonus: +${breakdown.eventBonus}`);
+  }
+  if (breakdown.resourceBonus > 0) {
+    lines.push(`Resource Bonus: +${breakdown.resourceBonus}`);
   }
   if (breakdown.survivalBonus > 0) {
     lines.push(`Survival Bonus: +${breakdown.survivalBonus}`);

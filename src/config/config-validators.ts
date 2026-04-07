@@ -127,6 +127,7 @@ export function validateRewards(data: RewardsConfig): void {
   assertPositive(data.base_clams, 'rewards.base_clams');
   assertNonNegative(data.kill_bonus, 'rewards.kill_bonus');
   assertNonNegative(data.event_bonus, 'rewards.event_bonus');
+  assertNonNegative(data.resource_bonus_per_100, 'rewards.resource_bonus_per_100');
   assertNonNegative(data.survival_bonus_per_minute, 'rewards.survival_bonus_per_minute');
   assertNonNegative(data.prestige_multiplier_per_rank, 'rewards.prestige_multiplier_per_rank');
 }

@@ -188,6 +188,7 @@ describe('App v3 Screen Wiring', () => {
         base: 10,
         killBonus: 5,
         eventBonus: 3,
+        resourceBonus: 0,
         survivalBonus: 2,
         subtotal: 20,
         prestigeMultiplier: 1,

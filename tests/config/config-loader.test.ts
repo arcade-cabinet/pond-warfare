@@ -298,6 +298,7 @@ describe('Validation error detection', () => {
       base_clams: 0,
       kill_bonus: 0,
       event_bonus: 0,
+      resource_bonus_per_100: 0,
       survival_bonus_per_minute: 0,
       prestige_multiplier_per_rank: 0,
     } as RewardsConfig;

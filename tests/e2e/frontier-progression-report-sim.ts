@@ -162,7 +162,9 @@ export function buildFrontierProgressionRows(): FrontierProgressionRow[] {
       const cacheKey = `${seed}:${toStage}`;
       let baseline = baselineCache.get(cacheKey);
       if (!baseline) {
-        baseline = runFrontierMatch(seed, createUpgradeWebState(0), FRONTIER_EVAL_FRAMES);
+        baseline = runFrontierMatch(seed, createUpgradeWebState(0), FRONTIER_EVAL_FRAMES, {
+          forcedStage: toStage,
+        });
         baselineCache.set(cacheKey, baseline);
       }
       return getDifficultyShiftPercent(getPowerScore(baseline.snapshot), result?.power ?? 0);

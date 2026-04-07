@@ -123,6 +123,7 @@ export interface RewardsConfig {
   base_clams: number;
   kill_bonus: number;
   event_bonus: number;
+  resource_bonus_per_100: number;
   survival_bonus_per_minute: number;
   prestige_multiplier_per_rank: number;
 }

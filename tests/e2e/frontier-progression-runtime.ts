@@ -63,10 +63,11 @@ export function runFrontierMatch(
   seed: number,
   state: UpgradeWebPurchaseState,
   frames: number,
+  options: { forcedStage?: number } = {},
 ): MatchRunResult {
   resetAutoSymbol();
   resetMatchEventRunner();
-  const panelStage = getCurrentRunPanelStage(Array.from(state.purchasedDiamonds));
+  const panelStage = options.forcedStage ?? getCurrentRunPanelStage(Array.from(state.purchasedDiamonds));
 
   storeV3.progressionLevel.value = panelStage;
   storeV3.prestigeState.value = createPrestigeState();

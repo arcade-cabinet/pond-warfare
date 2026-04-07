@@ -284,14 +284,15 @@ Auto-deploy specialists are intended to be permanent acceleration, not a hidden 
 
 After each match, the Rewards Screen shows earned Clams and routes the player back into the current run:
 
-**Formula**: `(base + kill_bonus + event_bonus + survival_bonus) * prestige_multiplier`
+**Formula**: `(base + kill_bonus + event_bonus + resource_bonus + survival_bonus) * prestige_multiplier`
 
 | Component | Value |
 |-----------|-------|
-| Base Clams | 10 (always earned) |
-| Kill Bonus | 1 per enemy killed |
-| Event Bonus | 5 per event completed |
-| Survival Bonus | 2 per minute survived |
+| Base Clams | 20 (always earned) |
+| Kill Bonus | 2 per enemy killed |
+| Event Bonus | 6 per event completed |
+| Resource Bonus | 8 per 100 resources gathered |
+| Survival Bonus | 4 per minute survived |
 | Prestige Multiplier | 1.0 + (rank * 0.1) |
 | Loss Penalty | 50% of total |
 

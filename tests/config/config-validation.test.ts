@@ -382,6 +382,7 @@ describe('Config Validation — US21', () => {
       expect(config.base_clams).toBeGreaterThan(0);
       expect(config.kill_bonus).toBeGreaterThan(0);
       expect(config.event_bonus).toBeGreaterThan(0);
+      expect(config.resource_bonus_per_100).toBeGreaterThan(0);
       expect(config.survival_bonus_per_minute).toBeGreaterThan(0);
       expect(config.prestige_multiplier_per_rank).toBeGreaterThanOrEqual(0);
     });

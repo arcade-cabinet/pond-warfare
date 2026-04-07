@@ -256,8 +256,8 @@ describe('progression meta loop', () => {
       canRankUp: false,
     });
     storeV3.currentRunPurchasedNodeIds.value = [
+      'gathering_fish_gathering_t0',
       'gathering_log_gathering_t0',
-      'gathering_log_gathering_t1',
     ];
 
     await waitFor(() => hasButtonText('Upgrades', { exact: true }));
@@ -270,7 +270,7 @@ describe('progression meta loop', () => {
     );
     clickAriaLabelPrefix('Toggle Gathering');
     await delay(100);
-    clickAriaLabel('Buy Frontier Expansion I for 200 Clams');
+    clickAriaLabel('Buy Frontier Expansion I for 30 Clams');
     await delay(100);
     clickFirstBuyButton('Clams');
     await delay(100);
