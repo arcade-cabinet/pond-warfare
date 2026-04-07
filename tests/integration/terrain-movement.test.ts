@@ -24,16 +24,16 @@ describe('Terrain affects movement', () => {
   it('unit on Mud moves at 0.75x speed', () => {
     const grid = new TerrainGrid(W, H, TILE);
     grid.set(1, 1, TerrainType.Mud);
-    const mult = grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, EntityKind.Brawler);
+    const mult = grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, EntityKind.Gatherer);
     expect(mult).toBe(0.75);
   });
 
-  it('non-Swimmer is blocked on Water (0 speed)', () => {
+  it('manual land units are blocked on Water (0 speed)', () => {
     const grid = new TerrainGrid(W, H, TILE);
     grid.set(2, 2, TerrainType.Water);
-    const mult = grid.getSpeedMultiplier(2 * TILE + 5, 2 * TILE + 5, EntityKind.Brawler);
+    const mult = grid.getSpeedMultiplier(2 * TILE + 5, 2 * TILE + 5, EntityKind.Gatherer);
     expect(mult).toBe(0);
-    expect(grid.isPassable(2 * TILE + 5, 2 * TILE + 5, EntityKind.Brawler)).toBe(false);
+    expect(grid.isPassable(2 * TILE + 5, 2 * TILE + 5, EntityKind.Gatherer)).toBe(false);
   });
 
   it('Swimmer crosses Water at 0.5x speed', () => {

@@ -76,7 +76,7 @@ Used for: ALL panels, modals, accordion sections. No PNG assets needed.
 Import from `@/ui/components/sprites`:
 - `SpriteOtter` -- Assault infantry (idle + attack frames)
 - `SpriteCroc` -- Siege heavy (idle + attack with gatling)
-- `SpriteSnake` -- Sniper specialist (idle + attack with laser)
+- `SpriteSnake` -- Legacy ranged specialist demo sprite (idle + attack with laser)
 
 CSS animations: `.sprite-frame-1` / `.sprite-frame-2` toggle frames at 0.4s steps.
 

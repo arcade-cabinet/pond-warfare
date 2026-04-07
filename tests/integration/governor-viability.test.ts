@@ -68,9 +68,9 @@ describe('Governor viability decisions', () => {
     storeV3.progressionLevel.value = 1;
   });
 
-  it('with idle gatherers, GatherEvaluator scores highest', () => {
-    // 4 total gatherers (2 idle, 2 busy) — enough that TrainEvaluator
-    // won't prioritize gatherer production (it checks gatherers < 4).
+  it('with idle Mudpaws, GatherEvaluator scores highest', () => {
+    // 4 total Mudpaws (2 idle, 2 busy) — enough that TrainEvaluator
+    // will focus on assignment rather than more early generalists.
     store.unitRoster.value = [
       makeGroup('generalist', [
         { eid: 1, task: 'idle', kind: EntityKind.Gatherer },
@@ -107,7 +107,7 @@ describe('Governor viability decisions', () => {
     const gather = new GatherEvaluator().calculateDesirability(owner);
     const build = new BuildEvaluator().calculateDesirability(owner);
 
-    expect(gather).toBe(0); // no idle gatherers
+    expect(gather).toBe(0); // no idle Mudpaws
     expect(build).toBe(0.85); // no armory -> 0.85
     expect(build).toBeGreaterThan(gather);
   });
@@ -116,7 +116,7 @@ describe('Governor viability decisions', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 3;
     store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Sapper }]),
       makeGroup('generalist', [{ eid: 2, task: 'idle', kind: EntityKind.Gatherer }]),
     ];
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
@@ -135,7 +135,7 @@ describe('Governor viability decisions', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 1;
     store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Sapper }]),
       makeGroup('generalist', [{ eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
     ];
     store.buildingRoster.value = [{ eid: 10, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] }];

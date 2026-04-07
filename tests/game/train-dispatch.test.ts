@@ -82,20 +82,38 @@ describe('train dispatch', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
     world.resources.fish = 0;
     world.resources.logs = 0;
+    world.resources.rocks = 0;
 
-    train(world, lodge, EntityKind.Brawler, 100, 50, 1);
+    const def = ENTITY_DEFS[EntityKind.Sapper];
+    train(
+      world,
+      lodge,
+      EntityKind.Sapper,
+      def.fishCost ?? 0,
+      def.logCost ?? 0,
+      def.foodCost ?? 1,
+      def.rockCost ?? 0,
+    );
 
     expect(TrainingQueue.count[lodge]).toBe(0);
     expect(world.resources.fish).toBe(0);
   });
 
   it('adds to TrainingQueue with correct timer on first enqueue', () => {
-    const armory = createPlayerBuilding(world, EntityKind.Armory);
+    const lodge = createPlayerBuilding(world, EntityKind.Lodge);
+    const def = ENTITY_DEFS[EntityKind.Healer];
 
-    train(world, armory, EntityKind.Brawler, 100, 50, 1);
+    train(
+      world,
+      lodge,
+      EntityKind.Healer,
+      def.fishCost ?? 0,
+      def.logCost ?? 0,
+      def.foodCost ?? 1,
+    );
 
-    expect(TrainingQueue.count[armory]).toBe(1);
-    expect(TrainingQueue.timer[armory]).toBeGreaterThan(0);
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    expect(TrainingQueue.timer[lodge]).toBeGreaterThan(0);
   });
 
   it('deducts rocks for stage-five manual siege units', () => {

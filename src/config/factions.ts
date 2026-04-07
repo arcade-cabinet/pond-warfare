@@ -12,6 +12,11 @@ export type PlayableFaction = 'otter' | 'predator';
 export interface FactionConfig {
   name: string;
   lodgeKind: EntityKind;
+  /**
+   * Legacy compatibility slots retained for horizontal scenarios and older
+   * adversarial helpers. The canonical player-facing otter roster is defined
+   * elsewhere as Mudpaw/Medic/Sapper/Saboteur.
+   */
   gathererKind: EntityKind;
   meleeKind: EntityKind;
   rangedKind: EntityKind;
@@ -23,7 +28,14 @@ export interface FactionConfig {
   techTree: string[];
 }
 
-/** Otter faction: the original player side. */
+/**
+ * Otter faction: legacy compatibility mapping for the original player side.
+ *
+ * Important: the live vertical-mode roster no longer exposes
+ * `Brawler/Sniper/Shieldbearer/Catapult` as player-facing manual units.
+ * Those older entity kinds remain here only for historical scenario support
+ * until the horizontal/adversarial layer is fully reauthored.
+ */
 export const OTTER_FACTION: FactionConfig = {
   name: 'Otters',
   lodgeKind: EntityKind.Lodge,

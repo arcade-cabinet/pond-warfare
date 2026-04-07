@@ -40,7 +40,7 @@ vi.mock('@/config/factions', () => ({
   getFactionConfig: (_faction: string) => ({
     lodgeKind: EntityKind.Lodge,
     gathererKind: EntityKind.Gatherer,
-    meleeKind: EntityKind.Brawler,
+    meleeKind: EntityKind.Gatherer,
     supportKind: EntityKind.Healer,
     heroKind: EntityKind.Commander,
   }),

@@ -26,8 +26,8 @@ export interface GovernorSnapshot {
   pearls: number;
   food: number;
   maxFood: number;
-  gatherers: number;
-  army: number;
+  mudpaws: number;
+  fieldUnits: number;
   buildings: number;
   enemyNests: number;
   techResearched: string[];
@@ -73,8 +73,8 @@ export function takeSnapshot(): GovernorSnapshot {
     pearls: w.resources.rocks,
     food: w.resources.food,
     maxFood: w.resources.maxFood,
-    gatherers: getPlayerEntities(w, EntityKind.Gatherer).length,
-    army: getPlayerArmyUnits(w).length,
+    mudpaws: getPlayerEntities(w, EntityKind.Gatherer).length,
+    fieldUnits: getPlayerArmyUnits(w).length,
     buildings: getPlayerEntities(w).filter((eid) => hasComponent(w.ecs, eid, IsBuilding)).length,
     enemyNests: getEnemyNests(w).length,
     techResearched: Object.entries(w.tech)

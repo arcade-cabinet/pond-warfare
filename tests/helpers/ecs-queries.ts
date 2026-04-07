@@ -109,7 +109,7 @@ export function getPlayerArmyUnits(world: GameWorld): number[] {
       Health.current[eid] > 0 &&
       !hasComponent(world.ecs, eid, IsBuilding) &&
       !hasComponent(world.ecs, eid, IsResource) &&
-      EntityTypeTag.kind[eid] !== EntityKind.Gatherer,
+      EntityTypeTag.kind[eid] !== EntityKind.Commander,
   );
 }
 

@@ -1,13 +1,12 @@
 /**
  * Army Integration Tests
  *
- * Tests combat unit training, attacking enemies, damage multipliers,
- * and veterancy. Operates directly on ECS systems — no UI, no DOM.
+ * Tests canonical field-unit training, combat, and veterancy. Operates
+ * directly on ECS systems — no UI, no DOM.
  */
 
 import { addComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getDamageMultiplier } from '@/config/entity-defs';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
@@ -31,39 +30,40 @@ describe('Army Integration', () => {
   beforeEach(() => {
     world = createGameWorld();
     world.frameCount = 1;
+    world.resources.rocks = 50;
   });
 
-  it('armory trains brawlers and snipers', () => {
-    const armory = spawnEntity(world, EntityKind.Armory, 400, 400, Faction.Player);
-    Building.progress[armory] = 100;
-    Health.current[armory] = Health.max[armory];
+  it('lodge trains Mudpaws, Medics, and Sappers', () => {
+    const lodge = spawnEntity(world, EntityKind.Lodge, 400, 400, Faction.Player);
+    Building.progress[lodge] = 100;
+    Health.current[lodge] = Health.max[lodge];
 
-    // Train a brawler
-    addComponent(world.ecs, armory, TrainingQueue);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1;
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
+    addComponent(world.ecs, lodge, TrainingQueue);
+    TrainingQueue.count[lodge] = 3;
+    TrainingQueue.timer[lodge] = 1;
+    trainingQueueSlots.set(lodge, [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper]);
     trainingSystem(world);
 
-    // Train a sniper
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1;
-    trainingQueueSlots.set(armory, [EntityKind.Sniper]);
+    TrainingQueue.timer[lodge] = 1;
     trainingSystem(world);
 
-    const army = getPlayerArmyUnits(world);
-    expect(army.length).toBe(2);
-    expect(getPlayerEntities(world, EntityKind.Brawler).length).toBe(1);
-    expect(getPlayerEntities(world, EntityKind.Sniper).length).toBe(1);
+    TrainingQueue.timer[lodge] = 1;
+    trainingSystem(world);
+
+    const fieldUnits = getPlayerArmyUnits(world);
+    expect(fieldUnits.length).toBe(3);
+    expect(getPlayerEntities(world, EntityKind.Gatherer).length).toBe(1);
+    expect(getPlayerEntities(world, EntityKind.Healer).length).toBe(1);
+    expect(getPlayerEntities(world, EntityKind.Sapper).length).toBe(1);
   });
 
-  it('brawler attacks enemy and deals damage', () => {
-    const brawler = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+  it('Mudpaw attacks enemy and deals damage', () => {
+    const mudpaw = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
     const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
 
-    UnitStateMachine.state[brawler] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[brawler] = gator;
-    Combat.attackCooldown[brawler] = 0;
+    UnitStateMachine.state[mudpaw] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[mudpaw] = gator;
+    Combat.attackCooldown[mudpaw] = 0;
 
     const hpBefore = Health.current[gator];
     combatSystem(world);
@@ -71,35 +71,18 @@ describe('Army Integration', () => {
     expect(Health.current[gator]).toBeLessThan(hpBefore);
   });
 
-  it('damage multipliers apply correctly', () => {
-    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Sniper)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Brawler)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.Shieldbearer, EntityKind.Gator)).toBe(0.75);
-  });
+  it('Saboteur attacks enemy and deals damage', () => {
+    const saboteur = spawnEntity(world, EntityKind.Saboteur, 100, 100, Faction.Player);
+    const snake = spawnEntity(world, EntityKind.Snake, 120, 100, Faction.Enemy);
 
-  it('catapult deals AoE damage to nearby enemies', () => {
-    const catapult = spawnEntity(world, EntityKind.Catapult, 100, 100, Faction.Player);
-    UnitStateMachine.state[catapult] = UnitState.Attacking;
-    Combat.attackCooldown[catapult] = 0;
+    UnitStateMachine.state[saboteur] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[saboteur] = snake;
+    Combat.attackCooldown[saboteur] = 0;
 
-    const target = spawnEntity(world, EntityKind.Gator, 300, 100, Faction.Enemy);
-    const nearby = spawnEntity(world, EntityKind.Snake, 330, 100, Faction.Enemy);
-    UnitStateMachine.targetEntity[catapult] = target;
-
-    Position.x[target] = Position.x[catapult] + 200;
-    Position.y[target] = Position.y[catapult];
-    Position.x[nearby] = Position.x[target] + 30;
-    Position.y[nearby] = Position.y[target];
-
-    world.spatialHash.clear();
-    world.spatialHash.insert(target, Position.x[target], Position.y[target]);
-    world.spatialHash.insert(nearby, Position.x[nearby], Position.y[nearby]);
-    world.spatialHash.insert(catapult, Position.x[catapult], Position.y[catapult]);
-
-    const nearbyHpBefore = Health.current[nearby];
+    const hpBefore = Health.current[snake];
     combatSystem(world);
 
-    expect(Health.current[nearby]).toBeLessThan(nearbyHpBefore);
+    expect(Health.current[snake]).toBeLessThan(hpBefore);
   });
 
   it('veterancy rank increases with kills', () => {
@@ -109,59 +92,43 @@ describe('Army Integration', () => {
     expect(rankFromKills(15)).toBe(3);
   });
 
-  it('veteran brawler gets stat bonuses', () => {
+  it('veteran Mudpaw gets stat bonuses', () => {
     world.frameCount = 60;
-    const brawler = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
-    const baseHp = Health.max[brawler];
-    const baseDmg = Combat.damage[brawler];
+    const mudpaw = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    const baseHp = Health.max[mudpaw];
+    const baseDmg = Combat.damage[mudpaw];
 
-    Combat.kills[brawler] = 3;
+    Combat.kills[mudpaw] = 3;
     veterancySystem(world);
 
-    expect(Health.max[brawler]).toBeGreaterThan(baseHp);
-    expect(Combat.damage[brawler]).toBeGreaterThan(baseDmg);
+    expect(Health.max[mudpaw]).toBeGreaterThan(baseHp);
+    expect(Combat.damage[mudpaw]).toBe(baseDmg);
   });
 
-  it('iron shell gates shieldbearer training', () => {
-    world.tech.ironShell = true;
-    const armory = spawnEntity(world, EntityKind.Armory, 400, 400, Faction.Player);
-    Building.progress[armory] = 100;
-    Health.current[armory] = Health.max[armory];
+  it('lodge can field late-panel manual siege units when rocks are available', () => {
+    const lodge = spawnEntity(world, EntityKind.Lodge, 400, 400, Faction.Player);
+    Building.progress[lodge] = 100;
+    Health.current[lodge] = Health.max[lodge];
 
-    addComponent(world.ecs, armory, TrainingQueue);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1;
-    trainingQueueSlots.set(armory, [EntityKind.Shieldbearer]);
+    addComponent(world.ecs, lodge, TrainingQueue);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = 1;
+    trainingQueueSlots.set(lodge, [EntityKind.Sapper, EntityKind.Saboteur]);
 
     trainingSystem(world);
-
-    const shieldbearers = getPlayerEntities(world, EntityKind.Shieldbearer);
-    expect(shieldbearers.length).toBe(1);
-  });
-
-  it('siege works gates catapult training', () => {
-    world.tech.siegeWorks = true;
-    const armory = spawnEntity(world, EntityKind.Armory, 400, 400, Faction.Player);
-    Building.progress[armory] = 100;
-    Health.current[armory] = Health.max[armory];
-
-    addComponent(world.ecs, armory, TrainingQueue);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1;
-    trainingQueueSlots.set(armory, [EntityKind.Catapult]);
-
+    TrainingQueue.timer[lodge] = 1;
     trainingSystem(world);
 
-    const catapults = getPlayerEntities(world, EntityKind.Catapult);
-    expect(catapults.length).toBe(1);
+    expect(getPlayerEntities(world, EntityKind.Sapper)).toHaveLength(1);
+    expect(getPlayerEntities(world, EntityKind.Saboteur)).toHaveLength(1);
   });
 
-  it('army units detected by query helper exclude gatherers', () => {
+  it('field-unit helper includes Mudpaws and manual specialists', () => {
     spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
-    spawnEntity(world, EntityKind.Brawler, 200, 100, Faction.Player);
-    spawnEntity(world, EntityKind.Sniper, 300, 100, Faction.Player);
+    spawnEntity(world, EntityKind.Healer, 200, 100, Faction.Player);
+    spawnEntity(world, EntityKind.Sapper, 300, 100, Faction.Player);
 
-    const army = getPlayerArmyUnits(world);
-    expect(army.length).toBe(2);
+    const fieldUnits = getPlayerArmyUnits(world);
+    expect(fieldUnits.length).toBe(3);
   });
 });
