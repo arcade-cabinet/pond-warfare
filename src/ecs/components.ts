@@ -141,6 +141,7 @@ export const IsBuilding = {};
 export const IsResource = {};
 export const Dead = {};
 export const IsProjectile = {};
+export const PrestigeAutoDeploy = {};
 
 // Patrol route tracking (waypoints stored externally in world.patrolWaypoints)
 export const Patrol = soa({

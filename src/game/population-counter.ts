@@ -19,6 +19,7 @@ import {
   IsBuilding,
   IsResource,
   Position,
+  PrestigeAutoDeploy,
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
@@ -61,7 +62,9 @@ export function computePopulation(world: GameWorld): PopulationResult {
         if (def.foodProvided) maxFoodCap += def.foodProvided;
       }
     } else if (!hasComponent(w.ecs, eid, IsResource)) {
-      curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
+      if (!hasComponent(w.ecs, eid, PrestigeAutoDeploy)) {
+        curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
+      }
       const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
       if (kind === EntityKind.Gatherer) {
         if (isIdle) {

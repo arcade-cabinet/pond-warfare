@@ -48,7 +48,7 @@ Each match takes place on a vertical map. The player's Lodge sits at the bottom.
 | **Logs** | Tree clusters (Cattail) | Building construction, repairs |
 | **Food** | Population count vs housing cap | Limits unit count |
 
-Food works as a population system: each non-building player entity counts as 1 food. Max food comes from the Lodge (+8) and Burrow wings (+6).
+Food works as a population system: each non-building player entity counts as 1 food. Max food comes from the Lodge (+8) and Burrow wings (+6). Prestige auto-deploy specialists are an exception: they are permanent helper units and do not consume the baseline food cap.
 
 Resources are finite. When a node is depleted, it is gone -- forcing expansion toward fresh nodes. Both factions compete for the same resource nodes.
 
@@ -109,7 +109,7 @@ Trainable at the Lodge during a match. These are the core units available from t
 
 ### Player Specialists (10)
 
-Unlocked via upgrade web diamond nodes and auto-deployed at match start via prestige Pearl upgrades. Specialists cannot be trained during a match -- they are permanent automated units.
+Unlocked via upgrade web diamond nodes and auto-deployed at match start via prestige Pearl upgrades. Specialists cannot be trained during a match -- they are permanent automated units. When deployed from Pearls, they act as bonus helper bodies rather than population-taxed baseline units.
 
 | Unit | HP | Speed | Damage | Role | Auto-Target |
 |------|----|-------|--------|------|-------------|
@@ -265,6 +265,8 @@ Pearl upgrades are the permanent main-menu layer. They can unlock:
 - Auto-Deploy Lookout (3 Pearls/rank, max 3)
 - Auto-Deploy Sapper (5 Pearls/rank, max 2)
 - Auto-Deploy Saboteur (4 Pearls/rank, max 2)
+
+Auto-deploy specialists are intended to be permanent acceleration, not a hidden penalty. They add helper behavior without consuming the same food budget the baseline run needs for normal unit production.
 
 #### Permanent passives / behavior unlocks
 - Lodge-adjacent unit regen

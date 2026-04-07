@@ -293,7 +293,8 @@ describe('AttackGoal', () => {
     const regularB = createUnit(EntityKind.Brawler, 120, 100);
     const regularC = createUnit(EntityKind.Brawler, 140, 100);
     const specialist = createUnit(EntityKind.Brawler, 160, 100);
-    createEnemy();
+    const closeEnemy = createEnemy(EntityKind.Gator, 200, 200);
+    createEnemy(EntityKind.Snake, 260, 220);
 
     store.unitRoster.value = [
       rosterGroup('combat', [
@@ -312,6 +313,9 @@ describe('AttackGoal', () => {
     expect(TaskOverride.active[regularA]).toBe(1);
     expect(TaskOverride.active[regularB]).toBe(1);
     expect(TaskOverride.active[regularC]).toBe(1);
+    expect(TaskOverride.targetEntity[regularA]).toBe(closeEnemy);
+    expect(TaskOverride.targetEntity[regularB]).toBe(closeEnemy);
+    expect(TaskOverride.targetEntity[regularC]).toBe(closeEnemy);
     expect(TaskOverride.active[specialist]).toBe(0);
   });
 });

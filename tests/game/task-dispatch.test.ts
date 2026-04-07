@@ -170,6 +170,22 @@ describe('dispatchTaskOverride', () => {
     expect(UnitStateMachine.targetEntity[eid]).toBe(enemy);
   });
 
+  it('attacking can lock onto an explicit shared target', () => {
+    const eid = createPlayerUnit(world, EntityKind.Brawler, 100, 100);
+    createEnemy(world, 120, 120);
+    const focusTarget = createEnemy(world, 300, 320);
+
+    dispatchTaskOverride(world, eid, 'attacking', focusTarget);
+
+    expect(TaskOverride.active[eid]).toBe(1);
+    expect(TaskOverride.task[eid]).toBe(UnitState.AttackMove);
+    expect(TaskOverride.targetEntity[eid]).toBe(focusTarget);
+    expect(UnitStateMachine.state[eid]).toBe(UnitState.AttackMove);
+    expect(UnitStateMachine.targetEntity[eid]).toBe(focusTarget);
+    expect(UnitStateMachine.targetX[eid]).toBe(300);
+    expect(UnitStateMachine.targetY[eid]).toBe(320);
+  });
+
   it('patrolling sets AttackMovePatrol with override', () => {
     const eid = createPlayerUnit(world, EntityKind.Brawler);
 

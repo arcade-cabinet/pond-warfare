@@ -9,12 +9,14 @@
  * getSpecialistSpawnPositions() for placement logic.
  */
 
+import { addComponent } from 'bitecs';
 import type { PrestigeState } from '@/config/prestige-logic';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Combat,
   Health,
   Position,
+  PrestigeAutoDeploy,
   Stance,
   StanceMode,
   TaskOverride,
@@ -94,6 +96,7 @@ export function deploySpecialistsAtMatchStart(
     for (let i = 0; i < spawn.count; i++) {
       const pos = allPositions[posIdx] ?? { x: lodgeX, y: lodgeY + 60 };
       const eid = spawnEntity(world, kind, pos.x, pos.y, Faction.Player);
+      addComponent(world.ecs, eid, PrestigeAutoDeploy);
       applySpecialistStats(world, eid, spawn);
       initializeSpecialistBehavior(world, eid, spawn, lodgeEid, pos.x, pos.y);
       posIdx++;

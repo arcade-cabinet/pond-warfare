@@ -53,6 +53,12 @@ interface ControllerVariant {
   startingTierRank?: number;
 }
 
+const GATHER_CONTROLLER_SEED = 101;
+const BUILD_CONTROLLER_SEED = 201;
+const TRAIN_CONTROLLER_SEED = 301;
+const DEFEND_CONTROLLER_SEED = 401;
+const ATTACK_CONTROLLER_SEED = 501;
+
 function tickWorld(world: GameWorld): void {
   world.frameCount++;
   world.yukaManager.update(1 / 60, world.ecs);
@@ -132,6 +138,7 @@ function setupMicroWorld(
   });
   applyUpgradeEffects(world, upgradeState.state, prestigeState);
   const lodgeEid = spawnEntity(world, EntityKind.Lodge, 320, 460, Faction.Player);
+  deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
   syncGovernorSignals(world);
   return { world, lodgeEid };
 }
@@ -213,19 +220,39 @@ describe('controller balance diagnostics', () => {
       { name: 'auto_deploy_digger', prestigeState: { ...rankOne, upgradeRanks: { auto_deploy_digger: 1 } } },
       { name: 'auto_deploy_logger', prestigeState: { ...rankOne, upgradeRanks: { auto_deploy_logger: 1 } } },
       { name: 'rare_resource_access', prestigeState: { ...rankOne, upgradeRanks: { rare_resource_access: 1 } } },
-    ].map((variant, index) => {
-      const { world, lodgeEid, rareNodeCount } = setupWorld(6, 101 + index, 300, 0, variant.prestigeState);
+    ].map((variant) => {
+      const { world, lodgeEid, rareNodeCount } = setupWorld(
+        6,
+        GATHER_CONTROLLER_SEED,
+        300,
+        0,
+        variant.prestigeState,
+      );
       spawnPlayerGatherers(world, lodgeEid, 4);
       runGoalLoop(world, () => new GatherGoal(), 1200);
-      return { name: variant.name, rareNodeCount, gathered: world.stats.resourcesGathered, fish: world.resources.fish, logs: world.resources.logs, rocks: world.resources.rocks };
+      return {
+        name: variant.name,
+        rareNodeCount,
+        gatherSpeedMod: world.gatherSpeedMod,
+        gathered: world.stats.resourcesGathered,
+        fish: world.resources.fish,
+        logs: world.resources.logs,
+        rocks: world.resources.rocks,
+      };
     });
 
     const buildRows = [
       { name: 'baseline', prestigeState: rankOne, startingTierRank: 0 },
       { name: 'gather_multiplier', prestigeState: { ...rankOne, upgradeRanks: { gather_multiplier: 2 } }, startingTierRank: 0 },
       { name: 'starting_tier_1', prestigeState: { ...rankOne, upgradeRanks: { starting_tier: 1 } }, startingTierRank: 1 },
-    ].map((variant, index) => {
-      const { world, lodgeEid } = setupMicroWorld(201 + index, 170, 110, variant.prestigeState, variant.startingTierRank);
+    ].map((variant) => {
+      const { world, lodgeEid } = setupMicroWorld(
+        BUILD_CONTROLLER_SEED,
+        170,
+        110,
+        variant.prestigeState,
+        variant.startingTierRank,
+      );
       spawnResourceNode(world, EntityKind.Clambed, 230, 360);
       spawnResourceNode(world, EntityKind.Clambed, 410, 360);
       spawnResourceNode(world, EntityKind.Cattail, 260, 320);
@@ -252,8 +279,15 @@ describe('controller balance diagnostics', () => {
       { name: 'auto_deploy_fisher', prestigeState: { ...rankOne, upgradeRanks: { auto_deploy_fisher: 1 } }, startingTierRank: 0 },
       { name: 'gather_multiplier', prestigeState: { ...rankOne, upgradeRanks: { gather_multiplier: 2 } }, startingTierRank: 0 },
       { name: 'starting_tier_1', prestigeState: { ...rankOne, upgradeRanks: { starting_tier: 1 } }, startingTierRank: 1 },
-    ].map((variant, index) => {
-      const { world, lodgeEid } = setupWorld(6, 301 + index, 40, 0, variant.prestigeState, variant.startingTierRank);
+    ].map((variant) => {
+      const { world, lodgeEid } = setupWorld(
+        6,
+        TRAIN_CONTROLLER_SEED,
+        40,
+        0,
+        variant.prestigeState,
+        variant.startingTierRank,
+      );
       const gatherers = spawnPlayerGatherers(world, lodgeEid, 4);
       for (const gatherer of gatherers) dispatchTaskOverride(world, gatherer, 'gathering-fish');
       runGoalLoop(world, () => new TrainGoal(), 1500);
@@ -265,8 +299,8 @@ describe('controller balance diagnostics', () => {
       { name: 'auto_repair_behavior', prestigeState: { ...rankOne, upgradeRanks: { auto_repair_behavior: 1 } } },
       { name: 'hp_multiplier', prestigeState: { ...rankOne, upgradeRanks: { hp_multiplier: 1 } } },
       { name: 'auto_heal_behavior', prestigeState: { ...rankOne, upgradeRanks: { auto_heal_behavior: 1 } } },
-    ].map((variant, index) => {
-      const { world, lodgeEid } = setupWorld(3, 401 + index, 80, 0, variant.prestigeState);
+    ].map((variant) => {
+      const { world, lodgeEid } = setupWorld(3, DEFEND_CONTROLLER_SEED, 80, 0, variant.prestigeState);
       seedDefendPressure(world, lodgeEid);
       runGoalLoop(world, () => new DefendGoal(), 900);
       const liveLodge = findPlayerLodge(world);
@@ -277,8 +311,13 @@ describe('controller balance diagnostics', () => {
       { name: 'baseline', prestigeState: rankOne },
       { name: 'combat_multiplier', prestigeState: { ...rankOne, upgradeRanks: { combat_multiplier: 1 } } },
       { name: 'auto_deploy_hunter', prestigeState: { ...rankOne, upgradeRanks: { auto_deploy_hunter: 1 } } },
-    ].map((variant, index) => {
-      const { world, lodgeEid } = setupMicroWorld(501 + index, 120, 0, variant.prestigeState);
+    ].map((variant) => {
+      const { world, lodgeEid } = setupMicroWorld(
+        ATTACK_CONTROLLER_SEED,
+        120,
+        0,
+        variant.prestigeState,
+      );
       seedAttackSkirmish(world, lodgeEid);
       let maxCommitted = 0;
       for (let frame = 0; frame < 900; frame += 1) {
@@ -306,13 +345,14 @@ describe('controller balance diagnostics', () => {
     console.log('\nAttack controller diagnostics');
     console.table(attackRows);
 
-    expect(gatherRows.find((row) => row.name === 'gather_multiplier')?.gathered).toBeGreaterThan(gatherRows[0].gathered);
+    expect(gatherRows.find((row) => row.name === 'gather_multiplier')?.gatherSpeedMod).toBeGreaterThan(gatherRows[0].gatherSpeedMod);
     expect(gatherRows.find((row) => row.name === 'auto_deploy_digger')?.rocks).toBeGreaterThan(gatherRows[0].rocks);
     expect(gatherRows.find((row) => row.name === 'auto_deploy_logger')?.logs).toBeGreaterThan(gatherRows[0].logs);
     expect(gatherRows.find((row) => row.name === 'rare_resource_access')?.rareNodeCount).toBeGreaterThan(gatherRows[0].rareNodeCount);
     expect(buildRows.some((row) => row.armoryFrame >= 0)).toBe(true);
     expect(Math.min(...buildRows.slice(1).map((row) => (row.armoryFrame >= 0 ? row.armoryFrame : Number.POSITIVE_INFINITY)))).toBeLessThan(Number.POSITIVE_INFINITY);
     expect(Math.max(...trainRows.slice(1).map((row) => row.unitsTrained))).toBeGreaterThanOrEqual(trainRows[0].unitsTrained);
+    expect(trainRows.find((row) => row.name === 'auto_deploy_fisher')?.playerUnits).toBeGreaterThan(trainRows[0].playerUnits);
     expect(defendRows.find((row) => row.name === 'auto_repair_behavior')?.lodgeHpRatio).toBeGreaterThan(defendRows[0].lodgeHpRatio);
     expect(attackRows[0].committed).toBeGreaterThanOrEqual(MIN_ATTACK_ARMY);
   });

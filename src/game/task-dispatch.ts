@@ -6,7 +6,7 @@
  * the unit, and updates the UnitStateMachine to the appropriate state.
  */
 
-import { query } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
 import {
   EntityTypeTag,
   FactionTag,
@@ -50,7 +50,12 @@ export interface GatherTaskTarget {
 }
 
 /** Dispatch a task override for a unit from the Forces tab. */
-export function dispatchTaskOverride(world: GameWorld, eid: number, task: UnitTask): boolean {
+export function dispatchTaskOverride(
+  world: GameWorld,
+  eid: number,
+  task: UnitTask,
+  targetEntity = -1,
+): boolean {
   // For idle, clear override and stop the unit
   if (task === 'idle') {
     clearTaskOverride(eid);
@@ -80,7 +85,13 @@ export function dispatchTaskOverride(world: GameWorld, eid: number, task: UnitTa
 
   // For attacking, find nearest enemy BEFORE changing state
   if (task === 'attacking') {
-    const enemy = findNearestEnemy(world, eid);
+    const enemy =
+      targetEntity !== -1 &&
+      hasComponent(world.ecs, targetEntity, Health) &&
+      FactionTag.faction[targetEntity] === Faction.Enemy &&
+      Health.current[targetEntity] > 0
+        ? targetEntity
+        : findNearestEnemy(world, eid);
     if (enemy === -1) return false; // No enemy available — stay in current state
     TaskOverride.active[eid] = 1;
     TaskOverride.task[eid] = TASK_TO_STATE[task];
