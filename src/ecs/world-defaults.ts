@@ -17,6 +17,7 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from '@/constants';
+import { resetTransientComponentState } from '@/ecs/components';
 import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, type Particle } from '@/types';
 import { ObjectPool } from '@/utils/pool';
@@ -45,6 +46,7 @@ const defaultSeed = Math.floor(Math.random() * 2147483647);
 
 /** Create a fresh GameWorld with all default values. */
 export function createGameWorld(): GameWorld {
+  resetTransientComponentState();
   return {
     ecs: createWorld(),
     particles: [],

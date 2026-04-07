@@ -220,11 +220,21 @@ function applyEventEffects(world: GameWorld, template: EventTemplate): void {
   if (template.effects.bonus_nodes != null) {
     const nodeCount = template.effects.bonus_nodes;
     for (let i = 0; i < nodeCount; i++) {
-      const x = mapW * 0.2 + Math.random() * mapW * 0.6;
-      const y = mapH * 0.3 + Math.random() * mapH * 0.4;
+      const { x, y } = getBonusNodeSpawnPosition(world, mapW, mapH);
       spawnEntity(world, EntityKind.Clambed, x, y, Faction.Neutral);
     }
   }
+}
+
+export function getBonusNodeSpawnPosition(
+  world: GameWorld,
+  mapW: number,
+  mapH: number,
+): { x: number; y: number } {
+  return {
+    x: mapW * 0.2 + world.gameRng.next() * mapW * 0.6,
+    y: mapH * 0.3 + world.gameRng.next() * mapH * 0.4,
+  };
 }
 
 // ── Active Event Tick ────────────────────────────────────────────

@@ -6,6 +6,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { STARTING_FISH, STARTING_LOGS } from '@/constants';
+import { EntityKind } from '@/types';
+import { trainingQueueSlots } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
 
 describe('createGameWorld', () => {
@@ -31,5 +33,13 @@ describe('createGameWorld', () => {
     expect(world.autoBehaviors.combat).toBe(false);
     expect(world.autoBehaviors.healer).toBe(false);
     expect(world.autoBehaviors.scout).toBe(false);
+  });
+
+  it('should clear transient training queues for a fresh world', () => {
+    trainingQueueSlots.set(7, [EntityKind.Gatherer]);
+
+    createGameWorld();
+
+    expect(trainingQueueSlots.size).toBe(0);
   });
 });

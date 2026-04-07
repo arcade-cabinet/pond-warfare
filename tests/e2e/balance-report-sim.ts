@@ -1,20 +1,13 @@
 // @vitest-environment jsdom
 
 import { query } from 'bitecs';
-import { describe, expect, it, vi } from 'vitest';
+import { vi } from 'vitest';
 import {
   getDifficultyShiftPercent,
-  getMetaProgressionScore,
-  getPowerScore,
-  getRewardScore,
   summarizeShiftPercents,
   type BalanceSnapshot,
 } from '@/balance/progression-model';
-import {
-  buildClamTierOneVariants,
-  buildPearlRankOneVariants,
-  type BalanceVariantConfig,
-} from '@/balance/track-variants';
+import { type BalanceVariantConfig } from '@/balance/track-variants';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
 import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
@@ -35,26 +28,26 @@ import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behavior
 import { trainingSystem } from '@/ecs/systems/training';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
-import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
+import { createPrestigeState, isAutoBehaviorUnlocked } from '@/config/prestige-logic';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
+import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
 import { EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
-import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
-import { createPrestigeState, isAutoBehaviorUnlocked } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { createSnapshotScoreCache } from './balance-score-cache';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
-const _gameRef: { world: GameWorld | null } = { world: null };
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
     get(_target, prop) {
-      if (prop === 'world') return _gameRef.world;
+      if (prop === 'world') return mockedGameRef.world;
       return undefined;
     },
   }),
@@ -65,9 +58,22 @@ vi.mock('@/audio/audio-system', () => ({
 vi.mock('@/rendering/animations');
 vi.mock('@/utils/particles');
 
-const SEEDS = [11, 42, 77];
+export const BALANCE_REPORT_SEEDS = [11, 42, 77];
 const TEST_STAGE = 6;
 const TEST_FRAMES = 1200;
+
+export interface BalanceReportRow {
+  kind: 'clam' | 'pearl';
+  id: string;
+  label: string;
+  cost: number;
+  budget_pct: number | null;
+  power_mean_pct: number;
+  economy_mean_pct: number;
+  meta_min_pct: number;
+  meta_mean_pct: number;
+  meta_max_pct: number;
+}
 
 function runFrame(world: GameWorld, governor: Governor): void {
   world.frameCount++;
@@ -144,7 +150,7 @@ function runVariant(seed: number, variant?: BalanceVariantConfig): BalanceSnapsh
 
   const world = createTestWorld({ stage: TEST_STAGE, seed, fish: 200 });
   world.peaceTimer = 0;
-  _gameRef.world = world;
+  mockedGameRef.world = world;
 
   const panelGrid = createTestPanelGrid(TEST_STAGE, 960, 540, seed);
   const layout = generateVerticalMapLayout(panelGrid, new SeededRandom(seed), {
@@ -170,34 +176,36 @@ function runVariant(seed: number, variant?: BalanceVariantConfig): BalanceSnapsh
   return snapshotWorld(world, prestigeState.rank);
 }
 
-function buildRows(variants: BalanceVariantConfig[], baselineVariant?: BalanceVariantConfig) {
-  const baselinePowerScores = new Map<number, number>();
-  const baselineRewardScores = new Map<number, number>();
-  const baselineMetaScores = new Map<number, number>();
-  for (const seed of SEEDS) {
-    const snapshot = runVariant(seed, baselineVariant);
-    baselinePowerScores.set(seed, getPowerScore(snapshot));
-    baselineRewardScores.set(seed, getRewardScore(snapshot));
-    baselineMetaScores.set(seed, getMetaProgressionScore(snapshot));
+export function buildReportRows(
+  variants: BalanceVariantConfig[],
+  baselineVariant?: BalanceVariantConfig,
+): BalanceReportRow[] {
+  const getScores = createSnapshotScoreCache(runVariant);
+  const baselineScores = new Map<number, ReturnType<typeof getScores>>();
+  for (const seed of BALANCE_REPORT_SEEDS) {
+    baselineScores.set(seed, getScores(seed, baselineVariant));
   }
 
   return variants
     .map((variant) => {
-      const powerShifts = SEEDS.map((seed) => {
-        const baseline = baselinePowerScores.get(seed) ?? 0;
-        const score = getPowerScore(runVariant(seed, variant));
-        return getDifficultyShiftPercent(baseline, score);
-      });
-      const rewardShifts = SEEDS.map((seed) => {
-        const baseline = baselineRewardScores.get(seed) ?? 0;
-        const score = getRewardScore(runVariant(seed, variant));
-        return getDifficultyShiftPercent(baseline, score);
-      });
-      const metaShifts = SEEDS.map((seed) => {
-        const baseline = baselineMetaScores.get(seed) ?? 0;
-        const score = getMetaProgressionScore(runVariant(seed, variant));
-        return getDifficultyShiftPercent(baseline, score);
-      });
+      const powerShifts = BALANCE_REPORT_SEEDS.map((seed) =>
+        getDifficultyShiftPercent(
+          baselineScores.get(seed)?.power ?? 0,
+          getScores(seed, variant).power,
+        ),
+      );
+      const rewardShifts = BALANCE_REPORT_SEEDS.map((seed) =>
+        getDifficultyShiftPercent(
+          baselineScores.get(seed)?.reward ?? 0,
+          getScores(seed, variant).reward,
+        ),
+      );
+      const metaShifts = BALANCE_REPORT_SEEDS.map((seed) =>
+        getDifficultyShiftPercent(
+          baselineScores.get(seed)?.meta ?? 0,
+          getScores(seed, variant).meta,
+        ),
+      );
       const powerSummary = summarizeShiftPercents(powerShifts);
       const rewardSummary = summarizeShiftPercents(rewardShifts);
       const metaSummary = summarizeShiftPercents(metaShifts);
@@ -217,58 +225,12 @@ function buildRows(variants: BalanceVariantConfig[], baselineVariant?: BalanceVa
     .sort((a, b) => b.meta_mean_pct - a.meta_mean_pct);
 }
 
-describe('exhaustive balance report', () => {
-  it('profiles every Clam T1 track and every Pearl rank-1 upgrade', () => {
-    const clamRows = buildRows(buildClamTierOneVariants());
-    const pearlRows = buildRows(buildPearlRankOneVariants(), {
-      kind: 'pearl',
-      id: 'baseline_rank_1',
-      label: 'Rank 1 Baseline',
-      cost: 0,
-      prestigeState: {
-        ...createPrestigeState(),
-        rank: 1,
-      },
-    });
-
-    console.log('\nClam T1 relief report (stage 6, 1200 frames)');
-    console.table(clamRows);
-    console.log('\nPearl rank-1 relief report (stage 6, 1200 frames)');
-    console.table(pearlRows);
-
-    const suspicious = [...clamRows, ...pearlRows]
-      .filter(
-        (row) =>
-          row.meta_mean_pct <= 0 ||
-          row.meta_min_pct < -2 ||
-          (row.budget_pct != null &&
-            Math.max(row.power_mean_pct, row.economy_mean_pct) < row.budget_pct * 0.25),
-      )
-      .map(({ kind, id, budget_pct, power_mean_pct, economy_mean_pct, meta_mean_pct, meta_min_pct, meta_max_pct }) => ({
-        kind,
-        id,
-        budget_pct,
-        power_mean_pct,
-        economy_mean_pct,
-        meta_mean_pct,
-        meta_min_pct,
-        meta_max_pct,
-      }));
-
-    if (suspicious.length > 0) {
-      console.log('\nSuspicious low-impact tracks');
-      console.table(suspicious);
-    }
-
-    expect(clamRows).toHaveLength(buildClamTierOneVariants().length);
-    expect(pearlRows).toHaveLength(buildPearlRankOneVariants().length);
-    expect(clamRows.some((row) => row.meta_mean_pct > 0)).toBe(true);
-    for (const row of [...clamRows, ...pearlRows]) {
-      expect(Number.isFinite(row.power_mean_pct)).toBe(true);
-      expect(Number.isFinite(row.economy_mean_pct)).toBe(true);
-      expect(Number.isFinite(row.meta_min_pct)).toBe(true);
-      expect(Number.isFinite(row.meta_mean_pct)).toBe(true);
-      expect(Number.isFinite(row.meta_max_pct)).toBe(true);
-    }
-  }, 120_000);
-});
+export function getSuspiciousRows(rows: BalanceReportRow[]): BalanceReportRow[] {
+  return rows.filter(
+    (row) =>
+      row.meta_mean_pct <= 0 ||
+      row.meta_min_pct < -2 ||
+      (row.budget_pct != null &&
+        Math.max(row.power_mean_pct, row.economy_mean_pct) < row.budget_pct * 0.25),
+  );
+}

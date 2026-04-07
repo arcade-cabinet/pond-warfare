@@ -52,16 +52,16 @@ import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 import { progressionLevel } from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 // ── Mocks ──────────────────────────────────────────────────────────
 
 // Mutable world ref — Governor goals read game.world to dispatch actions
-const _gameRef: { world: GameWorld | null } = { world: null };
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
     get(_target, prop) {
-      if (prop === 'world') return _gameRef.world;
+      if (prop === 'world') return mockedGameRef.world;
       return undefined;
     },
   }),
@@ -370,7 +370,7 @@ describe('Governor Diagnostic Playthrough', () => {
     // Create world with peace timer disabled so AI engages immediately
     const world = createTestWorld({ stage, seed: 42 });
     world.peaceTimer = 0; // No grace period — enemies active from frame 1
-    _gameRef.world = world; // Wire Governor goals to this world
+    mockedGameRef.world = world; // Wire Governor goals to this world
     const pg = createTestPanelGrid(stage);
     const layout = generateVerticalMapLayout(pg, new SeededRandom(42));
 

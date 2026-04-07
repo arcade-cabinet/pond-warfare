@@ -4,7 +4,6 @@ import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import {
   getDifficultyShiftPercent,
-  getMetaProgressionScore,
   summarizeShiftPercents,
   type BalanceSnapshot,
 } from '@/balance/progression-model';
@@ -38,14 +37,15 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { type PrestigeState, createPrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { createSnapshotScoreCache } from './balance-score-cache';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
-const _gameRef: { world: GameWorld | null } = { world: null };
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
     get(_target, prop) {
-      if (prop === 'world') return _gameRef.world;
+      if (prop === 'world') return mockedGameRef.world;
       return undefined;
     },
   }),
@@ -143,7 +143,7 @@ function runVariant(seed: number, variant: VariantConfig): BalanceSnapshot {
 
   const world = createTestWorld({ stage: TEST_STAGE, seed, fish: 200 });
   world.peaceTimer = 0;
-  _gameRef.world = world;
+  mockedGameRef.world = world;
 
   const panelGrid = createTestPanelGrid(TEST_STAGE, 960, 540, seed);
   const layout = generateVerticalMapLayout(panelGrid, new SeededRandom(seed));
@@ -169,6 +169,7 @@ function runVariant(seed: number, variant: VariantConfig): BalanceSnapshot {
 
 describe('balance track shifts', () => {
   it('estimates min/mean/max relief for selected Clam and Pearl tracks', () => {
+    const getScores = createSnapshotScoreCache(runVariant);
     const baselineScores = new Map<string, number>();
     const rankOneBaseline: VariantConfig = {
       name: 'rank_one_baseline',
@@ -178,8 +179,8 @@ describe('balance track shifts', () => {
       },
     };
     for (const seed of SEEDS) {
-      baselineScores.set(`clam:${seed}`, getMetaProgressionScore(runVariant(seed, { name: 'baseline' })));
-      baselineScores.set(`pearl:${seed}`, getMetaProgressionScore(runVariant(seed, rankOneBaseline)));
+      baselineScores.set(`clam:${seed}`, getScores(seed, { name: 'baseline' }).meta);
+      baselineScores.set(`pearl:${seed}`, getScores(seed, rankOneBaseline).meta);
     }
 
     const variants: VariantConfig[] = [
@@ -229,8 +230,7 @@ describe('balance track shifts', () => {
       const baselineKeyPrefix = variant.name.startsWith('pearl_') ? 'pearl' : 'clam';
       const shifts = SEEDS.map((seed) => {
         const baseline = baselineScores.get(`${baselineKeyPrefix}:${seed}`) ?? 0;
-        const variantScore = getMetaProgressionScore(runVariant(seed, variant));
-        return getDifficultyShiftPercent(baseline, variantScore);
+        return getDifficultyShiftPercent(baseline, getScores(seed, variant).meta);
       });
       const summary = summarizeShiftPercents(shifts);
       return {

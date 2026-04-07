@@ -100,59 +100,55 @@ From [balance-track-shifts.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfa
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| clam_gather_t1 | -1.04 | 5.83 | 13.58 |
-| clam_yield_t1 | 0.77 | 6.66 | 13.82 |
-| clam_clam_bonus_t1 | 0.09 | 6.09 | 13.17 |
-| pearl_clam_earnings_rank_1 | -1.66 | 1.68 | 6.18 |
-| pearl_gather_rank_2 | -1.92 | 0.91 | 5.90 |
-| pearl_auto_deploy_fisher | -1.92 | 1.27 | 5.69 |
-| pearl_starting_tier_1 | -1.30 | 1.72 | 6.77 |
+| clam_gather_t1 | -4.56 | 4.57 | 12.51 |
+| clam_yield_t1 | 1.30 | 6.90 | 13.25 |
+| clam_clam_bonus_t1 | 0.62 | 6.35 | 12.65 |
+| pearl_clam_earnings_rank_1 | 1.09 | 3.57 | 8.34 |
+| pearl_gather_rank_2 | 1.36 | 3.62 | 7.70 |
+| pearl_auto_deploy_fisher | 0.58 | 3.08 | 7.84 |
+| pearl_starting_tier_1 | 1.94 | 4.40 | 8.53 |
 
 These sampled Pearl rows now compare against a rank-matched Pearl baseline, so
 the shifts represent the upgrade itself instead of accidentally including the
 rank-1 prestige reward multiplier.
 
-The diagnostic also now includes the controller/runtime fixes for gather
+The diagnostic now also includes the controller/runtime fixes for gather
 override persistence, specialist governor lockout, prestige population
 accounting, the combat counter-scaling fix, governor attack-party reuse, safer
-governor attack pacing, and bottom-row-only rare resource placement. Before
-those fixes, boosted gather tracks could falsely go deeply negative because
-workers lost their assigned resource intent after depletion or flee recovery,
-several Pearl specialists could be re-commanded by the governor instead of
-staying on their intended fixed roles, auto-deploy Pearl tracks could look
-worse than baseline simply because they consumed food that the baseline run
-needed for normal training, combat tracks could be suppressed because melee and
-projectile counters were effectively being applied twice at damage time, attack
-parties could get stranded in old overrides instead of being recalled for base
-defense, and rare-resource prestige nodes could spawn as gatherer bait in the
-hostile top row.
+governor attack pacing, bottom-row-only rare resource placement, deterministic
+match-event bonus-node placement, transient training-queue reset on fresh world
+creation, and a shared mocked `game.world` reference across the balance harness
+files. Those fixes removed multiple false negatives from the progression
+reports.
 
-## Exhaustive First-Rank Report
+## Exhaustive Broad Reports
 
-From [exhaustive-balance-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/exhaustive-balance-report.test.ts), stage 6, 1200 frames, seeds `11/42/77`:
+The old combined exhaustive report turned out to be order-sensitive: running
+Pearl rows before Clam rows or vice versa materially changed the output. The
+root causes were test/runtime state leaking across runs, especially a stale
+global training queue map and per-file `@/game` mocks that did not share the
+same mocked `game.world` reference.
 
-- The report now separates `power_mean_pct`, `economy_mean_pct`, and `meta_mean_pct`, plus `meta_min_pct` and `meta_max_pct`.
-- Clam T1 tracks still cluster tightly on observed in-match power, which is a strong sign that many categories remain runtime-flat or measurement-flat in this window.
-- Direct multiplier tracks now also carry a `budget_pct`, so we can explicitly compare configured stat budget against observed relief.
-- If `budget_pct` is non-zero but both observed power and observed economy are near zero, that track is not being expressed strongly enough in live play or diagnostics.
+The broad scan is now split into isolated files so each currency layer runs in
+a fresh worker process:
 
-Current corrected readout:
+- [exhaustive-clam-balance-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/exhaustive-clam-balance-report.test.ts)
+- [exhaustive-pearl-balance-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/exhaustive-pearl-balance-report.test.ts)
+
+Current isolated readout:
 
 - Clam T1:
-  - `economy_node_yield_t0` is currently strongest at about `4.79%` `meta_mean_pct`
-  - the basic gather tracks are close behind at about `4.08%`
-  - most non-economy Clam T1 rows still cluster tightly around `4.08%`, which means the harness can now see them as positive, but it still cannot distinguish many categories from each other in this window
-  - `economy_mean_pct` is still `0` across the sampled Clam T1 set, so the current report is still mostly observing battlefield pacing, not post-match reward acceleration
+  - `economy_node_yield_t0` is strongest at about `6.06%` `meta_mean_pct`
+  - the three basic gather tracks cluster just behind at about `6.03%`
+  - most remaining Clam T1 rows cluster around `5.34%`, which means the harness now reads them as clearly positive even if it still does not separate categories cleanly in this short window
+  - the Clam broad scan now shows a small but real `economy_mean_pct` signal (`1.21%`) instead of the previous flat zero
 - Pearl rank 1:
-  - `auto_deploy_fisher` is now strongly positive at about `6.02%` `meta_mean_pct`
-  - `auto_deploy_digger` and `auto_deploy_logger` crossed into positive territory at roughly `1.50%` `meta_mean_pct`, though their minimums are still unstable
-  - `auto_deploy_hunter` improved to about `1.11%`, and `auto_deploy_guardian` improved to about `0.71%`
-  - `auto_deploy_ranger`, `auto_deploy_shaman`, and `auto_deploy_lookout` still sit just below neutral at about `-0.51%`
-  - `rare_resource_access` improved dramatically after moving rare nodes out of the hostile top row and now sits roughly at break-even (`-0.02%` `meta_mean_pct`)
-  - `starting_tier` is still negative at about `-2.08%`, which means the current harness still does not value that tempo correctly enough
-  - `combat_multiplier` improved materially but is still negative at about `-2.57%`
-  - `clam_earnings_multiplier` remains economy-only with `4.22%` `economy_mean_pct`, but its combined `meta_mean_pct` is still negative in this stage-6 window because it does not improve in-match power
-  - `auto_repair_behavior`, `gather_multiplier`, `hp_multiplier`, and `auto_heal_behavior` are the main remaining negative cluster at roughly `-3.91%` to `-3.93%`
+  - `auto_deploy_fisher` is strongly positive at about `11.73%` `meta_mean_pct`
+  - `auto_deploy_digger` is about `6.66%`, `auto_deploy_logger` about `4.05%`, and the remaining auto-deploy specialists cluster around `2.27%` to `4.01%`
+  - `starting_tier` is now slightly positive at about `0.52%`
+  - `clam_earnings_multiplier` is also slightly positive on combined meta at about `0.35%`, with `4.22%` `economy_mean_pct`
+  - `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `auto_repair_behavior` are now near-neutral in the isolated 1200-frame broad scan (`-0.05%` to `-0.07%` `meta_mean_pct`) instead of materially negative
+  - the main remaining negative broad-scan rows are `rare_resource_access` at about `-0.87%` and `gather_multiplier` at about `-1.43%`
 
 ## Combat-Pressure Diagnostic
 
@@ -202,14 +198,14 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 
 ## Interpretation
 
-- Cheap first-rank Clam tracks are currently landing around **6% to 8% sampled mean relief** in the smaller report.
-- Early sampled Pearl tracks are now directionally positive across the selected rows, but still much smaller than Clam T1 relief in the same window.
+- Cheap first-rank Clam tracks are currently landing around **4.5% to 7% sampled mean relief** in the smaller report, and around **5.3% to 6.1%** in the isolated Clam broad scan.
+- Early sampled Pearl tracks are now directionally positive across the selected rows and the isolated broad Pearl scan, but they still land below the strongest Clam pressure-relief rows unless they auto-deploy real specialists.
 - Under forced early combat pressure, all four tested Pearl combat/repair tracks are now positive, with `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` showing the strongest gains.
 - The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
-- Basic Clam gather/yield/clam-bonus tracks are now confirmed as positive again after the gather-override persistence fix.
-- The exhaustive report still shows a second issue beyond raw tuning: many Clam categories remain too tightly clustered, and several Pearl tracks are still either inert or actively harmful in governor play.
-- Some of the remaining Pearl negatives are now much more clearly governor-quality problems rather than missing runtime consumers: the direct combat-pressure harness flipped positive after the damage-path fix, while the long stage-6 governor harness still undervalues the same upgrades.
-- The rare-resource prestige path is no longer a map-generation trap. Its near-neutral stage-6 score now points at ordinary governor valuation limits rather than a fundamentally harmful spawn pattern.
+- Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.
+- The isolated broad scans are now trustworthy enough to use as a release-budget input, but they still show two real limitations: many Clam categories remain tightly clustered, and some Pearl tracks are only near-neutral in the short 1200-frame window even when targeted diagnostics show clear local value.
+- The targeted governor trace still shows `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `gather_multiplier` improving raw power on specific seeds even when the broad Pearl scan only reads them as near-neutral. That means the remaining gap is now much more about measurement window and governor policy than about missing runtime consumers.
+- The rare-resource prestige path is no longer a map-generation trap. Its small remaining negative broad-scan value now points at ordinary governor valuation limits rather than a fundamentally harmful spawn pattern.
 - The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the prestige population fix, but attack still fails to cash in its orders over the longer governor run.
 
 ## How To Use This
@@ -223,9 +219,8 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Investigate the remaining attack-controller conversion gap, since the governor now shares targets, reuses attack parties, and paces attacks more safely, but still does not convert that into enough long-run kill value in the exhaustive harness.
-2. Reconcile the remaining blended full-run negatives for `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `auto_repair_behavior` against the now-positive pressure harness, since that mismatch still points at governor-path or pacing issues rather than missing combat consumers.
+1. Investigate the remaining attack-controller conversion gap, since the governor still spends most of the sampled stage-6 run on train/defend rather than turning surplus power into kills.
+2. Improve the broad Pearl scan window or scoring so `gather_multiplier`, `rare_resource_access`, and the repair/combat/heal cluster are not under-read relative to the targeted governor trace and immediate-pressure harness.
 3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
-4. Expand the diagnostics from sampled tracks to every Clam subcategory and every Pearl upgrade.
-5. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
-6. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.
+4. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
+5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

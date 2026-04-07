@@ -29,14 +29,14 @@ import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
 import * as storeV3 from '@/ui/store-v3';
 import { createPrestigeState, isAutoBehaviorUnlocked, type PrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
-const _gameRef: { world: GameWorld | null } = { world: null };
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
     get(_target, prop) {
-      if (prop === 'world') return _gameRef.world;
+      if (prop === 'world') return mockedGameRef.world;
       return undefined;
     },
   }),
@@ -93,7 +93,7 @@ function setupWorld(
 
   const world = createTestWorld({ stage, seed, fish, logs });
   world.peaceTimer = Number.MAX_SAFE_INTEGER;
-  _gameRef.world = world;
+  mockedGameRef.world = world;
 
   const panelGrid = createTestPanelGrid(stage, 960, 540, seed);
   const layout = generateVerticalMapLayout(panelGrid, new SeededRandom(seed), {
@@ -129,7 +129,7 @@ function setupMicroWorld(
   storeV3.startingTierRank.value = startingTierRank;
   const world = createTestWorld({ stage: 1, seed, fish, logs });
   world.peaceTimer = Number.MAX_SAFE_INTEGER;
-  _gameRef.world = world;
+  mockedGameRef.world = world;
   const upgradeState = buildCurrentRunUpgradeState({
     clams: 0,
     purchasedNodeIds: [],

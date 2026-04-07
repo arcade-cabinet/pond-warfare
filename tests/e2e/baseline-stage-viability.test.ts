@@ -27,14 +27,14 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { createPrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
-const _gameRef: { world: GameWorld | null } = { world: null };
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
     get(_target, prop) {
-      if (prop === 'world') return _gameRef.world;
+      if (prop === 'world') return mockedGameRef.world;
       return undefined;
     },
   }),
@@ -115,7 +115,7 @@ function runScenario(stage: number, purchasedNodeIds: string[] = []): BaselineMe
 
   const world = createTestWorld({ stage, seed: 42, fish: 200 });
   world.peaceTimer = 0;
-  _gameRef.world = world;
+  mockedGameRef.world = world;
 
   const panelGrid = createTestPanelGrid(stage);
   const layout = generateVerticalMapLayout(panelGrid, new SeededRandom(42));
