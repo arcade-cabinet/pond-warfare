@@ -7,6 +7,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -153,7 +154,7 @@ describe('diverStealthSystem', () => {
   });
 
   it('does not stealth non-Diver units on water', () => {
-    // Create a Brawler on water — should NOT get stealth
+    // Create a Sapper on water — should NOT get stealth
     const eid = addEntity(world.ecs);
     addComponent(world.ecs, eid, Position);
     addComponent(world.ecs, eid, Health);
@@ -166,7 +167,7 @@ describe('diverStealthSystem', () => {
     Health.max[eid] = 60;
     UnitStateMachine.state[eid] = UnitState.Idle;
     FactionTag.faction[eid] = Faction.Player;
-    EntityTypeTag.kind[eid] = EntityKind.Brawler;
+    EntityTypeTag.kind[eid] = SAPPER_KIND;
     setTerrain(world, 100, 100, TerrainType.Water);
 
     diverStealthSystem(world);

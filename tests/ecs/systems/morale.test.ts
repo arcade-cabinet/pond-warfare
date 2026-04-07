@@ -6,6 +6,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { Combat, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES, moraleSystem } from '@/ecs/systems/morale';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
@@ -16,7 +17,7 @@ function createUnit(
   x: number,
   y: number,
   faction: Faction,
-  kind: EntityKind = EntityKind.Brawler,
+  kind: EntityKind = SAPPER_KIND,
 ): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);

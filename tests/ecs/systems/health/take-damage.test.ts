@@ -21,6 +21,7 @@ import {
 } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health/take-damage';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 vi.mock('@/audio/audio-system', () => ({
@@ -45,7 +46,7 @@ function spawnUnit(
   hp: number,
   maxHp: number,
   faction: Faction,
-  kind: EntityKind = EntityKind.Brawler,
+  kind: EntityKind = SAPPER_KIND,
 ): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
@@ -329,7 +330,7 @@ describe('takeDamage', () => {
 
   describe('gather override protection', () => {
     it('does not convert a fleeing gather override into AttackMove on repeated hits', () => {
-      const target = spawnUnit(world, 100, 100, 50, 60, Faction.Player, EntityKind.Gatherer);
+      const target = spawnUnit(world, 100, 100, 50, 60, Faction.Player, MUDPAW_KIND);
       const attacker = spawnUnit(world, 120, 100, 60, 60, Faction.Enemy, EntityKind.Snake);
 
       Combat.damage[target] = 2;

@@ -3,6 +3,7 @@ import { spawnEntity } from '@/ecs/archetypes';
 import { Health } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
 import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behaviors';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 import * as storeV3 from '@/ui/store-v3';
 
@@ -19,8 +20,8 @@ describe('prestigeAutoBehaviorSystem', () => {
   it('heals damaged friendly units near the Lodge when lodge_regen is unlocked', () => {
     const world = createGameWorld();
     const lodge = spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
-    const nearby = spawnEntity(world, EntityKind.Brawler, 240, 200, Faction.Player);
-    const far = spawnEntity(world, EntityKind.Brawler, 500, 200, Faction.Player);
+    const nearby = spawnEntity(world, SAPPER_KIND, 240, 200, Faction.Player);
+    const far = spawnEntity(world, SAPPER_KIND, 500, 200, Faction.Player);
 
     Health.current[lodge] = Health.max[lodge] = 400;
     Health.max[nearby] = 100;
@@ -64,7 +65,7 @@ describe('prestigeAutoBehaviorSystem', () => {
   it('does nothing when no prestige auto-behaviors are unlocked', () => {
     const world = createGameWorld();
     const lodge = spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
-    const unit = spawnEntity(world, EntityKind.Brawler, 220, 200, Faction.Player);
+    const unit = spawnEntity(world, SAPPER_KIND, 220, 200, Faction.Player);
 
     Health.max[lodge] = 400;
     Health.current[lodge] = 350;

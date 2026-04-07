@@ -8,6 +8,7 @@ import {
   getShrineAbility,
 } from '@/ecs/systems/shrine';
 import { createGameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 function spawnShrine(world: ReturnType<typeof createGameWorld>) {
@@ -36,7 +37,7 @@ function spawnPlayerUnit(world: ReturnType<typeof createGameWorld>) {
   Position.x[eid] = 500;
   Position.y[eid] = 500;
   addComponent(world.ecs, eid, EntityTypeTag);
-  EntityTypeTag.kind[eid] = EntityKind.Brawler;
+  EntityTypeTag.kind[eid] = SAPPER_KIND;
   return eid;
 }
 

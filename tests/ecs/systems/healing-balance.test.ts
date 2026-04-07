@@ -9,6 +9,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { MEDIC_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   Carrying,
@@ -97,7 +98,7 @@ describe('Healer aura -- max 3 concurrent heals', () => {
   });
 
   it('heals at most 3 nearby injured units per healer', () => {
-    const healer = makeUnit(world, 100, 100, Faction.Player, EntityKind.Healer, 60);
+    const healer = makeUnit(world, 100, 100, Faction.Player, MEDIC_KIND, 60);
     Health.current[healer] = 60;
 
     const injured: number[] = [];
@@ -107,7 +108,7 @@ describe('Healer aura -- max 3 concurrent heals', () => {
         100 + (i - 2) * 10,
         100 + (i - 2) * 10,
         Faction.Player,
-        EntityKind.Brawler,
+        SAPPER_KIND,
         60,
         50,
       );
@@ -124,9 +125,9 @@ describe('Healer aura -- max 3 concurrent heals', () => {
   });
 
   it('heals fewer than 3 if fewer injured units in range', () => {
-    makeUnit(world, 100, 100, Faction.Player, EntityKind.Healer, 60);
-    const u1 = makeUnit(world, 110, 100, Faction.Player, EntityKind.Brawler, 60, 50);
-    const u2 = makeUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 60, 50);
+    makeUnit(world, 100, 100, Faction.Player, MEDIC_KIND, 60);
+    const u1 = makeUnit(world, 110, 100, Faction.Player, SAPPER_KIND, 60, 50);
+    const u2 = makeUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60, 50);
 
     processHealerAura(world);
 
@@ -144,21 +145,21 @@ describe('Regeneration -- out-of-combat check', () => {
   });
 
   it('regens units that have not been damaged recently', () => {
-    const u = makeUnit(world, 100, 100, Faction.Player, EntityKind.Brawler, 60, 50);
+    const u = makeUnit(world, 100, 100, Faction.Player, SAPPER_KIND, 60, 50);
     Health.lastDamagedFrame[u] = 0;
     processRegeneration(world);
     expect(Health.current[u]).toBe(51);
   });
 
   it('does NOT regen units damaged within last 300 frames', () => {
-    const u = makeUnit(world, 100, 100, Faction.Player, EntityKind.Brawler, 60, 50);
+    const u = makeUnit(world, 100, 100, Faction.Player, SAPPER_KIND, 60, 50);
     Health.lastDamagedFrame[u] = 400;
     processRegeneration(world);
     expect(Health.current[u]).toBe(50);
   });
 
   it('regens units damaged more than 300 frames ago', () => {
-    const u = makeUnit(world, 100, 100, Faction.Player, EntityKind.Brawler, 60, 50);
+    const u = makeUnit(world, 100, 100, Faction.Player, SAPPER_KIND, 60, 50);
     Health.lastDamagedFrame[u] = 200;
     processRegeneration(world);
     expect(Health.current[u]).toBe(51);
@@ -182,15 +183,15 @@ describe('Herbalist Hut -- 200px range', () => {
 
   it('heals units within 200px', () => {
     makeHerbalistHut(world, 100, 100);
-    const close = makeUnit(world, 200, 100, Faction.Player, EntityKind.Brawler, 60, 50);
+    const close = makeUnit(world, 200, 100, Faction.Player, SAPPER_KIND, 60, 50);
     processHerbalistHutHeal(world);
     expect(Health.current[close]).toBe(52);
   });
 
   it('heals injured player units near hut (no spatial hash)', () => {
     makeHerbalistHut(world, 100, 100);
-    const u1 = makeUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 60, 50);
-    const u2 = makeUnit(world, 130, 100, Faction.Player, EntityKind.Brawler, 60, 50);
+    const u1 = makeUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60, 50);
+    const u2 = makeUnit(world, 130, 100, Faction.Player, SAPPER_KIND, 60, 50);
     processHerbalistHutHeal(world);
     // Without spatial hash, all player units are healed
     expect(Health.current[u1]).toBe(52);

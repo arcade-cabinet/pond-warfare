@@ -7,6 +7,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEDIC_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   EntityTypeTag,
@@ -42,7 +43,7 @@ function spawnUnit(
   hp: number,
   maxHp: number,
   state: UnitState = UnitState.Idle,
-  kind: EntityKind = EntityKind.Brawler,
+  kind: EntityKind = SAPPER_KIND,
   faction: Faction = Faction.Player,
 ): number {
   const eid = addEntity(world.ecs);
@@ -206,7 +207,7 @@ describe('processHealerAura', () => {
   });
 
   it('healer heals a nearby damaged ally by 2 HP', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
     const ally = spawnUnit(world, 130, 100, 40, 60, UnitState.Idle);
 
     processHealerAura(world);
@@ -215,7 +216,7 @@ describe('processHealerAura', () => {
   });
 
   it('does NOT heal allies beyond max HP', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
     const ally = spawnUnit(world, 130, 100, 59, 60, UnitState.Idle);
 
     processHealerAura(world);
