@@ -22,6 +22,7 @@ import {
 } from '@/ecs/components';
 import { enemyCommanderTick } from '@/ecs/systems/ai/enemy-commander';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 // Mock takeDamage to avoid side-effect chain (audio, particles, death)
@@ -95,7 +96,7 @@ function createPlayerUnit(world: GameWorld, x: number, y: number, hp = 60): numb
   Combat.damage[eid] = 6;
   Combat.attackRange[eid] = 40;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Brawler;
+  EntityTypeTag.kind[eid] = SAPPER_KIND;
   UnitStateMachine.state[eid] = UnitState.Idle;
   Velocity.speed[eid] = 1.8;
 

@@ -28,6 +28,7 @@ import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
@@ -91,7 +92,8 @@ function seedPlayerDefense(world: GameWorld, lodge: number): void {
 
   for (let index = 0; index < offsets.length; index += 1) {
     const [dx, dy] = offsets[index];
-    const eid = spawnEntity(world, EntityKind.Brawler, lodgeX + dx, lodgeY + dy, Faction.Player);
+    const kind = index < 3 ? MUDPAW_KIND : SAPPER_KIND;
+    const eid = spawnEntity(world, kind, lodgeX + dx, lodgeY + dy, Faction.Player);
     const hpRatio = world.gameRng.float(0.48, 0.72);
     Health.current[eid] = Math.round(Health.max[eid] * hpRatio);
     dispatchTaskOverride(world, eid, 'defending');

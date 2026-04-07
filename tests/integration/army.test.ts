@@ -21,6 +21,7 @@ import { combatSystem } from '@/ecs/systems/combat';
 import { trainingSystem } from '@/ecs/systems/training';
 import { rankFromKills, veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND, SABOTEUR_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getPlayerArmyUnits, getPlayerEntities } from '../helpers/ecs-queries';
 
@@ -41,7 +42,7 @@ describe('Army Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 3;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper]);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, MEDIC_KIND, SAPPER_KIND]);
     trainingSystem(world);
 
     TrainingQueue.timer[lodge] = 1;
@@ -52,13 +53,13 @@ describe('Army Integration', () => {
 
     const fieldUnits = getPlayerArmyUnits(world);
     expect(fieldUnits.length).toBe(3);
-    expect(getPlayerEntities(world, EntityKind.Gatherer).length).toBe(1);
-    expect(getPlayerEntities(world, EntityKind.Healer).length).toBe(1);
-    expect(getPlayerEntities(world, EntityKind.Sapper).length).toBe(1);
+    expect(getPlayerEntities(world, MUDPAW_KIND).length).toBe(1);
+    expect(getPlayerEntities(world, MEDIC_KIND).length).toBe(1);
+    expect(getPlayerEntities(world, SAPPER_KIND).length).toBe(1);
   });
 
   it('Mudpaw attacks enemy and deals damage', () => {
-    const mudpaw = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
     const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
 
     UnitStateMachine.state[mudpaw] = UnitState.Attacking;
@@ -72,7 +73,7 @@ describe('Army Integration', () => {
   });
 
   it('Saboteur attacks enemy and deals damage', () => {
-    const saboteur = spawnEntity(world, EntityKind.Saboteur, 100, 100, Faction.Player);
+    const saboteur = spawnEntity(world, SABOTEUR_KIND, 100, 100, Faction.Player);
     const snake = spawnEntity(world, EntityKind.Snake, 120, 100, Faction.Enemy);
 
     UnitStateMachine.state[saboteur] = UnitState.Attacking;
@@ -94,7 +95,7 @@ describe('Army Integration', () => {
 
   it('veteran Mudpaw gets stat bonuses', () => {
     world.frameCount = 60;
-    const mudpaw = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
     const baseHp = Health.max[mudpaw];
     const baseDmg = Combat.damage[mudpaw];
 
@@ -113,20 +114,20 @@ describe('Army Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 2;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Sapper, EntityKind.Saboteur]);
+    trainingQueueSlots.set(lodge, [SAPPER_KIND, SABOTEUR_KIND]);
 
     trainingSystem(world);
     TrainingQueue.timer[lodge] = 1;
     trainingSystem(world);
 
-    expect(getPlayerEntities(world, EntityKind.Sapper)).toHaveLength(1);
-    expect(getPlayerEntities(world, EntityKind.Saboteur)).toHaveLength(1);
+    expect(getPlayerEntities(world, SAPPER_KIND)).toHaveLength(1);
+    expect(getPlayerEntities(world, SABOTEUR_KIND)).toHaveLength(1);
   });
 
   it('field-unit helper includes Mudpaws and manual specialists', () => {
-    spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
-    spawnEntity(world, EntityKind.Healer, 200, 100, Faction.Player);
-    spawnEntity(world, EntityKind.Sapper, 300, 100, Faction.Player);
+    spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    spawnEntity(world, MEDIC_KIND, 200, 100, Faction.Player);
+    spawnEntity(world, SAPPER_KIND, 300, 100, Faction.Player);
 
     const fieldUnits = getPlayerArmyUnits(world);
     expect(fieldUnits.length).toBe(3);

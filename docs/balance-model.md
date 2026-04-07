@@ -24,6 +24,9 @@ The goal is not perfect prediction. The goal is a repeatable approximation we ca
 - Pearls are the permanent prestige acceleration layer.
 - Player-facing Pearl specialists now cost in-match resources and consume normal population when trained during a run.
 - Player-facing Pearl specialist zone upgrades now apply at spawn time into their assignment geometry, not just their display copy.
+- Enemy counter-training now keys off actual player combat pressure. `Mudpaw`
+  economy bodies are intentionally excluded from that signal so small Clam
+  economy upgrades do not get "countered" as if they were frontline army tech.
 - The legacy instant-deploy diagnostic helper still excludes those spawned specialists from baseline food-cap accounting so older pressure slices remain comparable while the harnesses are being rewritten.
 - If a building or response is required to clear a pane, it belongs in baseline pane progression, not behind Clams.
 

@@ -16,6 +16,7 @@ import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
 import { EntityKind, Faction } from '@/types';
@@ -52,7 +53,7 @@ interface DiagnosticVariant {
 
 interface VariantMetrics {
   name: string;
-  startingGatherers: number;
+  startingMudpaws: number;
   gatherSpeedMod: number;
   rareNodeCount: number;
   resourcesGathered: number;
@@ -61,7 +62,7 @@ interface VariantMetrics {
   fish: number;
   logs: number;
   rocks: number;
-  gathererInfo: string;
+  generalistInfo: string;
 }
 
 function countPlayerUnits(world: GameWorld, kind?: EntityKind): number {
@@ -71,18 +72,18 @@ function countPlayerUnits(world: GameWorld, kind?: EntityKind): number {
   }).length;
 }
 
-function summarizeGatherers(world: GameWorld): string {
+function summarizeMudpaws(world: GameWorld): string {
   return Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag, UnitStateMachine]))
     .filter(
       (eid) =>
         FactionTag.faction[eid] === Faction.Player &&
         Health.current[eid] > 0 &&
-        EntityTypeTag.kind[eid] === EntityKind.Gatherer,
+        EntityTypeTag.kind[eid] === MUDPAW_KIND,
     )
     .map((eid) => {
       const target = UnitStateMachine.targetEntity[eid];
       const targetKind = target >= 0 ? EntityTypeTag.kind[target] : -1;
-      return `G:${UnitStateMachine.state[eid]}/O:${TaskOverride.task[eid]}/T:${targetKind}`;
+      return `M:${UnitStateMachine.state[eid]}/O:${TaskOverride.task[eid]}/T:${targetKind}`;
     })
     .join(' ');
 }
@@ -118,7 +119,7 @@ function runVariant(variant: DiagnosticVariant): VariantMetrics {
   const governor = new Governor();
   governor.enabled = true;
 
-  const startingGatherers = countPlayerUnits(world, EntityKind.Gatherer);
+  const startingMudpaws = countPlayerUnits(world, MUDPAW_KIND);
   const rareNodeCount = layout.resourcePositions.filter((pos) => pos.type === 'rare_node').length;
 
   for (let frame = 0; frame < 1200; frame += 1) {
@@ -127,7 +128,7 @@ function runVariant(variant: DiagnosticVariant): VariantMetrics {
 
   return {
     name: variant.name,
-    startingGatherers,
+    startingMudpaws,
     gatherSpeedMod: world.gatherSpeedMod,
     rareNodeCount,
     resourcesGathered: world.stats.resourcesGathered,
@@ -136,7 +137,7 @@ function runVariant(variant: DiagnosticVariant): VariantMetrics {
     fish: world.resources.fish,
     logs: world.resources.logs,
     rocks: world.resources.rocks,
-    gathererInfo: summarizeGatherers(world),
+    generalistInfo: summarizeMudpaws(world),
   };
 }
 
@@ -194,7 +195,7 @@ describe('progression balance diagnostics', () => {
       startingTier,
     ]);
 
-    expect(blueprintFisher.startingGatherers).toBeGreaterThan(baseline.startingGatherers);
+    expect(blueprintFisher.startingMudpaws).toBeGreaterThan(baseline.startingMudpaws);
     expect(pearlGather.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
     expect(clamFishTier.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
     expect(rareResources.rareNodeCount).toBeGreaterThan(baseline.rareNodeCount);

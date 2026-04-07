@@ -34,7 +34,7 @@ import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
 import type { SeededRandom } from '@/utils/random';
-import { countPlayerUnitsOfKind, getEnemyNests } from './helpers';
+import { getEnemyNests, getPlayerCombatPressure } from './helpers';
 
 /** Resource costs for all enemy-trainable unit types. */
 const ENEMY_UNIT_COSTS: Partial<
@@ -60,6 +60,8 @@ const RANGED_KINDS = new Set([EntityKind.Snake, EntityKind.VenomSnake, EntityKin
 /** Siege-type enemy units. */
 const SIEGE_KINDS = new Set([EntityKind.SiegeTurtle]);
 
+type TrainingPreference = 'melee' | 'ranged' | 'balanced' | 'siege';
+
 /**
  * Pick a unit kind from unlocked units using weighted random selection.
  * Higher-tier units have lower weights, so they train less frequently.
@@ -68,7 +70,7 @@ const SIEGE_KINDS = new Set([EntityKind.SiegeTurtle]);
 function pickEnemyUnit(
   rng: SeededRandom,
   unlockedUnits: EntityKind[],
-  trainingPreference: 'melee' | 'ranged' | 'balanced' | 'siege' = 'balanced',
+  trainingPreference: TrainingPreference = 'balanced',
 ): EntityKind {
   let totalWeight = 0;
   for (const kind of unlockedUnits) {
@@ -91,6 +93,26 @@ function pickEnemyUnit(
     if (roll <= 0) return kind;
   }
   return unlockedUnits[0];
+}
+
+/**
+ * Blend personality bias with observed player composition. Clear frontline or
+ * projected pressure overrides personality so enemy counter-training actually
+ * responds to the live roster; otherwise the personality preference stays in
+ * control.
+ */
+export function resolveEnemyTrainingPreference(
+  world: Pick<GameWorld, 'ecs' | 'specialistAssignments'>,
+  personalityPreference: TrainingPreference,
+): TrainingPreference {
+  const pressure = getPlayerCombatPressure(world);
+  if (pressure.projected >= Math.max(2, pressure.frontline + 1)) {
+    return 'ranged';
+  }
+  if (pressure.frontline >= Math.max(2, pressure.projected + 1)) {
+    return 'melee';
+  }
+  return personalityPreference;
 }
 
 /**
@@ -124,22 +146,6 @@ export function enemyTrainingTick(world: GameWorld): void {
 
   const res = world.enemyResources;
 
-  // Analyze player army to decide composition
-  const playerSnipers = countPlayerUnitsOfKind(world, EntityKind.Sniper);
-  const playerBrawlers = countPlayerUnitsOfKind(world, EntityKind.Brawler);
-
-  // Counter logic: gators counter brawlers, snakes counter snipers
-  // Default to 50/50 if player has no army
-  let _gatorWeight = 0.5;
-  const totalPlayerCombat = playerSnipers + playerBrawlers;
-  if (totalPlayerCombat > 0) {
-    // More snipers -> train more gators (gators are strong vs brawlers, but snakes counter snipers)
-    // Actually from DAMAGE_MULTIPLIERS: Snake is strong vs Sniper, Gator is strong vs Brawler
-    const sniperRatio = playerSnipers / totalPlayerCombat;
-    // If player has many snipers, train more snakes (which counter snipers)
-    _gatorWeight = 1.0 - sniperRatio * 0.7; // Bias toward snakes when snipers dominate
-  }
-
   // Queue training at each nest that isn't already training
   // Early game (before mid-game): only train 1 unit per check, max 1 in queue
   // Mid game: normal training (max 2 in queue)
@@ -156,11 +162,11 @@ export function enemyTrainingTick(world: GameWorld): void {
 
     // Decide what to train from unlocked units (evolution system + personality bias)
     const personality = resolvePersonality(world.aiPersonality, world.frameCount);
-    const unitKind = pickEnemyUnit(
-      world.gameRng,
-      world.enemyEvolution.unlockedUnits,
+    const trainingPreference = resolveEnemyTrainingPreference(
+      world,
       personality.trainingPreference,
     );
+    const unitKind = pickEnemyUnit(world.gameRng, world.enemyEvolution.unlockedUnits, trainingPreference);
     const costs = ENEMY_UNIT_COSTS[unitKind];
     if (!costs) continue;
     const costFish = costs.fish;

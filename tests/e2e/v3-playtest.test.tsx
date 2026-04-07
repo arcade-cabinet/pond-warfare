@@ -71,7 +71,7 @@ describe('E2E Playtest Suite — US20', () => {
     });
   });
 
-  describe('E2E: Gatherer → resource node → collects → returns', () => {
+  describe('E2E: Mudpaw → resource node → collects → returns', () => {
     it('resource nodes exist on map (from terrain config)', () => {
       const rule = getBiomeTerrainRule('grassland_clearing');
       expect(rule.primary).toBeTruthy();

@@ -1,14 +1,23 @@
 // @vitest-environment jsdom
 
-import { query } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
-import { EntityTypeTag, FactionTag, Health, Position, TaskOverride } from '@/ecs/components';
+import {
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  IsBuilding,
+  IsResource,
+  Position,
+  TaskOverride,
+} from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { AttackGoal, MIN_ATTACK_ARMY } from '@/governor/goals/attack-goal';
 import { BuildGoal } from '@/governor/goals/build-goal';
@@ -121,11 +130,11 @@ function setupMicroWorld(
   return { world, lodgeEid };
 }
 
-function spawnPlayerGatherers(world: GameWorld, lodgeEid: number, count: number): number[] {
+function spawnPlayerMudpaws(world: GameWorld, lodgeEid: number, count: number): number[] {
   const lodgeX = Position.x[lodgeEid];
   const lodgeY = Position.y[lodgeEid];
   return Array.from({ length: count }, (_, index) =>
-    spawnEntity(world, EntityKind.Gatherer, lodgeX - 70 + index * 25, lodgeY - 40, Faction.Player),
+    spawnEntity(world, MUDPAW_KIND, lodgeX - 70 + index * 25, lodgeY - 40, Faction.Player),
   );
 }
 
@@ -153,6 +162,17 @@ function countLiving(world: GameWorld, kind: EntityKind, faction: Faction): numb
   ).length;
 }
 
+function countLivingPlayerFieldUnits(world: GameWorld): number {
+  return Array.from(query(world.ecs, [EntityTypeTag, FactionTag, Health])).filter((eid) => {
+    if (FactionTag.faction[eid] !== Faction.Player) return false;
+    if (Health.current[eid] <= 0) return false;
+    if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource)) {
+      return false;
+    }
+    return true;
+  }).length;
+}
+
 function findPlayerLodge(world: GameWorld): number {
   const lodge = Array.from(query(world.ecs, [EntityTypeTag, FactionTag, Health])).find(
     (eid) =>
@@ -167,9 +187,10 @@ function findPlayerLodge(world: GameWorld): number {
 function seedAttackSkirmish(world: GameWorld, lodgeEid: number): void {
   const lodgeX = Position.x[lodgeEid];
   const lodgeY = Position.y[lodgeEid];
-  for (let i = 0; i < 4; i += 1) {
-    spawnEntity(world, EntityKind.Brawler, lodgeX - 60 + i * 30, lodgeY - 50, Faction.Player);
-  }
+  spawnEntity(world, MUDPAW_KIND, lodgeX - 60, lodgeY - 50, Faction.Player);
+  spawnEntity(world, MUDPAW_KIND, lodgeX - 20, lodgeY - 64, Faction.Player);
+  spawnEntity(world, SAPPER_KIND, lodgeX + 20, lodgeY - 56, Faction.Player);
+  spawnEntity(world, SAPPER_KIND, lodgeX + 60, lodgeY - 44, Faction.Player);
   for (let i = 0; i < 6; i += 1) {
     spawnEntity(world, i % 2 === 0 ? EntityKind.Gator : EntityKind.Snake, lodgeX - 50 + i * 20, lodgeY - 280 - i * 10, Faction.Enemy);
   }
@@ -179,8 +200,13 @@ function seedDefendPressure(world: GameWorld, lodgeEid: number): void {
   const lodgeX = Position.x[lodgeEid];
   const lodgeY = Position.y[lodgeEid];
   Health.current[lodgeEid] = Math.round(Health.max[lodgeEid] * 0.6);
-  for (let i = 0; i < 4; i += 1) {
-    const eid = spawnEntity(world, EntityKind.Brawler, lodgeX - 70 + i * 35, lodgeY - 35, Faction.Player);
+  const defenders = [
+    spawnEntity(world, MUDPAW_KIND, lodgeX - 70, lodgeY - 35, Faction.Player),
+    spawnEntity(world, MUDPAW_KIND, lodgeX - 25, lodgeY - 52, Faction.Player),
+    spawnEntity(world, SAPPER_KIND, lodgeX + 18, lodgeY - 48, Faction.Player),
+    spawnEntity(world, SAPPER_KIND, lodgeX + 60, lodgeY - 34, Faction.Player),
+  ];
+  for (const eid of defenders) {
     Health.current[eid] = Math.round(Health.max[eid] * 0.65);
   }
   for (let i = 0; i < 6; i += 1) {
@@ -214,7 +240,7 @@ describe('controller balance diagnostics', () => {
         0,
         variant.prestigeState,
       );
-      spawnPlayerGatherers(world, lodgeEid, 4);
+      spawnPlayerMudpaws(world, lodgeEid, 4);
       runGoalLoop(world, () => new GatherGoal(), 1200);
       return {
         name: variant.name,
@@ -243,11 +269,11 @@ describe('controller balance diagnostics', () => {
       spawnResourceNode(world, EntityKind.Clambed, 410, 360);
       spawnResourceNode(world, EntityKind.Cattail, 260, 320);
       spawnResourceNode(world, EntityKind.Cattail, 380, 320);
-      const gatherers = spawnPlayerGatherers(world, lodgeEid, 4);
-      dispatchTaskOverride(world, gatherers[0], 'gathering-fish');
-      dispatchTaskOverride(world, gatherers[1], 'gathering-fish');
-      dispatchTaskOverride(world, gatherers[2], 'gathering-logs');
-      dispatchTaskOverride(world, gatherers[3], 'gathering-logs');
+      const mudpaws = spawnPlayerMudpaws(world, lodgeEid, 4);
+      dispatchTaskOverride(world, mudpaws[0], 'gathering-fish');
+      dispatchTaskOverride(world, mudpaws[1], 'gathering-fish');
+      dispatchTaskOverride(world, mudpaws[2], 'gathering-logs');
+      dispatchTaskOverride(world, mudpaws[3], 'gathering-logs');
       let armoryFrame = -1;
       for (let frame = 0; frame < 1200; frame += 1) {
         if (frame % 120 === 0) {
@@ -274,10 +300,15 @@ describe('controller balance diagnostics', () => {
         variant.prestigeState,
         variant.startingTierRank,
       );
-      const gatherers = spawnPlayerGatherers(world, lodgeEid, 4);
-      for (const gatherer of gatherers) dispatchTaskOverride(world, gatherer, 'gathering-fish');
+      const mudpaws = spawnPlayerMudpaws(world, lodgeEid, 4);
+      for (const mudpaw of mudpaws) dispatchTaskOverride(world, mudpaw, 'gathering-fish');
       runGoalLoop(world, () => new TrainGoal(), 1500);
-      return { name: variant.name, unitsTrained: world.stats.unitsTrained, playerUnits: countLiving(world, EntityKind.Gatherer, Faction.Player) + countLiving(world, EntityKind.Brawler, Faction.Player) + countLiving(world, EntityKind.Scout, Faction.Player), fish: world.resources.fish };
+      return {
+        name: variant.name,
+        unitsTrained: world.stats.unitsTrained,
+        playerUnits: countLivingPlayerFieldUnits(world),
+        fish: world.resources.fish,
+      };
     });
 
     const defendRows = [

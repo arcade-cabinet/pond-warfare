@@ -23,6 +23,7 @@ import { computePopulation } from '@/game/population-counter';
 import { syncRosters } from '@/game/roster-sync';
 import { syncThreatAndObjectives } from '@/game/threat-sync';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
 import { EntityKind, Faction } from '@/types';
@@ -81,8 +82,10 @@ function seedCombatPressure(world: GameWorld, lodgeEid: number): void {
     [35, -40],
     [75, -15],
   ] as const;
-  for (const [dx, dy] of playerOffsets) {
-    const eid = spawnEntity(world, EntityKind.Brawler, lodgeX + dx, lodgeY + dy, Faction.Player);
+  for (let index = 0; index < playerOffsets.length; index += 1) {
+    const [dx, dy] = playerOffsets[index];
+    const kind = index < 2 ? MUDPAW_KIND : SAPPER_KIND;
+    const eid = spawnEntity(world, kind, lodgeX + dx, lodgeY + dy, Faction.Player);
     Health.current[eid] = Math.round(Health.max[eid] * 0.65);
   }
 

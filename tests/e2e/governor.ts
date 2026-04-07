@@ -9,6 +9,7 @@
 import { hasComponent } from 'bitecs';
 import { IsBuilding } from '@/ecs/components';
 import { game } from '@/game';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import { getEnemyNests, getPlayerArmyUnits, getPlayerEntities } from '../helpers/ecs-queries';
 
@@ -73,7 +74,7 @@ export function takeSnapshot(): GovernorSnapshot {
     pearls: w.resources.rocks,
     food: w.resources.food,
     maxFood: w.resources.maxFood,
-    mudpaws: getPlayerEntities(w, EntityKind.Gatherer).length,
+    mudpaws: getPlayerEntities(w, MUDPAW_KIND).length,
     fieldUnits: getPlayerArmyUnits(w).length,
     buildings: getPlayerEntities(w).filter((eid) => hasComponent(w.ecs, eid, IsBuilding)).length,
     enemyNests: getEnemyNests(w).length,

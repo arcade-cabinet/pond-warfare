@@ -9,6 +9,7 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import { ENEMY_BUILD_RADIUS, TILE_SIZE } from '@/constants';
 import {
   Building,
+  Combat,
   EntityTypeTag,
   FactionTag,
   Health,
@@ -19,6 +20,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { canPlaceBuilding } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
 
@@ -104,6 +106,94 @@ export function countPlayerUnitsOfKind(world: GameWorld, targetKind: EntityKind)
     if (EntityTypeTag.kind[eid] === targetKind) count++;
   }
   return count;
+}
+
+export interface PlayerCombatPressure {
+  frontline: number;
+  projected: number;
+}
+
+/**
+ * Summarize the live player army into the counter buckets enemy training cares
+ * about. Frontline maps to gator-style answers; projected maps to snake-style
+ * answers. Economy, recon, and heal specialists do not contribute here.
+ */
+export function getPlayerCombatPressure(
+  world: Pick<GameWorld, 'ecs' | 'specialistAssignments'>,
+): PlayerCombatPressure {
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+  let frontline = 0;
+  let projected = 0;
+
+  for (let i = 0; i < allUnits.length; i++) {
+    const eid = allUnits[i];
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource)) {
+      continue;
+    }
+
+    const specialistRole = getSpecialistCounterRole(world, eid);
+    if (specialistRole === 'frontline') {
+      frontline++;
+      continue;
+    }
+    if (specialistRole === 'projected') {
+      projected++;
+      continue;
+    }
+    if (specialistRole === 'ignore') continue;
+
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    if (kind === EntityKind.Commander) {
+      frontline++;
+      continue;
+    }
+
+    if (kind === MUDPAW_KIND) continue;
+
+    const def = ENTITY_DEFS[kind];
+    const damage = hasComponent(world.ecs, eid, Combat) ? Combat.damage[eid] : (def?.damage ?? 0);
+    if (damage <= 0) continue;
+    const attackRange = hasComponent(world.ecs, eid, Combat)
+      ? Combat.attackRange[eid]
+      : (def?.attackRange ?? 0);
+    if (attackRange >= 120) projected++;
+    else frontline++;
+  }
+
+  return { frontline, projected };
+}
+
+function getSpecialistCounterRole(
+  world: Pick<GameWorld, 'specialistAssignments'>,
+  eid: number,
+): 'frontline' | 'projected' | 'ignore' | null {
+  const runtimeId = world.specialistAssignments.get(eid)?.runtimeId;
+  if (!runtimeId) return null;
+
+  switch (runtimeId) {
+    case 'guard':
+      return 'frontline';
+    case 'ranger':
+    case 'bombardier':
+      return 'projected';
+    case 'fisher':
+    case 'logger':
+    case 'digger':
+    case 'shaman':
+    case 'lookout':
+      return 'ignore';
+    default:
+      return inferLiveRosterCounterRole(EntityTypeTag.kind[eid] as EntityKind);
+  }
+}
+
+function inferLiveRosterCounterRole(kind: EntityKind): 'frontline' | null {
+  if (kind === SAPPER_KIND || kind === SABOTEUR_KIND) {
+    return 'frontline';
+  }
+  return null;
 }
 
 /** Find a valid placement position near a nest */

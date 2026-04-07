@@ -14,6 +14,7 @@ import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { ENEMY_TRAIN_CHECK_INTERVAL } from '@/constants';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
   EntityTypeTag,
@@ -25,8 +26,14 @@ import {
   TrainingQueue,
   trainingQueueSlots,
 } from '@/ecs/components';
-import { enemyTrainingQueueProcess, enemyTrainingTick } from '@/ecs/systems/ai/enemy-training';
+import {
+  enemyTrainingQueueProcess,
+  enemyTrainingTick,
+  resolveEnemyTrainingPreference,
+} from '@/ecs/systems/ai/enemy-training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction } from '@/types';
 
 // Mock rendering animations to prevent side-effects
@@ -66,6 +73,25 @@ function createEnemyNest(world: GameWorld, x: number, y: number): number {
   trainingQueueSlots.set(eid, []);
 
   return eid;
+}
+
+function tagSpecialist(world: GameWorld, eid: number, runtimeId: string): void {
+  world.specialistAssignments.set(eid, {
+    runtimeId,
+    canonicalId: runtimeId,
+    label: runtimeId,
+    mode: runtimeId === 'ranger' || runtimeId === 'bombardier' ? 'dual_zone' : 'single_zone',
+    operatingRadius: 0,
+    centerX: 0,
+    centerY: 0,
+    anchorX: 0,
+    anchorY: 0,
+    anchorRadius: 0,
+    engagementRadius: 0,
+    engagementX: 0,
+    engagementY: 0,
+    projectionRange: 0,
+  } satisfies SpecialistAssignment);
 }
 
 describe('enemyTrainingTick', () => {
@@ -197,6 +223,36 @@ describe('enemyTrainingTick', () => {
       enemyTrainingTick(world);
 
       expect(world.enemyResources.fish).toBe(fishBefore);
+    });
+  });
+
+  describe('counter training preference', () => {
+    it('prefers melee answers against a frontline-heavy live roster', () => {
+      spawnEntity(world, SAPPER_KIND, 360, 360, Faction.Player);
+      spawnEntity(world, SAPPER_KIND, 390, 360, Faction.Player);
+      spawnEntity(world, SAPPER_KIND, 420, 360, Faction.Player);
+
+      expect(resolveEnemyTrainingPreference(world, 'balanced')).toBe('melee');
+    });
+
+    it('prefers ranged answers against projected specialists', () => {
+      const ranger = spawnEntity(world, SAPPER_KIND, 360, 360, Faction.Player);
+      const bombardier = spawnEntity(world, SAPPER_KIND, 400, 360, Faction.Player);
+      tagSpecialist(world, ranger, 'ranger');
+      tagSpecialist(world, bombardier, 'bombardier');
+
+      expect(resolveEnemyTrainingPreference(world, 'balanced')).toBe('ranged');
+    });
+
+    it('preserves personality when player pressure is mixed or absent', () => {
+      expect(resolveEnemyTrainingPreference(world, 'siege')).toBe('siege');
+
+      const frontline = spawnEntity(world, MUDPAW_KIND, 360, 360, Faction.Player);
+      const projected = spawnEntity(world, SAPPER_KIND, 400, 360, Faction.Player);
+      tagSpecialist(world, projected, 'ranger');
+      expect(frontline).toBeGreaterThan(0);
+
+      expect(resolveEnemyTrainingPreference(world, 'balanced')).toBe('balanced');
     });
   });
 });
