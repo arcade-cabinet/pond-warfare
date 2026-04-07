@@ -206,4 +206,16 @@ describe('drawFog gradient softness', () => {
 
     expect(mockGradients.length).toBe(0);
   });
+
+  it('skips invalid projected vision circles instead of throwing', () => {
+    const eid = createPlayerUnit(EntityKind.Gatherer, Number.NaN, 300);
+
+    const state: FogRendererState = {
+      fogCtx: mockCtx as unknown as CanvasRenderingContext2D,
+      fogPattern: {} as CanvasPattern,
+    };
+
+    expect(() => drawFog(state, world, [eid], 0, 0)).not.toThrow();
+    expect(mockGradients.length).toBe(0);
+  });
 });

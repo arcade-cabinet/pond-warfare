@@ -60,10 +60,15 @@ export class PhysicsManager {
 
     const isBuilding = hasComponent(ecsWorld, eid, IsBuilding);
     const radius = Collider.radius[eid] || 16;
+    const x = Position.x[eid];
+    const y = Position.y[eid];
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(radius) || radius <= 0) {
+      return;
+    }
 
     const body = this.world.createBody({
       type: isBuilding ? 'static' : 'dynamic',
-      position: Vec2(Position.x[eid], Position.y[eid]),
+      position: Vec2(x, y),
       fixedRotation: true,
       linearDamping: 10, // high damping so bodies don't drift after separation
     });
@@ -111,6 +116,7 @@ export class PhysicsManager {
       const pos = body.getPosition();
       const ex = Position.x[eid];
       const ey = Position.y[eid];
+      if (!Number.isFinite(ex) || !Number.isFinite(ey)) continue;
 
       // Only update Planck if ECS position changed (movement system moved the entity)
       if (Math.abs(pos.x - ex) > 0.01 || Math.abs(pos.y - ey) > 0.01) {

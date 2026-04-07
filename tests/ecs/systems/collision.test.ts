@@ -129,4 +129,16 @@ describe('collisionSystem', () => {
     expect(Position.x[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN - 1);
     expect(Position.y[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN - 1);
   });
+
+  it('skips invalid physics bodies instead of poisoning the world step', () => {
+    const invalid = createUnit(world, Number.NaN, 100);
+    const valid = createUnit(world, 140, 100);
+
+    physics.createBody(world.ecs, invalid);
+    physics.createBody(world.ecs, valid);
+
+    expect(physics.hasBody(invalid)).toBe(false);
+    expect(physics.hasBody(valid)).toBe(true);
+    expect(() => collisionSystem(world, physics)).not.toThrow();
+  });
 });

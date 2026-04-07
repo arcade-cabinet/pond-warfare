@@ -29,7 +29,9 @@ import {
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { BUILD_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
+import { combatSystem } from '@/ecs/systems/combat';
 import { game } from '@/game';
+import { projectileSystem } from '@/ecs/systems/projectile';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { takeDamage } from '@/ecs/systems/health';
@@ -82,6 +84,16 @@ function getUnits(kind?: EntityKind, faction = Faction.Player) {
     FactionTag.faction[eid] === faction && Health.current[eid] > 0 &&
     (kind === undefined || EntityTypeTag.kind[eid] === kind),
   );
+}
+
+function rebuildSpatialHash() {
+  game.world.spatialHash.clear();
+  const eids = query(game.world.ecs, [Position, Health]);
+  for (const eid of eids) {
+    if (Health.current[eid] > 0) {
+      game.world.spatialHash.insert(eid, Position.x[eid], Position.y[eid]);
+    }
+  }
 }
 
 async function waitFrames(n: number) {
@@ -445,24 +457,20 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('13. Losing last Lodge triggers game over', () => {
-    it('destroying all Lodges sets state to lose', async () => {
-      // This test must run last or with care since it ends the game.
-      // Save current state to restore.
-      const savedState = game.world.state;
-
+    it('destroying all Lodges and field units sets state to lose', async () => {
       // Find all player Lodges
       const lodges = getUnits(EntityKind.Lodge);
       expect(lodges.length).toBeGreaterThanOrEqual(1);
 
-      // Save their HPs so we can restore after the test
-      const savedHPs = lodges.map((eid) => ({
-        eid,
-        current: Health.current[eid],
-        max: Health.max[eid],
-      }));
-
-      // Kill all Lodges by setting HP to 0
+      // Current commander-mode loss is "no Lodge and no remaining field units".
+      // Clear both so the browser test matches the live rule.
       for (const eid of lodges) {
+        Health.current[eid] = 0;
+      }
+      const playerFieldUnits = getUnits(undefined, Faction.Player).filter(
+        (eid) => !hasComponent(game.world.ecs, eid, IsBuilding),
+      );
+      for (const eid of playerFieldUnits) {
         Health.current[eid] = 0;
       }
 
@@ -473,11 +481,15 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       expect(game.world.state).toBe('lose');
       await page.screenshot({ path: 'tests/browser/screenshots/bld-13-lodge-game-over.png' });
 
-      // Restore game state and respawn a Lodge so other tests can continue
+      // Restore a minimal playable commander-mode state for the remaining tests.
       game.world.state = 'playing';
       const spawnedLodge = spawnEntity(game.world, EntityKind.Lodge, 400, 400, Faction.Player);
       Building.progress[spawnedLodge] = 100;
       Health.current[spawnedLodge] = Health.max[spawnedLodge];
+      const commander = spawnEntity(game.world, EntityKind.Commander, 440, 340, Faction.Player);
+      game.world.commanderEntityId = commander;
+      spawnEntity(game.world, EntityKind.Gatherer, 360, 360, Faction.Player);
+      rebuildSpatialHash();
     });
   });
 
@@ -491,6 +503,15 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const tx = Position.x[lodge] - 250;
       const ty = Position.y[lodge] - 250;
 
+      // Keep any ambient enemies away from this local targeting check.
+      const ambientEnemies = getUnits(undefined, Faction.Enemy);
+      for (const eid of ambientEnemies) {
+        if (Math.hypot(Position.x[eid] - tx, Position.y[eid] - ty) < 300) {
+          Position.x[eid] = Position.x[lodge] + 1200;
+          Position.y[eid] = Position.y[lodge] + 1200;
+        }
+      }
+
       // Spawn a complete Tower via archetype (sets TowerAI, Combat, Building progress, etc.)
       const towerEid = spawnCompleteBuilding(EntityKind.Tower, tx, ty);
       // Reset cooldown so it fires immediately
@@ -500,9 +521,13 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const enemyEid = spawnEntity(game.world, EntityKind.Gator, tx + 100, ty, Faction.Enemy);
       const enemyHpBefore = Health.current[enemyEid];
 
-      // Wait for combat system to process tower auto-attack and projectile to land
-      // Tower fires projectile -> projectile system needs frames to reach target
-      await waitFrames(180);
+      rebuildSpatialHash();
+      combatSystem(game.world);
+      expect(Combat.attackCooldown[towerEid]).toBeGreaterThan(0);
+
+      for (let i = 0; i < 40; i++) {
+        projectileSystem(game.world);
+      }
 
       // The enemy should have taken damage (from tower projectile)
       expect(Health.current[enemyEid]).toBeLessThan(enemyHpBefore);
@@ -525,11 +550,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const enemyEid = spawnEntity(game.world, EntityKind.Gator, tx + 300, ty, Faction.Enemy);
       const enemyHpBefore = Health.current[enemyEid];
 
-      // Wait for a few combat system ticks
-      await waitFrames(180);
+      rebuildSpatialHash();
+      combatSystem(game.world);
 
       // The enemy should NOT have taken damage since it is out of range
       expect(Health.current[enemyEid]).toBe(enemyHpBefore);
+      expect(Combat.attackCooldown[towerEid]).toBe(0);
 
       // Cleanup
       Health.current[enemyEid] = 0;
