@@ -19,6 +19,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type { RosterGroup, RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -109,14 +110,14 @@ describe('DefendGoal', () => {
     const { DefendGoal } = await import('@/governor/goals/defend-goal');
 
     createPlayerLodge();
-    const regular = createUnit(EntityKind.Brawler);
-    const specialist = createUnit(EntityKind.Brawler, 120, 120);
+    const regular = createUnit(SAPPER_KIND);
+    const specialist = createUnit(SAPPER_KIND, 120, 120);
     addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
 
     store.unitRoster.value = [
       rosterGroup('combat', [
-        rosterUnit(regular, EntityKind.Brawler, 'idle'),
-        rosterUnit(specialist, EntityKind.Brawler, 'patrolling', true),
+        rosterUnit(regular, SAPPER_KIND, 'idle'),
+        rosterUnit(specialist, SAPPER_KIND, 'patrolling', true),
       ]),
     ];
 
@@ -134,12 +135,12 @@ describe('DefendGoal', () => {
     const { DefendGoal } = await import('@/governor/goals/defend-goal');
 
     const lodge = createPlayerLodge(220, 220);
-    const regular = createUnit(EntityKind.Brawler);
+    const regular = createUnit(SAPPER_KIND);
     TaskOverride.active[regular] = 1;
     TaskOverride.task[regular] = UnitState.AttackMove;
     UnitStateMachine.state[regular] = UnitState.AttackMove;
 
-    const specialist = createUnit(EntityKind.Brawler, 120, 120);
+    const specialist = createUnit(SAPPER_KIND, 120, 120);
     addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
     TaskOverride.active[specialist] = 1;
     TaskOverride.task[specialist] = UnitState.AttackMove;
@@ -147,8 +148,8 @@ describe('DefendGoal', () => {
 
     store.unitRoster.value = [
       rosterGroup('combat', [
-        rosterUnit(regular, EntityKind.Brawler, 'attacking', true),
-        rosterUnit(specialist, EntityKind.Brawler, 'attacking', true),
+        rosterUnit(regular, SAPPER_KIND, 'attacking', true),
+        rosterUnit(specialist, SAPPER_KIND, 'attacking', true),
       ]),
     ];
 
@@ -172,20 +173,20 @@ describe('AttackGoal', () => {
   it('does not retask locked specialist units during an attack order', async () => {
     const { AttackGoal, MIN_ATTACK_ARMY } = await import('@/governor/goals/attack-goal');
 
-    const regularA = createUnit(EntityKind.Brawler, 100, 100);
-    const regularB = createUnit(EntityKind.Brawler, 120, 100);
-    const regularC = createUnit(EntityKind.Brawler, 140, 100);
-    const specialist = createUnit(EntityKind.Brawler, 160, 100);
+    const regularA = createUnit(SAPPER_KIND, 100, 100);
+    const regularB = createUnit(SAPPER_KIND, 120, 100);
+    const regularC = createUnit(SAPPER_KIND, 140, 100);
+    const specialist = createUnit(SAPPER_KIND, 160, 100);
     addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
     const closeEnemy = createEnemy(EntityKind.Gator, 200, 200);
     createEnemy(EntityKind.Snake, 260, 220);
 
     store.unitRoster.value = [
       rosterGroup('combat', [
-        rosterUnit(regularA, EntityKind.Brawler, 'idle'),
-        rosterUnit(regularB, EntityKind.Brawler, 'idle'),
-        rosterUnit(regularC, EntityKind.Brawler, 'defending'),
-        rosterUnit(specialist, EntityKind.Brawler, 'patrolling', true),
+        rosterUnit(regularA, SAPPER_KIND, 'idle'),
+        rosterUnit(regularB, SAPPER_KIND, 'idle'),
+        rosterUnit(regularC, SAPPER_KIND, 'defending'),
+        rosterUnit(specialist, SAPPER_KIND, 'patrolling', true),
       ]),
     ];
 
@@ -206,15 +207,15 @@ describe('AttackGoal', () => {
   it('can retarget regular attackers while leaving prestige-locked specialists alone', async () => {
     const { AttackGoal } = await import('@/governor/goals/attack-goal');
 
-    const regularA = createUnit(EntityKind.Brawler, 100, 100);
-    const regularB = createUnit(EntityKind.Brawler, 120, 100);
-    const regularC = createUnit(EntityKind.Brawler, 140, 100);
+    const regularA = createUnit(SAPPER_KIND, 100, 100);
+    const regularB = createUnit(SAPPER_KIND, 120, 100);
+    const regularC = createUnit(SAPPER_KIND, 140, 100);
     TaskOverride.active[regularA] = 1;
     TaskOverride.task[regularA] = UnitState.AttackMove;
     TaskOverride.active[regularB] = 1;
     TaskOverride.task[regularB] = UnitState.AttackMovePatrol;
 
-    const specialist = createUnit(EntityKind.Brawler, 160, 100);
+    const specialist = createUnit(SAPPER_KIND, 160, 100);
     addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
     TaskOverride.active[specialist] = 1;
     TaskOverride.task[specialist] = UnitState.AttackMove;
@@ -224,10 +225,10 @@ describe('AttackGoal', () => {
 
     store.unitRoster.value = [
       rosterGroup('combat', [
-        rosterUnit(regularA, EntityKind.Brawler, 'attacking', true),
-        rosterUnit(regularB, EntityKind.Brawler, 'defending', true),
-        rosterUnit(regularC, EntityKind.Brawler, 'idle'),
-        rosterUnit(specialist, EntityKind.Brawler, 'attacking', true),
+        rosterUnit(regularA, SAPPER_KIND, 'attacking', true),
+        rosterUnit(regularB, SAPPER_KIND, 'defending', true),
+        rosterUnit(regularC, SAPPER_KIND, 'idle'),
+        rosterUnit(specialist, SAPPER_KIND, 'attacking', true),
       ]),
     ];
 

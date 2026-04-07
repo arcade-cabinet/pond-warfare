@@ -32,6 +32,7 @@ import {
 import { combatSystem } from '@/ecs/systems/combat';
 import { movementSystem } from '@/ecs/systems/movement';
 import type { GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { issueContextCommand } from '@/input/selection';
 import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -67,7 +68,7 @@ function createTestWorld(): GameWorld {
     floatingTexts: [] as unknown[],
     particles: [] as unknown[],
     tech: {},
-    resources: { fish: 500, twigs: 300, pearls: 0 },
+    resources: { fish: 500, logs: 300, rocks: 0, twigs: 300, pearls: 0 },
     placingBuilding: null,
     groundPings: [] as unknown[],
     attackMoveMode: false,
@@ -116,7 +117,7 @@ function spawnUnit(
   x: number,
   y: number,
   speed: number,
-  kind: EntityKind = EntityKind.Gatherer,
+  kind: EntityKind = MUDPAW_KIND,
   faction: Faction = Faction.Player,
 ): number {
   const eid = addEntity(world.ecs);
@@ -323,61 +324,61 @@ describe('issueContextCommand -> movement', () => {
     expect(d).toBeGreaterThan(1);
   });
 
-  it('right-click resource sets GatherMove for gatherer', () => {
-    const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
+  it('right-click resource sets GatherMove for Mudpaw', () => {
+    const mudpaw = spawnUnit(world, 100, 100, 2.0, MUDPAW_KIND);
     const resource = spawnResource(world, 300, 300, ResourceType.Fish);
-    world.selection = [gatherer];
-    Selectable.selected[gatherer] = 1;
+    world.selection = [mudpaw];
+    Selectable.selected[mudpaw] = 1;
 
     issueContextCommand(world, resource, 300, 300);
 
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
-    expect(UnitStateMachine.targetEntity[gatherer]).toBe(resource);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(resource);
   });
 
-  it('right-click resource -> gatherer walks toward it', () => {
-    const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
+  it('right-click resource -> Mudpaw walks toward it', () => {
+    const mudpaw = spawnUnit(world, 100, 100, 2.0, MUDPAW_KIND);
     const resource = spawnResource(world, 300, 300, ResourceType.Fish);
-    world.selection = [gatherer];
-    Selectable.selected[gatherer] = 1;
+    world.selection = [mudpaw];
+    Selectable.selected[mudpaw] = 1;
 
     issueContextCommand(world, resource, 300, 300);
     runFrames(world, 300);
 
-    const d = Math.sqrt((Position.x[gatherer] - 100) ** 2 + (Position.y[gatherer] - 100) ** 2);
+    const d = Math.sqrt((Position.x[mudpaw] - 100) ** 2 + (Position.y[mudpaw] - 100) ** 2);
     expect(d).toBeGreaterThan(1);
   });
 
-  it('right-click enemy sets AttackMove for combat unit', () => {
-    const brawler = spawnUnit(world, 100, 100, 1.8, EntityKind.Brawler);
+  it('right-click enemy sets AttackMove for Sapper', () => {
+    const sapper = spawnUnit(world, 100, 100, 1.8, SAPPER_KIND);
     const enemy = spawnEnemy(world, 300, 300);
-    world.selection = [brawler];
-    Selectable.selected[brawler] = 1;
+    world.selection = [sapper];
+    Selectable.selected[sapper] = 1;
 
     issueContextCommand(world, enemy, 300, 300);
 
-    expect(UnitStateMachine.state[brawler]).toBe(UnitState.AttackMove);
-    expect(UnitStateMachine.targetEntity[brawler]).toBe(enemy);
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.AttackMove);
+    expect(UnitStateMachine.targetEntity[sapper]).toBe(enemy);
   });
 
   it('right-click enemy -> unit walks toward enemy', () => {
-    const brawler = spawnUnit(world, 100, 100, 1.8, EntityKind.Brawler);
+    const sapper = spawnUnit(world, 100, 100, 1.8, SAPPER_KIND);
     const enemy = spawnEnemy(world, 300, 300);
-    world.selection = [brawler];
-    Selectable.selected[brawler] = 1;
+    world.selection = [sapper];
+    Selectable.selected[sapper] = 1;
 
     issueContextCommand(world, enemy, 300, 300);
     runFrames(world, 300);
 
-    const d = Math.sqrt((Position.x[brawler] - 100) ** 2 + (Position.y[brawler] - 100) ** 2);
+    const d = Math.sqrt((Position.x[sapper] - 100) ** 2 + (Position.y[sapper] - 100) ** 2);
     expect(d).toBeGreaterThan(1);
   });
 
   it('group right-click ground -> all units get Move state', () => {
     const units = [
       spawnUnit(world, 100, 100, 2.0),
-      spawnUnit(world, 120, 100, 2.0, EntityKind.Brawler),
-      spawnUnit(world, 100, 120, 2.0, EntityKind.Sniper),
+      spawnUnit(world, 120, 100, 2.0, SAPPER_KIND),
+      spawnUnit(world, 100, 120, 2.0, SABOTEUR_KIND),
     ];
     world.selection = [...units];
     for (const eid of units) Selectable.selected[eid] = 1;
@@ -392,8 +393,8 @@ describe('issueContextCommand -> movement', () => {
   it('group right-click ground -> all units change position', () => {
     const units = [
       spawnUnit(world, 100, 100, 2.0),
-      spawnUnit(world, 120, 100, 2.0, EntityKind.Brawler),
-      spawnUnit(world, 100, 120, 2.0, EntityKind.Sniper),
+      spawnUnit(world, 120, 100, 2.0, SAPPER_KIND),
+      spawnUnit(world, 100, 120, 2.0, SABOTEUR_KIND),
     ];
     world.selection = [...units];
     for (const eid of units) Selectable.selected[eid] = 1;
@@ -415,20 +416,20 @@ describe('Gather loop', () => {
     world = createTestWorld();
   });
 
-  it('gatherer transitions from GatherMove -> Gathering on arrival', () => {
-    const gatherer = spawnUnit(world, 100, 100, 2.0, EntityKind.Gatherer);
+  it('Mudpaw transitions from GatherMove -> Gathering on arrival', () => {
+    const mudpaw = spawnUnit(world, 100, 100, 2.0, MUDPAW_KIND);
     const resource = spawnResource(world, 130, 100, ResourceType.Fish);
 
-    UnitStateMachine.state[gatherer] = UnitState.GatherMove;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.targetX[gatherer] = 130;
-    UnitStateMachine.targetY[gatherer] = 100;
+    UnitStateMachine.state[mudpaw] = UnitState.GatherMove;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.targetX[mudpaw] = 130;
+    UnitStateMachine.targetY[mudpaw] = 100;
 
     // Run until arrival (close enough)
     runFrames(world, 600);
 
     // Should have transitioned to Gathering or be idle (if gathered + returned)
-    const state = UnitStateMachine.state[gatherer];
+    const state = UnitStateMachine.state[mudpaw];
     expect(state).not.toBe(UnitState.GatherMove);
   });
 });
@@ -441,15 +442,15 @@ describe('Attack loop', () => {
   });
 
   it('attacker transitions from AttackMove to Attacking when in range', () => {
-    const brawler = spawnUnit(world, 100, 100, 1.8, EntityKind.Brawler);
+    const sapper = spawnUnit(world, 100, 100, 1.8, SAPPER_KIND);
     const enemy = spawnEnemy(world, 130, 100);
 
-    UnitStateMachine.state[brawler] = UnitState.AttackMove;
-    UnitStateMachine.targetEntity[brawler] = enemy;
-    UnitStateMachine.targetX[brawler] = 130;
-    UnitStateMachine.targetY[brawler] = 100;
+    UnitStateMachine.state[sapper] = UnitState.AttackMove;
+    UnitStateMachine.targetEntity[sapper] = enemy;
+    UnitStateMachine.targetX[sapper] = 130;
+    UnitStateMachine.targetY[sapper] = 100;
 
-    // Run movement to bring brawler to enemy
+    // Run movement to bring the sapper to the enemy
     runFrames(world, 600);
 
     // Now run combat system
@@ -458,10 +459,10 @@ describe('Attack loop', () => {
       combatSystem(world);
     }
 
-    // Brawler should have transitioned or enemy should have taken damage
+    // Sapper should have transitioned or enemy should have taken damage
     const enemyHp = Health.current[enemy];
-    const brawlerState = UnitStateMachine.state[brawler];
-    // Either brawler is attacking or enemy lost HP
-    expect(brawlerState === UnitState.Attacking || enemyHp < 50).toBe(true);
+    const sapperState = UnitStateMachine.state[sapper];
+    // Either the sapper is attacking or the enemy lost HP
+    expect(sapperState === UnitState.Attacking || enemyHp < 50).toBe(true);
   });
 });

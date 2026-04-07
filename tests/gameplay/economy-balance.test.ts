@@ -14,6 +14,7 @@ import { getUnitDef } from '@/config/config-loader';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import type { GeneralistDef } from '@/config/v3-types';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { EntityKind } from '@/types';
 import { progressionLevel } from '@/ui/store-v3';
@@ -23,13 +24,13 @@ import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 describe('v3 Economy Balance', () => {
   describe('Unit costs (ENTITY_DEFS aligned with units.json)', () => {
     it('Mudpaw costs 10 Fish only', () => {
-      const def = ENTITY_DEFS[EntityKind.Gatherer];
+      const def = ENTITY_DEFS[MUDPAW_KIND];
       expect(def.fishCost).toBe(10);
       expect(def.logCost).toBe(0);
     });
 
     it('Medic costs 15 Fish only', () => {
-      const def = ENTITY_DEFS[EntityKind.Healer];
+      const def = ENTITY_DEFS[MEDIC_KIND];
       expect(def.fishCost).toBe(15);
       expect(def.logCost).toBe(0);
     });
@@ -51,10 +52,10 @@ describe('v3 Economy Balance', () => {
     it('ENTITY_DEFS costs match units.json for the canonical manual roster', () => {
       const generalists = ['mudpaw', 'medic', 'sapper', 'saboteur'] as const;
       const mapping: Record<string, EntityKind> = {
-        mudpaw: EntityKind.Gatherer,
-        medic: EntityKind.Healer,
-        sapper: EntityKind.Sapper,
-        saboteur: EntityKind.Saboteur,
+        mudpaw: MUDPAW_KIND,
+        medic: MEDIC_KIND,
+        sapper: SAPPER_KIND,
+        saboteur: SABOTEUR_KIND,
       };
 
       for (const name of generalists) {
@@ -76,8 +77,8 @@ describe('v3 Economy Balance', () => {
       spawnVerticalEntities(world, layout, new SeededRandom(99));
 
       const fish = world.resources.fish;
-      const mudpawCost = ENTITY_DEFS[EntityKind.Gatherer].fishCost ?? 0;
-      const medicCost = ENTITY_DEFS[EntityKind.Healer].fishCost ?? 0;
+      const mudpawCost = ENTITY_DEFS[MUDPAW_KIND].fishCost ?? 0;
+      const medicCost = ENTITY_DEFS[MEDIC_KIND].fishCost ?? 0;
 
       // Must afford at least 2 Mudpaws and one Medic from stage 2 onward.
       const minArmyCost = stage >= 2 ? mudpawCost * 2 + medicCost : mudpawCost * 2;
@@ -122,10 +123,10 @@ describe('v3 Economy Balance', () => {
 
     it('Commander + 4 Mudpaws + Medic + Sapper + Saboteur = 8 food (fits Lodge cap)', () => {
       const cmdrCost = ENTITY_DEFS[EntityKind.Commander].foodCost ?? 0;
-      const mudpawCost = (ENTITY_DEFS[EntityKind.Gatherer].foodCost ?? 1) * 4;
-      const medicCost = ENTITY_DEFS[EntityKind.Healer].foodCost ?? 1;
-      const sapperCost = ENTITY_DEFS[EntityKind.Sapper].foodCost ?? 1;
-      const saboteurCost = ENTITY_DEFS[EntityKind.Saboteur].foodCost ?? 1;
+      const mudpawCost = (ENTITY_DEFS[MUDPAW_KIND].foodCost ?? 1) * 4;
+      const medicCost = ENTITY_DEFS[MEDIC_KIND].foodCost ?? 1;
+      const sapperCost = ENTITY_DEFS[SAPPER_KIND].foodCost ?? 1;
+      const saboteurCost = ENTITY_DEFS[SABOTEUR_KIND].foodCost ?? 1;
 
       // Commander has no foodCost (0), so total is seven roster units at one food each.
       const total = cmdrCost + mudpawCost + medicCost + sapperCost + saboteurCost;

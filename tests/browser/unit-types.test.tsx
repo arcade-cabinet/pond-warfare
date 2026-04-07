@@ -2,7 +2,7 @@
  * Browser roster tests
  *
  * Verifies the current player-facing roster rather than the removed
- * Gatherer/Brawler/Sniper-era split. This suite focuses on the canonical
+ * split-roster era. This suite focuses on the canonical
  * manual roster plus Pearl specialists and checks a few live behaviors in the
  * browser-driven runtime.
  */
@@ -29,6 +29,7 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import { getEntityDisplayName } from '@/game/unit-display';
 import { getSpecialistAssignment } from '@/game/specialist-assignment';
 import { spawnSpecialistUnit } from '@/game/init-entities/specialist-spawn';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import { mountCurrentGame } from './helpers/mount-current-game';
@@ -148,7 +149,7 @@ describe('Browser roster tests', () => {
   describe('manual roster', () => {
     it('Mudpaw can gather from fish nodes and return with resources', async () => {
       const pos = nextPos();
-      const mudpaw = spawnTestUnit(EntityKind.Gatherer, Faction.Player, pos.x, pos.y);
+      const mudpaw = spawnTestUnit(MUDPAW_KIND, Faction.Player, pos.x, pos.y);
       const fishNode = spawnEntity(game.world, EntityKind.Clambed, pos.x + 60, pos.y, Faction.Neutral);
 
       expect(getEntityDisplayName(game.world, mudpaw)).toBe('Mudpaw');
@@ -170,7 +171,7 @@ describe('Browser roster tests', () => {
 
     it('Mudpaw can enter BuildMove for incomplete structures', () => {
       const pos = nextPos();
-      const mudpaw = spawnTestUnit(EntityKind.Gatherer, Faction.Player, pos.x, pos.y);
+      const mudpaw = spawnTestUnit(MUDPAW_KIND, Faction.Player, pos.x, pos.y);
       const burrow = spawnCompleteBuilding(EntityKind.Burrow, Faction.Player, pos.x + 80, pos.y);
 
       Building.progress[burrow] = 10;
@@ -186,8 +187,8 @@ describe('Browser roster tests', () => {
 
     it('Medic heals nearby wounded allies in the live runtime', async () => {
       const pos = nextPos();
-      const mudpaw = spawnTestUnit(EntityKind.Gatherer, Faction.Player, pos.x, pos.y);
-      const medic = spawnTestUnit(EntityKind.Healer, Faction.Player, pos.x + 20, pos.y + 10);
+      const mudpaw = spawnTestUnit(MUDPAW_KIND, Faction.Player, pos.x, pos.y);
+      const medic = spawnTestUnit(MEDIC_KIND, Faction.Player, pos.x + 20, pos.y + 10);
 
       Health.current[mudpaw] = 10;
       expect(getEntityDisplayName(game.world, medic)).toBe('Medic');
@@ -199,8 +200,8 @@ describe('Browser roster tests', () => {
 
     it('Sapper occupies the heavy manual roster slot with live stats', () => {
       const pos = nextPos();
-      const sapper = spawnTestUnit(EntityKind.Sapper, Faction.Player, pos.x, pos.y);
-      const mudpaw = spawnTestUnit(EntityKind.Gatherer, Faction.Player, pos.x + 40, pos.y);
+      const sapper = spawnTestUnit(SAPPER_KIND, Faction.Player, pos.x, pos.y);
+      const mudpaw = spawnTestUnit(MUDPAW_KIND, Faction.Player, pos.x + 40, pos.y);
 
       expect(getEntityDisplayName(game.world, sapper)).toBe('Sapper');
       expect(Health.current[sapper]).toBe(ENTITY_DEFS[EntityKind.Sapper].hp);

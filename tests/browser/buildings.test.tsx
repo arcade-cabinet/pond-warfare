@@ -408,25 +408,25 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   // ========================================================================
 
   describe('11. Building costs', () => {
-    it('Burrow costs match entity-defs (0 clams, 75 twigs)', () => {
+    it('Burrow costs match entity-defs (0 Fish, 75 Logs)', () => {
       const def = ENTITY_DEFS[EntityKind.Burrow];
       expect(def.fishCost).toBe(0);
       expect(def.logCost).toBe(75);
     });
 
-    it('Tower costs match entity-defs (200 clams, 250 twigs)', () => {
+    it('Tower costs match entity-defs (200 Fish, 250 Logs)', () => {
       const def = ENTITY_DEFS[EntityKind.Tower];
       expect(def.fishCost).toBe(200);
       expect(def.logCost).toBe(250);
     });
 
-    it('Lodge costs match entity-defs (200 clams, 150 twigs)', () => {
+    it('Lodge costs match entity-defs (200 Fish, 150 Logs)', () => {
       const def = ENTITY_DEFS[EntityKind.Lodge];
       expect(def.fishCost).toBe(200);
       expect(def.logCost).toBe(150);
     });
 
-    it('Armory costs match entity-defs (180 clams, 120 twigs)', () => {
+    it('Armory costs match entity-defs (180 Fish, 120 Logs)', () => {
       const def = ENTITY_DEFS[EntityKind.Armory];
       expect(def.fishCost).toBe(180);
       expect(def.logCost).toBe(120);
