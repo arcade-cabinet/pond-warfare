@@ -23,6 +23,7 @@ import {
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES } from '@/ecs/systems/morale';
 import type { GameWorld } from '@/ecs/world';
 import { isLookoutKind } from '@/game/live-unit-kinds';
+import { getEntityDisplayName } from '@/game/unit-display';
 import { createCorpseId, EntityKind, Faction, SpriteId } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
 import { reduceVisualNoise } from '@/ui/store';
@@ -47,16 +48,12 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     const faction = FactionTag.faction[eid] as Faction;
     if (faction === Faction.Player && !isBuilding && !isResource) {
       world.stats.unitsLost++;
-      const name = hasComponent(world.ecs, eid, EntityTypeTag)
-        ? entityKindName(EntityTypeTag.kind[eid] as EntityKind)
-        : 'Unit';
+      const name = hasComponent(world.ecs, eid, EntityTypeTag) ? getEntityDisplayName(world, eid) : 'Unit';
       pushGameEvent(`${name} killed`, '#ef4444', world.frameCount);
     }
     if (faction === Faction.Player && isBuilding) {
       world.stats.buildingsLost++;
-      const bName = hasComponent(world.ecs, eid, EntityTypeTag)
-        ? entityKindName(EntityTypeTag.kind[eid] as EntityKind)
-        : 'Building';
+      const bName = hasComponent(world.ecs, eid, EntityTypeTag) ? getEntityDisplayName(world, eid) : 'Building';
       pushGameEvent(`${bName} destroyed`, '#ef4444', world.frameCount);
     }
     if (faction === Faction.Enemy) {
@@ -88,7 +85,7 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
 
   // Death floating text showing unit name
   if (!isResource && !isBuilding && deathKind !== -1) {
-    const name = entityKindName(deathKind as EntityKind);
+    const name = getEntityDisplayName(world, eid);
     world.floatingTexts.push({
       x: ex,
       y: ey - 35,

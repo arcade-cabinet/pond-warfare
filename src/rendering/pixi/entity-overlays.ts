@@ -5,8 +5,9 @@
  */
 
 import { type Container, type Graphics, Text, type TextStyleOptions } from 'pixi.js';
-import { entityKindName } from '@/config/entity-defs';
 import { CB_PALETTE } from '@/constants';
+import type { GameWorld } from '@/ecs/world';
+import { getEntityDisplayName } from '@/game/unit-display';
 import { type EntityKind as EntityKindType } from '@/types';
 import { cleanupAutoSymbols } from './auto-symbol-overlay';
 import {
@@ -198,6 +199,7 @@ export function drawHealthBar(
 }
 
 export function renderUnitLabel(
+  world: Pick<GameWorld, 'specialistAssignments'> | null,
   eid: number,
   kind: EntityKindType,
   isResource: boolean,
@@ -217,7 +219,7 @@ export function renderUnitLabel(
       entityLayer.addChild(label);
       unitLabelTexts.set(eid, label);
     }
-    label.text = entityKindName(kind);
+    label.text = world ? getEntityDisplayName(world, eid) : String(kind);
     label.position.set(ex, ey - sh / 2 + yOff - 16);
     label.zIndex = ey + 1;
     label.visible = true;

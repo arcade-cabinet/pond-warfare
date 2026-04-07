@@ -28,6 +28,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getEntityDisplayName } from '@/game/unit-display';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
@@ -101,7 +102,7 @@ export function trainingSystem(world: GameWorld): void {
       audio.playSelectionVoice(unitKind, world.playerFaction);
 
       // "{Unit Name} Ready" floating text near building
-      const unitName = entityKindName(unitKind);
+      const unitName = getEntityDisplayName(world, newEid);
 
       // Event feed
       pushGameEvent(`${unitName} trained`, '#38bdf8', world.frameCount);

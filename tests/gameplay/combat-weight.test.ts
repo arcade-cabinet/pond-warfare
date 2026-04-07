@@ -21,6 +21,7 @@ import {
 } from '@/ecs/components';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 // Mock audio to track calls
@@ -218,6 +219,36 @@ describe('Combat weight – differentiated death sounds', () => {
     const deathTexts = world.floatingTexts.slice(textsBefore);
     const nameText = deathTexts.find((t) => t.color === '#ef4444' && !t.text.startsWith('-'));
     expect(nameText).toBeDefined();
+  });
+
+  it('death text uses the specialist assignment label when present', async () => {
+    const { processDeath } = await import('@/ecs/systems/health/death');
+
+    const eid = createUnit(world, EntityKind.Sapper, Faction.Player, 1);
+    const assignment: SpecialistAssignment = {
+      runtimeId: 'guard',
+      canonicalId: 'guard',
+      label: 'Guard',
+      mode: 'single_zone',
+      operatingRadius: 140,
+      centerX: 100,
+      centerY: 100,
+      anchorX: 100,
+      anchorY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 100,
+      engagementY: 100,
+      projectionRange: 0,
+    };
+    world.specialistAssignments.set(eid, assignment);
+    Health.current[eid] = 0;
+
+    const textsBefore = world.floatingTexts.length;
+    processDeath(world, eid);
+
+    const deathTexts = world.floatingTexts.slice(textsBefore);
+    expect(deathTexts.some((t) => t.text === 'Guard')).toBe(true);
   });
 });
 
