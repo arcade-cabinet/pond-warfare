@@ -1,9 +1,9 @@
 /**
- * Prestige Auto-Deploy Logic Tests
+ * Prestige Pearl logic tests.
  *
  * Validates prestige system from configs/prestige.json:
  * - Pearl calculation formula
- * - Auto-deploy counts at each rank
+ * - Specialist blueprint caps at each rank
  * - Auto-behavior unlocks
  * - Stat multipliers
  * - Pearl upgrade purchase logic
@@ -93,7 +93,7 @@ describe('Prestige threshold', () => {
   });
 });
 
-describe('Auto-deploy calculations', () => {
+describe('Specialist blueprint cap calculations', () => {
   it('should return empty list for new player', () => {
     const state = createPrestigeState();
     const deploys = getAutoDeployUnits(state);
@@ -135,7 +135,7 @@ describe('Auto-deploy calculations', () => {
     expect(getAutoDeployCount(state, 'hunter')).toBe(0);
   });
 
-  it('should not include non-auto-deploy upgrades', () => {
+  it('should not include non-specialist Pearl upgrades', () => {
     const state: PrestigeState = {
       rank: 1,
       pearls: 0,
@@ -391,7 +391,7 @@ describe('Display helpers', () => {
     expect(fisher?.maxRank).toBe(5);
     expect(fisher?.isMaxed).toBe(false);
     expect(fisher?.canAfford).toBe(true); // 10 >= 3
-    expect(fisher?.effectSummary).toBe('2x fisher');
+    expect(fisher?.effectSummary).toBe('Field up to 2 Fishers');
   });
 
   it('should show max rank correctly', () => {

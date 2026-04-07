@@ -1,9 +1,13 @@
 /**
- * Prestige Auto-Deploy Logic
+ * Prestige Pearl Logic
  *
  * Reads from configs/prestige.json to calculate Pearl rewards,
- * determine auto-deploy unit counts per rank, and resolve
- * which auto-behaviors are unlocked at the current prestige state.
+ * determine specialist blueprint caps per rank, and resolve
+ * which permanent auto-behaviors are unlocked at the current prestige state.
+ *
+ * The underlying config ids still use the historical `auto_deploy_*` prefix,
+ * but in the live player-facing runtime those ranks now initialize
+ * in-match specialist field caps rather than free match-start units.
  *
  * Display helpers live in prestige-display.ts (extracted for 300 LOC limit).
  */
@@ -62,7 +66,7 @@ export function nextPrestigeThreshold(currentRank: number): number {
   return getPrestigeThreshold(currentRank);
 }
 
-// ── Auto-Deploy Calculations ──────────────────────────────────────
+// ── Specialist Blueprint Cap Calculations ────────────────────────
 
 export interface AutoDeploySpec {
   unitId: string;
@@ -70,6 +74,7 @@ export interface AutoDeploySpec {
   upgradeId: string;
 }
 
+/** Historical helper name retained for config/test stability. */
 export function getAutoDeployUnits(state: PrestigeState): AutoDeploySpec[] {
   const result: AutoDeploySpec[] = [];
   for (const { id, def } of getAllPearlUpgradeEntries()) {

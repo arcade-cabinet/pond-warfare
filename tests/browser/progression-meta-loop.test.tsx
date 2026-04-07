@@ -5,6 +5,7 @@ import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
 import { game } from '@/game';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { App } from '@/ui/app';
+import { actionButtons } from '@/ui/action-panel';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import '@/styles/main.css';
@@ -230,12 +231,12 @@ describe('progression meta loop', () => {
     await delay(100);
     await waitFor(() =>
       Array.from(document.querySelectorAll('[aria-label]')).some((node) =>
-        node.getAttribute('aria-label')?.startsWith('Toggle Auto-Deploy'),
+        node.getAttribute('aria-label')?.startsWith('Toggle Specialists'),
       ),
     );
-    clickAriaLabelPrefix('Toggle Auto-Deploy');
+    clickAriaLabelPrefix('Toggle Specialists');
     await delay(100);
-    clickAriaLabel('Buy Auto-Deploy Fisher for 3 Pearls');
+    clickAriaLabel('Buy Fisher Blueprint for 3 Pearls');
     await delay(100);
     clickButtonText('Close', { exact: true });
     await delay(100);
@@ -244,9 +245,17 @@ describe('progression meta loop', () => {
     expect(storeV3.prestigeState.value.upgradeRanks.auto_deploy_fisher).toBe(1);
 
     await startSinglePlayer(shell.waitForInit);
-    const autoDeployGathererCount = countPlayerUnits(EntityKind.Gatherer);
+    const blueprintGathererCount = countPlayerUnits(EntityKind.Gatherer);
     const preClamGatherSpeed = game.world.gatherSpeedMod;
-    expect(autoDeployGathererCount).toBeGreaterThan(baseGathererCount);
+    expect(blueprintGathererCount).toBe(baseGathererCount);
+    expect(game.world.specialistBlueprintCaps.fisher).toBe(1);
+    game.world.selection = [];
+    game.syncUIStore();
+    await waitFor(() => actionButtons.value.some((button) => button.title === 'Fisher'));
+    actionButtons.value.find((button) => button.title === 'Fisher')?.onClick();
+    await delay(100);
+    const afterTrainingGathererCount = countPlayerUnits(EntityKind.Gatherer);
+    expect(afterTrainingGathererCount).toBeGreaterThan(blueprintGathererCount);
     expect(preClamGatherSpeed).toBe(baseGatherSpeed);
 
     setRewardsState({

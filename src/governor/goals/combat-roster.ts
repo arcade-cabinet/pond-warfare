@@ -1,5 +1,5 @@
 import { hasComponent } from 'bitecs';
-import { PrestigeAutoDeploy } from '@/ecs/components';
+import { AutonomousSpecialist, PrestigeAutoDeploy } from '@/ecs/components';
 import { game } from '@/game';
 import type { RosterUnit, UnitTask } from '@/ui/roster-types';
 
@@ -10,7 +10,10 @@ function isPrestigeLocked(unit: RosterUnit): boolean {
   if (!unit.hasOverride) return false;
   const ecs = game.world?.ecs;
   if (!ecs) return false;
-  return hasComponent(ecs, unit.eid, PrestigeAutoDeploy);
+  return (
+    hasComponent(ecs, unit.eid, PrestigeAutoDeploy) ||
+    hasComponent(ecs, unit.eid, AutonomousSpecialist)
+  );
 }
 
 function canReassign(unit: RosterUnit, allowedTasks: UnitTask[]): boolean {

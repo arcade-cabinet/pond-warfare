@@ -69,6 +69,7 @@ describe('Unit configs', () => {
       expect(def.hp).toBeGreaterThan(0);
       expect(def.speed).toBeGreaterThan(0);
       expect(def.damage).toBeGreaterThanOrEqual(0);
+      expect(def.cost).toBeDefined();
       expect(def.role).toBeTruthy();
       expect(def.autoTarget).toBeTruthy();
     }

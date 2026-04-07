@@ -1,7 +1,8 @@
-import { hasComponent, query } from 'bitecs';
+import { addComponent, hasComponent, query } from 'bitecs';
 import { describe, expect, it } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
+  AutonomousSpecialist,
   EntityTypeTag,
   FactionTag,
   Health,
@@ -44,4 +45,37 @@ describe('computePopulation', () => {
     expect(world.resources.food).toBe(1);
     expect(world.resources.maxFood).toBe(8);
   });
+
+  it('counts in-match autonomous specialists against food cap', () => {
+    const world = createGameWorld();
+    spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
+    const specialist = spawnEntity(world, EntityKind.Gatherer, 280, 540, Faction.Player);
+    addAutonomousSpecialist(world, specialist);
+
+    computePopulation(world);
+
+    expect(world.resources.food).toBe(1);
+    expect(world.resources.maxFood).toBe(8);
+  });
 });
+
+function addAutonomousSpecialist(
+  world: ReturnType<typeof createGameWorld>,
+  eid: number,
+): void {
+  world.specialistAssignments.set(eid, {
+    runtimeId: 'fisher',
+    canonicalId: 'fisher',
+    label: 'Fisher',
+    mode: 'single_zone',
+    operatingRadius: 160,
+    centerX: 280,
+    centerY: 540,
+    anchorRadius: 0,
+    engagementRadius: 0,
+    engagementX: 280,
+    engagementY: 540,
+    projectionRange: 0,
+  });
+  addComponent(world.ecs, eid, AutonomousSpecialist);
+}

@@ -15,6 +15,7 @@ import { train } from '@/input/selection';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind } from '@/types';
 import type { ActionButtonDef } from '@/ui/action-panel';
+import { buildSpecialistButtons } from './specialist-buttons';
 
 export function buildLodgeButtons(
   w: GameWorld,
@@ -159,5 +160,6 @@ export function buildLodgeButtons(
     });
   }
 
+  btns.push(...buildSpecialistButtons(w, lodgeEid, recorder));
   return btns;
 }

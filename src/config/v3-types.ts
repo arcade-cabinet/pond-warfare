@@ -26,6 +26,7 @@ export interface SpecialistDef {
   hp: number;
   damage: number;
   speed: number;
+  cost: ResourceCost;
   role: string;
   autoTarget: string;
 }

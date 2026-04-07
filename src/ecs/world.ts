@@ -86,6 +86,7 @@ export interface GameWorld {
   idleWorkerIdx: number;
   specialistAssignments: Map<number, SpecialistAssignment>;
   pendingSpecialistAssignment: PendingSpecialistAssignment | null;
+  specialistBlueprintCaps: Record<string, number>;
 
   // Yuka AI manager for steering behaviors (all factions)
   yukaManager: YukaManager;

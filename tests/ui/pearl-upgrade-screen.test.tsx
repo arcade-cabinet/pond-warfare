@@ -4,9 +4,9 @@
  *
  * Validates Pearl upgrade screen behavior:
  * - Displays all Pearl upgrades from prestige.json
- * - Categories: auto-deploy, auto-behavior, multiplier
+ * - Categories: specialists, behaviors, multipliers
  * - Purchase deducts Pearls correctly
- * - Auto-deploy count updates after purchase
+ * - Specialist cap display updates after purchase
  * - Max rank prevention
  * - Correct display of current rank/max rank
  */
@@ -33,7 +33,7 @@ describe('Pearl Upgrade Screen — US15', () => {
       expect(list.length).toBe(expectedCount);
     });
 
-    it('should categorize auto-deploy upgrades correctly', () => {
+    it('should keep specialist blueprint upgrades grouped together', () => {
       const state = createPrestigeState();
       const list = getPearlUpgradeDisplayList(state);
 
@@ -114,8 +114,8 @@ describe('Pearl Upgrade Screen — US15', () => {
     });
   });
 
-  describe('Auto-deploy slider display', () => {
-    it('should show N units auto-spawned for auto-deploy upgrades', () => {
+  describe('Specialist blueprint display', () => {
+    it('should show field caps for specialist blueprint upgrades', () => {
       const state: PrestigeState = {
         rank: 3,
         pearls: 0,
@@ -125,8 +125,7 @@ describe('Pearl Upgrade Screen — US15', () => {
 
       const list = getPearlUpgradeDisplayList(state);
       const fisher = list.find((u) => u.id === 'auto_deploy_fisher');
-      // Effect summary: "4x fisher"
-      expect(fisher?.effectSummary).toBe('4x fisher');
+      expect(fisher?.effectSummary).toBe('Field up to 4 Fishers');
     });
 
     it('should update count after purchase', () => {

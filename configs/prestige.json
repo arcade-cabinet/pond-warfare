@@ -7,57 +7,57 @@
   "rank_threshold_formula": "rank_threshold_base * (1 + current_rank * 0.5)",
   "pearl_upgrades": {
     "auto_deploy_fisher": {
-      "label": "Auto-Deploy Fisher",
-      "description": "Spawns fishers at match start",
+      "label": "Fisher Blueprint",
+      "description": "Raises your in-match Fisher field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
       "effect": { "type": "auto_deploy", "unit": "fisher", "count_per_rank": 1 }
     },
     "auto_deploy_digger": {
-      "label": "Auto-Deploy Digger",
-      "description": "Spawns diggers at match start",
+      "label": "Digger Blueprint",
+      "description": "Raises your in-match Digger field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
       "effect": { "type": "auto_deploy", "unit": "digger", "count_per_rank": 1 }
     },
     "auto_deploy_logger": {
-      "label": "Auto-Deploy Logger",
-      "description": "Spawns loggers at match start",
+      "label": "Logger Blueprint",
+      "description": "Raises your in-match Logger field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
       "effect": { "type": "auto_deploy", "unit": "logger", "count_per_rank": 1 }
     },
     "auto_deploy_guardian": {
-      "label": "Auto-Deploy Guardian",
-      "description": "Spawns guardians at match start",
+      "label": "Guard Blueprint",
+      "description": "Raises your in-match Guard field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
       "effect": { "type": "auto_deploy", "unit": "guardian", "count_per_rank": 1 }
     },
     "auto_deploy_hunter": {
-      "label": "Auto-Deploy Hunter",
-      "description": "Spawns hunters at match start",
+      "label": "Hunter Blueprint",
+      "description": "Raises your in-match Hunter field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
       "effect": { "type": "auto_deploy", "unit": "hunter", "count_per_rank": 1 }
     },
     "auto_deploy_ranger": {
-      "label": "Auto-Deploy Ranger",
-      "description": "Spawns rangers at match start",
+      "label": "Ranger Blueprint",
+      "description": "Raises your in-match Ranger field cap",
       "cost_per_rank": 4,
       "max_rank": 3,
       "effect": { "type": "auto_deploy", "unit": "ranger", "count_per_rank": 1 }
     },
     "auto_deploy_shaman": {
-      "label": "Auto-Deploy Shaman",
-      "description": "Spawns shamans at match start",
+      "label": "Shaman Blueprint",
+      "description": "Raises your in-match Shaman field cap",
       "cost_per_rank": 4,
       "max_rank": 3,
       "effect": { "type": "auto_deploy", "unit": "shaman", "count_per_rank": 1 }
     },
     "auto_deploy_lookout": {
-      "label": "Auto-Deploy Lookout",
-      "description": "Spawns lookouts at match start",
+      "label": "Lookout Blueprint",
+      "description": "Raises your in-match Lookout field cap",
       "cost_per_rank": 3,
       "max_rank": 3,
       "effect": { "type": "auto_deploy", "unit": "lookout", "count_per_rank": 1 }

@@ -153,7 +153,7 @@ The intended gameplay model is:
 - specialist radius growth is a first-class Pearl upgrade axis, not a secondary stat
 - selected specialists should reveal their assigned circle(s) plus dotted correlation links on the map; `Ranger` and `Bombardier` are dual-zone by design
 
-The older model of free match-start specialist auto-deploy is considered transitional runtime behavior, not the long-run architecture target.
+The older model of free match-start specialist auto-deploy is obsolete in the player-facing runtime. Pearl specialist ranks now initialize in-match blueprint caps, and the player fields those specialists from the Lodge during a run.
 
 ## Upgrade Effects Pipeline
 
@@ -165,7 +165,7 @@ At game init, `src/game/upgrade-effects.ts`:
 
 Separately, `src/ui/current-run-diamond-effects.ts` resolves current-run Frontier Expansion diamonds so the next match spawns at the correct panel stage.
 
-Under the canonical unit model, Pearl progression should evolve from `free auto_deploy` toward:
+Under the canonical unit model, Pearl progression now centers on:
 
 1. specialist blueprint unlocks
 2. specialist cap/radius/efficiency modifiers

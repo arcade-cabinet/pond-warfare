@@ -1,6 +1,6 @@
 # Balance Model
 
-This document currently measures the live transitional runtime, which still contains legacy `auto_deploy_*` specialist plumbing. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where Pearl specialists are trainable in-match units and operating radius is a primary upgrade axis.
+This document now measures a mixed runtime: the player-facing game uses Pearl specialist blueprint caps plus in-match specialist training, while some diagnostics still use the legacy instant-deploy helper as a controlled measurement tool. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where operating radius is a primary upgrade axis.
 
 ## Purpose
 
@@ -22,7 +22,8 @@ The goal is not perfect prediction. The goal is a repeatable approximation we ca
 - The baseline game must be technically playable through the first exposure to all six panel stages without spending Clams or Pearls.
 - Clams are a current-run pressure-relief layer.
 - Pearls are the permanent prestige acceleration layer.
-- In the transitional runtime, Pearl auto-deploy specialists should not consume the same food cap the baseline run uses for ordinary production. The long-run target is to replace free auto-deploy with Pearl specialist blueprint unlocks plus in-match specialist training.
+- Player-facing Pearl specialists now cost in-match resources and consume normal population when trained during a run.
+- The legacy instant-deploy diagnostic helper still excludes those spawned specialists from baseline food-cap accounting so older pressure slices remain comparable while the harnesses are being rewritten.
 - If a building or response is required to clear a pane, it belongs in baseline pane progression, not behind Clams.
 
 ## Current Model
@@ -166,7 +167,7 @@ a fresh worker process:
 
 The Pearl broad scan still reports two horizons:
 
-- opening window: 1200 frames, which is useful for early pacing and legacy auto-deploy-era Pearl impact
+- opening window: 1200 frames, which is useful for early pacing and early-expression Pearl impact
 - long-run window: 2400 frames, which is needed for combat and repair/heal tracks that do not fully express before the first army exists
 
 Current isolated readout:
@@ -275,7 +276,7 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - The corrected full-stack viability run is materially healthier than the older harness implied: a fresh stage-6 no-upgrade run now stays alive through the 1800-frame baseline check with Lodge HP around `1354` and `5` kills.
 - The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, while `hp_multiplier` still needs a better bridge between pressure slices and sustain scoring.
 - The rare-resource prestige path is no longer a map-generation trap. Its opening-window wobble now looks like ordinary governor valuation noise rather than a fundamentally harmful spawn pattern.
-- The suspicious long-run Pearl set is now clearer: Logger and Digger auto-deploys are still materially negative in the broad scan, while Fisher is only near-neutral and the plain multiplier tracks are modestly positive.
+- The suspicious long-run Pearl set is now clearer: Logger and Digger specialist-cap tracks are still materially negative in the broad scan, while Fisher is only near-neutral and the plain multiplier tracks are modestly positive.
 - The controller split still makes the attack/stabilization path the next highest-signal controller problem. The train path is cleaner after the stage-aware gatherer target and baseline Lodge-generalist alignment, but build follow-up and siege relief still lag once the Armory step is complete.
 
 ## How To Use This

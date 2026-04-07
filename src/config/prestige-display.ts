@@ -51,7 +51,7 @@ function formatEffectSummary(def: PearlUpgradeDef, rank: number): string {
   const effect = def.effect;
   switch (effect.type) {
     case 'auto_deploy':
-      return `${effect.count_per_rank * rank}x ${effect.unit}`;
+      return formatBlueprintCapSummary(effect.unit, effect.count_per_rank * rank);
     case 'multiplier':
       return `+${Math.round(effect.value_per_rank * rank * 100)}% ${effect.stat}`;
     case 'auto_behavior':
@@ -61,4 +61,29 @@ function formatEffectSummary(def: PearlUpgradeDef, rank: number): string {
     default:
       return '';
   }
+}
+
+function formatBlueprintCapSummary(unitId: string, count: number): string {
+  const label = SPECIALIST_DISPLAY_NAMES[unitId] ?? titleCase(unitId);
+  return `Field up to ${count} ${count === 1 ? label : `${label}s`}`;
+}
+
+const SPECIALIST_DISPLAY_NAMES: Record<string, string> = {
+  fisher: 'Fisher',
+  digger: 'Digger',
+  logger: 'Logger',
+  guardian: 'Guard',
+  hunter: 'Hunter',
+  ranger: 'Ranger',
+  shaman: 'Shaman',
+  lookout: 'Lookout',
+  sapper: 'Bombardier',
+  saboteur: 'Saboteur',
+};
+
+function titleCase(value: string): string {
+  return value
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }

@@ -131,6 +131,7 @@ export function createGameWorld(): GameWorld {
     idleWorkerIdx: 0,
     specialistAssignments: new Map(),
     pendingSpecialistAssignment: null,
+    specialistBlueprintCaps: {},
     resTracker: {
       lastFish: STARTING_FISH,
       lastLogs: STARTING_LOGS,

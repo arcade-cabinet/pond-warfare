@@ -12,6 +12,7 @@
 import { hasComponent, query } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
+  AutonomousSpecialist,
   Building,
   EntityTypeTag,
   FactionTag,
@@ -65,21 +66,22 @@ export function computePopulation(world: GameWorld): PopulationResult {
       if (!hasComponent(w.ecs, eid, PrestigeAutoDeploy)) {
         curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
       }
+      const isAutonomousSpecialist = hasComponent(w.ecs, eid, AutonomousSpecialist);
       const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
       if (kind === EntityKind.Gatherer) {
-        if (isIdle) {
+        if (isIdle && !isAutonomousSpecialist) {
           idleWorkers++;
           idleGatherers++;
         }
       } else if (kind === EntityKind.Healer) {
         armyUnits++;
-        if (isIdle) idleHealers++;
+        if (isIdle && !isAutonomousSpecialist) idleHealers++;
       } else if (kind === EntityKind.Commander) {
         // Commander counts toward population but is never auto-assigned;
         // exclude from army counts and idle menus so it stays near the Lodge.
       } else {
         armyUnits++;
-        if (isIdle) {
+        if (isIdle && !isAutonomousSpecialist) {
           idleCombat++;
           if (hasComponent(w.ecs, eid, Velocity) && Velocity.speed[eid] >= 2.0) idleScouts++;
         }

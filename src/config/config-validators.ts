@@ -60,6 +60,7 @@ export function validateUnits(data: UnitsConfig): void {
     assertField(def, 'speed', ctx);
     assertPositive(def.speed, `${ctx}.speed`);
     assertNonNegative(def.damage, `${ctx}.damage`);
+    assertField(def, 'cost', ctx);
     assertField(def, 'role', ctx);
     assertField(def, 'autoTarget', ctx);
   }
