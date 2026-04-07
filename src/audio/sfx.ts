@@ -1,4 +1,10 @@
-/** SFX module - All sound effect methods and synth pool management. */
+/**
+ * SFX module - All sound effect methods and synth pool management.
+ *
+ * Canonical live callers should prefer Mudpaw/Medic/Lookout aliases where
+ * available. Older `selectGatherer` / `selectScout` / etc. methods remain for
+ * low-level compatibility with historical entity kinds.
+ */
 import * as Tone from 'tone';
 import {
   catapultImpactEffect,
@@ -156,11 +162,17 @@ export class SfxManager {
   selectUnit(): void {
     this.playAt(600, 'sine', 0.1, 0.05, 800);
   }
+  selectMudpaw(): void {
+    this.selectGatherer();
+  }
   selectBrawler(): void {
     this.playAt(80, 'sine', 0.15, 0.08, 50);
   }
   selectSniper(): void {
     this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
+  }
+  selectMedic(): void {
+    this.selectHealer();
   }
   selectCatapult(): void {
     this.playAt(60, 'sawtooth', 0.2, 0.06, 40);
@@ -209,6 +221,9 @@ export class SfxManager {
   }
   selectHealer(): void {
     selectHealerEffect(this, this._getMuted, this._getStarted);
+  }
+  selectLookout(): void {
+    this.selectScout();
   }
   selectScout(): void {
     selectScoutEffect(this, this._getMuted, this._getStarted);

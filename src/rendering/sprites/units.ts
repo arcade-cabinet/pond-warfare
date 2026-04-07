@@ -1,12 +1,18 @@
 /**
- * Otter-type unit sprites: gatherer, brawler, sniper, healer, shieldbearer,
- * scout, swimmer, trapper, commander, sapper, saboteur, shaman, diver, engineer.
+ * Otter-type unit sprites.
+ *
+ * Some sprite functions still use historical internal names (`gatherer`,
+ * `scout`, `brawler`, `sniper`) because they are keyed off long-lived enums.
+ * In the live player-facing model those chassis map to:
+ * - `drawGatherer` -> Mudpaw and gather-specialist compatibility bodies
+ * - `drawScout` -> Lookout compatibility body
+ * - `drawBrawler` / `drawSniper` -> historical compatibility bodies
  */
 
 import { PALETTE } from '@/constants';
 import { type DrawCtx, OTTER_NOSE_HIGHLIGHT, OTTER_OUTLINE } from './draw-helpers';
 
-/** Draw the base otter body shared by gatherer, brawler, sniper, healer, etc. */
+/** Draw the base otter body shared by Mudpaw and other compatibility otter units. */
 function drawOtterBase(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   // Shadow under feet

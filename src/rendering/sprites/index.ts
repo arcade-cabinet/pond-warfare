@@ -61,7 +61,14 @@ import {
 } from './units';
 import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } from './v2-entities';
 
-/** Names used internally to map to SpriteId enum values. */
+/**
+ * Names used internally to map to SpriteId enum values.
+ *
+ * These are compatibility-oriented debug/registry keys, not the canonical
+ * player-facing roster names. For example:
+ * - `gatherer` is the Mudpaw / economy-specialist chassis
+ * - `scout` is the Lookout chassis
+ */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'gatherer', id: SpriteId.Gatherer },
   { name: 'brawler', id: SpriteId.Brawler },
