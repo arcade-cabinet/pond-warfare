@@ -23,6 +23,7 @@ import {
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
@@ -77,7 +78,7 @@ describe('combatSystem', () => {
   });
 
   it('should set attack cooldown after attacking', () => {
-    const attacker = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
 
     UnitStateMachine.state[attacker] = UnitState.Attacking;
@@ -91,7 +92,7 @@ describe('combatSystem', () => {
   });
 
   it('should return to idle if target is dead', () => {
-    const attacker = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
 
     UnitStateMachine.state[attacker] = UnitState.Attacking;
@@ -104,7 +105,7 @@ describe('combatSystem', () => {
   });
 
   it('should skip attack when cooldown is active', () => {
-    const attacker = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
 
     UnitStateMachine.state[attacker] = UnitState.Attacking;
@@ -120,7 +121,7 @@ describe('combatSystem', () => {
 
   it('clears commander aura buffs immediately after the commander dies', () => {
     const commander = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Commander);
-    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, SAPPER_KIND);
 
     combatSystem(world);
     expect(world.commanderDamageBuff.has(ally)).toBe(true);
@@ -150,7 +151,7 @@ describe('combatSystem', () => {
     FactionTag.faction[armory] = Faction.Player;
     EntityTypeTag.kind[armory] = EntityKind.Armory;
 
-    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, SAPPER_KIND);
     world.tech.warDrums = true;
 
     combatSystem(world);
@@ -190,7 +191,7 @@ describe('combatSystem', () => {
 
   it('skips idle auto-aggro for gather overrides', () => {
     world.frameCount = 10;
-    const gatherer = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Gatherer);
+    const gatherer = createCombatUnit(world, 100, 100, Faction.Player, MUDPAW_KIND);
     const enemy = createCombatUnit(world, 120, 100, Faction.Enemy, EntityKind.Snake);
 
     Combat.damage[gatherer] = 2;
@@ -210,7 +211,7 @@ describe('combatSystem', () => {
   it('moves shamans toward wounded allies while idle', () => {
     world.frameCount = 30;
     const shaman = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Shaman);
-    const ally = createCombatUnit(world, 140, 100, Faction.Player, EntityKind.Brawler);
+    const ally = createCombatUnit(world, 140, 100, Faction.Player, SAPPER_KIND);
 
     Combat.damage[shaman] = 0;
     Health.current[ally] = 40;
@@ -226,8 +227,8 @@ describe('combatSystem', () => {
   it('keeps shaman support targeting inside the assigned area', () => {
     world.frameCount = 30;
     const shaman = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Shaman);
-    const inside = createCombatUnit(world, 150, 100, Faction.Player, EntityKind.Brawler);
-    const outside = createCombatUnit(world, 360, 100, Faction.Player, EntityKind.Brawler);
+    const inside = createCombatUnit(world, 150, 100, Faction.Player, SAPPER_KIND);
+    const outside = createCombatUnit(world, 360, 100, Faction.Player, SAPPER_KIND);
 
     Health.current[inside] = 40;
     Health.current[outside] = 20;

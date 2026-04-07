@@ -34,6 +34,7 @@ import { combatSystem } from '@/ecs/systems/combat';
 import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { registerSpecialistEntity, getSpecialistAssignment } from '@/game/specialist-assignment';
 import { getSpecialistSpawnCost } from '@/game/specialist-training';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -114,7 +115,7 @@ describe('commander passives', () => {
   it('Sage: nearby gatherers receive the aura gather bonus', () => {
     world.commanderModifiers.auraGatherBonus = 0.25;
     const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
-    const gatherer = createUnit(world, 120, 100, Faction.Player, EntityKind.Gatherer, 30);
+    const gatherer = createUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
     const lodge = createTrainingBuilding(world, 100, 160);
     EntityTypeTag.kind[lodge] = EntityKind.Lodge;
     const fishNode = spawnResource(world, 120, 120, EntityKind.Clambed, 100);
@@ -190,7 +191,7 @@ describe('commander passives', () => {
   it('Ironpaw: +20% HP aura applied to units in range', () => {
     world.commanderModifiers.auraUnitHpBonus = 0.2;
     const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
-    const brawler = createUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 60);
+    const brawler = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60);
 
     // Run combat system to trigger aura refresh
     world.frameCount = 60;
@@ -205,7 +206,7 @@ describe('commander passives', () => {
   it('Ironpaw: HP aura not applied twice', () => {
     world.commanderModifiers.auraUnitHpBonus = 0.2;
     const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
-    const brawler = createUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 60);
+    const brawler = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60);
 
     world.frameCount = 60;
     combatSystem(world);
