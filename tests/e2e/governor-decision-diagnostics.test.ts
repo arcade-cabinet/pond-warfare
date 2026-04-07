@@ -18,7 +18,7 @@ import {
 import { countAvailableAttackers } from '@/governor/goals/attack-goal';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { Governor } from '@/governor/governor';
-import { Faction, UnitState } from '@/types';
+import { BUILDING_KINDS, EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 import {
   combatArmySize,
@@ -75,8 +75,19 @@ interface TraceSummary {
   kills: number;
   unitsTrained: number;
   gathered: number;
+  stockpile: number;
   clams: number;
   power: number;
+}
+
+function getMobilePlayerUnits(world: GameWorld): number[] {
+  return Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).filter(
+    (eid) =>
+      FactionTag.faction[eid] === Faction.Player &&
+      Health.current[eid] > 0 &&
+      EntityTypeTag.kind[eid] !== EntityKind.Lodge &&
+      !BUILDING_KINDS.has(EntityTypeTag.kind[eid]),
+  );
 }
 
 function scoreDecisionWindow(): { bestName: string; attackScore: number } {
@@ -187,17 +198,24 @@ function runVariant(
     kills: world.stats.unitsKilled,
     unitsTrained: world.stats.unitsTrained,
     gathered: world.stats.resourcesGathered,
+    stockpile: world.resources.fish + world.resources.logs + world.resources.rocks,
     clams,
     power: Number(
-      getPowerScore({
-        resourcesGathered: world.stats.resourcesGathered,
-        unitsTrained: world.stats.unitsTrained,
-        kills: world.stats.unitsKilled,
-        playerUnits: Array.from(query(world.ecs, [Health, FactionTag])).filter(
-          (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
-        ).length,
-        lodgeHpRatio: lodgeHpRatio(world),
-      }).toFixed(3),
+      (() => {
+        const playerUnits = getMobilePlayerUnits(world);
+        const totalCurrentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
+        const totalMaxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
+        return getPowerScore({
+          resourcesGathered: world.stats.resourcesGathered,
+          resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
+          unitsTrained: world.stats.unitsTrained,
+          kills: world.stats.unitsKilled,
+          playerUnits: playerUnits.length,
+          playerUnitHpPool: totalCurrentHp,
+          playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
+          lodgeHpRatio: lodgeHpRatio(world),
+        });
+      })().toFixed(3),
     ),
   };
 }

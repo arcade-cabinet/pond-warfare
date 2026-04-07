@@ -35,7 +35,7 @@ import { calculateMatchReward } from '@/game/match-rewards';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
-import { EntityKind, Faction } from '@/types';
+import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
 import * as storeV3 from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
@@ -60,6 +60,7 @@ vi.mock('@/utils/particles');
 
 export const BALANCE_REPORT_SEEDS = [11, 42, 77];
 export const BALANCE_REPORT_OPENING_FRAMES = 1200;
+export const BALANCE_REPORT_CLAM_FRAMES = 1800;
 export const BALANCE_REPORT_LONG_RUN_FRAMES = 2400;
 const TEST_STAGE = 6;
 
@@ -119,9 +120,15 @@ function snapshotWorld(world: GameWorld, prestigeRank: number): BalanceSnapshot 
       EntityTypeTag.kind[eid] === EntityKind.Lodge &&
       Health.current[eid] > 0,
   );
-  const playerUnits = Array.from(query(world.ecs, [Health, FactionTag])).filter(
-    (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
-  ).length;
+  const playerUnits = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).filter(
+    (eid) =>
+      FactionTag.faction[eid] === Faction.Player &&
+      Health.current[eid] > 0 &&
+      EntityTypeTag.kind[eid] !== EntityKind.Lodge &&
+      !BUILDING_KINDS.has(EntityTypeTag.kind[eid]),
+  );
+  const totalCurrentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
+  const totalMaxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
   const matchClamsEarned = calculateMatchReward({
     result: world.state === 'lose' ? 'loss' : 'win',
     durationSeconds: Math.round(world.frameCount / 60),
@@ -134,11 +141,14 @@ function snapshotWorld(world: GameWorld, prestigeRank: number): BalanceSnapshot 
 
   return {
     resourcesGathered: world.stats.resourcesGathered,
+    resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
     unitsTrained: world.stats.unitsTrained,
     kills: world.stats.unitsKilled,
-    playerUnits,
+    playerUnits: playerUnits.length,
     lodgeHpRatio:
       lodge == null || Health.max[lodge] <= 0 ? 0 : Health.current[lodge] / Health.max[lodge],
+    playerUnitHpPool: totalCurrentHp,
+    playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
     matchClamsEarned,
   };
 }

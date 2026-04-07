@@ -1,5 +1,6 @@
 export interface BalanceSnapshot {
   resourcesGathered: number;
+  resourcesStockpiled?: number;
   unitsTrained: number;
   kills: number;
   playerUnits: number;
@@ -40,12 +41,15 @@ export function getBaselinePressureScore(panelStage: number, matchNumber: number
  * metric dominates the result.
  */
 export function getPowerScore(snapshot: BalanceSnapshot): number {
-  const resources = Math.log2(snapshot.resourcesGathered + 1) * 0.35;
-  const training = Math.log2(snapshot.unitsTrained + 1) * 0.2;
-  const kills = Math.log2(snapshot.kills + 1) * 0.15;
+  const resources = Math.log2(snapshot.resourcesGathered + 1) * 0.24;
+  const stockpile = Math.log2((snapshot.resourcesStockpiled ?? 0) + 1) * 0.1;
+  const training = Math.log2(snapshot.unitsTrained + 1) * 0.16;
+  const kills = Math.log2(snapshot.kills + 1) * 0.12;
   const army = Math.log2(snapshot.playerUnits + 1) * 0.1;
-  const lodge = clamp(snapshot.lodgeHpRatio, 0, 1) * 0.2;
-  return resources + training + kills + army + lodge;
+  const hpPool = Math.log2((snapshot.playerUnitHpPool ?? 0) + 1) * 0.1;
+  const armyHealthRatio = clamp(snapshot.playerUnitHpRatio ?? 0, 0, 1) * 0.08;
+  const lodge = clamp(snapshot.lodgeHpRatio, 0, 1) * 0.1;
+  return resources + stockpile + training + kills + army + hpPool + armyHealthRatio + lodge;
 }
 
 /**

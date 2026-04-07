@@ -31,7 +31,7 @@ import { calculateMatchReward } from '@/game/match-rewards';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
-import { EntityKind } from '@/types';
+import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
@@ -101,16 +101,22 @@ function runFrame(world: GameWorld, governor: Governor): void {
 function getLodgeSnapshot(world: GameWorld): BalanceSnapshot {
   const lodge = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).find(
     (eid) =>
-      FactionTag.faction[eid] === 0 &&
+      FactionTag.faction[eid] === Faction.Player &&
       EntityTypeTag.kind[eid] === EntityKind.Lodge &&
       Health.current[eid] > 0,
   );
   const lodgeHpRatio =
     lodge == null || Health.max[lodge] <= 0 ? 0 : Health.current[lodge] / Health.max[lodge];
 
-  const playerUnits = Array.from(query(world.ecs, [Health, FactionTag])).filter(
-    (eid) => FactionTag.faction[eid] === 0 && Health.current[eid] > 0,
-  ).length;
+  const playerUnits = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).filter(
+    (eid) =>
+      FactionTag.faction[eid] === Faction.Player &&
+      Health.current[eid] > 0 &&
+      EntityTypeTag.kind[eid] !== EntityKind.Lodge &&
+      !BUILDING_KINDS.has(EntityTypeTag.kind[eid]),
+  );
+  const totalCurrentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
+  const totalMaxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
   const matchClamsEarned = calculateMatchReward({
     result: world.state === 'lose' ? 'loss' : 'win',
     durationSeconds: Math.round(world.frameCount / 60),
@@ -123,9 +129,12 @@ function getLodgeSnapshot(world: GameWorld): BalanceSnapshot {
 
   return {
     resourcesGathered: world.stats.resourcesGathered,
+    resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
     unitsTrained: world.stats.unitsTrained,
     kills: world.stats.unitsKilled,
-    playerUnits,
+    playerUnits: playerUnits.length,
+    playerUnitHpPool: totalCurrentHp,
+    playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
     lodgeHpRatio,
     matchClamsEarned,
   };

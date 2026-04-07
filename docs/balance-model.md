@@ -113,17 +113,24 @@ From [balance-track-shifts.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfa
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| clam_gather_t1 | -4.56 | 4.57 | 12.51 |
-| clam_yield_t1 | 1.30 | 6.90 | 13.25 |
-| clam_clam_bonus_t1 | 0.62 | 6.35 | 12.65 |
-| pearl_clam_earnings_rank_1 | 1.09 | 3.57 | 8.34 |
-| pearl_gather_rank_2 | 1.36 | 3.62 | 7.70 |
-| pearl_auto_deploy_fisher | 0.58 | 3.08 | 7.84 |
-| pearl_starting_tier_1 | 1.94 | 4.40 | 8.53 |
+| clam_gather_t1 | 0.00 | 0.90 | 2.70 |
+| clam_yield_t1 | 0.17 | 1.08 | 2.78 |
+| clam_clam_bonus_t1 | 0.00 | 0.78 | 2.33 |
+| pearl_clam_earnings_rank_1 | 0.39 | 0.43 | 0.46 |
+| pearl_gather_rank_2 | 0.25 | 0.75 | 1.28 |
+| pearl_auto_deploy_fisher | 0.00 | 0.83 | 1.77 |
+| pearl_starting_tier_1 | 0.90 | 1.27 | 1.79 |
 
 These sampled Pearl rows now compare against a rank-matched Pearl baseline, so
 the shifts represent the upgrade itself instead of accidentally including the
 rank-1 prestige reward multiplier.
+
+The broad score now also credits retained in-match stockpile and surviving
+mobile-army HP instead of only raw gathered count, trained count, kills, unit
+count, and Lodge HP. That makes the Pearl long-run scan more honest for
+durability and economy-buffer tracks, but it also exposes that the old Clam
+frame-zero broad scan is not yet a good release-budget proxy for mid-run Clam
+relief.
 
 The diagnostic now also includes the controller/runtime fixes for gather
 override persistence, specialist governor lockout, prestige population
@@ -156,22 +163,23 @@ The Pearl broad scan now reports two horizons:
 Current isolated readout:
 
 - Clam T1:
-  - `economy_node_yield_t0` is strongest at about `6.06%` `meta_mean_pct`
-  - the three basic gather tracks cluster just behind at about `6.03%`
-  - most remaining Clam T1 rows cluster around `5.34%`, which means the harness now reads them as clearly positive even if it still does not separate categories cleanly in this short window
-  - the Clam broad scan now shows a small but real `economy_mean_pct` signal (`1.21%`) instead of the previous flat zero
+  - the exhaustive broad scan is still under-reading Clam relief even at `1800` frames
+  - `economy_node_yield_t0` currently lands around `-1.45%` `meta_mean_pct`, the three basic gather tracks around `-1.63%`, and most remaining T1 rows around `-1.75%`
+  - those same basic Clam rows are still positive in the sampled stage-6 shift test, which means the remaining problem is the broad-report lens, not proof that the runtime consumers are dead
+  - current interpretation: a frame-zero exhaustive scan is the wrong proxy for ephemeral, pane-earned Clam pressure relief, so the Clam broad report should be treated as diagnostic-only until it is replaced with a pane-transition purchase harness
 - Pearl rank 1:
   - opening window, 1200 frames:
     - the opening slice is still not a release-budget signal; it is a fast early-expression check
     - after the governor bootstrap fix, the opening trace now reaches an attack window instead of flatlining
     - `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `gather_multiplier` still read strongly negative here because the first 1200 frames are dominated by early setup and the first defend cycle
   - long-run window, 2400 frames:
-    - `auto_deploy_fisher` is now strongest at about `7.93%` `meta_mean_pct`
-    - `auto_deploy_digger` is about `4.08%`, `auto_deploy_guardian` about `2.33%`, and `auto_deploy_hunter` about `1.76%`
-    - `rare_resource_access` is now clearly positive at about `1.14%`
-    - `combat_multiplier` is positive at about `0.77%`
-    - `clam_earnings_multiplier` remains economy-led, with about `2.65%` `economy_mean_pct` and about `0.69%` `meta_mean_pct`
-    - the remaining low-expression long-run rows are now `hp_multiplier` at about `0.29%`, `auto_heal_behavior` at about `0.29%`, and `gather_multiplier` at about `0.01%`
+    - `auto_deploy_fisher` is now strongest at about `6.42%` `meta_mean_pct`
+    - `auto_deploy_digger` is about `3.33%`, `auto_deploy_guardian` about `2.25%`, and `auto_deploy_hunter` about `1.30%`
+    - `rare_resource_access` is positive at about `1.20%`
+    - `hp_multiplier` is positive at about `0.68%`
+    - `combat_multiplier` is positive at about `0.50%`
+    - `clam_earnings_multiplier` remains economy-led, with about `2.65%` `economy_mean_pct` and about `0.51%` `meta_mean_pct`
+    - the only still-negative long-run Pearl row in the broad scan is now `gather_multiplier` at about `-0.01%`; `hp_multiplier` and `combat_multiplier` remain under budget, but they are no longer directionally negative
 
 ## Combat-Pressure Diagnostic
 
@@ -237,17 +245,18 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 
 ## Interpretation
 
-- Cheap first-rank Clam tracks are currently landing around **4.5% to 7% sampled mean relief** in the smaller report, and around **5.3% to 6.1%** in the isolated Clam broad scan.
-- Early sampled Pearl tracks are now directionally positive across the selected rows and the isolated broad Pearl scan, but they still land below the strongest Clam pressure-relief rows unless they auto-deploy real specialists.
+- Cheap first-rank Clam tracks are currently landing around **0.8% to 1.1% sampled mean relief** in the smaller stage-6 report.
+- The exhaustive Clam broad scan is still not a release-budget input. It stays slightly negative on mean even though the sampled Clam tracks are positive, which makes it a measurement gap rather than a settled gameplay conclusion.
+- Early sampled Pearl tracks are directionally positive across the selected rows, and the long-run broad Pearl scan is now mostly positive as well, but the non-specialist Pearl rows still land below the strongest specialist auto-deploys.
 - Under forced early combat pressure, all four tested Pearl combat/repair tracks are now positive, with `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` showing the strongest gains.
 - The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
 - Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.
-- The isolated broad scans are now trustworthy enough to use as a release-budget input, but they still show two real limitations: many Clam categories remain tightly clustered, and some Pearl tracks are only near-neutral in the short 1200-frame window even when targeted diagnostics show clear local value.
+- The Pearl broad scan is now trustworthy enough to use as one release-budget input, but the Clam broad scan still is not. Clams need a pane-transition or mid-run purchase harness rather than a frame-zero exhaustive scan.
 - The targeted governor trace is now healthier: the stage-6 opening window reaches an attack scoring window at about `14s`, the opening slice averages about `2.2` ready combat units instead of `1.2`, and the 2400-frame trace averages about `3.1` ready combat units. That means the short Pearl scan is no longer dominated by a pure gatherer bootstrap stall.
-- The dual-window Pearl report moved materially after the governor/bootstrap fix. The 2400-frame scan is now mostly positive: `auto_deploy_fisher` lands around `7.93% meta_mean_pct`, `auto_deploy_digger` around `4.08%`, `rare_resource_access` around `1.14%`, and `combat_multiplier` around `0.77%`.
+- The dual-window Pearl report moved materially after the score-model fix as well as the governor/bootstrap fixes. The 2400-frame scan is now mostly positive: `auto_deploy_fisher` lands around `6.42% meta_mean_pct`, `auto_deploy_digger` around `3.33%`, `rare_resource_access` around `1.20%`, `hp_multiplier` around `0.68%`, and `combat_multiplier` around `0.50%`.
 - The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, and `hp_multiplier` reads as small-but-positive instead of looking inert.
 - The rare-resource prestige path is no longer a map-generation trap. Its opening-window wobble now looks like ordinary governor valuation noise rather than a fundamentally harmful spawn pattern.
-- The suspicious long-run Pearl set is much narrower now: `combat_multiplier`, `hp_multiplier`, and `gather_multiplier` are the only rows still reading under their intended budget in the broad 2400-frame scan.
+- The suspicious long-run Pearl set is much narrower now: `gather_multiplier` is the only row still slightly negative, while `combat_multiplier` and `hp_multiplier` are now positive but still reading under budget.
 - The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the stage-aware gatherer target and baseline Lodge-generalist alignment, but attack still fails to cash in its later army strength as well as it should over the longer governor run.
 
 ## How To Use This
@@ -261,8 +270,9 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Investigate the remaining attack-controller conversion gap, since the governor now reaches attack windows earlier but still does not convert later army strength into enough kills.
-2. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under-budget in the long-run broad scan.
+1. Replace the frame-zero exhaustive Clam broad scan with a pane-transition purchase harness, so current-run Clam relief is measured where it actually exists in the game loop.
+2. Investigate the remaining attack-controller conversion gap, since the governor now reaches attack windows earlier but still does not convert later army strength into enough kills.
 3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
-4. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
-5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.
+4. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under budget in the long-run broad scan.
+5. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
+6. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

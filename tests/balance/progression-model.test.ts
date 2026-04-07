@@ -66,6 +66,24 @@ describe('progression model', () => {
     expect(getMetaProgressionScore(higherReward)).toBeGreaterThan(getMetaProgressionScore(baseline));
   });
 
+  it('credits retained stockpile as in-match power', () => {
+    const baseline = {
+      resourcesGathered: 120,
+      resourcesStockpiled: 15,
+      unitsTrained: 3,
+      kills: 2,
+      playerUnits: 6,
+      lodgeHpRatio: 0.75,
+    };
+    const stocked = {
+      ...baseline,
+      resourcesStockpiled: 70,
+    };
+
+    expect(getPowerScore(stocked)).toBeGreaterThan(getPowerScore(baseline));
+    expect(getRewardScore(stocked)).toBe(getRewardScore(baseline));
+  });
+
   it('weights survival more heavily for combat-pressure scenarios', () => {
     const riskyEconomy = {
       resourcesGathered: 220,
@@ -84,6 +102,25 @@ describe('progression model', () => {
 
     expect(getPowerScore(riskyEconomy)).toBeGreaterThan(0);
     expect(getCombatPressureScore(stableDefense)).toBeGreaterThan(getCombatPressureScore(riskyEconomy));
+  });
+
+  it('credits healthier armies in the broad power score', () => {
+    const brittleArmy = {
+      resourcesGathered: 150,
+      unitsTrained: 4,
+      kills: 3,
+      playerUnits: 6,
+      playerUnitHpPool: 95,
+      playerUnitHpRatio: 0.24,
+      lodgeHpRatio: 0.7,
+    };
+    const durableArmy = {
+      ...brittleArmy,
+      playerUnitHpPool: 220,
+      playerUnitHpRatio: 0.76,
+    };
+
+    expect(getPowerScore(durableArmy)).toBeGreaterThan(getPowerScore(brittleArmy));
   });
 
   it('captures retained army health for sustain scenarios', () => {
