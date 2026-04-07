@@ -60,6 +60,16 @@ describe('projectileSystem', () => {
     expect(Health.current[target]).toBeLessThan(100);
   });
 
+  it('should not apply projectile damage multipliers twice on impact', () => {
+    const target = createTarget(world, 100, 100, 100);
+    // Sniper-style hit: final damage already includes matchup scaling.
+    spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 6, -1, 0.75);
+
+    projectileSystem(world);
+
+    expect(Health.current[target]).toBe(94);
+  });
+
   it('should be removed after impact', () => {
     const target = createTarget(world, 100, 100, 100);
     // Spawn projectile at the target position (immediate impact)

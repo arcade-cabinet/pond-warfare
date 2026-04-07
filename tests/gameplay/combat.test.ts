@@ -8,7 +8,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
 import { spawnEntity } from '@/ecs/archetypes';
-import { Building, Combat, Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
+import {
+  Building,
+  Combat,
+  Health,
+  Position,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
+} from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
@@ -54,6 +62,21 @@ describe('Combat', () => {
 
     // Tower should have fired (cooldown set)
     expect(Combat.attackCooldown[tower]).toBeGreaterThan(0);
+  });
+
+  it('melee counter multipliers are applied once, not twice', () => {
+    const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
+    const brawler = spawnEntity(world, EntityKind.Brawler, 140, 100, Faction.Player);
+    Sprite.facingLeft[gator] = 0;
+
+    UnitStateMachine.state[brawler] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[brawler] = gator;
+    Combat.attackCooldown[brawler] = 0;
+
+    combatSystem(world);
+
+    // Brawler base damage 6 vs Gator 0.75x => round(4.5) = 5 damage.
+    expect(Health.current[gator]).toBe(55);
   });
 
   it('catapult should deal AoE damage', () => {
@@ -135,8 +158,8 @@ describe('Combat', () => {
 
     combatSystem(world);
 
-    // Siege Turtle should have dealt significant damage to the building
-    expect(Health.current[lodge]).toBeLessThan(lodgeHpBefore);
+    // Siege Turtle base damage 25 with 3x building bonus => 75 damage.
+    expect(lodgeHpBefore - Health.current[lodge]).toBe(75);
   });
 
   it('venom snake should apply poison DoT', () => {

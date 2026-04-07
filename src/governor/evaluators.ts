@@ -122,8 +122,9 @@ export class AttackEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     if (store.baseUnderAttack.value) return 0;
     const army = combatUnitCount();
-    if (army < MIN_ATTACK_ARMY) return 0;
-    return Math.min(0.6 + (army - MIN_ATTACK_ARMY) * 0.05, 0.9);
+    const safeAttackArmy = Math.max(MIN_ATTACK_ARMY + 2, 5);
+    if (army < safeAttackArmy) return 0;
+    return Math.min(0.4 + (army - safeAttackArmy) * 0.08, 0.85);
   }
 
   override setGoal(owner: GameEntity): void {

@@ -40,7 +40,10 @@ export function takeDamage(
   if (!hasComponent(world.ecs, targetEid, Health)) return;
   if (Health.current[targetEid] <= 0) return;
 
-  let effectiveAmount = Math.max(0, Math.round(amount * multiplier));
+  // Most callers already fold matchup and upgrade math into the incoming
+  // amount. The optional multiplier is retained for damage text styling and
+  // diagnostics, but should not scale the numeric hit a second time.
+  let effectiveAmount = Math.max(0, Math.round(amount));
 
   // Hardened Shells: player units take 15% less damage
   if (
