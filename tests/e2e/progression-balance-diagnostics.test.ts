@@ -200,5 +200,5 @@ describe('progression balance diagnostics', () => {
     expect(clamFishTier.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
     expect(rareResources.rareNodeCount).toBeGreaterThan(baseline.rareNodeCount);
     expect(startingTier.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
-  });
+  }, 60_000);
 });

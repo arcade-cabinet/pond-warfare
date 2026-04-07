@@ -1,7 +1,7 @@
 /**
  * Economy Integration Tests
  *
- * Tests that gatherers can be spawned, assigned to resources, and actually
+ * Tests that Mudpaws can be spawned, assigned to resources, and actually
  * gather. Tests auto-gather behavior and resource depletion. Operates
  * directly on ECS systems — no UI, no DOM, no fake clicks.
  */
@@ -99,7 +99,7 @@ describe('Economy Integration', () => {
     UnitStateMachine.state[gatherer] = UnitState.Idle;
 
     // Legacy auto-behavior toggle system removed in v3.0 and replaced by Pearl blueprint/autonomy progression.
-    // Idle gatherers no longer auto-assign; player must manually command them
+    // Idle Mudpaws no longer auto-assign; player must manually command them
     expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
   });
 

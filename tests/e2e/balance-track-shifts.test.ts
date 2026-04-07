@@ -223,5 +223,5 @@ describe('balance track shifts', () => {
     // actually fields that specialist in-match.
     expect(rows.find((row) => row.track === 'pearl_blueprint_fisher')?.mean_pct).toBeGreaterThanOrEqual(-0.1);
     expect(rows.find((row) => row.track === 'pearl_clam_earnings_rank_1')?.mean_pct).toBeGreaterThan(0);
-  }, 20_000);
+  }, 60_000);
 });

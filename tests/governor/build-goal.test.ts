@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { BuildGoal } from '@/governor/goals/build-goal';
 import { EntityKind, Faction } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
@@ -32,7 +33,7 @@ describe('BuildGoal', () => {
 
   it('places an armory wing near the lodge when resources are available', () => {
     const lodge = spawnEntity(world, EntityKind.Lodge, 320, 460, Faction.Player);
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 280, 430, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 280, 430, Faction.Player);
 
     world.resources.fish = 220;
     world.resources.logs = 150;
@@ -52,7 +53,7 @@ describe('BuildGoal', () => {
         maxHp: 1500,
         queueItems: [],
         queueProgress: 0,
-        canTrain: [EntityKind.Gatherer],
+        canTrain: [MUDPAW_KIND],
       } satisfies RosterBuilding,
     ];
     store.unitRoster.value = [
@@ -60,7 +61,7 @@ describe('BuildGoal', () => {
         role: 'generalist',
         idleCount: 1,
         autoEnabled: false,
-        units: [{ eid: gatherer, kind: EntityKind.Gatherer, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false }],
+        units: [{ eid: mudpaw, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false }],
       } satisfies RosterGroup,
     ];
 

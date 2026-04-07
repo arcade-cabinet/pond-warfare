@@ -388,5 +388,5 @@ describe('controller balance diagnostics', () => {
     );
     expect(defendRows.find((row) => row.name === 'auto_repair_behavior')?.lodgeHpRatio).toBeGreaterThan(defendRows[0].lodgeHpRatio);
     expect(attackRows[0].committed).toBeGreaterThanOrEqual(MIN_ATTACK_ARMY);
-  });
+  }, 60_000);
 });

@@ -39,6 +39,13 @@ import {
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
+import {
   cancelTrain,
   canPlaceBuilding,
   getEntityAt,
@@ -59,7 +66,7 @@ function createPlayerUnit(
   world: GameWorld,
   x: number,
   y: number,
-  kind = EntityKind.Gatherer,
+  kind = MUDPAW_KIND,
 ): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
@@ -351,13 +358,13 @@ describe('selectIdleWorker()', () => {
     world.idleWorkerIdx = 0;
   });
 
-  it('does nothing when no idle gatherers exist', () => {
+  it('does nothing when no idle Mudpaws exist', () => {
     selectIdleWorker(world);
     expect(world.selection).toHaveLength(0);
   });
 
-  it('selects the idle gatherer', () => {
-    const eid = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
+  it('selects the idle Mudpaw', () => {
+    const eid = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     UnitStateMachine.state[eid] = UnitState.Idle;
 
     selectIdleWorker(world);
@@ -365,7 +372,7 @@ describe('selectIdleWorker()', () => {
   });
 
   it('marks selected entity as selected', () => {
-    const eid = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
+    const eid = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     UnitStateMachine.state[eid] = UnitState.Idle;
 
     selectIdleWorker(world);
@@ -373,7 +380,7 @@ describe('selectIdleWorker()', () => {
   });
 
   it('sets isTracking to true', () => {
-    const eid = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
+    const eid = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     UnitStateMachine.state[eid] = UnitState.Idle;
     world.isTracking = false;
 
@@ -381,9 +388,9 @@ describe('selectIdleWorker()', () => {
     expect(world.isTracking).toBe(true);
   });
 
-  it('cycles to next idle gatherer on second call', () => {
-    const eid1 = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
-    const eid2 = createPlayerUnit(world, 200, 200, EntityKind.Gatherer);
+  it('cycles to next idle Mudpaw on second call', () => {
+    const eid1 = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
+    const eid2 = createPlayerUnit(world, 200, 200, MUDPAW_KIND);
     UnitStateMachine.state[eid1] = UnitState.Idle;
     UnitStateMachine.state[eid2] = UnitState.Idle;
 
@@ -397,17 +404,17 @@ describe('selectIdleWorker()', () => {
     expect(firstSelection).not.toEqual(secondSelection);
   });
 
-  it('ignores non-idle gatherers', () => {
-    const eid = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
+  it('ignores non-idle Mudpaws', () => {
+    const eid = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     UnitStateMachine.state[eid] = UnitState.Move; // Not idle
 
     selectIdleWorker(world);
     expect(world.selection).toHaveLength(0);
   });
 
-  it('ignores non-gatherer units even if idle', () => {
-    const brawler = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
-    UnitStateMachine.state[brawler] = UnitState.Idle;
+  it('ignores non-Mudpaw units even if idle', () => {
+    const sapper = createPlayerUnit(world, 100, 100, SAPPER_KIND);
+    UnitStateMachine.state[sapper] = UnitState.Idle;
 
     selectIdleWorker(world);
     expect(world.selection).toHaveLength(0);
@@ -431,39 +438,39 @@ describe('selectArmy()', () => {
     expect(world.selection).toHaveLength(0);
   });
 
-  it('selects all non-gatherer player units', () => {
-    const brawler = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
-    const sniper = createPlayerUnit(world, 200, 200, EntityKind.Sniper);
-    // Gatherer should NOT be included
-    createPlayerUnit(world, 300, 300, EntityKind.Gatherer);
+  it('selects all non-Mudpaw player units', () => {
+    const sapper = createPlayerUnit(world, 100, 100, SAPPER_KIND);
+    const lookout = createPlayerUnit(world, 200, 200, LOOKOUT_KIND);
+    // Mudpaw should NOT be included
+    createPlayerUnit(world, 300, 300, MUDPAW_KIND);
 
     selectArmy(world);
-    expect(world.selection).toContain(brawler);
-    expect(world.selection).toContain(sniper);
+    expect(world.selection).toContain(sapper);
+    expect(world.selection).toContain(lookout);
   });
 
-  it('excludes gatherers from army selection', () => {
-    const gatherer = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
-    const brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+  it('excludes Mudpaws from army selection', () => {
+    const mudpaw = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
+    const sapper = createPlayerUnit(world, 200, 200, SAPPER_KIND);
 
     selectArmy(world);
-    expect(world.selection).not.toContain(gatherer);
-    expect(world.selection).toContain(brawler);
+    expect(world.selection).not.toContain(mudpaw);
+    expect(world.selection).toContain(sapper);
   });
 
   it('excludes buildings from army selection', () => {
     const building = createPlayerBuilding(world, 500, 500, 96, 96);
-    const brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const sapper = createPlayerUnit(world, 200, 200, SAPPER_KIND);
 
     selectArmy(world);
     expect(world.selection).not.toContain(building);
-    expect(world.selection).toContain(brawler);
+    expect(world.selection).toContain(sapper);
   });
 
   it('excludes dead units', () => {
-    const dead = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    const dead = createPlayerUnit(world, 100, 100, SAPPER_KIND);
     Health.current[dead] = 0;
-    const alive = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const alive = createPlayerUnit(world, 200, 200, SAPPER_KIND);
 
     selectArmy(world);
     expect(world.selection).not.toContain(dead);
@@ -471,7 +478,7 @@ describe('selectArmy()', () => {
   });
 
   it('sets isTracking to true', () => {
-    const _brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const _sapper = createPlayerUnit(world, 200, 200, SAPPER_KIND);
     world.isTracking = false;
 
     selectArmy(world);
@@ -479,20 +486,20 @@ describe('selectArmy()', () => {
   });
 
   it('marks all selected units as selected', () => {
-    const brawler1 = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
-    const brawler2 = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const sapper1 = createPlayerUnit(world, 100, 100, SAPPER_KIND);
+    const sapper2 = createPlayerUnit(world, 200, 200, SAPPER_KIND);
 
     selectArmy(world);
-    expect(Selectable.selected[brawler1]).toBe(1);
-    expect(Selectable.selected[brawler2]).toBe(1);
+    expect(Selectable.selected[sapper1]).toBe(1);
+    expect(Selectable.selected[sapper2]).toBe(1);
   });
 
   it('deselects previously selected entities', () => {
-    const prevSelected = createPlayerUnit(world, 50, 50, EntityKind.Gatherer);
+    const prevSelected = createPlayerUnit(world, 50, 50, MUDPAW_KIND);
     Selectable.selected[prevSelected] = 1;
     world.selection = [prevSelected];
 
-    const _brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const _sapper = createPlayerUnit(world, 200, 200, SAPPER_KIND);
     selectArmy(world);
 
     expect(Selectable.selected[prevSelected]).toBe(0);
@@ -500,12 +507,12 @@ describe('selectArmy()', () => {
 
   it('excludes Commander from army selection', () => {
     const commander = createPlayerUnit(world, 100, 100, EntityKind.Commander);
-    const brawler = createPlayerUnit(world, 200, 200, EntityKind.Brawler);
+    const sapper = createPlayerUnit(world, 200, 200, SAPPER_KIND);
 
     selectArmy(world);
 
     expect(world.selection).not.toContain(commander);
-    expect(world.selection).toContain(brawler);
+    expect(world.selection).toContain(sapper);
   });
 });
 
@@ -514,10 +521,11 @@ describe('selectArmy()', () => {
 // ---------------------------------------------------------------------------
 
 // Training cost constants (from ENTITY_DEFS — aligned with configs/units.json)
-const GC = ENTITY_DEFS[EntityKind.Gatherer].fishCost ?? 0;
-const GT = ENTITY_DEFS[EntityKind.Gatherer].logCost ?? 0;
-const BC = ENTITY_DEFS[EntityKind.Brawler].fishCost ?? 0;
-const BT = ENTITY_DEFS[EntityKind.Brawler].logCost ?? 0;
+const MF = ENTITY_DEFS[MUDPAW_KIND].fishCost ?? 0;
+const ML = ENTITY_DEFS[MUDPAW_KIND].logCost ?? 0;
+const SF = ENTITY_DEFS[SAPPER_KIND].fishCost ?? 0;
+const SL = ENTITY_DEFS[SAPPER_KIND].logCost ?? 0;
+const SR = ENTITY_DEFS[SAPPER_KIND].rockCost ?? 0;
 
 describe('train()', () => {
   let world: GameWorld;
@@ -533,6 +541,7 @@ describe('train()', () => {
     // Reset resources to known values
     world.resources.fish = 200;
     world.resources.logs = 50;
+    world.resources.rocks = 50;
     // Clear the queue slot map
     trainingQueueSlots.delete(lodgeEid);
     TrainingQueue.count[lodgeEid] = 0;
@@ -541,70 +550,61 @@ describe('train()', () => {
 
   it('deducts fish cost when queuing a unit', () => {
     const before = world.resources.fish;
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
-    expect(world.resources.fish).toBe(before - GC);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
+    expect(world.resources.fish).toBe(before - MF);
   });
 
-  it('deducts log cost when queuing a unit', () => {
+  it('deducts rock cost when queuing a Sapper', () => {
     world.resources.fish = 200;
-    world.resources.logs = 100;
-    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1);
-    expect(world.resources.logs).toBe(100 - BT);
+    world.resources.rocks = 100;
+    train(world, lodgeEid, SAPPER_KIND, SF, SL, 1, SR);
+    expect(world.resources.rocks).toBe(100 - SR);
   });
 
   it('eagerly reserves food so consecutive train calls respect the cap', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     // Food is eagerly incremented so subsequent train() calls see the reservation
     expect(world.resources.food).toBe(1);
   });
 
   it('adds unit to training queue', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
     const slots = trainingQueueSlots.get(lodgeEid);
-    expect(slots?.[0]).toBe(EntityKind.Gatherer);
+    expect(slots?.[0]).toBe(MUDPAW_KIND);
   });
 
   it('initializes timer for first queued unit', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     expect(TrainingQueue.timer[lodgeEid]).toBe(TRAIN_TIMER);
   });
 
   it('does not reset timer when second unit is queued', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     TrainingQueue.timer[lodgeEid] = 90; // Simulate partial progress
     world.resources.fish = 200;
 
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     expect(TrainingQueue.timer[lodgeEid]).toBe(90); // Timer unchanged
   });
 
   it('does not queue when insufficient fish', () => {
-    world.resources.fish = GC - 1; // 1 short of Gatherer cost
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    world.resources.fish = MF - 1; // 1 short of Mudpaw cost
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
-  it('does not queue when insufficient logs', () => {
-    // Use Sniper which costs logs, or verify fish-gated rejection
-    const SC = ENTITY_DEFS[EntityKind.Sniper].fishCost ?? 0;
-    const SL = ENTITY_DEFS[EntityKind.Sniper].logCost ?? 0;
+  it('does not queue when insufficient rocks for a Sapper', () => {
     world.resources.fish = 200;
-    world.resources.logs = SL > 0 ? SL - 1 : 0;
-    if (SL > 0) {
-      train(world, lodgeEid, EntityKind.Sniper, SC, SL, 1);
-      expect(TrainingQueue.count[lodgeEid]).toBe(0);
-    } else {
-      world.resources.fish = GC - 1;
-      train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
-      expect(TrainingQueue.count[lodgeEid]).toBe(0);
-    }
+    world.resources.rocks = SR - 1;
+    train(world, lodgeEid, SAPPER_KIND, SF, SL, 1, SR);
+    expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
   it('does not queue when food limit reached', () => {
     world.resources.food = 10;
     world.resources.maxFood = 10;
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
@@ -613,27 +613,27 @@ describe('train()', () => {
     world.resources.maxFood = 20;
     for (let i = 0; i < 8; i++) {
       world.resources.fish = 200;
-      train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+      train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     }
     expect(TrainingQueue.count[lodgeEid]).toBe(8);
 
     world.resources.fish = 200;
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     expect(TrainingQueue.count[lodgeEid]).toBe(8); // Still 8, not 9
   });
 
   it('queues multiple different unit types', () => {
     world.resources.fish = 300;
-    world.resources.logs = 200;
+    world.resources.rocks = 200;
     world.resources.maxFood = 5;
 
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
-    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
+    train(world, lodgeEid, SAPPER_KIND, SF, SL, 1, SR);
 
     expect(TrainingQueue.count[lodgeEid]).toBe(2);
     const slots = trainingQueueSlots.get(lodgeEid);
-    expect(slots?.[0]).toBe(EntityKind.Gatherer);
-    expect(slots?.[1]).toBe(EntityKind.Brawler);
+    expect(slots?.[0]).toBe(MUDPAW_KIND);
+    expect(slots?.[1]).toBe(SAPPER_KIND);
   });
 });
 
@@ -657,26 +657,26 @@ describe('cancelTrain()', () => {
     TrainingQueue.timer[lodgeEid] = 0;
   });
 
-  it('refunds fish cost when canceling a gatherer', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+  it('refunds fish cost when canceling a Mudpaw', () => {
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     const fishBefore = world.resources.fish;
 
     cancelTrain(world, lodgeEid, 0);
-    expect(world.resources.fish).toBe(fishBefore + GC);
+    expect(world.resources.fish).toBe(fishBefore + MF);
   });
 
-  it('refunds log cost when canceling a brawler', () => {
+  it('refunds rock cost when canceling a Sapper', () => {
     world.resources.fish = 200;
-    world.resources.logs = 100;
-    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1);
-    const logsBefore = world.resources.logs;
+    world.resources.rocks = 100;
+    train(world, lodgeEid, SAPPER_KIND, SF, SL, 1, SR);
+    const rocksBefore = world.resources.rocks;
 
     cancelTrain(world, lodgeEid, 0);
-    expect(world.resources.logs).toBe(logsBefore + BT);
+    expect(world.resources.rocks).toBe(rocksBefore + SR);
   });
 
   it('eagerly releases food reservation on cancellation', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     expect(world.resources.food).toBe(1);
 
     cancelTrain(world, lodgeEid, 0);
@@ -684,21 +684,21 @@ describe('cancelTrain()', () => {
   });
 
   it('removes the unit from the queue', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     cancelTrain(world, lodgeEid, 0);
     expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
   it('resets timer to 0 when last queued unit is canceled', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     cancelTrain(world, lodgeEid, 0);
     expect(TrainingQueue.timer[lodgeEid]).toBe(0);
   });
 
   it('resets timer to TRAIN_TIMER when active item canceled with items remaining', () => {
     world.resources.fish = 300;
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
 
     TrainingQueue.timer[lodgeEid] = 90; // Simulate partial progress
     cancelTrain(world, lodgeEid, 0); // Cancel the active (first) item
@@ -707,8 +707,8 @@ describe('cancelTrain()', () => {
 
   it('does not change timer when canceling a non-active item', () => {
     world.resources.fish = 300;
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
 
     TrainingQueue.timer[lodgeEid] = 90;
     cancelTrain(world, lodgeEid, 1); // Cancel second item (not active)
@@ -716,7 +716,7 @@ describe('cancelTrain()', () => {
   });
 
   it('does nothing for out-of-range index', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     const clamsBefore = world.resources.fish;
 
     cancelTrain(world, lodgeEid, 5); // Out of range
@@ -725,7 +725,7 @@ describe('cancelTrain()', () => {
   });
 
   it('does nothing for negative index', () => {
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1);
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1);
     const clamsBefore = world.resources.fish;
 
     cancelTrain(world, lodgeEid, -1);
@@ -740,14 +740,14 @@ describe('cancelTrain()', () => {
 
   it('shifts remaining items down after cancellation of first item', () => {
     world.resources.fish = 300;
-    world.resources.logs = 200;
-    train(world, lodgeEid, EntityKind.Gatherer, GC, GT, 1); // index 0
-    train(world, lodgeEid, EntityKind.Brawler, BC, BT, 1); // index 1
+    world.resources.rocks = 200;
+    train(world, lodgeEid, MUDPAW_KIND, MF, ML, 1); // index 0
+    train(world, lodgeEid, SAPPER_KIND, SF, SL, 1, SR); // index 1
 
     cancelTrain(world, lodgeEid, 0);
 
     const slots = trainingQueueSlots.get(lodgeEid);
-    expect(slots?.[0]).toBe(EntityKind.Brawler); // Brawler shifted to index 0
+    expect(slots?.[0]).toBe(SAPPER_KIND); // Sapper shifted to index 0
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
   });
 });
@@ -787,7 +787,7 @@ describe('issueContextCommand()', () => {
 
     issueContextCommand(world, null, 500, 500);
     expect(UnitStateMachine.state[unit]).toBe(UnitState.Move);
-    // Role-based formation: single Gatherer goes to support (back) row
+    // Role-based formation: single Mudpaw goes to support (back) row
     // at targetY + FORMATION_SPACING * 2 = 500 + 80 = 580, centered X
     expect(UnitStateMachine.targetX[unit]).toBeCloseTo(500, 0);
     // Support row offset: targetY + FORMATION_SPACING * 2
@@ -804,7 +804,7 @@ describe('issueContextCommand()', () => {
   });
 
   it('issues attack command when targeting enemy', () => {
-    const unit = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    const unit = createPlayerUnit(world, 100, 100, SAPPER_KIND);
     const enemy = createEnemyUnit(world, 300, 300);
     world.selection = [unit];
 
@@ -814,7 +814,7 @@ describe('issueContextCommand()', () => {
   });
 
   it('adds a red ground ping when attacking enemy', () => {
-    const unit = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    const unit = createPlayerUnit(world, 100, 100, SAPPER_KIND);
     const enemy = createEnemyUnit(world, 300, 300);
     world.selection = [unit];
 
@@ -823,20 +823,20 @@ describe('issueContextCommand()', () => {
     expect(redPing).toBeDefined();
   });
 
-  it('issues gather command when gatherer targets resource', () => {
-    const gatherer = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
+  it('issues gather command when Mudpaw targets resource', () => {
+    const mudpaw = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     const resource = createResource(world, 300, 300);
-    world.selection = [gatherer];
+    world.selection = [mudpaw];
 
     issueContextCommand(world, resource, 300, 300);
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
-    expect(UnitStateMachine.targetEntity[gatherer]).toBe(resource);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(resource);
   });
 
   it('adds a yellow ground ping when gathering resource', () => {
-    const gatherer = createPlayerUnit(world, 100, 100, EntityKind.Gatherer);
+    const mudpaw = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     const resource = createResource(world, 300, 300);
-    world.selection = [gatherer];
+    world.selection = [mudpaw];
 
     issueContextCommand(world, resource, 300, 300);
     const yellowPing = world.groundPings.find((p) => p.color.includes('250, 204, 21'));
@@ -885,7 +885,7 @@ describe('issueContextCommand()', () => {
   });
 
   it('returns true when movable player units are dispatched on ground move', () => {
-    const unit = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    const unit = createPlayerUnit(world, 100, 100, SAPPER_KIND);
     world.selection = [unit];
 
     const result = issueContextCommand(world, null, 500, 500);
@@ -893,7 +893,7 @@ describe('issueContextCommand()', () => {
   });
 
   it('returns true when movable player units are dispatched on attack command', () => {
-    const unit = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
+    const unit = createPlayerUnit(world, 100, 100, SAPPER_KIND);
     const enemy = createEnemyUnit(world, 300, 300);
     world.selection = [unit];
 
@@ -926,8 +926,8 @@ describe('issueContextCommand()', () => {
   });
 
   it('issues move command when Healer targets a wounded ally', () => {
-    const healer = createPlayerUnit(world, 100, 100, EntityKind.Healer);
-    const wounded = createPlayerUnit(world, 300, 300, EntityKind.Brawler);
+    const healer = createPlayerUnit(world, 100, 100, MEDIC_KIND);
+    const wounded = createPlayerUnit(world, 300, 300, SAPPER_KIND);
     Health.current[wounded] = 30; // Wounded
     Health.max[wounded] = 60;
     world.selection = [healer];
@@ -940,8 +940,8 @@ describe('issueContextCommand()', () => {
   });
 
   it('does not issue heal-move when Healer targets a full-health ally', () => {
-    const healer = createPlayerUnit(world, 100, 100, EntityKind.Healer);
-    const healthy = createPlayerUnit(world, 300, 300, EntityKind.Brawler);
+    const healer = createPlayerUnit(world, 100, 100, MEDIC_KIND);
+    const healthy = createPlayerUnit(world, 300, 300, SAPPER_KIND);
     Health.current[healthy] = 60;
     Health.max[healthy] = 60;
     world.selection = [healer];
@@ -952,16 +952,16 @@ describe('issueContextCommand()', () => {
     expect(UnitStateMachine.targetEntity[healer]).toBe(-1);
   });
 
-  it('non-Healer targeting wounded ally falls through to generic move', () => {
-    const brawler = createPlayerUnit(world, 100, 100, EntityKind.Brawler);
-    const wounded = createPlayerUnit(world, 300, 300, EntityKind.Gatherer);
+  it('non-Medic targeting wounded ally falls through to generic move', () => {
+    const sapper = createPlayerUnit(world, 100, 100, SAPPER_KIND);
+    const wounded = createPlayerUnit(world, 300, 300, MUDPAW_KIND);
     Health.current[wounded] = 10;
     Health.max[wounded] = 30;
-    world.selection = [brawler];
+    world.selection = [sapper];
 
     issueContextCommand(world, wounded, 300, 300);
-    // Brawler should not do a special heal-move; falls through to generic
-    expect(UnitStateMachine.state[brawler]).toBe(UnitState.Move);
-    expect(UnitStateMachine.targetEntity[brawler]).toBe(-1);
+    // Sapper should not do a special heal-move; falls through to generic
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[sapper]).toBe(-1);
   });
 });

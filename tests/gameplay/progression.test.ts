@@ -14,6 +14,7 @@ import { evolutionSystem } from '@/ecs/systems/evolution';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { rankFromKills, veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /* ------------------------------------------------------------------ */
@@ -85,14 +86,14 @@ describe('Progression', () => {
   it('veterancy bonuses should stack correctly', () => {
     world.frameCount = 60;
 
-    const brawler = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const sapper = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
+    const def = ENTITY_DEFS[SAPPER_KIND];
     const baseHp = def.hp;
     const baseDmg = def.damage;
     const baseSpeed = def.speed;
 
     // Jump straight to Hero (15 kills)
-    Combat.kills[brawler] = 15;
+    Combat.kills[sapper] = 15;
     veterancySystem(world);
 
     // Hero bonuses: 35% HP, 40% damage, 15% speed
@@ -100,9 +101,9 @@ describe('Progression', () => {
     const expectedDmg = baseDmg + Math.round(baseDmg * VET_DMG_BONUS[3]);
     const expectedSpd = baseSpeed + baseSpeed * VET_SPD_BONUS[3];
 
-    expect(Health.max[brawler]).toBe(expectedHp);
-    expect(Combat.damage[brawler]).toBe(expectedDmg);
-    expect(Velocity.speed[brawler]).toBeCloseTo(expectedSpd);
+    expect(Health.max[sapper]).toBe(expectedHp);
+    expect(Combat.damage[sapper]).toBe(expectedDmg);
+    expect(Velocity.speed[sapper]).toBeCloseTo(expectedSpd);
   });
 
   it('difficulty easy should give 1 enemy nest', () => {
@@ -134,19 +135,19 @@ describe('Progression', () => {
 
     expect(world.rewardsModifier).toBe(1.5);
 
-    // Verify the modifier affects gathering by checking a gatherer
+    // Verify the modifier affects gathering by checking a Mudpaw
     world.frameCount = 1;
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const resource = spawnEntity(world, EntityKind.Clambed, 100, 100, Faction.Neutral);
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
     // With rewardsModifier 1.5, gather amount should be Math.round(15 * 1.5) = 23
-    expect(Carrying.resourceAmount[gatherer]).toBe(Math.round(15 * 1.5));
+    expect(Carrying.resourceAmount[mudpaw]).toBe(Math.round(15 * 1.5));
   });
 });

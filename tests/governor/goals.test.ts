@@ -23,6 +23,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND, SABOTEUR_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import type { RosterBuilding, RosterGroup, RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -97,15 +98,15 @@ describe('GatherGoal', () => {
     store.unitRoster.value = [];
   });
 
-  it('assigns idle gatherers to resource tasks', async () => {
+  it('assigns idle Mudpaws to resource tasks', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
     const { dispatchTaskOverride } = await import('@/game/task-dispatch');
 
-    const eid1 = createUnit(EntityKind.Gatherer, 100, 100);
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
     createResource(EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
     store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
     ];
     store.fish.value = 100;
     store.logs.value = 200;
@@ -123,11 +124,11 @@ describe('GatherGoal', () => {
   it('falls back to an available resource when the lowest-stockpiled one is absent', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 
-    const eid1 = createUnit(EntityKind.Gatherer, 100, 100);
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
     const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
     store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
     ];
     store.fish.value = 100;
     store.logs.value = 0;
@@ -145,12 +146,12 @@ describe('GatherGoal', () => {
   it('prefers a nearby available resource over a distant low-stockpile target', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 
-    const eid1 = createUnit(EntityKind.Gatherer, 100, 100);
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
     const farLogs = createResource(EntityKind.Cattail, ResourceType.Logs, 1200, 1200);
     const nearFish = createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
 
     store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
     ];
     store.fish.value = 200;
     store.logs.value = 0;
@@ -165,7 +166,7 @@ describe('GatherGoal', () => {
     expect(UnitStateMachine.targetEntity[eid1]).not.toBe(farLogs);
   });
 
-  it('completes immediately with no idle gatherers', async () => {
+  it('completes immediately with no idle Mudpaws', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 
     store.unitRoster.value = [];
@@ -186,7 +187,7 @@ describe('TrainGoal', () => {
     storeV3.progressionLevel.value = 1;
   });
 
-  it('queues a gatherer at lodge when few gatherers exist', async () => {
+  it('queues a Mudpaw at the Lodge when few Mudpaws exist', async () => {
     const { TrainGoal } = await import('@/governor/goals/train-goal');
 
     const lodgeEid = addEntity(world.ecs);
@@ -204,11 +205,11 @@ describe('TrainGoal', () => {
         maxHp: 1500,
         queueItems: [],
         queueProgress: 0,
-        canTrain: [EntityKind.Gatherer],
+        canTrain: [MUDPAW_KIND],
       } satisfies RosterBuilding,
     ];
     store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(1, EntityKind.Gatherer, 'gathering-fish')]),
+      rosterGroup('generalist', [rosterUnit(1, MUDPAW_KIND, 'gathering-fish')]),
     ];
     store.food.value = 2;
     store.maxFood.value = 8;
@@ -239,13 +240,13 @@ describe('TrainGoal', () => {
         maxHp: 1500,
         queueItems: [],
         queueProgress: 0,
-        canTrain: [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper, EntityKind.Saboteur],
+        canTrain: [MUDPAW_KIND, EntityKind.Healer, SAPPER_KIND, SABOTEUR_KIND],
       } satisfies RosterBuilding,
     ];
     store.unitRoster.value = [
       rosterGroup('generalist', [
-        rosterUnit(1, EntityKind.Gatherer, 'gathering-fish'),
-        rosterUnit(2, EntityKind.Gatherer, 'gathering-fish'),
+        rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
+        rosterUnit(2, MUDPAW_KIND, 'gathering-fish'),
       ]),
     ];
     store.food.value = 2;
@@ -256,6 +257,6 @@ describe('TrainGoal', () => {
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
-    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Gatherer);
+    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(MUDPAW_KIND);
   });
 });
