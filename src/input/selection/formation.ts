@@ -25,7 +25,6 @@ export function calculateFormationPositions(
     if (
       kind === SAPPER_KIND ||
       kind === SABOTEUR_KIND ||
-      kind === EntityKind.Brawler ||
       kind === EntityKind.Gator ||
       kind === EntityKind.ArmoredGator ||
       kind === EntityKind.Berserker
@@ -33,7 +32,6 @@ export function calculateFormationPositions(
       melee.push(eid);
     } else if (
       kind === LOOKOUT_KIND ||
-      kind === EntityKind.Sniper ||
       kind === EntityKind.Catapult ||
       kind === EntityKind.VenomSnake
     ) {

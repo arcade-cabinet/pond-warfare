@@ -1,5 +1,11 @@
 import type { PlayableFaction } from '@/config/factions';
-import { isLookoutKind, isMudpawKind, MEDIC_KIND } from '@/game/live-unit-kinds';
+import {
+  isLookoutKind,
+  isMudpawKind,
+  MEDIC_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { SfxManager } from './sfx';
 
@@ -152,12 +158,7 @@ export class VoiceManager {
     ) {
       return 'skirmisher';
     }
-    if (
-      kind === EntityKind.Brawler ||
-      kind === EntityKind.Sniper ||
-      kind === EntityKind.Sapper ||
-      kind === EntityKind.Saboteur
-    ) {
+    if (kind === SAPPER_KIND || kind === SABOTEUR_KIND) {
       return 'skirmisher';
     }
     return 'heavy';
