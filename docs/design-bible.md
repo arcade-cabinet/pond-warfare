@@ -1,5 +1,7 @@
 # Pond Warfare - Game Design Bible
 
+> **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), [docs/architecture.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/architecture.md), and [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
+
 ## Vision
 
 Warcraft II-style RTS in a pond ecosystem. Two playable factions compete for finite resources, territory, and survival. Long games with escalating threats, meaningful progression, and deep replayability. Campaign mode teaches the ropes; ranked play and cosmetic unlocks keep players coming back.

@@ -9,6 +9,8 @@ Pond Warfare is a mobile-first real-time strategy game set in a pond ecosystem. 
 
 The core loop: PLAY -> WIN -> SPEND CLAMS TO PUSH THE CURRENT RUN -> RANK UP FOR PEARLS -> REPEAT.
 
+The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), with a machine-readable copy in [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). Older docs that describe separate baseline `Gatherer`, `Fighter`, and `Scout` units plus free match-start Pearl auto-deploys should be treated as obsolete.
+
 ### Baseline Balance Rule
 
 The baseline game must be technically playable without spending either Clams or Pearls:
@@ -43,12 +45,12 @@ Each match takes place on a vertical map. The player's Lodge sits at the bottom.
 
 | Resource | Source | Used For |
 |----------|--------|----------|
-| **Fish** | Fish nodes (Clambed) | Training generalist units |
+| **Fish** | Fish nodes (Clambed) | Training manual units and Pearl specialists |
 | **Rocks** | Rock deposits (PearlBed) | Building fortifications |
 | **Logs** | Tree clusters (Cattail) | Building construction, repairs |
 | **Food** | Population count vs housing cap | Limits unit count |
 
-Food works as a population system: each non-building player entity counts as 1 food. Max food comes from the Lodge (+8) and Burrow wings (+6). Prestige auto-deploy specialists are an exception: they are permanent helper units and do not consume the baseline food cap.
+Food works as a population system: each non-building player entity counts as 1 food. Max food comes from the Lodge (+8) and Burrow wings (+6). Under the canonical specialist model, Pearl specialists are trained during a match and should be balanced intentionally rather than appearing as free hidden-cap helpers.
 
 Resources are finite. When a node is depleted, it is gone -- forcing expansion toward fresh nodes. Both factions compete for the same resource nodes.
 
@@ -96,33 +98,44 @@ Map dimensions also scale with progression level (from `configs/terrain.json`):
 
 ## Units
 
-### Player Generalists (4)
+### Manual Units
 
-Trainable at the Lodge during a match. These are the core units available from the start.
+The baseline run uses a compact manual roster that expands only when new pressure complexity demands a new response.
 
-| Unit | HP | Speed | Damage | Cost (Fish) | Role |
-|------|----|-------|--------|-------------|------|
-| **Gatherer** | 30 | 2.0 | 0 | 10 | Collects resources, constructs buildings |
-| **Fighter** | 60 | 1.8 | 8 | 20 | Melee combat unit |
-| **Medic** | 25 | 1.5 | 0 | 15 | Heals nearby wounded allies |
-| **Scout** | 20 | 3.5 | 1 | 8 | Fast recon, reveals fog of war |
+| Unit | Unlock Stage | Role |
+|------|--------------|------|
+| **Mudpaw** | 1 | Baseline manual generalist. Gathers, fights, scouts, builds, repairs. |
+| **Medic** | 2 | Manual healing/support once logs and repair pressure enter the run. |
+| **Sapper** | 5 | Manual siege/demolition once rocks, fortifications, and flank pressure matter. |
+| **Saboteur** | 6 | Manual disruption/subversion once the full six-panel pressure set is active. |
 
-### Player Specialists (10)
+`Mudpaw` replaces the older split baseline `Gatherer + Fighter + Scout` model. Clam upgrades are intended to make that one reusable manual chassis better at economy, vision, field utility, and survivability.
 
-Unlocked via upgrade web diamond nodes and auto-deployed at match start via prestige Pearl upgrades. Specialists cannot be trained during a match -- they are permanent automated units. When deployed from Pearls, they act as bonus helper bodies rather than population-taxed baseline units.
+### Pearl Specialists
 
-| Unit | HP | Speed | Damage | Role | Auto-Target |
-|------|----|-------|--------|------|-------------|
-| **Fisher** | 25 | 2.0 | 0 | Auto-gathers fish | Nearest fish node |
-| **Digger** | 25 | 1.8 | 0 | Auto-gathers rocks | Nearest rock deposit |
-| **Logger** | 25 | 1.8 | 0 | Auto-gathers logs | Nearest tree cluster |
-| **Guardian** | 80 | 1.2 | 6 | Auto-defends Lodge area | Lodge perimeter |
-| **Hunter** | 50 | 2.0 | 10 | Auto-attacks nearest enemy | Closest threat |
-| **Ranger** | 40 | 2.5 | 6 | Auto-patrols routes | Patrol waypoints |
-| **Shaman** | 20 | 1.5 | 0 | Auto-heals wounded | Nearest wounded ally |
-| **Lookout** | 15 | 3.0 | 0 | Auto-scouts fog edges | Fog of war boundary |
-| **Sapper** | 40 | 1.5 | 15 | Siege enemy fortifications | Enemy forts |
-| **Saboteur** | 30 | 2.5 | 5 | Subverts enemy resource nodes | Enemy resource nodes |
+Pearls unlock specialist blueprints, autonomy, and specialist growth. They do not exist to give the player free match-start godmode bodies.
+
+| Specialist | Domain | Behavior |
+|------------|--------|----------|
+| **Fisher** | Economy | Autonomous fish harvesting in an assigned area |
+| **Logger** | Economy | Autonomous log harvesting in an assigned area |
+| **Digger** | Economy | Autonomous rock harvesting in an assigned area |
+| **Guard** | Combat | Autonomous infantry coverage in an assigned area |
+| **Ranger** | Combat | Autonomous ranged coverage in an assigned area |
+| **Bombardier** | Combat | Autonomous siege support in an assigned area |
+| **Shaman** | Support | Autonomous healing in an assigned area |
+| **Lookout** | Recon | Autonomous scouting in an assigned area |
+
+### Specialist Control Model
+
+Pearl specialists are trained during a match after their blueprint is unlocked. The player still pays in-match resources to spawn them.
+
+- Specialists are autonomous by default
+- The player can still select and reposition them
+- Specialists are assigned to a terrain area, not a single target
+- That area defines the specialist's Yuka-governed operating radius
+- Within that radius, the specialist searches for work matching its role
+- Radius growth is a primary Pearl upgrade path alongside unlock, cap, throughput, and durability
 
 ### Enemy Units (6)
 
@@ -139,7 +152,7 @@ Enemy units scale with progression level: HP +5%/level, Damage +3%/level, Speed 
 
 ## Fortifications
 
-Built by Gatherers using Rocks. Placed around the Lodge perimeter. Fort slot count scales with progression level.
+Built by Mudpaws using Rocks. Placed around the Lodge perimeter. Fort slot count scales with progression level.
 
 | Fortification | HP | Cost (Rocks) | Effect |
 |---------------|----|-------------|--------|
@@ -254,19 +267,13 @@ When the player reaches a progression threshold and the run starts to taper off,
 
 Pearl upgrades are the permanent main-menu layer. They can unlock:
 
-#### Automation / auto-deploy
-- Auto-Deploy Fisher (3 Pearls/rank, max 5)
-- Auto-Deploy Digger (3 Pearls/rank, max 5)
-- Auto-Deploy Logger (3 Pearls/rank, max 5)
-- Auto-Deploy Guardian (5 Pearls/rank, max 3)
-- Auto-Deploy Hunter (5 Pearls/rank, max 3)
-- Auto-Deploy Ranger (4 Pearls/rank, max 3)
-- Auto-Deploy Shaman (4 Pearls/rank, max 3)
-- Auto-Deploy Lookout (3 Pearls/rank, max 3)
-- Auto-Deploy Sapper (5 Pearls/rank, max 2)
-- Auto-Deploy Saboteur (4 Pearls/rank, max 2)
+#### Specialist blueprints and autonomy
+- Unlock Fisher, Logger, Digger, Guard, Ranger, Bombardier, Shaman, and Lookout
+- Increase specialist cap or deployment slots
+- Increase specialist operating radius
+- Increase specialist throughput, efficiency, or survivability
 
-Auto-deploy specialists are intended to be permanent acceleration, not a hidden penalty. They add helper behavior without consuming the same food budget the baseline run needs for normal unit production.
+Specialists are intended to be strategic in-match investments after Pearl unlock, not free match-start units. Pearls unlock the blueprint and the autonomy layer; Fish, Logs, and Rocks still gate how many specialists the player actually fields during a match.
 
 #### Permanent passives / behavior unlocks
 - Lodge-adjacent unit regen
@@ -303,7 +310,7 @@ Rank Up becomes available when `progression_level >= rank_threshold_base * (1 + 
 ## Combat Mechanics
 
 - **Auto-aggro**: Idle combat units engage enemies within aggro radius (200px player, 250px enemy)
-- **Retaliation**: Units under attack fight back (gatherers flee first)
+- **Retaliation**: Units under attack fight back (legacy gatherer references should be read as the Mudpaw role)
 - **Ally assist**: Nearby idle allies join combat within 300px
 - **Towers/Watchtowers**: Auto-target nearest enemy within range
 - **Formation movement**: Group move commands arrange units by role (melee front, ranged middle, support back)
@@ -336,18 +343,9 @@ After a player unit completes an order and is deselected, a themed icon (the aut
 
 This provides a non-intrusive way to set up automated economy and defense without micro-managing every unit. Auto-symbols are rendered as PixiJS overlays (`src/rendering/pixi/auto-symbol-overlay.ts`) and driven by the `autoSymbolSystem` ECS system.
 
-## Auto-Behaviors
+## Legacy Automation Note
 
-Toggled via the radial menu on the idle worker button:
-
-| Behavior | Applies To | Effect |
-|----------|-----------|--------|
-| Auto-Gather | Idle Gatherers | Seek nearest resource node |
-| Auto-Build | Idle Gatherers | Pressure-based building decisions |
-| Auto-Defend | Idle Combat | Patrol near Lodge |
-| Auto-Attack | Idle Combat | Attack-move toward nearest enemy |
-| Auto-Heal | Idle Medics | Seek nearest wounded ally |
-| Auto-Scout | Idle Scouts | Move to unexplored map areas |
+The current runtime still contains legacy auto-behavior toggles and auto-symbol flows from the older generalist model. The canonical direction is to move that automation into Pearl specialist area assignment, as defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
 
 ## Day/Night Cycle
 

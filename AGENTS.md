@@ -4,7 +4,7 @@
 
 Pond Warfare is a mobile-first real-time strategy game where otters defend their Lodge from waves of predators in a pond ecosystem. One game mode: defend the Lodge at the bottom of a vertical map against escalating enemy waves from the top. Between matches, spend earned Clams on an upgrade web (240+ nodes) and Pearls on prestige upgrades.
 
-**Feature summary:** 14 unit types (4 generalists + 10 specialists), 6 enemy types with role-based behaviors (raiders, healers, sappers) and per-level scaling, 6-panel map grid with progression-based unlock, auto-symbol unit autonomy mechanic, 240+ procedural upgrade nodes across 6 categories with Frontier Expansion diamond nodes, prestige system with Pearl upgrades (auto-deploy, auto-behaviors, multipliers), JSON-driven wave-survival match events (waves, bosses, sabotage, escorts), post-match reward screen with Clam earnings, Lodge with visual wing evolution, fortification system (walls, towers), deterministic PRNG (zero Math.random in gameplay), unit-specific SFX with spatial panning, Yuka.js steering for all units, terrain system (4 types), weather system (4 types), fog of war, day/night cycle, veterancy ranks, formation movement, auto-behaviors (gather/build/defend/attack/heal/scout), kill streaks, minimap, ctrl groups, hotkeys, comic panel landing page, SQLite persistence, SVG 9-slice panel system with pond watercolor aesthetic, Android APK builds.
+**Feature summary:** 4 canonical manual units (`Mudpaw`, `Medic`, `Sapper`, `Saboteur`) plus 8 Pearl specialist blueprints (`Fisher`, `Logger`, `Digger`, `Guard`, `Ranger`, `Bombardier`, `Shaman`, `Lookout`), 6 enemy types with role-based behaviors (raiders, healers, sappers) and per-level scaling, 6-panel map grid with progression-based unlock, auto-symbol unit autonomy mechanic, 240+ procedural upgrade nodes across 6 categories with Frontier Expansion diamond nodes, prestige system with Pearl upgrades (specialist blueprints, radius/cap/efficiency growth, auto-behaviors, multipliers), JSON-driven wave-survival match events (waves, bosses, sabotage, escorts), post-match reward screen with Clam earnings, Lodge with visual wing evolution, fortification system (walls, towers), deterministic PRNG (zero Math.random in gameplay), unit-specific SFX with spatial panning, Yuka.js steering for all units, terrain system (4 types), weather system (4 types), fog of war, day/night cycle, veterancy ranks, formation movement, auto-behaviors (gather/build/defend/attack/heal/scout), kill streaks, minimap, ctrl groups, hotkeys, comic panel landing page, SQLite persistence, SVG 9-slice panel system with pond watercolor aesthetic, Android APK builds.
 
 Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
 
@@ -22,6 +22,10 @@ pnpm lint:fix   # Biome auto-fix
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for the full system overview.
+
+Canonical unit-model references:
+- [docs/unit-model.md](docs/unit-model.md) -- human-readable design source
+- [configs/unit-model.json](configs/unit-model.json) -- machine-readable canonical model
 
 **Key pattern:** ECS game state lives in `GameWorld` (src/ecs/world.ts). UI reads from reactive `signal()` values in `src/ui/store.ts` (core signals) + `src/ui/store-v3.ts` (prestige, upgrade web, rewards, events). The game orchestrator (`src/game.ts` + `src/game/`) syncs world -> store every 30 frames via `syncUIStore()`. Persistence via `src/ui/store-v3-persistence.ts` syncs v3 state to SQLite.
 
@@ -117,33 +121,31 @@ Metagame currencies (between matches):
 - **Clams** -- earned post-match, spent on upgrade web nodes
 - **Pearls** -- earned from prestige (rank up), spent on Pearl upgrades
 
-### Player Units (14 types)
+### Player Units
 
-#### Generalists (4) -- trainable at Lodge
+#### Manual Units -- baseline run roster
 
-| Unit | HP | Speed | Damage | Cost (Fish) | Role |
-|------|----|-------|--------|-------------|------|
-| Gatherer | 30 | 2.0 | 0 | 10 | Economy worker |
-| Fighter | 60 | 1.8 | 8 | 20 | Melee DPS |
-| Medic | 25 | 1.5 | 0 | 15 | Support healer |
-| Scout | 20 | 3.5 | 1 | 8 | Fast recon |
+| Unit | Unlock Stage | Role |
+|------|--------------|------|
+| Mudpaw | 1 | Baseline manual generalist. Gathers, fights, scouts, builds, repairs. |
+| Medic | 2 | Manual healing/support response. |
+| Sapper | 5 | Manual siege and demolition response. |
+| Saboteur | 6 | Manual disruption/subversion response. |
 
-#### Specialists (10) -- unlocked via upgrade web diamond nodes, auto-deployed via prestige
+#### Pearl Specialists -- blueprint unlocks, trained in-match
 
-| Unit | HP | Speed | Damage | Role | Auto-Target |
-|------|----|-------|--------|------|-------------|
-| Fisher | 25 | 2.0 | 0 | Auto-gather fish | fish_node |
-| Digger | 25 | 1.8 | 0 | Auto-gather rocks | rock_deposit |
-| Logger | 25 | 1.8 | 0 | Auto-gather logs | tree_cluster |
-| Guardian | 80 | 1.2 | 6 | Auto-defend Lodge | lodge_area |
-| Hunter | 50 | 2.0 | 10 | Auto-attack enemies | nearest_enemy |
-| Ranger | 40 | 2.5 | 6 | Auto-patrol routes | patrol_route |
-| Shaman | 20 | 1.5 | 0 | Auto-heal wounded | nearest_wounded |
-| Lookout | 15 | 3.0 | 0 | Auto-scout fog | fog_edge |
-| Sapper | 40 | 1.5 | 15 | Siege enemy forts | enemy_fort |
-| Saboteur | 30 | 2.5 | 5 | Subvert enemy nodes | enemy_node |
+| Unit | Domain | Autonomy Model |
+|------|--------|----------------|
+| Fisher | Economy | Works fish nodes within assigned radius |
+| Logger | Economy | Works log nodes within assigned radius |
+| Digger | Economy | Works rock nodes within assigned radius |
+| Guard | Combat | Handles infantry defense/offense within assigned radius |
+| Ranger | Combat | Provides ranged coverage within assigned radius |
+| Bombardier | Combat | Applies siege pressure within assigned radius |
+| Shaman | Support | Heals wounded allies within assigned radius |
+| Lookout | Recon | Scouts and extends vision within assigned radius |
 
-Specialist definitions in `configs/units.json`. Specialists are auto-deployed at match start based on prestige Pearl upgrades.
+Pearls unlock specialist blueprints and upgrade their autonomy. Specialists still cost in-match resources to train, and radius growth is a primary Pearl upgrade path.
 
 ### Enemy Units (6 types)
 
@@ -194,13 +196,14 @@ Resource types: fish_node, rock_deposit, tree_cluster. Terrain types: grass, wat
 
 Generation in `src/game/vertical-map.ts`. Panel grid in `src/game/panel-grid.ts`. Terrain painting in `src/terrain/`.
 
-### JSON Config System (11 files in configs/)
+### JSON Config System (12 files in configs/)
 
 All game balance data lives in `configs/*.json`, loaded via `src/config/config-loader.ts` with typed accessors. Types in `src/config/v3-types.ts`.
 
 | Config | Purpose | Key Data |
 |--------|---------|----------|
-| `units.json` | Player unit stats | Generalists (4) + Specialists (10) |
+| `units.json` | Current runtime unit stats | Transitional live entity definitions |
+| `unit-model.json` | Canonical unit-model design | Manual roster, Pearl specialists, radius/autonomy rules |
 | `enemies.json` | Enemy unit stats + scaling | Types (6) + per-level scaling |
 | `upgrades.json` | Upgrade web categories | 6 categories, 4 subcats each, 10 tiers = 240 nodes |
 | `prestige.json` | Pearl upgrades + prestige formula | Auto-deploy, auto-behavior, multiplier upgrades |
@@ -222,11 +225,11 @@ Generated by `src/config/upgrade-web.ts` from `configs/upgrades.json`:
 - **State management**: `src/ui/upgrade-web-state.ts` tracks purchases, highest tiers, clam balance
 - **Screen component**: `src/ui/screens/UpgradeWebScreen.tsx` + `UpgradeNodeRow.tsx`
 
-### Prestige System (Pearls, Auto-Deploy, Auto-Behaviors)
+### Prestige System (Pearls, Specialist Blueprints, Auto-Behaviors)
 
 Managed by `src/config/prestige-logic.ts` reading `configs/prestige.json`:
 - **Prestige (Rank Up)**: Reset Clam upgrades, earn Pearls based on progression level
-- **Pearl upgrades** (3 categories): Auto-Deploy (specialists at match start), Auto-Behavior (permanent passives), Multipliers (permanent stat boosts)
+- **Pearl upgrades**: Permanent specialist blueprints, cap/radius/efficiency growth, auto-behavior passives, and permanent multipliers
 - **Pearl screen**: `src/ui/screens/PearlUpgradeScreen.tsx`
 - **Rank-up modal**: `src/ui/screens/RankUpModal.tsx`
 
@@ -318,7 +321,7 @@ Changes every 3-5 minutes, seeded from map seed:
 | `src/rendering/pixi/lodge-visuals.ts` | Lodge wing rendering in PixiJS | |
 | `src/rendering/camera.ts` | Camera system: pan, zoom, shake | ~81 |
 | `src/ecs/systems/match-event-runner.ts` | v3 event system from events.json | |
-| `src/ecs/systems/specialist-deploy.ts` | Auto-deploy specialists from prestige | |
+| `src/ecs/systems/specialist-deploy.ts` | Transitional prestige specialist spawning logic | |
 | `src/ecs/systems/fortification.ts` | Wall/tower fortification system | |
 | `src/ecs/systems/wave-spawner.ts` | Role-based enemy spawning, panel-aware positions |
 | `src/ecs/systems/spawn-patterns.ts` | Wave spawn pattern functions (10 patterns) |
@@ -370,6 +373,7 @@ Changes every 3-5 minutes, seeded from map seed:
 | File | Purpose |
 |------|---------|
 | `configs/units.json` | Player generalist + specialist definitions |
+| `configs/unit-model.json` | Canonical manual/specialist design model |
 | `configs/enemies.json` | Enemy types + per-level scaling |
 | `configs/upgrades.json` | Upgrade web categories, subcategories, diamond nodes |
 | `configs/prestige.json` | Pearl upgrade definitions + prestige formula |
@@ -453,6 +457,7 @@ Note: bitECS SoA components are global typed arrays. When tests run in parallel,
 
 - [Architecture](docs/architecture.md) -- System overview, game loop, data flow
 - [Gameplay](docs/gameplay.md) -- Units, resources, events, upgrade web, prestige, combat
+- [Unit Model](docs/unit-model.md) -- canonical manual roster and Pearl specialist rules
 - [Libraries](docs/libraries.md) -- How each dependency is utilized
 - [Design Bible](docs/design-bible.md) -- Vision, visual identity, design tokens
 
@@ -462,9 +467,11 @@ Note: bitECS SoA components are global typed arrays. When tests run in parallel,
 - **Max 300 LOC per file**: Enforced by `.claude/hooks/file-size-guard.py`. Decompose before adding features.
 - **Wave-survival mode**: One game mode — defend the Lodge from escalating events. No campaigns, puzzles, or co-op modes in v3.
 - **JSON configs for balance**: All unit stats, enemy scaling, events, upgrades, and prestige data live in `configs/*.json`. Content changes should never require TypeScript modifications.
+- **Canonical unit model**: Use `docs/unit-model.md` and `configs/unit-model.json` for intended roster and specialist autonomy behavior, even when transitional runtime code still says `Gatherer` or `auto_deploy`.
 - **Vertical map**: Lodge at bottom, enemies from top, resources in middle. Map grows with progression level.
 - **Clams are metagame currency**: Earned post-match, spent on upgrade web between matches. Fish/Rocks/Logs are the in-match resources.
-- **Specialists auto-deploy**: Specialists spawn at match start based on prestige Pearl upgrades, not trained during a match.
+- **Pearl specialists are trainable autonomous units**: Pearls unlock specialist blueprints and radius/autonomy growth, but the player still pays in-match resources to field them.
+- **Radius is a primary specialist upgrade path**: Pearl upgrades should explicitly improve specialist operating radius along with cap, efficiency, and durability.
 - **Player units use Yuka too**: Not just enemies. All moving entities register with YukaManager for smooth steering.
 - **Both factions use the same systems**: Gathering, movement, and combat work identically for player and enemy units.
 - **SQLite is required**: Persistence uses capacitor-sqlite + jeep-sqlite. There is no localStorage fallback.

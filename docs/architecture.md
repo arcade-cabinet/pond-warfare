@@ -2,6 +2,8 @@
 
 Pond Warfare uses an Entity Component System (ECS) architecture powered by bitECS, with Preact for UI and PixiJS 8 for rendering.
 
+The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md) and [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). Some runtime systems still carry legacy `Gatherer` and `auto_deploy_*` terminology while the refactor toward `Mudpaw` plus trainable Pearl specialists is in progress.
+
 ## System Overview
 
 ```
@@ -140,6 +142,18 @@ Maps use a 6-panel grid system (`src/game/panel-grid.ts`) with Clam-run frontier
 - The live match map size is driven by purchased Frontier Expansion diamonds in the current run, not by Pearl prestige state
 - Required buildings/responses should arrive from the pane baseline; Clams can tune power, but should not gate the existence of mandatory progression tools
 
+## Canonical Unit Architecture
+
+The intended gameplay model is:
+
+- baseline manual units: `Mudpaw`, `Medic`, `Sapper`, `Saboteur`
+- Pearl specialists: `Fisher`, `Logger`, `Digger`, `Guard`, `Ranger`, `Bombardier`, `Shaman`, `Lookout`
+- Pearl specialists are unlocked by Pearls but trained with in-match resources
+- specialists are assigned to terrain areas and operate within a Yuka-governed radius
+- specialist radius growth is a first-class Pearl upgrade axis, not a secondary stat
+
+The older model of free match-start specialist auto-deploy is considered transitional runtime behavior, not the long-run architecture target.
+
 ## Upgrade Effects Pipeline
 
 At game init, `src/game/upgrade-effects.ts`:
@@ -149,6 +163,13 @@ At game init, `src/game/upgrade-effects.ts`:
 4. Applies all bonuses as world modifiers before entity spawning
 
 Separately, `src/ui/current-run-diamond-effects.ts` resolves current-run Frontier Expansion diamonds so the next match spawns at the correct panel stage.
+
+Under the canonical unit model, Pearl progression should evolve from `free auto_deploy` toward:
+
+1. specialist blueprint unlocks
+2. specialist cap/radius/efficiency modifiers
+3. specialist training availability during a match
+4. area-assignment control rather than per-target micromanagement
 
 ## Veterancy System
 

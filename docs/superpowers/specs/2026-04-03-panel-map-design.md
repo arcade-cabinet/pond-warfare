@@ -82,7 +82,7 @@ Panel dimensions MUST be computed from actual viewport size at game start, not h
 | Item | Reason |
 |------|--------|
 | Minimap canvas + refs | Viewport IS the map at zoom-out |
-| Airdrop button + mechanic | Doesn't fit v3 design. Supply drops become prestige auto-deploy if needed |
+| Airdrop button + mechanic | Doesn't fit v3 design. If revived, it should align with specialist blueprint/radius systems rather than free prestige auto-deploy |
 | Ability bar (Rally Cry, Pond Blessing, Tidal Surge) | Old tech-tree abilities. Commander abilities become prestige unlocks |
 | Old terrain generator (random noise) | Replaced by panel-aware biome generation |
 | Hardcoded map dimensions in terrain.json | Replaced by viewport-computed panel sizing |

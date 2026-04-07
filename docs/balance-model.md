@@ -1,5 +1,7 @@
 # Balance Model
 
+This document currently measures the live transitional runtime, which still contains legacy `auto_deploy_*` specialist plumbing. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where Pearl specialists are trainable in-match units and operating radius is a primary upgrade axis.
+
 ## Purpose
 
 Pond Warfare needs a balance model that can answer three questions:
@@ -20,7 +22,7 @@ The goal is not perfect prediction. The goal is a repeatable approximation we ca
 - The baseline game must be technically playable through the first exposure to all six panel stages without spending Clams or Pearls.
 - Clams are a current-run pressure-relief layer.
 - Pearls are the permanent prestige acceleration layer.
-- Pearl auto-deploy specialists are permanent helper units and should not consume the same food cap the baseline run uses for ordinary production.
+- In the transitional runtime, Pearl auto-deploy specialists should not consume the same food cap the baseline run uses for ordinary production. The long-run target is to replace free auto-deploy with Pearl specialist blueprint unlocks plus in-match specialist training.
 - If a building or response is required to clear a pane, it belongs in baseline pane progression, not behind Clams.
 
 ## Current Model
@@ -164,7 +166,7 @@ a fresh worker process:
 
 The Pearl broad scan still reports two horizons:
 
-- opening window: 1200 frames, which is useful for early pacing and auto-deploy impact
+- opening window: 1200 frames, which is useful for early pacing and legacy auto-deploy-era Pearl impact
 - long-run window: 2400 frames, which is needed for combat and repair/heal tracks that do not fully express before the first army exists
 
 Current isolated readout:

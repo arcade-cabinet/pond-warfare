@@ -73,7 +73,7 @@ Complete audio system with procedural synthesis and unit-specific SFX.
 
 **Usage:**
 - **SFX** (25+ effects): `Synth` with pooled synth+panner pairs (16 pre-allocated)
-- **Unit-specific select sounds**: Brawler (drum thud), Sniper (metallic ping), Healer (wind chime), Catapult (wooden creak), Scout (bird chirp), Commander (horn blast), Gatherer (tool clink), Shieldbearer (shield clang)
+- **Unit-specific select sounds**: Brawler (drum thud), Sniper (metallic ping), Healer (wind chime), Catapult (wooden creak), Scout (bird chirp), Commander (horn blast), legacy Gatherer slot / future Mudpaw (tool clink), Shieldbearer (shield clang)
 - **Contextual effects**: building placement, research complete, airdrop incoming, train complete, build complete, unit death, building destruction, heal, error
 - **Spatial panning**: SFX panned left/right based on world position relative to camera
 - **Music**: Procedural chiptune via `Sequence` - peaceful (C major, 100 BPM) / hunting (C minor, 140 BPM)

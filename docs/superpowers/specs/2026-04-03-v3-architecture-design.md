@@ -1,5 +1,8 @@
 # Pond Warfare v3.0 — Architecture Design Spec
 
+> Unit-model note, April 7, 2026:
+> The unit split described in this spec is now historical context. The canonical current design lives in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), which supersedes the older `Gatherer/Fighter/Scout + free auto-deploy specialist` framing.
+
 ## Vision
 
 A mobile-first RTS where every match is a dense 5-25 minute battle on a compact vertical map. Your Lodge sits at the bottom. Enemies come from the top. Between matches, a deep procedural upgrade web and prestige system provide infinite replayability. Automation is EARNED through prestige, not toggled in settings. Everything is data-driven via JSON configs.

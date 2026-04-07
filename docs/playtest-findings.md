@@ -1,5 +1,4 @@
-> **NOTE (v3)**: These findings are from v1/v2 playtests. Some issues are addressed
-> by the v3 rearchitecture (simplified game mode, tutorial, etc.).
+> **NOTE (v3)**: These findings are from v1/v2 playtests. Some terminology is obsolete. References to `Gatherer`, `Brawler`, or other older unit names should be translated through the current unit model in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
 
 # Playtest Findings - 5 Player Personas
 
