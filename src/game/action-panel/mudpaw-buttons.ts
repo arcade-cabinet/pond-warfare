@@ -1,7 +1,7 @@
 /**
- * Action Panel — Gatherer Build Buttons
+ * Action Panel — Mudpaw Build Buttons
  *
- * Building placement buttons shown when a Gatherer is selected.
+ * Building placement buttons shown when a Mudpaw is selected.
  */
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
@@ -9,7 +9,7 @@ import type { GameWorld } from '@/ecs/world';
 import { EntityKind } from '@/types';
 import type { ActionButtonDef } from '@/ui/action-panel';
 
-export function buildGathererButtons(w: GameWorld): ActionButtonDef[] {
+export function buildMudpawButtons(w: GameWorld): ActionButtonDef[] {
   const btns: ActionButtonDef[] = [];
 
   const lodgeDef = ENTITY_DEFS[EntityKind.Lodge];

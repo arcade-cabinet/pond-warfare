@@ -12,11 +12,11 @@ import * as store from '@/ui/store';
 import { AttackGoal, countAvailableAttackers, MIN_ATTACK_ARMY } from './goals/attack-goal';
 import { BuildGoal } from './goals/build-goal';
 import { DefendGoal } from './goals/defend-goal';
-import { findIdleGatherers, GatherGoal } from './goals/gather-goal';
+import { findIdleMudpaws, GatherGoal } from './goals/gather-goal';
 import { TrainGoal } from './goals/train-goal';
 import type { Governor } from './governor';
 import { getGovernorCombatUnits, getGovernorGatherUnits } from './roster-units';
-import { getGovernorCombatTarget, getGovernorGathererTarget } from './train-policy';
+import { getGovernorCombatTarget, getGovernorMudpawTarget } from './train-policy';
 
 function hasBuilding(kind: EntityKind): boolean {
   return store.buildingRoster.value.some((b) => b.kind === kind);
@@ -89,10 +89,10 @@ function canPressureSafely(totalArmy: number, readyArmy: number): boolean {
   return Number.isFinite(threshold) && threshold <= MIN_ATTACK_ARMY + 1 && readyArmy >= threshold;
 }
 
-/** High score when idle gatherers exist — always beats Train to avoid idle waste. */
+/** High score when idle Mudpaws exist — always beats Train to avoid idle waste. */
 export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
-    const idle = findIdleGatherers();
+    const idle = findIdleMudpaws();
     if (idle.length === 0) return 0;
     return 0.85 + Math.min(idle.length * 0.03, 0.1);
   }
@@ -127,12 +127,12 @@ export class TrainEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     if (store.food.value >= store.maxFood.value) return 0;
 
-    const gatherers = getGovernorGatherUnits(store.unitRoster.value).length;
-    const idleGatherers = findIdleGatherers().length;
+    const mudpaws = getGovernorGatherUnits(store.unitRoster.value).length;
+    const idleMudpaws = findIdleMudpaws().length;
 
-    // Need gatherers for economy — but the target drops on higher-pressure stages.
-    if (gatherers < getGovernorGathererTarget()) {
-      if (idleGatherers > 0) return 0; // Let Gather goal assign them first
+    // Need Mudpaws for economy — but the target drops on higher-pressure stages.
+    if (mudpaws < getGovernorMudpawTarget()) {
+      if (idleMudpaws > 0) return 0; // Let Gather goal assign them first
       if (store.fish.value >= 10) return 0.8;
     }
 

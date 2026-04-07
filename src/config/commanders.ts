@@ -73,7 +73,7 @@ export const COMMANDERS: CommanderDef[] = [
     name: 'Otter Sage',
     title: 'The Sage',
     auraDesc: '+25% tech research speed',
-    passiveDesc: 'Gatherers +10% gather rate',
+    passiveDesc: 'Mudpaws +10% gather rate',
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,

@@ -180,7 +180,7 @@ describe('CommanderAccordionContent', () => {
       />,
     );
 
-    expect(getByText('Gatherers +10% gather rate')).toBeTruthy();
+    expect(getByText('Mudpaws +10% gather rate')).toBeTruthy();
   });
 
   it('should apply grayscale filter to portrait when locked', () => {

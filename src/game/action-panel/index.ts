@@ -24,7 +24,7 @@ import {
   queueItems,
 } from '@/ui/action-panel';
 
-import { buildGathererButtons } from './gatherer-buttons';
+import { buildMudpawButtons } from './mudpaw-buttons';
 import { buildLodgeButtons } from './lodge-buttons';
 import { buildMarketButtons } from './market-buttons';
 import { buildTrainingQueueItems } from './tech-helpers';
@@ -65,7 +65,7 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
 
     if (selFaction === Faction.Player) {
       if (selKind === EntityKind.Gatherer) {
-        btns.push(...buildGathererButtons(w));
+        btns.push(...buildMudpawButtons(w));
       }
 
       if (selKind === EntityKind.Lodge && Building.progress[selEid] >= 100) {

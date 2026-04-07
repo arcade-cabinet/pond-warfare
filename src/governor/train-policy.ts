@@ -36,7 +36,7 @@ function currentStage(): number {
   return Math.max(1, Math.trunc(storeV3.progressionLevel.value || 1));
 }
 
-export function getGovernorGathererTarget(): number {
+export function getGovernorMudpawTarget(): number {
   if (hasImmediatePressure()) return 2;
 
   const stage = currentStage();

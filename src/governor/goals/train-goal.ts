@@ -17,16 +17,16 @@ import * as storeV3 from '@/ui/store-v3';
 import { getGovernorCombatUnits, getGovernorGatherUnits } from '../roster-units';
 import {
   getGovernorCombatTarget,
-  getGovernorGathererTarget,
+  getGovernorMudpawTarget,
   shouldTrainSupportUnit,
 } from '../train-policy';
 
-/** Count of combat units (non-gatherer, non-healer, non-scout). */
+/** Count of combat units outside the Mudpaw economy chassis. */
 function armySize(): number {
   return getGovernorCombatUnits(store.unitRoster.value).length;
 }
 
-function gathererCount(): number {
+function mudpawCount(): number {
   return getGovernorGatherUnits(store.unitRoster.value).length;
 }
 
@@ -76,7 +76,7 @@ export class TrainGoal extends Goal {
   }
 
   private pickUnit(trainable: EntityKind[]): EntityKind | null {
-    if (trainable.includes(EntityKind.Gatherer) && gathererCount() < getGovernorGathererTarget()) {
+    if (trainable.includes(EntityKind.Gatherer) && mudpawCount() < getGovernorMudpawTarget()) {
       return EntityKind.Gatherer;
     }
     if (trainable.includes(EntityKind.Gatherer) && armySize() < getGovernorCombatTarget()) {

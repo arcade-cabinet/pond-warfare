@@ -1,5 +1,7 @@
 # Claude Plan/Docs Audit — 2026-04-06
 
+> **Historical note:** This audit captured repo drift on April 6, 2026. Several items below have since been resolved. For the current live model, use [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), [docs/architecture.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/architecture.md), and [docs/balance-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/balance-model.md).
+
 ## Scope
 
 This audit compares:

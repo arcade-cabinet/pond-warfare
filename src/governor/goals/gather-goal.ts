@@ -1,7 +1,7 @@
 /**
- * GatherGoal — Assigns idle gatherers to resource collection.
+ * GatherGoal — Assigns idle Mudpaws to resource collection.
  *
- * Reads unitRoster from the store to find idle gatherers, then dispatches
+ * Reads unitRoster from the store to find idle Mudpaws, then dispatches
  * gathering tasks through the same API the Forces tab uses.
  */
 
@@ -22,12 +22,12 @@ const GATHER_TASKS = [
 const PREFERRED_GATHER_DISTANCE_SQ = 450 * 450;
 
 /**
- * Find truly idle gatherers — those not yet assigned to any task.
- * Gatherers with a TaskOverride are between gather trips (idle momentarily
+ * Find truly idle Mudpaws — those not yet assigned to any task.
+ * Mudpaws with a TaskOverride are between gather trips (idle momentarily
  * after depositing), not truly unassigned. Excluding them prevents
  * GatherEval from blocking TrainEval when the economy is running.
  */
-export function findIdleGatherers(): RosterUnit[] {
+export function findIdleMudpaws(): RosterUnit[] {
   return getGovernorGatherUnits(store.unitRoster.value).filter(
     (unit) => unit.task === 'idle' && !unit.hasOverride,
   );
@@ -35,14 +35,14 @@ export function findIdleGatherers(): RosterUnit[] {
 
 export class GatherGoal extends Goal {
   override activate(): void {
-    const idle = findIdleGatherers();
+    const idle = findIdleMudpaws();
     if (idle.length === 0) {
       this.status = Goal.STATUS.COMPLETED;
       return;
     }
 
-    // Assign each idle gatherer to the lowest-stockpiled resource, but prefer
-    // nearby available nodes so early-stage layouts do not send gatherers on
+    // Assign each idle Mudpaw to the lowest-stockpiled resource, but prefer
+    // nearby available nodes so early-stage layouts do not send Mudpaws on
     // dead-end marches toward distant or absent resource types.
     const sorted = [...GATHER_TASKS].sort((a, b) => a.signal() - b.signal());
     for (let i = 0; i < idle.length; i++) {

@@ -10,20 +10,24 @@ import { COLORS } from '@/ui/design-tokens';
 import { Frame9Slice } from './components/frame';
 import { customGameSettings } from './store';
 
-const LOADING_TIPS = [
-  'Gatherers auto-return resources when their haul is full.',
-  'Right-click on a resource patch to send selected gatherers.',
+export const LOADING_TIPS = [
+  'Mudpaws auto-return resources when their haul is full.',
+  'Tap or right-click a resource patch after selecting Mudpaws to start a harvest route.',
   'Towers and Watchtowers reveal fog of war around them.',
-  'Brawlers deal bonus damage to buildings — use them to siege.',
+  'Sappers and Bombardiers are your siege answers once fort pressure comes online.',
   'Hold Shift to add or remove units from your selection.',
   'Double-click a unit to select all visible units of that type.',
   'Set rally points on buildings by right-clicking with them selected.',
   'The Lodge provides food capacity — protect it at all costs.',
-  'Scouts move fast and reveal stealthed enemies.',
+  'Clams buy current-run relief; Pearls buy permanent specialist blueprints and upgrades.',
+  'Rank Up converts a slowing run into Pearls from the main menu.',
+  'Fisher, Logger, and Digger work inside their assigned operating circle.',
+  'Shamans are strongest when their healing circle overlaps the frontline rotation.',
+  'Rangers and Bombardiers use both an anchor zone and an engagement zone.',
+  'Projection range is what lets a dual-zone specialist reach farther from its anchor.',
   'Use control groups (Ctrl+1-9) to organise your army quickly.',
   'Veterancy makes units stronger — keep your elite units alive.',
   'Walls block enemy pathing and buy time for your defenders.',
-  'Research upgrades at the Lodge to unlock new units and abilities.',
   'Flying Herons can cross water and ignore terrain obstacles.',
   "High ground ridges give tactical advantage in no-man's-land.",
 ] as const;

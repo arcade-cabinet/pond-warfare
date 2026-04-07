@@ -2,8 +2,9 @@
  * Radial Action Menu (v3.0 -- US9)
  *
  * Contextual circular menu that appears on tap:
- * - Tap Lodge -> Train Gatherer, Train Fighter, Train Medic, Train Scout, Fortify, Repair
- * - Tap selected unit -> role-specific actions (Gather, Attack, Heal, Scout, Hold, Patrol)
+ * - Tap Lodge -> Train Mudpaw/Medic/Sapper/Saboteur, field specialists, Fortify, Repair
+ * - Tap selected manual unit -> role-specific actions (Gather, Attack, Heal, Scout, Hold, Patrol)
+ * - Tap selected specialist -> assign area or zones, then let autonomy handle local work
  *
  * Design bible: vine-frame popup, gritty gold icons, wood plank button backgrounds,
  * design token colors from design-tokens.ts.

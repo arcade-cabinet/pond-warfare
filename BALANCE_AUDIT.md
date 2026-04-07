@@ -1,5 +1,7 @@
 # Pond Warfare - Comprehensive Game Balance Audit
 
+> **Historical note:** This audit predates the canonical `Mudpaw` plus trainable Pearl specialist model. Treat `Gatherer`, `Brawler`, `Armory`, and similar terminology here as historical unless a section has been explicitly updated. For the live model, use [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), and [docs/balance-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/balance-model.md).
+
 ## Executive Summary
 
 Pond Warfare has solid foundational balance with well-designed resource economy, meaningful unit roles, and strategic tech progression. Key strengths: the counter system is well-articulated, veterancy thresholds are achievable, and tech gates feel appropriate. However, several specific balance issues emerged:
@@ -630,4 +632,3 @@ Pond Warfare has excellent foundational balance. The unit counter system is the 
 4. Pearl economy is delayed (not a problem, but worth noting) ⚠
 
 **Recommended Action**: Apply the 3 immediate fixes (Scout cost, Trade Routes buff, Siege Turtle HP). These are low-risk, high-clarity changes that improve player agency without breaking balance.
-
