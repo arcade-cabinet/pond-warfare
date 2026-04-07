@@ -15,18 +15,13 @@ describe('buildActionPanel', () => {
     queueItems.value = [];
   });
 
-  it('shows all four baseline generalists from the Lodge command panel', () => {
+  it('shows the stage-1 Mudpaw baseline from the Lodge command panel', () => {
     const lodge = spawnEntity(world, EntityKind.Lodge, 320, 400, Faction.Player);
     Building.progress[lodge] = 100;
     world.selection = [];
 
     buildActionPanel(world);
 
-    expect(actionButtons.value.map((button) => button.title)).toEqual([
-      'Gatherer',
-      'Fighter',
-      'Medic',
-      'Scout',
-    ]);
+    expect(actionButtons.value.map((button) => button.title)).toEqual(['Mudpaw']);
   });
 });

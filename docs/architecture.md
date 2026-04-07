@@ -2,7 +2,7 @@
 
 Pond Warfare uses an Entity Component System (ECS) architecture powered by bitECS, with Preact for UI and PixiJS 8 for rendering.
 
-The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md) and [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). Some runtime systems still carry legacy `Gatherer` and `auto_deploy_*` terminology while the refactor toward `Mudpaw` plus trainable Pearl specialists is in progress.
+The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md) and [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). The live player-facing runtime now uses the canonical Lodge/radial roster and in-match specialist blueprints, although some low-level ECS/config ids still carry legacy `Gatherer` and `auto_deploy_*` terminology under the hood.
 
 ## System Overview
 
@@ -153,7 +153,7 @@ The intended gameplay model is:
 - specialist radius growth is a first-class Pearl upgrade axis, not a secondary stat
 - selected specialists should reveal their assigned circle(s) plus dotted correlation links on the map; `Ranger` and `Bombardier` are dual-zone by design
 
-The older model of free match-start specialist auto-deploy is obsolete in the player-facing runtime. Pearl specialist ranks now initialize in-match blueprint caps, and the player fields those specialists from the Lodge during a run.
+The older model of free match-start specialist auto-deploy is obsolete in the player-facing runtime. Pearl specialist ranks now initialize in-match blueprint caps, the player fields those specialists from the Lodge during a run, and the manual Lodge/radial flow now exposes `Mudpaw`, `Medic`, `Sapper`, and `Saboteur` on their intended stage gates.
 
 ## Upgrade Effects Pipeline
 

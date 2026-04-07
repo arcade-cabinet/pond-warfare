@@ -266,7 +266,7 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - Cheap first-rank Clam tracks are currently landing around **0.1% to 0.4% mean relief** in the stricter live-stack sampled stage-6 report, while the post-match Clam report shows clearer economy-side value.
 - The post-match Clam broad scan now agrees directionally with the sampled Clam rows: basic gather, node-yield, and clam-bonus T1 purchases are positive once they are measured as real between-match purchases instead of frame-zero injections.
 - The remaining Clam broad-report gap is narrower now: many non-gather T1 rows are still flat in the very next match, which means they either need a different expression harness or stronger gameplay impact.
-- Early sampled Pearl tracks are mostly flat-to-positive now, and the long-run broad Pearl scan is mixed rather than broadly positive: Guardian/Hunter/Ranger/Shaman lead, while Logger/Digger remain the strongest negative anomalies.
+- Early sampled Pearl tracks are mostly flat-to-positive now, and the long-run broad Pearl scan is mixed rather than broadly positive: frontline/support specialist-cap tracks lead, while Logger/Digger remain the strongest negative anomalies.
 - Under forced early combat pressure, all four tested Pearl combat/repair tracks are now positive, with `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` showing the strongest gains.
 - The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
 - Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.

@@ -2,7 +2,7 @@
  * Radial Menu Option Definitions (v3.0 — US9)
  *
  * Defines what options appear in the radial menu based on context:
- * - Lodge: training options + fortify + repair
+ * - Lodge: manual training options + fortify + repair
  * - Unit (by role): role-specific actions
  *
  * Each option has an id (dispatched as action), label, icon, color, and
@@ -28,18 +28,11 @@ export interface RadialOption {
 
 const LODGE_OPTIONS: RadialOption[] = [
   {
-    id: 'train_gatherer',
-    label: 'Gatherer',
-    icon: '\u{1F41F}', // fish emoji for gatherer
-    tooltip: 'Train Gatherer (10 Fish)',
+    id: 'train_mudpaw',
+    label: 'Mudpaw',
+    icon: '\u{1F9A6}',
+    tooltip: 'Train Mudpaw (10 Fish)',
     color: 'success',
-  },
-  {
-    id: 'train_fighter',
-    label: 'Fighter',
-    icon: '\u2694\uFE0F', // crossed swords
-    tooltip: 'Train Fighter (20 Fish)',
-    color: 'enemy',
   },
   {
     id: 'train_medic',
@@ -47,13 +40,6 @@ const LODGE_OPTIONS: RadialOption[] = [
     icon: '\u2764\uFE0F', // heart
     tooltip: 'Train Medic (15 Fish)',
     color: 'vine-highlight',
-  },
-  {
-    id: 'train_scout',
-    label: 'Scout',
-    icon: '\u{1F441}\uFE0F', // eye
-    tooltip: 'Train Scout (8 Fish)',
-    color: 'scout',
   },
   {
     id: 'train_sapper',
@@ -86,6 +72,45 @@ const LODGE_OPTIONS: RadialOption[] = [
 ];
 
 // ── Unit Options by Role ───────────────────────────────────────────
+
+const GENERALIST_OPTIONS: RadialOption[] = [
+  {
+    id: 'cmd_gather',
+    label: 'Gather',
+    icon: '\u{1F33E}',
+    tooltip: 'Send to resource',
+    color: 'success',
+  },
+  {
+    id: 'cmd_attack',
+    label: 'Attack',
+    icon: '\u2694\uFE0F',
+    tooltip: 'Attack target',
+    color: 'enemy',
+  },
+  {
+    id: 'cmd_scout',
+    label: 'Scout',
+    icon: '\u{1F441}\uFE0F',
+    tooltip: 'Explore area',
+    color: 'scout',
+  },
+  { id: 'cmd_hold', label: 'Hold', icon: '\u270B', tooltip: 'Hold position', color: 'warning' },
+  {
+    id: 'cmd_patrol',
+    label: 'Patrol',
+    icon: '\u{1F6B6}',
+    tooltip: 'Patrol between points',
+    color: 'vine-base',
+  },
+  {
+    id: 'cmd_return',
+    label: 'Return',
+    icon: '\u{1F3E0}',
+    tooltip: 'Return to Lodge',
+    color: 'otter',
+  },
+];
 
 const GATHER_OPTIONS: RadialOption[] = [
   {
@@ -215,6 +240,7 @@ const GENERIC_OPTIONS: RadialOption[] = [
 
 /** Map unit roles to their radial options. */
 const ROLE_OPTIONS: Record<string, RadialOption[]> = {
+  generalist: GENERALIST_OPTIONS,
   gather: GATHER_OPTIONS,
   combat: COMBAT_OPTIONS,
   heal: HEAL_OPTIONS,
@@ -248,26 +274,18 @@ export function getRadialOptions(
     if (!gameState) return LODGE_OPTIONS;
     return LODGE_OPTIONS.filter((opt) => {
       switch (opt.id) {
-        case 'train_gatherer':
+        case 'train_mudpaw':
           return gameState.fish >= 10;
-        case 'train_fighter':
-          return gameState.fish >= 20;
         case 'train_medic':
-          return gameState.fish >= 15;
-        case 'train_scout':
-          return gameState.fish >= 8;
+          return gameState.unlockStage >= 2 && gameState.fish >= 15;
         case 'train_sapper':
-          // Sapper needs rocks (panel 4/6 unlock = stage 5+)
           return gameState.unlockStage >= 5 && gameState.fish >= 25 && gameState.rocks >= 15;
         case 'train_saboteur':
-          // Saboteur needs rocks
-          return gameState.unlockStage >= 5 && gameState.fish >= 20 && gameState.rocks >= 10;
+          return gameState.unlockStage >= 6 && gameState.fish >= 20 && gameState.rocks >= 10;
         case 'fortify':
-          // Fortify needs rocks (panel 4/6)
           return gameState.unlockStage >= 5 && gameState.rocks >= 15;
         case 'repair':
-          // Repair needs logs (panel 2+) and Lodge must be damaged
-          return gameState.unlockStage >= 2 && gameState.logs >= 10 && gameState.lodgeDamaged;
+          return gameState.unlockStage >= 2 && gameState.logs >= 30 && gameState.lodgeDamaged;
         default:
           return true;
       }

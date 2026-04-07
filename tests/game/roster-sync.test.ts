@@ -81,6 +81,7 @@ describe('syncRosters', () => {
 
     syncRosters(world);
     const unit = findGroup('gatherer').units[0];
+    expect(unit.label).toBe('Mudpaw');
     expect(unit.task).toBe('gathering-fish');
     expect(unit.targetName).toBe('Clambed');
   });
@@ -142,7 +143,7 @@ describe('syncRosters', () => {
     const bldgs = store.buildingRoster.value;
     expect(bldgs).toHaveLength(1);
     expect(bldgs[0].kind).toBe(EntityKind.Lodge);
-    expect(bldgs[0].queueItems).toEqual(['Gatherer']);
+    expect(bldgs[0].queueItems).toEqual(['Mudpaw']);
     expect(bldgs[0].queueProgress).toBeCloseTo(0.5, 1);
     expect(bldgs[0].canTrain).toEqual([
       EntityKind.Gatherer,
@@ -152,5 +153,42 @@ describe('syncRosters', () => {
     ]);
 
     trainingQueueSlots.delete(lodge);
+  });
+
+  it('uses specialist labels instead of collapsing autonomous gather specialists into Gatherer', () => {
+    const fisher = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    const logger = spawnEntity(world, EntityKind.Gatherer, 140, 100, Faction.Player);
+    world.specialistAssignments.set(fisher, {
+      runtimeId: 'fisher',
+      canonicalId: 'fisher',
+      label: 'Fisher',
+      mode: 'single_zone',
+      operatingRadius: 160,
+      centerX: 100,
+      centerY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 100,
+      engagementY: 100,
+      projectionRange: 0,
+    });
+    world.specialistAssignments.set(logger, {
+      runtimeId: 'logger',
+      canonicalId: 'logger',
+      label: 'Logger',
+      mode: 'single_zone',
+      operatingRadius: 170,
+      centerX: 140,
+      centerY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 140,
+      engagementY: 100,
+      projectionRange: 0,
+    });
+
+    syncRosters(world);
+
+    expect(findGroup('gatherer').units.map((unit) => unit.label)).toEqual(['Fisher', 'Logger']);
   });
 });

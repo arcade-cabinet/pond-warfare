@@ -11,20 +11,19 @@
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { getUnitDef } from '@/config/config-loader';
-import type { GeneralistDef } from '@/config/v3-types';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   EntityTypeTag,
   FactionTag,
   Health,
   IsBuilding,
   Position,
-  TrainingQueue,
-  trainingQueueSlots,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
 import { beginSpecialistAssignment } from '@/game/specialist-assignment';
+import { train } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { COLORS } from '@/ui/design-tokens';
 import { radialMenuTargetEntityId } from '@/ui/store-radial';
@@ -36,20 +35,20 @@ export { tryPlaceFortAtPosition } from './radial-fort-actions';
 
 /** Unit kind mapping for training commands. */
 const TRAIN_KIND_MAP: Record<string, EntityKind> = {
+  train_mudpaw: EntityKind.Gatherer,
   train_gatherer: EntityKind.Gatherer,
   train_fighter: EntityKind.Brawler,
   train_medic: EntityKind.Healer,
-  train_scout: EntityKind.Scout,
   train_sapper: EntityKind.Sapper,
   train_saboteur: EntityKind.Saboteur,
 };
 
 /** v3 generalist names for config lookup. */
 const TRAIN_CONFIG_MAP: Record<string, string> = {
+  train_mudpaw: 'gatherer',
   train_gatherer: 'gatherer',
   train_fighter: 'fighter',
   train_medic: 'medic',
-  train_scout: 'scout',
   train_sapper: 'sapper_unit',
   train_saboteur: 'saboteur_unit',
 };
@@ -76,12 +75,19 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const configKey = TRAIN_CONFIG_MAP[actionId];
   if (unitKind === undefined || !configKey) return false;
 
-  const def = getUnitDef(configKey) as GeneralistDef;
+  const def = getUnitDef(configKey);
   const fishCost = def.cost.fish ?? 0;
+  const logCost = def.cost.logs ?? 0;
   const rocksCost = def.cost.rocks ?? 0;
+  const foodCost = ENTITY_DEFS[unitKind].foodCost ?? 1;
 
   if (world.resources.fish < fishCost) {
     pushGameEvent('Not enough Fish!', COLORS.feedbackError, world.frameCount);
+    audio.error();
+    return false;
+  }
+  if (logCost > 0 && world.resources.logs < logCost) {
+    pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
@@ -94,23 +100,13 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const lodgeEid = findPlayerLodge(world);
   if (lodgeEid < 0) return false;
 
-  world.resources.fish -= fishCost;
-  if (rocksCost > 0) world.resources.rocks -= rocksCost;
-
-  const slots = trainingQueueSlots.get(lodgeEid) ?? [];
-  slots.push(unitKind);
-  trainingQueueSlots.set(lodgeEid, slots);
-  TrainingQueue.count[lodgeEid] = slots.length;
-
-  if (slots.length === 1) {
-    TrainingQueue.timer[lodgeEid] = def.trainTime * 60;
-  }
+  train(world, lodgeEid, unitKind, fishCost, logCost, foodCost, rocksCost);
 
   const names: Record<string, string> = {
+    train_mudpaw: 'Mudpaw',
     train_gatherer: 'Gatherer',
     train_fighter: 'Fighter',
     train_medic: 'Medic',
-    train_scout: 'Scout',
     train_sapper: 'Sapper',
     train_saboteur: 'Saboteur',
   };

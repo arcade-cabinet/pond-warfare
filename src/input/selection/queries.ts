@@ -192,6 +192,7 @@ export function train(
   fishCost: number,
   logCost: number,
   foodCost: number,
+  rockCost = 0,
 ): void {
   const count = TrainingQueue.count[buildingEid];
   if (count >= 8) return;
@@ -213,10 +214,12 @@ export function train(
   if (
     world.resources.fish >= fishCost &&
     world.resources.logs >= logCost &&
+    world.resources.rocks >= rockCost &&
     world.resources.food + foodCost <= world.resources.maxFood
   ) {
     world.resources.fish -= fishCost;
     world.resources.logs -= logCost;
+    world.resources.rocks -= rockCost;
     world.resources.food += foodCost;
 
     {
@@ -243,6 +246,7 @@ export function cancelTrain(world: GameWorld, buildingEid: number, index: number
   const def = ENTITY_DEFS[kind];
   world.resources.fish += def.fishCost ?? 0;
   world.resources.logs += def.logCost ?? 0;
+  world.resources.rocks += def.rockCost ?? 0;
   world.resources.food = Math.max(0, world.resources.food - (def.foodCost ?? 1));
 
   slots.splice(index, 1);

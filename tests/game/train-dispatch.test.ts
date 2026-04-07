@@ -53,6 +53,7 @@ describe('train dispatch', () => {
     // Give player enough resources
     world.resources.fish = 500;
     world.resources.logs = 500;
+    world.resources.rocks = 500;
     world.resources.food = 0;
     world.resources.maxFood = 20;
     trainingQueueSlots.clear();
@@ -95,5 +96,23 @@ describe('train dispatch', () => {
 
     expect(TrainingQueue.count[armory]).toBe(1);
     expect(TrainingQueue.timer[armory]).toBeGreaterThan(0);
+  });
+
+  it('deducts rocks for stage-five manual siege units', () => {
+    const lodge = createPlayerBuilding(world, EntityKind.Lodge);
+    const def = ENTITY_DEFS[EntityKind.Sapper];
+
+    train(
+      world,
+      lodge,
+      EntityKind.Sapper,
+      def.fishCost ?? 0,
+      def.logCost ?? 0,
+      def.foodCost ?? 1,
+      def.rockCost ?? 0,
+    );
+
+    expect(world.resources.rocks).toBe(500 - (def.rockCost ?? 0));
+    expect(TrainingQueue.count[lodge]).toBe(1);
   });
 });

@@ -13,7 +13,7 @@ export function entityKindToRole(kind: number): string {
   // EntityKind values from types.ts
   switch (kind) {
     case 0:
-      return 'gather'; // Gatherer
+      return 'generalist'; // Mudpaw
     case 12:
       return 'heal'; // Healer
     case 16:

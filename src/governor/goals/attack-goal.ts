@@ -10,6 +10,7 @@ import { query } from 'bitecs';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { game } from '@/game';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
+import { getGovernorCombatUnits } from '@/governor/roster-units';
 import { EntityKind, Faction } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -20,10 +21,7 @@ export const MIN_ATTACK_ARMY = 3;
 
 /** Find combat units available for an attack mission. */
 export function availableAttackers(): RosterUnit[] {
-  return store.unitRoster.value
-    .filter((g) => g.role === 'combat')
-    .flatMap((g) => g.units)
-    .filter(canAttackWith);
+  return getGovernorCombatUnits(store.unitRoster.value).filter(canAttackWith);
 }
 
 export function countAvailableAttackers(): number {

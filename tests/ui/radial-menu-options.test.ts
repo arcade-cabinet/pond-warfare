@@ -24,16 +24,14 @@ function assertValidOption(opt: RadialOption): void {
 describe('getRadialOptions — Lodge mode', () => {
   const options = getRadialOptions('lodge', null);
 
-  it('returns all 8 Lodge options', () => {
-    expect(options).toHaveLength(8);
+  it('returns all canonical Lodge options', () => {
+    expect(options).toHaveLength(6);
   });
 
-  it('includes training options for all 6 trainable units', () => {
+  it('includes training options for the canonical manual roster', () => {
     const ids = options.map((o) => o.id);
-    expect(ids).toContain('train_gatherer');
-    expect(ids).toContain('train_fighter');
+    expect(ids).toContain('train_mudpaw');
     expect(ids).toContain('train_medic');
-    expect(ids).toContain('train_scout');
     expect(ids).toContain('train_sapper');
     expect(ids).toContain('train_saboteur');
   });
@@ -131,8 +129,8 @@ describe('getRadialOptions — unknown role', () => {
 });
 
 describe('entityKindToRole', () => {
-  it('maps Gatherer (0) to gather', () => {
-    expect(entityKindToRole(0)).toBe('gather');
+  it('maps Gatherer (0) to generalist', () => {
+    expect(entityKindToRole(0)).toBe('generalist');
   });
 
   it('maps Brawler (1) to combat', () => {

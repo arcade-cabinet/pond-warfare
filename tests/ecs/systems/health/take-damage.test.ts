@@ -138,8 +138,10 @@ describe('takeDamage', () => {
 
       takeDamage(world, target, 10, attacker, 1.5);
 
-      // 10 * 1.5 = 15, rounded
-      expect(Health.current[target]).toBe(35);
+      // The optional multiplier now affects damage text styling, not numeric
+      // damage application, because callers already fold matchup math into
+      // the incoming amount.
+      expect(Health.current[target]).toBe(40);
     });
 
     it('sets flash timer on hit', () => {
@@ -178,7 +180,7 @@ describe('takeDamage', () => {
 
       takeDamage(world, target, 1, attacker, 0);
 
-      expect(Health.current[target]).toBe(50);
+      expect(Health.current[target]).toBe(49);
     });
 
     it('clamps negative effective amount to zero', () => {

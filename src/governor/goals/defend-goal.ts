@@ -7,6 +7,7 @@
 
 import { Goal } from 'yuka';
 import { game } from '@/game';
+import { getGovernorCombatUnits } from '@/governor/roster-units';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -14,10 +15,7 @@ import { canDefendWith } from './combat-roster';
 
 /** Find combat units that can be redirected to defense. */
 function availableDefenders(): RosterUnit[] {
-  return store.unitRoster.value
-    .filter((g) => g.role === 'combat')
-    .flatMap((g) => g.units)
-    .filter(canDefendWith);
+  return getGovernorCombatUnits(store.unitRoster.value).filter(canDefendWith);
 }
 
 export class DefendGoal extends Goal {

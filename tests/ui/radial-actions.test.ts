@@ -106,20 +106,20 @@ beforeEach(() => {
 describe('dispatchRadialAction -- training', () => {
   it('returns false when Lodge not found (no buildings in query)', () => {
     // query returns [] -- no lodge entity found
-    const result = dispatchRadialAction('train_gatherer');
+    const result = dispatchRadialAction('train_mudpaw');
     expect(result).toBe(false);
   });
 
   it('does not deduct resources when Lodge not found', () => {
     const initialClams = game.world.resources.fish;
-    dispatchRadialAction('train_gatherer');
+    dispatchRadialAction('train_mudpaw');
     // Resources should NOT be deducted because Lodge isn't found
     expect(game.world.resources.fish).toBe(initialClams);
   });
 
   it('returns false and shows error for insufficient resources', () => {
     game.world.resources.fish = 0;
-    const result = dispatchRadialAction('train_gatherer');
+    const result = dispatchRadialAction('train_mudpaw');
     expect(result).toBe(false);
     expect(audio.error).toHaveBeenCalled();
     expect(pushGameEvent).toHaveBeenCalledWith('Not enough Fish!', '#f87171', 100);

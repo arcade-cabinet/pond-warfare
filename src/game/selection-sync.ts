@@ -6,7 +6,7 @@
  */
 
 import { hasComponent } from 'bitecs';
-import { ENTITY_DEFS, entityKindName } from '@/config/entity-defs';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import { VET_RANK_NAMES } from '@/constants';
 import {
   Combat,
@@ -21,6 +21,7 @@ import {
   Veterancy,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getEntityDisplayName } from '@/game/unit-display';
 import { type EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 
@@ -55,7 +56,7 @@ export function syncSelectionInfo(
     const kind = EntityTypeTag.kind[selEid] as EntityKind;
     const faction = FactionTag.faction[selEid] as Faction;
     store.selectionCount.value = 1;
-    store.selectionName.value = entityKindName(kind);
+    store.selectionName.value = getEntityDisplayName(w, selEid);
     store.selectionIsMulti.value = false;
     store.selectionNameColor.value =
       faction === Faction.Player
@@ -117,14 +118,14 @@ export function syncSelectionInfo(
     store.selectionShowHpBar.value = false;
     store.selectionSpriteData.value = null;
     // Build composition string
-    const kindCounts = new Map<EntityKind, number>();
+    const labelCounts = new Map<string, number>();
     for (const eid of w.selection) {
-      const k = EntityTypeTag.kind[eid] as EntityKind;
-      kindCounts.set(k, (kindCounts.get(k) ?? 0) + 1);
+      const label = getEntityDisplayName(w, eid);
+      labelCounts.set(label, (labelCounts.get(label) ?? 0) + 1);
     }
     const compParts: string[] = [];
-    for (const [k, count] of kindCounts) {
-      compParts.push(`${count} ${entityKindName(k)}`);
+    for (const [label, count] of labelCounts) {
+      compParts.push(`${count} ${label}`);
     }
     store.selectionComposition.value = compParts.join(', ');
     store.selectionStatsHtml.value = '';

@@ -5,8 +5,8 @@
  * were removed in v3.0 (replaced by upgrade web).
  */
 
-import { entityKindName } from '@/config/entity-defs';
 import { TRAIN_TIMER } from '@/constants';
+import { getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { TrainingQueue, trainingQueueSlots } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { cancelTrain } from '@/input/selection';
@@ -33,7 +33,7 @@ export function buildTrainingQueueItems(
         : 0;
     const idx = qi;
     qItems.push({
-      label: entityKindName(unitKind).charAt(0),
+      label: getPlayerTrainableDisplayName(unitKind).charAt(0),
       progressPct: progress,
       onCancel: () => {
         cancelTrain(w, buildingEid, idx);

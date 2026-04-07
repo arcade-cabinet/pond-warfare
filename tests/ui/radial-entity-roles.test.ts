@@ -12,8 +12,8 @@ import { entityKindToRole } from '@/ui/radial-entity-roles';
 import { entityKindToRole as reExported } from '@/ui/radial-menu-options';
 
 describe('entityKindToRole (direct import)', () => {
-  it('maps Gatherer (0) to gather', () => {
-    expect(entityKindToRole(0)).toBe('gather');
+  it('maps Gatherer (0) to generalist', () => {
+    expect(entityKindToRole(0)).toBe('generalist');
   });
 
   it('maps Brawler (1) to combat', () => {
@@ -55,7 +55,7 @@ describe('entityKindToRole (re-export backward compat)', () => {
   });
 
   it('maps correctly via re-export', () => {
-    expect(reExported(0)).toBe('gather');
+    expect(reExported(0)).toBe('generalist');
     expect(reExported(12)).toBe('heal');
     expect(reExported(16)).toBe('scout');
     expect(reExported(1)).toBe('combat');

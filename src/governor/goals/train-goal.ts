@@ -14,31 +14,28 @@ import { game } from '@/game';
 import { train } from '@/input/selection';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
+import { getGovernorCombatUnits, getGovernorGatherUnits } from '../roster-units';
 import {
   getGovernorCombatTarget,
   getGovernorGathererTarget,
-  shouldTrainScoutUnit,
   shouldTrainSupportUnit,
 } from '../train-policy';
 
 /** What each building type can train, in priority order. */
 const BUILDING_TRAINS: Record<number, EntityKind[]> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Healer, EntityKind.Scout],
+  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper, EntityKind.Saboteur],
   // Armory is a Lodge wing — trains heavier follow-up units when unlocked
   [EntityKind.Armory]: [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Healer, EntityKind.Shieldbearer],
 };
 
 /** Count of combat units (non-gatherer, non-healer, non-scout). */
 function armySize(): number {
-  return store.unitRoster.value
-    .filter((g) => g.role === 'combat')
-    .reduce((sum, g) => sum + g.units.length, 0);
+  return getGovernorCombatUnits(store.unitRoster.value).length;
 }
 
 function gathererCount(): number {
-  return store.unitRoster.value
-    .filter((g) => g.role === 'gatherer')
-    .reduce((sum, g) => sum + g.units.length, 0);
+  return getGovernorGatherUnits(store.unitRoster.value).length;
 }
 
 function scoutCount(): number {
@@ -48,6 +45,14 @@ function scoutCount(): number {
 }
 
 function trainableUnits(buildingKind: EntityKind, canTrain: EntityKind[]): EntityKind[] {
+  if (buildingKind === EntityKind.Lodge) {
+    const stage = Math.max(1, Math.trunc(storeV3.progressionLevel.value || 1));
+    const manualUnits = [EntityKind.Gatherer];
+    if (stage >= 2) manualUnits.push(EntityKind.Healer);
+    if (stage >= 5) manualUnits.push(EntityKind.Sapper);
+    if (stage >= 6) manualUnits.push(EntityKind.Saboteur);
+    return manualUnits;
+  }
   if (canTrain.length > 0) return canTrain;
   return BUILDING_TRAINS[buildingKind] ?? [];
 }
@@ -83,19 +88,21 @@ export class TrainGoal extends Goal {
     if (trainable.includes(EntityKind.Gatherer) && gathererCount() < getGovernorGathererTarget()) {
       return EntityKind.Gatherer;
     }
-    if (trainable.includes(EntityKind.Brawler) && armySize() < getGovernorCombatTarget()) {
-      return EntityKind.Brawler;
+    if (trainable.includes(EntityKind.Gatherer) && armySize() < getGovernorCombatTarget()) {
+      return EntityKind.Gatherer;
     }
     if (trainable.includes(EntityKind.Healer) && shouldTrainSupportUnit()) {
       return EntityKind.Healer;
     }
-    if (trainable.includes(EntityKind.Scout) && shouldTrainScoutUnit() && scoutCount() === 0) {
-      return EntityKind.Scout;
+    if (trainable.includes(EntityKind.Saboteur) && armySize() >= Math.max(4, getGovernorCombatTarget())) {
+      return EntityKind.Saboteur;
+    }
+    if (trainable.includes(EntityKind.Sapper) && armySize() >= Math.max(2, getGovernorCombatTarget() - 1)) {
+      return EntityKind.Sapper;
     }
     if (trainable.includes(EntityKind.Sniper) && armySize() >= 3) return EntityKind.Sniper;
     if (trainable.includes(EntityKind.Brawler)) return EntityKind.Brawler;
     if (trainable.includes(EntityKind.Healer)) return EntityKind.Healer;
-    if (trainable.includes(EntityKind.Scout)) return EntityKind.Scout;
     return trainable[0] ?? null;
   }
 

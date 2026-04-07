@@ -136,7 +136,7 @@ function ForcesTab() {
                 class="rounded px-2 py-1 text-left text-xs hud-btn"
                 onClick={() => focusEntity(unit.eid)}
               >
-                <span class="font-heading">{entityKindName(unit.kind)}</span>
+                <span class="font-heading">{unit.label ?? entityKindName(unit.kind)}</span>
                 <span style={{ color: 'var(--pw-text-muted)' }}>
                   {' '}
                   • {unit.task} • {unit.hp}/{unit.maxHp}

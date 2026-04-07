@@ -15,6 +15,7 @@ import { DefendGoal } from './goals/defend-goal';
 import { findIdleGatherers, GatherGoal } from './goals/gather-goal';
 import { TrainGoal } from './goals/train-goal';
 import type { Governor } from './governor';
+import { getGovernorCombatUnits, getGovernorGatherUnits } from './roster-units';
 import { getGovernorCombatTarget, getGovernorGathererTarget } from './train-policy';
 
 function hasBuilding(kind: EntityKind): boolean {
@@ -34,9 +35,7 @@ function hasWingOrBuilding(kind: EntityKind): boolean {
 }
 
 function combatUnitCount(): number {
-  return store.unitRoster.value
-    .filter((g) => g.role === 'combat')
-    .reduce((sum, g) => sum + g.units.length, 0);
+  return getGovernorCombatUnits(store.unitRoster.value).length;
 }
 
 function lodgeHpRatio(): number {
@@ -128,9 +127,7 @@ export class TrainEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     if (store.food.value >= store.maxFood.value) return 0;
 
-    const gatherers = store.unitRoster.value
-      .filter((g) => g.role === 'gatherer')
-      .reduce((sum, g) => sum + g.units.length, 0);
+    const gatherers = getGovernorGatherUnits(store.unitRoster.value).length;
     const idleGatherers = findIdleGatherers().length;
 
     // Need gatherers for economy — but the target drops on higher-pressure stages.

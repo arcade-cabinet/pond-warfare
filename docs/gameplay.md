@@ -111,6 +111,14 @@ The baseline run uses a compact manual roster that expands only when new pressur
 
 `Mudpaw` replaces the older split baseline `Gatherer + Fighter + Scout` model. Clam upgrades are intended to make that one reusable manual chassis better at economy, vision, field utility, and survivability.
 
+The live player-facing Lodge surfaces now follow that model:
+
+- stage 1 Lodge/radial training exposes `Mudpaw`
+- `Medic` appears at stage 2
+- `Sapper` appears at stage 5
+- `Saboteur` appears at stage 6
+- selected `Mudpaws` use the mixed generalist radial, not the old gatherer-only command set
+
 ### Pearl Specialists
 
 Pearls unlock specialist blueprints, autonomy, and specialist growth. They do not exist to give the player free match-start godmode bodies.
@@ -136,6 +144,7 @@ Pearl specialists are trained during a match after their blueprint is unlocked. 
 - That area defines the specialist's Yuka-governed operating radius
 - Within that radius, the specialist searches for work matching its role
 - Radius growth is a primary Pearl upgrade path alongside unlock, cap, throughput, and durability
+- The Lodge action panel shows only the specialist blueprints the player has actually unlocked and the current field-cap state for each
 
 ### Specialist Radius UI
 

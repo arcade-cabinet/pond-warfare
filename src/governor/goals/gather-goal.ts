@@ -8,7 +8,7 @@
 import { Goal } from 'yuka';
 import { game } from '@/game';
 import { dispatchTaskOverride, findNearestGatherTaskTarget } from '@/game/task-dispatch';
-import { EntityKind } from '@/types';
+import { getGovernorGatherUnits } from '@/governor/roster-units';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
 
@@ -28,9 +28,9 @@ const PREFERRED_GATHER_DISTANCE_SQ = 450 * 450;
  * GatherEval from blocking TrainEval when the economy is running.
  */
 export function findIdleGatherers(): RosterUnit[] {
-  return store.unitRoster.value
-    .flatMap((g) => g.units)
-    .filter((u) => u.task === 'idle' && u.kind === EntityKind.Gatherer && !u.hasOverride);
+  return getGovernorGatherUnits(store.unitRoster.value).filter(
+    (unit) => unit.task === 'idle' && !unit.hasOverride,
+  );
 }
 
 export class GatherGoal extends Goal {

@@ -27,6 +27,8 @@ These are the normal-run units the player trains and controls directly.
 | `Sapper` | 5 | Manual siege/demolition response once rocks, fortifications, and flank pressure enter the run. |
 | `Saboteur` | 6 | Manual subversion/disruption response once the full six-panel pressure set is active. |
 
+The player-facing Lodge action panel and Lodge radial should expose that unlock ladder directly instead of the obsolete `Gatherer/Fighter/Scout` split.
+
 ### Mudpaw
 
 `Mudpaw` replaces the older split baseline model of `Gatherer + Fighter + Scout`.
@@ -71,6 +73,7 @@ Pearl specialists follow a different control model from manual units:
 - that area defines the specialist's Yuka-governed operating radius
 - within that radius, the specialist searches for work matching its role
 - a temporary direct move/reposition is allowed, but the specialist should fall back to its assigned radius behavior afterward
+- the Lodge UI should show current cap pressure, so the player can read `fielded / cap` at a glance before committing more resources
 
 Examples:
 

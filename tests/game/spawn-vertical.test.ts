@@ -21,6 +21,7 @@ vi.mock('@/ecs/archetypes', () => ({
 }));
 
 vi.mock('@/ecs/components', () => ({
+  resetTransientComponentState: vi.fn(),
   Resource: { amount: {} as Record<number, number> },
   Commander: {
     commanderType: {} as Record<number, number>,

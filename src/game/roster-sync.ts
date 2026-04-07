@@ -1,5 +1,4 @@
 import { hasComponent, query } from 'bitecs';
-import { entityKindName } from '@/config/entity-defs';
 import {
   EntityTypeTag,
   FactionTag,
@@ -13,6 +12,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getEntityDisplayName, getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type {
   RosterBuilding,
@@ -63,10 +63,10 @@ function deriveTask(eid: number, state: UnitState): UnitTask {
   return 'idle';
 }
 
-function targetNameFor(eid: number): string {
+function targetNameFor(world: GameWorld, eid: number): string {
   const target = UnitStateMachine.targetEntity[eid];
   if (target <= 0) return '';
-  return entityKindName(EntityTypeTag.kind[target] as EntityKind) ?? '';
+  return getEntityDisplayName(world, target) ?? '';
 }
 
 const AUTO_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
@@ -103,8 +103,9 @@ export function syncRosters(world: GameWorld): void {
     const unit: RosterUnit = {
       eid,
       kind,
+      label: getEntityDisplayName(world, eid),
       task: deriveTask(eid, state),
-      targetName: targetNameFor(eid),
+      targetName: targetNameFor(world, eid),
       hp: Health.current[eid],
       maxHp: Health.max[eid],
       hasOverride: TaskOverride.active[eid] === 1,
@@ -143,7 +144,7 @@ export function syncRosters(world: GameWorld): void {
     const slots = trainingQueueSlots.get(eid) ?? [];
     const count = TrainingQueue.count[eid] ?? 0;
     const timer = TrainingQueue.timer[eid] ?? 0;
-    const queueItems = slots.map((k) => entityKindName(k as EntityKind) ?? '');
+    const queueItems = slots.map((k) => getPlayerTrainableDisplayName(k as EntityKind));
     const progress = count > 0 && timer > 0 ? 1 - timer / 300 : count > 0 ? 1 : 0;
     buildings.push({
       eid,

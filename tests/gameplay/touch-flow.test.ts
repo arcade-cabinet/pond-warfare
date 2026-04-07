@@ -45,10 +45,8 @@ describe('Touch-Only Gameplay Flow', () => {
     const options = getRadialOptions('lodge', null, gameState);
     const ids = options.map((o) => o.id);
 
-    expect(ids).toContain('train_gatherer');
-    expect(ids).toContain('train_fighter');
-    expect(ids).toContain('train_medic');
-    expect(ids).toContain('train_scout');
+    expect(ids).toContain('train_mudpaw');
+    expect(ids).not.toContain('train_medic');
   });
 
   it('Lodge radial hides training when broke', () => {
@@ -63,11 +61,8 @@ describe('Touch-Only Gameplay Flow', () => {
     const options = getRadialOptions('lodge', null, gameState);
     const ids = options.map((o) => o.id);
 
-    // 5 fish is not enough for anything
-    expect(ids).not.toContain('train_gatherer');
-    expect(ids).not.toContain('train_fighter');
+    expect(ids).not.toContain('train_mudpaw');
     expect(ids).not.toContain('train_medic');
-    expect(ids).not.toContain('train_scout');
   });
 
   it('tap gatherer then tap resource issues gather-move command', () => {
@@ -132,7 +127,7 @@ describe('Touch-Only Gameplay Flow', () => {
       lodgeDamaged: false,
     });
     expect(options.length).toBeGreaterThan(0);
-    expect(options.map((o) => o.id)).toContain('train_gatherer');
+    expect(options.map((o) => o.id)).toContain('train_mudpaw');
 
     // Step 2: Spawn a gatherer (simulating training completion)
     const gatherer = spawnEntity(world, EntityKind.Gatherer, 400, 420, Faction.Player);
@@ -149,9 +144,10 @@ describe('Touch-Only Gameplay Flow', () => {
   });
 
   it('unit radial shows correct options for each role via tap', () => {
-    // Gatherer role
-    const gatherOpts = getRadialOptions('unit', 'gather');
-    expect(gatherOpts.map((o) => o.id)).toContain('cmd_gather');
+    const generalistOpts = getRadialOptions('unit', 'generalist');
+    expect(generalistOpts.map((o) => o.id)).toContain('cmd_gather');
+    expect(generalistOpts.map((o) => o.id)).toContain('cmd_attack');
+    expect(generalistOpts.map((o) => o.id)).toContain('cmd_scout');
 
     // Combat role
     const combatOpts = getRadialOptions('unit', 'combat');

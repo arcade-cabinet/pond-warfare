@@ -220,7 +220,7 @@ describe('TrainGoal', () => {
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
   });
 
-  it('switches to a fighter earlier on higher-pressure stages', async () => {
+  it('leans on Mudpaws earlier on higher-pressure stages', async () => {
     const { TrainGoal } = await import('@/governor/goals/train-goal');
 
     const lodgeEid = addEntity(world.ecs);
@@ -239,7 +239,7 @@ describe('TrainGoal', () => {
         maxHp: 1500,
         queueItems: [],
         queueProgress: 0,
-        canTrain: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Healer, EntityKind.Scout],
+        canTrain: [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper, EntityKind.Saboteur],
       } satisfies RosterBuilding,
     ];
     store.unitRoster.value = [
@@ -256,6 +256,6 @@ describe('TrainGoal', () => {
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
-    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Brawler);
+    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Gatherer);
   });
 });

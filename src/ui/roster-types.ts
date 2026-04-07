@@ -27,6 +27,7 @@ export type UnitTask =
 export interface RosterUnit {
   eid: number;
   kind: EntityKind;
+  label?: string;
   task: UnitTask;
   targetName: string;
   hp: number;
