@@ -195,6 +195,14 @@ describe('controller balance diagnostics', () => {
     const gatherRows = [
       { name: 'baseline', prestigeState: rankOne },
       { name: 'gather_multiplier', prestigeState: { ...rankOne, upgradeRanks: { gather_multiplier: 2 } } },
+      { name: 'blueprint_fisher', prestigeState: { ...rankOne, upgradeRanks: { blueprint_fisher: 1 } } },
+      {
+        name: 'fisher_radius',
+        prestigeState: {
+          ...rankOne,
+          upgradeRanks: { blueprint_fisher: 1, fisher_radius: 2 },
+        },
+      },
       { name: 'blueprint_digger', prestigeState: { ...rankOne, upgradeRanks: { blueprint_digger: 1 } } },
       { name: 'blueprint_logger', prestigeState: { ...rankOne, upgradeRanks: { blueprint_logger: 1 } } },
       { name: 'rare_resource_access', prestigeState: { ...rankOne, upgradeRanks: { rare_resource_access: 1 } } },
@@ -274,6 +282,14 @@ describe('controller balance diagnostics', () => {
 
     const defendRows = [
       { name: 'baseline', prestigeState: rankOne },
+      { name: 'blueprint_shaman', prestigeState: { ...rankOne, upgradeRanks: { blueprint_shaman: 1 } } },
+      {
+        name: 'shaman_radius',
+        prestigeState: {
+          ...rankOne,
+          upgradeRanks: { blueprint_shaman: 1, shaman_radius: 2 },
+        },
+      },
       { name: 'auto_repair_behavior', prestigeState: { ...rankOne, upgradeRanks: { auto_repair_behavior: 1 } } },
       { name: 'hp_multiplier', prestigeState: { ...rankOne, upgradeRanks: { hp_multiplier: 1 } } },
       { name: 'auto_heal_behavior', prestigeState: { ...rankOne, upgradeRanks: { auto_heal_behavior: 1 } } },
@@ -324,6 +340,10 @@ describe('controller balance diagnostics', () => {
     console.table(attackRows);
 
     expect(gatherRows.find((row) => row.name === 'gather_multiplier')?.gatherSpeedMod).toBeGreaterThan(gatherRows[0].gatherSpeedMod);
+    expect(gatherRows.find((row) => row.name === 'blueprint_fisher')?.fish).toBeGreaterThan(gatherRows[0].fish);
+    expect(gatherRows.find((row) => row.name === 'fisher_radius')?.fish).toBeGreaterThanOrEqual(
+      gatherRows.find((row) => row.name === 'blueprint_fisher')?.fish ?? 0,
+    );
     expect(gatherRows.find((row) => row.name === 'blueprint_digger')?.rocks).toBeGreaterThan(gatherRows[0].rocks);
     expect(gatherRows.find((row) => row.name === 'blueprint_logger')?.logs).toBeGreaterThan(gatherRows[0].logs);
     expect(gatherRows.find((row) => row.name === 'rare_resource_access')?.rareNodeCount).toBeGreaterThan(gatherRows[0].rareNodeCount);
@@ -331,6 +351,10 @@ describe('controller balance diagnostics', () => {
     expect(Math.min(...buildRows.slice(1).map((row) => (row.armoryFrame >= 0 ? row.armoryFrame : Number.POSITIVE_INFINITY)))).toBeLessThan(Number.POSITIVE_INFINITY);
     expect(Math.max(...trainRows.slice(1).map((row) => row.unitsTrained))).toBeGreaterThanOrEqual(trainRows[0].unitsTrained);
     expect(trainRows.find((row) => row.name === 'blueprint_fisher')?.playerUnits).toBeGreaterThan(trainRows[0].playerUnits);
+    expect(defendRows.find((row) => row.name === 'blueprint_shaman')?.kills).toBeGreaterThanOrEqual(defendRows[0].kills);
+    expect(defendRows.find((row) => row.name === 'shaman_radius')?.lodgeHpRatio).toBeGreaterThanOrEqual(
+      defendRows.find((row) => row.name === 'blueprint_shaman')?.lodgeHpRatio ?? 0,
+    );
     expect(defendRows.find((row) => row.name === 'auto_repair_behavior')?.lodgeHpRatio).toBeGreaterThan(defendRows[0].lodgeHpRatio);
     expect(attackRows[0].committed).toBeGreaterThanOrEqual(MIN_ATTACK_ARMY);
   });

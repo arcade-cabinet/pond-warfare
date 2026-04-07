@@ -252,6 +252,7 @@ was incorrectly reporting a deleted Pearl combat specialist instead of the real 
 
 - Gather controller:
   - `gather_multiplier` now cleanly shows up as a higher `gatherSpeedMod`, but the fixed-seed short window is still travel-bound enough that raw gathered output stays flat in that slice
+  - the new `fisher_radius` row is live and covered here, but it currently reads flat against `blueprint_fisher` in the short fixed-seed slice because the default fish lane is already fully covered
   - `blueprint_digger` and `blueprint_logger` do increase rock/log collection when the gather controller is forced to care about those tracks
   - `rare_resource_access` now adds rare nodes only in the bottom-row panels, which keeps the runtime consumer active without luring gatherers into the hostile top row
 - Build controller:
@@ -262,6 +263,7 @@ was incorrectly reporting a deleted Pearl combat specialist instead of the real 
   - short-window training throughput is still bottlenecked by queue timing and building cadence more than raw fish income
 - Defend controller:
   - `auto_repair_behavior`, `hp_multiplier`, and `auto_heal_behavior` all improve raw Lodge survival in the defend-only slice, with `auto_heal_behavior` currently showing the largest kill-side bump there
+  - the new `shaman_radius` row is also live and currently reads flat against `blueprint_shaman` in this short hold slice, which indicates the default defense pocket is already small enough to be covered without the radius upgrade
   - that means the strongly negative blended pressure scores are not purely missing runtime effects; they are interactions inside the full governor loop
 - Attack controller:
   - the attack controller does convert better in the micro slice now, and that attack-specific diagnostic now uses the canonical `blueprint_guard` specialist instead of the obsolete Hunter path
