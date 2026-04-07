@@ -28,11 +28,13 @@ import {
   IsResource,
   Position,
   Resource,
+  TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } from '@/types';
 import { checkResourceDepletion } from './gathering/depletion-warning';
+import { resumeGatherOverride, retargetGatherOverride } from './gathering/gather-override';
 import { applyPassiveIncome } from './gathering/passive-income';
 
 export function gatheringSystem(world: GameWorld): void {
@@ -62,9 +64,10 @@ export function gatheringSystem(world: GameWorld): void {
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const faction = FactionTag.faction[eid] as Faction;
 
-    // --- Idle auto-gather ---
-    // Player gatherers only auto-gather when autoBehaviors.gatherer is enabled
-    // Enemy gatherers always auto-gather (AI economy)
+    if (kind === EntityKind.Gatherer && state === UnitState.Idle && resumeGatherOverride(world, eid)) {
+      continue;
+    }
+
     const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.gatherer;
     if (
       state === UnitState.Idle &&
@@ -143,6 +146,9 @@ export function gatheringSystem(world: GameWorld): void {
 
         if (closest !== -1) {
           // cmdGather(closest)
+          if (TaskOverride.active[eid] === 1 && TaskOverride.task[eid] === UnitState.GatherMove) {
+            TaskOverride.targetEntity[eid] = closest;
+          }
           UnitStateMachine.targetEntity[eid] = closest;
           UnitStateMachine.targetX[eid] = Position.x[closest];
           UnitStateMachine.targetY[eid] = Position.y[closest];
@@ -150,6 +156,8 @@ export function gatheringSystem(world: GameWorld): void {
           continue;
         }
       }
+
+      if (retargetGatherOverride(world, eid)) continue;
       UnitStateMachine.state[eid] = UnitState.Idle;
       continue;
     }

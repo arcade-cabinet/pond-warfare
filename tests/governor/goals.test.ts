@@ -118,6 +118,51 @@ describe('GatherGoal', () => {
     expect(TaskOverride.active[eid1]).toBe(1);
   });
 
+  it('falls back to an available resource when the lowest-stockpiled one is absent', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(EntityKind.Gatherer, 100, 100);
+    const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 110);
+
+    store.unitRoster.value = [
+      rosterGroup('gatherer', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+    ];
+    store.fish.value = 100;
+    store.logs.value = 0;
+    store.rocks.value = 0;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[eid1]).toBe(fishNode);
+    expect(TaskOverride.active[eid1]).toBe(1);
+  });
+
+  it('prefers a nearby available resource over a distant low-stockpile target', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(EntityKind.Gatherer, 100, 100);
+    const farLogs = createResource(EntityKind.Cattail, ResourceType.Logs, 1200, 1200);
+    const nearFish = createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
+
+    store.unitRoster.value = [
+      rosterGroup('gatherer', [rosterUnit(eid1, EntityKind.Gatherer, 'idle')]),
+    ];
+    store.fish.value = 200;
+    store.logs.value = 0;
+    store.rocks.value = 0;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[eid1]).toBe(nearFish);
+    expect(UnitStateMachine.targetEntity[eid1]).not.toBe(farLogs);
+  });
+
   it('completes immediately with no idle gatherers', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 

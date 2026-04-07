@@ -18,6 +18,7 @@ import {
   IsBuilding,
   Position,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
@@ -183,6 +184,8 @@ function processRetaliation(
     const targetKind = hasComponent(world.ecs, targetEid, EntityTypeTag)
       ? (EntityTypeTag.kind[targetEid] as EntityKind)
       : -1;
+    const hasGatherOverride =
+      TaskOverride.active[targetEid] === 1 && TaskOverride.task[targetEid] === UnitState.GatherMove;
 
     if (
       targetState === UnitState.Idle ||
@@ -192,8 +195,9 @@ function processRetaliation(
       targetState === UnitState.Move
     ) {
       const isGathering =
-        targetKind === EntityKind.Gatherer &&
-        (targetState === UnitState.Gathering ||
+        (targetKind === EntityKind.Gatherer || hasGatherOverride) &&
+        (hasGatherOverride ||
+          targetState === UnitState.Gathering ||
           targetState === UnitState.GatherMove ||
           targetState === UnitState.ReturnMove);
 
@@ -233,6 +237,9 @@ function processRetaliation(
     if (FactionTag.faction[ally] !== targetFaction) continue;
     if (!hasComponent(world.ecs, ally, UnitStateMachine)) continue;
     if (hasComponent(world.ecs, ally, IsBuilding)) continue;
+    if (TaskOverride.active[ally] === 1 && TaskOverride.task[ally] === UnitState.GatherMove) {
+      continue;
+    }
     if (!hasComponent(world.ecs, ally, Health) || Health.current[ally] <= 0) continue;
     if (!hasComponent(world.ecs, ally, Combat) || Combat.damage[ally] <= 0) continue;
 

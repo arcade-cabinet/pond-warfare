@@ -74,14 +74,14 @@
       "description": "Permanent boost to unit damage",
       "cost_per_rank": 5,
       "max_rank": 10,
-      "effect": { "type": "multiplier", "stat": "damage", "value_per_rank": 0.03 }
+      "effect": { "type": "multiplier", "stat": "damage", "value_per_rank": 0.1 }
     },
     "hp_multiplier": {
       "label": "HP Multiplier",
       "description": "Permanent boost to unit HP",
       "cost_per_rank": 5,
       "max_rank": 10,
-      "effect": { "type": "multiplier", "stat": "hp", "value_per_rank": 0.05 }
+      "effect": { "type": "multiplier", "stat": "hp", "value_per_rank": 0.2 }
     },
     "clam_earnings_multiplier": {
       "label": "Clam Earnings",

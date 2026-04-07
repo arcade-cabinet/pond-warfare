@@ -16,7 +16,9 @@ import {
   FactionTag,
   Health,
   Position,
+  Resource,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
@@ -36,6 +38,7 @@ function createTestUnit(world: GameWorld, x: number, y: number): number {
   addComponent(world.ecs, eid, Combat);
   addComponent(world.ecs, eid, Carrying);
   addComponent(world.ecs, eid, Health);
+  addComponent(world.ecs, eid, TaskOverride);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -46,8 +49,13 @@ function createTestUnit(world: GameWorld, x: number, y: number): number {
   EntityTypeTag.kind[eid] = EntityKind.Gatherer;
   Combat.attackRange[eid] = 40;
   Carrying.resourceType[eid] = ResourceType.None;
+  Carrying.resourceAmount[eid] = 0;
   Health.current[eid] = 100;
   Health.max[eid] = 100;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = -1;
+  TaskOverride.resourceKind[eid] = 0;
 
   return eid;
 }
@@ -84,6 +92,34 @@ describe('movementSystem', () => {
     expect(UnitStateMachine.state[eid]).toBe(UnitState.Idle);
   });
 
+  it('resumes a gather override after a flee move arrives', () => {
+    const eid = createTestUnit(world, 100, 100);
+    const resource = addEntity(world.ecs);
+    addComponent(world.ecs, resource, Position);
+    addComponent(world.ecs, resource, Resource);
+    addComponent(world.ecs, resource, EntityTypeTag);
+
+    Position.x[resource] = 140;
+    Position.y[resource] = 100;
+    Resource.amount[resource] = 50;
+    EntityTypeTag.kind[resource] = EntityKind.Clambed;
+
+    UnitStateMachine.state[eid] = UnitState.Move;
+    UnitStateMachine.targetX[eid] = 101;
+    UnitStateMachine.targetY[eid] = 100;
+    TaskOverride.active[eid] = 1;
+    TaskOverride.task[eid] = UnitState.GatherMove;
+    TaskOverride.targetEntity[eid] = resource;
+    TaskOverride.resourceKind[eid] = EntityKind.Clambed;
+
+    movementSystem(world);
+
+    expect(UnitStateMachine.state[eid]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[eid]).toBe(resource);
+    expect(UnitStateMachine.targetX[eid]).toBe(140);
+    expect(UnitStateMachine.targetY[eid]).toBe(100);
+  });
+
   it('should transition to Gathering on arrival for GatherMove state', () => {
     // Ensure clear weather so gather timer has no weather penalty
     world.weather.current = 'clear';
@@ -96,6 +132,22 @@ describe('movementSystem', () => {
     movementSystem(world);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.Gathering);
     expect(UnitStateMachine.gatherTimer[eid]).toBe(GATHER_TIMER);
+  });
+
+  it('applies gatherSpeedMod as faster gathering, not slower gathering', () => {
+    world.weather.current = 'clear';
+    world.gatherSpeedMod = 2;
+
+    const eid = createTestUnit(world, 100, 100);
+    UnitStateMachine.state[eid] = UnitState.GatherMove;
+    UnitStateMachine.targetX[eid] = 101;
+    UnitStateMachine.targetY[eid] = 100;
+    UnitStateMachine.targetEntity[eid] = -1;
+
+    movementSystem(world);
+
+    expect(UnitStateMachine.state[eid]).toBe(UnitState.Gathering);
+    expect(UnitStateMachine.gatherTimer[eid]).toBe(Math.round(GATHER_TIMER / 2));
   });
 
   it('should not move idle entities', () => {

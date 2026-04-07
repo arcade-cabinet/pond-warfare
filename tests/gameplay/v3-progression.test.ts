@@ -168,7 +168,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, prestState);
 
-    expect(world.playerUnitDamageMultiplier).toBeCloseTo(1.03, 2);
+    expect(world.playerUnitDamageMultiplier).toBeCloseTo(1.1, 2);
   });
 
   it('applies Pearl HP multiplier to playerUnitHpMultiplier', () => {
@@ -182,7 +182,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, prestState);
 
-    expect(world.playerUnitHpMultiplier).toBeCloseTo(1.05, 2);
+    expect(world.playerUnitHpMultiplier).toBeCloseTo(1.2, 2);
   });
 
   it('empty upgrade state does not change world modifiers', () => {

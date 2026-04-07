@@ -4,7 +4,7 @@ import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
-import { autoSymbolSystem } from '@/ecs/systems/auto-symbol';
+import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { combatSystem } from '@/ecs/systems/combat';
@@ -12,15 +12,12 @@ import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
-import { matchEventRunnerSystem } from '@/ecs/systems/match-event-runner';
+import { matchEventRunnerSystem, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import { movementSystem } from '@/ecs/systems/movement';
 import { trainingSystem } from '@/ecs/systems/training';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
-import { computePopulation } from '@/game/population-counter';
-import { syncRosters } from '@/game/roster-sync';
-import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
@@ -30,6 +27,7 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { createPrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 const _gameRef: { world: GameWorld | null } = { world: null };
@@ -100,25 +98,15 @@ function runFrame(world: GameWorld, governor: Governor): void {
   cleanupSystem(world);
 
   if (world.frameCount % 30 === 0) {
-    computePopulation(world);
-    store.fish.value = world.resources.fish;
-    store.logs.value = world.resources.logs;
-    store.rocks.value = world.resources.rocks;
-    store.gameState.value = world.state;
-    syncRosters(world);
-
-    const idleGatherers = store.unitRoster.value
-      .flatMap((group) => group.units)
-      .filter((unit) => unit.kind === EntityKind.Gatherer && unit.task === 'idle');
-    for (const unit of idleGatherers) {
-      dispatchTaskOverride(world, unit.eid, 'gathering-fish');
-    }
+    syncGovernorSignals(world);
   }
 
   governor.tick();
 }
 
 function runScenario(stage: number, purchasedNodeIds: string[] = []): BaselineMetrics {
+  resetAutoSymbol();
+  resetMatchEventRunner();
   storeV3.progressionLevel.value = stage;
   storeV3.prestigeState.value = createPrestigeState();
   storeV3.startingTierRank.value = 0;
@@ -139,6 +127,7 @@ function runScenario(stage: number, purchasedNodeIds: string[] = []): BaselineMe
   });
   applyUpgradeEffects(world, upgradeState.state, createPrestigeState());
   spawnVerticalEntities(world, layout, new SeededRandom(99));
+  syncGovernorSignals(world);
 
   const governor = new Governor();
   governor.enabled = true;

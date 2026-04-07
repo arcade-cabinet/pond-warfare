@@ -38,7 +38,7 @@ describe('prestigeAutoBehaviorSystem', () => {
 
     prestigeAutoBehaviorSystem(world);
 
-    expect(Health.current[nearby]).toBe(81);
+    expect(Health.current[nearby]).toBe(84);
     expect(Health.current[far]).toBe(80);
   });
 
@@ -58,7 +58,7 @@ describe('prestigeAutoBehaviorSystem', () => {
 
     prestigeAutoBehaviorSystem(world);
 
-    expect(Health.current[lodge]).toBe(352);
+    expect(Health.current[lodge]).toBe(356);
   });
 
   it('does nothing when no prestige auto-behaviors are unlocked', () => {

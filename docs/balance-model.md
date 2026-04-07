@@ -99,17 +99,22 @@ From [balance-track-shifts.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfa
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| clam_gather_t1 | -0.87 | 4.49 | 14.34 |
-| clam_yield_t1 | -0.47 | 5.16 | 15.25 |
-| clam_clam_bonus_t1 | -0.87 | 4.59 | 14.63 |
-| pearl_clam_earnings_rank_1 | 0.27 | 2.39 | 6.60 |
-| pearl_gather_rank_2 | -0.98 | 3.07 | 7.15 |
-| pearl_auto_deploy_fisher | 0.00 | 2.10 | 6.31 |
-| pearl_starting_tier_1 | -0.31 | 3.90 | 8.01 |
+| clam_gather_t1 | -1.35 | 3.69 | 13.43 |
+| clam_yield_t1 | -0.98 | 4.15 | 13.77 |
+| clam_clam_bonus_t1 | -1.35 | 3.58 | 13.11 |
+| pearl_clam_earnings_rank_1 | -1.71 | 1.29 | 6.12 |
+| pearl_gather_rank_2 | -2.03 | 0.88 | 5.91 |
+| pearl_auto_deploy_fisher | -2.03 | 0.86 | 5.63 |
+| pearl_starting_tier_1 | -1.66 | 1.60 | 6.77 |
 
 These sampled Pearl rows now compare against a rank-matched Pearl baseline, so
 the shifts represent the upgrade itself instead of accidentally including the
 rank-1 prestige reward multiplier.
+
+The diagnostic also now includes the controller/runtime fixes for gather
+override persistence. Before that fix, boosted gather tracks could falsely go
+deeply negative because workers lost their assigned resource intent after
+depletion or flee recovery.
 
 ## Exhaustive First-Rank Report
 
@@ -123,14 +128,15 @@ From [exhaustive-balance-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-
 Current corrected readout:
 
 - Clam T1:
-  - `economy_node_yield_t0` is currently strongest at about `13.33%` `meta_mean_pct`
-  - most other Clam T1 tracks still collapse into a narrow `11.78%` to `12.55%` band
-  - `economy_mean_pct` is still `0` across the sampled Clam T1 set, which means the first-rank Clam report is mostly observing battlefield effects, not reward pacing
+  - `economy_node_yield_t0` is currently strongest at about `5.20%` `meta_mean_pct`
+  - basic gather tracks land around `4.78%` `meta_mean_pct`
+  - most non-economy Clam T1 rows still cluster tightly around `4.54%`, which means the harness can now see them as positive, but it still cannot distinguish many categories from each other in this window
+  - `economy_mean_pct` is still `0` across the sampled Clam T1 set, so the current report is still mostly observing battlefield pacing, not post-match reward acceleration
 - Pearl rank 1:
-  - `auto_deploy_fisher`, `auto_deploy_digger`, and `auto_deploy_logger` are the clearest positive Pearl effects at roughly `1.82%` `meta_mean_pct`
-  - `clam_earnings_multiplier` now correctly shows as economy-only value with about `3.22%` `economy_mean_pct` and `0.40%` `meta_mean_pct`
-  - `combat_multiplier` and `hp_multiplier` still show `budget_pct` but `0` observed effect in this window
-- `gather_multiplier`, `rare_resource_access`, and the non-worker auto-deploy set are still neutral-to-negative in this stage-6 governor scenario
+  - worker auto-deploys are now clearly positive: `auto_deploy_fisher`, `auto_deploy_digger`, and `auto_deploy_logger` are all around `2.13%` `meta_mean_pct`
+  - `clam_earnings_multiplier` remains economy-only with `3.22%` `economy_mean_pct`, but its combined `meta_mean_pct` is still negative in this stage-6 window because it does not improve in-match power
+  - `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `gather_multiplier` are still negative in the stage-6 exhaustive report
+  - `rare_resource_access` is still strongly negative in this governor scenario, which likely means the governor is not exploiting the extra node mix effectively
 
 ## Combat-Pressure Diagnostic
 
@@ -138,26 +144,25 @@ From [pearl-combat-pressure-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabin
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| combat_multiplier | -56.90 | -32.91 | 13.54 |
-| hp_multiplier | -56.08 | -28.80 | 20.00 |
-| auto_heal_behavior | -52.27 | -27.33 | 22.25 |
-| auto_repair_behavior | -52.14 | -29.11 | 13.88 |
+| combat_multiplier | 0.43 | 0.43 | 0.43 |
+| hp_multiplier | -13.66 | -13.66 | -13.66 |
+| auto_heal_behavior | -13.73 | -13.73 | -13.73 |
+| auto_repair_behavior | 3.22 | 3.22 | 3.22 |
 
 This is not a tuning success. It is a diagnostic finding:
 
-- those Pearl tracks do not currently improve the governor-controlled outcome under forced early pressure
-- either the scenario is exposing a bad interaction, or these upgrades are not being applied in a way that the live combat loop can leverage
-- this moves the problem from "balance values might be low" to "the runtime/governor expression path needs investigation"
+- `combat_multiplier` is now barely positive and `auto_repair_behavior` is meaningfully positive in the immediate-pressure scenario
+- `hp_multiplier` and `auto_heal_behavior` are still materially negative under the same pressure setup
+- this narrows the investigation: the blanket "all Pearl combat tracks are broken" diagnosis is no longer true, but the HP/heal expression path is still not helping the governor survive early pressure
 
 ## Interpretation
 
-- Cheap first-rank Clam tracks are currently landing around roughly **4.5% to 5.2% sampled mean relief** in the smaller report.
-- Early Pearl tracks are currently much smaller, mostly around **2% to 4% sampled mean relief**, with several still flat or negative.
-- Under forced early combat pressure, several Pearl combat/repair tracks are actually negative on average, which is a higher-priority issue than fine-grained number tuning.
-- The small negative minimums mean the current balance is not yet stable enough to guarantee every upgrade always helps under every seed/governor path.
-- `starting_tier_1` and `clam_earnings_rank_1` are both materially positive in the sampled report, but not dominant.
-- Basic Clam gather/yield/clam-bonus tracks are already large enough to materially affect pacing.
-- The exhaustive report shows a second issue beyond raw tuning: several upgrade tracks are still indistinguishable or inert, which points to missing runtime consumers, insufficiently sensitive diagnostics, or both.
+- Cheap first-rank Clam tracks are currently landing around **3.6% to 4.2% sampled mean relief** in the smaller report.
+- Early Pearl tracks are much smaller, roughly **0.8% to 1.6% sampled mean relief** in the sampled report, with several still negative in the exhaustive stage-6 report.
+- Under forced early combat pressure, `hp_multiplier` and `auto_heal_behavior` are still negative on average, while `combat_multiplier` and `auto_repair_behavior` are now at least directionally positive.
+- The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
+- Basic Clam gather/yield/clam-bonus tracks are now confirmed as positive again after the gather-override persistence fix.
+- The exhaustive report still shows a second issue beyond raw tuning: many Clam categories remain too tightly clustered, and several Pearl tracks are still either inert or actively harmful in governor play.
 
 ## How To Use This
 
@@ -170,7 +175,7 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Expand the diagnostics from sampled tracks to every Clam subcategory and every Pearl upgrade.
-2. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
-3. Wire missing runtime consumers for the inert Pearl and flat Clam tracks before attempting fine-grained economy tuning.
+1. Investigate the still-negative Pearl tracks, especially `hp_multiplier`, `auto_heal_behavior`, `rare_resource_access`, and the non-worker auto-deploy set.
+2. Expand the diagnostics from sampled tracks to every Clam subcategory and every Pearl upgrade.
+3. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
 4. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

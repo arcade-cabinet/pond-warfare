@@ -17,6 +17,7 @@ import {
   IsBuilding,
   Position,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
@@ -42,6 +43,7 @@ function createCombatUnit(
   addComponent(world.ecs, eid, Collider);
   addComponent(world.ecs, eid, Sprite);
   addComponent(world.ecs, eid, Carrying);
+  addComponent(world.ecs, eid, TaskOverride);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -57,6 +59,10 @@ function createCombatUnit(
   Velocity.speed[eid] = 1.8;
   Collider.radius[eid] = 16;
   Carrying.resourceType[eid] = ResourceType.None;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = -1;
+  TaskOverride.resourceKind[eid] = 0;
 
   return eid;
 }
@@ -179,5 +185,24 @@ describe('combatSystem', () => {
 
     combatSystem(world);
     expect(world.warDrumsBuff.has(ally)).toBe(false);
+  });
+
+  it('skips idle auto-aggro for gather overrides', () => {
+    world.frameCount = 10;
+    const gatherer = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Gatherer);
+    const enemy = createCombatUnit(world, 120, 100, Faction.Enemy, EntityKind.Snake);
+
+    Combat.damage[gatherer] = 2;
+    TaskOverride.active[gatherer] = 1;
+    TaskOverride.task[gatherer] = UnitState.GatherMove;
+    TaskOverride.targetEntity[gatherer] = 3;
+    TaskOverride.resourceKind[gatherer] = EntityKind.Clambed;
+    UnitStateMachine.targetEntity[gatherer] = -1;
+
+    combatSystem(world);
+
+    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.targetEntity[gatherer]).toBe(-1);
+    expect(enemy).toBeGreaterThanOrEqual(0);
   });
 });

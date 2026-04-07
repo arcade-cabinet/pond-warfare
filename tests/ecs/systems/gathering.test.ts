@@ -17,6 +17,7 @@ import {
   Position,
   Resource,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
@@ -36,6 +37,7 @@ function createGatherer(world: GameWorld, x: number, y: number): number {
   addComponent(world.ecs, eid, Sprite);
   addComponent(world.ecs, eid, Carrying);
   addComponent(world.ecs, eid, Combat);
+  addComponent(world.ecs, eid, TaskOverride);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -48,6 +50,10 @@ function createGatherer(world: GameWorld, x: number, y: number): number {
   Carrying.resourceType[eid] = ResourceType.None;
   Combat.damage[eid] = 2;
   Combat.attackRange[eid] = 40;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = -1;
+  TaskOverride.resourceKind[eid] = 0;
 
   return eid;
 }
@@ -123,5 +129,28 @@ describe('gatheringSystem', () => {
     gatheringSystem(world);
 
     expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Logs);
+  });
+
+  it('retargets a gather override to another same-type node when the first is depleted', () => {
+    const gatherer = createGatherer(world, 100, 100);
+    const depleted = createResource(world, 100, 100, EntityKind.Cattail);
+    const backup = createResource(world, 500, 100, EntityKind.Cattail);
+
+    Resource.amount[depleted] = 0;
+    Resource.amount[backup] = 1000;
+
+    TaskOverride.active[gatherer] = 1;
+    TaskOverride.task[gatherer] = UnitState.GatherMove;
+    TaskOverride.targetEntity[gatherer] = depleted;
+    TaskOverride.resourceKind[gatherer] = EntityKind.Cattail;
+    UnitStateMachine.state[gatherer] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[gatherer] = depleted;
+    UnitStateMachine.gatherTimer[gatherer] = 5;
+
+    gatheringSystem(world);
+
+    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[gatherer]).toBe(backup);
+    expect(TaskOverride.targetEntity[gatherer]).toBe(backup);
   });
 });

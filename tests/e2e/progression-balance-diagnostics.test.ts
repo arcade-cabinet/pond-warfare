@@ -2,9 +2,16 @@
 
 import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import {
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  Position,
+  TaskOverride,
+  UnitStateMachine,
+} from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
-import { autoSymbolSystem } from '@/ecs/systems/auto-symbol';
+import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { combatSystem } from '@/ecs/systems/combat';
@@ -12,7 +19,7 @@ import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
-import { matchEventRunnerSystem } from '@/ecs/systems/match-event-runner';
+import { matchEventRunnerSystem, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import { movementSystem } from '@/ecs/systems/movement';
 import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behaviors';
 import { trainingSystem } from '@/ecs/systems/training';
@@ -20,9 +27,6 @@ import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
-import { computePopulation } from '@/game/population-counter';
-import { syncRosters } from '@/game/roster-sync';
-import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
@@ -32,6 +36,7 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { type PrestigeState, createPrestigeState, isAutoBehaviorUnlocked } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 const _gameRef: { world: GameWorld | null } = { world: null };
@@ -64,6 +69,10 @@ interface VariantMetrics {
   resourcesGathered: number;
   unitsTrained: number;
   playerUnits: number;
+  fish: number;
+  logs: number;
+  rocks: number;
+  gathererInfo: string;
 }
 
 function countPlayerUnits(world: GameWorld, kind?: EntityKind): number {
@@ -71,6 +80,22 @@ function countPlayerUnits(world: GameWorld, kind?: EntityKind): number {
     if (FactionTag.faction[eid] !== Faction.Player || Health.current[eid] <= 0) return false;
     return kind === undefined || EntityTypeTag.kind[eid] === kind;
   }).length;
+}
+
+function summarizeGatherers(world: GameWorld): string {
+  return Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag, UnitStateMachine]))
+    .filter(
+      (eid) =>
+        FactionTag.faction[eid] === Faction.Player &&
+        Health.current[eid] > 0 &&
+        EntityTypeTag.kind[eid] === EntityKind.Gatherer,
+    )
+    .map((eid) => {
+      const target = UnitStateMachine.targetEntity[eid];
+      const targetKind = target >= 0 ? EntityTypeTag.kind[target] : -1;
+      return `G:${UnitStateMachine.state[eid]}/O:${TaskOverride.task[eid]}/T:${targetKind}`;
+    })
+    .join(' ');
 }
 
 function runFrame(world: GameWorld, governor: Governor): void {
@@ -99,25 +124,15 @@ function runFrame(world: GameWorld, governor: Governor): void {
   cleanupSystem(world);
 
   if (world.frameCount % 30 === 0) {
-    computePopulation(world);
-    store.fish.value = world.resources.fish;
-    store.logs.value = world.resources.logs;
-    store.rocks.value = world.resources.rocks;
-    store.gameState.value = world.state;
-    syncRosters(world);
-
-    const idleGatherers = store.unitRoster.value
-      .flatMap((group) => group.units)
-      .filter((unit) => unit.kind === EntityKind.Gatherer && unit.task === 'idle');
-    for (const unit of idleGatherers) {
-      dispatchTaskOverride(world, unit.eid, 'gathering-fish');
-    }
+    syncGovernorSignals(world);
   }
 
   governor.tick();
 }
 
 function runVariant(variant: DiagnosticVariant): VariantMetrics {
+  resetAutoSymbol();
+  resetMatchEventRunner();
   const prestigeState = variant.prestigeState ?? createPrestigeState();
   storeV3.progressionLevel.value = 3;
   storeV3.prestigeState.value = prestigeState;
@@ -141,6 +156,7 @@ function runVariant(variant: DiagnosticVariant): VariantMetrics {
 
   const lodgeEid = spawnVerticalEntities(world, layout, new SeededRandom(99));
   deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
+  syncGovernorSignals(world);
 
   const governor = new Governor();
   governor.enabled = true;
@@ -160,6 +176,10 @@ function runVariant(variant: DiagnosticVariant): VariantMetrics {
     resourcesGathered: world.stats.resourcesGathered,
     unitsTrained: world.stats.unitsTrained,
     playerUnits: countPlayerUnits(world),
+    fish: world.resources.fish,
+    logs: world.resources.logs,
+    rocks: world.resources.rocks,
+    gathererInfo: summarizeGatherers(world),
   };
 }
 

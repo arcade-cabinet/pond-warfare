@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getBaselinePressureScore,
+  getCombatPressureScore,
   getDifficultyShiftPercent,
   getMetaProgressionScore,
   getPerformanceScore,
@@ -62,6 +63,26 @@ describe('progression model', () => {
     expect(getPowerScore(higherReward)).toBe(getPowerScore(baseline));
     expect(getRewardScore(higherReward)).toBeGreaterThan(getRewardScore(baseline));
     expect(getMetaProgressionScore(higherReward)).toBeGreaterThan(getMetaProgressionScore(baseline));
+  });
+
+  it('weights survival more heavily for combat-pressure scenarios', () => {
+    const riskyEconomy = {
+      resourcesGathered: 220,
+      unitsTrained: 5,
+      kills: 2,
+      playerUnits: 3,
+      lodgeHpRatio: 0.2,
+    };
+    const stableDefense = {
+      resourcesGathered: 120,
+      unitsTrained: 3,
+      kills: 4,
+      playerUnits: 6,
+      lodgeHpRatio: 0.8,
+    };
+
+    expect(getPowerScore(riskyEconomy)).toBeGreaterThan(0);
+    expect(getCombatPressureScore(stableDefense)).toBeGreaterThan(getCombatPressureScore(riskyEconomy));
   });
 
   it('summarizes min/mean/max difficulty shifts', () => {

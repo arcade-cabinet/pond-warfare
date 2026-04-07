@@ -17,7 +17,7 @@ import {
 } from '@/balance/track-variants';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
-import { autoSymbolSystem } from '@/ecs/systems/auto-symbol';
+import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
 import { combatSystem } from '@/ecs/systems/combat';
@@ -38,9 +38,6 @@ import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { calculateMatchReward } from '@/game/match-rewards';
-import { computePopulation } from '@/game/population-counter';
-import { syncRosters } from '@/game/roster-sync';
-import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
@@ -50,6 +47,7 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { createPrestigeState, isAutoBehaviorUnlocked } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 const _gameRef: { world: GameWorld | null } = { world: null };
@@ -97,19 +95,7 @@ function runFrame(world: GameWorld, governor: Governor): void {
   cleanupSystem(world);
 
   if (world.frameCount % 30 === 0) {
-    computePopulation(world);
-    store.fish.value = world.resources.fish;
-    store.logs.value = world.resources.logs;
-    store.rocks.value = world.resources.rocks;
-    store.gameState.value = world.state;
-    syncRosters(world);
-
-    const idleGatherers = store.unitRoster.value
-      .flatMap((group) => group.units)
-      .filter((unit) => unit.kind === EntityKind.Gatherer && unit.task === 'idle');
-    for (const unit of idleGatherers) {
-      dispatchTaskOverride(world, unit.eid, 'gathering-fish');
-    }
+    syncGovernorSignals(world);
   }
 
   governor.tick();
@@ -148,6 +134,7 @@ function snapshotWorld(world: GameWorld, prestigeRank: number): BalanceSnapshot 
 
 function runVariant(seed: number, variant?: BalanceVariantConfig): BalanceSnapshot {
   const prestigeState = variant?.prestigeState ?? createPrestigeState();
+  resetAutoSymbol();
   resetMatchEventRunner();
   storeV3.progressionLevel.value = TEST_STAGE;
   storeV3.prestigeState.value = prestigeState;
@@ -172,6 +159,7 @@ function runVariant(seed: number, variant?: BalanceVariantConfig): BalanceSnapsh
   applyUpgradeEffects(world, upgradeState.state, prestigeState);
   const lodgeEid = spawnVerticalEntities(world, layout, new SeededRandom(seed + 100));
   deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
+  syncGovernorSignals(world);
 
   const governor = new Governor();
   governor.enabled = true;

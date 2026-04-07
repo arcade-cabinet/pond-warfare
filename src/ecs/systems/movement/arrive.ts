@@ -19,6 +19,7 @@ import {
   Sprite,
   UnitStateMachine,
 } from '@/ecs/components';
+import { resumeGatherOverride, retargetGatherOverride } from '@/ecs/systems/gathering/gather-override';
 import { getWeatherGatherMult } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { Faction, ResourceType, UnitState } from '@/types';
@@ -48,6 +49,7 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
 
   switch (state) {
     case UnitState.Move:
+      if (resumeGatherOverride(world, eid)) break;
       UnitStateMachine.state[eid] = UnitState.Idle;
       break;
     case UnitState.AttackMovePatrol:
@@ -57,7 +59,7 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
     case UnitState.GatherMove:
       UnitStateMachine.state[eid] = UnitState.Gathering;
       UnitStateMachine.gatherTimer[eid] = Math.round(
-        GATHER_TIMER * world.gatherSpeedMod * (1 / getWeatherGatherMult(world)),
+        (GATHER_TIMER / Math.max(0.1, world.gatherSpeedMod)) * (1 / getWeatherGatherMult(world)),
       );
       break;
     case UnitState.BuildMove:
@@ -181,6 +183,8 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
           UnitStateMachine.targetX[eid] = Position.x[tEnt];
           UnitStateMachine.targetY[eid] = Position.y[tEnt];
           UnitStateMachine.state[eid] = UnitState.GatherMove;
+        } else if (retargetGatherOverride(world, eid)) {
+          // Manual/governor gather orders should reacquire a same-type resource.
         } else {
           UnitStateMachine.state[eid] = UnitState.Idle;
         }

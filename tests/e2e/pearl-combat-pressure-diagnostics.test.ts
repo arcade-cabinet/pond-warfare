@@ -3,6 +3,7 @@
 import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  getCombatPressureScore,
   getDifficultyShiftPercent,
   getPowerScore,
   summarizeShiftPercents,
@@ -32,6 +33,7 @@ import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { computePopulation } from '@/game/population-counter';
 import { syncRosters } from '@/game/roster-sync';
+import { syncThreatAndObjectives } from '@/game/threat-sync';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
@@ -41,6 +43,7 @@ import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
+import { syncGovernorSignals } from '../helpers/governor-sync';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 const _gameRef: { world: GameWorld | null } = { world: null };
@@ -97,6 +100,7 @@ function runFrame(world: GameWorld, governor: Governor): void {
     store.rocks.value = world.resources.rocks;
     store.gameState.value = world.state;
     syncRosters(world);
+    syncThreatAndObjectives(world);
   }
 
   governor.tick();
@@ -182,6 +186,7 @@ function runCombatVariant(seed: number, variant: CombatVariant): BalanceSnapshot
   const lodgeEid = spawnVerticalEntities(world, layout, new SeededRandom(seed + 100));
   deploySpecialistsAtMatchStart(world, variant.prestigeState, lodgeEid);
   seedCombatPressure(world, lodgeEid);
+  syncGovernorSignals(world);
 
   const governor = new Governor();
   governor.enabled = true;
@@ -235,13 +240,16 @@ describe('pearl combat-pressure diagnostics', () => {
 
     const baselineScores = new Map<number, number>();
     for (const seed of SEEDS) {
-      baselineScores.set(seed, getPowerScore(runCombatVariant(seed, baselineVariant)));
+      baselineScores.set(seed, getCombatPressureScore(runCombatVariant(seed, baselineVariant)));
     }
 
     const rows = variants.map((variant) => {
       const shifts = SEEDS.map((seed) => {
         const baseline = baselineScores.get(seed) ?? 0;
-        return getDifficultyShiftPercent(baseline, getPowerScore(runCombatVariant(seed, variant)));
+        return getDifficultyShiftPercent(
+          baseline,
+          getCombatPressureScore(runCombatVariant(seed, variant)),
+        );
       });
       const summary = summarizeShiftPercents(shifts);
       return {

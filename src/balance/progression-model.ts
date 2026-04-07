@@ -47,6 +47,22 @@ export function getPowerScore(snapshot: BalanceSnapshot): number {
 }
 
 /**
+ * Scenario-specific score for immediate-pressure defense diagnostics.
+ *
+ * This intentionally weights Lodge survival and army retention more heavily
+ * than economy, since the scenario is trying to answer whether a defensive
+ * upgrade helps the player hold the line under sudden pressure.
+ */
+export function getCombatPressureScore(snapshot: BalanceSnapshot): number {
+  const resources = Math.log2(snapshot.resourcesGathered + 1) * 0.05;
+  const training = Math.log2(snapshot.unitsTrained + 1) * 0.1;
+  const kills = Math.log2(snapshot.kills + 1) * 0.2;
+  const army = Math.log2(snapshot.playerUnits + 1) * 0.2;
+  const lodge = clamp(snapshot.lodgeHpRatio, 0, 1) * 0.45;
+  return resources + training + kills + army + lodge;
+}
+
+/**
  * Convert post-match Clam earnings into a compressed economy score.
  *
  * This lets diagnostics separate direct in-match power from meta-economy

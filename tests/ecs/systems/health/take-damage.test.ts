@@ -15,6 +15,7 @@ import {
   IsBuilding,
   Position,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
@@ -55,6 +56,7 @@ function spawnUnit(
   addComponent(world.ecs, eid, UnitStateMachine);
   addComponent(world.ecs, eid, Velocity);
   addComponent(world.ecs, eid, Combat);
+  addComponent(world.ecs, eid, TaskOverride);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -71,6 +73,10 @@ function spawnUnit(
   Velocity.speed[eid] = 2.0;
   Combat.damage[eid] = 6;
   Combat.attackRange[eid] = 40;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = -1;
+  TaskOverride.resourceKind[eid] = 0;
 
   return eid;
 }
@@ -316,6 +322,28 @@ describe('takeDamage', () => {
 
       // Should merge into one zone, not create two
       expect(world.combatZones.length).toBe(1);
+    });
+  });
+
+  describe('gather override protection', () => {
+    it('does not convert a fleeing gather override into AttackMove on repeated hits', () => {
+      const target = spawnUnit(world, 100, 100, 50, 60, Faction.Player, EntityKind.Gatherer);
+      const attacker = spawnUnit(world, 120, 100, 60, 60, Faction.Enemy, EntityKind.Snake);
+
+      Combat.damage[target] = 2;
+      TaskOverride.active[target] = 1;
+      TaskOverride.task[target] = UnitState.GatherMove;
+      TaskOverride.targetEntity[target] = 7;
+      TaskOverride.resourceKind[target] = EntityKind.Clambed;
+      UnitStateMachine.state[target] = UnitState.Move;
+      UnitStateMachine.targetEntity[target] = 7;
+      world.yukaManager.addUnit(target, Position.x[target], Position.y[target], 2, 80, 100);
+      world.yukaManager.setFlee(target, Position.x[attacker], Position.y[attacker]);
+
+      takeDamage(world, target, 5, attacker);
+
+      expect(UnitStateMachine.state[target]).toBe(UnitState.Move);
+      expect(UnitStateMachine.targetEntity[target]).toBe(7);
     });
   });
 });

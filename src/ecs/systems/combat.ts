@@ -20,6 +20,7 @@ import {
   Position,
   Stance,
   StanceMode,
+  TaskOverride,
   TowerAI,
   UnitStateMachine,
 } from '@/ecs/components';
@@ -144,6 +145,10 @@ export function combatSystem(world: GameWorld): void {
 
     // Idle auto-aggro: scan every 10 frames for snappier combat response
     if (state === UnitState.Idle && dmg > 0 && world.frameCount % 10 === 0) {
+      if (TaskOverride.active[eid] === 1 && TaskOverride.task[eid] === UnitState.GatherMove) {
+        continue;
+      }
+
       const stanceMode = (Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive;
       // Hold stance: never auto-aggro
       if (faction === Faction.Player && stanceMode === StanceMode.Hold) continue;

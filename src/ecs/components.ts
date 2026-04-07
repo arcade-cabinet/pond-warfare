@@ -117,6 +117,7 @@ export const TaskOverride = soa({
   active: [] as number[], // 0 = no override, 1 = has override
   task: [] as number[], // UnitState value for the assigned task
   targetEntity: [] as number[], // target entity for the task (0 = none)
+  resourceKind: [] as number[], // EntityKind for gather overrides (0 = none)
 });
 
 // Unit stance (controls auto-aggro behavior)

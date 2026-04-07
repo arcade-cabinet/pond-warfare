@@ -7,9 +7,9 @@ import { EntityKind, Faction } from '@/types';
 import * as storeV3 from '@/ui/store-v3';
 
 const TICK_INTERVAL = 60;
-const LODGE_REGEN_RADIUS = 180;
-const LODGE_REGEN_PER_TICK = 1;
-const LODGE_SELF_REPAIR_PER_TICK = 2;
+const LODGE_REGEN_RADIUS = 220;
+const LODGE_REGEN_PER_TICK = 4;
+const LODGE_SELF_REPAIR_PER_TICK = 6;
 
 export function prestigeAutoBehaviorSystem(world: GameWorld): void {
   if (world.frameCount % TICK_INTERVAL !== 0) return;

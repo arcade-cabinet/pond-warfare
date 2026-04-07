@@ -186,8 +186,8 @@ describe('Pearl Upgrade Screen — US15', () => {
       expect(gather?.effectSummary).toBe('+20% gathering_speed');
 
       const combat = list.find((u) => u.id === 'combat_multiplier');
-      // 2 ranks * 0.03 = 0.06 = 6%
-      expect(combat?.effectSummary).toBe('+6% damage');
+      // 2 ranks * 0.10 = 0.20 = 20%
+      expect(combat?.effectSummary).toBe('+20% damage');
     });
   });
 
