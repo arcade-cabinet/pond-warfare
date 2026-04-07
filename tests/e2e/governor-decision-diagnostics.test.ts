@@ -39,6 +39,7 @@ import {
   GatherEvaluator,
   TrainEvaluator,
 } from '@/governor/evaluators';
+import { countAvailableAttackers } from '@/governor/goals/attack-goal';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { calculateMatchReward } from '@/game/match-rewards';
@@ -82,6 +83,10 @@ interface TraceSummary {
   name: string;
   seed: number;
   decisions: string;
+  avgCombatArmy: number;
+  avgReadyArmy: number;
+  attackOpportunityTicks: number;
+  maxAttackScore: number;
   avgAttackers: number;
   avgDefenders: number;
   avgLodgeHp: number;
@@ -156,6 +161,10 @@ function createWorld(prestigeState: PrestigeState, seed: number): GameWorld {
 }
 
 function pickDecision(): string {
+  return scoreDecisionWindow().bestName;
+}
+
+function scoreDecisionWindow(): { bestName: string; attackScore: number } {
   const evaluators = [
     ['gather', new GatherEvaluator()],
     ['build', new BuildEvaluator()],
@@ -165,14 +174,22 @@ function pickDecision(): string {
   ] as const;
   let bestName = 'none';
   let bestScore = 0;
+  let attackScore = 0;
   for (const [name, evaluator] of evaluators) {
     const score = evaluator.calculateDesirability(evaluatorOwner);
+    if (name === 'attack') attackScore = score;
     if (score > bestScore) {
       bestScore = score;
       bestName = name;
     }
   }
-  return bestName;
+  return { bestName, attackScore };
+}
+
+function combatArmySize(): number {
+  return store.unitRoster.value
+    .filter((group) => group.role === 'combat')
+    .reduce((sum, group) => sum + group.units.length, 0);
 }
 
 function lodgeHpRatio(world: GameWorld): number {
@@ -201,6 +218,10 @@ function runVariant(seed: number, variant: TraceVariant): TraceSummary {
   governor.enabled = true;
 
   const decisionCounts = new Map<string, number>();
+  let combatArmyTotal = 0;
+  let readyArmyTotal = 0;
+  let attackOpportunityTicks = 0;
+  let maxAttackScore = 0;
   let attackersTotal = 0;
   let defendersTotal = 0;
   let lodgeHpTotal = 0;
@@ -210,8 +231,14 @@ function runVariant(seed: number, variant: TraceVariant): TraceSummary {
   for (let frame = 0; frame < TEST_FRAMES; frame += 1) {
     runFrame(world, governor);
     if (world.frameCount % 120 === 0) {
-      const choice = pickDecision();
+      const combatArmy = combatArmySize();
+      const readyArmy = countAvailableAttackers();
+      const { bestName: choice, attackScore } = scoreDecisionWindow();
       decisionCounts.set(choice, (decisionCounts.get(choice) ?? 0) + 1);
+      combatArmyTotal += combatArmy;
+      readyArmyTotal += readyArmy;
+      if (attackScore > 0) attackOpportunityTicks += 1;
+      if (attackScore > maxAttackScore) maxAttackScore = attackScore;
     }
     if (world.frameCount % 30 === 0) {
       attackersTotal += countTaskUnits(world, UnitState.AttackMove);
@@ -240,6 +267,10 @@ function runVariant(seed: number, variant: TraceVariant): TraceSummary {
     name: variant.name,
     seed,
     decisions,
+    avgCombatArmy: Number((combatArmyTotal / Math.max(TEST_FRAMES / 120, 1)).toFixed(2)),
+    avgReadyArmy: Number((readyArmyTotal / Math.max(TEST_FRAMES / 120, 1)).toFixed(2)),
+    attackOpportunityTicks,
+    maxAttackScore: Number(maxAttackScore.toFixed(2)),
     avgAttackers: Number((attackersTotal / Math.max(samples, 1)).toFixed(2)),
     avgDefenders: Number((defendersTotal / Math.max(samples, 1)).toFixed(2)),
     avgLodgeHp: Number((lodgeHpTotal / Math.max(samples, 1)).toFixed(3)),
@@ -283,6 +314,9 @@ describe('governor decision diagnostics', () => {
       expect(Number.isFinite(row.avgDefenders)).toBe(true);
       expect(Number.isFinite(row.avgLodgeHp)).toBe(true);
       expect(Number.isFinite(row.baseThreatPct)).toBe(true);
+      expect(Number.isFinite(row.avgCombatArmy)).toBe(true);
+      expect(Number.isFinite(row.avgReadyArmy)).toBe(true);
+      expect(Number.isFinite(row.maxAttackScore)).toBe(true);
       expect(row.decisions.length).toBeGreaterThan(0);
     }
   }, 120_000);

@@ -59,8 +59,9 @@ vi.mock('@/rendering/animations');
 vi.mock('@/utils/particles');
 
 export const BALANCE_REPORT_SEEDS = [11, 42, 77];
+export const BALANCE_REPORT_OPENING_FRAMES = 1200;
+export const BALANCE_REPORT_LONG_RUN_FRAMES = 2400;
 const TEST_STAGE = 6;
-const TEST_FRAMES = 1200;
 
 export interface BalanceReportRow {
   kind: 'clam' | 'pearl';
@@ -73,6 +74,10 @@ export interface BalanceReportRow {
   meta_min_pct: number;
   meta_mean_pct: number;
   meta_max_pct: number;
+}
+
+interface BuildReportOptions {
+  frames?: number;
 }
 
 function runFrame(world: GameWorld, governor: Governor): void {
@@ -138,7 +143,11 @@ function snapshotWorld(world: GameWorld, prestigeRank: number): BalanceSnapshot 
   };
 }
 
-function runVariant(seed: number, variant?: BalanceVariantConfig): BalanceSnapshot {
+function runVariant(
+  seed: number,
+  variant: BalanceVariantConfig | undefined,
+  frames: number,
+): BalanceSnapshot {
   const prestigeState = variant?.prestigeState ?? createPrestigeState();
   resetAutoSymbol();
   resetMatchEventRunner();
@@ -169,7 +178,7 @@ function runVariant(seed: number, variant?: BalanceVariantConfig): BalanceSnapsh
 
   const governor = new Governor();
   governor.enabled = true;
-  for (let frame = 0; frame < TEST_FRAMES; frame += 1) {
+  for (let frame = 0; frame < frames; frame += 1) {
     runFrame(world, governor);
   }
 
@@ -179,8 +188,12 @@ function runVariant(seed: number, variant?: BalanceVariantConfig): BalanceSnapsh
 export function buildReportRows(
   variants: BalanceVariantConfig[],
   baselineVariant?: BalanceVariantConfig,
+  options: BuildReportOptions = {},
 ): BalanceReportRow[] {
-  const getScores = createSnapshotScoreCache(runVariant);
+  const frames = options.frames ?? BALANCE_REPORT_OPENING_FRAMES;
+  const getScores = createSnapshotScoreCache<BalanceVariantConfig | undefined>((seed, variant) =>
+    runVariant(seed, variant, frames),
+  );
   const baselineScores = new Map<number, ReturnType<typeof getScores>>();
   for (const seed of BALANCE_REPORT_SEEDS) {
     baselineScores.set(seed, getScores(seed, baselineVariant));

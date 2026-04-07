@@ -135,6 +135,11 @@ a fresh worker process:
 - [exhaustive-clam-balance-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/exhaustive-clam-balance-report.test.ts)
 - [exhaustive-pearl-balance-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/exhaustive-pearl-balance-report.test.ts)
 
+The Pearl broad scan now reports two horizons:
+
+- opening window: 1200 frames, which is useful for early pacing and auto-deploy impact
+- long-run window: 2400 frames, which is needed for combat and repair/heal tracks that do not fully express before the first army exists
+
 Current isolated readout:
 
 - Clam T1:
@@ -143,12 +148,18 @@ Current isolated readout:
   - most remaining Clam T1 rows cluster around `5.34%`, which means the harness now reads them as clearly positive even if it still does not separate categories cleanly in this short window
   - the Clam broad scan now shows a small but real `economy_mean_pct` signal (`1.21%`) instead of the previous flat zero
 - Pearl rank 1:
-  - `auto_deploy_fisher` is strongly positive at about `11.73%` `meta_mean_pct`
-  - `auto_deploy_digger` is about `6.66%`, `auto_deploy_logger` about `4.05%`, and the remaining auto-deploy specialists cluster around `2.27%` to `4.01%`
-  - `starting_tier` is now slightly positive at about `0.52%`
-  - `clam_earnings_multiplier` is also slightly positive on combined meta at about `0.35%`, with `4.22%` `economy_mean_pct`
-  - `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `auto_repair_behavior` are now near-neutral in the isolated 1200-frame broad scan (`-0.05%` to `-0.07%` `meta_mean_pct`) instead of materially negative
-  - the main remaining negative broad-scan rows are `rare_resource_access` at about `-0.87%` and `gather_multiplier` at about `-1.43%`
+  - opening window, 1200 frames:
+    - `auto_deploy_fisher` is strongly positive at about `8.98%` `meta_mean_pct`
+    - `auto_deploy_digger` is about `5.76%`, `auto_deploy_logger` about `6.34%`, and the remaining auto-deploy specialists cluster around `3.33%` to `4.01%`
+    - several non-deploy Pearl tracks still read negative here: `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `gather_multiplier` are all about `-2.81%`, while `auto_repair_behavior` is about `-2.78%`
+    - this opening scan is now explicitly treated as an early-expression diagnostic, not the only truth for Pearl balance
+  - long-run window, 2400 frames:
+    - `auto_deploy_fisher` stays strong at about `6.82%` `meta_mean_pct`, with `auto_deploy_digger` about `6.06%` and `auto_deploy_logger` about `5.23%`
+    - `combat_multiplier` flips positive at about `0.86%`
+    - `starting_tier` is slightly positive at about `0.53%`
+    - `clam_earnings_multiplier` is slightly positive on combined meta at about `0.35%`, with `2.63%` `economy_mean_pct`
+    - `rare_resource_access` is effectively neutral-to-slightly-positive at about `0.33%`
+    - the remaining low-expression long-run rows are now `hp_multiplier` and `auto_heal_behavior` at `0%`, plus `gather_multiplier` at about `-0.27%`
 
 ## Combat-Pressure Diagnostic
 
@@ -204,9 +215,10 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
 - Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.
 - The isolated broad scans are now trustworthy enough to use as a release-budget input, but they still show two real limitations: many Clam categories remain tightly clustered, and some Pearl tracks are only near-neutral in the short 1200-frame window even when targeted diagnostics show clear local value.
-- The targeted governor trace still shows `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `gather_multiplier` improving raw power on specific seeds even when the broad Pearl scan only reads them as near-neutral. That means the remaining gap is now much more about measurement window and governor policy than about missing runtime consumers.
-- The rare-resource prestige path is no longer a map-generation trap. Its small remaining negative broad-scan value now points at ordinary governor valuation limits rather than a fundamentally harmful spawn pattern.
-- The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the prestige population fix, but attack still fails to cash in its orders over the longer governor run.
+- The targeted governor trace now makes the 1200-frame limitation explicit: the sampled stage-6 run averages only about `1.2` ready combat units at arbitration time, and `attack` never has a nonzero scoring window in that opening slice. That means the short Pearl scan was under-reading several tracks simply because the governor had not built an army yet.
+- The new dual-window Pearl report fixes most of that under-read. `combat_multiplier` is no longer negative once the run is allowed to breathe to 2400 frames, while `rare_resource_access` becomes roughly neutral and `clam_earnings_multiplier` remains correctly economy-led.
+- The rare-resource prestige path is no longer a map-generation trap. Its opening-window wobble now looks like ordinary governor valuation noise rather than a fundamentally harmful spawn pattern.
+- The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the prestige population fix, but attack still fails to cash in its orders over the longer governor run, and `hp_multiplier` / `auto_heal_behavior` still need a scenario that actually stresses their intended value after the army exists.
 
 ## How To Use This
 
@@ -219,8 +231,8 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Investigate the remaining attack-controller conversion gap, since the governor still spends most of the sampled stage-6 run on train/defend rather than turning surplus power into kills.
-2. Improve the broad Pearl scan window or scoring so `gather_multiplier`, `rare_resource_access`, and the repair/combat/heal cluster are not under-read relative to the targeted governor trace and immediate-pressure harness.
+1. Investigate the remaining attack-controller conversion gap, since the governor still spends most of the sampled stage-6 run on train/defend and still does not convert later army strength into enough kills.
+2. Add a long-run or role-targeted expression harness for `hp_multiplier` and `auto_heal_behavior`, since the 2400-frame broad scan still leaves those rows flat even though the immediate-pressure harness shows they work.
 3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
 4. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
 5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

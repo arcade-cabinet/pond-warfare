@@ -119,6 +119,7 @@ describe('TrainEvaluator', () => {
     store.fish.value = 200;
     store.food.value = 2;
     store.maxFood.value = 8;
+    store.waveCountdown.value = -1;
   });
 
   it('returns 0 when idle gatherers exist (Gather goal takes priority)', () => {
@@ -138,6 +139,27 @@ describe('TrainEvaluator', () => {
     store.food.value = 8;
     store.maxFood.value = 8;
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
+  });
+
+  it('backs off training when a healthy early attack window is already open', () => {
+    store.waveCountdown.value = 24;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('gatherer', Array.from({ length: 4 }, (_, i) => ({
+        eid: i + 1,
+        task: 'gathering-fish',
+        kind: EntityKind.Gatherer,
+      }))),
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: EntityKind.Brawler,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.44);
   });
 });
 
@@ -208,6 +230,23 @@ describe('AttackEvaluator', () => {
       { eid: 99, kind: EntityKind.Lodge, hp: 700, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
     ];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
+  });
+
+  it('opens an earlier attack window with 3 ready units when the lodge is healthy and the next wave is far away', () => {
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: EntityKind.Brawler,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.7);
   });
 });
 

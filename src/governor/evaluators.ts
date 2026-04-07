@@ -44,6 +44,33 @@ function lodgeHpRatio(): number {
   return lodge.hp / lodge.maxHp;
 }
 
+function nextWaveCountdown(): number | null {
+  return store.waveCountdown.value === -1 ? null : store.waveCountdown.value;
+}
+
+function safeAttackArmyThreshold(totalArmy: number): number {
+  const lodgeHp = lodgeHpRatio();
+  const waveCountdown = nextWaveCountdown();
+
+  if (lodgeHp < 0.85) return Number.POSITIVE_INFINITY;
+  if (waveCountdown !== null && waveCountdown <= 10) return Number.POSITIVE_INFINITY;
+
+  if (totalArmy >= MIN_ATTACK_ARMY && lodgeHp >= 0.97 && (waveCountdown === null || waveCountdown > 18)) {
+    return MIN_ATTACK_ARMY;
+  }
+
+  if (totalArmy >= MIN_ATTACK_ARMY + 1 && lodgeHp >= 0.92 && (waveCountdown === null || waveCountdown > 14)) {
+    return MIN_ATTACK_ARMY + 1;
+  }
+
+  return Math.max(MIN_ATTACK_ARMY + 2, 5);
+}
+
+function canPressureSafely(totalArmy: number, readyArmy: number): boolean {
+  const threshold = safeAttackArmyThreshold(totalArmy);
+  return Number.isFinite(threshold) && threshold <= MIN_ATTACK_ARMY + 1 && readyArmy >= threshold;
+}
+
 /** High score when idle gatherers exist — always beats Train to avoid idle waste. */
 export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
@@ -95,9 +122,12 @@ export class TrainEvaluator extends GoalEvaluator {
 
     // Need combat units — always desirable when economy is running
     const army = combatUnitCount();
+    const readyArmy = countAvailableAttackers();
+    if (army < 6 && store.fish.value >= 20 && canPressureSafely(army, readyArmy)) return 0.44;
     if (army < 6 && store.fish.value >= 20) return 0.75;
 
     // Keep training if we can afford it
+    if (store.fish.value >= 20 && canPressureSafely(army, readyArmy)) return 0.42;
     if (store.fish.value >= 20) return 0.5;
     return 0;
   }
@@ -129,15 +159,16 @@ export class AttackEvaluator extends GoalEvaluator {
     if (store.baseUnderAttack.value) return 0;
     const totalArmy = combatUnitCount();
     const readyArmy = countAvailableAttackers();
-    const safeAttackArmy = Math.max(MIN_ATTACK_ARMY + 2, 5);
+    const safeAttackArmy = safeAttackArmyThreshold(totalArmy);
     if (readyArmy < safeAttackArmy) return 0;
-    if (lodgeHpRatio() < 0.85) return 0;
-    if (store.waveCountdown.value !== -1 && store.waveCountdown.value <= 10) return 0;
+    if (!Number.isFinite(safeAttackArmy)) return 0;
 
+    const openingWindow =
+      safeAttackArmy === MIN_ATTACK_ARMY ? 0.66 : safeAttackArmy === MIN_ATTACK_ARMY + 1 ? 0.58 : 0.34;
     const armyPressure = Math.min((readyArmy - safeAttackArmy) * 0.08, 0.24);
     const reservePressure = Math.min(Math.max(totalArmy - readyArmy, 0) * 0.03, 0.09);
-    const fishReservePressure = Math.min(Math.max(store.fish.value - 80, 0) / 400, 0.12);
-    return Math.min(0.34 + armyPressure + reservePressure + fishReservePressure, 0.79);
+    const fishReservePressure = Math.min(Math.max(store.fish.value - 60, 0) / 320, 0.14);
+    return Math.min(openingWindow + armyPressure + reservePressure + fishReservePressure, 0.82);
   }
 
   override setGoal(owner: GameEntity): void {
