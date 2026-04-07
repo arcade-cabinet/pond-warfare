@@ -99,7 +99,7 @@ describe('specialistZoneBehaviorSystem', () => {
   it('returns dual-zone specialists to their anchor area when they drift too far', () => {
     const world = createGameWorld();
     world.frameCount = 20;
-    const ranger = createUnit(world, 320, 120, EntityKind.Brawler);
+    const ranger = createUnit(world, 320, 120, EntityKind.Saboteur);
     registerSpecialistEntity(world, ranger, 'ranger');
     const assignment = world.specialistAssignments.get(ranger);
     if (!assignment) throw new Error('missing assignment');

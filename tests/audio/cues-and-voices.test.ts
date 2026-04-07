@@ -73,7 +73,7 @@ describe('AudioSystem – biome and faction palettes', () => {
   it('plays different selection voice palettes for otters and predators', async () => {
     const playAt = vi.spyOn((sys as any).sfxMgr, 'playAt');
 
-    sys.playSelectionVoice(EntityKind.Brawler, 'otter');
+    sys.playSelectionVoice(EntityKind.Sapper, 'otter');
     await vi.runAllTimersAsync();
     const otterCalls = playAt.mock.calls.map((call) => [call[0], call[1]]);
 

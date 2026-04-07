@@ -36,11 +36,15 @@ const SPECIALIST_KIND_MAP: Record<string, EntityKind> = {
   fisher: EntityKind.Gatherer,
   digger: EntityKind.Gatherer,
   logger: EntityKind.Gatherer,
-  guard: EntityKind.Brawler,
-  ranger: EntityKind.Scout,
+  // Economy/recon specialists still use gatherer/scout because their
+  // low-level automation hooks are keyed off those kinds. Combat specialists
+  // should use the canonical live combat chassis instead of the obsolete
+  // Brawler/Engineer split.
+  guard: EntityKind.Sapper,
+  ranger: EntityKind.Saboteur,
   shaman: EntityKind.Shaman,
   lookout: EntityKind.Scout,
-  bombardier: EntityKind.Engineer,
+  bombardier: EntityKind.Sapper,
 };
 
 const SPECIALIST_STANCE_MAP: Partial<Record<string, number>> = {

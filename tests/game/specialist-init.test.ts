@@ -59,7 +59,7 @@ describe('deploySpecialistsAtMatchStart', () => {
     expect(UnitStateMachine.targetEntity[fisher]).toBe(fishNode);
   });
 
-  it('applies guard stats and anchors it to the lodge defense area', () => {
+  it('applies guard stats on the canonical combat chassis and anchors it to the lodge defense area', () => {
     const world = createGameWorld();
     const lodge = spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
 
@@ -74,7 +74,7 @@ describe('deploySpecialistsAtMatchStart', () => {
       lodge,
     );
 
-    const guard = findPlayerUnit(world, EntityKind.Brawler);
+    const guard = findPlayerUnit(world, EntityKind.Sapper);
     expect(Health.max[guard]).toBe(80);
     expect(Combat.damage[guard]).toBe(6);
     expect(Velocity.speed[guard]).toBeCloseTo(1.2);
@@ -132,7 +132,7 @@ describe('deploySpecialistsAtMatchStart', () => {
       lodge,
     );
 
-    const bombardier = findPlayerUnit(world, EntityKind.Engineer);
+    const bombardier = findPlayerUnit(world, EntityKind.Sapper);
     const assignment = world.specialistAssignments.get(bombardier);
 
     expect(Combat.attackRange[bombardier]).toBe(340);

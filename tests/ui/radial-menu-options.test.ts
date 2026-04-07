@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { EntityKind } from '@/types';
 import { entityKindToRole, getRadialOptions, type RadialOption } from '@/ui/radial-menu-options';
 
 function assertValidOption(opt: RadialOption): void {
@@ -129,28 +130,28 @@ describe('getRadialOptions — unknown role', () => {
 });
 
 describe('entityKindToRole', () => {
-  it('maps Gatherer (0) to generalist', () => {
-    expect(entityKindToRole(0)).toBe('generalist');
+  it('maps Mudpaw chassis to generalist', () => {
+    expect(entityKindToRole(EntityKind.Gatherer)).toBe('generalist');
   });
 
-  it('maps Brawler (1) to combat', () => {
-    expect(entityKindToRole(1)).toBe('combat');
+  it('maps Sapper to combat', () => {
+    expect(entityKindToRole(EntityKind.Sapper)).toBe('combat');
   });
 
-  it('maps Healer (12) to heal', () => {
-    expect(entityKindToRole(12)).toBe('heal');
+  it('maps Medic chassis to heal', () => {
+    expect(entityKindToRole(EntityKind.Healer)).toBe('heal');
   });
 
-  it('maps Scout (16) to scout', () => {
-    expect(entityKindToRole(16)).toBe('scout');
+  it('maps Lookout chassis to scout', () => {
+    expect(entityKindToRole(EntityKind.Scout)).toBe('scout');
   });
 
-  it('maps Shaman (35) to heal', () => {
-    expect(entityKindToRole(35)).toBe('heal');
+  it('maps Shaman to heal', () => {
+    expect(entityKindToRole(EntityKind.Shaman)).toBe('heal');
   });
 
-  it('maps Commander (30) to combat', () => {
-    expect(entityKindToRole(30)).toBe('combat');
+  it('maps Commander to combat', () => {
+    expect(entityKindToRole(EntityKind.Commander)).toBe('combat');
   });
 
   it('maps unknown kinds to combat (default)', () => {

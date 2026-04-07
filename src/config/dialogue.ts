@@ -76,17 +76,17 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
   }),
 
   [EntityKind.Gatherer]: pool({
-    select: ['Ready to work!', 'What do you need?', "Job's a job.", 'Hmm?'],
-    select_repeat: ['More work?', 'Alright, alright.', 'I was on break!'],
-    select_spam: ["I'm not a machine!", 'Union rules say I get a break!', 'STOP. CLICKING. ME.'],
+    select: ['Mudpaw ready.', 'What needs doing?', 'Point me at the problem.', 'Ready for fieldwork.'],
+    select_repeat: ['Still on it.', 'I heard you.', 'Busy paws, steady pond.'],
+    select_spam: ["I'm doing five jobs already!", 'One more tap and you can do it yourself.', 'Alright, alright, I am moving.'],
     move: ['On it.', 'Going!', 'Right away.', 'Off I go.'],
-    gather: ['Ooh, shiny fish!', 'Timber!', "These logs won't gather themselves.", 'Heavy load...'],
-    build: ['Hammer time!', 'Building away!', 'Brick by brick.', "This'll look great."],
-    idle: ['*whistles*', '*yawns*', 'Sooo... what now?', 'I could be gathering, just saying.'],
-    combat: ["I'm a worker, not a fighter!", 'Aaah!', 'Why me?!'],
-    kill: ['Did... did I do that?', "Beginner's luck!"],
+    gather: ['Fish first, questions later.', 'Timber!', 'Got a haul coming in.', 'I can carry that.'],
+    build: ['Setting the frame.', 'Brick by brick.', 'I can patch this together.', 'Give me a moment.'],
+    idle: ['*whistles*', 'The pond is too quiet.', 'I could be fixing something.', 'Waiting on your signal.'],
+    combat: ['I can handle it!', 'Not backing down!', 'For the Lodge!'],
+    kill: ['Still got it.', 'One less problem.', 'That worked better than expected.'],
     low_hp: ['Ow ow ow!', 'Not the face!', 'I need help here!'],
-    death: ['Tell my family... I gathered well...'],
+    death: ['Tell them I held the line...'],
   }),
 
   [EntityKind.Brawler]: pool({
@@ -129,13 +129,13 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
   }),
 
   [EntityKind.Scout]: pool({
-    select: ["What's out there?", 'Reporting in.', 'Fast and quiet.'],
-    select_repeat: ["I'm built for speed, not conversation.", 'Zoom zoom.'],
-    select_spam: ["Can't catch me!", 'Nyoom!', "You'll never be as fast as me."],
-    move: ['Gone!', 'Like the wind!', 'Scouting ahead!'],
-    discover: ['Found something!', 'Enemy spotted!', 'You need to see this!', 'Nest located!'],
-    idle: ['*stretches*', 'Getting rusty...', 'Let me run!'],
-    death: ['Too... slow...'],
+    select: ['Eyes up.', 'Watching the marsh.', 'Recon ready.'],
+    select_repeat: ['Still watching.', 'I have the perimeter.', 'Nothing slips past me twice.'],
+    select_spam: ['The marsh is not getting clearer by tapping me.', 'I can scout and complain at the same time.', 'Yes, yes, still on watch.'],
+    move: ['Sweeping ahead.', 'I have the edge.', 'Taking point.'],
+    discover: ['Movement ahead!', 'Found an opening!', 'Enemy position marked!', 'New ground sighted!'],
+    idle: ['*scans horizon*', 'Fog is shifting...', 'Keeping watch.'],
+    death: ['Eyes... closing...'],
   }),
 
   [EntityKind.Shieldbearer]: pool({
@@ -179,6 +179,44 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
     kill: ['The trap worked!', 'Caught!'],
     idle: ['*whittles trap*', '*checks snares*'],
     death: ['Trapped... myself...'],
+  }),
+
+  [EntityKind.Shaman]: pool({
+    select: ['Spirits listen.', 'Healing current ready.', 'Who needs mending?'],
+    select_repeat: ['Calm yourself.', 'The marsh still answers.', 'I am already watching them.'],
+    select_spam: ['The spirits are patient. Be like them.', 'Even magic needs breathing room.', 'Tap softer.'],
+    move: ['Carrying the current.', 'I am there.', 'Healing on the move.'],
+    heal: ['Easy now.', 'Let the current mend you.', 'Back to your feet.', 'The marsh restores.'],
+    idle: ['*chants softly*', 'The water remembers.', 'Wounds are never far for long.'],
+    combat: ['Stay inside the circle!', 'I can keep you standing!', 'Do not fall yet!'],
+    low_hp: ['I need cover!', 'The spirits fade...', 'Too much pressure!'],
+    death: ['The current... takes me...'],
+  }),
+
+  [EntityKind.Sapper]: pool({
+    select: ['Charges set.', 'Siege ready.', 'Point me at the hard target.'],
+    select_repeat: ['I know where the weak point is.', 'Still carrying enough powder.', 'Waiting on the breach.'],
+    select_spam: ['If it explodes early, that is on you.', 'You want a hole or not?', 'I work better with fewer interruptions.'],
+    move: ['Moving charges.', 'Closing on the wall.', 'I have the breach.'],
+    attack: ['Breach it!', 'Fire in the reeds!', 'Bring it down!', 'Open the way!'],
+    idle: ['*checks fuse*', '*packs powder*', 'Stone always cracks eventually.'],
+    combat: ['Hold them off!', 'Need one clean opening!', 'Almost there!'],
+    kill: ['Target broken.', 'That opened nicely.', 'Nothing stands forever.'],
+    low_hp: ['Need cover for the breach!', 'Fuse is shorter than I am!', 'Too hot up here!'],
+    death: ['Light the next one...'],
+  }),
+
+  [EntityKind.Saboteur]: pool({
+    select: ['Quiet feet.', 'No alarms yet.', 'I go where they do not look.'],
+    select_repeat: ['Still unseen.', 'Patience makes the opening.', 'I know the route.'],
+    select_spam: ['You are louder than I am.', 'Stealth works better without commentary.', 'Yes, yes, I am sneaking.'],
+    move: ['Slipping around.', 'Taking the side path.', 'Keeping low.'],
+    attack: ['Cut the line.', 'Their rear is open.', 'Strike and vanish!', 'Now they notice me.'],
+    idle: ['*checks blade*', '*melts into the reeds*', 'Waiting for the mistake.'],
+    combat: ['Hit the weak point!', 'They never saw me!', 'In and out!'],
+    kill: ['Clean work.', 'Gone before they felt it.', 'That lane is open now.'],
+    low_hp: ['Too exposed!', 'Need another shadow!', 'Time to disappear!'],
+    death: ['Should have... stayed hidden...'],
   }),
 };
 

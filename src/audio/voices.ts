@@ -123,6 +123,7 @@ export class VoiceManager {
     if (kind === EntityKind.Gatherer) return 'worker';
     if (
       kind === EntityKind.Healer ||
+      kind === EntityKind.Shaman ||
       kind === EntityKind.Scout ||
       kind === EntityKind.SwampDrake ||
       kind === EntityKind.Trapper
@@ -150,6 +151,14 @@ export class VoiceManager {
     ) {
       return 'skirmisher';
     }
-    return kind === EntityKind.Brawler || kind === EntityKind.Sniper ? 'skirmisher' : 'heavy';
+    if (
+      kind === EntityKind.Brawler ||
+      kind === EntityKind.Sniper ||
+      kind === EntityKind.Sapper ||
+      kind === EntityKind.Saboteur
+    ) {
+      return 'skirmisher';
+    }
+    return 'heavy';
   }
 }

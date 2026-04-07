@@ -169,12 +169,12 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 1);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 1);
     await vi.runAllTimersAsync();
 
     expect(sfx.playAt).toHaveBeenCalled();
     const calls = sfx.playAt.mock.calls;
-    // Normal volume for skirmisher role (Brawler)
+    // Normal volume for skirmisher role (Sapper)
     for (const call of calls) {
       expect(call[3]).toBeLessThanOrEqual(0.05);
     }
@@ -184,7 +184,7 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 3);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 3);
     await vi.runAllTimersAsync();
 
     const calls = sfx.playAt.mock.calls;
@@ -199,11 +199,11 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 8);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 8);
     await vi.runAllTimersAsync();
 
     const calls = sfx.playAt.mock.calls;
-    // Brawler (skirmisher role) = 2 base steps + 2 stinger = 4 total
+    // Sapper (skirmisher role) = 2 base steps + 2 stinger = 4 total
     expect(calls.length).toBeGreaterThanOrEqual(4);
 
     // Stinger calls include freq 400 and 500
@@ -216,11 +216,11 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 5);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 5);
     await vi.runAllTimersAsync();
 
     const calls = sfx.playAt.mock.calls;
-    // Brawler = 2 steps, no stinger
+    // Sapper = 2 steps, no stinger
     expect(calls.length).toBe(2);
     const freqs = calls.map((c: number[]) => c[0]);
     expect(freqs).not.toContain(400);
