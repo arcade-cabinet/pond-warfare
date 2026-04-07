@@ -90,17 +90,26 @@ export function installDelegates(proto: any): void {
   def(proto, 'selectUnit', function (this: Self) {
     this.sfxMgr.selectUnit();
   });
+  def(proto, 'selectMudpaw', function (this: Self) {
+    this.sfxMgr.selectGatherer();
+  });
   def(proto, 'selectBrawler', function (this: Self) {
     this.sfxMgr.selectBrawler();
   });
   def(proto, 'selectSniper', function (this: Self) {
     this.sfxMgr.selectSniper();
   });
+  def(proto, 'selectMedic', function (this: Self) {
+    this.sfxMgr.selectHealer();
+  });
   def(proto, 'selectHealer', function (this: Self) {
     this.sfxMgr.selectHealer();
   });
   def(proto, 'selectCatapult', function (this: Self) {
     this.sfxMgr.selectCatapult();
+  });
+  def(proto, 'selectLookout', function (this: Self) {
+    this.sfxMgr.selectScout();
   });
   def(proto, 'selectScout', function (this: Self) {
     this.sfxMgr.selectScout();

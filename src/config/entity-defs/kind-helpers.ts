@@ -5,6 +5,7 @@ export function entityKindFromString(name: string): EntityKind {
   const map: Record<string, EntityKind> = {
     gatherer: EntityKind.Gatherer,
     mudpaw: EntityKind.Gatherer,
+    // Historical compatibility melee/ranged ids.
     brawler: EntityKind.Brawler,
     sniper: EntityKind.Sniper,
     gator: EntityKind.Gator,
@@ -22,6 +23,7 @@ export function entityKindFromString(name: string): EntityKind {
     boss_croc: EntityKind.BossCroc,
     shieldbearer: EntityKind.Shieldbearer,
     scout: EntityKind.Scout,
+    lookout: EntityKind.Scout,
     catapult: EntityKind.Catapult,
     wall: EntityKind.Wall,
     scout_post: EntityKind.ScoutPost,
@@ -79,7 +81,8 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.Watchtower]: 'Watchtower',
     [EntityKind.BossCroc]: 'Boss Croc',
     [EntityKind.Shieldbearer]: 'Shieldbearer',
-    [EntityKind.Scout]: 'Scout',
+    // The live player-facing recon specialist on this chassis is `Lookout`.
+    [EntityKind.Scout]: 'Lookout',
     [EntityKind.Catapult]: 'Catapult',
     [EntityKind.Wall]: 'Wall',
     [EntityKind.ScoutPost]: 'Scout Post',

@@ -46,7 +46,7 @@ export const selectionIsMulti = signal(false);
 export const selectionSpriteData = signal<string | null>(null);
 export const selectionKills = signal(0);
 
-/** Typed composition breakdown for multi-select, e.g. "2 gatherer, 1 brawler" */
+/** Typed composition breakdown for multi-select, e.g. "2 Mudpaws, 1 Sapper" */
 export const selectionComposition = signal('');
 
 /** Entity IDs of the first 12 selected units, for mini-grid display */

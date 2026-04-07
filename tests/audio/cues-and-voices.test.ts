@@ -91,4 +91,19 @@ describe('AudioSystem – biome and faction palettes', () => {
       [220, 'square'],
     ]);
   });
+
+  it('exposes canonical selection-sfx aliases for live roster names', async () => {
+    const sfxMgr = (sys as any).sfxMgr;
+    const selectGatherer = vi.spyOn(sfxMgr, 'selectGatherer');
+    const selectHealer = vi.spyOn(sfxMgr, 'selectHealer');
+    const selectScout = vi.spyOn(sfxMgr, 'selectScout');
+
+    sys.selectMudpaw();
+    sys.selectMedic();
+    sys.selectLookout();
+
+    expect(selectGatherer).toHaveBeenCalledTimes(1);
+    expect(selectHealer).toHaveBeenCalledTimes(1);
+    expect(selectScout).toHaveBeenCalledTimes(1);
+  });
 });

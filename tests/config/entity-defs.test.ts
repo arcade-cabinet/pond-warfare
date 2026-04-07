@@ -120,6 +120,7 @@ describe('entityKindName', () => {
   it('should return correct names', () => {
     expect(entityKindName(EntityKind.Gatherer)).toBe('Mudpaw');
     expect(entityKindName(EntityKind.Healer)).toBe('Medic');
+    expect(entityKindName(EntityKind.Scout)).toBe('Lookout');
     expect(entityKindName(EntityKind.PredatorNest)).toBe('Predator Nest');
   });
 });
@@ -129,6 +130,7 @@ describe('entityKindFromString', () => {
     expect(entityKindFromString('gatherer')).toBe(EntityKind.Gatherer);
     expect(entityKindFromString('mudpaw')).toBe(EntityKind.Gatherer);
     expect(entityKindFromString('medic')).toBe(EntityKind.Healer);
+    expect(entityKindFromString('lookout')).toBe(EntityKind.Scout);
     expect(entityKindFromString('predator_nest')).toBe(EntityKind.PredatorNest);
   });
 
