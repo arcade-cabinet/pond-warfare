@@ -62,7 +62,7 @@
 ### Session 10 (mid-game):
 1. Has Frontier Expansion I. Panel 2 unlocked.
 2. Zooms out to see both panels. Good.
-3. Sends Scout into panel 2. Fog reveals muddy forest + log groves.
+3. Sends a Mudpaw into panel 2 to scout ahead. Fog reveals muddy forest + log groves.
 4. Sends Mudpaw to collect logs. "Now I can repair."
 5. Enemies from panel 2 top. Two-front pressure.
 6. "I need the radial to issue attack commands faster."

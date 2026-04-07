@@ -1,7 +1,7 @@
 /**
  * Healing Sub-systems
  *
- * Passive healing, healer aura (max 3 targets), herbalist hut area heal,
+ * Passive healing, Medic aura (max 3 targets), herbalist hut area heal,
  * and regeneration (requires 5s out of combat).
  */
 
@@ -18,10 +18,11 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { MEDIC_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
-/** Max units a single healer can heal per tick. */
+/** Max units a single Medic can heal per tick. */
 const MAX_HEALS_PER_HEALER = 3;
 
 /** Herbalist Hut healing radius in pixels. */
@@ -68,7 +69,7 @@ export function processPassiveHealing(world: GameWorld): void {
   }
 }
 
-/** Healer aura: healers heal up to 3 nearest friendlies within 80px every 60 frames. */
+/** Medic aura: Medics heal up to 3 nearest friendlies within 80px every 60 frames. */
 export function processHealerAura(world: GameWorld): void {
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
 
@@ -78,7 +79,7 @@ export function processHealerAura(world: GameWorld): void {
     const eid = allUnits[i];
     if ((FactionTag.faction[eid] as Faction) !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
-    if ((EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Healer) {
+    if ((EntityTypeTag.kind[eid] as EntityKind) === MEDIC_KIND) {
       healers.push(eid);
     } else if (
       !hasComponent(world.ecs, eid, IsBuilding) &&
@@ -127,7 +128,7 @@ export function processHealerAura(world: GameWorld): void {
     }
 
     if (healCount > 0 && world.gameRng.next() < 0.2) {
-      showBark(world, hEid, hx, hy, EntityKind.Healer, 'heal');
+      showBark(world, hEid, hx, hy, MEDIC_KIND, 'heal');
     }
   }
 }

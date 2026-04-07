@@ -32,6 +32,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } from '@/types';
 import { checkResourceDepletion } from './gathering/depletion-warning';
 import { resumeGatherOverride, retargetGatherOverride } from './gathering/gather-override';
@@ -64,14 +65,14 @@ export function gatheringSystem(world: GameWorld): void {
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const faction = FactionTag.faction[eid] as Faction;
 
-    if (kind === EntityKind.Gatherer && state === UnitState.Idle && resumeGatherOverride(world, eid)) {
+    if (isMudpawKind(kind) && state === UnitState.Idle && resumeGatherOverride(world, eid)) {
       continue;
     }
 
     const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.gatherer;
     if (
       state === UnitState.Idle &&
-      kind === EntityKind.Gatherer &&
+      isMudpawKind(kind) &&
       canAutoGather &&
       (world.frameCount + eid * 7) % 30 === 0
     ) {

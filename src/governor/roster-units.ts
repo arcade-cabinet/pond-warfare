@@ -1,8 +1,8 @@
-import { EntityKind } from '@/types';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import type { RosterGroup, RosterUnit } from '@/ui/roster-types';
 
 export function isMudpawUnit(unit: Pick<RosterUnit, 'kind' | 'label'>): boolean {
-  return unit.kind === EntityKind.Gatherer && (unit.label ?? 'Mudpaw') === 'Mudpaw';
+  return isMudpawKind(unit.kind) && (unit.label ?? 'Mudpaw') === 'Mudpaw';
 }
 
 export function getGovernorGatherUnits(groups: RosterGroup[]): RosterUnit[] {

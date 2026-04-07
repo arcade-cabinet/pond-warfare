@@ -14,6 +14,7 @@ import { spawnEntity } from '@/ecs/archetypes';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 import * as store from '@/ui/store';
 
@@ -140,7 +141,7 @@ export function useAirdrop(world: GameWorld): boolean {
     { x: 40, y: 60 },
     { x: 0, y: 80 },
   ];
-  const airdropKinds = [EntityKind.Gatherer, EntityKind.Gatherer, EntityKind.Healer] as const;
+  const airdropKinds = [MUDPAW_KIND, MUDPAW_KIND, MEDIC_KIND] as const;
   for (let i = 0; i < airdropKinds.length; i++) {
     const offset = offsets[i];
     spawnEntity(

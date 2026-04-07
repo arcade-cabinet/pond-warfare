@@ -1,12 +1,12 @@
 /**
  * Otter-type unit sprites.
  *
- * Some sprite functions still use historical internal names (`gatherer`,
- * `scout`, `brawler`, `sniper`) because they are keyed off long-lived enums.
- * In the live player-facing model those chassis map to:
- * - `drawGatherer` -> Mudpaw and gather-specialist compatibility bodies
- * - `drawScout` -> Lookout compatibility body
- * - `drawBrawler` / `drawSniper` -> historical compatibility bodies
+ * Some sprite functions still use long-lived internal chassis names because
+ * they are keyed off shared enums and sprite registries. In the live
+ * player-facing model those chassis map to:
+ * - `drawGatherer` -> Mudpaw and gather-specialist bodies
+ * - `drawScout` -> Lookout body
+ * - `drawBrawler` / `drawSniper` -> historical compatibility bodies only
  */
 
 import { PALETTE } from '@/constants';

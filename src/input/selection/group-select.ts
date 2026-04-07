@@ -17,6 +17,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /** Select idle worker with cycling. */
@@ -26,7 +27,7 @@ export function selectIdleWorker(world: GameWorld): void {
   const idles = ents.filter(
     (eid) =>
       FactionTag.faction[eid] === Faction.Player &&
-      EntityTypeTag.kind[eid] === EntityKind.Gatherer &&
+      isMudpawKind(EntityTypeTag.kind[eid]) &&
       UnitStateMachine.state[eid] === UnitState.Idle,
   );
 
@@ -45,7 +46,7 @@ export function selectIdleWorker(world: GameWorld): void {
   }
 }
 
-/** Select all army units (non-gatherer player units). */
+/** Select all army units (non-Mudpaw player units). */
 export function selectArmy(world: GameWorld): void {
   audio.selectUnit();
   const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
@@ -54,7 +55,7 @@ export function selectArmy(world: GameWorld): void {
       FactionTag.faction[eid] === Faction.Player &&
       !hasComponent(world.ecs, eid, IsBuilding) &&
       !hasComponent(world.ecs, eid, IsResource) &&
-      EntityTypeTag.kind[eid] !== EntityKind.Gatherer &&
+      !isMudpawKind(EntityTypeTag.kind[eid]) &&
       EntityTypeTag.kind[eid] !== EntityKind.Commander &&
       Health.current[eid] > 0,
   );

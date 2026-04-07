@@ -3,6 +3,7 @@ import { spawnEntity } from '@/ecs/archetypes';
 import { EntityTypeTag, FactionTag, Health, IsResource, Position } from '@/ecs/components';
 import { render } from 'preact';
 import { game } from '@/game';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { App } from '@/ui/app';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
@@ -68,15 +69,15 @@ function ensureBrowserTestRoster(): void {
 
   const lodgeX = Position.x[lodge];
   const lodgeY = Position.y[lodge];
-  const gatherers = getPlayerUnitIds(EntityKind.Gatherer);
-  const sappers = getPlayerUnitIds(EntityKind.Sapper);
+  const mudpaws = getPlayerUnitIds(MUDPAW_KIND);
+  const sappers = getPlayerUnitIds(SAPPER_KIND);
 
-  for (let i = gatherers.length; i < 2; i += 1) {
-    spawnEntity(game.world, EntityKind.Gatherer, lodgeX - 90 + i * 36, lodgeY - 70, Faction.Player);
+  for (let i = mudpaws.length; i < 2; i += 1) {
+    spawnEntity(game.world, MUDPAW_KIND, lodgeX - 90 + i * 36, lodgeY - 70, Faction.Player);
   }
 
   if (sappers.length === 0) {
-    spawnEntity(game.world, EntityKind.Sapper, lodgeX + 70, lodgeY - 90, Faction.Player);
+    spawnEntity(game.world, SAPPER_KIND, lodgeX + 70, lodgeY - 90, Faction.Player);
   }
 }
 

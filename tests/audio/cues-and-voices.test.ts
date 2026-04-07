@@ -97,13 +97,23 @@ describe('AudioSystem – biome and faction palettes', () => {
     const selectGatherer = vi.spyOn(sfxMgr, 'selectGatherer');
     const selectHealer = vi.spyOn(sfxMgr, 'selectHealer');
     const selectScout = vi.spyOn(sfxMgr, 'selectScout');
+    const selectBrawler = vi.spyOn(sfxMgr, 'selectBrawler');
+    const selectSniper = vi.spyOn(sfxMgr, 'selectSniper');
+    const selectCatapult = vi.spyOn(sfxMgr, 'selectCatapult');
 
     sys.selectMudpaw();
     sys.selectMedic();
+    sys.selectGuard();
+    sys.selectRanger();
+    sys.selectBombardier();
+    sys.selectShaman();
     sys.selectLookout();
 
     expect(selectGatherer).toHaveBeenCalledTimes(1);
-    expect(selectHealer).toHaveBeenCalledTimes(1);
+    expect(selectHealer).toHaveBeenCalledTimes(2);
     expect(selectScout).toHaveBeenCalledTimes(1);
+    expect(selectBrawler).toHaveBeenCalledTimes(1);
+    expect(selectSniper).toHaveBeenCalledTimes(1);
+    expect(selectCatapult).toHaveBeenCalledTimes(1);
   });
 });

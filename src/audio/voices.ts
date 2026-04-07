@@ -1,4 +1,5 @@
 import type { PlayableFaction } from '@/config/factions';
+import { isLookoutKind, isMudpawKind, MEDIC_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { SfxManager } from './sfx';
 
@@ -120,11 +121,11 @@ export class VoiceManager {
   }
 
   private roleFor(kind: EntityKind, faction: PlayableFaction): keyof VoicePalette {
-    if (kind === EntityKind.Gatherer) return 'worker';
+    if (isMudpawKind(kind)) return 'worker';
     if (
-      kind === EntityKind.Healer ||
+      kind === MEDIC_KIND ||
       kind === EntityKind.Shaman ||
-      kind === EntityKind.Scout ||
+      isLookoutKind(kind) ||
       kind === EntityKind.SwampDrake ||
       kind === EntityKind.Trapper
     ) {

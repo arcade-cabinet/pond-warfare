@@ -59,7 +59,7 @@ function symbolFromPrevState(prev: UnitState, kind: EntityKind): number {
   if (kind === EntityKind.Healer || kind === EntityKind.Shaman) {
     if (prev === UnitState.Move) return SymbolType.Heal;
   }
-  // Scouts that were moving get scout symbol
+  // Recon specialists on the lookout chassis that were moving get scout symbol
   if (kind === EntityKind.Scout) {
     if (prev === UnitState.Move) return SymbolType.Scout;
   }

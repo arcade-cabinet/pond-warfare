@@ -20,6 +20,7 @@ import {
 import { buildingSystem } from '@/ecs/systems/building';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getPlayerArmory, getPlayerEntities, getPlayerLodge } from '../helpers/ecs-queries';
 
@@ -31,29 +32,29 @@ describe('Building Integration', () => {
     world.frameCount = 1;
   });
 
-  it('gatherer constructs a building from 0 to completion', () => {
+  it('Mudpaw constructs a building from 0 to completion', () => {
     const burrow = spawnEntity(world, EntityKind.Burrow, 300, 300, Faction.Player);
     Building.progress[burrow] = 0;
     Health.current[burrow] = 0;
 
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 300, 300, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.Building;
-    UnitStateMachine.targetEntity[gatherer] = burrow;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 300, 300, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.Building;
+    UnitStateMachine.targetEntity[mudpaw] = burrow;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     // Each timer cycle adds 10 HP. Keep ticking until done.
     const maxHp = Health.max[burrow];
     const cycles = Math.ceil(maxHp / 10);
 
     for (let i = 0; i < cycles; i++) {
-      UnitStateMachine.gatherTimer[gatherer] = 1;
+      UnitStateMachine.gatherTimer[mudpaw] = 1;
       buildingSystem(world);
       world.frameCount++;
     }
 
     expect(Building.progress[burrow]).toBe(100);
     expect(Health.current[burrow]).toBe(maxHp);
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
   });
 
   it('building progress increments correctly', () => {
@@ -61,10 +62,10 @@ describe('Building Integration', () => {
     Building.progress[burrow] = 0;
     Health.current[burrow] = 0;
 
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 300, 300, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.Building;
-    UnitStateMachine.targetEntity[gatherer] = burrow;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 300, 300, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.Building;
+    UnitStateMachine.targetEntity[mudpaw] = burrow;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     buildingSystem(world);
 
@@ -79,7 +80,7 @@ describe('Building Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 1;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Gatherer]);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND]);
 
     world.resources.food = 0;
     world.resources.maxFood = 8;
@@ -89,8 +90,8 @@ describe('Building Integration', () => {
     const slots = trainingQueueSlots.get(lodge) ?? [];
     expect(slots.length).toBe(0);
 
-    const gatherers = getPlayerEntities(world, EntityKind.Gatherer);
-    expect(gatherers.length).toBe(1);
+    const mudpaws = getPlayerEntities(world, MUDPAW_KIND);
+    expect(mudpaws.length).toBe(1);
   });
 
   it('completed lodge can train Medics', () => {
@@ -101,11 +102,11 @@ describe('Building Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 1;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Healer]);
+    trainingQueueSlots.set(lodge, [MEDIC_KIND]);
 
     trainingSystem(world);
 
-    const medics = getPlayerEntities(world, EntityKind.Healer);
+    const medics = getPlayerEntities(world, MEDIC_KIND);
     expect(medics.length).toBe(1);
   });
 
@@ -118,17 +119,17 @@ describe('Building Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 2;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Healer, EntityKind.Sapper]);
+    trainingQueueSlots.set(lodge, [MEDIC_KIND, SAPPER_KIND]);
 
     trainingSystem(world);
-    const medics = getPlayerEntities(world, EntityKind.Healer);
+    const medics = getPlayerEntities(world, MEDIC_KIND);
     expect(medics.length).toBe(1);
 
     expect(TrainingQueue.count[lodge]).toBe(1);
     TrainingQueue.timer[lodge] = 1;
     trainingSystem(world);
 
-    const sappers = getPlayerEntities(world, EntityKind.Sapper);
+    const sappers = getPlayerEntities(world, SAPPER_KIND);
     expect(sappers.length).toBe(1);
   });
 
@@ -140,11 +141,11 @@ describe('Building Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 1;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Healer]);
+    trainingQueueSlots.set(lodge, [MEDIC_KIND]);
 
     trainingSystem(world);
 
-    const medics = getPlayerEntities(world, EntityKind.Healer);
+    const medics = getPlayerEntities(world, MEDIC_KIND);
     expect(medics.length).toBe(0);
   });
 
@@ -153,15 +154,15 @@ describe('Building Integration', () => {
     Health.current[burrow] = 0;
     Health.max[burrow] = 0;
 
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 300, 300, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.Building;
-    UnitStateMachine.targetEntity[gatherer] = burrow;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 300, 300, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.Building;
+    UnitStateMachine.targetEntity[mudpaw] = burrow;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     buildingSystem(world);
 
     // Builder goes idle because target is at max HP (0 == 0)
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
   });
 
   it('sturdy mud tech adds HP to buildings', () => {

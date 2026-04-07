@@ -12,6 +12,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isLookoutKind, isMudpawKind, MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { getEntityDisplayName, getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type {
@@ -24,10 +25,10 @@ import type {
 import * as store from '@/ui/store';
 
 function roleFor(kind: EntityKind): UnitRole {
-  if (kind === EntityKind.Gatherer) return 'generalist';
+  if (isMudpawKind(kind)) return 'generalist';
   if (kind === EntityKind.Commander) return 'commander';
-  if (kind === EntityKind.Healer || kind === EntityKind.Shaman) return 'support';
-  if (kind === EntityKind.Scout) return 'recon';
+  if (kind === MEDIC_KIND || kind === EntityKind.Shaman) return 'support';
+  if (isLookoutKind(kind)) return 'recon';
   return 'combat';
 }
 
@@ -80,7 +81,7 @@ const AUTO_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
 const ROLE_ORDER: UnitRole[] = ['generalist', 'combat', 'support', 'recon', 'commander'];
 
 const BUILDING_TRAIN_MAP: Partial<Record<EntityKind, EntityKind[]>> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Healer, EntityKind.Sapper, EntityKind.Saboteur],
+  [EntityKind.Lodge]: [MUDPAW_KIND, MEDIC_KIND, EntityKind.Sapper, EntityKind.Saboteur],
 };
 
 /** Sync unit and building rosters from ECS into store signals. */

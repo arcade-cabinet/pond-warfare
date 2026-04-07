@@ -23,6 +23,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /**
@@ -170,7 +171,7 @@ export function placeBuilding(world: GameWorld, worldX: number, worldY: number):
     for (const selEid of world.selection) {
       if (
         hasComponent(world.ecs, selEid, EntityTypeTag) &&
-        EntityTypeTag.kind[selEid] === EntityKind.Gatherer &&
+        isMudpawKind(EntityTypeTag.kind[selEid]) &&
         FactionTag.faction[selEid] === Faction.Player
       ) {
         UnitStateMachine.targetEntity[selEid] = eid;

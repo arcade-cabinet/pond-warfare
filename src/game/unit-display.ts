@@ -1,11 +1,12 @@
 import { entityKindName } from '@/config/entity-defs';
 import { EntityTypeTag, FactionTag } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 const PLAYER_MANUAL_LABELS: Partial<Record<EntityKind, string>> = {
-  [EntityKind.Gatherer]: 'Mudpaw',
-  [EntityKind.Healer]: 'Medic',
+  [MUDPAW_KIND]: 'Mudpaw',
+  [MEDIC_KIND]: 'Medic',
 };
 
 export function getPlayerTrainableDisplayName(kind: EntityKind): string {

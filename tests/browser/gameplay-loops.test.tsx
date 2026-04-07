@@ -8,7 +8,7 @@
  * 2. Unit selection (click, drag-select, double-click)
  * 3. Movement (right-click ground, position changes, speed)
  * 4. Gathering (right-click resource → walk → gather → resources increase)
- * 5. Building (select gatherer → click build → place → progress completes)
+ * 5. Building (select Mudpaw → click build → place → progress completes)
  * 6. Training (select building → click train → unit spawns)
  * 7. Tech research (select lodge → click tech → researched)
  * 8. Combat (right-click enemy → walk → attack → enemy HP drops)
@@ -40,6 +40,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { game } from '@/game';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { canPlaceBuilding, issueContextCommand, placeBuilding } from '@/input/selection';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
@@ -127,7 +128,7 @@ function spawnSandboxMudpaw(offsetX = -80, offsetY = -60) {
 
   return spawnEntity(
     game.world,
-    EntityKind.Gatherer,
+    MUDPAW_KIND,
     Position.x[lodge] + offsetX,
     Position.y[lodge] + offsetY,
     Faction.Player,
@@ -222,14 +223,14 @@ function findValidPlacement(kind: EntityKind, centerX: number, centerY: number) 
   return null;
 }
 
-function primeAutoGatherers() {
-  const gatherers = getUnits(EntityKind.Gatherer);
+function primeAutoMudpaws() {
+  const mudpaws = getUnits(MUDPAW_KIND);
   const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
   const logNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Cattail);
   const targets = [fishNode, logNode].filter((eid): eid is number => eid != null);
 
   targets.forEach((target, index) => {
-    const eid = gatherers[index];
+    const eid = mudpaws[index];
     if (eid == null) return;
     Position.x[eid] = Position.x[target] - 36 + index * 18;
     Position.y[eid] = Position.y[target] + 48;
@@ -285,8 +286,8 @@ describe('Full player journey', () => {
       expect(getUnits(EntityKind.Lodge).length).toBe(1);
     });
 
-    it('player has starting gatherers', () => {
-      expect(getUnits(EntityKind.Gatherer).length).toBeGreaterThanOrEqual(2);
+    it('player has starting Mudpaws', () => {
+      expect(getUnits(MUDPAW_KIND).length).toBeGreaterThanOrEqual(2);
     });
 
     it('resources are set', () => {
@@ -303,16 +304,16 @@ describe('Full player journey', () => {
   // ── Phase 2: Unit selection ────────────────────────────────────────────
 
   describe('2. Unit selection', () => {
-    it('left-click selects a gatherer', async () => {
+    it('left-click selects a Mudpaw', async () => {
       await deselectAll();
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
       expect(game.world.selection.length).toBeGreaterThan(0);
       await page.screenshot({ path: 'tests/browser/screenshots/02-unit-selected.png' });
     });
 
     it('selection can be cleared by the test harness without mutating world state', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await deselectAll();
       await selectEntity(gid);
       expect(game.world.selection.length).toBeGreaterThan(0);
@@ -404,7 +405,7 @@ describe('Full player journey', () => {
       ).toBe(true);
     });
 
-    it('gatherer walks toward the right-clicked resource', async () => {
+    it('Mudpaw walks toward the right-clicked resource', async () => {
       const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
       expect(fishNode).toBeDefined();
       const gid = spawnSandboxMudpaw(-110, -80);
@@ -450,8 +451,8 @@ describe('Full player journey', () => {
   // ── Phase 5: Building ──────────────────────────────────────────────────
 
   describe('5. Building', () => {
-    it('select gatherer and open Act tab', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+    it('select Mudpaw and open Act tab', async () => {
+      const gid = getUnits(MUDPAW_KIND)[0];
       await deselectAll();
       forceSelectEntity(gid);
       await delay(200);
@@ -465,7 +466,7 @@ describe('Full player journey', () => {
 
     it('building placement creates a building entity', async () => {
       const buildingsBefore = getUnits(EntityKind.Burrow).length;
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       const lodge = getUnits(EntityKind.Lodge)[0];
       const lx = Position.x[lodge], ly = Position.y[lodge];
 
@@ -506,7 +507,7 @@ describe('Full player journey', () => {
       const burrows = getUnits(EntityKind.Burrow);
       if (burrows.length === 0) return;
 
-      // Assign a gatherer to build
+      // Assign a Mudpaw to build
       game.world.autoBehaviors.gatherer = true;
       await waitFrames(600);
 
@@ -521,9 +522,9 @@ describe('Full player journey', () => {
   // ── Phase 6: Training ──────────────────────────────────────────────────
 
   describe('6. Training units', () => {
-    it('select lodge and train gatherer', async () => {
+    it('select lodge and train Mudpaw', async () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
-      const gatherersBefore = getUnits(EntityKind.Gatherer).length;
+      const mudpawsBefore = getUnits(MUDPAW_KIND).length;
 
       if (game.world.resources.fish < 50) game.world.resources.fish = 200;
       if (game.world.resources.food >= game.world.resources.maxFood) return;
@@ -543,8 +544,8 @@ describe('Full player journey', () => {
       // Wait for training to complete
       await waitFrames(600);
 
-      const gatherersAfter = getUnits(EntityKind.Gatherer).length;
-      expect(gatherersAfter).toBeGreaterThanOrEqual(gatherersBefore);
+      const mudpawsAfter = getUnits(MUDPAW_KIND).length;
+      expect(mudpawsAfter).toBeGreaterThanOrEqual(mudpawsBefore);
       await page.screenshot({ path: 'tests/browser/screenshots/06-trained-unit.png' });
     });
   });
@@ -613,7 +614,7 @@ describe('Full player journey', () => {
       expect(lodge).toBeDefined();
       const gid = spawnEntity(
         game.world,
-        EntityKind.Gatherer,
+        MUDPAW_KIND,
         Position.x[fishNode!] - 40,
         Position.y[fishNode!] + 40,
         Faction.Player,
@@ -626,7 +627,7 @@ describe('Full player journey', () => {
       Carrying.resourceAmount[gid] = 0;
       const startX = Position.x[gid];
       const startY = Position.y[gid];
-      for (const other of getUnits(EntityKind.Gatherer)) {
+      for (const other of getUnits(MUDPAW_KIND)) {
         if (other === gid) continue;
         Position.x[other] = Position.x[lodge] - 180;
         Position.y[other] = Position.y[lodge] + 180;
@@ -674,7 +675,7 @@ describe('Full player journey', () => {
       await waitFrames(120);
 
       const combat = getUnits(EntityKind.Sapper)
-        .concat(getUnits(EntityKind.Sniper));
+        .concat(getUnits(EntityKind.Saboteur));
 
       const attacking = combat.filter(
         (eid) => UnitStateMachine.state[eid] === UnitState.AttackMove ||

@@ -15,6 +15,7 @@ import {
   Position,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind, Faction } from '@/types';
 import {
@@ -64,7 +65,7 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
     const selFaction = FactionTag.faction[selEid] as Faction;
 
     if (selFaction === Faction.Player) {
-      if (selKind === EntityKind.Gatherer) {
+      if (isMudpawKind(selKind)) {
         btns.push(...buildMudpawButtons(w));
       }
 

@@ -27,6 +27,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind, MEDIC_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 
@@ -68,12 +69,12 @@ export function computePopulation(world: GameWorld): PopulationResult {
       }
       const isAutonomousSpecialist = hasComponent(w.ecs, eid, AutonomousSpecialist);
       const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
-      if (kind === EntityKind.Gatherer) {
+      if (isMudpawKind(kind)) {
         if (isIdle && !isAutonomousSpecialist) {
           idleWorkers++;
           idleGeneralists++;
         }
-      } else if (kind === EntityKind.Healer) {
+      } else if (kind === MEDIC_KIND) {
         armyUnits++;
         if (isIdle && !isAutonomousSpecialist) idleHealers++;
       } else if (kind === EntityKind.Commander) {

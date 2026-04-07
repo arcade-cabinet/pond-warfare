@@ -22,6 +22,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { beginSpecialistAssignment } from '@/game/specialist-assignment';
 import { train } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -35,10 +36,10 @@ export { tryPlaceFortAtPosition } from './radial-fort-actions';
 
 /** Unit kind mapping for training commands. */
 const TRAIN_KIND_MAP: Record<string, EntityKind> = {
-  train_mudpaw: EntityKind.Gatherer,
-  train_medic: EntityKind.Healer,
-  train_sapper: EntityKind.Sapper,
-  train_saboteur: EntityKind.Saboteur,
+  train_mudpaw: MUDPAW_KIND,
+  train_medic: MEDIC_KIND,
+  train_sapper: SAPPER_KIND,
+  train_saboteur: SABOTEUR_KIND,
 };
 
 /** v3 generalist names for config lookup. */

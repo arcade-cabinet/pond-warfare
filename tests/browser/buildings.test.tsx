@@ -29,8 +29,10 @@ import {
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { BUILD_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
+import { buildingSystem } from '@/ecs/systems/building';
 import { combatSystem } from '@/ecs/systems/combat';
 import { game } from '@/game';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -101,6 +103,22 @@ async function waitFrames(n: number) {
   while (game.world.frameCount - start < n) await delay(16);
 }
 
+function runBuildingFrames(n: number) {
+  for (let i = 0; i < n; i += 1) {
+    game.world.frameCount += 1;
+    buildingSystem(game.world);
+  }
+}
+
+function runUntilBuildingComplete(buildingEid: number, maxFrames = BUILD_TIMER * 60) {
+  for (let i = 0; i < maxFrames; i += 1) {
+    game.world.frameCount += 1;
+    buildingSystem(game.world);
+    if (Building.progress[buildingEid] >= 100) return;
+  }
+  throw new Error(`Building ${buildingEid} did not complete within ${maxFrames} frames`);
+}
+
 async function selectEntity(eid: number) {
   clickWorld(Position.x[eid], Position.y[eid], 0);
   await delay(150);
@@ -126,6 +144,16 @@ function spawnIncompleteBuilding(kind: EntityKind, x: number, y: number): number
 // ---------------------------------------------------------------------------
 
 const mountGame = mountCurrentGame;
+
+async function resetBuildingSandbox() {
+  await mountGame();
+  await delay(250);
+  game.world.gameSpeed = 3;
+  game.world.resources.fish = 50000;
+  game.world.resources.logs = 50000;
+  game.world.resources.rocks = 5000;
+  game.world.resources.maxFood = 200;
+}
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -335,7 +363,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       spawnCompleteBuilding(EntityKind.HerbalistHut, hx, hy);
 
       // Spawn a wounded player unit within 150px of the hut
-      const woundedEid = spawnEntity(game.world, EntityKind.Brawler, hx + 30, hy + 30, Faction.Player);
+      const woundedEid = spawnEntity(game.world, SAPPER_KIND, hx + 30, hy + 30, Faction.Player);
       const maxHp = Health.max[woundedEid];
       Health.current[woundedEid] = Math.floor(maxHp * 0.5);
       const hpBefore = Health.current[woundedEid];
@@ -417,7 +445,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
       // --- Single builder test ---
       const building1 = spawnIncompleteBuilding(EntityKind.Burrow, bx, by);
-      const builder1 = spawnEntity(game.world, EntityKind.Gatherer, bx + 10, by + 10, Faction.Player);
+      const builder1 = spawnEntity(game.world, MUDPAW_KIND, bx + 10, by + 10, Faction.Player);
 
       // Assign builder to the building
       UnitStateMachine.state[builder1] = UnitState.Building;
@@ -431,8 +459,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
       // --- Two builder test ---
       const building2 = spawnIncompleteBuilding(EntityKind.Burrow, bx + 200, by);
-      const builderA = spawnEntity(game.world, EntityKind.Gatherer, bx + 210, by + 10, Faction.Player);
-      const builderB = spawnEntity(game.world, EntityKind.Gatherer, bx + 220, by + 10, Faction.Player);
+      const builderA = spawnEntity(game.world, MUDPAW_KIND, bx + 210, by + 10, Faction.Player);
+      const builderB = spawnEntity(game.world, MUDPAW_KIND, bx + 220, by + 10, Faction.Player);
 
       UnitStateMachine.state[builderA] = UnitState.Building;
       UnitStateMachine.targetEntity[builderA] = building2;
@@ -488,7 +516,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       Health.current[spawnedLodge] = Health.max[spawnedLodge];
       const commander = spawnEntity(game.world, EntityKind.Commander, 440, 340, Faction.Player);
       game.world.commanderEntityId = commander;
-      spawnEntity(game.world, EntityKind.Gatherer, 360, 360, Faction.Player);
+      spawnEntity(game.world, MUDPAW_KIND, 360, 360, Faction.Player);
       rebuildSpatialHash();
     });
   });
@@ -568,6 +596,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
   describe('15. Construction progress', () => {
     it('building progress increases from 1 toward 100 with a builder', async () => {
+      await resetBuildingSandbox();
+
       const lodge = getUnits(EntityKind.Lodge)[0];
       const bx = Position.x[lodge] + 400;
       const by = Position.y[lodge] + 100;
@@ -575,13 +605,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const buildingEid = spawnIncompleteBuilding(EntityKind.Burrow, bx, by);
       expect(Building.progress[buildingEid]).toBeLessThan(5);
 
-      const builderEid = spawnEntity(game.world, EntityKind.Gatherer, bx + 5, by + 5, Faction.Player);
+      const builderEid = spawnEntity(game.world, MUDPAW_KIND, bx + 5, by + 5, Faction.Player);
       UnitStateMachine.state[builderEid] = UnitState.Building;
       UnitStateMachine.targetEntity[builderEid] = buildingEid;
       UnitStateMachine.gatherTimer[builderEid] = BUILD_TIMER;
 
-      // Wait for sufficient build ticks (BUILD_TIMER=25 frames per tick, each adds 10 HP)
-      await waitFrames(600);
+      runBuildingFrames(BUILD_TIMER + 5);
 
       expect(Building.progress[buildingEid]).toBeGreaterThan(1);
     });
@@ -593,6 +622,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
   describe('16. Building destruction', () => {
     it('building is removed when HP reaches 0 via takeDamage', async () => {
+      await resetBuildingSandbox();
+
       const lodge = getUnits(EntityKind.Lodge)[0];
       const bx = Position.x[lodge] + 500;
       const by = Position.y[lodge] + 500;
@@ -603,9 +634,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       // Deal lethal damage
       takeDamage(game.world, wallEid, Health.max[wallEid] + 100, -1);
 
-      // Entity should be removed from queries after death processing
-      // processDeath removes entity synchronously via removeEntity
-      await waitFrames(30);
+      // processDeath removes the building synchronously via removeEntity
       const walls = getUnits(EntityKind.Wall).filter((e) =>
         Position.x[e] === bx && Position.y[e] === by,
       );
@@ -613,6 +642,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
     });
 
     it('screen shakes on building destruction', async () => {
+      await resetBuildingSandbox();
+
       const lodge = getUnits(EntityKind.Lodge)[0];
       const bx = Position.x[lodge] + 600;
       const by = Position.y[lodge] + 600;
@@ -634,6 +665,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
   describe('17. Fortified Walls tech', () => {
     it('Wall completed with fortifiedWalls tech gets +100 HP', async () => {
+      await resetBuildingSandbox();
       game.world.tech.fortifiedWalls = true;
 
       const lodge = getUnits(EntityKind.Lodge)[0];
@@ -644,15 +676,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const baseMax = Health.max[wallEid];
 
       // Assign a builder and run until complete
-      const builderEid = spawnEntity(game.world, EntityKind.Gatherer, wx + 5, wy + 5, Faction.Player);
+      const builderEid = spawnEntity(game.world, MUDPAW_KIND, wx + 5, wy + 5, Faction.Player);
       UnitStateMachine.state[builderEid] = UnitState.Building;
       UnitStateMachine.targetEntity[builderEid] = wallEid;
       UnitStateMachine.gatherTimer[builderEid] = BUILD_TIMER;
 
-      // Wait for construction to complete (Wall is 400 HP, BUILD_TIMER=25 frames per tick,
-      // each tick adds 10 HP, so 40 ticks * 25 frames = 1000 frames at 1x speed)
-      // With gameSpeed=3, this goes faster but waitFrames counts game frames
-      await waitFrames(1800);
+      runUntilBuildingComplete(wallEid);
 
       // Verify the wall completed
       expect(Building.progress[wallEid]).toBeGreaterThanOrEqual(100);
@@ -688,6 +717,8 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
   describe('19. Incomplete buildings are inactive', () => {
     it('Tower at progress < 100 does not fire', async () => {
+      await resetBuildingSandbox();
+
       const lodge = getUnits(EntityKind.Lodge)[0];
       const tx = Position.x[lodge] - 400;
       const ty = Position.y[lodge] - 400;
@@ -703,10 +734,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const enemyEid = spawnEntity(game.world, EntityKind.Gator, tx + 50, ty, Faction.Enemy);
       const hpBefore = Health.current[enemyEid];
 
-      await waitFrames(180);
+      rebuildSpatialHash();
+      combatSystem(game.world);
 
       // Tower should not have fired because building is incomplete (progress < 100)
       expect(Health.current[enemyEid]).toBe(hpBefore);
+      expect(Combat.attackCooldown[towerEid]).toBe(0);
 
       Health.current[enemyEid] = 0;
     });

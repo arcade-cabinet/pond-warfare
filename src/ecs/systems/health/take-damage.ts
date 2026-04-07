@@ -23,6 +23,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { triggerHitRecoil } from '@/rendering/animations';
 import { checkAttackAlert } from '@/systems/attack-alerts';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -215,7 +216,7 @@ function processRetaliation(
       targetState === UnitState.Move
     ) {
       const isGathering =
-        (targetKind === EntityKind.Gatherer || hasGatherOverride) &&
+        (isMudpawKind(targetKind) || hasGatherOverride) &&
         (hasGatherOverride ||
           targetState === UnitState.Gathering ||
           targetState === UnitState.GatherMove ||

@@ -5,8 +5,9 @@
  */
 
 import { type Container, type Graphics, Text, type TextStyleOptions } from 'pixi.js';
+import { entityKindName } from '@/config/entity-defs';
 import { CB_PALETTE } from '@/constants';
-import { EntityKind, type EntityKind as EntityKindType } from '@/types';
+import { type EntityKind as EntityKindType } from '@/types';
 import { cleanupAutoSymbols } from './auto-symbol-overlay';
 import {
   colorToHex,
@@ -216,7 +217,7 @@ export function renderUnitLabel(
       entityLayer.addChild(label);
       unitLabelTexts.set(eid, label);
     }
-    label.text = EntityKind[kind] ?? '';
+    label.text = entityKindName(kind);
     label.position.set(ex, ey - sh / 2 + yOff - 16);
     label.zIndex = ey + 1;
     label.visible = true;

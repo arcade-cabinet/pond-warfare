@@ -5,13 +5,14 @@
  * Also opens the radial menu on Lodge or selected-unit taps.
  * v3: handles fortification slot placement when placingBuilding starts with "fort_".
  *
- * Fix: when re-tapping a selected gatherer near a resource node, dispatch
+ * Fix: when re-tapping a selected Mudpaw near a resource node, dispatch
  * a gather command instead of opening the radial menu.
  */
 
 import { showSelectBark } from '@/config/barks';
 import { AutoSymbol } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { placePendingSpecialistAssignment } from '@/game/specialist-assignment';
 import { hitTestAutoSymbol } from '@/rendering/pixi/auto-symbol-overlay';
 import { EntityKind, type EntityKind as EntityKindType } from '@/types';
@@ -98,11 +99,11 @@ export function handleClick(
       // over opening the radial menu -- this is the core gameplay loop.
       if (wasAlreadySelected && !isShiftDown()) {
         const resourceUnder = cb.getResourceAt(mouse.worldX, mouse.worldY);
-        const hasGatherer = world.selection.some(
+        const hasMudpaw = world.selection.some(
           (eid) =>
-            cb.getEntityKind(eid) === EntityKind.Gatherer && cb.getSpecialistMenuMode(eid) === null,
+            isMudpawKind(cb.getEntityKind(eid)) && cb.getSpecialistMenuMode(eid) === null,
         );
-        if (resourceUnder !== null && hasGatherer) {
+        if (resourceUnder !== null && hasMudpaw) {
           cb.issueContextCommand(resourceUnder);
           clickState.lastClickTime = now;
           clickState.lastClickEntity = clicked;

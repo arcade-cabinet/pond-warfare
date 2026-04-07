@@ -23,6 +23,12 @@ import {
   shouldRefreshSpecialistPatrol,
 } from '@/game/specialist-assignment-queries';
 import {
+  LOOKOUT_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
+import {
   getSpecialistAssignment,
   registerSpecialistEntity,
 } from '@/game/specialist-assignment';
@@ -33,18 +39,18 @@ import { EntityKind, Faction, UnitState } from '@/types';
 export type SpecialistSpawnMode = 'blueprint' | 'legacy_snapshot';
 
 const SPECIALIST_KIND_MAP: Record<string, EntityKind> = {
-  fisher: EntityKind.Gatherer,
-  digger: EntityKind.Gatherer,
-  logger: EntityKind.Gatherer,
+  fisher: MUDPAW_KIND,
+  digger: MUDPAW_KIND,
+  logger: MUDPAW_KIND,
   // Economy/recon specialists still use gatherer/scout because their
   // low-level automation hooks are keyed off those kinds. Combat specialists
   // should use the canonical live combat chassis instead of the obsolete
   // Brawler/Engineer split.
-  guard: EntityKind.Sapper,
-  ranger: EntityKind.Saboteur,
+  guard: SAPPER_KIND,
+  ranger: SABOTEUR_KIND,
   shaman: EntityKind.Shaman,
-  lookout: EntityKind.Scout,
-  bombardier: EntityKind.Sapper,
+  lookout: LOOKOUT_KIND,
+  bombardier: SAPPER_KIND,
 };
 
 const SPECIALIST_STANCE_MAP: Partial<Record<string, number>> = {

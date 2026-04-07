@@ -54,11 +54,15 @@ export interface AudioDelegateMethods {
   advisorTip(): void;
   selectUnit(): void;
   selectMudpaw(): void;
+  selectGuard(): void;
+  selectRanger(): void;
+  selectBombardier(): void;
   selectBrawler(): void;
   selectSniper(): void;
   selectMedic(): void;
   selectHealer(): void;
   selectCatapult(): void;
+  selectShaman(): void;
   selectLookout(): void;
   selectScout(): void;
   selectCommander(): void;

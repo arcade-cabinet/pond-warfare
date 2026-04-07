@@ -10,6 +10,12 @@
 import { Goal } from 'yuka';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { game } from '@/game';
+import {
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { train } from '@/input/selection';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
@@ -39,10 +45,10 @@ function scoutCount(): number {
 function trainableUnits(buildingKind: EntityKind, canTrain: EntityKind[]): EntityKind[] {
   if (buildingKind === EntityKind.Lodge) {
     const stage = Math.max(1, Math.trunc(storeV3.progressionLevel.value || 1));
-    const manualUnits = [EntityKind.Gatherer];
-    if (stage >= 2) manualUnits.push(EntityKind.Healer);
-    if (stage >= 5) manualUnits.push(EntityKind.Sapper);
-    if (stage >= 6) manualUnits.push(EntityKind.Saboteur);
+    const manualUnits = [MUDPAW_KIND];
+    if (stage >= 2) manualUnits.push(MEDIC_KIND);
+    if (stage >= 5) manualUnits.push(SAPPER_KIND);
+    if (stage >= 6) manualUnits.push(SABOTEUR_KIND);
     return manualUnits;
   }
   return canTrain;
@@ -76,22 +82,22 @@ export class TrainGoal extends Goal {
   }
 
   private pickUnit(trainable: EntityKind[]): EntityKind | null {
-    if (trainable.includes(EntityKind.Gatherer) && mudpawCount() < getGovernorMudpawTarget()) {
-      return EntityKind.Gatherer;
+    if (trainable.includes(MUDPAW_KIND) && mudpawCount() < getGovernorMudpawTarget()) {
+      return MUDPAW_KIND;
     }
-    if (trainable.includes(EntityKind.Gatherer) && armySize() < getGovernorCombatTarget()) {
-      return EntityKind.Gatherer;
+    if (trainable.includes(MUDPAW_KIND) && armySize() < getGovernorCombatTarget()) {
+      return MUDPAW_KIND;
     }
-    if (trainable.includes(EntityKind.Healer) && shouldTrainSupportUnit()) {
-      return EntityKind.Healer;
+    if (trainable.includes(MEDIC_KIND) && shouldTrainSupportUnit()) {
+      return MEDIC_KIND;
     }
-    if (trainable.includes(EntityKind.Saboteur) && armySize() >= Math.max(4, getGovernorCombatTarget())) {
-      return EntityKind.Saboteur;
+    if (trainable.includes(SABOTEUR_KIND) && armySize() >= Math.max(4, getGovernorCombatTarget())) {
+      return SABOTEUR_KIND;
     }
-    if (trainable.includes(EntityKind.Sapper) && armySize() >= Math.max(2, getGovernorCombatTarget() - 1)) {
-      return EntityKind.Sapper;
+    if (trainable.includes(SAPPER_KIND) && armySize() >= Math.max(2, getGovernorCombatTarget() - 1)) {
+      return SAPPER_KIND;
     }
-    if (trainable.includes(EntityKind.Healer)) return EntityKind.Healer;
+    if (trainable.includes(MEDIC_KIND)) return MEDIC_KIND;
     return trainable[0] ?? null;
   }
 

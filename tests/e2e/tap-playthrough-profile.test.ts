@@ -39,6 +39,13 @@ import { movementSystem } from '@/ecs/systems/movement';
 import { trainingSystem } from '@/ecs/systems/training';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { computePopulation } from '@/game/population-counter';
 import { syncRosters } from '@/game/roster-sync';
@@ -125,13 +132,11 @@ function findPlayerUnits(w: GameWorld, kind: EntityKind): number[] {
 /** Find all idle player combat-capable units, including Mudpaws. */
 function findIdleCombatUnits(w: GameWorld): number[] {
   const combatKinds = new Set([
-    EntityKind.Gatherer,
-    EntityKind.Brawler,
-    EntityKind.Sniper,
-    EntityKind.Healer,
-    EntityKind.Scout,
-    EntityKind.Sapper,
-    EntityKind.Saboteur,
+    MUDPAW_KIND,
+    MEDIC_KIND,
+    LOOKOUT_KIND,
+    SAPPER_KIND,
+    SABOTEUR_KIND,
   ]);
   const results: number[] = [];
   for (const eid of query(w.ecs, [EntityTypeTag, FactionTag, Health, UnitStateMachine])) {
@@ -274,10 +279,10 @@ function tapTrainFromRadial(w: GameWorld, lodgeEid: number, unitKind: EntityKind
   const options = getRadialOptions('lodge', null, gameState);
 
   const kindToRadialId: Partial<Record<EntityKind, string>> = {
-    [EntityKind.Gatherer]: 'train_mudpaw',
-    [EntityKind.Healer]: 'train_medic',
-    [EntityKind.Sapper]: 'train_sapper',
-    [EntityKind.Saboteur]: 'train_saboteur',
+    [MUDPAW_KIND]: 'train_mudpaw',
+    [MEDIC_KIND]: 'train_medic',
+    [SAPPER_KIND]: 'train_sapper',
+    [SABOTEUR_KIND]: 'train_saboteur',
   };
 
   const radialId = kindToRadialId[unitKind];
@@ -360,7 +365,7 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
     let prevResourcesGathered = world.stats.resourcesGathered;
     let prevKills = world.stats.unitsKilled;
     let prevWaveNumber = world.waveNumber;
-    let gathererTrainAttempts = 0;
+    let mudpawTrainAttempts = 0;
     let fighterTrainAttempts = 0;
 
     const TOTAL_FRAMES = 13200; // 220 seconds — past 3-min peace timer + initial combat
@@ -401,10 +406,10 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
 
       const lodgeX = Position.x[lodge];
       const lodgeY = Position.y[lodge];
-      const mudpaws = findPlayerUnits(world, EntityKind.Gatherer);
-      const medics = findPlayerUnits(world, EntityKind.Healer);
-      const sappers = findPlayerUnits(world, EntityKind.Sapper);
-      const saboteurs = findPlayerUnits(world, EntityKind.Saboteur);
+      const mudpaws = findPlayerUnits(world, MUDPAW_KIND);
+      const medics = findPlayerUnits(world, MEDIC_KIND);
+      const sappers = findPlayerUnits(world, SAPPER_KIND);
+      const saboteurs = findPlayerUnits(world, SABOTEUR_KIND);
       const baseAttacked = isBaseUnderAttack(world, 500);
 
       // Priority 1: If base is under attack, rally ALL combat units
@@ -426,25 +431,25 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
       }
 
       // Priority 2: Train units via Lodge radial menu
-      if (mudpaws.length < 4 && gathererTrainAttempts < 10) {
+      if (mudpaws.length < 4 && mudpawTrainAttempts < 10) {
         tapSelect(world, lodge);
-        if (tapTrainFromRadial(world, lodge, EntityKind.Gatherer)) {
-          gathererTrainAttempts++;
+        if (tapTrainFromRadial(world, lodge, MUDPAW_KIND)) {
+          mudpawTrainAttempts++;
         }
       } else if (stage >= 2 && medics.length < 1 && fighterTrainAttempts < 4) {
         tapSelect(world, lodge);
-        if (tapTrainFromRadial(world, lodge, EntityKind.Healer)) {
+        if (tapTrainFromRadial(world, lodge, MEDIC_KIND)) {
           fighterTrainAttempts++;
         }
       } else if (stage >= 5 && sappers.length < 1) {
         tapSelect(world, lodge);
-        tapTrainFromRadial(world, lodge, EntityKind.Sapper);
+        tapTrainFromRadial(world, lodge, SAPPER_KIND);
       } else if (stage >= 6 && saboteurs.length < 1) {
         tapSelect(world, lodge);
-        tapTrainFromRadial(world, lodge, EntityKind.Saboteur);
+        tapTrainFromRadial(world, lodge, SABOTEUR_KIND);
       } else if (world.resources.food < world.resources.maxFood) {
         tapSelect(world, lodge);
-        tapTrainFromRadial(world, lodge, EntityKind.Gatherer);
+        tapTrainFromRadial(world, lodge, MUDPAW_KIND);
       }
 
       // Priority 3: Send idle Mudpaws to fish

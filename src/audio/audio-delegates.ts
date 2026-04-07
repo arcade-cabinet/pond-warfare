@@ -91,7 +91,16 @@ export function installDelegates(proto: any): void {
     this.sfxMgr.selectUnit();
   });
   def(proto, 'selectMudpaw', function (this: Self) {
-    this.sfxMgr.selectGatherer();
+    this.sfxMgr.selectMudpaw();
+  });
+  def(proto, 'selectGuard', function (this: Self) {
+    this.sfxMgr.selectGuard();
+  });
+  def(proto, 'selectRanger', function (this: Self) {
+    this.sfxMgr.selectRanger();
+  });
+  def(proto, 'selectBombardier', function (this: Self) {
+    this.sfxMgr.selectBombardier();
   });
   def(proto, 'selectBrawler', function (this: Self) {
     this.sfxMgr.selectBrawler();
@@ -100,7 +109,10 @@ export function installDelegates(proto: any): void {
     this.sfxMgr.selectSniper();
   });
   def(proto, 'selectMedic', function (this: Self) {
-    this.sfxMgr.selectHealer();
+    this.sfxMgr.selectMedic();
+  });
+  def(proto, 'selectShaman', function (this: Self) {
+    this.sfxMgr.selectShaman();
   });
   def(proto, 'selectHealer', function (this: Self) {
     this.sfxMgr.selectHealer();
@@ -109,7 +121,7 @@ export function installDelegates(proto: any): void {
     this.sfxMgr.selectCatapult();
   });
   def(proto, 'selectLookout', function (this: Self) {
-    this.sfxMgr.selectScout();
+    this.sfxMgr.selectLookout();
   });
   def(proto, 'selectScout', function (this: Self) {
     this.sfxMgr.selectScout();

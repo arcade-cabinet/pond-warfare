@@ -7,6 +7,7 @@
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import type { GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { train } from '@/input/selection';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind } from '@/types';
@@ -23,28 +24,28 @@ interface ManualButtonSpec {
 
 const MANUAL_BUTTON_SPECS: ManualButtonSpec[] = [
   {
-    kind: EntityKind.Gatherer,
+    kind: MUDPAW_KIND,
     title: 'Mudpaw',
     hotkey: 'Q',
     requiredStage: 1,
     description: 'Generalist manual otter. Gathers, fights, scouts, builds, and repairs.',
   },
   {
-    kind: EntityKind.Healer,
+    kind: MEDIC_KIND,
     title: 'Medic',
     hotkey: 'W',
     requiredStage: 2,
     description: 'Field support manual unit that keeps Mudpaws and siege teams alive.',
   },
   {
-    kind: EntityKind.Sapper,
+    kind: SAPPER_KIND,
     title: 'Sapper',
     hotkey: 'E',
     requiredStage: 5,
     description: 'Manual siege specialist for breaking late-panel fort pressure.',
   },
   {
-    kind: EntityKind.Saboteur,
+    kind: SABOTEUR_KIND,
     title: 'Saboteur',
     hotkey: 'R',
     requiredStage: 6,

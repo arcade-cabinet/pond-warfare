@@ -15,6 +15,7 @@ import {
   Position, Selectable,
 } from '@/ecs/components';
 import { game } from '@/game';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { canPlaceBuilding, placeBuilding } from '@/input/selection';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
@@ -148,8 +149,8 @@ describe('Training & Building', () => {
     expect(getUnits(EntityKind.Lodge).length).toBeGreaterThan(0);
   });
 
-  it('select gatherer shows build actions in panel', async () => {
-    const gid = getUnits(EntityKind.Gatherer)[0];
+  it('select Mudpaw shows build actions in panel', async () => {
+    const gid = getUnits(MUDPAW_KIND)[0];
     await selectEntity(gid);
     await delay(200);
     await openPanelTab('Act');
@@ -161,7 +162,7 @@ describe('Training & Building', () => {
 
   it('place and build a burrow', async () => {
     const burrowsBefore = getUnits(EntityKind.Burrow).length;
-    const gid = getUnits(EntityKind.Gatherer)[0];
+    const gid = getUnits(MUDPAW_KIND)[0];
     const lodge = getUnits(EntityKind.Lodge)[0];
     const lx = Position.x[lodge], ly = Position.y[lodge];
 
@@ -177,7 +178,7 @@ describe('Training & Building', () => {
     game.syncUIStore();
     await delay(300);
 
-    // Enable auto-build so gatherer finishes it
+    // Enable auto-build so the Mudpaw finishes it
     game.world.autoBehaviors.gatherer = true;
     await waitFrames(600);
 
@@ -186,12 +187,12 @@ describe('Training & Building', () => {
     await page.screenshot({ path: 'tests/browser/screenshots/ct-burrow-built.png' });
   });
 
-  it('gatherer can be selected and is correct entity type', async () => {
-    const gid = getUnits(EntityKind.Gatherer)[0];
+  it('Mudpaw can be selected and is correct entity type', async () => {
+    const gid = getUnits(MUDPAW_KIND)[0];
     forceSelectEntity(gid);
     await delay(200);
     expect(game.world.selection.length).toBeGreaterThan(0);
-    expect(EntityTypeTag.kind[gid]).toBe(EntityKind.Gatherer);
+    expect(EntityTypeTag.kind[gid]).toBe(MUDPAW_KIND);
   });
 
   it('food cap prevents training when full', async () => {
@@ -200,7 +201,6 @@ describe('Training & Building', () => {
     if (food < maxFood) return; // can't test if not at cap
 
     const lodge = getUnits(EntityKind.Lodge)[0];
-    const gatherersBefore = getUnits(EntityKind.Gatherer).length;
     await selectEntity(lodge);
     await openPanelTab('Act');
     // Button should be disabled/grayed

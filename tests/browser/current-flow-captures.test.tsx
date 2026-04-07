@@ -5,6 +5,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { game } from '@/game';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { App } from '@/ui/app';
 import * as store from '@/ui/store';
@@ -199,14 +200,14 @@ describe('Current flow captures', () => {
 
     const lodge = findPlayerLodge();
     const fishNode = findFishNode();
-    const gatherer = spawnEntity(
+    const mudpaw = spawnEntity(
       game.world,
-      EntityKind.Gatherer,
+      MUDPAW_KIND,
       Position.x[lodge] - 80,
       Position.y[lodge] - 60,
       Faction.Player,
     );
-    clickWorld(Position.x[gatherer], Position.y[gatherer], 0);
+    clickWorld(Position.x[mudpaw], Position.y[mudpaw], 0);
     await delay(200);
     clickWorld(Position.x[fishNode], Position.y[fishNode], 2);
     await waitFrames(120);
@@ -223,14 +224,14 @@ describe('Current flow captures', () => {
 
     spawnEntity(
       game.world,
-      EntityKind.Sapper,
+      SAPPER_KIND,
       Position.x[lodge] + 40,
       Position.y[lodge] - 80,
       Faction.Player,
     );
     spawnEntity(
       game.world,
-      EntityKind.Sapper,
+      SAPPER_KIND,
       Position.x[lodge] + 40,
       Position.y[lodge] - 150,
       Faction.Enemy,

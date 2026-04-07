@@ -2,7 +2,7 @@
  * Auto-Build System
  *
  * When auto-build is enabled (via the idle menu), evaluates build pressures
- * every 300 frames (~5 seconds) and assigns an idle gatherer to construct
+ * every 300 frames (~5 seconds) and assigns an idle Mudpaw to construct
  * the highest-priority affordable building near the player Lodge.
  *
  * Pressure scoring:
@@ -27,6 +27,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { canPlaceBuilding } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
 
@@ -180,14 +181,14 @@ function findBuildPosition(
   return null;
 }
 
-/** Find the first idle player gatherer. Returns -1 if none. */
+/** Find the first idle player Mudpaw. Returns -1 if none. */
 function findIdleGatherer(world: GameWorld): number {
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
   for (let i = 0; i < units.length; i++) {
     const eid = units[i];
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
-    if (EntityTypeTag.kind[eid] !== EntityKind.Gatherer) continue;
+    if (!isMudpawKind(EntityTypeTag.kind[eid])) continue;
     if (UnitStateMachine.state[eid] !== UnitState.Idle) continue;
     return eid;
   }

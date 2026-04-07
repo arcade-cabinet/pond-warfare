@@ -6,34 +6,15 @@
  */
 
 import { EntityKind } from '@/types';
+import { isLookoutKind, isMudpawKind, MEDIC_KIND } from '@/game/live-unit-kinds';
 
 /**
  * Map an EntityKind numeric value to a v3 role string.
  * Uses the existing entity kinds to determine role.
  */
 export function entityKindToRole(kind: EntityKind | number): string {
-  switch (kind) {
-    case EntityKind.Gatherer:
-      return 'generalist';
-    case EntityKind.Healer:
-    case EntityKind.Shaman:
-      return 'heal';
-    case EntityKind.Scout:
-      return 'scout';
-    case EntityKind.Brawler:
-    case EntityKind.Sniper:
-    case EntityKind.Shieldbearer:
-    case EntityKind.Catapult:
-    case EntityKind.Swimmer:
-    case EntityKind.Commander:
-    case EntityKind.Diver:
-    case EntityKind.Engineer:
-    case EntityKind.FlyingHeron:
-    case EntityKind.Berserker:
-    case EntityKind.Sapper:
-    case EntityKind.Saboteur:
-      return 'combat';
-    default:
-      return 'combat';
-  }
+  if (isMudpawKind(kind)) return 'generalist';
+  if (kind === MEDIC_KIND || kind === EntityKind.Shaman) return 'heal';
+  if (isLookoutKind(kind)) return 'scout';
+  return 'combat';
 }

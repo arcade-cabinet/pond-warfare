@@ -24,6 +24,12 @@ import {
   TrainingQueue,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import {
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { train } from '@/input/selection';
 import { EntityKind, Faction } from '@/types';
 
@@ -110,10 +116,10 @@ export function autoTrainSystem(world: GameWorld): void {
   if (world.frameCount % AUTO_TRAIN_INTERVAL !== 0) return;
 
   // Count player army composition
-  const mudpaws = countPlayerKind(world, EntityKind.Gatherer);
-  const medics = countPlayerKind(world, EntityKind.Healer);
-  const sappers = countPlayerKind(world, EntityKind.Sapper);
-  const saboteurs = countPlayerKind(world, EntityKind.Saboteur);
+  const mudpaws = countPlayerKind(world, MUDPAW_KIND);
+  const medics = countPlayerKind(world, MEDIC_KIND);
+  const sappers = countPlayerKind(world, SAPPER_KIND);
+  const saboteurs = countPlayerKind(world, SABOTEUR_KIND);
   const enemies = countEnemyUnits(world);
   const stage = world.panelGrid?.getActivePanels().length ?? 1;
 
@@ -137,23 +143,23 @@ export function autoTrainSystem(world: GameWorld): void {
     const frontline = mudpaws + sappers + saboteurs;
 
     if (mudpaws < mudpawTarget) {
-      tryTrain(world, bestLodge, EntityKind.Gatherer);
+      tryTrain(world, bestLodge, MUDPAW_KIND);
       return;
     }
     if (stage >= 2 && medics === 0 && frontline >= 4) {
-      tryTrain(world, bestLodge, EntityKind.Healer);
+      tryTrain(world, bestLodge, MEDIC_KIND);
       return;
     }
     if (stage >= 6 && saboteurs === 0 && frontline >= 6) {
-      tryTrain(world, bestLodge, EntityKind.Saboteur);
+      tryTrain(world, bestLodge, SABOTEUR_KIND);
       return;
     }
     if (stage >= 5 && sappers === 0 && frontline >= 4) {
-      tryTrain(world, bestLodge, EntityKind.Sapper);
+      tryTrain(world, bestLodge, SAPPER_KIND);
       return;
     }
     if (enemies > 0 && mudpaws < mudpawTarget + 1) {
-      tryTrain(world, bestLodge, EntityKind.Gatherer);
+      tryTrain(world, bestLodge, MUDPAW_KIND);
     }
   }
 }

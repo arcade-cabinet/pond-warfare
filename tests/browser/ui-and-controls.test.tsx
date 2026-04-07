@@ -21,6 +21,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
+import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -83,6 +84,13 @@ async function waitFrames(n: number) {
 async function selectEntity(eid: number) {
   clickWorld(Position.x[eid], Position.y[eid], 0);
   await delay(150);
+}
+
+function forceSelectEntity(eid: number) {
+  game.world.selection = [eid];
+  Selectable.selected[eid] = 1;
+  game.world.isTracking = true;
+  game.syncUIStore();
 }
 
 async function deselectAll() {
@@ -236,10 +244,10 @@ describe('UI panels and keyboard controls', () => {
   // ======================================================================
 
   describe('5. Act tab shows actions for selected unit', () => {
-    it('selecting a gatherer and opening Act tab shows build actions', async () => {
+    it('selecting a Mudpaw and opening Act tab shows build actions', async () => {
       await ensurePanelClosed();
 
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       expect(gid).toBeDefined();
       await selectEntity(gid);
       await delay(100);
@@ -438,7 +446,7 @@ describe('UI panels and keyboard controls', () => {
 
   describe('12. Keyboard Escape deselects/cancels', () => {
     it('Escape cancels attack-move mode', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
       game.world.attackMoveMode = true;
 
@@ -448,7 +456,7 @@ describe('UI panels and keyboard controls', () => {
     });
 
     it('Escape deselects all units when no mode is active', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
       expect(game.world.selection.length).toBeGreaterThan(0);
 
@@ -477,8 +485,9 @@ describe('UI panels and keyboard controls', () => {
 
   describe('13. Keyboard A activates attack-move mode', () => {
     it('pressing A with units selected enables attack-move', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
-      await selectEntity(gid);
+      const gid = getUnits(MUDPAW_KIND)[0];
+      forceSelectEntity(gid);
+      await delay(100);
       expect(game.world.selection.length).toBeGreaterThan(0);
 
       game.world.attackMoveMode = false;
@@ -497,7 +506,7 @@ describe('UI panels and keyboard controls', () => {
 
   describe('14. Keyboard H halts selected units', () => {
     it('pressing H sets selected units to Idle state', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
       await delay(200);
 
@@ -595,11 +604,11 @@ describe('UI panels and keyboard controls', () => {
       await deselectAll();
       await delay(100);
 
-      // Ensure we have idle gatherers
-      const gatherers = getUnits(EntityKind.Gatherer);
-      if (gatherers.length > 0) {
-        // Set at least one gatherer to idle so the cycle can find it
-        UnitStateMachine.state[gatherers[0]] = UnitState.Idle;
+      // Ensure we have idle Mudpaws
+      const mudpaws = getUnits(MUDPAW_KIND);
+      if (mudpaws.length > 0) {
+        // Set at least one Mudpaw to idle so the cycle can find it
+        UnitStateMachine.state[mudpaws[0]] = UnitState.Idle;
         game.syncUIStore();
       }
 
@@ -607,7 +616,7 @@ describe('UI panels and keyboard controls', () => {
       await delay(200);
 
       // Should have selected something (if idle workers exist)
-      if (store.idleWorkerCount.value > 0 || gatherers.some(
+      if (store.idleWorkerCount.value > 0 || mudpaws.some(
         (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
       )) {
         expect(game.world.selection.length).toBeGreaterThan(0);
@@ -629,14 +638,14 @@ describe('UI panels and keyboard controls', () => {
 
       // If there are combat units, they should be selected
       const sappers = getUnits(EntityKind.Sapper);
-      const snipers = getUnits(EntityKind.Sniper);
-      const combatCount = sappers.length + snipers.length;
+      const lookouts = getUnits(LOOKOUT_KIND);
+      const combatCount = sappers.length + lookouts.length;
 
       if (combatCount > 0) {
         expect(game.world.selection.length).toBeGreaterThan(0);
       }
       // Even with no combat units, selectArmy selects all non-building player units
-      // so gatherers may be selected
+      // so Mudpaws may be selected
     });
   });
 
@@ -646,11 +655,12 @@ describe('UI panels and keyboard controls', () => {
 
   describe('18. Control groups: Ctrl+1 saves, 1 recalls', () => {
     it('Ctrl+1 saves current selection to group 1', async () => {
-      const gatherers = getUnits(EntityKind.Gatherer);
-      expect(gatherers.length).toBeGreaterThan(0);
+      const mudpaws = getUnits(MUDPAW_KIND);
+      expect(mudpaws.length).toBeGreaterThan(0);
 
-      // Select a gatherer
-      await selectEntity(gatherers[0]);
+      // Select a Mudpaw
+      forceSelectEntity(mudpaws[0]);
+      await delay(100);
       expect(game.world.selection.length).toBeGreaterThan(0);
       const savedSelection = [...game.world.selection];
 
@@ -665,8 +675,9 @@ describe('UI panels and keyboard controls', () => {
 
     it('pressing 1 recalls saved control group', async () => {
       // First save a group
-      const gatherers = getUnits(EntityKind.Gatherer);
-      await selectEntity(gatherers[0]);
+      const mudpaws = getUnits(MUDPAW_KIND);
+      forceSelectEntity(mudpaws[0]);
+      await delay(100);
       const savedSelection = [...game.world.selection];
       pressKey('1', { ctrlKey: true });
       await delay(100);
@@ -688,15 +699,16 @@ describe('UI panels and keyboard controls', () => {
 
     it('recalling group selects correct units and marks them', async () => {
       // Save multiple units
-      const gatherers = getUnits(EntityKind.Gatherer);
-      if (gatherers.length < 2) return;
+      const mudpaws = getUnits(MUDPAW_KIND);
+      if (mudpaws.length < 2) return;
 
-      // Select two gatherers by selecting the first, then the second
-      await selectEntity(gatherers[0]);
+      // Select two Mudpaws by selecting the first, then the second
+      forceSelectEntity(mudpaws[0]);
+      await delay(100);
       // Manually add second to selection for multi-select
-      game.world.selection.push(gatherers[1]);
-      if (hasComponent(game.world.ecs, gatherers[1], Selectable)) {
-        Selectable.selected[gatherers[1]] = 1;
+      game.world.selection.push(mudpaws[1]);
+      if (hasComponent(game.world.ecs, mudpaws[1], Selectable)) {
+        Selectable.selected[mudpaws[1]] = 1;
       }
 
       pressKey('2', { ctrlKey: true });

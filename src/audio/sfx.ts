@@ -165,6 +165,15 @@ export class SfxManager {
   selectMudpaw(): void {
     this.selectGatherer();
   }
+  selectGuard(): void {
+    this.selectBrawler();
+  }
+  selectRanger(): void {
+    this.selectSniper();
+  }
+  selectBombardier(): void {
+    this.selectCatapult();
+  }
   selectBrawler(): void {
     this.playAt(80, 'sine', 0.15, 0.08, 50);
   }
@@ -172,6 +181,9 @@ export class SfxManager {
     this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
   }
   selectMedic(): void {
+    this.selectHealer();
+  }
+  selectShaman(): void {
     this.selectHealer();
   }
   selectCatapult(): void {
@@ -210,7 +222,7 @@ export class SfxManager {
   trade(worldX?: number): void {
     this.playAt(350, 'sine', 0.1, 0.06, 550, worldX);
   }
-  /** Subtle pickup sound when a gatherer finishes collecting a resource. */
+  /** Subtle pickup sound when a Mudpaw or gather specialist finishes collecting a resource. */
   pickup(worldX?: number): void {
     this.playAt(700, 'triangle', 0.06, 0.03, 900, worldX);
   }

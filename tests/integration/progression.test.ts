@@ -23,6 +23,7 @@ import { buildingSystem } from '@/ecs/systems/building';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import {
   getPlayerArmyUnits,
@@ -54,10 +55,10 @@ describe('Progression Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 4;
     trainingQueueSlots.set(lodge, [
-      EntityKind.Gatherer,
-      EntityKind.Gatherer,
-      EntityKind.Gatherer,
-      EntityKind.Gatherer,
+      MUDPAW_KIND,
+      MUDPAW_KIND,
+      MUDPAW_KIND,
+      MUDPAW_KIND,
     ]);
 
     for (let i = 0; i < 4; i++) {
@@ -65,7 +66,7 @@ describe('Progression Integration', () => {
       trainingSystem(world);
     }
 
-    const mudpaws = getPlayerEntities(world, EntityKind.Gatherer);
+    const mudpaws = getPlayerEntities(world, MUDPAW_KIND);
     expect(mudpaws.length).toBe(4);
     expect(getPlayerLodge(world)).toBe(lodge);
   });
@@ -73,36 +74,36 @@ describe('Progression Integration', () => {
   it('lodge trains additional Mudpaws', () => {
     const lodge = spawnEntity(world, EntityKind.Lodge, 500, 500, Faction.Player);
     for (let i = 0; i < 4; i++) {
-      spawnEntity(world, EntityKind.Gatherer, 480 + i * 20, 520, Faction.Player);
+      spawnEntity(world, MUDPAW_KIND, 480 + i * 20, 520, Faction.Player);
     }
 
-    // Queue 2 gatherers
+    // Queue 2 Mudpaws
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 2;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Gatherer, EntityKind.Gatherer]);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, MUDPAW_KIND]);
 
     trainingSystem(world);
     TrainingQueue.timer[lodge] = 1;
     trainingSystem(world);
 
-    const gatherers = getPlayerEntities(world, EntityKind.Gatherer);
-    expect(gatherers.length).toBe(6);
+    const mudpaws = getPlayerEntities(world, MUDPAW_KIND);
+    expect(mudpaws.length).toBe(6);
   });
 
   it('Mudpaws collect resources over time', () => {
     spawnEntity(world, EntityKind.Lodge, 500, 500, Faction.Player);
     const resource = spawnEntity(world, EntityKind.Clambed, 510, 510, Faction.Neutral);
     Resource.amount[resource] = 4000;
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 510, 510, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 510, 510, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.ReturnMove);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.ReturnMove);
     expect(Resource.amount[resource]).toBeLessThan(4000);
   });
 
@@ -111,15 +112,15 @@ describe('Progression Integration', () => {
     Building.progress[burrow] = 0;
     Health.current[burrow] = 0;
 
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 400, 400, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.Building;
-    UnitStateMachine.targetEntity[gatherer] = burrow;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 400, 400, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.Building;
+    UnitStateMachine.targetEntity[mudpaw] = burrow;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     const maxHp = Health.max[burrow];
     const cycles = Math.ceil(maxHp / 10);
     for (let i = 0; i < cycles; i++) {
-      UnitStateMachine.gatherTimer[gatherer] = 1;
+      UnitStateMachine.gatherTimer[mudpaw] = 1;
       buildingSystem(world);
       world.frameCount++;
     }
@@ -136,7 +137,7 @@ describe('Progression Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 2;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Healer, EntityKind.Sapper]);
+    trainingQueueSlots.set(lodge, [MEDIC_KIND, SAPPER_KIND]);
     trainingSystem(world);
 
     TrainingQueue.timer[lodge] = 1;
@@ -144,18 +145,18 @@ describe('Progression Integration', () => {
 
     const fieldUnits = getPlayerArmyUnits(world);
     expect(fieldUnits.length).toBe(2);
-    expect(getPlayerEntities(world, EntityKind.Healer)).toHaveLength(1);
-    expect(getPlayerEntities(world, EntityKind.Sapper)).toHaveLength(1);
+    expect(getPlayerEntities(world, MEDIC_KIND)).toHaveLength(1);
+    expect(getPlayerEntities(world, SAPPER_KIND)).toHaveLength(1);
   });
 
   it('tech research applies effects to new Mudpaws', () => {
     world.tech.sharpSticks = true;
     world.tech.swiftPaws = true;
 
-    const baseDmg = ENTITY_DEFS[EntityKind.Gatherer].damage;
-    const baseSpd = ENTITY_DEFS[EntityKind.Gatherer].speed;
+    const baseDmg = ENTITY_DEFS[MUDPAW_KIND].damage;
+    const baseSpd = ENTITY_DEFS[MUDPAW_KIND].speed;
 
-    const mudpaw = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
     expect(Combat.damage[mudpaw]).toBe(baseDmg + 2);
     expect(Velocity.speed[mudpaw]).toBeCloseTo(baseSpd * 1.15);
@@ -180,10 +181,10 @@ describe('Progression Integration', () => {
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 4;
     trainingQueueSlots.set(lodge, [
-      EntityKind.Gatherer,
-      EntityKind.Gatherer,
-      EntityKind.Gatherer,
-      EntityKind.Gatherer,
+      MUDPAW_KIND,
+      MUDPAW_KIND,
+      MUDPAW_KIND,
+      MUDPAW_KIND,
     ]);
 
     for (let i = 0; i < 4; i++) {
@@ -191,7 +192,7 @@ describe('Progression Integration', () => {
       trainingSystem(world);
     }
 
-    mudpaws.push(...getPlayerEntities(world, EntityKind.Gatherer));
+    mudpaws.push(...getPlayerEntities(world, MUDPAW_KIND));
     expect(mudpaws).toHaveLength(4);
 
     const burrow = spawnEntity(world, EntityKind.Burrow, 600, 500, Faction.Player);
@@ -216,20 +217,20 @@ describe('Progression Integration', () => {
 
     TrainingQueue.count[lodge] = 1;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Healer]);
+    trainingQueueSlots.set(lodge, [MEDIC_KIND]);
     trainingSystem(world);
 
     const fieldUnits = getPlayerArmyUnits(world);
     expect(fieldUnits.length).toBeGreaterThanOrEqual(5);
-    expect(getPlayerEntities(world, EntityKind.Healer)).toHaveLength(1);
+    expect(getPlayerEntities(world, MEDIC_KIND)).toHaveLength(1);
 
     TrainingQueue.count[lodge] = 1;
     TrainingQueue.timer[lodge] = 1;
-    trainingQueueSlots.set(lodge, [EntityKind.Gatherer]);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND]);
     trainingSystem(world);
 
-    const baseMudpawDmg = ENTITY_DEFS[EntityKind.Gatherer].damage;
-    const trainedMudpaws = getPlayerEntities(world, EntityKind.Gatherer);
+    const baseMudpawDmg = ENTITY_DEFS[MUDPAW_KIND].damage;
+    const trainedMudpaws = getPlayerEntities(world, MUDPAW_KIND);
     const latestMudpaw = trainedMudpaws[trainedMudpaws.length - 1];
     expect(Combat.damage[latestMudpaw]).toBe(baseMudpawDmg + 2);
   });

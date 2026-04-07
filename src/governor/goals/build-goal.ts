@@ -11,6 +11,7 @@ import { Goal } from 'yuka';
 import { ENTITY_DEFS, entityKindName, isWingBuilding } from '@/config/entity-defs';
 import { Position } from '@/ecs/components';
 import { game } from '@/game';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { placeBuilding } from '@/input/selection';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
@@ -81,7 +82,7 @@ export class BuildGoal extends Goal {
     // Select a gatherer to be the builder (placeBuilding assigns them)
     const gatherers = store.unitRoster.value
       .flatMap((g) => g.units)
-      .filter((u) => u.kind === EntityKind.Gatherer);
+      .filter((u) => u.kind === MUDPAW_KIND);
     if (gatherers.length > 0) {
       w.selection = [gatherers[0].eid];
     }

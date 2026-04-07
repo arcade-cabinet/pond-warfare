@@ -6,6 +6,7 @@ import { query } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { loadGame as loadGameFromSave, saveGame } from '@/save-system';
 import { EntityKind, Faction } from '@/types';
 import * as store from '@/ui/store';
@@ -61,7 +62,7 @@ export function checkEvacuation(world: GameWorld): void {
       lodgeHp = Health.current[eid];
     } else if (kind === EntityKind.Commander) {
       commanderAlive = true;
-    } else if (kind === EntityKind.Gatherer) {
+    } else if (isMudpawKind(kind)) {
       playerGeneralists++;
     } else if (!ENTITY_DEFS[kind]?.isBuilding) {
       playerCombatUnits++;

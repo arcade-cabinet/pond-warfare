@@ -477,7 +477,7 @@ Note: bitECS SoA components are global typed arrays. When tests run in parallel,
 - **Max 300 LOC per file**: Enforced by `.claude/hooks/file-size-guard.py`. Decompose before adding features.
 - **Wave-survival mode**: One game mode — defend the Lodge from escalating events. No campaigns, puzzles, or co-op modes in v3.
 - **JSON configs for balance**: All unit stats, enemy scaling, events, upgrades, and prestige data live in `configs/*.json`. Content changes should never require TypeScript modifications.
-- **Canonical unit model**: Use `docs/unit-model.md` and `configs/unit-model.json` for intended roster and specialist autonomy behavior, even when transitional runtime code still uses historical internal entity names like `Gatherer`.
+- **Canonical unit model**: Use `docs/unit-model.md` and `configs/unit-model.json` for intended roster and specialist autonomy behavior. Some low-level shared chassis ids still use historical enum names like `Gatherer`, but live player/runtime code should map them through the canonical model.
 - **Commanders must target live systems**: Commander passives and abilities should hook Mudpaws, current specialist fielding/zone logic, or real combat/damage systems. Do not add new references to the deleted tech tree or removed optional unit roster.
 - **Vertical map**: Lodge at bottom, enemies from top, resources in middle. Map grows with progression level.
 - **Clams are metagame currency**: Earned post-match, spent on upgrade web between matches. Fish/Rocks/Logs are the in-match resources.
