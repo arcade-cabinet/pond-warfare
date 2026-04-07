@@ -28,6 +28,12 @@ export const totalClams = signal(0);
 /** Current progression level (determines event pool, map size). */
 export const progressionLevel = signal(0);
 
+/** Purchased Clam web nodes for the current run. */
+export const currentRunPurchasedNodeIds = signal<string[]>([]);
+
+/** Purchased Clam web diamond nodes for the current run. */
+export const currentRunPurchasedDiamondIds = signal<string[]>([]);
+
 /** Starting tier rank from Pearl upgrades (0 = none). Used at match init for auto-fill. */
 export const startingTierRank = signal(0);
 

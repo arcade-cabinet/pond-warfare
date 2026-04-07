@@ -11,7 +11,7 @@ import '@/styles/main.css';
 import { render } from 'preact';
 import { loadKeymapFromStorage } from '@/config/keymap';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
-import { game } from '@/game';
+import { hydrateSaveAvailability, startMenuGame } from '@/game/menu-start';
 import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { initDatabase } from '@/storage';
 import { loadPersistedSettings } from '@/storage/settings-persistence';
@@ -33,19 +33,12 @@ let storedRefs: {
 
 let gameStarted = false;
 
-// US7: Seamless PLAY — always starts a new match. Run state (progression,
-// clams, upgrades) is already in store-v3 signals from hydrateV3StoreFromDb().
-// Game.init() reads those signals to apply upgrade effects and difficulty.
+// PLAY always starts a new match from the current run state.
+// CONTINUE loads the latest saved battle after init completes.
 function startGame() {
   if (!storedRefs || gameStarted) return;
   gameStarted = true;
-
-  game.init(
-    storedRefs.container,
-    storedRefs.gameCanvas,
-    storedRefs.fogCanvas,
-    storedRefs.lightCanvas,
-  );
+  startMenuGame(storedRefs).catch(reportFatalError);
 }
 
 // Initialize database then mount the Preact application
@@ -69,6 +62,7 @@ function startGame() {
 
   // Hydrate v3 prestige/run signals from SQLite
   await hydrateV3StoreFromDb();
+  await hydrateSaveAvailability();
 
   // Load keymap from Capacitor Preferences
   await loadKeymapFromStorage();
@@ -88,7 +82,7 @@ function startGame() {
       root,
     );
 
-    // Subscribe to menu state changes — US7: always new match, no continue flag
+    // Subscribe to menu state changes from PLAY or CONTINUE.
     menuState.subscribe((state) => {
       if (state === 'playing' && storedRefs && !gameStarted) {
         startGame();

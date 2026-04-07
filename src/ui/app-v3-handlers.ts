@@ -15,9 +15,11 @@ import * as store from './store';
 import * as storeV3 from './store-v3';
 import {
   persistPrestigeState,
+  persistCurrentRun,
   persistSelectedCommander,
   resetCurrentRunOnPrestige,
 } from './store-v3-persistence';
+import type { CurrentRunUpgradeSnapshot } from './current-run-upgrades';
 
 export function handleUpgradesBack() {
   storeV3.upgradesScreenOpen.value = false;
@@ -40,6 +42,18 @@ export function handlePearlStateChange(newState: PrestigeState) {
   storeV3.prestigeState.value = newState;
   storeV3.totalPearls.value = newState.pearls;
   storeV3.prestigeRank.value = newState.rank;
+  storeV3.startingTierRank.value = getStartingTierRank(newState);
+  persistPrestigeState().catch(() => {});
+}
+
+export function handleCurrentRunUpgradeStateChange(
+  snapshot: CurrentRunUpgradeSnapshot,
+  newClams: number,
+) {
+  storeV3.currentRunPurchasedNodeIds.value = snapshot.nodes;
+  storeV3.currentRunPurchasedDiamondIds.value = snapshot.diamonds;
+  storeV3.totalClams.value = newClams;
+  persistCurrentRun({ incrementMatchCount: false }).catch(() => {});
 }
 
 export function handleRankUpCancel() {

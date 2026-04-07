@@ -157,6 +157,34 @@ describe('T39: Upgrade effects apply in-game', () => {
     expect(world.gatherSpeedMod).toBeGreaterThan(origMod);
   });
 
+  it('applies Pearl damage multiplier to playerUnitDamageMultiplier', () => {
+    const state = createUpgradeWebState(0);
+    const prestState: PrestigeState = {
+      rank: 1,
+      pearls: 10,
+      totalPearlsEarned: 10,
+      upgradeRanks: { combat_multiplier: 1 },
+    };
+
+    applyUpgradeEffects(world, state, prestState);
+
+    expect(world.playerUnitDamageMultiplier).toBeCloseTo(1.03, 2);
+  });
+
+  it('applies Pearl HP multiplier to playerUnitHpMultiplier', () => {
+    const state = createUpgradeWebState(0);
+    const prestState: PrestigeState = {
+      rank: 1,
+      pearls: 10,
+      totalPearlsEarned: 10,
+      upgradeRanks: { hp_multiplier: 1 },
+    };
+
+    applyUpgradeEffects(world, state, prestState);
+
+    expect(world.playerUnitHpMultiplier).toBeCloseTo(1.05, 2);
+  });
+
   it('empty upgrade state does not change world modifiers', () => {
     const state = createUpgradeWebState(0);
     const prestState = createPrestigeState();
@@ -177,6 +205,18 @@ describe('T39: Upgrade effects apply in-game', () => {
     applyUpgradeEffects(world, state, prestState);
 
     expect(world.rewardsModifier).toBeGreaterThan(1.0);
+  });
+
+  it('applies economy clam bonus to clamRewardMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'economy_clam_bonus_t0');
+
+    const prestState = createPrestigeState();
+    applyUpgradeEffects(world, state, prestState);
+
+    expect(world.clamRewardMultiplier).toBeGreaterThan(1.0);
   });
 });
 

@@ -8,7 +8,6 @@
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { query } from 'bitecs';
@@ -26,9 +25,9 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import { VET_HP_BONUS, VET_THRESHOLDS } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { game } from '@/game';
-import { App } from '@/ui/app';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as gameplay-loops.test.tsx)
@@ -99,24 +98,7 @@ async function selectEntity(eid: number) {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -125,7 +107,7 @@ async function mountGame() {
 describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
     // Ensure all auto-behaviors start OFF for a clean slate
     game.world.autoBehaviors.gatherer = false;

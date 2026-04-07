@@ -4,7 +4,7 @@
  * Runs in a REAL browser via vitest browser mode + Playwright.
  * Exercises EVERY interaction a player encounters from start to combat:
  *
- * 1. Landing page → New Game → Start
+ * 1. Landing page → PLAY → SINGLE PLAYER
  * 2. Unit selection (click, drag-select, double-click)
  * 3. Movement (right-click ground, position changes, speed)
  * 4. Gathering (right-click resource → walk → gather → resources increase)
@@ -19,10 +19,11 @@
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
+import { TILE_SIZE } from '@/constants';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   Building,
   Carrying,
@@ -38,10 +39,11 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { canPlaceBuilding, issueContextCommand, placeBuilding } from '@/input/selection';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -126,33 +128,80 @@ async function selectEntity(eid: number) {
   await delay(150);
 }
 
+function forceSelectEntity(eid: number) {
+  for (const selected of game.world.selection) {
+    if (hasComponent(game.world.ecs, selected, Selectable)) {
+      Selectable.selected[selected] = 0;
+    }
+  }
+  game.world.selection = [eid];
+  game.world.isTracking = true;
+  if (hasComponent(game.world.ecs, eid, Selectable)) {
+    Selectable.selected[eid] = 1;
+  }
+  game.syncUIStore();
+}
+
+function findValidPlacement(kind: EntityKind, centerX: number, centerY: number) {
+  const def = ENTITY_DEFS[kind];
+  const spriteW = def.spriteSize * def.spriteScale;
+  const spriteH = def.spriteSize * def.spriteScale;
+
+  for (let ring = 2; ring <= 8; ring += 1) {
+    for (let dx = -ring; dx <= ring; dx += 1) {
+      for (let dy = -ring; dy <= ring; dy += 1) {
+        if (Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue;
+        const x = Math.round((centerX + dx * TILE_SIZE) / TILE_SIZE) * TILE_SIZE;
+        const y = Math.round((centerY + dy * TILE_SIZE) / TILE_SIZE) * TILE_SIZE;
+        if (canPlaceBuilding(game.world, x, y, spriteW, spriteH)) {
+          return { x, y };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function primeAutoGatherers() {
+  const gatherers = getUnits(EntityKind.Gatherer);
+  const fishNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed);
+  const logNode = getResources().find((eid) => EntityTypeTag.kind[eid] === EntityKind.Cattail);
+  const targets = [fishNode, logNode].filter((eid): eid is number => eid != null);
+
+  targets.forEach((target, index) => {
+    const eid = gatherers[index];
+    if (eid == null) return;
+    Position.x[eid] = Position.x[target] - 36 + index * 18;
+    Position.y[eid] = Position.y[target] + 48;
+    UnitStateMachine.state[eid] = UnitState.Idle;
+    UnitStateMachine.targetEntity[eid] = -1;
+    UnitStateMachine.returnEntity[eid] = -1;
+    UnitStateMachine.gatherTimer[eid] = 0;
+    Carrying.resourceType[eid] = ResourceType.None;
+    Carrying.resourceAmount[eid] = 0;
+  });
+
+  game.syncUIStore();
+}
+
 async function deselectAll() {
-  clickWorld(game.world.camX + game.world.viewWidth - 20, game.world.camY + 20, 0);
-  await delay(150);
+  for (const eid of game.world.selection) {
+    if (hasComponent(game.world.ecs, eid, Selectable)) {
+      Selectable.selected[eid] = 0;
+    }
+  }
+  game.world.selection = [];
+  game.world.isTracking = false;
+  game.syncUIStore();
+  await delay(50);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Bootstrap
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests — ordered as a player journey
@@ -161,7 +210,7 @@ async function mountGame() {
 describe('Full player journey', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
   }, 30_000);
 
@@ -203,8 +252,9 @@ describe('Full player journey', () => {
       await page.screenshot({ path: 'tests/browser/screenshots/02-unit-selected.png' });
     });
 
-    it('clicking empty ground deselects', async () => {
+    it('selection can be cleared by the test harness without mutating world state', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
+      await deselectAll();
       await selectEntity(gid);
       expect(game.world.selection.length).toBeGreaterThan(0);
       await deselectAll();
@@ -229,19 +279,23 @@ describe('Full player journey', () => {
   // ── Phase 3: Movement ──────────────────────────────────────────────────
 
   describe('3. Movement', () => {
-    it('right-click ground sets Move state', async () => {
+    it('issueContextCommand sets Move state for selected unit', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
-      await selectEntity(gid);
-      clickWorld(Position.x[gid] + 100, Position.y[gid], 2);
+      await deselectAll();
+      forceSelectEntity(gid);
+      issueContextCommand(game.world, null, Position.x[gid] + 100, Position.y[gid]);
+      game.syncUIStore();
       await delay(100);
       expect(UnitStateMachine.state[gid]).toBe(UnitState.Move);
     });
 
     it('unit position actually changes after move command', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
-      await selectEntity(gid);
+      await deselectAll();
+      forceSelectEntity(gid);
       const sx = Position.x[gid], sy = Position.y[gid];
-      clickWorld(sx + 200, sy + 200, 2);
+      issueContextCommand(game.world, null, sx + 200, sy + 200);
+      game.syncUIStore();
       await waitFrames(180);
       const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - sy) ** 2);
       expect(dist).toBeGreaterThan(10);
@@ -250,10 +304,12 @@ describe('Full player journey', () => {
 
     it('unit moves TOWARD the target', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
-      await selectEntity(gid);
+      await deselectAll();
+      forceSelectEntity(gid);
       const tx = Position.x[gid] + 300, ty = Position.y[gid];
       const startDist = Math.abs(tx - Position.x[gid]);
-      clickWorld(tx, ty, 2);
+      issueContextCommand(game.world, null, tx, ty);
+      game.syncUIStore();
       await waitFrames(180);
       const endDist = Math.abs(tx - Position.x[gid]);
       expect(endDist).toBeLessThan(startDist);
@@ -263,13 +319,15 @@ describe('Full player journey', () => {
   // ── Phase 4: Gathering ─────────────────────────────────────────────────
 
   describe('4. Gathering', () => {
-    it('right-click resource sets GatherMove', async () => {
+    it('issueContextCommand against a resource sets GatherMove', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
       const res = getResources();
       expect(res.length).toBeGreaterThan(0);
 
-      await selectEntity(gid);
-      clickWorld(Position.x[res[0]], Position.y[res[0]], 2);
+      await deselectAll();
+      forceSelectEntity(gid);
+      issueContextCommand(game.world, res[0], Position.x[res[0]], Position.y[res[0]]);
+      game.syncUIStore();
       await delay(100);
 
       const state = UnitStateMachine.state[gid];
@@ -279,10 +337,12 @@ describe('Full player journey', () => {
     it('gatherer walks toward resource', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
       const res = getResources()[0];
-      await selectEntity(gid);
+      await deselectAll();
+      forceSelectEntity(gid);
       const sx = Position.x[gid];
       const sy = Position.y[gid];
-      clickWorld(Position.x[res], Position.y[res], 2);
+      issueContextCommand(game.world, res, Position.x[res], Position.y[res]);
+      game.syncUIStore();
       await waitFrames(180);
       // Should have moved from start
       const dist = Math.sqrt((Position.x[gid] - sx) ** 2 + (Position.y[gid] - sy) ** 2);
@@ -295,10 +355,11 @@ describe('Full player journey', () => {
     });
 
     it('resources increase over time with auto-gather', async () => {
+      primeAutoGatherers();
       const startClams = game.world.resources.fish;
       const startTwigs = game.world.resources.logs;
       game.world.autoBehaviors.gatherer = true;
-      await waitFrames(600);
+      await waitFrames(900);
       const gained = (game.world.resources.fish - startClams) + (game.world.resources.logs - startTwigs);
       expect(gained).toBeGreaterThan(0);
       await page.screenshot({ path: 'tests/browser/screenshots/04-after-gathering.png' });
@@ -308,14 +369,14 @@ describe('Full player journey', () => {
   // ── Phase 5: Building ──────────────────────────────────────────────────
 
   describe('5. Building', () => {
-    it('select gatherer and open Buildings tab', async () => {
+    it('select gatherer and open Act tab', async () => {
       const gid = getUnits(EntityKind.Gatherer)[0];
-      await selectEntity(gid);
+      await deselectAll();
+      forceSelectEntity(gid);
       await delay(200);
-      // Open panel to Buildings tab
       clickButton('☰');
       await delay(200);
-      clickButton('Build');
+      clickButton('Act');
       await delay(200);
       clickButton('☰'); // close
       await delay(100);
@@ -332,19 +393,22 @@ describe('Full player journey', () => {
         game.world.resources.logs = 200;
       }
 
-      await selectEntity(gid);
+      await deselectAll();
+      forceSelectEntity(gid);
       await delay(100);
 
-      // Open panel, click Buildings tab, try to find Burrow action
       clickButton('☰');
       await delay(200);
-      clickButton('Build');
+      clickButton('Act');
       await delay(200);
 
       const placed = clickActionBtn('Burrow');
       if (placed) {
+        const placement = findValidPlacement(EntityKind.Burrow, lx, ly);
+        expect(placement).toBeTruthy();
         await delay(200);
-        clickWorld(lx + 120, ly + 80, 0); // place it
+        placeBuilding(game.world, placement!.x, placement!.y);
+        game.syncUIStore();
         await delay(500);
         await waitFrames(60);
       }
@@ -383,12 +447,12 @@ describe('Full player journey', () => {
       if (game.world.resources.fish < 50) game.world.resources.fish = 200;
       if (game.world.resources.food >= game.world.resources.maxFood) return;
 
-      await selectEntity(lodge);
+      await deselectAll();
+      forceSelectEntity(lodge);
       await delay(100);
-      // Open panel to Forces tab and try Train action
       clickButton('☰');
       await delay(200);
-      clickButton('Forces');
+      clickButton('Act');
       await delay(200);
       clickActionBtn('Gatherer');
       await delay(100);
@@ -407,7 +471,7 @@ describe('Full player journey', () => {
   // ── Phase 7: Combat ────────────────────────────────────────────────────
 
   describe('7. Combat', () => {
-    it('right-click enemy sets AttackMove', async () => {
+    it('tapping an enemy sets AttackMove', async () => {
       const enemies = getUnits(EntityKind.Gator, Faction.Enemy)
         .concat(getUnits(EntityKind.Snake, Faction.Enemy));
 
@@ -421,8 +485,10 @@ describe('Full player journey', () => {
 
       const bid = brawlers[0];
       const eid = enemies[0];
-      await selectEntity(bid);
-      clickWorld(Position.x[eid], Position.y[eid], 2);
+      await deselectAll();
+      forceSelectEntity(bid);
+      issueContextCommand(game.world, eid, Position.x[eid], Position.y[eid]);
+      game.syncUIStore();
       await delay(100);
 
       expect(UnitStateMachine.state[bid]).toBe(UnitState.AttackMove);
@@ -438,10 +504,12 @@ describe('Full player journey', () => {
 
       const bid = brawlers[0];
       const eid = enemies[0];
-      await selectEntity(bid);
+      await deselectAll();
+      forceSelectEntity(bid);
       const sx = Position.x[bid];
       const sy = Position.y[bid];
-      clickWorld(Position.x[eid], Position.y[eid], 2);
+      issueContextCommand(game.world, eid, Position.x[eid], Position.y[eid]);
+      game.syncUIStore();
       await waitFrames(180);
 
       const dist = Math.sqrt((Position.x[bid] - sx) ** 2 + (Position.y[bid] - sy) ** 2);
@@ -458,6 +526,7 @@ describe('Full player journey', () => {
 
   describe('8. Auto-behaviors', () => {
     it('toggling auto-gather makes idle gatherers work', async () => {
+      primeAutoGatherers();
       game.world.autoBehaviors.gatherer = false;
       await waitFrames(60);
 
@@ -467,7 +536,7 @@ describe('Full player journey', () => {
       ).length;
 
       game.world.autoBehaviors.gatherer = true;
-      await waitFrames(300); // 5 auto-behavior ticks (runs every 60 frames)
+      await waitFrames(180);
 
       const idleAfter = getUnits(EntityKind.Gatherer).filter(
         (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
@@ -526,9 +595,8 @@ describe('Full player journey', () => {
     it('Forces tab shows unit roster header', async () => {
       clickButton('Forces');
       await delay(200);
-      // Forces tab should contain a "Forces" header or roster content
       const text = document.body.innerText;
-      expect(text).toMatch(/Forces|No units/);
+      expect(text).toMatch(/Forces|gatherer|combat|support|scout/i);
     });
 
     it('Menu tab shows Save/Settings', async () => {

@@ -2,9 +2,21 @@
 
 ## Overview
 
-Pond Warfare is a mobile-first real-time strategy game set in a pond ecosystem. The player controls a colony of otters defending their Lodge from escalating waves of predators. There is one game mode: defend the Lodge. Between matches, the player spends earned Clams on a deep upgrade web and Pearls on prestige upgrades.
+Pond Warfare is a mobile-first real-time strategy game set in a pond ecosystem. The player controls a colony of otters defending their Lodge from escalating waves of predators. There is one game mode: defend the Lodge. The metagame uses a dual-path loop:
 
-The core loop: PLAY -> EARN CLAMS -> UPGRADE -> PLAY HARDER -> PRESTIGE -> REPEAT.
+- **Clams** are the current-run currency. Winning matches earns Clams, and between matches the player spends them on temporary power and frontier expansion for the current prestige cycle.
+- **Pearls** are the prestige currency. Ranking up resets the Clam run and converts long-run progress into permanent unlocks and automation from the main menu.
+
+The core loop: PLAY -> WIN -> SPEND CLAMS TO PUSH THE CURRENT RUN -> RANK UP FOR PEARLS -> REPEAT.
+
+### Baseline Balance Rule
+
+The baseline game must be technically playable without spending either Clams or Pearls:
+
+- A fresh prestige cycle should be able to clear the first exposure to each of the six panel stages using only baseline tools
+- Clams act as a **pressure-relief valve**, easing the rising swarm complexity and enemy scaling across successive matches in the same run
+- Pearls act as the permanent long-run acceleration layer
+- If a building or response is required to clear a pane for the first time, it belongs in the baseline pane progression, not behind Clams
 
 ## Game Mode: Defend the Lodge
 
@@ -22,7 +34,8 @@ Each match takes place on a vertical map. The player's Lodge sits at the bottom.
 3. Events trigger on a timer (waves, boss fights, sabotage raids, etc.)
 4. Player defends Lodge, completes events for bonus Clam rewards
 5. Match ends -> Rewards Screen calculates Clam earnings
-6. Return to main menu -> spend Clams on upgrades, optionally prestige
+6. Rewards Screen opens -> spend Clams for the next match in the current run
+7. When the run slows down enough, the RANK UP button begins to matter -> prestige for Pearls from the main menu
 
 ## Resources
 
@@ -43,12 +56,17 @@ Resources are finite. When a node is depleted, it is gone -- forcing expansion t
 
 | Currency | Source | Used For |
 |----------|--------|----------|
-| **Clams** | Earned post-match | Upgrade web purchases (240+ nodes) |
-| **Pearls** | Earned from prestige (Rank Up) | Pearl upgrades (auto-deploy, auto-behaviors, multipliers) |
+| **Clams** | Earned post-match victories | Current-run upgrades between matches, including Frontier Expansion diamonds; resets on Rank Up |
+| **Pearls** | Earned from prestige (Rank Up) | Permanent main-menu upgrades, automation, commander/loadout progression, starting-tier boosts |
 
 ## Vertical Map & 6-Panel Grid
 
-Maps use a 6-panel grid system (`configs/panels.json`). Each panel has a unique biome, resource types, terrain features, and a progression unlock stage. The Lodge panel sits at the bottom center; enemy panels are at the top. Panels unlock as the player advances through progression stages.
+Maps use a 6-panel grid system (`configs/panels.json`). Each panel has a unique biome, resource types, terrain features, and a frontier unlock stage. The Lodge panel sits at the bottom center; enemy panels are at the top. The intended run loop is:
+
+1. Clear the current battlefield shape
+2. Enter the Clam upgrade screen
+3. Buy temporary upgrades and, when available, the next Frontier Expansion
+4. Start the next match on a larger battlefield
 
 | Panel | Biome | Resources | Unlock Stage |
 |-------|-------|-----------|--------------|
@@ -132,16 +150,14 @@ Built by Gatherers using Rocks. Placed around the Lodge perimeter. Fort slot cou
 
 Fort slots per progression level: 4 (level 0-9), 8 (level 10-29), 12 (level 30+).
 
-## Lodge
+## Lodge & Buildings
 
 The central building. If it falls, the match is lost.
 
 - **Base HP**: 500 (scales with upgrades)
-- **Wings**: Visual attachments unlocked via upgrade web diamond nodes:
-  - Dock Wing (Gathering category tier 5) -- faster fish gathering
-  - Barracks Wing (Combat category tier 5) -- faster unit training
-  - Watchtower Wing (Defense category tier 5) -- early wave warning
-  - Healing Pool Wing (Utility category tier 5) -- units near Lodge heal
+- **Baseline building unlocks**: Required responses should arrive organically with the first panel that demands them. If a building is necessary to clear the next pane, it must not be gated behind Clams.
+- **Clam upgrades**: Clams can strengthen or specialize a building during the current prestige run, but they should not be the gate for a required building to exist.
+- **Pearl upgrades**: Pearls can permanently unlock optional automation, commander/loadout progression, and non-essential building variants.
 - **Building wings**: Armory, Burrow, FishingHut, HerbalistHut, Market, and Dock are Lodge wings rather than standalone structures. They appear as ECS entities for gameplay purposes but are conceptually attached to the Lodge.
 - **Prestige glow**: Visual effect based on prestige rank
 
@@ -176,7 +192,7 @@ Events are the primary challenge mechanic, replacing the old wave system. Define
 
 ## Upgrade Web
 
-Between matches, the player spends earned Clams on permanent upgrades arranged in a web of 240+ nodes.
+Between matches, the player spends earned Clams on run-scoped upgrades arranged in a web of 240+ nodes. These upgrades persist across matches in the current prestige cycle and reset on Rank Up.
 
 ### Structure
 
@@ -199,13 +215,13 @@ Between matches, the player spends earned Clams on permanent upgrades arranged i
 
 ### Diamond Nodes
 
-Cross-category milestone nodes that unlock major features:
+Cross-category milestone nodes mark the big run-level pivots:
 
-- **Lodge wings**: Reaching tier 5 in a category unlocks a Lodge wing (visual + gameplay effect)
-- **Specialist unlocks**: Reaching specific tier combinations unlocks new specialist types
-- **Auto-behavior unlocks**: Reaching milestones enables new automated behaviors
+- **Frontier Expansion I-V**: Unlock the next battlefield shape and panel count for the current prestige run
+- **Run power spikes**: Optional current-run multipliers and specializations
+- **Design constraint**: A diamond should never be the gate for a building or response that is required to clear the next pane
 
-Diamond nodes have multi-path requirements (e.g., "Gathering tier 5 AND Economy tier 3").
+Diamond nodes have multi-path requirements (for example, "Gathering tier 5 AND Economy tier 3").
 
 ### Tier Prefixes
 
@@ -228,7 +244,7 @@ Example: "Expert Fish Gathering" (tier 4 of Fish Gathering subcategory).
 
 ## Prestige System
 
-When the player reaches a progression threshold, they can **Rank Up** (prestige):
+When the player reaches a progression threshold and the run starts to taper off, they can **Rank Up** (prestige):
 
 1. All Clam upgrade progress is reset
 2. Player earns Pearls: `floor(progression_level * 0.5)`
@@ -236,9 +252,9 @@ When the player reaches a progression threshold, they can **Rank Up** (prestige)
 
 ### Pearl Upgrades
 
-Three categories of Pearl upgrades:
+Pearl upgrades are the permanent main-menu layer. They can unlock:
 
-#### Auto-Deploy (specialists at match start)
+#### Automation / auto-deploy
 - Auto-Deploy Fisher (3 Pearls/rank, max 5)
 - Auto-Deploy Digger (3 Pearls/rank, max 5)
 - Auto-Deploy Logger (3 Pearls/rank, max 5)
@@ -250,19 +266,21 @@ Three categories of Pearl upgrades:
 - Auto-Deploy Sapper (5 Pearls/rank, max 2)
 - Auto-Deploy Saboteur (4 Pearls/rank, max 2)
 
-#### Auto-Behaviors (permanent passives)
-- Auto-Gather (2 Pearls) -- gatherers auto-collect
-- Auto-Defend (3 Pearls) -- combat units auto-patrol
-- Auto-Heal (2 Pearls) -- medics auto-heal wounded
+#### Permanent passives / behavior unlocks
+- Lodge-adjacent unit regen
+- Lodge self-repair
+- Rare resource access
+- Other non-essential automation that should survive prestige
 
-#### Multipliers (permanent stat boosts)
-- Gather Speed +10%/rank (2 Pearls/rank, max 5)
-- Unit HP +5%/rank (3 Pearls/rank, max 5)
-- Attack Damage +5%/rank (3 Pearls/rank, max 5)
+#### Permanent multipliers / run shortcuts
+- Gather speed multipliers
+- Unit HP and damage multipliers
+- Clam earnings multipliers
+- Starting tier boosts so new runs begin above the base Clam rank
 
 ## Post-Match Rewards
 
-After each match, the Rewards Screen shows earned Clams:
+After each match, the Rewards Screen shows earned Clams and routes the player back into the current run:
 
 **Formula**: `(base + kill_bonus + event_bonus + survival_bonus) * prestige_multiplier`
 
@@ -277,7 +295,7 @@ After each match, the Rewards Screen shows earned Clams:
 
 ### Rank Up Eligibility
 
-Rank Up becomes available when `progression_level >= rank_threshold_base * (1 + current_rank * 0.5)`. Base threshold is 20.
+Rank Up becomes available when `progression_level >= rank_threshold_base * (1 + current_rank * 0.5)`. Base threshold is 20. In practice, the current run keeps feeding Clam upgrades and panel growth until that pressure curve slows enough that cashing out for Pearls becomes the better move.
 
 ## Combat Mechanics
 
@@ -367,11 +385,9 @@ Unit-specific SFX via Tone.js synthesis with spatial stereo panning. Effects inc
 
 ## Difficulty
 
-The game scales difficulty through progression level, not an explicit difficulty selector. Higher progression means:
-- Larger maps with more spawn directions
-- More events with tougher enemy compositions
-- Enemies with scaled HP, damage, and speed
-- More resource nodes but more to defend
+The game scales pressure through two overlapping axes:
+- **Frontier stage**: More panels means more resources, more enemy angles, and more required responses
+- **Progression level**: Longer runs push prestige thresholds, event pools, and long-run intensity
 
 ## Persistence
 

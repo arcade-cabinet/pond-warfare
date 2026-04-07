@@ -125,6 +125,16 @@ export function spawnEntity(
     maxHp = Math.round(maxHp * world.enemyStatMult);
   }
 
+  if (
+    faction === Faction.Player &&
+    !def.isBuilding &&
+    !def.isResource &&
+    world.playerUnitHpMultiplier > 1
+  ) {
+    hp = Math.round(hp * world.playerUnitHpMultiplier);
+    maxHp = Math.round(maxHp * world.playerUnitHpMultiplier);
+  }
+
   // Apply tech bonuses for player buildings
   if (faction === Faction.Player && def.isBuilding && world.tech.sturdyMud) {
     hp += 300;
@@ -189,6 +199,9 @@ export function spawnEntity(
     addComponent(world.ecs, eid, Combat);
     let damage = def.damage;
     if (faction === Faction.Player && world.tech.sharpSticks && damage > 0) damage += 2;
+    if (faction === Faction.Player && damage > 0 && world.playerUnitDamageMultiplier > 1) {
+      damage = Math.round(damage * world.playerUnitDamageMultiplier);
+    }
     // Apply enemy stat multiplier to damage
     if (faction === Faction.Enemy && world.enemyStatMult > 1 && damage > 0)
       damage = Math.round(damage * world.enemyStatMult);

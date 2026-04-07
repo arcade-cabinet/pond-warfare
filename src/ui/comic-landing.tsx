@@ -1,15 +1,15 @@
 /**
  * ComicLanding — Full comic book landing page with three stacked panels.
  *
- * Panel 1: Otter (left) — "Ready for battle?" [PLAY] (seamless: US7)
- * Panel 2: Croc (right) — "Power up, soldier" [UPGRADES] (always visible: commander + pearl loadout)
+ * Main view:
+ * Panel 1: Otter (left) — "Ready for battle?" [PLAY] [+ CONTINUE if save exists]
+ * Panel 2: Croc (right) — "Power up, soldier" [UPGRADES] [+ PRESTIGE if rank > 0]
  * Panel 3: Snake (left) — "Adjust your gear" [SETTINGS]
  *
- * SwampEcosystem canvas runs behind everything (rendered by app.tsx).
- * All 3 panels + title fit on one 1080p screen without scrolling.
- *
- * Panels are staggered left/center/right in landscape for visual dynamism.
- * In portrait tablet mode, panels fill width without stagger.
+ * Play view:
+ * Panel 1: Otter (left) — "Just me and the pond..." [SINGLE PLAYER] [+ BACK]
+ * Panel 2: Croc (right) — "Lodge versus Lodge!" [MULTIPLAYER]
+ * Panel 3: Snake (left) — "Adjust your gear" [SETTINGS]
  */
 
 import { signal } from '@preact/signals';
@@ -23,16 +23,23 @@ import {
   DEFAULT_CUSTOM_SETTINGS,
   gameName,
   gameSeed,
+  hasSaveGame,
   menuState,
   permadeathEnabled,
   selectedDifficulty,
+  settingsOpen,
+  continueRequested,
 } from './store';
 import { multiplayerMenuOpen } from './store-multiplayer';
-import { pearlScreenOpen } from './store-v3';
+import { pearlScreenOpen, prestigeRank, upgradesScreenOpen } from './store-v3';
 
 /** Which view of the landing page is showing. */
 type LandingView = 'main' | 'play-mode';
 const landingView = signal<LandingView>('main');
+
+export function resetComicLandingState() {
+  landingView.value = 'main';
+}
 
 function generateName(): string {
   const adj = ['Murky', 'Still', 'Raging', 'Deep', 'Frozen', 'Verdant'];
@@ -45,7 +52,16 @@ function generateSeed(): number {
 }
 
 export function ComicLanding() {
+  const closeMenuOverlays = useCallback(() => {
+    settingsOpen.value = false;
+    upgradesScreenOpen.value = false;
+    pearlScreenOpen.value = false;
+    multiplayerMenuOpen.value = false;
+  }, []);
+
   const startSinglePlayer = useCallback(() => {
+    closeMenuOverlays();
+    continueRequested.value = false;
     selectedDifficulty.value = 'normal';
     permadeathEnabled.value = false;
     customGameSettings.value = { ...DEFAULT_CUSTOM_SETTINGS };
@@ -54,27 +70,54 @@ export function ComicLanding() {
     gameSeed.value = seed;
     customMapSeed.value = String(seed);
     menuState.value = 'playing';
-    landingView.value = 'main'; // reset for next time
-  }, []);
+    resetComicLandingState();
+  }, [closeMenuOverlays]);
+
+  const handleContinue = useCallback(() => {
+    closeMenuOverlays();
+    continueRequested.value = true;
+    menuState.value = 'playing';
+    resetComicLandingState();
+  }, [closeMenuOverlays]);
 
   const handlePlay = useCallback(() => {
     landingView.value = 'play-mode';
   }, []);
 
   const handleMultiplayer = useCallback(() => {
+    settingsOpen.value = false;
+    upgradesScreenOpen.value = false;
+    pearlScreenOpen.value = false;
     multiplayerMenuOpen.value = true;
-    landingView.value = 'main'; // reset so back returns to main
+    resetComicLandingState();
   }, []);
 
   const handleBack = useCallback(() => {
-    landingView.value = 'main';
+    resetComicLandingState();
   }, []);
 
   const handleUpgrades = useCallback(() => {
+    settingsOpen.value = false;
+    pearlScreenOpen.value = false;
+    upgradesScreenOpen.value = true;
+  }, []);
+
+  const handlePrestige = useCallback(() => {
+    settingsOpen.value = false;
+    upgradesScreenOpen.value = false;
     pearlScreenOpen.value = true;
   }, []);
 
+  const handleSettings = useCallback(() => {
+    settingsOpen.value = true;
+  }, []);
+
   const view = landingView.value;
+  const continueButton = hasSaveGame.value
+    ? { label: 'CONTINUE', onClick: handleContinue }
+    : undefined;
+  const prestigeButton =
+    prestigeRank.value > 0 ? { label: 'PRESTIGE', onClick: handlePrestige } : undefined;
 
   return (
     <div
@@ -106,6 +149,7 @@ export function ComicLanding() {
               quote="Ready for battle?"
               buttonLabel="PLAY"
               onButtonClick={handlePlay}
+              secondaryButton={continueButton}
               stagger="left"
             />
             <ComicPanel
@@ -114,7 +158,16 @@ export function ComicLanding() {
               quote="Power up, soldier"
               buttonLabel="UPGRADES"
               onButtonClick={handleUpgrades}
+              secondaryButton={prestigeButton}
               stagger="center"
+            />
+            <ComicPanel
+              character="snake"
+              side="left"
+              quote="Adjust your gear"
+              buttonLabel="SETTINGS"
+              onButtonClick={handleSettings}
+              stagger="right"
             />
           </>
         )}
@@ -137,6 +190,14 @@ export function ComicLanding() {
               buttonLabel="MULTIPLAYER"
               onButtonClick={handleMultiplayer}
               stagger="center"
+            />
+            <ComicPanel
+              character="snake"
+              side="left"
+              quote="Adjust your gear"
+              buttonLabel="SETTINGS"
+              onButtonClick={handleSettings}
+              stagger="right"
             />
           </>
         )}

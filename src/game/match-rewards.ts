@@ -26,6 +26,8 @@ export interface MatchStats {
   eventsCompleted: number;
   /** Current prestige rank. */
   prestigeRank: number;
+  /** Additional reward multiplier from current-run or Pearl earnings bonuses. */
+  earningsMultiplier?: number;
 }
 
 /** Detailed breakdown of how Clams were calculated. */
@@ -44,6 +46,8 @@ export interface RewardBreakdown {
   prestigeMultiplier: number;
   /** Final Clam reward after multiplier. */
   totalClams: number;
+  /** Additional reward multiplier applied after prestige. */
+  earningsMultiplier: number;
   /** Whether this is a win (losers get reduced rewards). */
   isWin: boolean;
   /** Match duration formatted for display. */
@@ -84,8 +88,9 @@ export function calculateMatchReward(stats: MatchStats): RewardBreakdown {
   const subtotal = base + killBonus + eventBonus + survivalBonus;
 
   const prestigeMultiplier = 1 + stats.prestigeRank * config.prestige_multiplier_per_rank;
+  const earningsMultiplier = stats.earningsMultiplier ?? 1;
 
-  let totalClams = Math.floor(subtotal * prestigeMultiplier);
+  let totalClams = Math.floor(subtotal * prestigeMultiplier * earningsMultiplier);
 
   // Losers get reduced rewards
   const isWin = stats.result === 'win';
@@ -100,6 +105,7 @@ export function calculateMatchReward(stats: MatchStats): RewardBreakdown {
     survivalBonus,
     subtotal,
     prestigeMultiplier,
+    earningsMultiplier,
     totalClams,
     isWin,
     durationDisplay: formatDuration(stats.durationSeconds),
@@ -131,6 +137,9 @@ export function generateRewardStatLines(stats: MatchStats, breakdown: RewardBrea
 
   if (breakdown.prestigeMultiplier > 1) {
     lines.push(`Prestige x${breakdown.prestigeMultiplier.toFixed(1)}`);
+  }
+  if (breakdown.earningsMultiplier > 1) {
+    lines.push(`Earnings x${breakdown.earningsMultiplier.toFixed(2)}`);
   }
 
   if (!breakdown.isWin) {

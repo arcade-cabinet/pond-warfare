@@ -176,6 +176,7 @@ export function syncGameOverStats(world: GameWorld): void {
       resourcesGathered: w.stats.resourcesGathered,
       eventsCompleted,
       prestigeRank: storeV3.prestigeRank.value,
+      earningsMultiplier: w.clamRewardMultiplier,
     });
 
     storeV3.lastRewardBreakdown.value = breakdown;

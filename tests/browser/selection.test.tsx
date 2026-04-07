@@ -5,7 +5,6 @@
  * shift-click add/remove, ground click deselect, Escape deselect.
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
@@ -14,9 +13,9 @@ import {
   Position, Selectable, UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -73,22 +72,7 @@ async function deselectAll() {
   await delay(200);
 }
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 async function waitFrames(n: number) {
   const start = game.world.frameCount;
@@ -98,7 +82,7 @@ async function waitFrames(n: number) {
 describe('Selection interactions', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500);
+    await delay(1000);
     game.world.gameSpeed = 3;
   }, 30_000);
 

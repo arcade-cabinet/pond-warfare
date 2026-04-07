@@ -26,6 +26,7 @@ import { matchEventRunnerSystem } from '@/ecs/systems/match-event-runner';
 import { moraleSystem } from '@/ecs/systems/morale';
 import { movementSystem } from '@/ecs/systems/movement';
 import { patrolSystem } from '@/ecs/systems/patrol';
+import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behaviors';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import { randomEventsSystem } from '@/ecs/systems/random-events';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
@@ -63,6 +64,7 @@ export function runSystems(
   autoTrainSystem(world);
   patrolSystem(world);
   healthSystem(world);
+  prestigeAutoBehaviorSystem(world);
   moraleSystem(world);
   autoRetreatSystem(world);
   shamanHealSystem(world);

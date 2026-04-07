@@ -191,6 +191,7 @@ describe('App v3 Screen Wiring', () => {
         survivalBonus: 2,
         subtotal: 20,
         prestigeMultiplier: 1,
+        earningsMultiplier: 1,
         totalClams: 20,
         isWin: true,
         durationDisplay: '5m 0s',

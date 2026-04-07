@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useRef } from 'preact/hooks';
+import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
 import { COLORS } from '@/ui/design-tokens';
 import type { RadialGameState, RadialOption } from './radial-menu-options';
 import { getRadialOptions } from './radial-menu-options';
@@ -108,7 +109,7 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
     fish: fish.value,
     rocks: rocks.value,
     logs: logs.value,
-    unlockStage: Math.min(6, Math.floor(storeV3.progressionLevel.value / 10) + 1),
+    unlockStage: getCurrentRunPanelStage(storeV3.currentRunPurchasedDiamondIds.value),
     lodgeDamaged: storeV3.lodgeHp.value < storeV3.lodgeMaxHp.value,
   };
   const options = getRadialOptions(mode, role, gameState);

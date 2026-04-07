@@ -134,11 +134,11 @@ aiSystem()
 
 ## Vertical Map & Panel Grid
 
-Maps use a 6-panel grid system (`src/game/panel-grid.ts`) with progression-based unlock:
-- Panels defined in `configs/panels.json` with biome, resources, terrain features
-- Lodge panel at bottom center, enemy panels at top
-- Panel unlock tied to progression stage
-- Map dimensions scale with progression level via `configs/terrain.json`
+Maps use a 6-panel grid system (`src/game/panel-grid.ts`) with Clam-run frontier unlocks:
+- Panels are defined in `configs/panels.json` with biome, resources, terrain features, and unlock order
+- Lodge panel sits at bottom center; new panels expand outward and add pressure/resources
+- The live match map size is driven by purchased Frontier Expansion diamonds in the current run, not by Pearl prestige state
+- Required buildings/responses should arrive from the pane baseline; Clams can tune power, but should not gate the existence of mandatory progression tools
 
 ## Upgrade Effects Pipeline
 
@@ -147,6 +147,8 @@ At game init, `src/game/upgrade-effects.ts`:
 2. Computes active stat effects (gather rate, combat, defense, etc.)
 3. Reads Pearl upgrade multipliers from prestige state
 4. Applies all bonuses as world modifiers before entity spawning
+
+Separately, `src/ui/current-run-diamond-effects.ts` resolves current-run Frontier Expansion diamonds so the next match spawns at the correct panel stage.
 
 ## Veterancy System
 

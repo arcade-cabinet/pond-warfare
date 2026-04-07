@@ -17,6 +17,11 @@ import {
   savePrestigeState,
   saveSelectedCommander,
 } from '@/storage/schema';
+import {
+  createEmptyCurrentRunUpgradeSnapshot,
+  parseCurrentRunUpgradeSnapshot,
+  serializeCurrentRunUpgradeSnapshot,
+} from './current-run-upgrades';
 import { selectedCommander } from './store';
 import * as storeV3 from './store-v3';
 
@@ -51,8 +56,15 @@ export async function hydrateV3StoreFromDb(): Promise<void> {
 
   const run = await loadCurrentRun();
   if (run) {
+    const snapshot = parseCurrentRunUpgradeSnapshot(run.upgrades_purchased);
     storeV3.totalClams.value = run.clams;
     storeV3.progressionLevel.value = run.progression_level;
+    storeV3.currentRunPurchasedNodeIds.value = snapshot.nodes;
+    storeV3.currentRunPurchasedDiamondIds.value = snapshot.diamonds;
+  } else {
+    const snapshot = createEmptyCurrentRunUpgradeSnapshot();
+    storeV3.currentRunPurchasedNodeIds.value = snapshot.nodes;
+    storeV3.currentRunPurchasedDiamondIds.value = snapshot.diamonds;
   }
 
   const commander = await loadSelectedCommander();
@@ -95,16 +107,25 @@ export async function persistPrestigeState(): Promise<void> {
  * Persist current run state from store-v3 signals to SQLite.
  * Call after match rewards are applied and progression incremented.
  */
-export async function persistCurrentRun(): Promise<void> {
+export async function persistCurrentRun(options: { incrementMatchCount?: boolean } = {}): Promise<void> {
   if (!isDatabaseReady()) return;
 
   // Load existing run to increment matches_this_run correctly
   const existing = await loadCurrentRun();
-  const matchCount = existing ? existing.matches_this_run + 1 : 1;
+  const incrementMatchCount = options.incrementMatchCount ?? true;
+  const matchCount = incrementMatchCount
+    ? existing
+      ? existing.matches_this_run + 1
+      : 1
+    : existing?.matches_this_run ?? 0;
+  const snapshot = serializeCurrentRunUpgradeSnapshot({
+    nodes: storeV3.currentRunPurchasedNodeIds.value,
+    diamonds: storeV3.currentRunPurchasedDiamondIds.value,
+  });
 
   await saveCurrentRun({
     clams: storeV3.totalClams.value,
-    upgrades_purchased: existing?.upgrades_purchased ?? '{}',
+    upgrades_purchased: snapshot,
     lodge_state: existing?.lodge_state ?? '{}',
     progression_level: storeV3.progressionLevel.value,
     matches_this_run: matchCount,
@@ -117,6 +138,8 @@ export async function persistCurrentRun(): Promise<void> {
 export async function resetCurrentRunOnPrestige(): Promise<void> {
   storeV3.totalClams.value = 0;
   storeV3.progressionLevel.value = 0;
+  storeV3.currentRunPurchasedNodeIds.value = [];
+  storeV3.currentRunPurchasedDiamondIds.value = [];
 
   if (!isDatabaseReady()) return;
   await resetCurrentRun();

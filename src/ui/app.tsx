@@ -8,17 +8,23 @@ import { game } from '@/game';
 import {
   handleClamsChange,
   handleClamUpgradeContinue,
-  handleCommanderSelect,
-  handlePearlBack,
-  handlePearlStateChange,
+  handleCurrentRunUpgradeStateChange,
   handleRankUpCancel,
   handleRankUpConfirm,
   handleRewardsPlayAgain,
   handleRewardsRankUp,
   handleRewardsUpgrades,
 } from './app-v3-handlers';
+import {
+  openKeyboardRef,
+  openSettings,
+  quickLoad,
+  quickSave,
+  toggleColorBlind,
+  togglePanel,
+} from './game-actions';
+import { CommandPanel } from './command-panel';
 import { SvgFilters } from './components/SvgFilters';
-import { SwampEcosystem } from './components/SwampEcosystem';
 import { Tooltip } from './components/Tooltip';
 import { ErrorOverlay } from './error-overlay';
 import { EvacuationOverlay } from './evacuation-overlay';
@@ -35,19 +41,16 @@ import { TopBar } from './hud/top-bar';
 import { WeatherEffects } from './hud/WeatherEffects';
 import { KeyboardReference } from './keyboard-reference';
 import { LoadingScreen } from './LoadingScreen';
-import { MainMenu } from './main-menu';
+import { MenuScreen } from './menu-screen';
 import { DisconnectOverlay } from './overlays/DisconnectOverlay';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
 import { dispatchRadialAction } from './radial-actions';
 import { RadialMenu } from './radial-menu';
 import { SplashVideo } from './SplashVideo';
-import { MultiplayerLobby } from './screens/MultiplayerLobby';
-import { PearlUpgradeScreen } from './screens/PearlUpgradeScreen';
 import { RankUpModal } from './screens/RankUpModal';
 import { RewardsScreen } from './screens/RewardsScreen';
 import { UpgradeWebScreen } from './screens/UpgradeWebScreen';
 import * as store from './store';
-import * as mp from './store-multiplayer';
 import * as storeV3 from './store-v3';
 
 export interface AppProps {
@@ -107,45 +110,7 @@ export function App({ onMount }: AppProps) {
 
   // ---------- Menu screen ----------
   if (store.menuState.value === 'main') {
-    return (
-      <div
-        class="relative h-screen w-screen overflow-hidden"
-        style={{ color: 'var(--pw-text-primary)' }}
-      >
-        <div class="rotate-prompt">
-          <div class="text-center">
-            <span style={{ fontSize: '48px' }}>&#x1F4F1;&#x2194;&#xFE0F;</span>
-            <p class="font-heading text-lg mt-4">Please rotate your device to landscape</p>
-          </div>
-        </div>
-        <SwampEcosystem />
-        <SvgFilters />
-        <ErrorOverlay />
-        <MainMenu />
-        {store.keyboardRefOpen.value && (
-          <KeyboardReference
-            onClose={() => {
-              store.keyboardRefOpen.value = false;
-            }}
-          />
-        )}
-
-        {/* v3 overlay screens -- rendered on top of main menu */}
-        {storeV3.pearlScreenOpen.value && (
-          <PearlUpgradeScreen
-            prestigeState={storeV3.prestigeState.value}
-            onStateChange={handlePearlStateChange}
-            onBack={handlePearlBack}
-            selectedCommanderId={store.selectedCommander.value}
-            onCommanderSelect={handleCommanderSelect}
-            playerProfile={storeV3.playerProfile.value}
-          />
-        )}
-
-        {/* Multiplayer lobby overlay */}
-        {mp.multiplayerMenuOpen.value && <MultiplayerLobby />}
-      </div>
-    );
+    return <MenuScreen />;
   }
 
   // ---------- Splash video before new game ----------
@@ -182,9 +147,12 @@ export function App({ onMount }: AppProps) {
         onPauseClick={act(() => {
           game.world.paused = !game.world.paused;
         })}
-        onSettingsClick={() => {
-          store.settingsOpen.value = true;
-        }}
+        onColorBlindToggle={toggleColorBlind}
+        onSaveClick={quickSave}
+        onLoadClick={quickLoad}
+        onSettingsClick={openSettings}
+        onKeyboardRefClick={openKeyboardRef}
+        onPanelToggle={togglePanel}
       />
 
       {/* Fullscreen game container */}
@@ -239,6 +207,11 @@ export function App({ onMount }: AppProps) {
         {/* Radial menu -- contextual actions for Lodge and units */}
         <RadialMenu onAction={dispatchRadialAction} />
       </div>
+      <CommandPanel
+        onClose={() => {
+          store.mobilePanelOpen.value = false;
+        }}
+      />
 
       <ConnectionStatus />
       <AchievementToast />
@@ -283,6 +256,10 @@ export function App({ onMount }: AppProps) {
         <UpgradeWebScreen
           clams={storeV3.totalClams.value}
           onClamsChange={handleClamsChange}
+          purchasedNodeIds={storeV3.currentRunPurchasedNodeIds.value}
+          purchasedDiamondIds={storeV3.currentRunPurchasedDiamondIds.value}
+          startingTierRank={storeV3.startingTierRank.value}
+          onUpgradeStateChange={handleCurrentRunUpgradeStateChange}
           onBack={handleClamUpgradeContinue}
         />
       )}

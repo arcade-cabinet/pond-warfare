@@ -29,9 +29,10 @@ import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera'
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
 import type { SpriteId } from '@/types';
+import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
 import { autoPlayEnabled } from '@/ui/store-gameplay';
+import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
 import * as storeV3 from '@/ui/store-v3';
-import { createUpgradeWebState } from '@/ui/upgrade-web-state';
 
 export class Game {
   world: GameWorld;
@@ -88,10 +89,16 @@ export class Game {
     applyMapSeed(this.world);
 
     // T39: Apply upgrade web effects from purchased nodes + Pearl multipliers
-    const upgradeState = createUpgradeWebState(storeV3.totalClams.value);
-    applyUpgradeEffects(this.world, upgradeState, storeV3.prestigeState.value);
+    const upgradeState = buildCurrentRunUpgradeState({
+      clams: storeV3.totalClams.value,
+      purchasedNodeIds: storeV3.currentRunPurchasedNodeIds.value,
+      purchasedDiamondIds: storeV3.currentRunPurchasedDiamondIds.value,
+      startingTierRank: storeV3.startingTierRank.value,
+    });
+    applyUpgradeEffects(this.world, upgradeState.state, storeV3.prestigeState.value);
 
-    spawnVerticalWorld(this.world, storeV3.progressionLevel.value ?? 1);
+    const panelStage = getCurrentRunPanelStage(storeV3.currentRunPurchasedDiamondIds.value);
+    spawnVerticalWorld(this.world, panelStage);
 
     // Initial zoom BEFORE resize (zoomLevel drives viewWidth/viewHeight)
     this.world.zoomLevel = computeInitialZoom(this.world.worldWidth, container.clientWidth);

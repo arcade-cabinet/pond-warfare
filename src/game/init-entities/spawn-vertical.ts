@@ -23,7 +23,6 @@ import { initFortificationState } from '@/ecs/systems/fortification';
 import type { GameWorld } from '@/ecs/world';
 import type { VerticalMapLayout } from '@/game/vertical-map';
 import { EntityKind, Faction } from '@/types';
-import { progressionLevel } from '@/ui/store-v3';
 import type { SeededRandom } from '@/utils/random';
 import enemiesConfig from '../../../configs/enemies.json';
 import { spawnAdversarialEntities } from './spawn-adversarial';
@@ -67,6 +66,7 @@ export function spawnVerticalEntities(
   layout: VerticalMapLayout,
   rng: SeededRandom,
 ): number {
+  const stage = layout.panelGrid.getActivePanels().length;
   const factionCfg = getFactionConfig(world.playerFaction);
 
   // Lodge at center-bottom of panel 5
@@ -80,13 +80,13 @@ export function spawnVerticalEntities(
 
   // Initialize fortification slots around the Lodge
   world.fortifications = initFortificationState(
-    progressionLevel.value,
+    stage,
     layout.lodgeX,
     layout.lodgeY,
   );
 
   // Scale Lodge HP with tier
-  const tierHpBonus = [0, 0, 0, 200, 400, 600, 800][Math.min(progressionLevel.value, 6)];
+  const tierHpBonus = [0, 0, 0, 200, 400, 600, 800][Math.min(stage, 6)];
   if (tierHpBonus > 0) {
     Health.max[lodgeEid] += tierHpBonus;
     Health.current[lodgeEid] += tierHpBonus;
@@ -111,7 +111,6 @@ export function spawnVerticalEntities(
   }
 
   // Scale enemy starting resources with tier
-  const stage = progressionLevel.value;
   if (nestsSpawned > 0) {
     const tierEnemyFish = [0, 0, 200, 300, 400, 450, 500][Math.min(stage, 6)];
     world.enemyResources.fish = tierEnemyFish;
@@ -161,7 +160,7 @@ function spawnPlayerCommander(world: GameWorld, layout: VerticalMapLayout): void
 
 /** Spawn an enemy Commander boss near the first enemy spawn position. */
 function spawnEnemyCommander(world: GameWorld, layout: VerticalMapLayout, rng: SeededRandom): void {
-  const stage = progressionLevel.value;
+  const stage = layout.panelGrid.getActivePanels().length;
   const tier = getEnemyCommanderTier(stage);
   if (!tier) return;
 

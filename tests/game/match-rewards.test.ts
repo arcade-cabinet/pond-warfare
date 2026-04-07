@@ -98,6 +98,14 @@ describe('Match reward calculation', () => {
     expect(reward3.totalClams).toBeGreaterThan(reward0.totalClams);
   });
 
+  it('should apply earnings multiplier after prestige', () => {
+    const stats = makeStats({ prestigeRank: 2, earningsMultiplier: 1.25 });
+    const reward = calculateMatchReward(stats);
+
+    expect(reward.earningsMultiplier).toBeCloseTo(1.25);
+    expect(reward.totalClams).toBe(Math.floor(reward.subtotal * reward.prestigeMultiplier * 1.25));
+  });
+
   it('should apply loss penalty (50%)', () => {
     const winStats = makeStats({ result: 'win' });
     const loseStats = makeStats({ result: 'loss' });
@@ -191,6 +199,14 @@ describe('Reward stat lines', () => {
     const lines = generateRewardStatLines(stats, breakdown);
 
     expect(lines.some((l) => l.includes('Prestige'))).toBe(true);
+  });
+
+  it('should include earnings multiplier when present', () => {
+    const stats = makeStats({ earningsMultiplier: 1.5 });
+    const breakdown = calculateMatchReward(stats);
+    const lines = generateRewardStatLines(stats, breakdown);
+
+    expect(lines.some((l) => l.includes('Earnings x1.50'))).toBe(true);
   });
 
   it('should include loss penalty when lost', () => {

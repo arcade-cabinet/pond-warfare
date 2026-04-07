@@ -121,6 +121,8 @@ export function cleanupOverlayTexts(): void {
   idleZTexts.clear();
   for (const t of ctrlGroupTexts.values()) t.destroy();
   ctrlGroupTexts.clear();
+  for (const t of getUnitLabelTexts().values()) t.destroy();
+  getUnitLabelTexts().clear();
   cleanupAutoSymbols();
 }
 

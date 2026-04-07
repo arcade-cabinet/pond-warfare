@@ -11,7 +11,6 @@
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { addComponent, addEntity, hasComponent, query } from 'bitecs';
@@ -33,11 +32,11 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
 import '@/styles/main.css';
 import { ENTITY_DEFS, getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import { spawnEntity } from '@/ecs/archetypes';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -159,38 +158,7 @@ function nextPos(): { x: number; y: number } {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) {
-    root = document.createElement('div');
-    root.id = 'app';
-    document.body.appendChild(root);
-  }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(
-      <App
-        onMount={async (refs) => {
-          await game.init(
-            refs.container,
-            refs.gameCanvas,
-            refs.fogCanvas,
-            refs.lightCanvas,
-          );
-          resolve();
-        }}
-      />,
-      root!,
-    );
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ===========================================================================
 // Tests
@@ -199,7 +167,7 @@ async function mountGame() {
 describe('Unit types -- player units', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
     // Ensure no tech bonuses interfere
     game.world.tech.sharpSticks = false;

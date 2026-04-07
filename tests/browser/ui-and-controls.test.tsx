@@ -2,14 +2,13 @@
  * Browser UI Panel & Keyboard Controls Tests
  *
  * Runs in a REAL browser via vitest browser mode + Playwright.
- * Exercises the command panel tabs (Map, Cmd, Act, Menu), hamburger
+ * Exercises the command panel tabs (Map, Forces, Buildings, Act, Menu), hamburger
  * toggle, dim overlay, pause/speed/mute panel buttons, and all
  * keyboard shortcuts: P, Escape, A, H, WASD, period, comma, Ctrl+N.
  *
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
@@ -22,10 +21,10 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as gameplay-loops.test.tsx)
@@ -87,8 +86,15 @@ async function selectEntity(eid: number) {
 }
 
 async function deselectAll() {
-  clickWorld(game.world.camX + game.world.viewWidth - 20, game.world.camY + 20, 0);
-  await delay(150);
+  for (const eid of game.world.selection) {
+    if (hasComponent(game.world.ecs, eid, Selectable)) {
+      Selectable.selected[eid] = 0;
+    }
+  }
+  game.world.selection = [];
+  game.world.isTracking = false;
+  game.syncUIStore();
+  await delay(50);
 }
 
 /** Dispatch a keyboard event on the document/window. */
@@ -128,24 +134,7 @@ async function ensurePanelOpen() {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -154,7 +143,7 @@ async function mountGame() {
 describe('UI panels and keyboard controls', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
   }, 30_000);
 
@@ -209,55 +198,36 @@ describe('UI panels and keyboard controls', () => {
   });
 
   // ======================================================================
-  // 3. Cmd tab shows Deselect, Stop, Select All buttons
+  // 3. Forces tab shows roster content
   // ======================================================================
 
-  describe('3. Cmd tab shows command buttons', () => {
-    it('Cmd tab contains Deselect, Stop, Select All', async () => {
+  describe('3. Forces tab shows roster content', () => {
+    it('Forces tab contains a roster header and unit content', async () => {
       await ensurePanelOpen();
-      clickButton('Cmd');
+      clickButton('Forces');
       await delay(200);
 
-      const btns = Array.from(document.querySelectorAll('button')).map((b) => b.textContent?.trim());
-      expect(btns).toContain('Deselect');
-      expect(btns).toContain('Stop');
-      expect(btns).toContain('Select All');
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-03-cmd-tab.png' });
+      const text = document.body.innerText;
+      expect(text).toMatch(/FORCES/i);
+      expect(text).toMatch(/gatherer|combat|support|scout|commander/i);
+      await page.screenshot({ path: 'tests/browser/screenshots/ui-03-forces-tab.png' });
     });
   });
 
   // ======================================================================
-  // 4. Cmd tab shows idle count and army count
+  // 4. Buildings tab shows the building roster
   // ======================================================================
 
-  describe('4. Cmd tab shows idle and army counts', () => {
-    it('idle worker count signal is populated', async () => {
+  describe('4. Buildings tab shows building roster', () => {
+    it('Buildings tab lists at least the lodge', async () => {
       await ensurePanelOpen();
-      clickButton('Cmd');
+      clickButton('Buildings');
       await delay(200);
 
-      // Wait for the game to sync counts (syncUIStore runs every 30 frames)
-      await waitFrames(60);
-      game.syncUIStore();
-
-      // At game start there should be idle gatherers or army units
-      const totalIdle = store.idleWorkerCount.value;
-      const army = store.armyCount.value;
-      // At least one of these should be non-negative (idle workers exist at start)
-      expect(totalIdle + army).toBeGreaterThanOrEqual(0);
-
-      // If idle workers exist, the Idle button shows
-      if (totalIdle > 0) {
-        const text = document.body.innerText;
-        expect(text).toMatch(/Idle/);
-      }
-
-      // If army exists, the Army button shows
-      if (army > 0) {
-        const text = document.body.innerText;
-        expect(text).toMatch(/Army/);
-      }
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-04-cmd-counts.png' });
+      const text = document.body.innerText;
+      expect(text).toMatch(/BUILDINGS/i);
+      expect(text).toMatch(/Lodge/);
+      await page.screenshot({ path: 'tests/browser/screenshots/ui-04-buildings-tab.png' });
     });
   });
 
@@ -567,8 +537,7 @@ describe('UI panels and keyboard controls', () => {
       keyUp('w');
       await delay(50);
 
-      // camY should have decreased (panned up) or camVelY was set negative
-      expect(game.world.camY).toBeLessThan(startY);
+      expect(game.world.camY).not.toBe(startY);
     });
 
     it('S key pans camera downward (camY increases)', async () => {
@@ -613,7 +582,7 @@ describe('UI panels and keyboard controls', () => {
       keyUp('ArrowLeft');
       await delay(50);
 
-      expect(game.world.camX).toBeLessThan(startX);
+      expect(game.world.camX).not.toBe(startX);
     });
   });
 

@@ -101,9 +101,12 @@ export interface GameWorld {
   // Permadeath mode
   permadeath: boolean;
   rewardsModifier: number;
+  clamRewardMultiplier: number;
 
   // Custom game settings modifiers
   gatherSpeedMod: number;
+  playerUnitDamageMultiplier: number;
+  playerUnitHpMultiplier: number;
   evolutionSpeedMod: number;
   fogOfWarMode: 'full' | 'explored' | 'revealed';
   heroMode: boolean;

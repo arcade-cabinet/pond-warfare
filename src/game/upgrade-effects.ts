@@ -43,10 +43,30 @@ export function applyUpgradeEffects(
     world.rewardsModifier *= 1 + nodeYield;
   }
 
+  const clamBonus = effects.get('economy_clam_bonus') ?? 0;
+  if (clamBonus > 0) {
+    world.clamRewardMultiplier *= 1 + clamBonus;
+  }
+
   // Pearl upgrade multipliers (prestige-persistent)
   const gatherMult = getStatMultiplier(prestigeState, 'gathering_speed');
   if (gatherMult > 1.0) {
     world.gatherSpeedMod *= gatherMult;
+  }
+
+  const damageMult = getStatMultiplier(prestigeState, 'damage');
+  if (damageMult > 1.0) {
+    world.playerUnitDamageMultiplier *= damageMult;
+  }
+
+  const hpMult = getStatMultiplier(prestigeState, 'hp');
+  if (hpMult > 1.0) {
+    world.playerUnitHpMultiplier *= hpMult;
+  }
+
+  const clamEarningsMult = getStatMultiplier(prestigeState, 'clam_earnings');
+  if (clamEarningsMult > 1.0) {
+    world.clamRewardMultiplier *= clamEarningsMult;
   }
 }
 

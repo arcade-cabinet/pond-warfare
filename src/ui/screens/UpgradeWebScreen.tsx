@@ -13,25 +13,37 @@ import { useCallback, useMemo, useState } from 'preact/hooks';
 import { getUpgradeCategories } from '@/config/config-loader';
 import {
   generateUpgradeWeb,
+  getDiamondsForCategory,
   getNodesForCategory,
   type UpgradeNode,
   type UpgradeWeb,
 } from '@/config/upgrade-web';
 import { Frame9Slice } from '@/ui/components/frame';
 import { type AccordionSection, PondAccordion } from '@/ui/components/PondAccordion';
+import {
+  buildCurrentRunUpgradeState,
+  snapshotCurrentRunUpgradeState,
+  type CurrentRunUpgradeSnapshot,
+} from '@/ui/current-run-upgrades';
 import { COLORS } from '@/ui/design-tokens';
 import {
-  createUpgradeWebState,
+  getDiamondDisplayInfo,
   getNodeDisplayState,
+  purchaseDiamondNode,
   purchaseNode,
   type UpgradeWebPurchaseState,
 } from '@/ui/upgrade-web-state';
 import { ConfirmChoicesOverlay } from './ConfirmChoicesOverlay';
+import { UpgradeWebCategoryContent } from './UpgradeWebCategoryContent';
 import { findCheapestAvailableNodeId } from './UpgradeNodeRow';
 
 export interface UpgradeWebScreenProps {
   clams: number;
-  onClamsChange: (newClams: number) => void;
+  onClamsChange?: (newClams: number) => void;
+  purchasedNodeIds?: string[];
+  purchasedDiamondIds?: string[];
+  startingTierRank?: number;
+  onUpgradeStateChange?: (snapshot: CurrentRunUpgradeSnapshot, newClams: number) => void;
   onBack: () => void;
 }
 
@@ -55,22 +67,52 @@ function isCategoryComplete(nodes: UpgradeNode[], state: UpgradeWebPurchaseState
   return nodes.every((n) => state.purchasedNodes.has(n.id));
 }
 
-export function UpgradeWebScreen({ clams, onClamsChange, onBack }: UpgradeWebScreenProps) {
+export function UpgradeWebScreen({
+  clams,
+  onClamsChange,
+  purchasedNodeIds = [],
+  purchasedDiamondIds = [],
+  startingTierRank = 0,
+  onUpgradeStateChange,
+  onBack,
+}: UpgradeWebScreenProps) {
   const web = useMemo<UpgradeWeb>(() => generateUpgradeWeb(), []);
   const categories = useMemo(() => getUpgradeCategories(), []);
   const categoryKeys = useMemo(() => Object.keys(categories), [categories]);
-  const [purchaseState, setPurchaseState] = useState<UpgradeWebPurchaseState>(() =>
-    createUpgradeWebState(clams),
+  const initialState = useMemo(
+    () =>
+      buildCurrentRunUpgradeState({
+        clams,
+        purchasedNodeIds,
+        purchasedDiamondIds,
+        startingTierRank,
+      }),
+    [clams, purchasedNodeIds, purchasedDiamondIds, startingTierRank],
   );
+  const [purchaseState, setPurchaseState] = useState<UpgradeWebPurchaseState>(() => initialState.state);
   const [purchases, setPurchases] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const categoryData = useMemo(() => {
     return categoryKeys.map((catKey) => {
       const nodes = getNodesForCategory(web, catKey);
+      const diamonds = getDiamondsForCategory(web, catKey).filter(
+        (diamond) => diamond.effect.type !== 'lodge_wing',
+      );
+      const diamondInfos = diamonds.map((diamond) => getDiamondDisplayInfo(purchaseState, diamond));
       const nextNode = findNextNodeForCategory(nodes, purchaseState);
-      const complete = isCategoryComplete(nodes, purchaseState);
-      return { catKey, label: categories[catKey].label, nodes, nextNode, complete };
+      const availableDiamond = diamondInfos.find((diamond) => diamond.state === 'available') ?? null;
+      const complete =
+        isCategoryComplete(nodes, purchaseState) &&
+        diamonds.every((diamond) => purchaseState.purchasedDiamonds.has(diamond.id));
+      return {
+        catKey,
+        label: categories[catKey].label,
+        nextNode,
+        complete,
+        diamondInfos,
+        availableDiamond,
+      };
     });
   }, [categoryKeys, categories, web, purchaseState]);
 
@@ -81,6 +123,10 @@ export function UpgradeWebScreen({ clams, onClamsChange, onBack }: UpgradeWebScr
         summary = 'Complete';
       } else if (cat.nextNode) {
         summary = `${cat.nextNode.name} -- ${cat.nextNode.cost}C`;
+      } else if (cat.availableDiamond) {
+        summary = `${cat.availableDiamond.label} -- ${cat.availableDiamond.cost}C`;
+      } else if (cat.diamondInfos.length > 0) {
+        summary = 'Milestones';
       } else {
         summary = 'Locked';
       }
@@ -95,10 +141,31 @@ export function UpgradeWebScreen({ clams, onClamsChange, onBack }: UpgradeWebScr
       if (result.success && result.newClams !== undefined) {
         setPurchases((prev) => [...prev, node?.name ?? nodeId]);
         setPurchaseState({ ...purchaseState });
-        onClamsChange(result.newClams);
+        onClamsChange?.(result.newClams);
+        onUpgradeStateChange?.(
+          snapshotCurrentRunUpgradeState(purchaseState, initialState.prestigeFilledNodes),
+          result.newClams,
+        );
       }
     },
-    [purchaseState, web, onClamsChange],
+    [initialState.prestigeFilledNodes, onClamsChange, onUpgradeStateChange, purchaseState, web],
+  );
+
+  const handlePurchaseDiamond = useCallback(
+    (diamondId: string) => {
+      const diamond = web.diamondMap.get(diamondId);
+      const result = purchaseDiamondNode(purchaseState, web, diamondId);
+      if (result.success && result.newClams !== undefined) {
+        setPurchases((prev) => [...prev, diamond?.label ?? diamondId]);
+        setPurchaseState({ ...purchaseState });
+        onClamsChange?.(result.newClams);
+        onUpgradeStateChange?.(
+          snapshotCurrentRunUpgradeState(purchaseState, initialState.prestigeFilledNodes),
+          result.newClams,
+        );
+      }
+    },
+    [initialState.prestigeFilledNodes, onClamsChange, onUpgradeStateChange, purchaseState, web],
   );
 
   const handleClose = useCallback(() => {
@@ -147,12 +214,14 @@ export function UpgradeWebScreen({ clams, onClamsChange, onBack }: UpgradeWebScr
             {/* Category accordion */}
             <PondAccordion sections={accordionSections} allowMultiple={false}>
               {categoryData.map((cat) => (
-                <CategoryContent
+                <UpgradeWebCategoryContent
                   key={cat.catKey}
                   nextNode={cat.nextNode}
                   complete={cat.complete}
+                  diamondInfos={cat.diamondInfos}
                   clams={purchaseState.clams}
-                  onPurchase={handlePurchaseNode}
+                  onPurchaseNode={handlePurchaseNode}
+                  onPurchaseDiamond={handlePurchaseDiamond}
                 />
               ))}
             </PondAccordion>
@@ -178,70 +247,6 @@ export function UpgradeWebScreen({ clams, onClamsChange, onBack }: UpgradeWebScr
           onGoBack={handleGoBack}
         />
       )}
-    </div>
-  );
-}
-
-/** Expanded content for a single category accordion section. */
-function CategoryContent({
-  nextNode,
-  complete,
-  clams,
-  onPurchase,
-}: {
-  nextNode: UpgradeNode | null;
-  complete: boolean;
-  clams: number;
-  onPurchase: (id: string) => void;
-}) {
-  if (complete) {
-    return (
-      <div class="py-3 text-center">
-        <span class="font-heading text-sm" style={{ color: COLORS.mossGreen }}>
-          All upgrades purchased
-        </span>
-      </div>
-    );
-  }
-
-  if (!nextNode) {
-    return (
-      <div class="py-3 text-center">
-        <span class="font-game text-xs" style={{ color: COLORS.weatheredSteel }}>
-          No upgrades available yet
-        </span>
-      </div>
-    );
-  }
-
-  const canAfford = clams >= nextNode.cost;
-
-  return (
-    <div class="py-2 px-1 flex flex-col gap-2">
-      <div>
-        <span class="font-heading text-sm" style={{ color: COLORS.sepiaText }}>
-          {nextNode.name}
-        </span>
-        <div class="font-game text-xs mt-1" style={{ color: COLORS.weatheredSteel }}>
-          +{Math.round(nextNode.effect * 100)}% bonus (Tier {nextNode.tier + 1})
-        </div>
-      </div>
-      <button
-        type="button"
-        class="rts-btn w-full py-2 font-heading text-sm"
-        style={{
-          color: canAfford ? COLORS.grittyGold : '#c44',
-          borderColor: canAfford ? COLORS.grittyGold : COLORS.weatheredSteel,
-          opacity: canAfford ? 1 : 0.6,
-          cursor: canAfford ? 'pointer' : 'not-allowed',
-          minHeight: '44px',
-        }}
-        onClick={() => canAfford && onPurchase(nextNode.id)}
-        disabled={!canAfford}
-        aria-label={`Buy ${nextNode.name} for ${nextNode.cost} Clams`}
-      >
-        {canAfford ? `Buy -- ${nextNode.cost}C` : `${nextNode.cost}C (not enough)`}
-      </button>
     </div>
   );
 }
