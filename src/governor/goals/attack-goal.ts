@@ -13,18 +13,21 @@ import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { EntityKind, Faction } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
+import { canAttackWith } from './combat-roster';
 
 /** Minimum army size before considering attack. */
 export const MIN_ATTACK_ARMY = 3;
 
 /** Find combat units available for an attack mission. */
-function availableAttackers(): RosterUnit[] {
+export function availableAttackers(): RosterUnit[] {
   return store.unitRoster.value
     .filter((g) => g.role === 'combat')
     .flatMap((g) => g.units)
-    .filter(
-      (u) => !u.hasOverride && (u.task === 'idle' || u.task === 'defending' || u.task === 'patrolling'),
-    );
+    .filter(canAttackWith);
+}
+
+export function countAvailableAttackers(): number {
+  return availableAttackers().length;
 }
 
 function pickAttackTarget(attackers: RosterUnit[]): number {

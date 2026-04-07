@@ -35,7 +35,7 @@ const dummyOwner = new GameEntity();
 
 function makeGroup(
   role: 'gatherer' | 'combat' | 'support' | 'scout' | 'commander',
-  units: Array<{ eid: number; task: string; kind: EntityKind }>,
+  units: Array<{ eid: number; task: string; kind: EntityKind; hasOverride?: boolean }>,
 ): RosterGroup {
   return {
     role,
@@ -48,7 +48,7 @@ function makeGroup(
       targetName: '',
       hp: 30,
       maxHp: 30,
-      hasOverride: false,
+      hasOverride: u.hasOverride ?? false,
     })),
   };
 }
@@ -161,6 +161,9 @@ describe('AttackEvaluator', () => {
   beforeEach(() => {
     store.baseUnderAttack.value = false;
     store.unitRoster.value = [];
+    store.buildingRoster.value = [];
+    store.waveCountdown.value = -1;
+    store.fish.value = 500;
   });
 
   it('returns 0 when army too small', () => {
@@ -178,6 +181,33 @@ describe('AttackEvaluator', () => {
     }));
     store.unitRoster.value = [makeGroup('combat', units)];
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.6);
+  });
+
+  it('returns 0 when combat units exist but none are reassignable for attack', () => {
+    const units = Array.from({ length: 6 }, (_, i) => ({
+      eid: i + 1,
+      task: 'moving',
+      kind: EntityKind.Brawler,
+    }));
+    store.unitRoster.value = [makeGroup('combat', units)];
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
+  });
+
+  it('returns 0 when a new wave is imminent or the lodge is damaged', () => {
+    const units = Array.from({ length: 8 }, (_, i) => ({
+      eid: i + 1,
+      task: 'idle',
+      kind: EntityKind.Brawler,
+    }));
+    store.unitRoster.value = [makeGroup('combat', units)];
+    store.waveCountdown.value = 8;
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
+
+    store.waveCountdown.value = -1;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 700, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
 });
 

@@ -9,7 +9,7 @@ import { type GameEntity, GoalEvaluator } from 'yuka';
 import { isWingBuilding } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
-import { AttackGoal, MIN_ATTACK_ARMY } from './goals/attack-goal';
+import { AttackGoal, countAvailableAttackers, MIN_ATTACK_ARMY } from './goals/attack-goal';
 import { BuildGoal } from './goals/build-goal';
 import { DefendGoal } from './goals/defend-goal';
 import { findIdleGatherers, GatherGoal } from './goals/gather-goal';
@@ -36,6 +36,12 @@ function combatUnitCount(): number {
   return store.unitRoster.value
     .filter((g) => g.role === 'combat')
     .reduce((sum, g) => sum + g.units.length, 0);
+}
+
+function lodgeHpRatio(): number {
+  const lodge = store.buildingRoster.value.find((b) => b.kind === EntityKind.Lodge);
+  if (!lodge || lodge.maxHp <= 0) return 1;
+  return lodge.hp / lodge.maxHp;
 }
 
 /** High score when idle gatherers exist — always beats Train to avoid idle waste. */
@@ -121,10 +127,17 @@ export class DefendEvaluator extends GoalEvaluator {
 export class AttackEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     if (store.baseUnderAttack.value) return 0;
-    const army = combatUnitCount();
+    const totalArmy = combatUnitCount();
+    const readyArmy = countAvailableAttackers();
     const safeAttackArmy = Math.max(MIN_ATTACK_ARMY + 2, 5);
-    if (army < safeAttackArmy) return 0;
-    return Math.min(0.4 + (army - safeAttackArmy) * 0.08, 0.85);
+    if (readyArmy < safeAttackArmy) return 0;
+    if (lodgeHpRatio() < 0.85) return 0;
+    if (store.waveCountdown.value !== -1 && store.waveCountdown.value <= 10) return 0;
+
+    const armyPressure = Math.min((readyArmy - safeAttackArmy) * 0.08, 0.24);
+    const reservePressure = Math.min(Math.max(totalArmy - readyArmy, 0) * 0.03, 0.09);
+    const fishReservePressure = Math.min(Math.max(store.fish.value - 80, 0) / 400, 0.12);
+    return Math.min(0.34 + armyPressure + reservePressure + fishReservePressure, 0.79);
   }
 
   override setGoal(owner: GameEntity): void {

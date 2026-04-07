@@ -100,13 +100,13 @@ From [balance-track-shifts.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfa
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| clam_gather_t1 | 0.00 | 6.12 | 10.33 |
-| clam_yield_t1 | 1.99 | 7.79 | 12.42 |
-| clam_clam_bonus_t1 | 1.31 | 7.21 | 11.76 |
-| pearl_clam_earnings_rank_1 | 0.49 | 1.29 | 2.87 |
-| pearl_gather_rank_2 | 0.01 | 1.15 | 2.90 |
-| pearl_auto_deploy_fisher | 0.00 | 0.87 | 2.61 |
-| pearl_starting_tier_1 | 0.65 | 1.96 | 3.76 |
+| clam_gather_t1 | -1.04 | 5.83 | 13.58 |
+| clam_yield_t1 | 0.77 | 6.66 | 13.82 |
+| clam_clam_bonus_t1 | 0.09 | 6.09 | 13.17 |
+| pearl_clam_earnings_rank_1 | -1.66 | 1.68 | 6.18 |
+| pearl_gather_rank_2 | -1.92 | 0.91 | 5.90 |
+| pearl_auto_deploy_fisher | -1.92 | 1.27 | 5.69 |
+| pearl_starting_tier_1 | -1.30 | 1.72 | 6.77 |
 
 These sampled Pearl rows now compare against a rank-matched Pearl baseline, so
 the shifts represent the upgrade itself instead of accidentally including the
@@ -114,15 +114,18 @@ rank-1 prestige reward multiplier.
 
 The diagnostic also now includes the controller/runtime fixes for gather
 override persistence, specialist governor lockout, prestige population
-accounting, the combat counter-scaling fix, and a more conservative governor
-attack threshold. Before those fixes, boosted gather tracks could falsely go
-deeply negative because workers lost their assigned resource intent after
-depletion or flee recovery, several Pearl specialists could be re-commanded by
-the governor instead of staying on their intended fixed roles, auto-deploy
-Pearl tracks could look worse than baseline simply because they consumed food
-that the baseline run needed for normal training, and combat tracks could be
-suppressed because melee and projectile counters were effectively being applied
-twice at damage time.
+accounting, the combat counter-scaling fix, governor attack-party reuse, safer
+governor attack pacing, and bottom-row-only rare resource placement. Before
+those fixes, boosted gather tracks could falsely go deeply negative because
+workers lost their assigned resource intent after depletion or flee recovery,
+several Pearl specialists could be re-commanded by the governor instead of
+staying on their intended fixed roles, auto-deploy Pearl tracks could look
+worse than baseline simply because they consumed food that the baseline run
+needed for normal training, combat tracks could be suppressed because melee and
+projectile counters were effectively being applied twice at damage time, attack
+parties could get stranded in old overrides instead of being recalled for base
+defense, and rare-resource prestige nodes could spawn as gatherer bait in the
+hostile top row.
 
 ## Exhaustive First-Rank Report
 
@@ -136,18 +139,20 @@ From [exhaustive-balance-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-
 Current corrected readout:
 
 - Clam T1:
-  - `economy_node_yield_t0` is currently strongest at about `6.54%` `meta_mean_pct`
-  - the basic gather tracks are close behind at about `6.09%`
-  - most non-economy Clam T1 rows still cluster tightly around `5.86%`, which means the harness can now see them as positive, but it still cannot distinguish many categories from each other in this window
+  - `economy_node_yield_t0` is currently strongest at about `4.79%` `meta_mean_pct`
+  - the basic gather tracks are close behind at about `4.08%`
+  - most non-economy Clam T1 rows still cluster tightly around `4.08%`, which means the harness can now see them as positive, but it still cannot distinguish many categories from each other in this window
   - `economy_mean_pct` is still `0` across the sampled Clam T1 set, so the current report is still mostly observing battlefield pacing, not post-match reward acceleration
 - Pearl rank 1:
-  - `auto_deploy_fisher` is positive, but now reads as a smaller gain at about `2.07%` `meta_mean_pct` in the stricter stage-6 exhaustive window
-  - `auto_deploy_hunter` improved slightly and now sits near `-0.95%`
-  - `auto_deploy_guardian`, `auto_deploy_ranger`, `auto_deploy_shaman`, and `auto_deploy_lookout` all improved toward the `-1%` band instead of the older `-2%` to `-3%` band
-  - `auto_deploy_digger` and `auto_deploy_logger` are still negative in the blended stage-6 report at roughly `-1.64%`, which still suggests the current harness undervalues non-fish gathering in that scenario
-  - `clam_earnings_multiplier` remains economy-only with `3.22%` `economy_mean_pct`, but its combined `meta_mean_pct` is still negative in this stage-6 window because it does not improve in-match power
-  - `gather_multiplier`, `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` improved slightly but still cluster at about `-5.12%` `meta_mean_pct` in the exhaustive stage-6 report
-  - `rare_resource_access` improved materially after the controller/runtime fixes and now sits around `-2.39%`, which still suggests the governor is not exploiting the extra node mix effectively enough
+  - `auto_deploy_fisher` is now strongly positive at about `6.02%` `meta_mean_pct`
+  - `auto_deploy_digger` and `auto_deploy_logger` crossed into positive territory at roughly `1.50%` `meta_mean_pct`, though their minimums are still unstable
+  - `auto_deploy_hunter` improved to about `1.11%`, and `auto_deploy_guardian` improved to about `0.71%`
+  - `auto_deploy_ranger`, `auto_deploy_shaman`, and `auto_deploy_lookout` still sit just below neutral at about `-0.51%`
+  - `rare_resource_access` improved dramatically after moving rare nodes out of the hostile top row and now sits roughly at break-even (`-0.02%` `meta_mean_pct`)
+  - `starting_tier` is still negative at about `-2.08%`, which means the current harness still does not value that tempo correctly enough
+  - `combat_multiplier` improved materially but is still negative at about `-2.57%`
+  - `clam_earnings_multiplier` remains economy-only with `4.22%` `economy_mean_pct`, but its combined `meta_mean_pct` is still negative in this stage-6 window because it does not improve in-match power
+  - `auto_repair_behavior`, `gather_multiplier`, `hp_multiplier`, and `auto_heal_behavior` are the main remaining negative cluster at roughly `-3.91%` to `-3.93%`
 
 ## Combat-Pressure Diagnostic
 
@@ -155,16 +160,16 @@ From [pearl-combat-pressure-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabin
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| combat_multiplier | 11.81 | 11.81 | 11.81 |
-| hp_multiplier | 13.07 | 13.07 | 13.07 |
-| auto_heal_behavior | 14.33 | 14.33 | 14.33 |
-| auto_repair_behavior | 3.15 | 3.15 | 3.15 |
+| combat_multiplier | 0.35 | 0.35 | 0.35 |
+| hp_multiplier | 2.05 | 2.05 | 2.05 |
+| auto_heal_behavior | 3.11 | 3.11 | 3.11 |
+| auto_repair_behavior | 3.18 | 3.18 | 3.18 |
 
 This is not a tuning success. It is a diagnostic finding:
 
 - `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` are now all clearly positive under pressure
-- `auto_repair_behavior` remains positive, but is a smaller gain than the direct combat and HP tracks in this specific pressure setup
-- this confirms the direct combat runtime and local defensive expression are working much better than the blended stage-6 exhaustive report suggests
+- `auto_repair_behavior` remains positive and now edges out the direct damage track in this specific setup
+- this still confirms the direct combat runtime and local defensive expression are working better than the blended stage-6 exhaustive report suggests, even though the gains are now more modest under the safer governor pacing
 - the remaining negative blended full-run rows now point more strongly at governor pathing and long-window decision policy than at missing damage/heal consumers
 
 ## Controller Diagnostics
@@ -179,7 +184,7 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - Gather controller:
   - `gather_multiplier` now cleanly shows up as a higher `gatherSpeedMod`, but the fixed-seed short window is still travel-bound enough that raw gathered output stays flat in that slice
   - `auto_deploy_digger` and `auto_deploy_logger` do increase rock/log collection when the gather controller is forced to care about those tracks
-  - `rare_resource_access` increases rock intake in the gather-only slice, which confirms the runtime consumer exists even though the blended governor score still undervalues it
+  - `rare_resource_access` now adds rare nodes only in the bottom-row panels, which keeps the runtime consumer active without luring gatherers into the hostile top row
 - Build controller:
   - the new controller slice exposed a real bug: wing-building placement offsets were too small, so the build controller could repeatedly fail to place Armory wings near the Lodge
   - after fixing [build-goal.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/src/governor/goals/build-goal.ts), the build controller now reaches Armory within a few controller cycles instead of stalling indefinitely
@@ -191,7 +196,8 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
   - that means the strongly negative blended pressure scores are not purely missing runtime effects; they are interactions inside the full governor loop
 - Attack controller:
   - the attack controller now issues shared-target attack orders instead of splitting units across the line by default
-  - the governor now waits for a safer attack army size in full play instead of treating the minimum viable army as immediately raid-ready
+  - the governor now waits for a safer attack army size in full play, avoids launching just before a wave, and avoids launching off a damaged Lodge
+  - regular attack parties are now reassignable back into defense instead of getting stranded behind their old governor-issued attack overrides, while prestige-locked specialists stay on their fixed roles
   - it still converts that into only trivial or zero kills in the short skirmish slice, which makes the attack path a concrete remaining gap rather than a scoring artifact
 
 ## Interpretation
@@ -203,6 +209,7 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - Basic Clam gather/yield/clam-bonus tracks are now confirmed as positive again after the gather-override persistence fix.
 - The exhaustive report still shows a second issue beyond raw tuning: many Clam categories remain too tightly clustered, and several Pearl tracks are still either inert or actively harmful in governor play.
 - Some of the remaining Pearl negatives are now much more clearly governor-quality problems rather than missing runtime consumers: the direct combat-pressure harness flipped positive after the damage-path fix, while the long stage-6 governor harness still undervalues the same upgrades.
+- The rare-resource prestige path is no longer a map-generation trap. Its near-neutral stage-6 score now points at ordinary governor valuation limits rather than a fundamentally harmful spawn pattern.
 - The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the prestige population fix, but attack still fails to cash in its orders over the longer governor run.
 
 ## How To Use This
@@ -216,8 +223,8 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Investigate the attack controller path, since it now issues shared-target orders and waits for a safer army size, but still does not convert that into enough long-run kill value in the exhaustive governor harness.
-2. Reconcile the blended negative full-run scores for `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` against the now-positive pressure harness, since that mismatch strongly suggests a governor-path or pacing issue rather than a missing combat consumer.
+1. Investigate the remaining attack-controller conversion gap, since the governor now shares targets, reuses attack parties, and paces attacks more safely, but still does not convert that into enough long-run kill value in the exhaustive harness.
+2. Reconcile the remaining blended full-run negatives for `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `auto_repair_behavior` against the now-positive pressure harness, since that mismatch still points at governor-path or pacing issues rather than missing combat consumers.
 3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
 4. Expand the diagnostics from sampled tracks to every Clam subcategory and every Pearl upgrade.
 5. Add multi-match simulations so the logarithmic run-pressure model is measured against actual match progression, not just single-match snapshots.
