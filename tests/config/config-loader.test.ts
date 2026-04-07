@@ -37,7 +37,7 @@ import type {
 } from '@/config/v3-types';
 
 describe('Unit configs', () => {
-  const generalistIds = ['gatherer', 'fighter', 'medic', 'scout', 'sapper_unit', 'saboteur_unit'];
+  const generalistIds = ['mudpaw', 'medic', 'sapper', 'saboteur'];
   const specialistIds = [
     'fisher',
     'digger',
@@ -77,7 +77,7 @@ describe('Unit configs', () => {
     const ids = getAllUnitIds();
     expect(ids).toEqual(expect.arrayContaining(generalistIds));
     expect(ids).toEqual(expect.arrayContaining(specialistIds));
-    expect(ids.length).toBe(generalistIds.length + specialistIds.length);
+      expect(ids.length).toBe(generalistIds.length + specialistIds.length);
   });
 
   it('should throw for unknown unit ID', () => {

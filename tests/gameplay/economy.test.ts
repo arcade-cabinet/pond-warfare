@@ -233,13 +233,13 @@ describe('Economy', () => {
 
   // ── T31: Training cost uses Fish (world.resources.fish) ──────────
   it('training cost reads fish from units.json and deducts clams', () => {
-    // units.json: gatherer.cost.fish = 10
+    // units.json: mudpaw.cost.fish = 10
     // radial-actions.ts reads def.cost.fish and deducts world.resources.fish
-    const def = getUnitDef('gatherer') as import('@/config/v3-types').GeneralistDef;
+    const def = getUnitDef('mudpaw') as import('@/config/v3-types').GeneralistDef;
     expect(def.cost.fish).toBe(10);
 
-    const fighterDef = getUnitDef('fighter') as import('@/config/v3-types').GeneralistDef;
-    expect(fighterDef.cost.fish).toBe(20);
+    const medicDef = getUnitDef('medic') as import('@/config/v3-types').GeneralistDef;
+    expect(medicDef.cost.fish).toBe(15);
   });
 
   // ── T32: Fortification costs Rocks (world.resources.rocks) ──────

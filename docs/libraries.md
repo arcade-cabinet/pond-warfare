@@ -2,6 +2,10 @@
 
 How each dependency is utilized in Pond Warfare.
 
+> Historical note: older references to `Gatherer`, `Swimmer`, or other removed
+> player-roster units in this file describe internal or superseded usage. The
+> live player-facing unit model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
+
 ## Runtime Dependencies
 
 ### bitECS (0.4.0) - Entity Component System
@@ -46,11 +50,11 @@ Smooth pathfinding, collision avoidance, and formation movement for ALL units (p
 - `AlignmentBehavior` (weight 0.3) - formation movement heading alignment
 - `CohesionBehavior` (weight 0.4) - formation movement group cohesion
 - `WanderBehavior` - organic idle patrol for auto-defend
-- `FleeBehavior` - gatherer escape when attacked (1.5s duration)
-- `EvadeBehavior` - Swimmer evasion when under fire
+- `FleeBehavior` - Mudpaw and worker retreat behavior when attacked (1.5s duration)
+- `EvadeBehavior` - specialist and enemy evasive movement when under fire
 - Faction-agnostic: `addUnit()` / `removeUnit()` for any entity
 - `setFormation()` - enable flocking for group move commands
-- Used for all 33 entity types including Swimmer (amphibious), evolved enemies, Commander, etc.
+- Used for the full live roster, Pearl specialists, enemies, and Commander units.
 
 **Files:** `src/ai/yuka-manager.ts`, `src/yuka.d.ts`
 

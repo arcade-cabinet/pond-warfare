@@ -140,10 +140,10 @@ describe('Specialist identification', () => {
   });
 
   it('should NOT identify generalists as specialists', () => {
-    expect(isSpecialistUnit('gatherer')).toBe(false);
-    expect(isSpecialistUnit('fighter')).toBe(false);
+    expect(isSpecialistUnit('mudpaw')).toBe(false);
     expect(isSpecialistUnit('medic')).toBe(false);
-    expect(isSpecialistUnit('scout')).toBe(false);
+    expect(isSpecialistUnit('sapper')).toBe(false);
+    expect(isSpecialistUnit('saboteur')).toBe(false);
   });
 
   it('should handle unknown unit IDs gracefully', () => {
@@ -192,8 +192,8 @@ describe('Specialist spawn positions', () => {
 // ── Generalist superiority tests ──────────────────────────────────
 
 describe('Generalist stat superiority', () => {
-  it('gatherer should have >= HP than fisher', () => {
-    const result = validateGeneralistSuperior('gatherer', 'fisher');
+  it('mudpaw should have >= HP than fisher', () => {
+    const result = validateGeneralistSuperior('mudpaw', 'fisher');
     expect(result.valid).toBe(true);
 
     const hpComp = result.comparison.find((c) => c.stat === 'hp');
@@ -201,8 +201,8 @@ describe('Generalist stat superiority', () => {
     expect(hpComp?.generalist ?? 0).toBeGreaterThanOrEqual(hpComp?.specialist ?? 0);
   });
 
-  it('sapper_unit should have >= HP than bombardier', () => {
-    const result = validateGeneralistSuperior('sapper_unit', 'bombardier');
+  it('sapper should have >= HP than bombardier', () => {
+    const result = validateGeneralistSuperior('sapper', 'bombardier');
     expect(result.valid).toBe(true);
   });
 
@@ -211,8 +211,8 @@ describe('Generalist stat superiority', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('scout should have >= HP than lookout', () => {
-    const result = validateGeneralistSuperior('scout', 'lookout');
+  it('mudpaw should have >= HP than lookout', () => {
+    const result = validateGeneralistSuperior('mudpaw', 'lookout');
     expect(result.valid).toBe(true);
   });
 });
@@ -266,8 +266,8 @@ describe('Specialist config completeness', () => {
     }
   });
 
-  it('all 4 generalists defined in units.json', () => {
-    const generalists = ['gatherer', 'fighter', 'medic', 'scout'];
+  it('the canonical manual roster is defined in units.json', () => {
+    const generalists = ['mudpaw', 'medic', 'sapper', 'saboteur'];
     for (const id of generalists) {
       const def = getUnitDef(id);
       expect(def, `${id} should exist`).toBeDefined();

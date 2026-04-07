@@ -1,11 +1,9 @@
 {
   "generalists": {
-    "gatherer": { "hp": 30, "damage": 0, "speed": 2.0, "cost": { "fish": 10 }, "role": "gather", "trainTime": 10 },
-    "fighter": { "hp": 60, "damage": 8, "speed": 1.8, "cost": { "fish": 20 }, "role": "combat", "trainTime": 15 },
+    "mudpaw": { "hp": 30, "damage": 0, "speed": 2.0, "cost": { "fish": 10 }, "role": "generalist", "trainTime": 10 },
     "medic": { "hp": 25, "damage": 0, "speed": 1.5, "cost": { "fish": 15 }, "role": "heal", "trainTime": 12 },
-    "scout": { "hp": 20, "damage": 1, "speed": 3.5, "cost": { "fish": 8 }, "role": "scout", "trainTime": 8 },
-    "sapper_unit": { "hp": 40, "damage": 15, "speed": 1.5, "cost": { "fish": 25, "rocks": 15 }, "role": "siege", "trainTime": 18 },
-    "saboteur_unit": { "hp": 30, "damage": 5, "speed": 2.5, "cost": { "fish": 20, "rocks": 10 }, "role": "subvert", "trainTime": 15 }
+    "sapper": { "hp": 40, "damage": 15, "speed": 1.5, "cost": { "fish": 25, "rocks": 15 }, "role": "siege", "trainTime": 18 },
+    "saboteur": { "hp": 30, "damage": 5, "speed": 2.5, "cost": { "fish": 20, "rocks": 10 }, "role": "subvert", "trainTime": 15 }
   },
   "specialists": {
     "fisher": { "hp": 25, "damage": 0, "speed": 2.0, "cost": { "fish": 12 }, "role": "auto_gather_fish", "autoTarget": "fish_node" },

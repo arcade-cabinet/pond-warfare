@@ -4,6 +4,7 @@ import { BUILDING_DEFS } from './buildings';
 export function entityKindFromString(name: string): EntityKind {
   const map: Record<string, EntityKind> = {
     gatherer: EntityKind.Gatherer,
+    mudpaw: EntityKind.Gatherer,
     brawler: EntityKind.Brawler,
     sniper: EntityKind.Sniper,
     gator: EntityKind.Gator,
@@ -16,6 +17,7 @@ export function entityKindFromString(name: string): EntityKind {
     cattail: EntityKind.Cattail,
     clambed: EntityKind.Clambed,
     healer: EntityKind.Healer,
+    medic: EntityKind.Healer,
     watchtower: EntityKind.Watchtower,
     boss_croc: EntityKind.BossCroc,
     shieldbearer: EntityKind.Shieldbearer,
@@ -61,7 +63,7 @@ export function entityKindFromString(name: string): EntityKind {
 
 export function entityKindName(kind: EntityKind): string {
   const names: Record<EntityKind, string> = {
-    [EntityKind.Gatherer]: 'Gatherer',
+    [EntityKind.Gatherer]: 'Mudpaw',
     [EntityKind.Brawler]: 'Brawler',
     [EntityKind.Sniper]: 'Sniper',
     [EntityKind.Gator]: 'Gator',
@@ -73,7 +75,7 @@ export function entityKindName(kind: EntityKind): string {
     [EntityKind.PredatorNest]: 'Predator Nest',
     [EntityKind.Cattail]: 'Cattail',
     [EntityKind.Clambed]: 'Clambed',
-    [EntityKind.Healer]: 'Healer',
+    [EntityKind.Healer]: 'Medic',
     [EntityKind.Watchtower]: 'Watchtower',
     [EntityKind.BossCroc]: 'Boss Croc',
     [EntityKind.Shieldbearer]: 'Shieldbearer',

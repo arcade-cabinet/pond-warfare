@@ -1,5 +1,11 @@
 # Responsive Modals — Design Reference
 
+> Historical note: this document still references the old `TechTreePanel`
+> work because that was the modal surface that originally drove the responsive
+> fixes. The live v3 game uses the Upgrade Web and Pearl screens instead of the
+> old tech-tree UI, but the viewport and drag-scroll guidance here still
+> applies to the current modal stack.
+
 ## Problem statement
 
 Two independent issues were addressed:

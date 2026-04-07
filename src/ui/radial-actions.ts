@@ -43,10 +43,10 @@ const TRAIN_KIND_MAP: Record<string, EntityKind> = {
 
 /** v3 generalist names for config lookup. */
 const TRAIN_CONFIG_MAP: Record<string, string> = {
-  train_mudpaw: 'gatherer',
+  train_mudpaw: 'mudpaw',
   train_medic: 'medic',
-  train_sapper: 'sapper_unit',
-  train_saboteur: 'saboteur_unit',
+  train_sapper: 'sapper',
+  train_saboteur: 'saboteur',
 };
 
 /**

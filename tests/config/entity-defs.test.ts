@@ -117,7 +117,8 @@ describe('isWingBuilding', () => {
 
 describe('entityKindName', () => {
   it('should return correct names', () => {
-    expect(entityKindName(EntityKind.Gatherer)).toBe('Gatherer');
+    expect(entityKindName(EntityKind.Gatherer)).toBe('Mudpaw');
+    expect(entityKindName(EntityKind.Healer)).toBe('Medic');
     expect(entityKindName(EntityKind.PredatorNest)).toBe('Predator Nest');
   });
 });
@@ -125,6 +126,8 @@ describe('entityKindName', () => {
 describe('entityKindFromString', () => {
   it('should convert string names to EntityKind', () => {
     expect(entityKindFromString('gatherer')).toBe(EntityKind.Gatherer);
+    expect(entityKindFromString('mudpaw')).toBe(EntityKind.Gatherer);
+    expect(entityKindFromString('medic')).toBe(EntityKind.Healer);
     expect(entityKindFromString('predator_nest')).toBe(EntityKind.PredatorNest);
   });
 

@@ -56,18 +56,18 @@ describe('E2E Playtest Suite — US20', () => {
   });
 
   describe('E2E: Train units from Lodge', () => {
-    it('Lodge radial offers all 4 generalist unit types', () => {
-      const generalistTypes = ['gatherer', 'fighter', 'medic', 'scout'];
-      expect(generalistTypes).toHaveLength(4);
+    it('Lodge radial offers the canonical manual roster', () => {
+      const manualTypes = ['mudpaw', 'medic', 'sapper', 'saboteur'];
+      expect(manualTypes).toHaveLength(4);
       // All should be loadable from config
-      for (const type of generalistTypes) {
+      for (const type of manualTypes) {
         expect(() => getUnitDef(type)).not.toThrow();
       }
     });
 
     it('training costs Fish (from units.json)', () => {
-      const gatherer = getUnitDef('gatherer') as GeneralistDef;
-      expect(gatherer.cost.fish).toBeGreaterThan(0);
+      const mudpaw = getUnitDef('mudpaw') as GeneralistDef;
+      expect(mudpaw.cost.fish).toBeGreaterThan(0);
     });
   });
 
@@ -79,10 +79,10 @@ describe('E2E Playtest Suite — US20', () => {
     });
   });
 
-  describe('E2E: Fighter → enemy → deals damage', () => {
-    it('fighter has positive damage stat', () => {
-      const fighter = getUnitDef('fighter');
-      expect(fighter.damage).toBeGreaterThan(0);
+  describe('E2E: Sapper → enemy fort → deals damage', () => {
+    it('sapper has positive damage stat', () => {
+      const sapper = getUnitDef('sapper');
+      expect(sapper.damage).toBeGreaterThan(0);
     });
   });
 

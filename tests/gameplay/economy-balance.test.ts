@@ -22,25 +22,13 @@ import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 describe('v3 Economy Balance', () => {
   describe('Unit costs (ENTITY_DEFS aligned with units.json)', () => {
-    it('Gatherer costs 10 Fish only', () => {
+    it('Mudpaw costs 10 Fish only', () => {
       const def = ENTITY_DEFS[EntityKind.Gatherer];
       expect(def.fishCost).toBe(10);
       expect(def.logCost).toBe(0);
     });
 
-    it('Fighter (Brawler) costs 20 Fish only', () => {
-      const def = ENTITY_DEFS[EntityKind.Brawler];
-      expect(def.fishCost).toBe(20);
-      expect(def.logCost).toBe(0);
-    });
-
-    it('Scout costs 8 Fish only', () => {
-      const def = ENTITY_DEFS[EntityKind.Scout];
-      expect(def.fishCost).toBe(8);
-      expect(def.logCost).toBe(0);
-    });
-
-    it('Healer costs 15 Fish only', () => {
+    it('Medic costs 15 Fish only', () => {
       const def = ENTITY_DEFS[EntityKind.Healer];
       expect(def.fishCost).toBe(15);
       expect(def.logCost).toBe(0);
@@ -60,19 +48,21 @@ describe('v3 Economy Balance', () => {
       expect(def.logCost).toBe(0);
     });
 
-    it('ENTITY_DEFS costs match units.json for all generalists', () => {
-      const generalists = ['gatherer', 'fighter', 'medic', 'scout'] as const;
+    it('ENTITY_DEFS costs match units.json for the canonical manual roster', () => {
+      const generalists = ['mudpaw', 'medic', 'sapper', 'saboteur'] as const;
       const mapping: Record<string, EntityKind> = {
-        gatherer: EntityKind.Gatherer,
-        fighter: EntityKind.Brawler,
+        mudpaw: EntityKind.Gatherer,
         medic: EntityKind.Healer,
-        scout: EntityKind.Scout,
+        sapper: EntityKind.Sapper,
+        saboteur: EntityKind.Saboteur,
       };
 
       for (const name of generalists) {
         const jsonDef = getUnitDef(name) as GeneralistDef;
         const ecsDef = ENTITY_DEFS[mapping[name]];
         expect(ecsDef.fishCost).toBe(jsonDef.cost.fish);
+        expect(ecsDef.logCost ?? 0).toBe(jsonDef.cost.logs ?? 0);
+        expect(ecsDef.rockCost ?? 0).toBe(jsonDef.cost.rocks ?? 0);
       }
     });
   });
@@ -86,11 +76,11 @@ describe('v3 Economy Balance', () => {
       spawnVerticalEntities(world, layout, new SeededRandom(99));
 
       const fish = world.resources.fish;
-      const gathererCost = ENTITY_DEFS[EntityKind.Gatherer].fishCost ?? 0;
-      const brawlerCost = ENTITY_DEFS[EntityKind.Brawler].fishCost ?? 0;
+      const mudpawCost = ENTITY_DEFS[EntityKind.Gatherer].fishCost ?? 0;
+      const medicCost = ENTITY_DEFS[EntityKind.Healer].fishCost ?? 0;
 
-      // Must afford at least 2 Gatherers + 1 Fighter
-      const minArmyCost = gathererCost * 2 + brawlerCost;
+      // Must afford at least 2 Mudpaws and one Medic from stage 2 onward.
+      const minArmyCost = stage >= 2 ? mudpawCost * 2 + medicCost : mudpawCost * 2;
       expect(fish).toBeGreaterThanOrEqual(minArmyCost);
     });
 
@@ -130,14 +120,15 @@ describe('v3 Economy Balance', () => {
       expect(lodgeDef.foodProvided).toBe(8);
     });
 
-    it('Commander + 4 Gatherers + 2 Brawlers + 1 Scout = 8 food (fits Lodge cap)', () => {
+    it('Commander + 4 Mudpaws + Medic + Sapper + Saboteur = 8 food (fits Lodge cap)', () => {
       const cmdrCost = ENTITY_DEFS[EntityKind.Commander].foodCost ?? 0;
-      const gatherCost = (ENTITY_DEFS[EntityKind.Gatherer].foodCost ?? 1) * 4;
-      const brawlerCost = (ENTITY_DEFS[EntityKind.Brawler].foodCost ?? 1) * 2;
-      const scoutCost = ENTITY_DEFS[EntityKind.Scout].foodCost ?? 1;
+      const mudpawCost = (ENTITY_DEFS[EntityKind.Gatherer].foodCost ?? 1) * 4;
+      const medicCost = ENTITY_DEFS[EntityKind.Healer].foodCost ?? 1;
+      const sapperCost = ENTITY_DEFS[EntityKind.Sapper].foodCost ?? 1;
+      const saboteurCost = ENTITY_DEFS[EntityKind.Saboteur].foodCost ?? 1;
 
-      // Commander has no foodCost (0), so total is 7 units × 1 food each
-      const total = cmdrCost + gatherCost + brawlerCost + scoutCost;
+      // Commander has no foodCost (0), so total is seven roster units at one food each.
+      const total = cmdrCost + mudpawCost + medicCost + sapperCost + saboteurCost;
       expect(total).toBeLessThanOrEqual(8);
     });
   });

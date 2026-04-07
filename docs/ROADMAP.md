@@ -1,6 +1,6 @@
 # Pond Warfare -- Feature Roadmap
 
-Current state: v3.0 -- Mobile-first single-mode RTS with prestige loop. 1663 tests.
+Current state: v3.0 -- Mobile-first single-mode RTS with prestige loop. Test count changes continuously; use CI or `pnpm test` for the current total.
 
 ---
 
@@ -73,6 +73,6 @@ prestige loop.
 - Asset loading optimization
 
 ### Testing
-- Maintain 1600+ tests across unit, integration, browser, and gameplay categories
+- Maintain broad coverage across unit, integration, browser, and gameplay categories
 - Browser screenshot regression tests
 - bitECS test isolation (mock audio/rendering in parallel tests)

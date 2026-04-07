@@ -50,12 +50,12 @@ describe('Config Validation — US21', () => {
       expect(ids.length).toBeGreaterThan(0);
     });
 
-    it('should have 4 generalist types', () => {
+    it('should have the canonical manual roster', () => {
       const allIds = getAllUnitIds();
-      expect(allIds).toContain('gatherer');
-      expect(allIds).toContain('fighter');
+      expect(allIds).toContain('mudpaw');
       expect(allIds).toContain('medic');
-      expect(allIds).toContain('scout');
+      expect(allIds).toContain('sapper');
+      expect(allIds).toContain('saboteur');
     });
 
     it('all unit stats should be positive', () => {
