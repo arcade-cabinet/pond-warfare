@@ -1,7 +1,7 @@
 /**
  * Action Panel -- Lodge Buttons
  *
- * Train buttons (Gatherer, Scout, Swimmer) shown by Global Command
+ * Train buttons (Gatherer, Fighter, Medic, Scout, Swimmer) shown by Global Command
  * Center and when a completed Lodge is selected.
  *
  * In v3.0 in-match tech research was replaced by the upgrade web.
@@ -45,6 +45,62 @@ export function buildLodgeButtons(
       recorder?.record(w.frameCount, 'train', {
         buildingEid: lodgeEid,
         unitKind: EntityKind.Gatherer,
+      });
+    },
+  });
+  const fighterDef = ENTITY_DEFS[EntityKind.Brawler];
+  btns.push({
+    title: 'Fighter',
+    cost: `${fighterDef.fishCost}F ${fighterDef.foodCost}F`,
+    hotkey: 'W',
+    affordable:
+      w.resources.fish >= (fighterDef.fishCost ?? 0) &&
+      w.resources.food + (fighterDef.foodCost ?? 1) <= w.resources.maxFood,
+    description: 'Baseline melee combat unit. Frontline damage and defense.',
+    category: 'train',
+    costBreakdown: {
+      fish: fighterDef.fishCost,
+      logs: fighterDef.logCost,
+      food: fighterDef.foodCost,
+    },
+    onClick: () => {
+      train(
+        w,
+        lodgeEid,
+        EntityKind.Brawler,
+        fighterDef.fishCost ?? 0,
+        fighterDef.logCost ?? 0,
+        fighterDef.foodCost ?? 1,
+      );
+      recorder?.record(w.frameCount, 'train', {
+        buildingEid: lodgeEid,
+        unitKind: EntityKind.Brawler,
+      });
+    },
+  });
+  const medicDef = ENTITY_DEFS[EntityKind.Healer];
+  btns.push({
+    title: 'Medic',
+    cost: `${medicDef.fishCost}F ${medicDef.foodCost}F`,
+    hotkey: 'E',
+    affordable:
+      w.resources.fish >= (medicDef.fishCost ?? 0) &&
+      w.resources.food + (medicDef.foodCost ?? 1) <= w.resources.maxFood,
+    description: 'Baseline support unit. Keeps the first-run frontline alive.',
+    category: 'train',
+    costBreakdown: { fish: medicDef.fishCost, logs: medicDef.logCost, food: medicDef.foodCost },
+    onClick: () => {
+      train(
+        w,
+        lodgeEid,
+        EntityKind.Healer,
+        medicDef.fishCost ?? 0,
+        medicDef.logCost ?? 0,
+        medicDef.foodCost ?? 1,
+      );
+      recorder?.record(w.frameCount, 'train', {
+        buildingEid: lodgeEid,
+        unitKind: EntityKind.Healer,
       });
     },
   });

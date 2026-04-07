@@ -80,7 +80,7 @@ const AUTO_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
 const ROLE_ORDER: UnitRole[] = ['gatherer', 'combat', 'support', 'scout', 'commander'];
 
 const BUILDING_TRAIN_MAP: Partial<Record<EntityKind, EntityKind[]>> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Scout],
+  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Healer, EntityKind.Scout],
   [EntityKind.Armory]: [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Healer],
   [EntityKind.Burrow]: [EntityKind.Gatherer],
 };

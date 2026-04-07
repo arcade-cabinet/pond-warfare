@@ -18,6 +18,7 @@ import { Governor } from '@/governor/governor';
 import { EntityKind } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 
 vi.mock('@/game', () => ({
   game: {
@@ -120,6 +121,7 @@ describe('TrainEvaluator', () => {
     store.food.value = 2;
     store.maxFood.value = 8;
     store.waveCountdown.value = -1;
+    storeV3.progressionLevel.value = 1;
   });
 
   it('returns 0 when idle gatherers exist (Gather goal takes priority)', () => {
@@ -159,7 +161,19 @@ describe('TrainEvaluator', () => {
       }))),
     ];
 
-    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.44);
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.42);
+  });
+
+  it('lowers the gatherer target on stage 6 so combat training can start earlier', () => {
+    storeV3.progressionLevel.value = 6;
+    store.unitRoster.value = [
+      makeGroup('gatherer', [
+        { eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer },
+        { eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer },
+      ]),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.75);
   });
 });
 

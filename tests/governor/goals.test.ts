@@ -18,6 +18,7 @@ import {
   Resource,
   TaskOverride,
   TrainingQueue,
+  trainingQueueSlots,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
@@ -25,6 +26,7 @@ import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import type { RosterBuilding, RosterGroup, RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 
 let world: GameWorld;
 
@@ -181,6 +183,7 @@ describe('TrainGoal', () => {
     store.buildingRoster.value = [];
     store.fish.value = 500;
     store.logs.value = 500;
+    storeV3.progressionLevel.value = 1;
   });
 
   it('queues a gatherer at lodge when few gatherers exist', async () => {
@@ -215,5 +218,44 @@ describe('TrainGoal', () => {
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
+  });
+
+  it('switches to a fighter earlier on higher-pressure stages', async () => {
+    const { TrainGoal } = await import('@/governor/goals/train-goal');
+
+    const lodgeEid = addEntity(world.ecs);
+    addComponent(world.ecs, lodgeEid, TrainingQueue);
+    addComponent(world.ecs, lodgeEid, FactionTag);
+    addComponent(world.ecs, lodgeEid, IsBuilding);
+    FactionTag.faction[lodgeEid] = Faction.Player;
+    TrainingQueue.count[lodgeEid] = 0;
+
+    storeV3.progressionLevel.value = 6;
+    store.buildingRoster.value = [
+      {
+        eid: lodgeEid,
+        kind: EntityKind.Lodge,
+        hp: 1500,
+        maxHp: 1500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Healer, EntityKind.Scout],
+      } satisfies RosterBuilding,
+    ];
+    store.unitRoster.value = [
+      rosterGroup('gatherer', [
+        rosterUnit(1, EntityKind.Gatherer, 'gathering-fish'),
+        rosterUnit(2, EntityKind.Gatherer, 'gathering-fish'),
+      ]),
+    ];
+    store.food.value = 2;
+    store.maxFood.value = 8;
+
+    const goal = new TrainGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(TrainingQueue.count[lodgeEid]).toBe(1);
+    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Brawler);
   });
 });

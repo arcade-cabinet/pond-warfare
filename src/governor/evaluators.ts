@@ -15,6 +15,7 @@ import { DefendGoal } from './goals/defend-goal';
 import { findIdleGatherers, GatherGoal } from './goals/gather-goal';
 import { TrainGoal } from './goals/train-goal';
 import type { Governor } from './governor';
+import { getGovernorCombatTarget, getGovernorGathererTarget } from './train-policy';
 
 function hasBuilding(kind: EntityKind): boolean {
   return store.buildingRoster.value.some((b) => b.kind === kind);
@@ -114,8 +115,8 @@ export class TrainEvaluator extends GoalEvaluator {
       .reduce((sum, g) => sum + g.units.length, 0);
     const idleGatherers = findIdleGatherers().length;
 
-    // Need gatherers for economy — but don't train more if some are idle
-    if (gatherers < 4) {
+    // Need gatherers for economy — but the target drops on higher-pressure stages.
+    if (gatherers < getGovernorGathererTarget()) {
       if (idleGatherers > 0) return 0; // Let Gather goal assign them first
       if (store.fish.value >= 10) return 0.8;
     }
@@ -123,8 +124,11 @@ export class TrainEvaluator extends GoalEvaluator {
     // Need combat units — always desirable when economy is running
     const army = combatUnitCount();
     const readyArmy = countAvailableAttackers();
-    if (army < 6 && store.fish.value >= 20 && canPressureSafely(army, readyArmy)) return 0.44;
-    if (army < 6 && store.fish.value >= 20) return 0.75;
+    const combatTarget = getGovernorCombatTarget();
+    if (army < combatTarget && store.fish.value >= 20 && canPressureSafely(army, readyArmy)) {
+      return 0.44;
+    }
+    if (army < combatTarget && store.fish.value >= 20) return 0.75;
 
     // Keep training if we can afford it
     if (store.fish.value >= 20 && canPressureSafely(army, readyArmy)) return 0.42;

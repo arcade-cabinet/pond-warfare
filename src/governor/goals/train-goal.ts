@@ -4,8 +4,8 @@
  * Reads buildingRoster to find buildings with available queue slots,
  * then calls the same train() function the BuildingsTab uses.
  *
- * The Lodge trains basic units (Gatherer, Brawler, Scout).
- * The Armory wing (Lodge upgrade) trains advanced units (Sniper, Healer, Shieldbearer).
+ * The Lodge trains the four baseline generalists.
+ * The Armory wing (Lodge upgrade) trains the heavier follow-up roster.
  */
 
 import { Goal } from 'yuka';
@@ -14,12 +14,18 @@ import { game } from '@/game';
 import { train } from '@/input/selection';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
+import {
+  getGovernorCombatTarget,
+  getGovernorGathererTarget,
+  shouldTrainScoutUnit,
+  shouldTrainSupportUnit,
+} from '../train-policy';
 
 /** What each building type can train, in priority order. */
 const BUILDING_TRAINS: Record<number, EntityKind[]> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Scout],
-  // Armory is a Lodge wing — trains advanced units when unlocked
-  [EntityKind.Armory]: [EntityKind.Sniper, EntityKind.Healer, EntityKind.Shieldbearer],
+  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Healer, EntityKind.Scout],
+  // Armory is a Lodge wing — trains heavier follow-up units when unlocked
+  [EntityKind.Armory]: [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Healer, EntityKind.Shieldbearer],
 };
 
 /** Count of combat units (non-gatherer, non-healer, non-scout). */
@@ -35,16 +41,27 @@ function gathererCount(): number {
     .reduce((sum, g) => sum + g.units.length, 0);
 }
 
+function scoutCount(): number {
+  return store.unitRoster.value
+    .filter((g) => g.role === 'scout')
+    .reduce((sum, g) => sum + g.units.length, 0);
+}
+
+function trainableUnits(buildingKind: EntityKind, canTrain: EntityKind[]): EntityKind[] {
+  if (canTrain.length > 0) return canTrain;
+  return BUILDING_TRAINS[buildingKind] ?? [];
+}
+
 export class TrainGoal extends Goal {
   override activate(): void {
     const buildings = store.buildingRoster.value;
     let trained = false;
 
     for (const b of buildings) {
-      const trainable = BUILDING_TRAINS[b.kind];
+      const trainable = trainableUnits(b.kind, b.canTrain);
       if (!trainable || b.queueItems.length >= 5) continue;
 
-      const unitKind = this.pickUnit(b.kind);
+      const unitKind = this.pickUnit(trainable);
       if (unitKind === null) continue;
 
       const def = ENTITY_DEFS[unitKind];
@@ -62,17 +79,24 @@ export class TrainGoal extends Goal {
     this.status = trained ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
   }
 
-  private pickUnit(buildingKind: EntityKind): EntityKind | null {
-    if (buildingKind === EntityKind.Lodge) {
-      if (gathererCount() < 4) return EntityKind.Gatherer;
-      if (armySize() < 6) return EntityKind.Brawler;
+  private pickUnit(trainable: EntityKind[]): EntityKind | null {
+    if (trainable.includes(EntityKind.Gatherer) && gathererCount() < getGovernorGathererTarget()) {
+      return EntityKind.Gatherer;
+    }
+    if (trainable.includes(EntityKind.Brawler) && armySize() < getGovernorCombatTarget()) {
+      return EntityKind.Brawler;
+    }
+    if (trainable.includes(EntityKind.Healer) && shouldTrainSupportUnit()) {
+      return EntityKind.Healer;
+    }
+    if (trainable.includes(EntityKind.Scout) && shouldTrainScoutUnit() && scoutCount() === 0) {
       return EntityKind.Scout;
     }
-    // Armory wing trains advanced units
-    if (buildingKind === EntityKind.Armory) {
-      return armySize() % 2 === 0 ? EntityKind.Brawler : EntityKind.Sniper;
-    }
-    return null;
+    if (trainable.includes(EntityKind.Sniper) && armySize() >= 3) return EntityKind.Sniper;
+    if (trainable.includes(EntityKind.Brawler)) return EntityKind.Brawler;
+    if (trainable.includes(EntityKind.Healer)) return EntityKind.Healer;
+    if (trainable.includes(EntityKind.Scout)) return EntityKind.Scout;
+    return trainable[0] ?? null;
   }
 
   override execute(): void {

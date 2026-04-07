@@ -4,34 +4,10 @@ import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import { GameEntity } from 'yuka';
 import { getPowerScore } from '@/balance/progression-model';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-  TaskOverride,
-  UnitStateMachine,
-} from '@/ecs/components';
-import { aiSystem } from '@/ecs/systems/ai';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { autoTrainSystem } from '@/ecs/systems/auto-train';
-import { cleanupSystem } from '@/ecs/systems/cleanup';
-import { combatSystem } from '@/ecs/systems/combat';
-import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
-import { evolutionSystem } from '@/ecs/systems/evolution';
-import { gatheringSystem } from '@/ecs/systems/gathering';
-import { healthSystem } from '@/ecs/systems/health';
-import {
-  getEventsCompletedCount,
-  matchEventRunnerSystem,
-  resetMatchEventRunner,
-} from '@/ecs/systems/match-event-runner';
-import { movementSystem } from '@/ecs/systems/movement';
-import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behaviors';
-import { trainingSystem } from '@/ecs/systems/training';
-import { weatherSystem } from '@/ecs/systems/weather';
+import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
+import { getEventsCompletedCount } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
-import { createPrestigeState, isAutoBehaviorUnlocked, type PrestigeState } from '@/config/prestige-logic';
+import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import {
   AttackEvaluator,
   BuildEvaluator,
@@ -40,20 +16,18 @@ import {
   TrainEvaluator,
 } from '@/governor/evaluators';
 import { countAvailableAttackers } from '@/governor/goals/attack-goal';
-import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
-import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { calculateMatchReward } from '@/game/match-rewards';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
-import { applyUpgradeEffects } from '@/game/upgrade-effects';
 import { Governor } from '@/governor/governor';
-import { EntityKind, Faction, UnitState } from '@/types';
-import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
+import { Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
-import * as storeV3 from '@/ui/store-v3';
-import { SeededRandom } from '@/utils/random';
+import {
+  combatArmySize,
+  countTaskUnits,
+  createGovernorTraceWorld,
+  lodgeHpRatio,
+  runGovernorFrame,
+} from './governor-diagnostics-harness';
 import { mockedGameRef } from '../helpers/game-world-ref';
-import { syncGovernorSignals } from '../helpers/governor-sync';
-import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
@@ -70,7 +44,10 @@ vi.mock('@/rendering/animations');
 vi.mock('@/utils/particles');
 
 const TEST_STAGE = 6;
-const TEST_FRAMES = 1200;
+const TRACE_WINDOWS = [
+  { label: 'opening', frames: 1200 },
+  { label: 'long_run', frames: 2400 },
+] as const;
 const TRACE_SEEDS = [11, 42, 77];
 const evaluatorOwner = new GameEntity();
 
@@ -81,11 +58,15 @@ interface TraceVariant {
 
 interface TraceSummary {
   name: string;
+  window: string;
   seed: number;
   decisions: string;
   avgCombatArmy: number;
   avgReadyArmy: number;
   attackOpportunityTicks: number;
+  attackDecisionTicks: number;
+  firstAttackOpportunitySec: number | null;
+  firstAttackDecisionSec: number | null;
   maxAttackScore: number;
   avgAttackers: number;
   avgDefenders: number;
@@ -96,72 +77,6 @@ interface TraceSummary {
   gathered: number;
   clams: number;
   power: number;
-}
-
-function runFrame(world: GameWorld, governor: Governor): void {
-  world.frameCount++;
-  world.yukaManager.update(1 / 60, world.ecs);
-  world.spatialHash.clear();
-  for (const eid of query(world.ecs, [Position, Health])) {
-    if (Health.current[eid] > 0) {
-      world.spatialHash.insert(eid, Position.x[eid], Position.y[eid]);
-    }
-  }
-
-  weatherSystem(world);
-  movementSystem(world);
-  gatheringSystem(world);
-  combatSystem(world);
-  commanderPassivesSystem(world);
-  trainingSystem(world);
-  aiSystem(world);
-  evolutionSystem(world);
-  autoTrainSystem(world);
-  healthSystem(world);
-  prestigeAutoBehaviorSystem(world);
-  matchEventRunnerSystem(world, storeV3.progressionLevel.value);
-  autoSymbolSystem(world);
-  cleanupSystem(world);
-
-  if (world.frameCount % 30 === 0) {
-    syncGovernorSignals(world);
-  }
-
-  governor.tick();
-}
-
-function createWorld(prestigeState: PrestigeState, seed: number): GameWorld {
-  resetAutoSymbol();
-  resetMatchEventRunner();
-  storeV3.progressionLevel.value = TEST_STAGE;
-  storeV3.prestigeState.value = prestigeState;
-  storeV3.startingTierRank.value = 0;
-  storeV3.currentRunPurchasedNodeIds.value = [];
-  storeV3.currentRunPurchasedDiamondIds.value = [];
-
-  const world = createTestWorld({ stage: TEST_STAGE, seed, fish: 200 });
-  world.peaceTimer = 0;
-  mockedGameRef.world = world;
-
-  const panelGrid = createTestPanelGrid(TEST_STAGE, 960, 540, seed);
-  const layout = generateVerticalMapLayout(panelGrid, new SeededRandom(seed), {
-    hasRareResourceAccess: isAutoBehaviorUnlocked(prestigeState, 'rare_resource_access'),
-  });
-  const upgradeState = buildCurrentRunUpgradeState({
-    clams: 999,
-    purchasedNodeIds: [],
-    purchasedDiamondIds: [],
-    startingTierRank: 0,
-  });
-  applyUpgradeEffects(world, upgradeState.state, prestigeState);
-  const lodgeEid = spawnVerticalEntities(world, layout, new SeededRandom(seed + 100));
-  deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
-  syncGovernorSignals(world);
-  return world;
-}
-
-function pickDecision(): string {
-  return scoreDecisionWindow().bestName;
 }
 
 function scoreDecisionWindow(): { bestName: string; attackScore: number } {
@@ -186,34 +101,12 @@ function scoreDecisionWindow(): { bestName: string; attackScore: number } {
   return { bestName, attackScore };
 }
 
-function combatArmySize(): number {
-  return store.unitRoster.value
-    .filter((group) => group.role === 'combat')
-    .reduce((sum, group) => sum + group.units.length, 0);
-}
-
-function lodgeHpRatio(world: GameWorld): number {
-  const lodge = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).find(
-    (eid) =>
-      FactionTag.faction[eid] === Faction.Player &&
-      EntityTypeTag.kind[eid] === EntityKind.Lodge &&
-      Health.current[eid] > 0,
-  );
-  if (lodge == null || Health.max[lodge] <= 0) return 0;
-  return Health.current[lodge] / Health.max[lodge];
-}
-
-function countTaskUnits(world: GameWorld, task: UnitState): number {
-  return Array.from(query(world.ecs, [Health, FactionTag, TaskOverride, UnitStateMachine])).filter(
-    (eid) =>
-      FactionTag.faction[eid] === Faction.Player &&
-      Health.current[eid] > 0 &&
-      TaskOverride.task[eid] === task,
-  ).length;
-}
-
-function runVariant(seed: number, variant: TraceVariant): TraceSummary {
-  const world = createWorld(variant.prestigeState, seed);
+function runVariant(
+  seed: number,
+  variant: TraceVariant,
+  window: (typeof TRACE_WINDOWS)[number],
+): TraceSummary {
+  const world = createGovernorTraceWorld(variant.prestigeState, seed, TEST_STAGE);
   const governor = new Governor();
   governor.enabled = true;
 
@@ -221,6 +114,9 @@ function runVariant(seed: number, variant: TraceVariant): TraceSummary {
   let combatArmyTotal = 0;
   let readyArmyTotal = 0;
   let attackOpportunityTicks = 0;
+  let attackDecisionTicks = 0;
+  let firstAttackOpportunityFrame: number | null = null;
+  let firstAttackDecisionFrame: number | null = null;
   let maxAttackScore = 0;
   let attackersTotal = 0;
   let defendersTotal = 0;
@@ -228,8 +124,8 @@ function runVariant(seed: number, variant: TraceVariant): TraceSummary {
   let threatFrames = 0;
   let samples = 0;
 
-  for (let frame = 0; frame < TEST_FRAMES; frame += 1) {
-    runFrame(world, governor);
+  for (let frame = 0; frame < window.frames; frame += 1) {
+    runGovernorFrame(world, governor);
     if (world.frameCount % 120 === 0) {
       const combatArmy = combatArmySize();
       const readyArmy = countAvailableAttackers();
@@ -237,7 +133,14 @@ function runVariant(seed: number, variant: TraceVariant): TraceSummary {
       decisionCounts.set(choice, (decisionCounts.get(choice) ?? 0) + 1);
       combatArmyTotal += combatArmy;
       readyArmyTotal += readyArmy;
-      if (attackScore > 0) attackOpportunityTicks += 1;
+      if (attackScore > 0) {
+        attackOpportunityTicks += 1;
+        if (firstAttackOpportunityFrame == null) firstAttackOpportunityFrame = world.frameCount;
+      }
+      if (choice === 'attack') {
+        attackDecisionTicks += 1;
+        if (firstAttackDecisionFrame == null) firstAttackDecisionFrame = world.frameCount;
+      }
       if (attackScore > maxAttackScore) maxAttackScore = attackScore;
     }
     if (world.frameCount % 30 === 0) {
@@ -265,11 +168,17 @@ function runVariant(seed: number, variant: TraceVariant): TraceSummary {
 
   return {
     name: variant.name,
+    window: window.label,
     seed,
     decisions,
-    avgCombatArmy: Number((combatArmyTotal / Math.max(TEST_FRAMES / 120, 1)).toFixed(2)),
-    avgReadyArmy: Number((readyArmyTotal / Math.max(TEST_FRAMES / 120, 1)).toFixed(2)),
+    avgCombatArmy: Number((combatArmyTotal / Math.max(window.frames / 120, 1)).toFixed(2)),
+    avgReadyArmy: Number((readyArmyTotal / Math.max(window.frames / 120, 1)).toFixed(2)),
     attackOpportunityTicks,
+    attackDecisionTicks,
+    firstAttackOpportunitySec:
+      firstAttackOpportunityFrame == null ? null : Number((firstAttackOpportunityFrame / 60).toFixed(1)),
+    firstAttackDecisionSec:
+      firstAttackDecisionFrame == null ? null : Number((firstAttackDecisionFrame / 60).toFixed(1)),
     maxAttackScore: Number(maxAttackScore.toFixed(2)),
     avgAttackers: Number((attackersTotal / Math.max(samples, 1)).toFixed(2)),
     avgDefenders: Number((defendersTotal / Math.max(samples, 1)).toFixed(2)),
@@ -303,12 +212,14 @@ describe('governor decision diagnostics', () => {
       { name: 'auto_heal_behavior', prestigeState: { ...rankOne, upgradeRanks: { auto_heal_behavior: 1 } } },
       { name: 'gather_multiplier', prestigeState: { ...rankOne, upgradeRanks: { gather_multiplier: 1 } } },
     ];
-    const rows = TRACE_SEEDS.flatMap((seed) => variants.map((variant) => runVariant(seed, variant)));
+    const rows = TRACE_WINDOWS.flatMap((window) =>
+      TRACE_SEEDS.flatMap((seed) => variants.map((variant) => runVariant(seed, variant, window))),
+    );
 
     console.log('\nGovernor decision diagnostics');
     console.table(rows);
 
-    expect(rows).toHaveLength(TRACE_SEEDS.length * variants.length);
+    expect(rows).toHaveLength(TRACE_WINDOWS.length * TRACE_SEEDS.length * variants.length);
     for (const row of rows) {
       expect(Number.isFinite(row.avgAttackers)).toBe(true);
       expect(Number.isFinite(row.avgDefenders)).toBe(true);
@@ -316,6 +227,7 @@ describe('governor decision diagnostics', () => {
       expect(Number.isFinite(row.baseThreatPct)).toBe(true);
       expect(Number.isFinite(row.avgCombatArmy)).toBe(true);
       expect(Number.isFinite(row.avgReadyArmy)).toBe(true);
+      expect(Number.isFinite(row.attackDecisionTicks)).toBe(true);
       expect(Number.isFinite(row.maxAttackScore)).toBe(true);
       expect(row.decisions.length).toBeGreaterThan(0);
     }
