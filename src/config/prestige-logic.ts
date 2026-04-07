@@ -20,6 +20,8 @@ import type {
   MultiplierEffect,
   PearlUpgradeDef,
   SpecialistBlueprintEffect,
+  SpecialistZoneEffect,
+  SpecialistZoneStat,
 } from './v3-types';
 
 // Re-export display helpers so existing imports still work
@@ -85,6 +87,42 @@ export function getSpecialistBlueprints(state: PrestigeState): SpecialistBluepri
 export function getSpecialistBlueprintCap(state: PrestigeState, unitId: string): number {
   const match = getSpecialistBlueprints(state).find((d) => d.unitId === unitId);
   return match?.cap ?? 0;
+}
+
+// ── Specialist Zone Bonuses ──────────────────────────────────────
+
+export interface SpecialistZoneBonus {
+  unitId: string;
+  stat: SpecialistZoneStat;
+  value: number;
+  upgradeId: string;
+}
+
+export function getSpecialistZoneBonuses(state: PrestigeState): SpecialistZoneBonus[] {
+  const result: SpecialistZoneBonus[] = [];
+  for (const { id, def } of getAllPearlUpgradeEntries()) {
+    if (def.effect.type !== 'specialist_zone') continue;
+    const effect = def.effect as SpecialistZoneEffect;
+    const rank = state.upgradeRanks[id] ?? 0;
+    if (rank <= 0) continue;
+    result.push({
+      unitId: effect.unit,
+      stat: effect.stat,
+      value: effect.value_per_rank * rank,
+      upgradeId: id,
+    });
+  }
+  return result;
+}
+
+export function getSpecialistZoneBonus(
+  state: PrestigeState,
+  unitId: string,
+  stat: SpecialistZoneStat,
+): number {
+  return getSpecialistZoneBonuses(state)
+    .filter((entry) => entry.unitId === unitId && entry.stat === stat)
+    .reduce((sum, entry) => sum + entry.value, 0);
 }
 
 // ── Auto-Behavior Unlocks ─────────────────────────────────────────

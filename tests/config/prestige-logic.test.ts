@@ -23,6 +23,8 @@ import {
   getPearlUpgradeDisplayList,
   getSpecialistBlueprintCap,
   getSpecialistBlueprints,
+  getSpecialistZoneBonus,
+  getSpecialistZoneBonuses,
   getStatMultiplier,
   getStatMultipliers,
   getUnlockedAutoBehaviors,
@@ -133,6 +135,28 @@ describe('Specialist blueprint cap calculations', () => {
 
     const blueprints = getSpecialistBlueprints(state);
     expect(blueprints).toHaveLength(0);
+  });
+});
+
+describe('Specialist zone bonuses', () => {
+  it('should return empty list for a new player', () => {
+    expect(getSpecialistZoneBonuses(createPrestigeState())).toEqual([]);
+  });
+
+  it('should sum specialist zone upgrades per unit and stat', () => {
+    const state: PrestigeState = {
+      rank: 2,
+      pearls: 0,
+      totalPearlsEarned: 25,
+      upgradeRanks: {
+        fisher_radius: 2,
+        ranger_projection_range: 1,
+      },
+    };
+
+    expect(getSpecialistZoneBonus(state, 'fisher', 'operating_radius')).toBe(48);
+    expect(getSpecialistZoneBonus(state, 'ranger', 'projection_range')).toBe(20);
+    expect(getSpecialistZoneBonus(state, 'ranger', 'anchor_radius')).toBe(0);
   });
 });
 

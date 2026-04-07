@@ -147,6 +147,10 @@ Metagame currencies (between matches):
 
 Pearls unlock specialist blueprints and upgrade their autonomy. Specialists still cost in-match resources to train, and radius growth is a primary Pearl upgrade path.
 
+The Pearl screen groups specialist progression per specialist rather than under
+one generic "Specialists" bucket. Each specialist's blueprint and radius path
+should stay readable together.
+
 Specialist assignment visuals are canonical too:
 - selecting a specialist should reveal its assigned circle(s) on the map
 - a dotted line should correlate the specialist to that circle or circles
@@ -212,7 +216,7 @@ All game balance data lives in `configs/*.json`, loaded via `src/config/config-l
 | `unit-model.json` | Canonical unit-model design | Manual roster, Pearl specialists, radius/autonomy rules |
 | `enemies.json` | Enemy unit stats + scaling | Types (6) + per-level scaling |
 | `upgrades.json` | Upgrade web categories | 6 categories, 4 subcats each, 10 tiers = 240 nodes |
-| `prestige.json` | Pearl upgrades + prestige formula | Specialist blueprints, auto-behaviors, multipliers |
+| `prestige.json` | Pearl upgrades + prestige formula | Specialist blueprints, cap/radius/projection growth, auto-behaviors, multipliers |
 | `events.json` | Match event templates + timing | Waves, bosses, sabotage, escorts, storms |
 | `rewards.json` | Post-match Clam reward formula | base + kill + event + survival bonuses |
 | `terrain.json` | Map size scaling per level | Progression tiers with resource counts |

@@ -13,12 +13,26 @@
       "max_rank": 5,
       "effect": { "type": "specialist_blueprint", "unit": "fisher", "cap_per_rank": 1 }
     },
+    "fisher_radius": {
+      "label": "Fisher Radius",
+      "description": "Expands the Fisher operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 5,
+      "effect": { "type": "specialist_zone", "unit": "fisher", "stat": "operating_radius", "value_per_rank": 24 }
+    },
     "blueprint_digger": {
       "label": "Digger Blueprint",
       "description": "Raises your in-match Digger field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
       "effect": { "type": "specialist_blueprint", "unit": "digger", "cap_per_rank": 1 }
+    },
+    "digger_radius": {
+      "label": "Digger Radius",
+      "description": "Expands the Digger operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 5,
+      "effect": { "type": "specialist_zone", "unit": "digger", "stat": "operating_radius", "value_per_rank": 24 }
     },
     "blueprint_logger": {
       "label": "Logger Blueprint",
@@ -27,12 +41,26 @@
       "max_rank": 5,
       "effect": { "type": "specialist_blueprint", "unit": "logger", "cap_per_rank": 1 }
     },
+    "logger_radius": {
+      "label": "Logger Radius",
+      "description": "Expands the Logger operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 5,
+      "effect": { "type": "specialist_zone", "unit": "logger", "stat": "operating_radius", "value_per_rank": 24 }
+    },
     "blueprint_guard": {
       "label": "Guard Blueprint",
       "description": "Raises your in-match Guard field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
       "effect": { "type": "specialist_blueprint", "unit": "guard", "cap_per_rank": 1 }
+    },
+    "guard_radius": {
+      "label": "Guard Radius",
+      "description": "Expands the Guard operating radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "guard", "stat": "operating_radius", "value_per_rank": 20 }
     },
     "blueprint_bombardier": {
       "label": "Bombardier Blueprint",
@@ -41,12 +69,54 @@
       "max_rank": 3,
       "effect": { "type": "specialist_blueprint", "unit": "bombardier", "cap_per_rank": 1 }
     },
+    "bombardier_anchor_radius": {
+      "label": "Bombardier Anchor",
+      "description": "Expands the Bombardier anchor radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "bombardier", "stat": "anchor_radius", "value_per_rank": 16 }
+    },
+    "bombardier_engagement_radius": {
+      "label": "Bombardier Siege Radius",
+      "description": "Expands the Bombardier engagement radius",
+      "cost_per_rank": 6,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "bombardier", "stat": "engagement_radius", "value_per_rank": 28 }
+    },
+    "bombardier_projection_range": {
+      "label": "Bombardier Projection",
+      "description": "Extends how far the Bombardier can project its engagement zone",
+      "cost_per_rank": 6,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "bombardier", "stat": "projection_range", "value_per_rank": 24 }
+    },
     "blueprint_ranger": {
       "label": "Ranger Blueprint",
       "description": "Raises your in-match Ranger field cap",
       "cost_per_rank": 4,
       "max_rank": 3,
       "effect": { "type": "specialist_blueprint", "unit": "ranger", "cap_per_rank": 1 }
+    },
+    "ranger_anchor_radius": {
+      "label": "Ranger Anchor",
+      "description": "Expands the Ranger anchor radius",
+      "cost_per_rank": 4,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "ranger", "stat": "anchor_radius", "value_per_rank": 14 }
+    },
+    "ranger_engagement_radius": {
+      "label": "Ranger Coverage",
+      "description": "Expands the Ranger engagement radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "ranger", "stat": "engagement_radius", "value_per_rank": 24 }
+    },
+    "ranger_projection_range": {
+      "label": "Ranger Projection",
+      "description": "Extends how far the Ranger can project its engagement zone",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "ranger", "stat": "projection_range", "value_per_rank": 20 }
     },
     "blueprint_shaman": {
       "label": "Shaman Blueprint",
@@ -55,12 +125,26 @@
       "max_rank": 3,
       "effect": { "type": "specialist_blueprint", "unit": "shaman", "cap_per_rank": 1 }
     },
+    "shaman_radius": {
+      "label": "Shaman Radius",
+      "description": "Expands the Shaman operating radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "shaman", "stat": "operating_radius", "value_per_rank": 20 }
+    },
     "blueprint_lookout": {
       "label": "Lookout Blueprint",
       "description": "Raises your in-match Lookout field cap",
       "cost_per_rank": 3,
       "max_rank": 3,
       "effect": { "type": "specialist_blueprint", "unit": "lookout", "cap_per_rank": 1 }
+    },
+    "lookout_radius": {
+      "label": "Lookout Radius",
+      "description": "Expands the Lookout operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "lookout", "stat": "operating_radius", "value_per_rank": 30 }
     },
     "gather_multiplier": {
       "label": "Gathering Multiplier",

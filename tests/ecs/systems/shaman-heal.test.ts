@@ -136,6 +136,8 @@ describe('shamanHealSystem', () => {
       operatingRadius: 90,
       centerX: 140,
       centerY: 100,
+      anchorX: 140,
+      anchorY: 100,
       anchorRadius: 0,
       engagementRadius: 0,
       engagementX: 140,

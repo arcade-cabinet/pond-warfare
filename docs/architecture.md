@@ -153,6 +153,14 @@ The intended gameplay model is:
 - specialist radius growth is a first-class Pearl upgrade axis, not a secondary stat
 - selected specialists should reveal their assigned circle(s) plus dotted correlation links on the map; `Ranger` and `Bombardier` are dual-zone by design
 
+The live player-facing runtime now also carries specialist zone bonuses on the
+world state at match start:
+
+- blueprint caps initialize from prestige state
+- zone bonuses initialize from prestige state
+- `registerSpecialistEntity()` applies those bonuses to the spawned specialist assignment
+- the Pearl screen groups progression per specialist so blueprint and radius rows stay readable together
+
 The older model of free match-start specialist auto-deploy is obsolete in the player-facing runtime. Pearl specialist ranks now initialize in-match blueprint caps, the player fields those specialists from the Lodge during a run, and the manual Lodge/radial flow now exposes `Mudpaw`, `Medic`, `Sapper`, and `Saboteur` on their intended stage gates.
 
 ## Upgrade Effects Pipeline
@@ -168,7 +176,7 @@ Separately, `src/ui/current-run-diamond-effects.ts` resolves current-run Frontie
 Under the canonical unit model, Pearl progression now centers on:
 
 1. specialist blueprint unlocks
-2. specialist cap/radius/efficiency modifiers
+2. specialist cap/radius/projection/efficiency modifiers
 3. specialist training availability during a match
 4. area-assignment control rather than per-target micromanagement
 

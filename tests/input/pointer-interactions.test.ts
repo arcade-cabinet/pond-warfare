@@ -350,6 +350,8 @@ describe('Pointer Interactions (tap-only)', () => {
       operatingRadius: 210,
       centerX: 100,
       centerY: 100,
+      anchorX: 100,
+      anchorY: 100,
       anchorRadius: 0,
       engagementRadius: 0,
       engagementX: 100,

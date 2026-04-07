@@ -132,6 +132,7 @@ export function createGameWorld(): GameWorld {
     specialistAssignments: new Map(),
     pendingSpecialistAssignment: null,
     specialistBlueprintCaps: {},
+    specialistZoneBonuses: {},
     resTracker: {
       lastFish: STARTING_FISH,
       lastLogs: STARTING_LOGS,

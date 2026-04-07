@@ -63,6 +63,7 @@ export function validateUnits(data: UnitsConfig): void {
     assertField(def, 'cost', ctx);
     assertField(def, 'role', ctx);
     assertField(def, 'autoTarget', ctx);
+    if (def.attackRange !== undefined) assertPositive(def.attackRange, `${ctx}.attackRange`);
   }
 }
 
@@ -193,5 +194,21 @@ export function validatePrestige(data: PrestigeConfig): void {
     const ctx = `prestige.pearl_upgrades.${id}`;
     assertPositive(up.cost_per_rank, `${ctx}.cost_per_rank`);
     assertPositive(up.max_rank, `${ctx}.max_rank`);
+    if (up.effect.type === 'specialist_blueprint') {
+      assertField(up.effect, 'unit', `${ctx}.effect`);
+      assertPositive(up.effect.cap_per_rank, `${ctx}.effect.cap_per_rank`);
+    }
+    if (up.effect.type === 'specialist_zone') {
+      assertField(up.effect, 'unit', `${ctx}.effect`);
+      assertField(up.effect, 'stat', `${ctx}.effect`);
+      assertPositive(up.effect.value_per_rank, `${ctx}.effect.value_per_rank`);
+      if (
+        !['operating_radius', 'anchor_radius', 'engagement_radius', 'projection_range'].includes(
+          up.effect.stat,
+        )
+      ) {
+        throw new Error(`Config validation: invalid specialist zone stat in ${ctx}.effect.stat`);
+      }
+    }
   }
 }

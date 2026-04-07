@@ -1,5 +1,6 @@
 import { Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getSpecialistZoneBonus } from './specialist-blueprints';
 
 export type SpecialistZoneMode = 'single_zone' | 'dual_zone';
 
@@ -11,6 +12,8 @@ export interface SpecialistAssignment {
   operatingRadius: number;
   centerX: number;
   centerY: number;
+  anchorX: number;
+  anchorY: number;
   anchorRadius: number;
   engagementRadius: number;
   engagementX: number;
@@ -89,14 +92,18 @@ export function registerSpecialistEntity(world: GameWorld, eid: number, runtimeI
     canonicalId: profile.canonicalId,
     label: profile.label,
     mode: profile.mode,
-    operatingRadius: profile.operatingRadius,
+    operatingRadius: profile.operatingRadius + getSpecialistZoneBonus(world, runtimeId, 'operating_radius'),
     centerX: x,
     centerY: y,
-    anchorRadius: profile.anchorRadius,
-    engagementRadius: profile.engagementRadius,
+    anchorX: x,
+    anchorY: y,
+    anchorRadius: profile.anchorRadius + getSpecialistZoneBonus(world, runtimeId, 'anchor_radius'),
+    engagementRadius:
+      profile.engagementRadius + getSpecialistZoneBonus(world, runtimeId, 'engagement_radius'),
     engagementX: x,
     engagementY: y,
-    projectionRange: profile.projectionRange,
+    projectionRange:
+      profile.projectionRange + getSpecialistZoneBonus(world, runtimeId, 'projection_range'),
   });
 }
 
@@ -128,9 +135,11 @@ export function placePendingSpecialistAssignment(
   }
 
   if (assignment.mode === 'dual_zone') {
+    assignment.anchorX = Position.x[pending.eid];
+    assignment.anchorY = Position.y[pending.eid];
     const { x, y } = clampToProjectionRange(
-      Position.x[pending.eid],
-      Position.y[pending.eid],
+      assignment.anchorX,
+      assignment.anchorY,
       worldX,
       worldY,
       assignment.projectionRange,

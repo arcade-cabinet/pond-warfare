@@ -7,6 +7,7 @@ import type { createWorld } from 'bitecs';
 import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
+import type { SpecialistZoneStat } from '@/config/v3-types';
 import type { WeatherState } from '@/config/weather';
 import type { FortificationState } from '@/ecs/systems/fortification';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
@@ -87,6 +88,7 @@ export interface GameWorld {
   specialistAssignments: Map<number, SpecialistAssignment>;
   pendingSpecialistAssignment: PendingSpecialistAssignment | null;
   specialistBlueprintCaps: Record<string, number>;
+  specialistZoneBonuses: Record<string, Partial<Record<SpecialistZoneStat, number>>>;
 
   // Yuka AI manager for steering behaviors (all factions)
   yukaManager: YukaManager;

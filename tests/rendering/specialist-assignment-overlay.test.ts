@@ -60,6 +60,18 @@ describe('specialist assignment overlay', () => {
 
     expect(drawDashedCircle).toHaveBeenCalledTimes(2);
     expect(drawDashedLine).toHaveBeenCalledTimes(1);
-    expect(uiGfx.circle).toHaveBeenCalledTimes(1);
+    expect(uiGfx.circle).toHaveBeenCalledTimes(2);
+    expect(drawDashedCircle).toHaveBeenNthCalledWith(
+      1,
+      uiGfx,
+      100,
+      100,
+      80,
+      7,
+      5,
+      expect.any(Number),
+      2,
+      0.3,
+    );
   });
 });

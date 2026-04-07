@@ -112,4 +112,31 @@ describe('deploySpecialistsAtMatchStart', () => {
     expect(route.length).toBeGreaterThanOrEqual(3);
     expect(UnitStateMachine.targetY[lookout]).toBeLessThan(Position.y[lookout]);
   });
+
+  it('applies dual-zone range upgrades to Bombardier spawn state', () => {
+    const world = createGameWorld();
+    const lodge = spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
+
+    deploySpecialistsAtMatchStart(
+      world,
+      {
+        rank: 2,
+        pearls: 0,
+        totalPearlsEarned: 20,
+        upgradeRanks: {
+          blueprint_bombardier: 1,
+          bombardier_engagement_radius: 2,
+          bombardier_projection_range: 1,
+        },
+      },
+      lodge,
+    );
+
+    const bombardier = findPlayerUnit(world, EntityKind.Engineer);
+    const assignment = world.specialistAssignments.get(bombardier);
+
+    expect(Combat.attackRange[bombardier]).toBe(340);
+    expect(assignment?.engagementRadius).toBe(206);
+    expect(assignment?.projectionRange).toBe(274);
+  });
 });

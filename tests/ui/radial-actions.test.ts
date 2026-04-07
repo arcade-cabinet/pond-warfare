@@ -210,6 +210,8 @@ describe('dispatchRadialAction -- unit commands', () => {
       operatingRadius: 160,
       centerX: 0,
       centerY: 0,
+      anchorX: 0,
+      anchorY: 0,
       anchorRadius: 0,
       engagementRadius: 0,
       engagementX: 0,

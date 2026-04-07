@@ -22,8 +22,8 @@ export function renderSpecialistAssignments(
     if (assignment.mode === 'dual_zone') {
       drawDashedCircle(
         uiGfx,
-        unitX,
-        unitY,
+        assignment.anchorX,
+        assignment.anchorY,
         assignment.anchorRadius,
         7,
         5,
@@ -42,10 +42,23 @@ export function renderSpecialistAssignments(
         2,
         0.45,
       );
+      if (Math.hypot(unitX - assignment.anchorX, unitY - assignment.anchorY) > 6) {
+        drawDashedLine(
+          uiGfx,
+          unitX,
+          unitY,
+          assignment.anchorX,
+          assignment.anchorY,
+          8,
+          6,
+          DUAL_ZONE_COLOR,
+          2,
+        );
+      }
       drawDashedLine(
         uiGfx,
-        unitX,
-        unitY,
+        assignment.anchorX,
+        assignment.anchorY,
         assignment.engagementX,
         assignment.engagementY,
         8,
@@ -53,6 +66,7 @@ export function renderSpecialistAssignments(
         DUAL_ZONE_COLOR,
         2,
       );
+      drawCenterDot(uiGfx, assignment.anchorX, assignment.anchorY, DUAL_ZONE_COLOR);
       drawCenterDot(uiGfx, assignment.engagementX, assignment.engagementY, DUAL_ZONE_COLOR);
       continue;
     }

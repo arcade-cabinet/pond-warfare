@@ -71,6 +71,8 @@ function addAutonomousSpecialist(
     operatingRadius: 160,
     centerX: 280,
     centerY: 540,
+    anchorX: 280,
+    anchorY: 540,
     anchorRadius: 0,
     engagementRadius: 0,
     engagementX: 280,

@@ -2,7 +2,7 @@
  * Pearl Upgrade Screen Helpers
  *
  * Extracted helper functions for PearlUpgradeScreen to keep it under 300 LOC.
- * Contains: upgrade categorization, next-per-group logic, commander section builder.
+ * Contains: upgrade categorization, grouping, commander section builder.
  */
 
 import { COMMANDERS } from '@/config/commanders';
@@ -22,16 +22,17 @@ export const COMMANDER_PEARL_COSTS: Record<string, number> = {
 
 /** Categorize a Pearl upgrade into a display group. */
 export function categorizeUpgrade(upgrade: PearlUpgradeDisplay): string {
-  if (upgrade.id.startsWith('blueprint_')) return 'Specialists';
+  const specialist = getSpecialistCategory(upgrade.id);
+  if (specialist) return specialist;
   if (upgrade.id.endsWith('_behavior')) return 'Behaviors';
   if (upgrade.id === 'starting_tier') return 'Starting Tier';
   return 'Multipliers';
 }
 
-/** Find the next (non-maxed) upgrade per group. */
-export function getNextPerGroup(
+/** Group Pearl upgrades by display category, preserving config order within each group. */
+export function getUpgradeGroups(
   upgrades: PearlUpgradeDisplay[],
-): Map<string, PearlUpgradeDisplay | null> {
+): Map<string, PearlUpgradeDisplay[]> {
   const groups = new Map<string, PearlUpgradeDisplay[]>();
   for (const u of upgrades) {
     const cat = categorizeUpgrade(u);
@@ -42,19 +43,7 @@ export function getNextPerGroup(
       groups.set(cat, [u]);
     }
   }
-
-  const result = new Map<string, PearlUpgradeDisplay | null>();
-  for (const [cat, items] of groups) {
-    const affordable = items.filter((u) => !u.isMaxed && u.canAfford);
-    if (affordable.length > 0) {
-      affordable.sort((a, b) => a.costPerRank - b.costPerRank);
-      result.set(cat, affordable[0]);
-    } else {
-      const available = items.find((u) => !u.isMaxed);
-      result.set(cat, available ?? null);
-    }
-  }
-  return result;
+  return groups;
 }
 
 /** Build commander accordion sections for unlocked + next unlockable commanders. */
@@ -89,4 +78,25 @@ export function buildCommanderSections(
     }
   }
   return sections;
+}
+
+const SPECIALIST_CATEGORY_NAMES: Record<string, string> = {
+  fisher: 'Fisher',
+  logger: 'Logger',
+  digger: 'Digger',
+  guard: 'Guard',
+  ranger: 'Ranger',
+  bombardier: 'Bombardier',
+  shaman: 'Shaman',
+  lookout: 'Lookout',
+};
+
+function getSpecialistCategory(id: string): string | null {
+  if (id.startsWith('blueprint_')) {
+    const unitId = id.slice('blueprint_'.length);
+    return SPECIALIST_CATEGORY_NAMES[unitId] ?? null;
+  }
+
+  const unitId = Object.keys(SPECIALIST_CATEGORY_NAMES).find((key) => id.startsWith(`${key}_`));
+  return unitId ? SPECIALIST_CATEGORY_NAMES[unitId] : null;
 }

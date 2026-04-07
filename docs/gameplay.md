@@ -146,6 +146,13 @@ Pearl specialists are trained during a match after their blueprint is unlocked. 
 - Radius growth is a primary Pearl upgrade path alongside unlock, cap, throughput, and durability
 - The Lodge action panel shows only the specialist blueprints the player has actually unlocked and the current field-cap state for each
 
+The live Pearl progression surface now reflects that model directly:
+
+- Pearl upgrades are grouped per specialist on the Pearl screen
+- specialist rows now mix blueprint unlocks with zone-growth rows instead of hiding all specialist progression inside one generic section
+- single-zone specialists upgrade `operating radius`
+- `Ranger` and `Bombardier` upgrade `anchor radius`, `engagement radius`, and `projection range`
+
 ### Specialist Radius UI
 
 Selecting a specialist should reveal its assignment geometry on the map.
@@ -154,6 +161,7 @@ Selecting a specialist should reveal its assignment geometry on the map.
 - Dual-zone specialists show an `anchor` circle, an `engagement` circle, and a dotted line connecting them
 - The dotted link is not just cosmetic; where appropriate, its reach becomes an upgradeable `projection range`
 - Circle and line styling should visually correlate to the selected specialist via color, glyph, or both
+- The runtime now applies Pearl zone upgrades into those circles and projection limits when the specialist is spawned
 
 ### Enemy Units (6)
 

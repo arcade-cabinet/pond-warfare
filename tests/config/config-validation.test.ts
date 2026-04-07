@@ -534,12 +534,12 @@ describe('Config Validation — US21', () => {
   // ── Cross-config reference validation ──────────────────────────
 
   describe('Cross-config references', () => {
-    it('specialist blueprint Pearl upgrades reference valid specialist unit IDs', () => {
+    it('specialist Pearl upgrades reference valid specialist unit IDs', () => {
       const entries = getAllPearlUpgradeEntries();
       const unitIds = getAllUnitIds();
 
       for (const { id, def } of entries) {
-        if (def.effect.type === 'specialist_blueprint') {
+        if (def.effect.type === 'specialist_blueprint' || def.effect.type === 'specialist_zone') {
           expect(
             unitIds.includes(def.effect.unit),
             `Pearl upgrade "${id}" references unknown unit "${def.effect.unit}"`,

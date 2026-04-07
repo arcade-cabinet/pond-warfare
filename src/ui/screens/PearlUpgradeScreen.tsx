@@ -5,7 +5,7 @@
  * Commander tab: PondAccordion with one section per commander
  *   (collapsed: name + portrait + SELECTED badge; expanded: description + SELECT).
  * Upgrades tab: PondAccordion with Pearl upgrade categories showing
- * the next available upgrade per category.
+ * the full rank path for each grouped specialist or systems track.
  * Close triggers a confirmation overlay summarising session purchases.
  */
 
@@ -27,7 +27,7 @@ import { PearlUpgradeRow } from './PearlUpgradeRow';
 import {
   buildCommanderSections,
   COMMANDER_PEARL_COSTS,
-  getNextPerGroup,
+  getUpgradeGroups,
 } from './pearl-upgrade-helpers';
 
 export interface PearlUpgradeScreenProps {
@@ -54,7 +54,7 @@ export function PearlUpgradeScreen({
   const [showConfirm, setShowConfirm] = useState(false);
 
   const upgrades = useMemo(() => getPearlUpgradeDisplayList(prestigeState), [prestigeState]);
-  const nextPerGroup = useMemo(() => getNextPerGroup(upgrades), [upgrades]);
+  const upgradeGroups = useMemo(() => getUpgradeGroups(upgrades), [upgrades]);
 
   const handlePurchase = useCallback(
     (upgradeId: string) => {
@@ -103,17 +103,18 @@ export function PearlUpgradeScreen({
   );
 
   const accordionSections: AccordionSection[] = useMemo(() => {
-    const groups = [...nextPerGroup.entries()];
-    return groups.map(([cat, next]) => {
-      let summary: string;
-      if (!next) {
-        summary = 'Complete';
-      } else {
-        summary = `${next.label} -- ${next.costPerRank}P`;
-      }
+    return [...upgradeGroups.entries()].map(([cat, items]) => {
+      const remaining = items.filter((item) => !item.isMaxed);
+      const affordable = remaining.filter((item) => item.canAfford);
+      const summary =
+        remaining.length === 0
+          ? 'Complete'
+          : affordable.length > 0
+            ? `${affordable.length} ready`
+            : `${remaining.length} remaining`;
       return { key: cat, title: cat, summary };
     });
-  }, [nextPerGroup]);
+  }, [upgradeGroups]);
 
   const handleClose = useCallback(() => {
     if (purchases.length === 0) {
@@ -199,10 +200,10 @@ export function PearlUpgradeScreen({
             {/* Upgrades tab */}
             {activeTab === 'upgrades' && (
               <PondAccordion sections={accordionSections} allowMultiple={false}>
-                {[...nextPerGroup.entries()].map(([cat, next]) => (
+                {[...upgradeGroups.entries()].map(([cat, upgradesInGroup]) => (
                   <PearlUpgradeCategoryContent
                     key={cat}
-                    next={next}
+                    upgrades={upgradesInGroup}
                     pearls={prestigeState.pearls}
                     onPurchase={handlePurchase}
                   />
@@ -237,15 +238,15 @@ export function PearlUpgradeScreen({
 
 /** Expanded content for a single Pearl upgrade category. */
 function PearlUpgradeCategoryContent({
-  next,
+  upgrades,
   pearls,
   onPurchase,
 }: {
-  next: PearlUpgradeDisplay | null;
+  upgrades: PearlUpgradeDisplay[];
   pearls: number;
   onPurchase: (id: string) => void;
 }) {
-  if (!next) {
+  if (upgrades.every((upgrade) => upgrade.isMaxed)) {
     return (
       <div class="py-3 text-center">
         <span class="font-heading text-sm" style={{ color: COLORS.mossGreen }}>
@@ -255,5 +256,16 @@ function PearlUpgradeCategoryContent({
     );
   }
 
-  return <PearlUpgradeRow upgrade={next} onPurchase={onPurchase} pearls={pearls} />;
+  return (
+    <div class="flex flex-col divide-y divide-white/10">
+      {upgrades.map((upgrade) => (
+        <PearlUpgradeRow
+          key={upgrade.id}
+          upgrade={upgrade}
+          onPurchase={onPurchase}
+          pearls={pearls}
+        />
+      ))}
+    </div>
+  );
 }

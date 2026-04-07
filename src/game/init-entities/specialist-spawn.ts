@@ -103,6 +103,9 @@ function applySpecialistStats(world: GameWorld, eid: number, runtimeId: string):
     damage = Math.round(damage * world.playerUnitDamageMultiplier);
   }
   Combat.damage[eid] = damage;
+  if ('attackRange' in def && typeof def.attackRange === 'number' && def.attackRange > 0) {
+    Combat.attackRange[eid] = def.attackRange;
+  }
 
   let speed = def.speed;
   if (world.tech.swiftPaws) speed *= 1.15;

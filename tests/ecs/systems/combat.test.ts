@@ -239,6 +239,8 @@ describe('combatSystem', () => {
       operatingRadius: 120,
       centerX: 150,
       centerY: 100,
+      anchorX: 150,
+      anchorY: 100,
       anchorRadius: 0,
       engagementRadius: 0,
       engagementX: 150,

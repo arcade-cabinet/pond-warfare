@@ -15,6 +15,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { Position } from '@/ecs/components';
 import { spawnSpecialistUnit } from '@/game/init-entities/specialist-spawn';
+import { initializeSpecialistProgression } from '@/game/specialist-blueprints';
 import { pushGameEvent } from '@/ui/game-events';
 
 export function deploySpecialistsAtMatchStart(
@@ -22,6 +23,7 @@ export function deploySpecialistsAtMatchStart(
   prestigeState: PrestigeState,
   lodgeEid: number,
 ): void {
+  initializeSpecialistProgression(world, prestigeState);
   const plan = computeSpecialistDeployPlan(prestigeState);
   if (plan.totalCount === 0) return;
 

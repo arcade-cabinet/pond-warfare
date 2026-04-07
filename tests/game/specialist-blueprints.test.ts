@@ -13,6 +13,7 @@ import { buildActionPanel } from '@/game/action-panel';
 import {
   getSpecialistBlueprintCap,
   initializeSpecialistBlueprintCaps,
+  initializeSpecialistProgression,
 } from '@/game/specialist-blueprints';
 import { computePopulation } from '@/game/population-counter';
 import { EntityKind, Faction } from '@/types';
@@ -78,5 +79,24 @@ describe('specialist blueprints', () => {
     const cappedFisherButton = actionButtons.value.find((button) => button.title === 'Fisher');
     expect(cappedFisherButton?.affordable).toBe(false);
     expect(cappedFisherButton?.requires).toContain('Open cap');
+  });
+
+  it('initializes specialist zone bonuses from Pearl specialist upgrades', () => {
+    const world = createGameWorld();
+
+    initializeSpecialistProgression(world, {
+      rank: 2,
+      pearls: 0,
+      totalPearlsEarned: 30,
+      upgradeRanks: {
+        blueprint_ranger: 1,
+        ranger_projection_range: 2,
+        ranger_engagement_radius: 1,
+      },
+    });
+
+    expect(getSpecialistBlueprintCap(world, 'ranger')).toBe(1);
+    expect(world.specialistZoneBonuses.ranger?.projection_range).toBe(40);
+    expect(world.specialistZoneBonuses.ranger?.engagement_radius).toBe(24);
   });
 });

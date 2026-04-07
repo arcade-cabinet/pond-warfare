@@ -10,7 +10,7 @@ import { Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { PanelGrid } from '@/game/panel-grid';
-import { initializeSpecialistBlueprintCaps } from '@/game/specialist-blueprints';
+import { initializeSpecialistProgression } from '@/game/specialist-blueprints';
 import {
   applyVerticalMapToWorld,
   buildVerticalTerrain,
@@ -50,7 +50,7 @@ export function spawnVerticalWorld(world: GameWorld, unlockStage = 1): void {
   world.worldHeight = dims.height;
 
   const lodgeEid = spawnVerticalEntities(world, layout, rng);
-  initializeSpecialistBlueprintCaps(world, prestigeState);
+  initializeSpecialistProgression(world, prestigeState);
 
   const lodge = world.selection[0];
   const textX = lodge != null ? Position.x[lodge] : layout.lodgeX;

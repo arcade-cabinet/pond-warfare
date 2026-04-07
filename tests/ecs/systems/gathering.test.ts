@@ -169,6 +169,8 @@ describe('gatheringSystem', () => {
       operatingRadius: 120,
       centerX: 180,
       centerY: 180,
+      anchorX: 180,
+      anchorY: 180,
       anchorRadius: 0,
       engagementRadius: 0,
       engagementX: 180,

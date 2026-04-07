@@ -95,4 +95,24 @@ describe('specialistZoneBehaviorSystem', () => {
     expect(world.patrolWaypoints.get(lookout)?.length).toBe(4);
     expect(UnitStateMachine.state[lookout]).toBe(UnitState.PatrolMove);
   });
+
+  it('returns dual-zone specialists to their anchor area when they drift too far', () => {
+    const world = createGameWorld();
+    world.frameCount = 20;
+    const ranger = createUnit(world, 320, 120, EntityKind.Brawler);
+    registerSpecialistEntity(world, ranger, 'ranger');
+    const assignment = world.specialistAssignments.get(ranger);
+    if (!assignment) throw new Error('missing assignment');
+    assignment.anchorX = 100;
+    assignment.anchorY = 100;
+    assignment.engagementX = 220;
+    assignment.engagementY = 100;
+    world.specialistAssignments.set(ranger, assignment);
+
+    specialistZoneBehaviorSystem(world);
+
+    expect(UnitStateMachine.state[ranger]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetX[ranger]).toBe(100);
+    expect(UnitStateMachine.targetY[ranger]).toBe(100);
+  });
 });

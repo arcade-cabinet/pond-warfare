@@ -231,10 +231,10 @@ describe('progression meta loop', () => {
     await delay(100);
     await waitFor(() =>
       Array.from(document.querySelectorAll('[aria-label]')).some((node) =>
-        node.getAttribute('aria-label')?.startsWith('Toggle Specialists'),
+        node.getAttribute('aria-label')?.startsWith('Toggle Fisher'),
       ),
     );
-    clickAriaLabelPrefix('Toggle Specialists');
+    clickAriaLabelPrefix('Toggle Fisher');
     await delay(100);
     clickAriaLabel('Buy Fisher Blueprint for 3 Pearls');
     await delay(100);

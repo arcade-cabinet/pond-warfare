@@ -1,6 +1,6 @@
 # Balance Model
 
-This document now measures a mixed runtime: the player-facing game uses Pearl specialist blueprint caps plus in-match specialist training, while some diagnostics still use the legacy instant-deploy helper as a controlled measurement tool. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where operating radius is a primary upgrade axis.
+This document now measures a mixed runtime: the player-facing game uses Pearl specialist blueprint caps plus in-match specialist training, while some diagnostics still use the legacy instant-deploy helper as a controlled measurement tool. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where operating radius is a primary upgrade axis. The live prestige config now also includes direct specialist-zone rows for `operating_radius`, `anchor_radius`, `engagement_radius`, and `projection_range`.
 
 ## Purpose
 
@@ -23,6 +23,7 @@ The goal is not perfect prediction. The goal is a repeatable approximation we ca
 - Clams are a current-run pressure-relief layer.
 - Pearls are the permanent prestige acceleration layer.
 - Player-facing Pearl specialists now cost in-match resources and consume normal population when trained during a run.
+- Player-facing Pearl specialist zone upgrades now apply at spawn time into their assignment geometry, not just their display copy.
 - The legacy instant-deploy diagnostic helper still excludes those spawned specialists from baseline food-cap accounting so older pressure slices remain comparable while the harnesses are being rewritten.
 - If a building or response is required to clear a pane, it belongs in baseline pane progression, not behind Clams.
 
@@ -170,6 +171,11 @@ The Pearl broad scan still reports two horizons:
 - opening window: 1200 frames, which is useful for early pacing and early-expression Pearl impact
 - long-run window: 2400 frames, which is needed for combat and repair/heal tracks that do not fully express before the first army exists
 
+Those broad Pearl reports still bias toward blueprint-cap and multiplier rows.
+The new specialist-zone upgrades are live in the runtime and covered by unit/UI
+tests, but they are not yet exhaustively budgeted in the broad report tables.
+That is now a measurement gap, not a missing runtime consumer.
+
 Current isolated readout:
 
 - Clam T1:
@@ -294,4 +300,5 @@ Short-term tuning heuristic:
 2. Improve the weak Frontier edge steps, especially `Frontier Expansion I` and `IV`, which are still slightly negative in the short-match lens.
 3. Improve the sampled and controller gather slices so `gather_multiplier`, `blueprint_fisher`, `blueprint_digger`, and `blueprint_logger` are measured in a window that is less dominated by travel time and panel mix.
 4. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under-expressed in both the broad and sustain reports.
-5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.
+5. Add specialist-zone upgrade rows to the Pearl budgeting harness so `operating_radius`, `anchor_radius`, `engagement_radius`, and `projection_range` have measured relief bands instead of only unit/runtime coverage.
+6. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

@@ -29,6 +29,7 @@ export interface SpecialistDef {
   cost: ResourceCost;
   role: string;
   autoTarget: string;
+  attackRange?: number;
 }
 
 export interface UnitsConfig {
@@ -250,6 +251,19 @@ export interface SpecialistBlueprintEffect {
   cap_per_rank: number;
 }
 
+export type SpecialistZoneStat =
+  | 'operating_radius'
+  | 'anchor_radius'
+  | 'engagement_radius'
+  | 'projection_range';
+
+export interface SpecialistZoneEffect {
+  type: 'specialist_zone';
+  unit: string;
+  stat: SpecialistZoneStat;
+  value_per_rank: number;
+}
+
 export interface MultiplierEffect {
   type: 'multiplier';
   stat: string;
@@ -267,6 +281,7 @@ export interface StartingTierEffect {
 
 export type PearlUpgradeEffect =
   | SpecialistBlueprintEffect
+  | SpecialistZoneEffect
   | MultiplierEffect
   | AutoBehaviorEffect
   | StartingTierEffect;

@@ -129,6 +129,16 @@ The canonical upgrade axes for dual-zone specialists are:
 - `engagement radius`
 - `projection_range`
 
+The live Pearl upgrade config now exposes those axes directly:
+
+- `Fisher`, `Logger`, `Digger`, `Guard`, `Shaman`, and `Lookout` use `operating radius`
+- `Ranger` uses `anchor radius`, `engagement radius`, and `projection_range`
+- `Bombardier` uses `anchor radius`, `engagement radius`, and `projection_range`
+
+The Pearl screen should group those upgrades per specialist so the player can
+read one specialist's blueprint, cap, and radius path together instead of
+hunting through a generic mixed "Specialists" bucket.
+
 ## Pearl Upgrade Philosophy
 
 Pearl specialist progression should scale specialist capability, not bypass gameplay.

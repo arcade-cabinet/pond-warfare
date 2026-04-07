@@ -142,6 +142,19 @@ describe('Pearl Upgrade Screen — US15', () => {
 
       expect(getSpecialistBlueprintCap(newState, 'fisher')).toBe(3);
     });
+
+    it('should show specialist zone summaries for radius upgrades', () => {
+      const state: PrestigeState = {
+        rank: 3,
+        pearls: 0,
+        totalPearlsEarned: 30,
+        upgradeRanks: { fisher_radius: 2 },
+      };
+
+      const list = getPearlUpgradeDisplayList(state);
+      const radius = list.find((u) => u.id === 'fisher_radius');
+      expect(radius?.effectSummary).toBe('+48 Fisher operating radius');
+    });
   });
 
   describe('Auto-behavior toggle display', () => {

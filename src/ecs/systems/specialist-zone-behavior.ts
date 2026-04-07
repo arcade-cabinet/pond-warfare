@@ -44,10 +44,12 @@ export function specialistZoneBehaviorSystem(world: GameWorld): void {
         handleGatherSpecialist(world, eid, EntityKind.PearlBed);
         break;
       case 'guard':
-      case 'bombardier':
         handleAreaCombatSpecialist(world, eid);
         break;
       case 'ranger':
+      case 'bombardier':
+        handleDualZoneCombatSpecialist(world, eid);
+        break;
       case 'lookout':
         syncAreaPatrol(world, eid);
         break;
@@ -90,6 +92,31 @@ function handleAreaCombatSpecialist(world: GameWorld, eid: number): void {
     UnitStateMachine.targetEntity[eid] = -1;
     UnitStateMachine.targetX[eid] = area.centerX;
     UnitStateMachine.targetY[eid] = area.centerY;
+    UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
+  }
+}
+
+function handleDualZoneCombatSpecialist(world: GameWorld, eid: number): void {
+  const assignment = getSpecialistAssignment(world, eid);
+  if (!assignment) return;
+
+  const state = UnitStateMachine.state[eid] as UnitState;
+  if (state === UnitState.Attacking || state === UnitState.AttackMove) return;
+
+  const distanceToAnchor = Math.hypot(Position.x[eid] - assignment.anchorX, Position.y[eid] - assignment.anchorY);
+  const anchorPadding = Math.max(24, assignment.anchorRadius * 0.2);
+  if (distanceToAnchor > assignment.anchorRadius + anchorPadding) {
+    UnitStateMachine.targetEntity[eid] = -1;
+    UnitStateMachine.targetX[eid] = assignment.anchorX;
+    UnitStateMachine.targetY[eid] = assignment.anchorY;
+    UnitStateMachine.state[eid] = UnitState.Move;
+    return;
+  }
+
+  if (state === UnitState.Idle || state === UnitState.Move) {
+    UnitStateMachine.targetEntity[eid] = -1;
+    UnitStateMachine.targetX[eid] = Position.x[eid];
+    UnitStateMachine.targetY[eid] = Position.y[eid];
     UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
   }
 }

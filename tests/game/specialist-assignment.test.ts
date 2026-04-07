@@ -30,8 +30,19 @@ describe('specialist assignment', () => {
       canonicalId: 'fisher',
       centerX: 120,
       centerY: 240,
+      anchorX: 120,
+      anchorY: 240,
       operatingRadius: 160,
     });
+  });
+
+  it('applies Pearl radius bonuses when registering specialists', () => {
+    const { world, eid } = createPositionedEntity(120, 240);
+    world.specialistZoneBonuses.fisher = { operating_radius: 48 };
+
+    registerSpecialistEntity(world, eid, 'fisher');
+
+    expect(getSpecialistAssignment(world, eid)?.operatingRadius).toBe(208);
   });
 
   it('begins assignment mode with the correct prompt', () => {
@@ -51,9 +62,24 @@ describe('specialist assignment', () => {
 
     const assignment = getSpecialistAssignment(world, eid);
     expect(assignment?.mode).toBe('dual_zone');
+    expect(assignment?.anchorX).toBe(100);
+    expect(assignment?.anchorY).toBe(100);
     expect(assignment?.projectionRange).toBe(220);
     expect(assignment?.engagementX).toBeCloseTo(320);
     expect(assignment?.engagementY).toBeCloseTo(100);
     expect(world.pendingSpecialistAssignment).toBeNull();
+  });
+
+  it('uses upgraded projection range for dual-zone specialists', () => {
+    const { world, eid } = createPositionedEntity(100, 100);
+    world.specialistZoneBonuses.ranger = { projection_range: 60 };
+    registerSpecialistEntity(world, eid, 'ranger');
+    beginSpecialistAssignment(world, eid);
+
+    expect(placePendingSpecialistAssignment(world, 500, 100)).toBe(true);
+
+    const assignment = getSpecialistAssignment(world, eid);
+    expect(assignment?.projectionRange).toBe(280);
+    expect(assignment?.engagementX).toBeCloseTo(380);
   });
 });
