@@ -26,13 +26,20 @@ import { SelectionPanel } from '@/ui/selection-panel';
 import * as store from '@/ui/store';
 
 // Mock animejs — the game-over and intro components import animation helpers
-vi.mock('@/rendering/animations', () => ({
-  animateGameOverStats: vi.fn(),
-  animateIntroTitle: vi.fn(),
-  animateIntroSubtitle: vi.fn(),
-  cleanupEntityAnimation: vi.fn(),
-  triggerCommandPulse: vi.fn(),
-}));
+vi.mock('@/rendering/animations', async () => {
+  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
+    '@/rendering/animations',
+  );
+  return {
+    ...actual,
+    animateGameOverStats: vi.fn(),
+    animateIntroTitle: vi.fn(),
+    animateIntroSubtitle: vi.fn(),
+    cleanupEntityAnimation: vi.fn(),
+    triggerCommandPulse: vi.fn(),
+    triggerHitRecoil: vi.fn(),
+  };
+});
 
 /** Import the stylesheet so Tailwind classes render properly */
 import '@/styles/main.css';
@@ -77,10 +84,10 @@ function resetStore() {
   store.idleWorkerCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
-  store.idleGathererCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.idleCombatCount.value = 0;
   store.idleHealerCount.value = 0;
-  store.idleScoutCount.value = 0;
+  store.idleReconCount.value = 0;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
@@ -252,7 +259,7 @@ describe('HUD screenshots', () => {
 
   it('HUD - production queue', async () => {
     store.globalProductionQueue.value = [
-      { buildingKind: 5, unitLabel: 'Gatherer', progress: 65, entityId: 100 },
+      { buildingKind: 5, unitLabel: 'Mudpaw', progress: 65, entityId: 100 },
       { buildingKind: 7, unitLabel: 'Brawler', progress: 0, entityId: 101 },
     ];
     store.gameTimeDisplay.value = 'Day 2 - 09:30';
@@ -322,9 +329,9 @@ describe('Selection Panel screenshots', () => {
     await page.screenshot({ path: 'screenshots/selection-empty.png', element: document.body });
   });
 
-  it('SelectionPanel - single unit selected (Gatherer)', async () => {
+  it('SelectionPanel - single unit selected (Mudpaw)', async () => {
     store.selectionCount.value = 1;
-    store.selectionName.value = 'Gatherer';
+    store.selectionName.value = 'Mudpaw';
     store.selectionNameColor.value = 'text-green-400';
     store.selectionHp.value = 80;
     store.selectionMaxHp.value = 100;
@@ -528,7 +535,7 @@ describe('Action Panel screenshots', () => {
   it('ActionPanel - lodge train + tech buttons', async () => {
     actionButtons.value = [
       {
-        title: 'Gatherer',
+        title: 'Mudpaw',
         cost: '50C 1F',
         hotkey: 'Q',
         affordable: true,
@@ -613,7 +620,7 @@ describe('Action Panel screenshots', () => {
   it('ActionPanel - with training queue', async () => {
     actionButtons.value = [
       {
-        title: 'Gatherer',
+        title: 'Mudpaw',
         cost: '50C 1F',
         hotkey: 'Q',
         affordable: true,
@@ -976,7 +983,7 @@ describe('Contextual Idle Menu screenshots', () => {
 
   it('Idle menu expanded - gatherers idle (Gather + Build)', async () => {
     store.idleWorkerCount.value = 5;
-    store.idleGathererCount.value = 5;
+    store.idleGeneralistCount.value = 5;
     store.idleCombatCount.value = 0;
     store.gameTimeDisplay.value = 'Day 3 - 10:00';
 
@@ -998,7 +1005,7 @@ describe('Contextual Idle Menu screenshots', () => {
 
   it('Idle menu expanded - combat idle (Attack + Defend)', async () => {
     store.idleWorkerCount.value = 4;
-    store.idleGathererCount.value = 0;
+    store.idleGeneralistCount.value = 0;
     store.idleCombatCount.value = 4;
     store.gameTimeDisplay.value = 'Day 5 - 16:00';
 
@@ -1020,10 +1027,10 @@ describe('Contextual Idle Menu screenshots', () => {
 
   it('Idle menu expanded - mixed idle with all auto toggles on', async () => {
     store.idleWorkerCount.value = 8;
-    store.idleGathererCount.value = 3;
+    store.idleGeneralistCount.value = 3;
     store.idleCombatCount.value = 3;
     store.idleHealerCount.value = 1;
-    store.idleScoutCount.value = 1;
+    store.idleReconCount.value = 1;
     store.gameTimeDisplay.value = 'Day 8 - 12:00';
 
     render(

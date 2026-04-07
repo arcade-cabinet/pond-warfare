@@ -80,11 +80,11 @@ export const baseThreatCount = signal(0);
 export const idleWorkerCount = signal(0);
 export const armyCount = signal(0);
 
-/** Per-type idle unit counts for contextual auto-behavior menu */
-export const idleGathererCount = signal(0);
+/** Per-role idle unit counts for contextual auto-behavior menu */
+export const idleGeneralistCount = signal(0);
 export const idleCombatCount = signal(0);
 export const idleHealerCount = signal(0);
-export const idleScoutCount = signal(0);
+export const idleReconCount = signal(0);
 
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);

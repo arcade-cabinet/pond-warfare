@@ -65,10 +65,10 @@ function resetStore() {
   store.idleWorkerCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
-  store.idleGathererCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.idleCombatCount.value = 0;
   store.idleHealerCount.value = 0;
-  store.idleScoutCount.value = 0;
+  store.idleReconCount.value = 0;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
@@ -318,7 +318,7 @@ describe('Selection Panel interactions', () => {
   it('deselect X button click calls onDeselect', async () => {
     const onDeselect = vi.fn();
     store.selectionCount.value = 1;
-    store.selectionName.value = 'Gatherer';
+    store.selectionName.value = 'Mudpaw';
     store.selectionNameColor.value = 'text-green-400';
 
     render(
@@ -468,7 +468,7 @@ describe('Action Panel interactions', () => {
 
     actionButtons.value = [
       {
-        title: 'Gatherer',
+        title: 'Mudpaw',
         cost: '50C 1F',
         hotkey: 'Q',
         affordable: true,

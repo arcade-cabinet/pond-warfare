@@ -205,7 +205,7 @@ describe('Training & Building', () => {
     await openPanelTab('Act');
     // Button should be disabled/grayed
     const btn = Array.from(document.querySelectorAll('.action-btn')).find(
-      (b) => b.textContent?.includes('Gatherer'),
+      (b) => b.textContent?.includes('Mudpaw'),
     ) as HTMLButtonElement | undefined;
     if (btn) {
       expect(btn.disabled || btn.classList.contains('opacity-50')).toBe(true);

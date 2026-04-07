@@ -45,10 +45,10 @@ export function computePopulation(world: GameWorld): PopulationResult {
   let maxFoodCap = 0;
   let idleWorkers = 0;
   let armyUnits = 0;
-  let idleGatherers = 0;
+  let idleGeneralists = 0;
   let idleCombat = 0;
   let idleHealers = 0;
-  let idleScouts = 0;
+  let idleRecon = 0;
 
   for (let i = 0; i < allEnts.length; i++) {
     const eid = allEnts[i];
@@ -71,7 +71,7 @@ export function computePopulation(world: GameWorld): PopulationResult {
       if (kind === EntityKind.Gatherer) {
         if (isIdle && !isAutonomousSpecialist) {
           idleWorkers++;
-          idleGatherers++;
+          idleGeneralists++;
         }
       } else if (kind === EntityKind.Healer) {
         armyUnits++;
@@ -83,7 +83,7 @@ export function computePopulation(world: GameWorld): PopulationResult {
         armyUnits++;
         if (isIdle && !isAutonomousSpecialist) {
           idleCombat++;
-          if (hasComponent(w.ecs, eid, Velocity) && Velocity.speed[eid] >= 2.0) idleScouts++;
+          if (hasComponent(w.ecs, eid, Velocity) && Velocity.speed[eid] >= 2.0) idleRecon++;
         }
       }
     }
@@ -108,10 +108,10 @@ export function computePopulation(world: GameWorld): PopulationResult {
   store.maxFood.value = maxFoodCap;
   store.idleWorkerCount.value = idleWorkers + idleCombat + idleHealers;
   store.armyCount.value = armyUnits;
-  store.idleGathererCount.value = idleGatherers;
+  store.idleGeneralistCount.value = idleGeneralists;
   store.idleCombatCount.value = idleCombat;
   store.idleHealerCount.value = idleHealers;
-  store.idleScoutCount.value = idleScouts;
+  store.idleReconCount.value = idleRecon;
 
   if (armyUnits > w.stats.peakArmy) {
     w.stats.peakArmy = armyUnits;

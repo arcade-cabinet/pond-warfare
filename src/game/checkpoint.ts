@@ -48,7 +48,7 @@ export function checkEvacuation(world: GameWorld): void {
 
   let lodgeHp = 0;
   let playerCombatUnits = 0;
-  let playerGatherers = 0;
+  let playerGeneralists = 0;
   let commanderAlive = false;
 
   for (let i = 0; i < allEnts.length; i++) {
@@ -62,7 +62,7 @@ export function checkEvacuation(world: GameWorld): void {
     } else if (kind === EntityKind.Commander) {
       commanderAlive = true;
     } else if (kind === EntityKind.Gatherer) {
-      playerGatherers++;
+      playerGeneralists++;
     } else if (!ENTITY_DEFS[kind]?.isBuilding) {
       playerCombatUnits++;
     }
@@ -72,7 +72,7 @@ export function checkEvacuation(world: GameWorld): void {
     lodgeHp > 0 &&
     lodgeHp < 150 &&
     playerCombatUnits === 0 &&
-    playerGatherers === 0 &&
+    playerGeneralists === 0 &&
     commanderAlive
   ) {
     world.evacuationTriggered = true;
