@@ -29,6 +29,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { type ClickState, handleClick } from '@/input/pointer-click';
 import type { PointerCallbacks, PointerState } from '@/input/pointer-types';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -150,6 +151,7 @@ function makeCallbacks(world: GameWorld, entityMap: Map<string, number>): Pointe
     getEntityPosition: (eid) => ({ x: Position.x[eid], y: Position.y[eid] }),
     isEntityOnScreen: () => true,
     getAllPlayerUnitsOfKind: () => [],
+    getSpecialistMenuMode: () => null,
     selectEntity: vi.fn((eid: number) => {
       Selectable.selected[eid] = 1;
     }),
@@ -300,6 +302,26 @@ describe('Pointer Interactions (tap-only)', () => {
     expect(cb.issueContextCommand).not.toHaveBeenCalledWith(resource);
   });
 
+  it('selected specialist gatherers do not trigger the manual gather shortcut', () => {
+    const world = createGameWorld();
+    const entities = new Map<string, number>();
+    const specialist = createUnit(world, 200, 200, EntityKind.Gatherer, Faction.Player);
+    const resource = createResource(world, 200, 200);
+    entities.set('specialist', specialist);
+    entities.set('resource', resource);
+
+    Selectable.selected[specialist] = 1;
+    world.selection = [specialist];
+
+    const cb = makeCallbacks(world, entities);
+    cb.getSpecialistMenuMode = () => 'single_zone';
+    const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
+
+    handleClick(world, makeMouse(200, 200), cb, clickState, () => false);
+
+    expect(cb.issueContextCommand).not.toHaveBeenCalledWith(resource);
+  });
+
   it('tap on nothing with no selection is a no-op', () => {
     const world = createGameWorld();
     world.state = 'playing';
@@ -311,6 +333,38 @@ describe('Pointer Interactions (tap-only)', () => {
     handleClick(world, makeMouse(500, 500), cb, clickState, () => false);
 
     expect(world.selection).toHaveLength(0);
+    expect(cb.issueContextCommand).not.toHaveBeenCalled();
+  });
+
+  it('pending specialist assignment consumes the click before normal commands', () => {
+    const world = createGameWorld();
+    const entities = new Map<string, number>();
+    const unit = createUnit(world, 100, 100, EntityKind.Scout, Faction.Player);
+    entities.set('unit', unit);
+    world.pendingSpecialistAssignment = { eid: unit, mode: 'single_zone' };
+    world.specialistAssignments.set(unit, {
+      runtimeId: 'lookout',
+      canonicalId: 'lookout',
+      label: 'Lookout',
+      mode: 'single_zone',
+      operatingRadius: 210,
+      centerX: 100,
+      centerY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 100,
+      engagementY: 100,
+      projectionRange: 0,
+    } satisfies SpecialistAssignment);
+
+    const cb = makeCallbacks(world, entities);
+    const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
+
+    handleClick(world, makeMouse(220, 240), cb, clickState, () => false);
+
+    expect(world.pendingSpecialistAssignment).toBeNull();
+    expect(world.specialistAssignments.get(unit)?.centerX).toBe(220);
+    expect(world.specialistAssignments.get(unit)?.centerY).toBe(240);
     expect(cb.issueContextCommand).not.toHaveBeenCalled();
   });
 });

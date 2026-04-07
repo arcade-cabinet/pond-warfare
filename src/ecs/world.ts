@@ -26,6 +26,7 @@ import type {
 import type { ObjectPool } from '@/utils/pool';
 import type { SeededRandom } from '@/utils/random';
 import type { SpatialHash } from '@/utils/spatial-hash';
+import type { PendingSpecialistAssignment, SpecialistAssignment } from '@/game/specialist-assignment';
 import type { CommanderModifiers } from './world-defaults';
 
 export { type CommanderModifiers, createGameWorld } from './world-defaults';
@@ -83,6 +84,8 @@ export interface GameWorld {
   placingBuilding: string | null;
   attackMoveMode: boolean;
   idleWorkerIdx: number;
+  specialistAssignments: Map<number, SpecialistAssignment>;
+  pendingSpecialistAssignment: PendingSpecialistAssignment | null;
 
   // Yuka AI manager for steering behaviors (all factions)
   yukaManager: YukaManager;

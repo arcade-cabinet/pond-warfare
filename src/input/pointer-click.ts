@@ -12,6 +12,7 @@
 import { showSelectBark } from '@/config/barks';
 import { AutoSymbol } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { placePendingSpecialistAssignment } from '@/game/specialist-assignment';
 import { hitTestAutoSymbol } from '@/rendering/pixi/auto-symbol-overlay';
 import { EntityKind, type EntityKind as EntityKindType } from '@/types';
 import { tryPlaceFortAtPosition } from '@/ui/radial-actions';
@@ -44,6 +45,12 @@ export function handleClick(
   // v3: Fortification slot placement mode
   if (world.placingBuilding?.startsWith('fort_')) {
     tryPlaceFortAtPosition(world, mouse.worldX, mouse.worldY);
+    cb.onUpdateUI();
+    return;
+  }
+
+  if (placePendingSpecialistAssignment(world, mouse.worldX, mouse.worldY)) {
+    cb.onPlaySound('click');
     cb.onUpdateUI();
     return;
   }
@@ -92,7 +99,8 @@ export function handleClick(
       if (wasAlreadySelected && !isShiftDown()) {
         const resourceUnder = cb.getResourceAt(mouse.worldX, mouse.worldY);
         const hasGatherer = world.selection.some(
-          (eid) => cb.getEntityKind(eid) === EntityKind.Gatherer,
+          (eid) =>
+            cb.getEntityKind(eid) === EntityKind.Gatherer && cb.getSpecialistMenuMode(eid) === null,
         );
         if (resourceUnder !== null && hasGatherer) {
           cb.issueContextCommand(resourceUnder);
@@ -126,7 +134,14 @@ export function handleClick(
       if (wasAlreadySelected && !isShiftDown()) {
         const kind = cb.getEntityKind(clicked);
         const role = entityKindToRole(kind);
-        openRadialMenu(mouse.screenX, mouse.screenY, 'unit', role);
+        openRadialMenu(
+          mouse.screenX,
+          mouse.screenY,
+          'unit',
+          role,
+          clicked,
+          cb.getSpecialistMenuMode(clicked),
+        );
       }
     } else if (cb.isPlayerBuilding(clicked)) {
       // Player building tap: select it and open radial for Lodge

@@ -129,6 +129,8 @@ export function createGameWorld(): GameWorld {
     placingBuilding: null,
     attackMoveMode: false,
     idleWorkerIdx: 0,
+    specialistAssignments: new Map(),
+    pendingSpecialistAssignment: null,
     resTracker: {
       lastFish: STARTING_FISH,
       lastLogs: STARTING_LOGS,

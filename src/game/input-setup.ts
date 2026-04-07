@@ -23,6 +23,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
 import { useCommanderAbility } from '@/game/commander-abilities';
+import { getSpecialistMenuMode } from '@/game/specialist-assignment';
 import type { KeyboardCallbacks } from '@/input/keyboard';
 import type { PointerCallbacks } from '@/input/pointer';
 import {
@@ -242,6 +243,7 @@ export function buildPointerCallbacks(deps: PointerSetupDeps): PointerCallbacks 
           Health.current[eid] > 0,
       );
     },
+    getSpecialistMenuMode: (eid) => getSpecialistMenuMode(world, eid),
     selectEntity: (eid) => {
       Selectable.selected[eid] = 1;
     },

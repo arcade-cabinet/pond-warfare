@@ -34,6 +34,8 @@ vi.mock('@/game', () => ({
       ecs: {},
       yukaManager: { removeUnit: vi.fn(), clearFormationBehaviors: vi.fn() },
       fortifications: null,
+      specialistAssignments: new Map(),
+      pendingSpecialistAssignment: null as { eid: number; mode: 'single_zone' | 'dual_zone' } | null,
     },
     syncUIStore: vi.fn(),
   },
@@ -85,6 +87,7 @@ import { audio } from '@/audio/audio-system';
 import { game } from '@/game';
 import { pushGameEvent } from '@/ui/game-events';
 import { dispatchRadialAction } from '@/ui/radial-actions';
+import { radialMenuTargetEntityId } from '@/ui/store-radial';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -95,6 +98,9 @@ beforeEach(() => {
   game.world.attackMoveMode = false;
   game.world.selection = [];
   game.world.fortifications = null;
+  game.world.specialistAssignments = new Map();
+  game.world.pendingSpecialistAssignment = null;
+  radialMenuTargetEntityId.value = -1;
 });
 
 describe('dispatchRadialAction -- training', () => {
@@ -192,6 +198,30 @@ describe('dispatchRadialAction -- unit commands', () => {
   it('cmd_return returns true (even if no Lodge)', () => {
     const result = dispatchRadialAction('cmd_return');
     expect(result).toBe(true);
+  });
+
+  it('cmd_assign_area starts pending specialist assignment for the radial target', () => {
+    radialMenuTargetEntityId.value = 91;
+    game.world.specialistAssignments.set(91, {
+      runtimeId: 'fisher',
+      canonicalId: 'fisher',
+      label: 'Fisher',
+      mode: 'single_zone',
+      operatingRadius: 160,
+      centerX: 0,
+      centerY: 0,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 0,
+      engagementY: 0,
+      projectionRange: 0,
+    });
+
+    const result = dispatchRadialAction('cmd_assign_area');
+
+    expect(result).toBe(true);
+    expect(game.world.pendingSpecialistAssignment).toEqual({ eid: 91, mode: 'single_zone' });
+    expect(pushGameEvent).toHaveBeenCalledWith('Tap terrain to set operating area', '#38bdf8', 100);
   });
 });
 

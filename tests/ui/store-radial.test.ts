@@ -14,6 +14,8 @@ import {
   openRadialMenu,
   radialMenuMode,
   radialMenuOpen,
+  radialMenuSpecialistMode,
+  radialMenuTargetEntityId,
   radialMenuUnitRole,
   radialMenuX,
   radialMenuY,
@@ -32,16 +34,20 @@ describe('openRadialMenu', () => {
     expect(radialMenuY.value).toBe(200);
     expect(radialMenuMode.value).toBe('lodge');
     expect(radialMenuUnitRole.value).toBeNull();
+    expect(radialMenuTargetEntityId.value).toBe(-1);
+    expect(radialMenuSpecialistMode.value).toBeNull();
   });
 
   it('opens the menu with unit mode and role', () => {
-    openRadialMenu(300, 400, 'unit', 'combat');
+    openRadialMenu(300, 400, 'unit', 'combat', 42, 'dual_zone');
 
     expect(radialMenuOpen.value).toBe(true);
     expect(radialMenuX.value).toBe(300);
     expect(radialMenuY.value).toBe(400);
     expect(radialMenuMode.value).toBe('unit');
     expect(radialMenuUnitRole.value).toBe('combat');
+    expect(radialMenuTargetEntityId.value).toBe(42);
+    expect(radialMenuSpecialistMode.value).toBe('dual_zone');
   });
 
   it('overrides previous state when called again', () => {
@@ -62,5 +68,7 @@ describe('closeRadialMenu', () => {
 
     closeRadialMenu();
     expect(radialMenuOpen.value).toBe(false);
+    expect(radialMenuTargetEntityId.value).toBe(-1);
+    expect(radialMenuSpecialistMode.value).toBeNull();
   });
 });

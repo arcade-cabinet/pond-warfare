@@ -17,8 +17,10 @@ import type { RadialGameState, RadialOption } from './radial-menu-options';
 import { getRadialOptions } from './radial-menu-options';
 import { fish, logs, rocks } from './store';
 import {
+  closeRadialMenu,
   radialMenuMode,
   radialMenuOpen,
+  radialMenuSpecialistMode,
   radialMenuUnitRole,
   radialMenuX,
   radialMenuY,
@@ -34,7 +36,25 @@ const AUTO_DISMISS_MS = 8000;
 const ITEM_SIZE = 52; // 52px > 44px minimum touch target
 
 function closeMenu() {
-  radialMenuOpen.value = false;
+  closeRadialMenu();
+}
+
+function getSpecialistAssignOption(mode: 'single_zone' | 'dual_zone'): RadialOption {
+  return mode === 'dual_zone'
+    ? {
+        id: 'cmd_assign_area',
+        label: 'Zones',
+        icon: '\u25CE',
+        tooltip: 'Assign anchor and engagement zones',
+        color: 'scout',
+      }
+    : {
+        id: 'cmd_assign_area',
+        label: 'Area',
+        icon: '\u25CE',
+        tooltip: 'Assign operating area',
+        color: 'scout',
+      };
 }
 
 /**
@@ -112,7 +132,11 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
     unlockStage: getCurrentRunPanelStage(storeV3.currentRunPurchasedDiamondIds.value),
     lodgeDamaged: storeV3.lodgeHp.value < storeV3.lodgeMaxHp.value,
   };
+  const specialistMode = radialMenuSpecialistMode.value;
   const options = getRadialOptions(mode, role, gameState);
+  if (mode === 'unit' && specialistMode) {
+    options.push(getSpecialistAssignOption(specialistMode));
+  }
 
   // Clamp menu center to viewport bounds
   const margin = RADIUS + ITEM_SIZE;

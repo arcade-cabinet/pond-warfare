@@ -6,6 +6,7 @@
  */
 
 import { signal } from '@preact/signals';
+import type { SpecialistZoneMode } from '@/game/specialist-assignment';
 import type { RadialMenuMode } from './radial-menu-options';
 
 /** Whether the radial menu is currently visible. */
@@ -22,6 +23,8 @@ export const radialMenuMode = signal<RadialMenuMode>('lodge');
 
 /** The v3 role of the selected unit (gather/combat/heal/scout), null for Lodge. */
 export const radialMenuUnitRole = signal<string | null>(null);
+export const radialMenuTargetEntityId = signal(-1);
+export const radialMenuSpecialistMode = signal<SpecialistZoneMode | null>(null);
 
 /**
  * Open the radial menu at the given screen position.
@@ -31,11 +34,15 @@ export function openRadialMenu(
   screenY: number,
   mode: RadialMenuMode,
   unitRole: string | null = null,
+  targetEntityId = -1,
+  specialistMode: SpecialistZoneMode | null = null,
 ): void {
   radialMenuX.value = screenX;
   radialMenuY.value = screenY;
   radialMenuMode.value = mode;
   radialMenuUnitRole.value = unitRole;
+  radialMenuTargetEntityId.value = targetEntityId;
+  radialMenuSpecialistMode.value = specialistMode;
   radialMenuOpen.value = true;
 }
 
@@ -44,4 +51,6 @@ export function openRadialMenu(
  */
 export function closeRadialMenu(): void {
   radialMenuOpen.value = false;
+  radialMenuTargetEntityId.value = -1;
+  radialMenuSpecialistMode.value = null;
 }

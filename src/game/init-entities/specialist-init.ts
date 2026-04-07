@@ -31,6 +31,7 @@ import {
   type SpecialistSpawnRequest,
 } from '@/ecs/systems/specialist-deploy';
 import type { GameWorld } from '@/ecs/world';
+import { registerSpecialistEntity } from '@/game/specialist-assignment';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
@@ -97,6 +98,7 @@ export function deploySpecialistsAtMatchStart(
       const pos = allPositions[posIdx] ?? { x: lodgeX, y: lodgeY + 60 };
       const eid = spawnEntity(world, kind, pos.x, pos.y, Faction.Player);
       addComponent(world.ecs, eid, PrestigeAutoDeploy);
+      registerSpecialistEntity(world, eid, spawn.unitId);
       applySpecialistStats(world, eid, spawn);
       initializeSpecialistBehavior(world, eid, spawn, lodgeEid, pos.x, pos.y);
       posIdx++;

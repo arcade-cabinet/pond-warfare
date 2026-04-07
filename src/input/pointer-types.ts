@@ -2,6 +2,8 @@
  * Pointer Types -- Shared interfaces and constants for pointer handling.
  */
 
+import type { SpecialistZoneMode } from '@/game/specialist-assignment';
+
 export interface PointerState {
   x: number;
   y: number;
@@ -33,6 +35,7 @@ export interface PointerCallbacks {
   getEntityPosition: (eid: number) => { x: number; y: number } | null;
   isEntityOnScreen: (eid: number) => boolean;
   getAllPlayerUnitsOfKind: (kind: number) => number[];
+  getSpecialistMenuMode: (eid: number) => SpecialistZoneMode | null;
   selectEntity: (eid: number) => void;
   deselectEntity: (eid: number) => void;
   deselectAll: () => void;

@@ -24,8 +24,10 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
+import { beginSpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { COLORS } from '@/ui/design-tokens';
+import { radialMenuTargetEntityId } from '@/ui/store-radial';
 import { pushGameEvent } from './game-events';
 import { handleFortifyAction, handleFortTypeAction } from './radial-fort-actions';
 
@@ -170,6 +172,8 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
     case 'cmd_return':
       returnToLodge(world);
       return true;
+    case 'cmd_assign_area':
+      return beginSpecialistAreaAssignment(world);
     case 'cmd_gather':
     case 'cmd_attack':
     case 'cmd_heal':
@@ -180,6 +184,17 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
     default:
       return false;
   }
+}
+
+function beginSpecialistAreaAssignment(world: GameWorld): boolean {
+  const targetEid = radialMenuTargetEntityId.value;
+  if (targetEid < 0) return false;
+  const prompt = beginSpecialistAssignment(world, targetEid);
+  if (!prompt) return false;
+  pushGameEvent(prompt, COLORS.feedbackInfo, world.frameCount);
+  audio.click();
+  game.syncUIStore();
+  return true;
 }
 
 function haltSelected(world: GameWorld): void {
