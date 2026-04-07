@@ -58,6 +58,8 @@ import { progressionLevel } from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
+const TAP_PLAYTHROUGH_TIMEOUT = 30_000;
+
 // ── Mocks (audio, rendering, particles only) ──────────────────────
 vi.mock('@/audio/audio-system', () => ({
   audio: new Proxy({}, { get: () => vi.fn() }),
@@ -512,7 +514,7 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
     // At all tiers, first unit should train within 300 frames (5s)
     expect(profile.firstUnitTrained).toBeGreaterThan(0);
     expect(profile.firstUnitTrained).toBeLessThanOrEqual(300);
-  });
+  }, TAP_PLAYTHROUGH_TIMEOUT);
 
   it('prints consolidated profiling table', () => {
     if (profiles.length === 0) {

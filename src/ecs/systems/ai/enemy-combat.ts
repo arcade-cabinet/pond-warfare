@@ -1,7 +1,7 @@
 /**
  * AI System - Enemy Combat
  *
- * Attack decisions, retreat logic, and scouting (task #14).
+ * Attack decisions, retreat logic, and recon pressure (task #14).
  * Attacks when army exceeds threshold, targets weakest player building,
  * groups units before attacking, retreats damaged units, and sends scouts.
  */
@@ -44,7 +44,7 @@ export function enemyCombatTick(world: GameWorld): void {
   // --- Retreat damaged units ---
   enemyRetreatLogic(world);
 
-  // --- Scout logic ---
+  // --- Recon logic ---
   enemyScoutLogic(world, isPeaceful);
 }
 

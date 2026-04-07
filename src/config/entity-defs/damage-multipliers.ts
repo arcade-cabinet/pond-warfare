@@ -12,9 +12,9 @@ import { EntityKind } from '@/types';
  * Entries < 1.0 mean the attacker is weak against that defender.
  * Missing entries default to 1.0 (neutral).
  *
- * Note: several pairings still reference historical internal otter kinds such
- * as `Brawler` and `Sniper`. Those are compatibility-facing low-level kinds,
- * not the canonical player-facing roster names.
+ * Note: several pairings still reference historical internal otter combat
+ * chassis ids. Those are compatibility-facing low-level kinds, not the
+ * canonical player-facing roster names.
  */
 export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<EntityKind, number>>>> =
   {

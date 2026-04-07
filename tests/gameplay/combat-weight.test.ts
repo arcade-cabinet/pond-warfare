@@ -21,6 +21,11 @@ import {
 } from '@/ecs/components';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import {
+  LEGACY_SABOTEUR_CHASSIS_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, UnitState } from '@/types';
 
@@ -102,25 +107,36 @@ describe('Combat weight – projectile sourceKind', () => {
   });
 
   it('spawnProjectile stores sourceKind on the projectile entity', () => {
-    const target = createUnit(world, EntityKind.Brawler, Faction.Enemy);
-    const proj = spawnProjectile(world, 0, 0, 100, 100, target, 10, -1, 1.0, EntityKind.Sniper);
-    expect(ProjectileData.sourceKind[proj]).toBe(EntityKind.Sniper);
+    const target = createUnit(world, EntityKind.Gator, Faction.Enemy);
+    const proj = spawnProjectile(
+      world,
+      0,
+      0,
+      100,
+      100,
+      target,
+      10,
+      -1,
+      1.0,
+      LEGACY_SABOTEUR_CHASSIS_KIND,
+    );
+    expect(ProjectileData.sourceKind[proj]).toBe(LEGACY_SABOTEUR_CHASSIS_KIND);
   });
 
   it('spawnProjectile defaults sourceKind to -1 when not specified', () => {
-    const target = createUnit(world, EntityKind.Brawler, Faction.Enemy);
+    const target = createUnit(world, EntityKind.Gator, Faction.Enemy);
     const proj = spawnProjectile(world, 0, 0, 100, 100, target, 10, -1);
     expect(ProjectileData.sourceKind[proj]).toBe(-1);
   });
 
   it('catapult projectile stores EntityKind.Catapult as sourceKind', () => {
-    const target = createUnit(world, EntityKind.Brawler, Faction.Enemy);
+    const target = createUnit(world, EntityKind.Gator, Faction.Enemy);
     const proj = spawnProjectile(world, 0, 0, 100, 100, target, 10, -1, 1.0, EntityKind.Catapult);
     expect(ProjectileData.sourceKind[proj]).toBe(EntityKind.Catapult);
   });
 
   it('tower projectile stores EntityKind.Tower as sourceKind', () => {
-    const target = createUnit(world, EntityKind.Brawler, Faction.Enemy);
+    const target = createUnit(world, EntityKind.Gator, Faction.Enemy);
     const proj = spawnProjectile(world, 0, 0, 100, 100, target, 10, -1, 1.0, EntityKind.Tower);
     expect(ProjectileData.sourceKind[proj]).toBe(EntityKind.Tower);
   });
@@ -139,8 +155,8 @@ describe('Combat weight – target recoil on hit', () => {
     const { triggerHitRecoil } = await import('@/rendering/animations');
     const { takeDamage } = await import('@/ecs/systems/health/take-damage');
 
-    const attacker = createUnit(world, EntityKind.Brawler, Faction.Enemy, 100, 80, 100);
-    const target = createUnit(world, EntityKind.Brawler, Faction.Player, 100, 120, 100);
+    const attacker = createUnit(world, EntityKind.Gator, Faction.Enemy, 100, 80, 100);
+    const target = createUnit(world, SAPPER_KIND, Faction.Player, 100, 120, 100);
 
     takeDamage(world, target, 10, attacker);
 
@@ -151,7 +167,7 @@ describe('Combat weight – target recoil on hit', () => {
     const { triggerHitRecoil } = await import('@/rendering/animations');
     const { takeDamage } = await import('@/ecs/systems/health/take-damage');
 
-    const attacker = createUnit(world, EntityKind.Brawler, Faction.Enemy, 100, 80, 100);
+    const attacker = createUnit(world, EntityKind.Gator, Faction.Enemy, 100, 80, 100);
     const building = createUnit(world, EntityKind.Tower, Faction.Player, 200, 120, 100);
     addComponent(world.ecs, building, IsBuilding);
 
@@ -175,7 +191,7 @@ describe('Combat weight – differentiated death sounds', () => {
     const { audio } = await import('@/audio/audio-system');
     const { processDeath } = await import('@/ecs/systems/health/death');
 
-    const eid = createUnit(world, EntityKind.Brawler, Faction.Player, 1);
+    const eid = createUnit(world, SAPPER_KIND, Faction.Player, 1);
     Health.current[eid] = 0;
     processDeath(world, eid);
 
@@ -183,11 +199,11 @@ describe('Combat weight – differentiated death sounds', () => {
     expect(audio.deathRanged).not.toHaveBeenCalled();
   });
 
-  it('ranged unit death plays deathRanged', async () => {
+  it('legacy saboteur chassis death plays deathRanged', async () => {
     const { audio } = await import('@/audio/audio-system');
     const { processDeath } = await import('@/ecs/systems/health/death');
 
-    const eid = createUnit(world, EntityKind.Sniper, Faction.Player, 1);
+    const eid = createUnit(world, LEGACY_SABOTEUR_CHASSIS_KIND, Faction.Player, 1);
     Health.current[eid] = 0;
     processDeath(world, eid);
 
@@ -211,7 +227,7 @@ describe('Combat weight – differentiated death sounds', () => {
   it('death spawns unit name floating text for non-building units', async () => {
     const { processDeath } = await import('@/ecs/systems/health/death');
 
-    const eid = createUnit(world, EntityKind.Brawler, Faction.Enemy, 1);
+    const eid = createUnit(world, EntityKind.Gator, Faction.Enemy, 1);
     Health.current[eid] = 0;
     const textsBefore = world.floatingTexts.length;
     processDeath(world, eid);
@@ -266,7 +282,7 @@ describe('Combat weight – kill streak escalation audio', () => {
     const { processDeath } = await import('@/ecs/systems/health/death');
 
     // Create attacker (player)
-    const attacker = createUnit(world, EntityKind.Brawler, Faction.Player, 100, 200, 200);
+    const attacker = createUnit(world, SAPPER_KIND, Faction.Player, 100, 200, 200);
 
     // Kill 3 enemies in quick succession
     for (let i = 0; i < 3; i++) {
@@ -283,7 +299,7 @@ describe('Combat weight – kill streak escalation audio', () => {
     const { audio } = await import('@/audio/audio-system');
     const { processDeath } = await import('@/ecs/systems/health/death');
 
-    const attacker = createUnit(world, EntityKind.Brawler, Faction.Player, 100, 200, 200);
+    const attacker = createUnit(world, SAPPER_KIND, Faction.Player, 100, 200, 200);
 
     for (let i = 0; i < 5; i++) {
       const enemy = createUnit(world, EntityKind.Gator, Faction.Enemy, 1, 100, 100 + i * 10);
@@ -299,7 +315,7 @@ describe('Combat weight – kill streak escalation audio', () => {
     const { audio } = await import('@/audio/audio-system');
     const { processDeath } = await import('@/ecs/systems/health/death');
 
-    const attacker = createUnit(world, EntityKind.Brawler, Faction.Player, 100, 200, 200);
+    const attacker = createUnit(world, SAPPER_KIND, Faction.Player, 100, 200, 200);
 
     for (let i = 0; i < 10; i++) {
       const enemy = createUnit(world, EntityKind.Gator, Faction.Enemy, 1, 100, 100 + i * 10);

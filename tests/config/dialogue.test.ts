@@ -17,7 +17,7 @@ describe('pickDialogue', () => {
     expect(pickDialogue(EntityKind.Sapper, 'attack')).toBeTruthy();
   });
 
-  it('routes legacy Brawler bark lookups through the Sapper pool', () => {
+  it('routes legacy sapper chassis bark lookups through the Sapper pool', () => {
     expect(pickDialogue(LEGACY_SAPPER_CHASSIS_KIND, 'attack')).toBeTruthy();
   });
 
@@ -25,7 +25,7 @@ describe('pickDialogue', () => {
     expect(pickDialogue(EntityKind.Saboteur, 'attack')).toBeTruthy();
   });
 
-  it('routes legacy Sniper bark lookups through the Saboteur pool', () => {
+  it('routes legacy saboteur chassis bark lookups through the Saboteur pool', () => {
     expect(pickDialogue(LEGACY_SABOTEUR_CHASSIS_KIND, 'attack')).toBeTruthy();
   });
 
@@ -33,7 +33,7 @@ describe('pickDialogue', () => {
     expect(pickDialogue(EntityKind.Shaman, 'heal')).toBeTruthy();
   });
 
-  it('returns Lookout discovery barks through the Scout chassis', () => {
+  it('returns Lookout discovery barks through the canonical recon alias', () => {
     expect(pickDialogue(LOOKOUT_KIND, 'discover')).toBeTruthy();
   });
 });

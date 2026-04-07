@@ -12,7 +12,7 @@ import { spawnEntity } from '@/ecs/archetypes';
 import { Carrying, Health, Resource, UnitStateMachine } from '@/ecs/components';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { ENEMY_HARVESTER_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import { getIdleMudpaws } from '../helpers/ecs-queries';
 
@@ -168,19 +168,19 @@ describe('Economy Integration', () => {
     expect(idles).not.toContain(g2);
   });
 
-  it('enemy gatherers compete for same resources', () => {
+  it('enemy harvester units compete for same resources', () => {
     spawnEntity(world, EntityKind.PredatorNest, 500, 500, Faction.Enemy);
     const resource = spawnEntity(world, EntityKind.Clambed, 300, 300, Faction.Neutral);
     Resource.amount[resource] = GATHER_AMOUNT * 2;
 
-    const enemyGatherer = spawnEntity(world, EntityKind.Gatherer, 300, 300, Faction.Enemy);
-    UnitStateMachine.state[enemyGatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[enemyGatherer] = resource;
-    UnitStateMachine.gatherTimer[enemyGatherer] = 1;
+    const enemyHarvester = spawnEntity(world, ENEMY_HARVESTER_KIND, 300, 300, Faction.Enemy);
+    UnitStateMachine.state[enemyHarvester] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[enemyHarvester] = resource;
+    UnitStateMachine.gatherTimer[enemyHarvester] = 1;
 
     gatheringSystem(world);
 
     expect(Resource.amount[resource]).toBe(GATHER_AMOUNT);
-    expect(Carrying.resourceType[enemyGatherer]).toBe(ResourceType.Fish);
+    expect(Carrying.resourceType[enemyHarvester]).toBe(ResourceType.Fish);
   });
 });

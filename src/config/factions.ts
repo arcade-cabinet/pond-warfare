@@ -6,6 +6,7 @@
  */
 
 import {
+  ENEMY_HARVESTER_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
   SABOTEUR_KIND,
@@ -59,7 +60,7 @@ export const OTTER_FACTION: FactionConfig = {
 export const PREDATOR_FACTION: FactionConfig = {
   name: 'Predators',
   lodgeKind: EntityKind.PredatorNest,
-  gathererKind: EntityKind.Gatherer,
+  gathererKind: ENEMY_HARVESTER_KIND,
   meleeKind: EntityKind.Gator,
   rangedKind: EntityKind.VenomSnake,
   tankKind: EntityKind.ArmoredGator,

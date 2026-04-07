@@ -60,9 +60,9 @@ function symbolFromPrevState(prev: UnitState, kind: EntityKind): number {
   if (kind === MEDIC_KIND || kind === SHAMAN_KIND) {
     if (prev === UnitState.Move) return SymbolType.Heal;
   }
-  // Recon specialists on the lookout chassis that were moving get scout symbol
+  // Recon specialists on the lookout chassis that were moving get recon symbol
   if (isLookoutKind(kind)) {
-    if (prev === UnitState.Move) return SymbolType.Scout;
+    if (prev === UnitState.Move) return SymbolType.Recon;
   }
   return SymbolType.None;
 }
@@ -180,10 +180,10 @@ function reissueCommand(world: GameWorld, eid: number, symType: number): void {
       UnitStateMachine.state[eid] = UnitState.AttackMove;
     }
   }
-  // Heal and Scout: enable the corresponding auto-behavior toggle
+  // Heal and recon: enable the corresponding auto-behavior toggle
   else if (symType === SymbolType.Heal) {
     world.autoBehaviors.healer = true;
-  } else if (symType === SymbolType.Scout) {
+  } else if (symType === SymbolType.Recon) {
     world.autoBehaviors.scout = true;
   }
 }

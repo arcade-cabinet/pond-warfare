@@ -26,6 +26,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { ENEMY_HARVESTER_KIND } from '@/game/live-unit-kinds';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
@@ -51,7 +52,7 @@ export function nestDefenseReinforcement(world: GameWorld): void {
       if (FactionTag.faction[u] !== Faction.Enemy) continue;
       if (hasComponent(world.ecs, u, IsBuilding)) continue;
       if (Health.current[u] <= 0) continue;
-      if (EntityTypeTag.kind[u] === EntityKind.Gatherer) continue;
+      if (EntityTypeTag.kind[u] === ENEMY_HARVESTER_KIND) continue;
 
       const dx = Position.x[u] - nx;
       const dy = Position.y[u] - ny;

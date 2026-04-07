@@ -26,7 +26,7 @@ import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { ENEMY_HARVESTER_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } from '@/types';
 
 /* ------------------------------------------------------------------ */
@@ -208,7 +208,7 @@ describe('Economy', () => {
     const resource = createResource(world, EntityKind.Clambed, 300, 300, GATHER_AMOUNT * 2);
 
     // Enemy-side workers still use the shared internal harvester chassis.
-    const enemyHarvester = spawnEntity(world, EntityKind.Gatherer, 300, 300, Faction.Enemy);
+    const enemyHarvester = spawnEntity(world, ENEMY_HARVESTER_KIND, 300, 300, Faction.Enemy);
     UnitStateMachine.state[enemyHarvester] = UnitState.Gathering;
     UnitStateMachine.targetEntity[enemyHarvester] = resource;
     UnitStateMachine.gatherTimer[enemyHarvester] = 1;

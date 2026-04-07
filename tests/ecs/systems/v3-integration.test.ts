@@ -12,6 +12,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { EntityKind, type GameResources, nodeKindToResourceType, ResourceType } from '@/types';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { COLORS } from '@/ui/design-tokens';
 
 describe('v3 resource aliases', () => {
@@ -58,7 +59,7 @@ describe('nodeKindToResourceType', () => {
   });
 
   it('maps unknown EntityKind to None', () => {
-    expect(nodeKindToResourceType(EntityKind.Brawler)).toBe(ResourceType.None);
+    expect(nodeKindToResourceType(SAPPER_KIND)).toBe(ResourceType.None);
     expect(nodeKindToResourceType(EntityKind.Lodge)).toBe(ResourceType.None);
   });
 });

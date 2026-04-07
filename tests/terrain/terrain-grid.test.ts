@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { TerrainGrid, TerrainType } from '@/terrain/terrain-grid';
 
 describe('TerrainGrid', () => {
@@ -76,8 +77,7 @@ describe('TerrainGrid', () => {
     it('returns 0 for non-swimmer on water', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(1, 1, TerrainType.Water);
-      // EntityKind.Brawler = 1 (not a swimmer)
-      expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, 1)).toBe(0);
+      expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, SAPPER_KIND)).toBe(0);
     });
 
     it('returns 0.5 for Swimmer on water', () => {
@@ -104,7 +104,7 @@ describe('TerrainGrid', () => {
     it('returns false for non-swimmer on water', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(0, 0, TerrainType.Water);
-      expect(grid.isPassable(5, 5, 1)).toBe(false);
+      expect(grid.isPassable(5, 5, SAPPER_KIND)).toBe(false);
     });
 
     it('returns true for Swimmer on water', () => {
@@ -117,7 +117,7 @@ describe('TerrainGrid', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(0, 0, TerrainType.Rocks);
       expect(grid.isPassable(5, 5, 28)).toBe(false);
-      expect(grid.isPassable(5, 5, 1)).toBe(false);
+      expect(grid.isPassable(5, 5, SAPPER_KIND)).toBe(false);
     });
   });
 

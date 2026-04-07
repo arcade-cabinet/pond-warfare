@@ -1,8 +1,8 @@
 /**
  * AI System - Enemy Economy
  *
- * Gatherer spawning and resource gathering logic (task #11).
- * Nests spawn gatherers to collect resources that feed the enemy economy.
+ * Enemy harvester spawning and resource gathering logic (task #11).
+ * Nests spawn harvester units to collect resources that feed the enemy economy.
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -28,12 +28,13 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { ENEMY_HARVESTER_KIND } from '@/game/live-unit-kinds';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
 import { getEnemyNests } from './helpers';
 
-/** Get difficulty-adjusted gatherer spawn interval */
+/** Get difficulty-adjusted enemy harvester spawn interval */
 function getGathererSpawnInterval(world: GameWorld): number {
   switch (world.difficulty) {
     case 'easy':
@@ -49,7 +50,7 @@ function getGathererSpawnInterval(world: GameWorld): number {
   }
 }
 
-/** Spawn enemy gatherers at nests to collect resources (task #11) */
+/** Spawn enemy harvester units at nests to collect resources (task #11) */
 export function enemyEconomyTick(world: GameWorld): void {
   const isPeaceful = world.frameCount < world.peaceTimer;
   if (isPeaceful) return;
@@ -66,12 +67,12 @@ export function enemyEconomyTick(world: GameWorld): void {
     const nx = Position.x[nestEid];
     const ny = Position.y[nestEid];
 
-    // Count nearby enemy gatherers
-    let gathererCount = 0;
+    // Count nearby enemy harvester units
+    let harvesterCount = 0;
     for (let j = 0; j < allUnits.length; j++) {
       const u = allUnits[j];
       if (FactionTag.faction[u] !== Faction.Enemy) continue;
-      if (EntityTypeTag.kind[u] !== EntityKind.Gatherer) continue;
+      if (EntityTypeTag.kind[u] !== ENEMY_HARVESTER_KIND) continue;
       if (hasComponent(world.ecs, u, IsBuilding)) continue;
       if (Health.current[u] <= 0) continue;
 
@@ -79,17 +80,17 @@ export function enemyEconomyTick(world: GameWorld): void {
       const dy = Position.y[u] - ny;
       const dSq = dx * dx + dy * dy;
       if (dSq < ENEMY_GATHERER_RADIUS * ENEMY_GATHERER_RADIUS) {
-        gathererCount++;
+        harvesterCount++;
       }
     }
 
-    // AI personality adjusts max gatherers per nest
+    // AI personality adjusts max harvester units per nest
     const personality = resolvePersonality(world.aiPersonality, world.frameCount);
     const maxGatherers = Math.max(
       1,
       Math.round(ENEMY_MAX_GATHERERS_PER_NEST * personality.gathererRate),
     );
-    if (gathererCount >= Math.min(maxGatherers, personality.maxGatherersPerNest)) continue;
+    if (harvesterCount >= Math.min(maxGatherers, personality.maxGatherersPerNest)) continue;
 
     // Find nearest resource node
     let closestResource = -1;
@@ -111,7 +112,7 @@ export function enemyEconomyTick(world: GameWorld): void {
     const sx = nx + (world.gameRng.next() - 0.5) * 60;
     const sy = ny + 30 + (world.gameRng.next() - 0.5) * 30;
 
-    const gEid = spawnEntity(world, EntityKind.Gatherer, sx, sy, Faction.Enemy);
+    const gEid = spawnEntity(world, ENEMY_HARVESTER_KIND, sx, sy, Faction.Enemy);
     if (gEid < 0) continue;
 
     // Spawn pop animation + dust
@@ -125,7 +126,7 @@ export function enemyEconomyTick(world: GameWorld): void {
     UnitStateMachine.targetY[gEid] = Position.y[closestResource];
     UnitStateMachine.state[gEid] = UnitState.GatherMove;
 
-    const speed = Velocity.speed[gEid] || ENTITY_DEFS[EntityKind.Gatherer]?.speed || 2.0;
+    const speed = Velocity.speed[gEid] || ENTITY_DEFS[ENEMY_HARVESTER_KIND]?.speed || 2.0;
     world.yukaManager.addUnit(
       gEid,
       sx,

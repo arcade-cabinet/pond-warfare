@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { TerrainGrid, TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind } from '@/types';
 
@@ -33,7 +34,7 @@ describe('terrain grid v2.0.0 additions', () => {
   it('regular units still cannot traverse water', () => {
     const grid = new TerrainGrid(320, 320, 32);
     grid.set(5, 5, TerrainType.Water);
-    const mult = grid.getSpeedMultiplier(160 + 16, 160 + 16, EntityKind.Brawler);
+    const mult = grid.getSpeedMultiplier(160 + 16, 160 + 16, SAPPER_KIND);
     expect(mult).toBe(0); // Impassable
   });
 

@@ -15,8 +15,8 @@ import type { UnitDef } from './unit-def';
  *
  * Important:
  * - The live player-facing manual roster is `Mudpaw / Medic / Sapper / Saboteur`.
- * - Some older internal entity kinds such as `Brawler` and `Sniper` still exist
- *   for historical scenarios, balance tables, and compatibility tests.
+ * - Some older internal combat chassis ids still exist for historical scenarios,
+ *   balance tables, and compatibility tests.
  */
 export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
   // Canonical live manual generalist chassis (`Mudpaw` display label).

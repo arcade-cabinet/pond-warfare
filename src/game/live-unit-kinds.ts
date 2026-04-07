@@ -3,13 +3,14 @@ import { EntityKind, SpriteId } from '@/types';
 /**
  * Canonical live player-facing unit mappings.
  *
- * The ECS enum still carries long-lived shared chassis ids such as
- * `Gatherer` and `Scout`, but live player/runtime code should speak in
- * canonical roster terms wherever possible.
+ * The ECS enum still carries long-lived shared worker/recon and legacy combat
+ * chassis ids, but live player/runtime code should speak in canonical roster
+ * terms wherever possible.
  */
 export const MUDPAW_KIND = EntityKind.Gatherer;
 export const MEDIC_KIND = EntityKind.Healer;
 export const LOOKOUT_KIND = EntityKind.Scout;
+export const ENEMY_HARVESTER_KIND = EntityKind.Gatherer;
 export const SAPPER_KIND = EntityKind.Sapper;
 export const SABOTEUR_KIND = EntityKind.Saboteur;
 export const LEGACY_SAPPER_CHASSIS_KIND = EntityKind.Brawler;

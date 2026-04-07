@@ -47,7 +47,7 @@ const SPECIALIST_KIND_MAP: Record<string, EntityKind> = {
   digger: DIGGER_KIND,
   logger: LOGGER_KIND,
   // Canonical specialist names still resolve through shared ECS chassis where
-  // needed, but they no longer route through the dead Brawler/Engineer split.
+  // needed, but they no longer route through the dead legacy combat split.
   guard: GUARD_KIND,
   ranger: RANGER_KIND,
   shaman: SHAMAN_KIND,

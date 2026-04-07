@@ -32,6 +32,7 @@ import {
 } from '@/ecs/components';
 import { enemyEconomyTick } from '@/ecs/systems/ai/enemy-economy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { ENEMY_HARVESTER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType } from '@/types';
 
 // Mock rendering animations to prevent side-effects
@@ -84,8 +85,8 @@ function createResourceNode(world: GameWorld, x: number, y: number): number {
   return eid;
 }
 
-/** Create an existing enemy gatherer near a position. */
-function createEnemyGatherer(world: GameWorld, x: number, y: number): number {
+/** Create an existing enemy harvester near a position. */
+function createEnemyHarvester(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
@@ -100,7 +101,7 @@ function createEnemyGatherer(world: GameWorld, x: number, y: number): number {
   Health.current[eid] = 30;
   Health.max[eid] = 30;
   FactionTag.faction[eid] = Faction.Enemy;
-  EntityTypeTag.kind[eid] = EntityKind.Gatherer;
+  EntityTypeTag.kind[eid] = ENEMY_HARVESTER_KIND;
   Carrying.resourceType[eid] = ResourceType.None;
 
   return eid;
@@ -118,7 +119,7 @@ describe('enemyEconomyTick', () => {
   });
 
   describe('peace timer gating', () => {
-    it('should not spawn gatherers during peace period', () => {
+    it('should not spawn harvester units during peace period', () => {
       world.peaceTimer = ENEMY_GATHERER_SPAWN_INTERVAL + 100;
       world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL;
 
@@ -131,7 +132,7 @@ describe('enemyEconomyTick', () => {
       expect(world.enemyResources.fish).toBe(fishBefore);
     });
 
-    it('should spawn gatherers when peace timer has expired', () => {
+    it('should spawn harvester units when peace timer has expired', () => {
       createEnemyNest(world, 500, 500);
       createResourceNode(world, 600, 500);
 
@@ -156,15 +157,15 @@ describe('enemyEconomyTick', () => {
     });
   });
 
-  describe('gatherer count limits', () => {
-    it('should not spawn when at max gatherers per nest', () => {
+  describe('enemy harvester count limits', () => {
+    it('should not spawn when at max harvester units per nest', () => {
       const nestX = 500;
       const nestY = 500;
       createEnemyNest(world, nestX, nestY);
       createResourceNode(world, 600, 500);
 
       for (let i = 0; i < ENEMY_MAX_GATHERERS_PER_NEST; i++) {
-        createEnemyGatherer(world, nestX + i * 10, nestY);
+        createEnemyHarvester(world, nestX + i * 10, nestY);
       }
 
       const fishBefore = world.enemyResources.fish;
@@ -173,14 +174,14 @@ describe('enemyEconomyTick', () => {
       expect(world.enemyResources.fish).toBe(fishBefore);
     });
 
-    it('should spawn when gatherers are below max per nest', () => {
+    it('should spawn when harvester units are below max per nest', () => {
       const nestX = 500;
       const nestY = 500;
       createEnemyNest(world, nestX, nestY);
       createResourceNode(world, 600, 500);
 
-      // Only create 1 gatherer, which is below the max
-      createEnemyGatherer(world, nestX + 10, nestY);
+      // Only create 1 harvester unit, which is below the max
+      createEnemyHarvester(world, nestX + 10, nestY);
 
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
@@ -188,27 +189,27 @@ describe('enemyEconomyTick', () => {
       expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
     });
 
-    it('should not count gatherers far from the nest', () => {
+    it('should not count harvester units far from the nest', () => {
       const nestX = 500;
       const nestY = 500;
       createEnemyNest(world, nestX, nestY);
       createResourceNode(world, 600, 500);
 
-      // Place max gatherers far from the nest (beyond ENEMY_GATHERER_RADIUS)
+      // Place max harvester units far from the nest (beyond ENEMY_GATHERER_RADIUS)
       for (let i = 0; i < ENEMY_MAX_GATHERERS_PER_NEST; i++) {
-        createEnemyGatherer(world, nestX + 2000, nestY + 2000);
+        createEnemyHarvester(world, nestX + 2000, nestY + 2000);
       }
 
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      // Distant gatherers should not be counted, so a new one spawns
+      // Distant harvester units should not be counted, so a new one spawns
       expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
     });
   });
 
   describe('resource costs', () => {
-    it('should decrease enemy fish when spawning gatherers', () => {
+    it('should decrease enemy fish when spawning harvester units', () => {
       createEnemyNest(world, 500, 500);
       createResourceNode(world, 600, 500);
 

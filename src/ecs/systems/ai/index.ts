@@ -4,7 +4,7 @@
  * Enemy AI with resource-based economy. Replaces the old fixed-timer wave
  * spawning with intelligent decision-making:
  *
- * 1. **Gatherer spawning** (from task #11): nests spawn gatherers to collect
+ * 1. **Enemy harvester spawning** (from task #11): nests spawn harvester units to collect
  *    resources that feed the enemy economy.
  *
  * 2. **Building construction** (task #12): AI spends resources to build Towers,

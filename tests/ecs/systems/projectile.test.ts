@@ -62,7 +62,7 @@ describe('projectileSystem', () => {
 
   it('should not apply projectile damage multipliers twice on impact', () => {
     const target = createTarget(world, 100, 100, 100);
-    // Sniper-style hit: final damage already includes matchup scaling.
+    // Legacy saboteur chassis hit: final damage already includes matchup scaling.
     spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 6, -1, 0.75);
 
     projectileSystem(world);

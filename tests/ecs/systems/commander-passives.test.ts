@@ -191,22 +191,22 @@ describe('commander passives', () => {
   it('Ironpaw: +20% HP aura applied to units in range', () => {
     world.commanderModifiers.auraUnitHpBonus = 0.2;
     const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
-    const brawler = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60);
+    const sapper = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60);
 
     // Run combat system to trigger aura refresh
     world.frameCount = 60;
     combatSystem(world);
 
-    // Brawler should have gained 20% HP (60 * 0.2 = 12)
-    expect(Health.max[brawler]).toBe(72);
-    expect(Health.current[brawler]).toBe(72);
-    expect(world.commanderUnitHpBuff.has(brawler)).toBe(true);
+    // Sapper should have gained 20% HP (60 * 0.2 = 12)
+    expect(Health.max[sapper]).toBe(72);
+    expect(Health.current[sapper]).toBe(72);
+    expect(world.commanderUnitHpBuff.has(sapper)).toBe(true);
   });
 
   it('Ironpaw: HP aura not applied twice', () => {
     world.commanderModifiers.auraUnitHpBonus = 0.2;
     const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
-    const brawler = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60);
+    const sapper = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60);
 
     world.frameCount = 60;
     combatSystem(world);
@@ -214,7 +214,7 @@ describe('commander passives', () => {
     combatSystem(world);
 
     // Should still be 72, not 86 (double-applied)
-    expect(Health.max[brawler]).toBe(72);
+    expect(Health.max[sapper]).toBe(72);
   });
 });
 

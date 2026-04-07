@@ -159,7 +159,7 @@ describe('Touch-Only Gameplay Flow', () => {
     const healOpts = getRadialOptions('unit', 'heal');
     expect(healOpts.map((o) => o.id)).toContain('cmd_heal');
 
-    // Scout role
+    // Recon role
     const scoutOpts = getRadialOptions('unit', 'scout');
     expect(scoutOpts.map((o) => o.id)).toContain('cmd_scout');
   });

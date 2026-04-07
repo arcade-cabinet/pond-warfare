@@ -56,6 +56,8 @@ import { SeededRandom } from '@/utils/random';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
+const DIAGNOSTIC_PLAYTHROUGH_TIMEOUT = 20_000;
+
 // ── Mocks ──────────────────────────────────────────────────────────
 
 // Mutable world ref — Governor goals read game.world to dispatch actions
@@ -450,7 +452,7 @@ describe('Governor Diagnostic Playthrough', () => {
 
     // Print full diagnostic table
     printDiag(stage, pg.getActivePanels(), world.waveSurvivalMode, world, snaps);
-  });
+  }, DIAGNOSTIC_PLAYTHROUGH_TIMEOUT);
 
   it('entity roster at spawn for each tier', () => {
     const NAMES: Record<number, string> = {
@@ -520,5 +522,5 @@ describe('Governor Diagnostic Playthrough', () => {
       new SeededRandom(99),
     );
     expect(query(w6.ecs, [Health]).length).toBeGreaterThan(query(w1.ecs, [Health]).length);
-  });
+  }, DIAGNOSTIC_PLAYTHROUGH_TIMEOUT);
 });

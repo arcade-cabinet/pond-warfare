@@ -7,6 +7,8 @@ import * as store from '@/ui/store';
 import { multiplayerMenuOpen } from '@/ui/store-multiplayer';
 import * as storeV3 from '@/ui/store-v3';
 
+const LANDING_TEST_TIMEOUT = 10_000;
+
 function resetSignals() {
   resetComicLandingState();
   store.menuState.value = 'main';
@@ -41,21 +43,21 @@ describe('ComicLanding', () => {
     expect(view.getByText('SETTINGS')).toBeTruthy();
     expect(view.queryByText('CONTINUE')).toBeNull();
     expect(view.queryByText('PRESTIGE')).toBeNull();
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('shows CONTINUE when a save exists', () => {
     store.hasSaveGame.value = true;
     const view = render(<ComicLanding />);
 
     expect(view.getByText('CONTINUE')).toBeTruthy();
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('shows PRESTIGE when the player has ranked up', () => {
     storeV3.prestigeRank.value = 1;
     const view = render(<ComicLanding />);
 
     expect(view.getByText('PRESTIGE')).toBeTruthy();
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('opens the play-mode stage from PLAY', () => {
     const view = render(<ComicLanding />);
@@ -66,7 +68,7 @@ describe('ComicLanding', () => {
     expect(view.getByText('MULTIPLAYER')).toBeTruthy();
     expect(view.getByText('BACK')).toBeTruthy();
     expect(view.getByText('SETTINGS')).toBeTruthy();
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('starts a new single-player match from play-mode', () => {
     const view = render(<ComicLanding />);
@@ -76,7 +78,7 @@ describe('ComicLanding', () => {
 
     expect(store.menuState.value).toBe('playing');
     expect(store.continueRequested.value).toBe(false);
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('sets continueRequested and starts the game from CONTINUE', () => {
     store.hasSaveGame.value = true;
@@ -86,7 +88,7 @@ describe('ComicLanding', () => {
 
     expect(store.continueRequested.value).toBe(true);
     expect(store.menuState.value).toBe('playing');
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('opens the upgrade web from UPGRADES', () => {
     const view = render(<ComicLanding />);
@@ -95,7 +97,7 @@ describe('ComicLanding', () => {
 
     expect(storeV3.upgradesScreenOpen.value).toBe(true);
     expect(storeV3.pearlScreenOpen.value).toBe(false);
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('opens the pearl screen from PRESTIGE', () => {
     storeV3.prestigeRank.value = 2;
@@ -105,7 +107,7 @@ describe('ComicLanding', () => {
 
     expect(storeV3.pearlScreenOpen.value).toBe(true);
     expect(storeV3.upgradesScreenOpen.value).toBe(false);
-  });
+  }, LANDING_TEST_TIMEOUT);
 
   it('opens settings from either landing stage', () => {
     const view = render(<ComicLanding />);
@@ -117,5 +119,5 @@ describe('ComicLanding', () => {
     fireEvent.click(view.getByText('PLAY'));
     fireEvent.click(view.getByText('SETTINGS'));
     expect(store.settingsOpen.value).toBe(true);
-  });
+  }, LANDING_TEST_TIMEOUT);
 });

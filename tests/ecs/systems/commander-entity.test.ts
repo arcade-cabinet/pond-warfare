@@ -21,6 +21,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 describe('Commander Entity', () => {
@@ -67,7 +68,7 @@ describe('Commander Entity', () => {
 
   it('should have 2x sprite scale compared to normal units', () => {
     const _cmdEid = spawnEntity(world, EntityKind.Commander, 100, 100, Faction.Player);
-    const _unitEid = spawnEntity(world, EntityKind.Brawler, 200, 100, Faction.Player);
+    const _unitEid = spawnEntity(world, SAPPER_KIND, 200, 100, Faction.Player);
     // Commander spriteScale is 5.0 vs normal 2.5 = 2x bigger
     const cmdW = 16 * 5.0; // spriteSize * spriteScale
     const unitW = 16 * 2.5;

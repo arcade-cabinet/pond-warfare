@@ -91,12 +91,12 @@ describe('fogOfWarSystem', () => {
     expect(mockCtx.arc).not.toHaveBeenCalled();
   });
 
-  it('should give Scout units a larger reveal radius than normal units', () => {
+  it('should give Lookout units a larger reveal radius than normal units', () => {
     createPlayerUnit(world, LOOKOUT_KIND, 320, 320);
 
     fogOfWarSystem(world);
 
-    // Scout reveal radius should be 16 (same as buildings, vs 10 for normal units)
+    // Lookout reveal radius should be 16 (same as buildings, vs 10 for normal units)
     const arcCalls = mockCtx.arc.mock.calls;
     expect(arcCalls.length).toBeGreaterThanOrEqual(1);
     const lastArc = arcCalls[arcCalls.length - 1];
@@ -104,7 +104,7 @@ describe('fogOfWarSystem', () => {
     expect(lastArc[2]).toBe(16);
   });
 
-  it('should give normal units a smaller reveal radius than Scout', () => {
+  it('should give normal units a smaller reveal radius than Lookout', () => {
     createPlayerUnit(world, MUDPAW_KIND, 320, 320);
 
     fogOfWarSystem(world);
@@ -153,7 +153,7 @@ describe('fogOfWarSystem', () => {
     expect(mockCtx.arc).not.toHaveBeenCalled();
   });
 
-  it('should apply cartography tech bonus to Scout reveal radius', () => {
+  it('should apply cartography tech bonus to Lookout reveal radius', () => {
     world.tech.cartography = true;
     createPlayerUnit(world, LOOKOUT_KIND, 320, 320);
 
@@ -175,7 +175,7 @@ describe('fogOfWarSystem', () => {
     const arcCalls = mockCtx.arc.mock.calls;
     expect(arcCalls.length).toBeGreaterThanOrEqual(1);
     const lastArc = arcCalls[arcCalls.length - 1];
-    // Scout base=16, fog vision mult=0.6: ceil(16*0.6) = 10
+    // Lookout base=16, fog vision mult=0.6: ceil(16*0.6) = 10
     expect(lastArc[2]).toBe(10);
   });
 });

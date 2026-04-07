@@ -20,9 +20,10 @@ import {
 } from '@/ecs/components';
 import { heronSpawnerSystem, resetHeronSpawner } from '@/ecs/systems/evolution/heron-spawner';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
-function createGatherer(world: GameWorld, x: number, y: number): number {
+function createMudpaw(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
@@ -43,7 +44,7 @@ function createGatherer(world: GameWorld, x: number, y: number): number {
   Combat.attackRange[eid] = 40;
   UnitStateMachine.state[eid] = UnitState.Idle;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Gatherer;
+  EntityTypeTag.kind[eid] = MUDPAW_KIND;
   Velocity.speed[eid] = 2.0;
   Collider.radius[eid] = 16;
   Carrying.resourceType[eid] = ResourceType.None;
@@ -80,7 +81,7 @@ describe('heronSpawnerSystem', () => {
     world.enemyEvolution.tier = 1;
     world.frameCount = 20000;
     world.peaceTimer = 0;
-    createGatherer(world, 500, 500);
+    createMudpaw(world, 500, 500);
 
     heronSpawnerSystem(world);
 
@@ -91,7 +92,7 @@ describe('heronSpawnerSystem', () => {
     world.enemyEvolution.tier = 2;
     world.frameCount = 20000;
     world.peaceTimer = 0;
-    createGatherer(world, 500, 500);
+    createMudpaw(world, 500, 500);
 
     heronSpawnerSystem(world);
 
@@ -102,7 +103,7 @@ describe('heronSpawnerSystem', () => {
     world.enemyEvolution.tier = 2;
     world.frameCount = 600;
     world.peaceTimer = 10800;
-    createGatherer(world, 500, 500);
+    createMudpaw(world, 500, 500);
 
     heronSpawnerSystem(world);
 
@@ -112,7 +113,7 @@ describe('heronSpawnerSystem', () => {
   it('respects spawn interval between herons', () => {
     world.enemyEvolution.tier = 2;
     world.peaceTimer = 0;
-    createGatherer(world, 500, 500);
+    createMudpaw(world, 500, 500);
 
     // First spawn
     world.frameCount = 20000;
@@ -128,7 +129,7 @@ describe('heronSpawnerSystem', () => {
   it('spawns another heron after interval elapses', () => {
     world.enemyEvolution.tier = 2;
     world.peaceTimer = 0;
-    createGatherer(world, 500, 500);
+    createMudpaw(world, 500, 500);
 
     world.frameCount = 20000;
     heronSpawnerSystem(world);

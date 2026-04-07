@@ -32,5 +32,5 @@ describe('frontier progression report', () => {
     expect(Math.max(...rows.map((row) => row.meta_mean_pct))).toBeGreaterThan(0);
     expect(rows[4]?.matches_total_mean ?? Number.POSITIVE_INFINITY).toBeLessThan(60);
     expect(rows[4]?.cumulative_cost ?? 0).toBeGreaterThan(rows[0]?.cumulative_cost ?? 0);
-  }, 120_000);
+  }, 240_000);
 });

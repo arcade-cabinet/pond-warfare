@@ -20,7 +20,12 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import {
+  ENEMY_HARVESTER_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { canPlaceBuilding } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
 
@@ -61,7 +66,7 @@ export function findPlayerLodge(world: GameWorld): number {
   return -1;
 }
 
-/** Count alive enemy combat units (not gatherers, not buildings) */
+/** Count alive enemy combat units (not harvester units, not buildings) */
 export function countEnemyArmy(world: GameWorld): number {
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   let count = 0;
@@ -72,7 +77,7 @@ export function countEnemyArmy(world: GameWorld): number {
     if (hasComponent(world.ecs, eid, IsResource)) continue;
     if (Health.current[eid] <= 0) continue;
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    if (kind === EntityKind.Gatherer) continue;
+    if (kind === ENEMY_HARVESTER_KIND) continue;
     count++;
   }
   return count;
@@ -89,7 +94,7 @@ export function getEnemyArmyUnits(world: GameWorld): number[] {
     if (hasComponent(world.ecs, eid, IsResource)) continue;
     if (Health.current[eid] <= 0) continue;
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    if (kind === EntityKind.Gatherer) continue;
+    if (kind === ENEMY_HARVESTER_KIND) continue;
     result.push(eid);
   }
   return result;
@@ -224,7 +229,7 @@ export function findBuildPosition(
 
 /**
  * Set a newly spawned building to 1 HP / 1% progress (construction site)
- * and assign nearby idle enemy gatherers to build it.
+ * and assign nearby idle enemy harvester units to build it.
  */
 export function startEnemyConstruction(world: GameWorld, buildingEid: number): void {
   // Set building to construction state (1 HP, 1% progress)
@@ -234,7 +239,7 @@ export function startEnemyConstruction(world: GameWorld, buildingEid: number): v
   const bx = Position.x[buildingEid];
   const by = Position.y[buildingEid];
 
-  // Find nearby idle enemy gatherers and assign them to build
+  // Find nearby idle enemy harvester units and assign them to build
   const allUnits = query(world.ecs, [
     Position,
     Health,
@@ -246,11 +251,11 @@ export function startEnemyConstruction(world: GameWorld, buildingEid: number): v
   for (let i = 0; i < allUnits.length; i++) {
     const eid = allUnits[i];
     if (FactionTag.faction[eid] !== Faction.Enemy) continue;
-    if (EntityTypeTag.kind[eid] !== EntityKind.Gatherer) continue;
+    if (EntityTypeTag.kind[eid] !== ENEMY_HARVESTER_KIND) continue;
     if (Health.current[eid] <= 0) continue;
 
     const state = UnitStateMachine.state[eid] as UnitState;
-    // Only redirect idle gatherers or those returning resources
+    // Only redirect idle harvester units or those returning resources
     if (state !== UnitState.Idle && state !== UnitState.ReturnMove) continue;
 
     const dx = Position.x[eid] - bx;
@@ -263,11 +268,11 @@ export function startEnemyConstruction(world: GameWorld, buildingEid: number): v
     UnitStateMachine.targetY[eid] = by;
     UnitStateMachine.state[eid] = UnitState.BuildMove;
 
-    const speed = Velocity.speed[eid] || ENTITY_DEFS[EntityKind.Gatherer]?.speed || 2.0;
+    const speed = Velocity.speed[eid] || ENTITY_DEFS[ENEMY_HARVESTER_KIND]?.speed || 2.0;
     world.yukaManager.addUnit(eid, Position.x[eid], Position.y[eid], speed, bx, by);
 
     assigned++;
-    if (assigned >= 2) break; // Send at most 2 gatherers per construction
+    if (assigned >= 2) break; // Send at most 2 harvester units per construction
   }
 }
 

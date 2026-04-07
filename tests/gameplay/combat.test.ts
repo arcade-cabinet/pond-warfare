@@ -76,7 +76,7 @@ describe('Combat', () => {
 
     combatSystem(world);
 
-    // Brawler base damage 6 vs Gator 0.75x => round(4.5) = 5 damage.
+    // Legacy sapper chassis base damage 6 vs Gator 0.75x => round(4.5) = 5 damage.
     expect(Health.current[gator]).toBe(55);
   });
 
@@ -173,7 +173,7 @@ describe('Combat', () => {
 
     combatSystem(world);
 
-    // Brawler should be poisoned (5 ticks)
+    // Legacy sapper chassis should be poisoned (5 ticks)
     expect(world.poisonTimers.has(brawler)).toBe(true);
     expect(world.poisonTimers.get(brawler)).toBe(5);
   });

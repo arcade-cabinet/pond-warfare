@@ -183,15 +183,15 @@ describe('getDamageMultiplier', () => {
   });
 
   it('should have expected counter triangle symmetry (A strong vs B implies B weak vs A)', () => {
-    // Brawler strong vs Sniper, Sniper weak vs Brawler
+    // Legacy sapper chassis strong vs legacy saboteur chassis, and vice versa.
     expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
     expect(getDamageMultiplier(LEGACY_SABOTEUR_CHASSIS_KIND, LEGACY_SAPPER_CHASSIS_KIND)).toBe(0.75);
 
-    // Gator strong vs Brawler, Brawler weak vs Gator
+    // Gator strong vs legacy sapper chassis, legacy sapper chassis weak vs Gator.
     expect(getDamageMultiplier(EntityKind.Gator, LEGACY_SAPPER_CHASSIS_KIND)).toBe(1.5);
     expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, EntityKind.Gator)).toBe(0.75);
 
-    // Snake strong vs Sniper, Gator weak vs Sniper (enemy triangle)
+    // Snake strong vs legacy saboteur chassis, Gator weak vs legacy saboteur chassis.
     expect(getDamageMultiplier(EntityKind.Snake, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
     expect(getDamageMultiplier(EntityKind.Gator, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(0.75);
   });

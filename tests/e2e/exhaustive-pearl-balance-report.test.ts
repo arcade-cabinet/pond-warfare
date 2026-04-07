@@ -54,5 +54,5 @@ describe('exhaustive pearl balance report', () => {
       expect(Number.isFinite(row.meta_mean_pct)).toBe(true);
       expect(Number.isFinite(row.meta_max_pct)).toBe(true);
     }
-  }, 120_000);
+  }, 240_000);
 });

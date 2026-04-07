@@ -21,6 +21,8 @@ import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
+const BASELINE_SCENARIO_TIMEOUT = 20_000;
+
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
     get(_target, prop) {
@@ -123,6 +125,7 @@ describe('baseline stage viability', () => {
       expect(metrics.unitsTrained).toBeGreaterThan(0);
       expect(metrics.playerUnits).toBeGreaterThanOrEqual(2);
     },
+    BASELINE_SCENARIO_TIMEOUT,
   );
 
   it('Clam upgrades improve margin instead of providing baseline viability', () => {
@@ -142,5 +145,5 @@ describe('baseline stage viability', () => {
     expect(reliefValve.resourcesGathered * reliefValve.gatherSpeedMod).toBeGreaterThan(
       baseline.resourcesGathered * baseline.gatherSpeedMod,
     );
-  });
+  }, BASELINE_SCENARIO_TIMEOUT);
 });

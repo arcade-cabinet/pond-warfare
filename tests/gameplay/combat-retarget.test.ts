@@ -21,6 +21,7 @@ import {
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 vi.mock('@/audio/audio-system', () => ({
@@ -77,17 +78,17 @@ describe('Combat retarget after kill', () => {
   });
 
   it('unit transitions to AttackMove (not Idle) after killing target', () => {
-    // Brawler next to a 1-HP enemy and another enemy nearby
-    const brawler = spawnUnit(world, 100, 100, EntityKind.Brawler, Faction.Player, 60, 50);
+    // Sapper next to a 1-HP enemy and another enemy nearby
+    const sapper = spawnUnit(world, 100, 100, SAPPER_KIND, Faction.Player, 60, 50);
     const enemy1 = spawnUnit(world, 110, 100, EntityKind.Gator, Faction.Enemy, 1, 5);
     const enemy2 = spawnUnit(world, 130, 100, EntityKind.Gator, Faction.Enemy, 60, 5);
 
-    // Put brawler in Attacking state targeting enemy1
-    UnitStateMachine.state[brawler] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[brawler] = enemy1;
+    // Put sapper in Attacking state targeting enemy1
+    UnitStateMachine.state[sapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sapper] = enemy1;
 
     // Populate spatial hash so retarget scan works
-    world.spatialHash.insert(brawler, 100, 100);
+    world.spatialHash.insert(sapper, 100, 100);
     world.spatialHash.insert(enemy1, 110, 100);
     world.spatialHash.insert(enemy2, 130, 100);
 
@@ -100,19 +101,19 @@ describe('Combat retarget after kill', () => {
     world.frameCount = 2;
     combatSystem(world);
 
-    // Brawler should have retargeted to enemy2 (AttackMove, not Idle)
-    expect(UnitStateMachine.state[brawler]).toBe(UnitState.AttackMove);
-    expect(UnitStateMachine.targetEntity[brawler]).toBe(enemy2);
+    // Sapper should have retargeted to enemy2 (AttackMove, not Idle)
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.AttackMove);
+    expect(UnitStateMachine.targetEntity[sapper]).toBe(enemy2);
   });
 
   it('unit goes Idle if no enemies remain after kill', () => {
-    const brawler = spawnUnit(world, 100, 100, EntityKind.Brawler, Faction.Player, 60, 50);
+    const sapper = spawnUnit(world, 100, 100, SAPPER_KIND, Faction.Player, 60, 50);
     const enemy = spawnUnit(world, 110, 100, EntityKind.Gator, Faction.Enemy, 1, 5);
 
-    UnitStateMachine.state[brawler] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[brawler] = enemy;
+    UnitStateMachine.state[sapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sapper] = enemy;
 
-    world.spatialHash.insert(brawler, 100, 100);
+    world.spatialHash.insert(sapper, 100, 100);
     world.spatialHash.insert(enemy, 110, 100);
 
     // Frame 1: attack kills the enemy
@@ -123,6 +124,6 @@ describe('Combat retarget after kill', () => {
     // Frame 2: detects dead target, no enemies remain → Idle
     world.frameCount = 2;
     combatSystem(world);
-    expect(UnitStateMachine.state[brawler]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.Idle);
   });
 });

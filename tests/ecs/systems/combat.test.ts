@@ -176,7 +176,7 @@ describe('combatSystem', () => {
     FactionTag.faction[armory] = Faction.Player;
     EntityTypeTag.kind[armory] = EntityKind.Armory;
 
-    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, SAPPER_KIND);
     world.tech.warDrums = true;
 
     combatSystem(world);

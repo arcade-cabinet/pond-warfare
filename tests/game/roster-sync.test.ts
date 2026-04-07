@@ -162,7 +162,7 @@ describe('syncRosters', () => {
     trainingQueueSlots.delete(lodge);
   });
 
-  it('uses specialist labels instead of collapsing autonomous gather specialists into Gatherer', () => {
+  it('uses specialist labels instead of collapsing autonomous gather specialists into a generic worker label', () => {
     const fisher = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
     const logger = spawnEntity(world, MUDPAW_KIND, 140, 100, Faction.Player);
     world.specialistAssignments.set(fisher, {

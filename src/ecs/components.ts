@@ -159,7 +159,7 @@ export const Patrol = soa({
 // Auto-symbol: icon above unit head after completing an order while deselected
 export const AutoSymbol = soa({
   active: [] as number[], // 0 = inactive, 1 = showing symbol
-  symbolType: [] as number[], // 0=none, 1=gather, 2=attack, 3=heal, 4=scout
+  symbolType: [] as number[], // 0=none, 1=gather, 2=attack, 3=heal, 4=recon
   timer: [] as number[], // frames remaining (240 = 4s at 60fps)
   confirmed: [] as number[], // 0 = unconfirmed, 1 = player tapped to confirm
 });
@@ -170,7 +170,8 @@ export const SymbolType = {
   Gather: 1,
   Attack: 2,
   Heal: 3,
-  Scout: 4,
+  Recon: 4,
+  Scout: 4, // legacy alias
 } as const;
 
 // Commander component (one per commander entity)
