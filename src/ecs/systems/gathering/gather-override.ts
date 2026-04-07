@@ -8,6 +8,10 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import {
+  findNearestAssignedResource,
+  getSpecialistOperatingArea,
+} from '@/game/specialist-assignment-queries';
 import { EntityKind, ResourceType, UnitState } from '@/types';
 
 function getGatherTargetKind(world: GameWorld, eid: number): EntityKind | null {
@@ -35,6 +39,17 @@ export function retargetGatherOverride(world: GameWorld, eid: number): boolean {
 
   const targetKind = getGatherTargetKind(world, eid);
   if (targetKind == null) return false;
+
+  if (getSpecialistOperatingArea(world, eid)) {
+    const assignedTarget = findNearestAssignedResource(world, eid, targetKind);
+    if (assignedTarget === -1) return false;
+    TaskOverride.targetEntity[eid] = assignedTarget;
+    UnitStateMachine.targetEntity[eid] = assignedTarget;
+    UnitStateMachine.targetX[eid] = Position.x[assignedTarget];
+    UnitStateMachine.targetY[eid] = Position.y[assignedTarget];
+    UnitStateMachine.state[eid] = UnitState.GatherMove;
+    return true;
+  }
 
   let closest = -1;
   let minDistSq = Infinity;

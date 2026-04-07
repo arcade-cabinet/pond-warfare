@@ -23,6 +23,7 @@ import {
 } from '@/ecs/components';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createGatherer(world: GameWorld, x: number, y: number): number {
@@ -152,5 +153,41 @@ describe('gatheringSystem', () => {
     expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
     expect(UnitStateMachine.targetEntity[gatherer]).toBe(backup);
     expect(TaskOverride.targetEntity[gatherer]).toBe(backup);
+  });
+
+  it('keeps specialist gather overrides inside the assigned area', () => {
+    const gatherer = createGatherer(world, 100, 100);
+    const depleted = createResource(world, 100, 100, EntityKind.Cattail);
+    const outside = createResource(world, 500, 100, EntityKind.Cattail);
+    const inside = createResource(world, 180, 160, EntityKind.Cattail);
+
+    world.specialistAssignments.set(gatherer, {
+      runtimeId: 'logger',
+      canonicalId: 'logger',
+      label: 'Logger',
+      mode: 'single_zone',
+      operatingRadius: 120,
+      centerX: 180,
+      centerY: 180,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 180,
+      engagementY: 180,
+      projectionRange: 0,
+    } satisfies SpecialistAssignment);
+
+    Resource.amount[depleted] = 0;
+    TaskOverride.active[gatherer] = 1;
+    TaskOverride.task[gatherer] = UnitState.GatherMove;
+    TaskOverride.targetEntity[gatherer] = depleted;
+    TaskOverride.resourceKind[gatherer] = EntityKind.Cattail;
+    UnitStateMachine.state[gatherer] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[gatherer] = depleted;
+    UnitStateMachine.gatherTimer[gatherer] = 5;
+
+    gatheringSystem(world);
+
+    expect(outside).toBeGreaterThanOrEqual(0);
+    expect(UnitStateMachine.targetEntity[gatherer]).toBe(inside);
   });
 });

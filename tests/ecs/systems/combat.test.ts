@@ -23,6 +23,7 @@ import {
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createCombatUnit(
@@ -220,5 +221,34 @@ describe('combatSystem', () => {
     expect(UnitStateMachine.targetEntity[shaman]).toBe(ally);
     expect(UnitStateMachine.targetX[shaman]).toBe(Position.x[ally]);
     expect(UnitStateMachine.targetY[shaman]).toBe(Position.y[ally]);
+  });
+
+  it('keeps shaman support targeting inside the assigned area', () => {
+    world.frameCount = 30;
+    const shaman = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Shaman);
+    const inside = createCombatUnit(world, 150, 100, Faction.Player, EntityKind.Brawler);
+    const outside = createCombatUnit(world, 360, 100, Faction.Player, EntityKind.Brawler);
+
+    Health.current[inside] = 40;
+    Health.current[outside] = 20;
+    world.specialistAssignments.set(shaman, {
+      runtimeId: 'shaman',
+      canonicalId: 'shaman',
+      label: 'Shaman',
+      mode: 'single_zone',
+      operatingRadius: 120,
+      centerX: 150,
+      centerY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 150,
+      engagementY: 100,
+      projectionRange: 0,
+    } satisfies SpecialistAssignment);
+
+    combatSystem(world);
+
+    expect(UnitStateMachine.targetEntity[shaman]).toBe(inside);
+    expect(UnitStateMachine.targetEntity[shaman]).not.toBe(outside);
   });
 });

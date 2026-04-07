@@ -18,6 +18,7 @@ import {
   Position,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isPointInSpecialistArea } from '@/game/specialist-assignment-queries';
 import { EntityKind, Faction } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
@@ -65,6 +66,7 @@ export function shamanHealSystem(world: GameWorld): void {
       if (Health.current[t] >= Health.max[t]) continue;
       if (hasComponent(world.ecs, t, IsBuilding) || hasComponent(world.ecs, t, IsResource))
         continue;
+      if (!isPointInSpecialistArea(world, eid, Position.x[t], Position.y[t])) continue;
 
       const dx = Position.x[t] - sx;
       const dy = Position.y[t] - sy;

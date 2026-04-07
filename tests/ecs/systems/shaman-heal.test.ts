@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction } from '@/types';
 
 function createUnit(
@@ -120,5 +121,31 @@ describe('shamanHealSystem', () => {
     shamanHealSystem(world);
 
     expect(world.particles.length).toBeGreaterThan(0);
+  });
+
+  it('respects the shaman assigned area when healing', () => {
+    const shaman = createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
+    const inside = createUnit(world, 140, 100, Faction.Player, EntityKind.Brawler, 40, 60);
+    const outside = createUnit(world, 260, 100, Faction.Player, EntityKind.Brawler, 40, 60);
+
+    world.specialistAssignments.set(shaman, {
+      runtimeId: 'shaman',
+      canonicalId: 'shaman',
+      label: 'Shaman',
+      mode: 'single_zone',
+      operatingRadius: 90,
+      centerX: 140,
+      centerY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 140,
+      engagementY: 100,
+      projectionRange: 0,
+    } satisfies SpecialistAssignment);
+
+    shamanHealSystem(world);
+
+    expect(Health.current[inside]).toBe(42);
+    expect(Health.current[outside]).toBe(40);
   });
 });

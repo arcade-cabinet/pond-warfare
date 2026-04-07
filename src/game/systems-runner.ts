@@ -30,6 +30,7 @@ import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behavior
 import { projectileSystem } from '@/ecs/systems/projectile';
 import { randomEventsSystem } from '@/ecs/systems/random-events';
 import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
+import { specialistZoneBehaviorSystem } from '@/ecs/systems/specialist-zone-behavior';
 import { trainingSystem } from '@/ecs/systems/training';
 import { veterancySystem } from '@/ecs/systems/veterancy';
 import { wallGateSystem } from '@/ecs/systems/wall-gate';
@@ -47,6 +48,7 @@ export function runSystems(
   weatherSystem(world);
   dayNightSystem(world);
   diverStealthSystem(world);
+  specialistZoneBehaviorSystem(world);
   movementSystem(world);
   collisionSystem(world, physicsManager);
   gatheringSystem(world);
