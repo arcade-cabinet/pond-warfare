@@ -87,6 +87,7 @@ export function registerSpecialistEntity(world: GameWorld, eid: number, runtimeI
 
   const x = Position.x[eid];
   const y = Position.y[eid];
+  const commanderProjectionBonus = getCommanderProjectionBonus(world, runtimeId);
   world.specialistAssignments.set(eid, {
     runtimeId,
     canonicalId: profile.canonicalId,
@@ -102,8 +103,10 @@ export function registerSpecialistEntity(world: GameWorld, eid: number, runtimeI
       profile.engagementRadius + getSpecialistZoneBonus(world, runtimeId, 'engagement_radius'),
     engagementX: x,
     engagementY: y,
-    projectionRange:
-      profile.projectionRange + getSpecialistZoneBonus(world, runtimeId, 'projection_range'),
+    projectionRange: Math.round(
+      (profile.projectionRange + getSpecialistZoneBonus(world, runtimeId, 'projection_range')) *
+        (1 + commanderProjectionBonus),
+    ),
   });
 }
 
@@ -179,6 +182,17 @@ export function isSpecialistEntity(
 
 function resolveSpecialistProfile(runtimeId: string): SpecialistProfile | null {
   return SPECIALIST_PROFILES[runtimeId] ?? null;
+}
+
+function getCommanderProjectionBonus(
+  world: Pick<GameWorld, 'commanderModifiers'>,
+  runtimeId: string,
+): number {
+  if (runtimeId === 'ranger') return world.commanderModifiers.passiveRangerProjectionBonus;
+  if (runtimeId === 'bombardier') {
+    return world.commanderModifiers.passiveBombardierProjectionBonus;
+  }
+  return 0;
 }
 
 function clampToProjectionRange(

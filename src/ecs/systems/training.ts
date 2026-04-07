@@ -57,14 +57,7 @@ export function trainingSystem(world: GameWorld): void {
     if (count === 0) continue;
 
     // Count down timer
-    // Ironpaw passive: Shieldbearers train 2x faster (tick 2 per frame)
-    const frontKind = slots[0] as EntityKind;
-    const trainTick =
-      frontKind === EntityKind.Shieldbearer &&
-      world.commanderModifiers.passiveShieldbearerTrainSpeed > 0
-        ? 2
-        : 1;
-    TrainingQueue.timer[eid] -= trainTick;
+    TrainingQueue.timer[eid] -= 1;
     if (TrainingQueue.timer[eid] <= 0) {
       // Get the first queued unit type from the slots map
       const unitKind = slots[0] as EntityKind;

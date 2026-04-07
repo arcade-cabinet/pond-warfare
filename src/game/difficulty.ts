@@ -109,13 +109,13 @@ export function applyDifficultyModifiers(world: GameWorld): void {
     auraHpBonus: cmdDef.auraHpBonus,
     auraUnitHpBonus: cmdDef.auraUnitHpBonus,
     auraEnemyDamageReduction: cmdDef.auraEnemyDamageReduction,
+    auraGatherBonus: cmdDef.auraGatherBonus,
     passiveGatherBonus: cmdDef.passiveGatherBonus,
-    passiveResearchSpeed: cmdDef.passiveResearchSpeed,
     passiveTowerAttackSpeed: cmdDef.passiveTowerAttackSpeed,
-    passiveSwimmerCostReduction: cmdDef.passiveSwimmerCostReduction,
-    passiveTrapDurationMult: cmdDef.passiveTrapDurationMult,
-    passiveShieldbearerTrainSpeed: cmdDef.passiveShieldbearerTrainSpeed,
-    passiveCatapultRangeBonus: cmdDef.passiveCatapultRangeBonus,
+    passiveFisherCostReduction: cmdDef.passiveFisherCostReduction,
+    passiveGuardCostReduction: cmdDef.passiveGuardCostReduction,
+    passiveRangerProjectionBonus: cmdDef.passiveRangerProjectionBonus,
+    passiveBombardierProjectionBonus: cmdDef.passiveBombardierProjectionBonus,
     passiveLightningDamage: cmdDef.passiveLightningDamage,
   };
 

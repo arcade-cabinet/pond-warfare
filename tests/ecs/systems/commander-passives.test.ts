@@ -2,25 +2,28 @@
  * Commander Passives Tests
  *
  * Validates all 7 commander passive abilities:
- * 1. Sage +25% research speed (cost discount)
- * 2. Tidekeeper Swimmer cost 50% less
- * 3. Shadowfang Trapper traps last 2x longer
- * 4. Ironpaw Shieldbearers trained 2x faster
- * 5. Stormcaller Catapults +50% range
- * 6. Stormcaller random lightning on enemies
- * 7. Ironpaw +20% HP to all units (aura)
+ * 1. Sage aura boosts nearby gathering
+ * 2. Tidekeeper Fishers cost 50% less
+ * 3. Shadowfang Rangers project 50% farther
+ * 4. Ironpaw Guards cost 50% less
+ * 5. Stormcaller Bombardiers project 50% farther
+ * 6. Stormcaller random lightning
+ * 7. Ironpaw +20% HP aura
  */
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  Carrying,
   Building,
   Combat,
   EntityTypeTag,
   FactionTag,
   Health,
   IsBuilding,
+  IsResource,
   Position,
+  Resource,
   Sprite,
   TrainingQueue,
   trainingQueueSlots,
@@ -29,8 +32,10 @@ import {
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
-import { trainingSystem } from '@/ecs/systems/training';
+import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { registerSpecialistEntity, getSpecialistAssignment } from '@/game/specialist-assignment';
+import { getSpecialistSpawnCost } from '@/game/specialist-training';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 function createUnit(
@@ -50,6 +55,7 @@ function createUnit(
   addComponent(world.ecs, eid, EntityTypeTag);
   addComponent(world.ecs, eid, Velocity);
   addComponent(world.ecs, eid, Sprite);
+  addComponent(world.ecs, eid, Carrying);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -63,6 +69,8 @@ function createUnit(
   EntityTypeTag.kind[eid] = kind;
   Velocity.speed[eid] = 1.8;
   Velocity.speedDebuffTimer[eid] = 0;
+  Carrying.resourceType[eid] = 0;
+  Carrying.resourceAmount[eid] = 0;
 
   return eid;
 }
@@ -103,69 +111,52 @@ describe('commander passives', () => {
     trainingQueueSlots.clear();
   });
 
-  it('Sage: research discount modifier is applied', () => {
-    // v3.0: TECH_UPGRADES emptied (upgrade web replaces tech tree)
-    // Test validates the discount formula itself
-    world.commanderModifiers.passiveResearchSpeed = 0.25;
-    const discount = 1 - world.commanderModifiers.passiveResearchSpeed;
-    expect(discount).toBeCloseTo(0.75);
-    const baseCost = 100;
-    const discountedCost = Math.round(baseCost * discount);
-    expect(discountedCost).toBe(75);
-  });
+  it('Sage: nearby gatherers receive the aura gather bonus', () => {
+    world.commanderModifiers.auraGatherBonus = 0.25;
+    const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
+    const gatherer = createUnit(world, 120, 100, Faction.Player, EntityKind.Gatherer, 30);
+    const lodge = createTrainingBuilding(world, 100, 160);
+    EntityTypeTag.kind[lodge] = EntityKind.Lodge;
+    const fishNode = spawnResource(world, 120, 120, EntityKind.Clambed, 100);
 
-  it('Shadowfang: Trapper traps last 2x longer', () => {
-    world.commanderModifiers.passiveTrapDurationMult = 2;
-    const trapper = createUnit(world, 100, 100, Faction.Player, EntityKind.Trapper);
-    const enemy = createUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
+    UnitStateMachine.state[gatherer] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[gatherer] = fishNode;
+    UnitStateMachine.gatherTimer[gatherer] = 1;
 
-    UnitStateMachine.state[trapper] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[trapper] = enemy;
-    Combat.damage[trapper] = 0;
-    Combat.attackRange[trapper] = 100;
-
-    // Run combat to trigger trap
     world.frameCount = 60;
     combatSystem(world);
+    gatheringSystem(world);
 
-    // Normal trap is 180 frames; with 2x mult should be 360
-    expect(Velocity.speedDebuffTimer[enemy]).toBe(360);
+    expect(Carrying.resourceAmount[gatherer]).toBe(19);
+    expect(world.commanderGatherBuff.has(gatherer)).toBe(true);
   });
 
-  it('Ironpaw: Shieldbearers train 2x faster', () => {
-    world.commanderModifiers.passiveShieldbearerTrainSpeed = 0.5;
-    const armory = createTrainingBuilding(world, 500, 500);
-
-    // Queue a Shieldbearer with timer at 10
-    trainingQueueSlots.set(armory, [EntityKind.Shieldbearer]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 10;
-
-    // Run one tick of training — should decrement by 2
-    trainingSystem(world);
-    expect(TrainingQueue.timer[armory]).toBe(8);
+  it('Tidekeeper: Fishers cost 50% less', () => {
+    world.commanderModifiers.passiveFisherCostReduction = 0.5;
+    expect(getSpecialistSpawnCost('fisher', world).fish).toBe(6);
   });
 
-  it('Ironpaw: non-Shieldbearer trains at normal speed', () => {
-    world.commanderModifiers.passiveShieldbearerTrainSpeed = 0.5;
-    const armory = createTrainingBuilding(world, 500, 500);
+  it('Shadowfang: Rangers project 50% farther', () => {
+    world.commanderModifiers.passiveRangerProjectionBonus = 0.5;
+    const ranger = createPositionedEntity(world, 100, 100);
 
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 10;
+    registerSpecialistEntity(world, ranger, 'ranger');
 
-    trainingSystem(world);
-    // Normal tick: decrements by 1
-    expect(TrainingQueue.timer[armory]).toBe(9);
+    expect(getSpecialistAssignment(world, ranger)?.projectionRange).toBe(330);
   });
 
-  it('Stormcaller: Catapult range bonus applied at spawn', () => {
-    world.commanderModifiers.passiveCatapultRangeBonus = 0.5;
-    const cat = createUnit(world, 100, 100, Faction.Player, EntityKind.Catapult);
-    // Manually apply the range bonus as archetypes would
-    const baseRange = 250;
-    Combat.attackRange[cat] = Math.round(baseRange * 1.5);
-    expect(Combat.attackRange[cat]).toBe(375);
+  it('Ironpaw: Guards cost 50% less', () => {
+    world.commanderModifiers.passiveGuardCostReduction = 0.5;
+    expect(getSpecialistSpawnCost('guard', world).fish).toBe(10);
+  });
+
+  it('Stormcaller: Bombardiers project 50% farther', () => {
+    world.commanderModifiers.passiveBombardierProjectionBonus = 0.5;
+    const bombardier = createPositionedEntity(world, 100, 100);
+
+    registerSpecialistEntity(world, bombardier, 'bombardier');
+
+    expect(getSpecialistAssignment(world, bombardier)?.projectionRange).toBe(375);
   });
 
   it('Stormcaller: lightning strikes up to 3 random enemies', () => {
@@ -225,3 +216,33 @@ describe('commander passives', () => {
     expect(Health.max[brawler]).toBe(72);
   });
 });
+
+function spawnResource(
+  world: GameWorld,
+  x: number,
+  y: number,
+  kind: EntityKind,
+  amount: number,
+): number {
+  const eid = addEntity(world.ecs);
+  addComponent(world.ecs, eid, Position);
+  addComponent(world.ecs, eid, Health);
+  addComponent(world.ecs, eid, EntityTypeTag);
+  addComponent(world.ecs, eid, IsResource);
+  addComponent(world.ecs, eid, Resource);
+  Position.x[eid] = x;
+  Position.y[eid] = y;
+  Health.current[eid] = 1;
+  Health.max[eid] = 1;
+  EntityTypeTag.kind[eid] = kind;
+  Resource.amount[eid] = amount;
+  return eid;
+}
+
+function createPositionedEntity(world: GameWorld, x: number, y: number): number {
+  const eid = addEntity(world.ecs);
+  addComponent(world.ecs, eid, Position);
+  Position.x[eid] = x;
+  Position.y[eid] = y;
+  return eid;
+}

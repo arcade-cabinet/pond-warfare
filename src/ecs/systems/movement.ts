@@ -78,6 +78,14 @@ export function movementSystem(world: GameWorld): void {
       speed += world.commanderModifiers.auraSpeedBonus;
     }
 
+    if (
+      world.commanderId === 'marshal' &&
+      world.frameCount < world.commanderAbilityActiveUntil &&
+      world.commanderAbilityTargets?.has(eid)
+    ) {
+      speed *= 2;
+    }
+
     // Shadow Sprint active: +40% speed to all player units while active
     if (
       FactionTag.faction[eid] === Faction.Player &&

@@ -32,13 +32,13 @@ export interface CommanderModifiers {
   auraHpBonus: number;
   auraUnitHpBonus: number;
   auraEnemyDamageReduction: number;
+  auraGatherBonus: number;
   passiveGatherBonus: number;
-  passiveResearchSpeed: number;
   passiveTowerAttackSpeed: number;
-  passiveSwimmerCostReduction: number;
-  passiveTrapDurationMult: number;
-  passiveShieldbearerTrainSpeed: number;
-  passiveCatapultRangeBonus: number;
+  passiveFisherCostReduction: number;
+  passiveGuardCostReduction: number;
+  passiveRangerProjectionBonus: number;
+  passiveBombardierProjectionBonus: number;
   passiveLightningDamage: number;
 }
 
@@ -165,6 +165,7 @@ export function createGameWorld(): GameWorld {
     enemyCommanderEntityId: -1,
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),
+    commanderGatherBuff: new Set(),
     commanderHpBuffApplied: new Set(),
     commanderUnitHpBuff: new Set(),
     commanderEnemyDebuff: new Set(),
@@ -175,13 +176,13 @@ export function createGameWorld(): GameWorld {
       auraHpBonus: 0,
       auraUnitHpBonus: 0,
       auraEnemyDamageReduction: 0,
+      auraGatherBonus: 0,
       passiveGatherBonus: 0,
-      passiveResearchSpeed: 0,
       passiveTowerAttackSpeed: 0,
-      passiveSwimmerCostReduction: 0,
-      passiveTrapDurationMult: 1,
-      passiveShieldbearerTrainSpeed: 0,
-      passiveCatapultRangeBonus: 0,
+      passiveFisherCostReduction: 0,
+      passiveGuardCostReduction: 0,
+      passiveRangerProjectionBonus: 0,
+      passiveBombardierProjectionBonus: 0,
       passiveLightningDamage: 0,
     },
     airdropsRemaining: 2,
@@ -205,6 +206,7 @@ export function createGameWorld(): GameWorld {
     waveSurvivalTarget: 5,
     commanderAbilityCooldownUntil: 0,
     commanderAbilityActiveUntil: 0,
+    commanderAbilityTargets: new Set(),
     demoralizedUnits: new Set(),
     commanderDeathDemoralizeUntil: 0,
     autoRetreatEnabled: true,

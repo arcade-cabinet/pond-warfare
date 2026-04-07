@@ -13,10 +13,10 @@ describe('Commander balance values', () => {
     expect(marshal.auraDamageBonus).toBe(0.15);
   });
 
-  it('Sage: +10% gather bonus and +25% research speed', () => {
+  it('Sage: +10% global gather bonus and +25% nearby gather aura', () => {
     const sage = getCommanderDef('sage');
     expect(sage.passiveGatherBonus).toBe(0.1);
-    expect(sage.passiveResearchSpeed).toBe(0.25);
+    expect(sage.auraGatherBonus).toBe(0.25);
   });
 
   it('Shadowfang: -10% enemy damage reduction aura', () => {
@@ -26,9 +26,19 @@ describe('Commander balance values', () => {
 
   it('Stormcaller: 10 lightning damage passive', () => {
     const stormcaller = getCommanderDef('stormcaller');
+    expect(stormcaller.passiveBombardierProjectionBonus).toBe(0.5);
     expect(stormcaller.passiveLightningDamage).toBe(10);
     expect(stormcaller.passiveDesc).toContain('15s');
-    expect(stormcaller.passiveDesc).toContain('3 random enemies');
+    expect(stormcaller.passiveDesc).toContain('Bombardiers');
+  });
+
+  it('Tidekeeper and Ironpaw apply specialist cost reductions', () => {
+    expect(getCommanderDef('tidekeeper').passiveFisherCostReduction).toBe(0.5);
+    expect(getCommanderDef('ironpaw').passiveGuardCostReduction).toBe(0.5);
+  });
+
+  it('Shadowfang boosts Ranger projection range', () => {
+    expect(getCommanderDef('shadowfang').passiveRangerProjectionBonus).toBe(0.5);
   });
 
   it('all 7 commanders are defined', () => {

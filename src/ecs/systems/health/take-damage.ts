@@ -39,6 +39,7 @@ export function takeDamage(
 ): void {
   if (!hasComponent(world.ecs, targetEid, Health)) return;
   if (Health.current[targetEid] <= 0) return;
+  if (isInvulnerableFromCommanderAbility(world, targetEid)) return;
 
   // Most callers already fold matchup and upgrade math into the incoming
   // amount. The optional multiplier is retained for damage text styling and
@@ -154,6 +155,22 @@ export function takeDamage(
   if (Health.current[targetEid] <= 0) {
     processDeath(world, targetEid, attackerEid);
   }
+}
+
+function isInvulnerableFromCommanderAbility(world: GameWorld, targetEid: number): boolean {
+  if (world.frameCount >= world.commanderAbilityActiveUntil) return false;
+  if (!hasComponent(world.ecs, targetEid, FactionTag)) return false;
+  if (FactionTag.faction[targetEid] !== Faction.Player) return false;
+
+  if (world.commanderId === 'warden') {
+    return hasComponent(world.ecs, targetEid, IsBuilding);
+  }
+
+  if (world.commanderId === 'ironpaw') {
+    return !hasComponent(world.ecs, targetEid, IsBuilding);
+  }
+
+  return false;
 }
 
 function processRetaliation(

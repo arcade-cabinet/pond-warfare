@@ -211,13 +211,6 @@ export function spawnEntity(
     let range = def.attackRange;
     if (kind === EntityKind.Sniper && faction === Faction.Player && world.tech.eagleEye)
       range += 50;
-    // Stormcaller passive: Catapults +50% range
-    if (
-      kind === EntityKind.Catapult &&
-      faction === Faction.Player &&
-      world.commanderModifiers.passiveCatapultRangeBonus > 0
-    )
-      range = Math.round(range * (1 + world.commanderModifiers.passiveCatapultRangeBonus));
     Combat.attackRange[eid] = range;
     Combat.attackCooldown[eid] = 0;
     Combat.kills[eid] = 0;

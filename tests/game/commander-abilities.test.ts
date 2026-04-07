@@ -7,12 +7,18 @@
 
 import { describe, expect, it } from 'vitest';
 import { COMMANDER_ABILITIES, COMMANDERS } from '@/config/commanders';
+import { spawnEntity } from '@/ecs/archetypes';
+import { FactionTag, Health, UnitStateMachine } from '@/ecs/components';
+import { combatSystem } from '@/ecs/systems/combat';
+import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
+import { takeDamage } from '@/ecs/systems/health';
 import { createGameWorld } from '@/ecs/world';
 import {
   canUseCommanderAbility,
   getAbilityCooldownSeconds,
   useCommanderAbility,
 } from '@/game/commander-abilities';
+import { EntityKind, Faction, UnitState } from '@/types';
 
 describe('Commander Active Abilities', () => {
   it('all 7 commanders have an active ability defined', () => {
@@ -35,7 +41,7 @@ describe('Commander Active Abilities', () => {
 
   it('ability can be activated when off cooldown', () => {
     const world = createGameWorld();
-    world.commanderId = 'marshal';
+    world.commanderId = 'sage';
     world.viewWidth = 1280;
     world.viewHeight = 720;
 
@@ -46,7 +52,7 @@ describe('Commander Active Abilities', () => {
 
   it('ability cannot be activated during cooldown', () => {
     const world = createGameWorld();
-    world.commanderId = 'marshal';
+    world.commanderId = 'sage';
     world.viewWidth = 1280;
     world.viewHeight = 720;
 
@@ -56,7 +62,7 @@ describe('Commander Active Abilities', () => {
 
   it('cooldown decreases over time', () => {
     const world = createGameWorld();
-    world.commanderId = 'marshal';
+    world.commanderId = 'sage';
     world.viewWidth = 1280;
     world.viewHeight = 720;
 
@@ -83,14 +89,84 @@ describe('Commander Active Abilities', () => {
     expect(cooldowns.get('ironpaw')).toBe(9000);
   });
 
-  it('sage eureka ability fires without error (v3.0: tech tree stubbed)', () => {
-    // v3.0: TECH_UPGRADES is empty, so eureka has nothing to unlock,
-    // but it should still not throw
+  it('marshal charge requires a selected player unit and tags it for the speed burst', () => {
+    const world = createGameWorld();
+    world.commanderId = 'marshal';
+    world.viewWidth = 1280;
+    world.viewHeight = 720;
+
+    expect(useCommanderAbility(world)).toBe(false);
+    expect(world.commanderAbilityCooldownUntil).toBe(0);
+
+    const unit = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    world.selection = [unit];
+
+    expect(useCommanderAbility(world)).toBe(true);
+    expect(world.commanderAbilityTargets.has(unit)).toBe(true);
+    expect(world.commanderAbilityActiveUntil).toBeGreaterThan(world.frameCount);
+  });
+
+  it('sage eureka grants a resource burst', () => {
     const world = createGameWorld();
     world.commanderId = 'sage';
     world.viewWidth = 1280;
     world.viewHeight = 720;
+    world.resources.fish = 10;
+    world.resources.logs = 5;
+    world.resources.rocks = 2;
 
-    expect(() => useCommanderAbility(world)).not.toThrow();
+    expect(useCommanderAbility(world)).toBe(true);
+    expect(world.resources.fish).toBe(70);
+    expect(world.resources.logs).toBe(25);
+    expect(world.resources.rocks).toBe(12);
+  });
+
+  it('warden fortify prevents building damage during the active window', () => {
+    const world = createGameWorld();
+    world.commanderId = 'warden';
+    world.viewWidth = 1280;
+    world.viewHeight = 720;
+
+    const lodge = spawnEntity(world, EntityKind.Lodge, 100, 100, Faction.Player);
+    const hpBefore = Health.current[lodge];
+
+    expect(useCommanderAbility(world)).toBe(true);
+    takeDamage(world, lodge, 50, -1);
+
+    expect(Health.current[lodge]).toBe(hpBefore);
+  });
+
+  it('shadowfang vanish makes player units untargetable while active', () => {
+    const world = createGameWorld();
+    world.spatialHash = undefined as never;
+    world.commanderId = 'shadowfang';
+    world.viewWidth = 1280;
+    world.viewHeight = 720;
+
+    const player = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const enemy = spawnEntity(world, EntityKind.Gator, 130, 100, Faction.Enemy);
+    UnitStateMachine.state[enemy] = UnitState.Idle;
+
+    expect(useCommanderAbility(world)).toBe(true);
+    commanderPassivesSystem(world);
+    combatSystem(world);
+
+    expect(world.stealthEntities.has(player)).toBe(true);
+    expect(UnitStateMachine.state[enemy]).toBe(UnitState.Idle);
+  });
+
+  it('ironpaw iron will prevents player unit damage during the active window', () => {
+    const world = createGameWorld();
+    world.commanderId = 'ironpaw';
+    world.viewWidth = 1280;
+    world.viewHeight = 720;
+
+    const unit = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const hpBefore = Health.current[unit];
+
+    expect(useCommanderAbility(world)).toBe(true);
+    takeDamage(world, unit, 20, -1);
+
+    expect(Health.current[unit]).toBe(hpBefore);
   });
 });

@@ -19,14 +19,18 @@ export interface SpecialistSpawnCost {
   food: number;
 }
 
-export function getSpecialistSpawnCost(runtimeId: string): SpecialistSpawnCost {
+export function getSpecialistSpawnCost(
+  runtimeId: string,
+  world?: Pick<GameWorld, 'commanderModifiers'>,
+): SpecialistSpawnCost {
   const def = getUnitDef(runtimeId) as SpecialistDef;
   const kind = getSpecialistSpawnKind(runtimeId);
   const unitDef = kind == null ? null : ENTITY_DEFS[kind];
+  const costReduction = getCommanderSpecialistCostReduction(world, runtimeId);
   return {
-    fish: def.cost?.fish ?? 0,
-    logs: def.cost?.logs ?? 0,
-    rocks: def.cost?.rocks ?? 0,
+    fish: applyCostReduction(def.cost?.fish ?? 0, costReduction),
+    logs: applyCostReduction(def.cost?.logs ?? 0, costReduction),
+    rocks: applyCostReduction(def.cost?.rocks ?? 0, costReduction),
     food: unitDef?.foodCost ?? 1,
   };
 }
@@ -38,7 +42,7 @@ export function canSpawnSpecialistFromLodge(
   const remaining = getRemainingSpecialistCapacity(world, runtimeId);
   if (remaining <= 0) return false;
 
-  const cost = getSpecialistSpawnCost(runtimeId);
+  const cost = getSpecialistSpawnCost(runtimeId, world);
   return (
     world.resources.fish >= cost.fish &&
     world.resources.logs >= cost.logs &&
@@ -55,7 +59,7 @@ export function spawnSpecialistFromLodge(
 ): boolean {
   if (!canSpawnSpecialistFromLodge(world, runtimeId)) return false;
 
-  const cost = getSpecialistSpawnCost(runtimeId);
+  const cost = getSpecialistSpawnCost(runtimeId, world);
   world.resources.fish -= cost.fish;
   world.resources.logs -= cost.logs;
   world.resources.rocks -= cost.rocks;
@@ -80,4 +84,19 @@ export function spawnSpecialistFromLodge(
   const cap = getSpecialistBlueprintCap(world, runtimeId);
   pushGameEvent(`${label} deployed (${active}/${cap})`, '#c4b5fd', world.frameCount);
   return true;
+}
+
+function getCommanderSpecialistCostReduction(
+  world: Pick<GameWorld, 'commanderModifiers'> | undefined,
+  runtimeId: string,
+): number {
+  if (!world) return 0;
+  if (runtimeId === 'fisher') return world.commanderModifiers.passiveFisherCostReduction;
+  if (runtimeId === 'guard') return world.commanderModifiers.passiveGuardCostReduction;
+  return 0;
+}
+
+function applyCostReduction(value: number, reduction: number): number {
+  if (value <= 0 || reduction <= 0) return value;
+  return Math.max(1, Math.round(value * (1 - reduction)));
 }

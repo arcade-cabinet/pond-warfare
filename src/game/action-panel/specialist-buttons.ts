@@ -93,7 +93,7 @@ export function buildSpecialistButtons(
     const active = getActiveSpecialistCount(world, spec.unitId);
     const atCap = active >= cap;
     const stageBlocked = stage < spec.requiredStage;
-    const cost = getSpecialistSpawnCost(spec.unitId);
+    const cost = getSpecialistSpawnCost(spec.unitId, world);
     const affordable = !stageBlocked && !atCap && canSpawnSpecialistFromLodge(world, spec.unitId);
 
     buttons.push({

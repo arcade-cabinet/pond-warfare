@@ -163,6 +163,36 @@ Selecting a specialist should reveal its assignment geometry on the map.
 - Circle and line styling should visually correlate to the selected specialist via color, glyph, or both
 - The runtime now applies Pearl zone upgrades into those circles and projection limits when the specialist is spawned
 
+## Commanders
+
+Commanders are permanent Pearl/loadout progression. Their bonuses must hook live gameplay systems only; dead tech-tree and removed-unit references are obsolete.
+
+### Commander Passives
+
+| Commander | Primary Effect | Secondary Effect |
+|----------|----------------|------------------|
+| **Marshal** | Nearby units deal +15% damage | None |
+| **Sage** | Nearby workers gain +25% gather rate | Mudpaws gain +10% gather rate globally |
+| **Warden** | Nearby buildings gain +200 HP | Towers attack 20% faster |
+| **Tidekeeper** | All nearby units gain +0.4 speed | Fishers cost 50% less to field |
+| **Shadowfang** | Enemies in aura deal -10% damage | Rangers gain +50% projection range |
+| **Ironpaw** | Nearby units gain +20% HP | Guards cost 50% less to field |
+| **Stormcaller** | Nearby units deal +10% damage | Bombardiers gain +50% projection range and lightning strikes every 15 seconds |
+
+### Commander Abilities
+
+The active commander ability is bound to the HUD button / `Q` and must produce real runtime effects:
+
+| Commander | Ability | Live Effect |
+|----------|---------|-------------|
+| **Marshal** | `Charge!` | Selected units gain 2x movement speed for 5 seconds |
+| **Sage** | `Eureka!` | Instantly grants +60 Fish, +20 Logs, +10 Rocks |
+| **Warden** | `Fortify!` | Player buildings are invulnerable for 10 seconds |
+| **Tidekeeper** | `Tidal Wave` | Pushes and damages enemies around the Lodge |
+| **Shadowfang** | `Vanish` | Player units become untargetable through temporary stealth for 8 seconds |
+| **Ironpaw** | `Iron Will` | Player units ignore incoming damage for 5 seconds |
+| **Stormcaller** | `Thunder Strike` | Deals massive AoE damage at the camera center |
+
 ### Enemy Units (6)
 
 Enemy units scale with progression level: HP +5%/level, Damage +3%/level, Speed +1%/level. All stats in `configs/enemies.json`.

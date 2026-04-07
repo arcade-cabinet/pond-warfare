@@ -29,6 +29,7 @@ import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { isStealthed } from '../diver-stealth';
 import { executeBossCrocAttack, executeMeleeAttack } from './melee-attacks';
 import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
@@ -52,6 +53,7 @@ function findNextTarget(
     if (FactionTag.faction[t] === faction || FactionTag.faction[t] === Faction.Neutral) continue;
     if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
     if (hasComponent(world.ecs, t, IsResource)) continue;
+    if (faction === Faction.Enemy && isStealthed(world, t)) continue;
     const dx = Position.x[t] - ex;
     const dy = Position.y[t] - ey;
     const d = dx * dx + dy * dy;
@@ -79,7 +81,12 @@ export function processAttackState(
   allTargetable: ArrayLike<number>,
 ): boolean {
   const tEnt = UnitStateMachine.targetEntity[eid];
-  if (tEnt === -1 || !hasComponent(world.ecs, tEnt, Health) || Health.current[tEnt] <= 0) {
+  if (
+    tEnt === -1 ||
+    !hasComponent(world.ecs, tEnt, Health) ||
+    Health.current[tEnt] <= 0 ||
+    (faction === Faction.Enemy && isStealthed(world, tEnt))
+  ) {
     // Immediate retarget: scan for next enemy instead of going idle.
     // Eliminates the 30-frame aggro re-check delay between kills.
     const nextTarget = findNextTarget(world, eid, ex, ey, faction, hasSpatial, allTargetable);
@@ -153,10 +160,7 @@ function executeAttack(
     }
   } else if (kind === EntityKind.Trapper) {
     if (hasComponent(world.ecs, tEnt, Velocity)) {
-      const baseDuration = 180;
-      const trapMult =
-        faction === Faction.Player ? world.commanderModifiers.passiveTrapDurationMult : 1;
-      Velocity.speedDebuffTimer[tEnt] = Math.round(baseDuration * trapMult);
+      Velocity.speedDebuffTimer[tEnt] = 180;
     }
     world.floatingTexts.push({
       x: Position.x[tEnt],

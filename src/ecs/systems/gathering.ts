@@ -215,9 +215,12 @@ export function gatheringSystem(world: GameWorld): void {
       if (faction === Faction.Player && world.tech.tidalHarvest) {
         gatherAmt = Math.round(GATHER_AMOUNT * 1.25);
       }
-      // Commander passive: gather bonus for player gatherers
+      // Commander bonuses: global gather passive plus Sage-style aura gather rate.
       if (faction === Faction.Player && world.commanderModifiers.passiveGatherBonus > 0) {
         gatherAmt = Math.round(gatherAmt * (1 + world.commanderModifiers.passiveGatherBonus));
+      }
+      if (faction === Faction.Player && world.commanderGatherBuff.has(eid)) {
+        gatherAmt = Math.round(gatherAmt * (1 + world.commanderModifiers.auraGatherBonus));
       }
       // Permadeath rewards modifier: +50% gathered resources for player
       if (faction === Faction.Player && world.rewardsModifier > 1.0) {

@@ -5,11 +5,11 @@
  * neatly into existing systems. Currently: Stormcaller lightning.
  */
 
-import { query } from 'bitecs';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import { hasComponent, query } from 'bitecs';
+import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
 import type { GameWorld } from '@/ecs/world';
-import { Faction } from '@/types';
+import { EntityKind, Faction } from '@/types';
 
 /** Interval in frames between lightning strikes (~15 seconds at 60fps). */
 const LIGHTNING_INTERVAL = 900;
@@ -82,5 +82,31 @@ function stormcallerLightning(world: GameWorld): void {
 
 /** Run all periodic commander passive effects. */
 export function commanderPassivesSystem(world: GameWorld): void {
+  syncCommanderAbilityState(world);
   stormcallerLightning(world);
+}
+
+function syncCommanderAbilityState(world: GameWorld): void {
+  world.commanderAbilityTargets ??= new Set();
+  world.stealthEntities ??= new Set();
+  if (world.commanderId === 'marshal' && world.frameCount >= world.commanderAbilityActiveUntil) {
+    world.commanderAbilityTargets.clear();
+  }
+
+  if (world.commanderId !== 'shadowfang') return;
+
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+  const vanishActive = world.frameCount < world.commanderAbilityActiveUntil;
+
+  for (const eid of allUnits) {
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+
+    if (vanishActive) {
+      world.stealthEntities.add(eid);
+    } else if ((EntityTypeTag.kind[eid] as EntityKind) !== EntityKind.Diver) {
+      world.stealthEntities.delete(eid);
+    }
+  }
 }

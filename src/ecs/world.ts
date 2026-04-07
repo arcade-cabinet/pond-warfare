@@ -188,6 +188,7 @@ export interface GameWorld {
   enemyCommanderEntityId: number;
   commanderDamageBuff: Set<number>;
   commanderSpeedBuff: Set<number>;
+  commanderGatherBuff: Set<number>;
   commanderHpBuffApplied: Set<number>;
   commanderUnitHpBuff: Set<number>;
   commanderEnemyDebuff: Set<number>;
@@ -227,6 +228,7 @@ export interface GameWorld {
   // Commander active ability + morale
   commanderAbilityCooldownUntil: number;
   commanderAbilityActiveUntil: number;
+  commanderAbilityTargets: Set<number>;
   demoralizedUnits: Set<number>;
   commanderDeathDemoralizeUntil: number;
   autoRetreatEnabled: boolean;

@@ -6,7 +6,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Combat, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import { Carrying, Combat, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { commanderAura } from '@/ecs/systems/combat/commander-aura';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
@@ -23,6 +23,7 @@ function spawnUnit(
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
   addComponent(world.ecs, eid, Combat);
+  addComponent(world.ecs, eid, Carrying);
   addComponent(world.ecs, eid, FactionTag);
   addComponent(world.ecs, eid, EntityTypeTag);
 
@@ -160,5 +161,48 @@ describe('commanderAura — Ironpaw HP buff', () => {
     // 50 * 0.2 = 10 bonus
     expect(Health.max[unit]).toBe(60);
     expect(Health.current[unit]).toBe(60);
+  });
+});
+
+describe('commanderAura — Sage gather aura', () => {
+  let world: GameWorld;
+
+  beforeEach(() => {
+    world = createGameWorld();
+    world.spatialHash = undefined as never;
+    world.commanderModifiers = {
+      ...world.commanderModifiers,
+      auraGatherBonus: 0.25,
+      auraDamageBonus: 0,
+      auraSpeedBonus: 0,
+      auraHpBonus: 0,
+      auraUnitHpBonus: 0,
+      auraEnemyDamageReduction: 0,
+    };
+  });
+
+  it('marks nearby worker units for gather-rate aura', () => {
+    const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const worker = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Gatherer, 30);
+
+    world.frameCount = 60;
+    commanderAura(world);
+
+    expect(world.commanderGatherBuff.has(worker)).toBe(true);
+  });
+
+  it('clears gather aura when the commander dies', () => {
+    const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const worker = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Gatherer, 30);
+
+    world.frameCount = 60;
+    commanderAura(world);
+    expect(world.commanderGatherBuff.has(worker)).toBe(true);
+
+    Health.current[cmd] = 0;
+    world.frameCount = 61;
+    commanderAura(world);
+
+    expect(world.commanderGatherBuff.size).toBe(0);
   });
 });

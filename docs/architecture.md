@@ -50,7 +50,7 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `engineerSystem` - Sapper siege mechanics
    - `combatSystem` - Tower auto-attack, idle aggro (10-frame scan), melee/ranged with damage multipliers, immediate retarget after kill
    - `fortificationTickSystem` - Fort slot towers attack nearest enemy in range
-   - `commanderPassivesSystem` - Commander aura/passive bonuses
+   - `commanderPassivesSystem` - Commander passive upkeep, Marshal/Shadowfang active-state cleanup, Stormcaller lightning
    - `berserkerSystem` - Berserker rage mechanic
    - `projectileSystem` - Projectile movement and impact
    - `trainingSystem` - Unit production from buildings
@@ -162,6 +162,22 @@ world state at match start:
 - the Pearl screen groups progression per specialist so blueprint and radius rows stay readable together
 
 The older model of free match-start specialist auto-deploy is obsolete in the player-facing runtime. Pearl specialist ranks now initialize in-match blueprint caps, the player fields those specialists from the Lodge during a run, and the manual Lodge/radial flow now exposes `Mudpaw`, `Medic`, `Sapper`, and `Saboteur` on their intended stage gates.
+
+## Commander Runtime
+
+The live commander layer now has two distinct parts:
+
+1. **Persistent commander modifiers**
+   - difficulty setup copies the selected commander's live aura/passive numbers into `world.commanderModifiers`
+   - aura state is rebuilt by `commanderAura()`
+   - specialist-specific commander bonuses are applied at specialist field time, not through deleted unit types
+
+2. **Active commander abilities**
+   - `src/game/commander-abilities.ts` owns activation and cooldown state
+   - `Marshal` tracks charged units in `world.commanderAbilityTargets`
+   - `Warden` and `Ironpaw` gate `takeDamage()` during their active windows
+   - `Shadowfang` uses the existing stealth targeting path instead of a fake placeholder flag
+   - `Sage` no longer targets the deleted research tree; it grants an instant resource spike
 
 ## Upgrade Effects Pipeline
 

@@ -42,6 +42,7 @@ describe('specialist blueprints', () => {
     world.resources.fish = 200;
     world.resources.logs = 50;
     world.resources.rocks = 50;
+    world.commanderModifiers.passiveFisherCostReduction = 0.5;
 
     const lodge = spawnEntity(world, EntityKind.Lodge, 320, 400, Faction.Player);
     Building.progress[lodge] = 100;
@@ -59,6 +60,7 @@ describe('specialist blueprints', () => {
     const fisherButton = actionButtons.value.find((button) => button.title === 'Fisher');
     expect(fisherButton).toBeDefined();
     expect(fisherButton?.affordable).toBe(true);
+    expect(fisherButton?.cost).toContain('6F');
 
     fisherButton?.onClick();
 
@@ -70,7 +72,7 @@ describe('specialist blueprints', () => {
     );
 
     expect(fisher).toBeDefined();
-    expect(world.resources.fish).toBe(188);
+    expect(world.resources.fish).toBe(194);
     expect(world.resources.food).toBe(1);
     expect(world.stats.unitsTrained).toBe(1);
     expect(world.specialistAssignments.get(fisher ?? -1)?.runtimeId).toBe('fisher');
