@@ -9,6 +9,7 @@
  * repeatedly escalates through tiers (normal → annoyed → exasperated).
  */
 
+import { LOOKOUT_KIND, MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 export type DialogueTrigger =
@@ -75,7 +76,7 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
     death: ['Tell them... I fought well...', 'The pond... endures...'],
   }),
 
-  [EntityKind.Gatherer]: pool({
+  [MUDPAW_KIND]: pool({
     select: ['Mudpaw ready.', 'What needs doing?', 'Point me at the problem.', 'Ready for fieldwork.'],
     select_repeat: ['Still on it.', 'I heard you.', 'Busy paws, steady pond.'],
     select_spam: ["I'm doing five jobs already!", 'One more tap and you can do it yourself.', 'Alright, alright, I am moving.'],
@@ -116,7 +117,7 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
     death: ["Didn't... see that coming..."],
   }),
 
-  [EntityKind.Healer]: pool({
+  [MEDIC_KIND]: pool({
     select: ['How can I help?', 'Healing ready.', "Who's hurt?", "I'm here."],
     select_repeat: ["I'm a healer, not a miracle worker.", 'Yes, still healing.'],
     select_spam: ['Heal yourself!', 'I charge extra for this.', 'My bedside manner has limits.'],
@@ -128,7 +129,7 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
     death: ["I couldn't... save myself..."],
   }),
 
-  [EntityKind.Scout]: pool({
+  [LOOKOUT_KIND]: pool({
     select: ['Eyes up.', 'Watching the marsh.', 'Recon ready.'],
     select_repeat: ['Still watching.', 'I have the perimeter.', 'Nothing slips past me twice.'],
     select_spam: ['The marsh is not getting clearer by tapping me.', 'I can scout and complain at the same time.', 'Yes, yes, still on watch.'],

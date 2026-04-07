@@ -1,5 +1,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
+import { isMudpawKind, LOOKOUT_KIND, MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
 import {
   AutoSymbol,
@@ -29,7 +30,7 @@ import {
 import type { GameWorld } from './world';
 
 const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
-  [EntityKind.Gatherer]: SpriteId.Gatherer,
+  [MUDPAW_KIND]: SpriteId.Gatherer,
   [EntityKind.Brawler]: SpriteId.Brawler,
   [EntityKind.Sniper]: SpriteId.Sniper,
   [EntityKind.Gator]: SpriteId.Gator,
@@ -41,11 +42,11 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.PredatorNest]: SpriteId.PredatorNest,
   [EntityKind.Cattail]: SpriteId.Cattail,
   [EntityKind.Clambed]: SpriteId.Clambed,
-  [EntityKind.Healer]: SpriteId.Healer,
+  [MEDIC_KIND]: SpriteId.Healer,
   [EntityKind.Watchtower]: SpriteId.Watchtower,
   [EntityKind.BossCroc]: SpriteId.BossCroc,
   [EntityKind.Shieldbearer]: SpriteId.Shieldbearer,
-  [EntityKind.Scout]: SpriteId.Scout,
+  [LOOKOUT_KIND]: SpriteId.Scout,
   [EntityKind.Catapult]: SpriteId.Catapult,
   [EntityKind.Wall]: SpriteId.Wall,
   [EntityKind.ScoutPost]: SpriteId.ScoutPost,
@@ -240,9 +241,7 @@ export function spawnEntity(
     // Stance: gatherers/healers default Defensive, combat units Aggressive
     addComponent(world.ecs, eid, Stance);
     Stance.mode[eid] =
-      kind === EntityKind.Gatherer || kind === EntityKind.Healer
-        ? StanceMode.Defensive
-        : StanceMode.Aggressive;
+      isMudpawKind(kind) || kind === MEDIC_KIND ? StanceMode.Defensive : StanceMode.Aggressive;
 
     // Auto-symbol: tracks pending auto-behavior confirmation
     addComponent(world.ecs, eid, AutoSymbol);

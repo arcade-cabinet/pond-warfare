@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BUILDING_SIGHT_RADIUS, UNIT_SIGHT_RADIUS } from '@/constants';
 import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import { drawFog } from '@/rendering/fog-renderer';
 import { EntityKind, Faction } from '@/types';
@@ -84,7 +85,7 @@ describe('drawFog gradient softness', () => {
   });
 
   it('should create a radial gradient with exactly 5 stops for smooth transition', () => {
-    const eid = createPlayerUnit(EntityKind.Gatherer, 400, 300);
+    const eid = createPlayerUnit(MUDPAW_KIND, 400, 300);
 
     const mockPattern = {} as CanvasPattern;
     const state: FogRendererState = {
@@ -101,7 +102,7 @@ describe('drawFog gradient softness', () => {
   });
 
   it('should have the first stop fully opaque and last stop fully transparent', () => {
-    const eid = createPlayerUnit(EntityKind.Gatherer, 400, 300);
+    const eid = createPlayerUnit(MUDPAW_KIND, 400, 300);
 
     const state: FogRendererState = {
       fogCtx: mockCtx as unknown as CanvasRenderingContext2D,
@@ -122,7 +123,7 @@ describe('drawFog gradient softness', () => {
   });
 
   it('should have intermediate stops that gradually decrease opacity', () => {
-    const eid = createPlayerUnit(EntityKind.Gatherer, 400, 300);
+    const eid = createPlayerUnit(MUDPAW_KIND, 400, 300);
 
     const state: FogRendererState = {
       fogCtx: mockCtx as unknown as CanvasRenderingContext2D,
@@ -152,7 +153,7 @@ describe('drawFog gradient softness', () => {
   });
 
   it('should use inner radius at 15% of total radius for small clear core', () => {
-    const eid = createPlayerUnit(EntityKind.Gatherer, 400, 300);
+    const eid = createPlayerUnit(MUDPAW_KIND, 400, 300);
 
     const state: FogRendererState = {
       fogCtx: mockCtx as unknown as CanvasRenderingContext2D,
@@ -208,7 +209,7 @@ describe('drawFog gradient softness', () => {
   });
 
   it('skips invalid projected vision circles instead of throwing', () => {
-    const eid = createPlayerUnit(EntityKind.Gatherer, Number.NaN, 300);
+    const eid = createPlayerUnit(MUDPAW_KIND, Number.NaN, 300);
 
     const state: FogRendererState = {
       fogCtx: mockCtx as unknown as CanvasRenderingContext2D,

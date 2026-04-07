@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { pickDialogue } from '@/config/dialogue';
+import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 describe('pickDialogue', () => {
   it('returns canonical Mudpaw combat barks', () => {
-    expect(pickDialogue(EntityKind.Gatherer, 'combat')).toBeTruthy();
+    expect(pickDialogue(MUDPAW_KIND, 'combat')).toBeTruthy();
   });
 
   it('returns Sapper attack barks', () => {
@@ -20,6 +21,6 @@ describe('pickDialogue', () => {
   });
 
   it('returns Lookout discovery barks through the Scout chassis', () => {
-    expect(pickDialogue(EntityKind.Scout, 'discover')).toBeTruthy();
+    expect(pickDialogue(LOOKOUT_KIND, 'discover')).toBeTruthy();
   });
 });

@@ -22,17 +22,16 @@ import {
 } from '@/ecs/components';
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES } from '@/ecs/systems/morale';
 import type { GameWorld } from '@/ecs/world';
+import { isLookoutKind } from '@/game/live-unit-kinds';
 import { createCorpseId, EntityKind, Faction, SpriteId } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
 import { reduceVisualNoise } from '@/ui/store';
 import { spawnDeathParticles } from './death-particles';
 
-/** Ranged unit kinds that get a "cry" death sound instead of a grunt. */
-const RANGED_KINDS: ReadonlySet<EntityKind> = new Set([
-  EntityKind.Sniper,
-  EntityKind.Catapult,
-  EntityKind.Scout,
-]);
+/** Ranged or recon bodies that get a "cry" death sound instead of a grunt. */
+function isRangedDeathKind(kind: EntityKind): boolean {
+  return kind === EntityKind.Sniper || kind === EntityKind.Catapult || isLookoutKind(kind);
+}
 
 export function processDeath(world: GameWorld, eid: number, attackerEid?: number): void {
   if (Health.current[eid] === -1) return;
@@ -75,7 +74,7 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     world.shakeTimer = Math.max(world.shakeTimer, 20);
     audio.deathBuilding(ex);
   } else if (!isResource) {
-    if (RANGED_KINDS.has(deathKind as EntityKind)) {
+    if (isRangedDeathKind(deathKind as EntityKind)) {
       audio.deathRanged(ex);
     } else {
       audio.deathMelee(ex);

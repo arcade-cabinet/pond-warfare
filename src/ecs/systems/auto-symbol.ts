@@ -27,6 +27,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isLookoutKind, MEDIC_KIND, SHAMAN_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /** Duration in frames the auto-symbol icon is visible (4s at 60fps). */
@@ -55,12 +56,12 @@ function symbolFromPrevState(prev: UnitState, kind: EntityKind): number {
     default:
       break;
   }
-  // Healers/Shamans that were moving get heal symbol
-  if (kind === EntityKind.Healer || kind === EntityKind.Shaman) {
+  // Medics/Shamans that were moving get heal symbol
+  if (kind === MEDIC_KIND || kind === SHAMAN_KIND) {
     if (prev === UnitState.Move) return SymbolType.Heal;
   }
   // Recon specialists on the lookout chassis that were moving get scout symbol
-  if (kind === EntityKind.Scout) {
+  if (isLookoutKind(kind)) {
     if (prev === UnitState.Move) return SymbolType.Scout;
   }
   return SymbolType.None;
