@@ -102,6 +102,12 @@ export function installDelegates(proto: any): void {
   def(proto, 'selectBombardier', function (this: Self) {
     this.sfxMgr.selectBombardier();
   });
+  def(proto, 'selectSapper', function (this: Self) {
+    this.sfxMgr.selectSapper();
+  });
+  def(proto, 'selectSaboteur', function (this: Self) {
+    this.sfxMgr.selectSaboteur();
+  });
   def(proto, 'selectBrawler', function (this: Self) {
     this.sfxMgr.selectBrawler();
   });

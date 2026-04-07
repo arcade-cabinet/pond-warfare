@@ -72,8 +72,8 @@ export function entityKindFromString(name: string): EntityKind {
 export function entityKindName(kind: EntityKind): string {
   const names: Record<EntityKind, string> = {
     [EntityKind.Gatherer]: 'Mudpaw',
-    [EntityKind.Brawler]: 'Brawler',
-    [EntityKind.Sniper]: 'Sniper',
+    [EntityKind.Brawler]: 'Sapper',
+    [EntityKind.Sniper]: 'Saboteur',
     [EntityKind.Gator]: 'Gator',
     [EntityKind.Snake]: 'Snake',
     [EntityKind.Lodge]: 'Lodge',

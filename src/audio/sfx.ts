@@ -166,17 +166,25 @@ export class SfxManager {
     this.selectGatherer();
   }
   selectGuard(): void {
-    this.selectBrawler();
+    this.selectSapper();
   }
   selectRanger(): void {
-    this.selectSniper();
+    this.selectSaboteur();
   }
   selectBombardier(): void {
     this.selectCatapult();
   }
+  selectSapper(): void {
+    this.selectBrawler();
+  }
+  selectSaboteur(): void {
+    this.selectSniper();
+  }
+  /** Historical compatibility alias for the old internal melee chassis. */
   selectBrawler(): void {
     this.playAt(80, 'sine', 0.15, 0.08, 50);
   }
+  /** Historical compatibility alias for the old internal ranged chassis. */
   selectSniper(): void {
     this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
   }

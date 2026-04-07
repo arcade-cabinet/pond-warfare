@@ -119,6 +119,8 @@ describe('isWingBuilding', () => {
 describe('entityKindName', () => {
   it('should return correct names', () => {
     expect(entityKindName(EntityKind.Gatherer)).toBe('Mudpaw');
+    expect(entityKindName(EntityKind.Brawler)).toBe('Sapper');
+    expect(entityKindName(EntityKind.Sniper)).toBe('Saboteur');
     expect(entityKindName(EntityKind.Healer)).toBe('Medic');
     expect(entityKindName(EntityKind.Scout)).toBe('Lookout');
     expect(entityKindName(EntityKind.PredatorNest)).toBe('Predator Nest');

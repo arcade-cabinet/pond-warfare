@@ -90,33 +90,6 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
     death: ['Tell them I held the line...'],
   }),
 
-  [EntityKind.Brawler]: pool({
-    select: ['Ready for a scrap.', 'Who needs hitting?', "Let's go.", 'Bring it.'],
-    select_repeat: ["I said I'm ready!", 'Point me at something.', 'Getting antsy here.'],
-    select_spam: ['Wanna fight about it?', "I'll fight anyone. Even you.", 'My fists are bored.'],
-    move: ['Moving.', 'Heading out.', 'Right behind you.'],
-    attack: ['Finally!', "Smash 'em!", 'RAAARGH!', 'You picked the wrong pond!'],
-    idle: ['*shadow boxes*', '*cracks knuckles*', 'Someone, anyone, fight me.'],
-    combat: ['Come get some!', 'Is that all you got?', 'Eat claw!'],
-    kill: ['Down you go!', 'Next!', 'Too easy.', "Who's next?"],
-    low_hp: ['Just a scratch!', 'I can take it!', 'Need a breather...'],
-    rank_up: ['Tougher than ever!', 'POWER UP!'],
-    death: ['Worth... every... punch...'],
-  }),
-
-  [EntityKind.Sniper]: pool({
-    select: ['Locked and loaded.', 'Eyes on target.', 'Awaiting coordinates.', 'Steady...'],
-    select_repeat: ['I see everything from up here.', 'Patience is a virtue.'],
-    select_spam: ["You're in my shot!", 'Do you want to get sniped?', 'I have VERY good aim.'],
-    move: ['Relocating.', 'New position.', 'Shifting.'],
-    attack: ['Taking the shot.', 'Target acquired.', 'Firing!', 'Bullseye.'],
-    idle: ['*adjusts scope*', 'Scanning...', 'Nothing moves without me knowing.'],
-    combat: ['Stay in range...', "Don't let them close!"],
-    kill: ['Clean hit.', 'Splash.', 'Target eliminated.'],
-    low_hp: ['Too close!', 'Need distance!', 'Back off!'],
-    death: ["Didn't... see that coming..."],
-  }),
-
   [MEDIC_KIND]: pool({
     select: ['How can I help?', 'Healing ready.', "Who's hurt?", "I'm here."],
     select_repeat: ["I'm a healer, not a miracle worker.", 'Yes, still healing.'],
@@ -221,9 +194,15 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
   }),
 };
 
+function canonicalDialogueKind(kind: EntityKind): EntityKind {
+  if (kind === EntityKind.Brawler) return EntityKind.Sapper;
+  if (kind === EntityKind.Sniper) return EntityKind.Saboteur;
+  return kind;
+}
+
 /** Pick a random line from a dialogue pool. Returns null if pool is empty. */
 export function pickDialogue(kind: EntityKind, trigger: DialogueTrigger): string | null {
-  const unitPool = UNIT_DIALOGUE[kind];
+  const unitPool = UNIT_DIALOGUE[canonicalDialogueKind(kind)];
   if (!unitPool) return null;
   const lines = unitPool[trigger];
   if (!lines || lines.length === 0) return null;

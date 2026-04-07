@@ -12,8 +12,16 @@ describe('pickDialogue', () => {
     expect(pickDialogue(EntityKind.Sapper, 'attack')).toBeTruthy();
   });
 
+  it('routes legacy Brawler bark lookups through the Sapper pool', () => {
+    expect(pickDialogue(EntityKind.Brawler, 'attack')).toBeTruthy();
+  });
+
   it('returns Saboteur attack barks', () => {
     expect(pickDialogue(EntityKind.Saboteur, 'attack')).toBeTruthy();
+  });
+
+  it('routes legacy Sniper bark lookups through the Saboteur pool', () => {
+    expect(pickDialogue(EntityKind.Sniper, 'attack')).toBeTruthy();
   });
 
   it('returns Shaman healing barks', () => {
