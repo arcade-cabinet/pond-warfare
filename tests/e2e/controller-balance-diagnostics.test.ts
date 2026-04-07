@@ -288,7 +288,7 @@ describe('controller balance diagnostics', () => {
     const attackRows = [
       { name: 'baseline', prestigeState: rankOne },
       { name: 'combat_multiplier', prestigeState: { ...rankOne, upgradeRanks: { combat_multiplier: 1 } } },
-      { name: 'auto_deploy_hunter', prestigeState: { ...rankOne, upgradeRanks: { auto_deploy_hunter: 1 } } },
+      { name: 'auto_deploy_guard', prestigeState: { ...rankOne, upgradeRanks: { auto_deploy_guard: 1 } } },
     ].map((variant) => {
       const { world, lodgeEid } = setupMicroWorld(
         ATTACK_CONTROLLER_SEED,

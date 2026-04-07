@@ -335,7 +335,7 @@ describe('T41: Specialist auto-deploy', () => {
       totalPearlsEarned: 80,
       upgradeRanks: {
         auto_deploy_fisher: 2,
-        auto_deploy_guardian: 1,
+        auto_deploy_guard: 1,
       },
     };
 
@@ -346,9 +346,9 @@ describe('T41: Specialist auto-deploy', () => {
     expect(fisher).toBeTruthy();
     expect(fisher?.count).toBe(2);
 
-    const guardian = deploySpecs.find((s) => s.unitId === 'guardian');
-    expect(guardian).toBeTruthy();
-    expect(guardian?.count).toBe(1);
+    const guard = deploySpecs.find((s) => s.unitId === 'guard');
+    expect(guard).toBeTruthy();
+    expect(guard?.count).toBe(1);
   });
 
   it('no specialists deployed with empty prestige state', () => {
@@ -367,7 +367,7 @@ describe('T41: Specialist auto-deploy', () => {
       upgradeRanks: {
         auto_deploy_fisher: 3,
         auto_deploy_digger: 2,
-        auto_deploy_guardian: 1,
+        auto_deploy_guard: 1,
         auto_deploy_shaman: 1,
       },
     };

@@ -36,20 +36,18 @@ const SPECIALIST_KIND_MAP: Record<string, EntityKind> = {
   fisher: EntityKind.Gatherer,
   digger: EntityKind.Gatherer,
   logger: EntityKind.Gatherer,
-  guardian: EntityKind.Brawler,
-  hunter: EntityKind.Brawler,
+  guard: EntityKind.Brawler,
   ranger: EntityKind.Scout,
   shaman: EntityKind.Shaman,
   lookout: EntityKind.Scout,
-  sapper: EntityKind.Engineer,
-  saboteur: EntityKind.Diver,
+  bombardier: EntityKind.Engineer,
 };
 
 const SPECIALIST_STANCE_MAP: Partial<Record<string, number>> = {
   fisher: StanceMode.Defensive,
   digger: StanceMode.Defensive,
   logger: StanceMode.Defensive,
-  guardian: StanceMode.Defensive,
+  guard: StanceMode.Defensive,
   shaman: StanceMode.Defensive,
   lookout: StanceMode.Defensive,
 };
@@ -131,16 +129,16 @@ function seedSpecialistAssignment(
     setSingleZoneTarget(world, assignment, EntityKind.Cattail, lodgeX, lodgeY);
   } else if (runtimeId === 'digger') {
     setSingleZoneTarget(world, assignment, EntityKind.PearlBed, lodgeX, lodgeY);
-  } else if (runtimeId === 'guardian' || runtimeId === 'shaman') {
+  } else if (runtimeId === 'guard' || runtimeId === 'shaman') {
     assignment.centerX = lodgeX;
     assignment.centerY = clampY(world, lodgeY - 80);
-  } else if (runtimeId === 'hunter' || runtimeId === 'lookout') {
+  } else if (runtimeId === 'lookout') {
     assignment.centerX = lodgeX;
     assignment.centerY = clampY(world, lodgeY - Math.max(140, world.worldHeight * 0.14));
   } else if (runtimeId === 'ranger') {
     assignment.engagementX = lodgeX;
     assignment.engagementY = clampY(world, lodgeY - Math.max(180, world.worldHeight * 0.18));
-  } else if (runtimeId === 'sapper' || runtimeId === 'saboteur') {
+  } else if (runtimeId === 'bombardier') {
     assignment.engagementX = lodgeX;
     assignment.engagementY = clampY(world, lodgeY - Math.max(220, world.worldHeight * 0.22));
   }
@@ -161,13 +159,8 @@ function initializeSpecialistBehavior(
   }
 
   switch (runtimeId) {
-    case 'guardian':
+    case 'guard':
       dispatchTaskOverride(world, eid, 'defending');
-      return;
-    case 'hunter':
-      if (!dispatchTaskOverride(world, eid, 'attacking')) {
-        dispatchTaskOverride(world, eid, 'defending');
-      }
       return;
     case 'ranger':
     case 'lookout':
@@ -179,8 +172,7 @@ function initializeSpecialistBehavior(
       UnitStateMachine.state[eid] = UnitState.Idle;
       UnitStateMachine.targetEntity[eid] = -1;
       return;
-    case 'sapper':
-    case 'saboteur':
+    case 'bombardier':
       if (!dispatchTaskOverride(world, eid, 'attacking')) {
         lockSpecialistRole(eid, UnitState.Idle, 0);
         UnitStateMachine.state[eid] = UnitState.Idle;

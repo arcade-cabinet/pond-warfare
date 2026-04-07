@@ -42,13 +42,11 @@ describe('Unit configs', () => {
     'fisher',
     'digger',
     'logger',
-    'guardian',
-    'hunter',
+    'guard',
     'ranger',
     'shaman',
     'lookout',
-    'sapper',
-    'saboteur',
+    'bombardier',
   ];
 
   it('should load all generalists with required fields', () => {

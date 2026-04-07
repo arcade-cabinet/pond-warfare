@@ -122,7 +122,7 @@ describe('Specialist blueprint cap calculations', () => {
       upgradeRanks: {
         auto_deploy_fisher: 5,
         auto_deploy_digger: 2,
-        auto_deploy_guardian: 1,
+        auto_deploy_guard: 1,
       },
     };
 
@@ -131,8 +131,8 @@ describe('Specialist blueprint cap calculations', () => {
 
     expect(getAutoDeployCount(state, 'fisher')).toBe(5);
     expect(getAutoDeployCount(state, 'digger')).toBe(2);
-    expect(getAutoDeployCount(state, 'guardian')).toBe(1);
-    expect(getAutoDeployCount(state, 'hunter')).toBe(0);
+    expect(getAutoDeployCount(state, 'guard')).toBe(1);
+    expect(getAutoDeployCount(state, 'bombardier')).toBe(0);
   });
 
   it('should not include non-specialist Pearl upgrades', () => {
@@ -433,9 +433,9 @@ describe('Prestige config completeness', () => {
     expect(ids).toContain('auto_deploy_fisher');
     expect(ids).toContain('auto_deploy_digger');
     expect(ids).toContain('auto_deploy_logger');
-    expect(ids).toContain('auto_deploy_guardian');
-    expect(ids).toContain('auto_deploy_hunter');
+    expect(ids).toContain('auto_deploy_guard');
     expect(ids).toContain('auto_deploy_ranger');
+    expect(ids).toContain('auto_deploy_bombardier');
     expect(ids).toContain('auto_deploy_shaman');
     expect(ids).toContain('auto_deploy_lookout');
 

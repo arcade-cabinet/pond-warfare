@@ -42,14 +42,6 @@ const SPECIALIST_PROFILES: Record<string, SpecialistProfile> = {
   bombardier: makeDualZoneProfile('bombardier', 'Bombardier', 80, 150, 250),
   shaman: makeSingleZoneProfile('shaman', 'Shaman', 140),
   lookout: makeSingleZoneProfile('lookout', 'Lookout', 210),
-  legacy_saboteur: makeSingleZoneProfile('legacy_saboteur', 'Saboteur', 130),
-};
-
-const RUNTIME_SPECIALIST_ALIAS: Record<string, string> = {
-  guardian: 'guard',
-  hunter: 'guard',
-  sapper: 'bombardier',
-  saboteur: 'legacy_saboteur',
 };
 
 function makeSingleZoneProfile(
@@ -177,8 +169,7 @@ export function isSpecialistEntity(
 }
 
 function resolveSpecialistProfile(runtimeId: string): SpecialistProfile | null {
-  const profileId = RUNTIME_SPECIALIST_ALIAS[runtimeId] ?? runtimeId;
-  return SPECIALIST_PROFILES[profileId] ?? null;
+  return SPECIALIST_PROFILES[runtimeId] ?? null;
 }
 
 function clampToProjectionRange(

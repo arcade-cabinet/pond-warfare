@@ -27,19 +27,19 @@
       "max_rank": 5,
       "effect": { "type": "auto_deploy", "unit": "logger", "count_per_rank": 1 }
     },
-    "auto_deploy_guardian": {
+    "auto_deploy_guard": {
       "label": "Guard Blueprint",
       "description": "Raises your in-match Guard field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "guardian", "count_per_rank": 1 }
+      "effect": { "type": "auto_deploy", "unit": "guard", "count_per_rank": 1 }
     },
-    "auto_deploy_hunter": {
-      "label": "Hunter Blueprint",
-      "description": "Raises your in-match Hunter field cap",
+    "auto_deploy_bombardier": {
+      "label": "Bombardier Blueprint",
+      "description": "Raises your in-match Bombardier field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "hunter", "count_per_rank": 1 }
+      "effect": { "type": "auto_deploy", "unit": "bombardier", "count_per_rank": 1 }
     },
     "auto_deploy_ranger": {
       "label": "Ranger Blueprint",

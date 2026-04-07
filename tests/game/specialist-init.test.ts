@@ -59,7 +59,7 @@ describe('deploySpecialistsAtMatchStart', () => {
     expect(UnitStateMachine.targetEntity[fisher]).toBe(fishNode);
   });
 
-  it('applies guardian stats and anchors it to the lodge defense area', () => {
+  it('applies guard stats and anchors it to the lodge defense area', () => {
     const world = createGameWorld();
     const lodge = spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
 
@@ -69,20 +69,20 @@ describe('deploySpecialistsAtMatchStart', () => {
         rank: 1,
         pearls: 0,
         totalPearlsEarned: 10,
-        upgradeRanks: { auto_deploy_guardian: 1 },
+        upgradeRanks: { auto_deploy_guard: 1 },
       },
       lodge,
     );
 
-    const guardian = findPlayerUnit(world, EntityKind.Brawler);
-    expect(Health.max[guardian]).toBe(80);
-    expect(Combat.damage[guardian]).toBe(6);
-    expect(Velocity.speed[guardian]).toBeCloseTo(1.2);
-    expect(TaskOverride.active[guardian]).toBe(1);
-    expect(TaskOverride.task[guardian]).toBe(UnitState.AttackMovePatrol);
-    expect(TaskOverride.targetEntity[guardian]).toBe(lodge);
-    expect(UnitStateMachine.state[guardian]).toBe(UnitState.AttackMovePatrol);
-    expect(UnitStateMachine.targetEntity[guardian]).toBe(lodge);
+    const guard = findPlayerUnit(world, EntityKind.Brawler);
+    expect(Health.max[guard]).toBe(80);
+    expect(Combat.damage[guard]).toBe(6);
+    expect(Velocity.speed[guard]).toBeCloseTo(1.2);
+    expect(TaskOverride.active[guard]).toBe(1);
+    expect(TaskOverride.task[guard]).toBe(UnitState.AttackMovePatrol);
+    expect(TaskOverride.targetEntity[guard]).toBe(lodge);
+    expect(UnitStateMachine.state[guard]).toBe(UnitState.AttackMovePatrol);
+    expect(UnitStateMachine.targetEntity[guard]).toBe(lodge);
   });
 
   it('starts lookout patrols across the upper map instead of leaving them idle', () => {

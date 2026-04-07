@@ -189,12 +189,12 @@ Current isolated readout:
 - Pearl rank 1:
   - opening window, 1200 frames:
     - the opening slice is still not a release-budget signal; it is a fast early-expression check
-    - `auto_deploy_guardian` is strongest at about `1.88%` `meta_mean_pct`, with `auto_deploy_hunter` around `1.56%` and `auto_deploy_fisher` around `1.09%`
+    - the strongest early specialist-cap rows are now the frontline Pearl specialists, with `auto_deploy_guard` leading and `auto_deploy_fisher` also positive
     - `hp_multiplier` is mildly positive around `0.54%`
     - `gather_multiplier`, `combat_multiplier`, and `auto_heal_behavior` are still effectively flat here
     - the worst opening-window Pearl rows are now `auto_deploy_logger` and `auto_deploy_digger`, both materially negative in this short slice
   - long-run window, 2400 frames:
-    - `auto_deploy_guardian` is strongest at about `2.20%` `meta_mean_pct`, with `auto_deploy_hunter` around `1.51%`, `auto_deploy_ranger` around `0.95%`, and `auto_deploy_shaman` around `0.90%`
+    - the strongest long-run Pearl specialist rows are now `auto_deploy_guard`, `auto_deploy_ranger`, and `auto_deploy_shaman`
     - `starting_tier` is about `0.70%`
     - `hp_multiplier` is about `0.47%`, `gather_multiplier` about `0.38%`, `combat_multiplier` about `0.32%`, and `auto_heal_behavior` about `0.14%`
     - `clam_earnings_multiplier` remains economy-led, with about `2.19%` `economy_mean_pct` and about `0.35%` `meta_mean_pct`
@@ -242,7 +242,7 @@ From [controller-balance-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabinet/
 This harness now uses fixed seeds per controller slice and actually deploys the
 Pearl specialists in the micro-worlds that claim to measure them. The old
 variant-per-seed setup was overstating some rows and the old attack micro slice
-was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
+was incorrectly reporting a deleted Pearl combat specialist instead of the real fielded unit.
 
 - Gather controller:
   - `gather_multiplier` now cleanly shows up as a higher `gatherSpeedMod`, but the fixed-seed short window is still travel-bound enough that raw gathered output stays flat in that slice
@@ -258,7 +258,7 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
   - `auto_repair_behavior`, `hp_multiplier`, and `auto_heal_behavior` all improve raw Lodge survival in the defend-only slice, with `auto_heal_behavior` currently showing the largest kill-side bump there
   - that means the strongly negative blended pressure scores are not purely missing runtime effects; they are interactions inside the full governor loop
 - Attack controller:
-  - the attack controller does convert better in the micro slice now: baseline commits `4` units for `2` kills, and `auto_deploy_hunter` improves that to `4` kills with only `2` enemies left
+  - the attack controller does convert better in the micro slice now, and that attack-specific diagnostic now uses the canonical `auto_deploy_guard` specialist instead of the obsolete Hunter path
   - the full-governor stage-6 trace is still the bigger issue: it opens `0` committed attack windows, so the remaining blocker is sustained safety under siege, not shared-target contact conversion
 
 ## Interpretation

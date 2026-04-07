@@ -42,18 +42,18 @@ const SPECIALIST_BUTTON_SPECS: SpecialistButtonSpec[] = [
     description: 'Autonomous rock specialist for later frontier pressure.',
   },
   {
-    unitId: 'guardian',
+    unitId: 'guard',
     title: 'Guard',
     hotkey: '4',
     requiredStage: 1,
     description: 'Autonomous melee defender that holds its assigned area.',
   },
   {
-    unitId: 'hunter',
-    title: 'Hunter',
+    unitId: 'bombardier',
+    title: 'Bombardier',
     hotkey: '5',
-    requiredStage: 3,
-    description: 'Autonomous attack specialist that pressures forward lanes.',
+    requiredStage: 5,
+    description: 'Autonomous siege specialist with an anchor zone and projected strike area.',
   },
   {
     unitId: 'ranger',

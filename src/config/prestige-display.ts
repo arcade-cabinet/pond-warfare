@@ -72,13 +72,11 @@ const SPECIALIST_DISPLAY_NAMES: Record<string, string> = {
   fisher: 'Fisher',
   digger: 'Digger',
   logger: 'Logger',
-  guardian: 'Guard',
-  hunter: 'Hunter',
+  guard: 'Guard',
   ranger: 'Ranger',
   shaman: 'Shaman',
   lookout: 'Lookout',
-  sapper: 'Bombardier',
-  saboteur: 'Saboteur',
+  bombardier: 'Bombardier',
 };
 
 function titleCase(value: string): string {

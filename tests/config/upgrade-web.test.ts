@@ -143,12 +143,12 @@ describe('Upgrade web generation', () => {
 
   it('should compute multi-path diamond prerequisites', () => {
     web = generateUpgradeWeb();
-    const guardian = web.diamondMap.get('guardian_specialist');
-    expect(guardian).toBeDefined();
+    const guard = web.diamondMap.get('guard_specialist');
+    expect(guard).toBeDefined();
     // Requires defense.lodge_hp: 5 AND defense.wall_hp: 5
-    expect(guardian?.prerequisiteNodeIds).toContain('defense_lodge_hp_t4');
-    expect(guardian?.prerequisiteNodeIds).toContain('defense_wall_hp_t4');
-    expect(guardian?.prerequisiteNodeIds.length).toBe(2);
+    expect(guard?.prerequisiteNodeIds).toContain('defense_lodge_hp_t4');
+    expect(guard?.prerequisiteNodeIds).toContain('defense_wall_hp_t4');
+    expect(guard?.prerequisiteNodeIds.length).toBe(2);
   });
 });
 
@@ -279,8 +279,7 @@ describe('Diamond node config completeness', () => {
     const specialistDiamonds = Object.entries(diamonds).filter(
       ([, d]) => d.effect.type === 'unlock_specialist',
     );
-    // At least 10 specialist unlocks expected
-    expect(specialistDiamonds.length).toBeGreaterThanOrEqual(10);
+    expect(specialistDiamonds.length).toBe(8);
   });
 
   it('should have auto-behavior diamonds', () => {

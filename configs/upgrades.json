@@ -103,16 +103,10 @@
       "effect": { "type": "unlock_specialist", "unit": "logger" },
       "cost": 150
     },
-    "guardian_specialist": {
-      "label": "Guardian Unlock",
+    "guard_specialist": {
+      "label": "Guard Unlock",
       "requires": { "defense": { "lodge_hp": 5, "wall_hp": 5 } },
-      "effect": { "type": "unlock_specialist", "unit": "guardian" },
-      "cost": 200
-    },
-    "hunter_specialist": {
-      "label": "Hunter Unlock",
-      "requires": { "combat": { "attack_power": 7 } },
-      "effect": { "type": "unlock_specialist", "unit": "hunter" },
+      "effect": { "type": "unlock_specialist", "unit": "guard" },
       "cost": 200
     },
     "ranger_specialist": {
@@ -133,16 +127,10 @@
       "effect": { "type": "unlock_specialist", "unit": "lookout" },
       "cost": 150
     },
-    "sapper_specialist": {
-      "label": "Sapper Unlock",
+    "bombardier_specialist": {
+      "label": "Bombardier Unlock",
       "requires": { "siege": { "siege_damage": 5, "demolish_power": 5 } },
-      "effect": { "type": "unlock_specialist", "unit": "sapper" },
-      "cost": 250
-    },
-    "saboteur_specialist": {
-      "label": "Saboteur Unlock",
-      "requires": { "siege": { "sapper_speed": 5 }, "economy": { "node_yield": 5 } },
-      "effect": { "type": "unlock_specialist", "unit": "saboteur" },
+      "effect": { "type": "unlock_specialist", "unit": "bombardier" },
       "cost": 250
     },
     "auto_battlements": {

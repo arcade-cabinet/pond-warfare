@@ -56,7 +56,7 @@ describe('Specialist deploy plan', () => {
       upgradeRanks: {
         auto_deploy_fisher: 5,
         auto_deploy_digger: 2,
-        auto_deploy_guardian: 1,
+        auto_deploy_guard: 1,
       },
     };
 
@@ -67,7 +67,7 @@ describe('Specialist deploy plan', () => {
     const ids = plan.spawns.map((s) => s.unitId);
     expect(ids).toContain('fisher');
     expect(ids).toContain('digger');
-    expect(ids).toContain('guardian');
+    expect(ids).toContain('guard');
   });
 
   it('should generate summary strings', () => {
@@ -132,13 +132,11 @@ describe('Specialist identification', () => {
     expect(isSpecialistUnit('fisher')).toBe(true);
     expect(isSpecialistUnit('digger')).toBe(true);
     expect(isSpecialistUnit('logger')).toBe(true);
-    expect(isSpecialistUnit('guardian')).toBe(true);
-    expect(isSpecialistUnit('hunter')).toBe(true);
+    expect(isSpecialistUnit('guard')).toBe(true);
     expect(isSpecialistUnit('ranger')).toBe(true);
     expect(isSpecialistUnit('shaman')).toBe(true);
     expect(isSpecialistUnit('lookout')).toBe(true);
-    expect(isSpecialistUnit('sapper')).toBe(true);
-    expect(isSpecialistUnit('saboteur')).toBe(true);
+    expect(isSpecialistUnit('bombardier')).toBe(true);
   });
 
   it('should NOT identify generalists as specialists', () => {
@@ -203,8 +201,8 @@ describe('Generalist stat superiority', () => {
     expect(hpComp?.generalist ?? 0).toBeGreaterThanOrEqual(hpComp?.specialist ?? 0);
   });
 
-  it('fighter should have >= HP than hunter', () => {
-    const result = validateGeneralistSuperior('fighter', 'hunter');
+  it('sapper_unit should have >= HP than bombardier', () => {
+    const result = validateGeneralistSuperior('sapper_unit', 'bombardier');
     expect(result.valid).toBe(true);
   });
 
@@ -226,13 +224,11 @@ describe('Specialist behavior descriptions', () => {
     'fisher',
     'digger',
     'logger',
-    'guardian',
-    'hunter',
+    'guard',
     'ranger',
     'shaman',
     'lookout',
-    'sapper',
-    'saboteur',
+    'bombardier',
   ];
 
   for (const id of specialists) {
@@ -251,18 +247,16 @@ describe('Specialist behavior descriptions', () => {
 // ── Config completeness tests ─────────────────────────────────────
 
 describe('Specialist config completeness', () => {
-  it('all 10 specialists defined in units.json', () => {
+  it('all 8 Pearl specialists defined in units.json', () => {
     const expectedSpecialists = [
       'fisher',
       'digger',
       'logger',
-      'guardian',
-      'hunter',
+      'guard',
       'ranger',
       'shaman',
       'lookout',
-      'sapper',
-      'saboteur',
+      'bombardier',
     ];
 
     for (const id of expectedSpecialists) {

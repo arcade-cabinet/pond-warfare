@@ -50,7 +50,7 @@ describe('specialist assignment overlay', () => {
 
   it('renders anchor and engagement circles for dual-zone specialists', () => {
     const { world, eid } = createEntity();
-    registerSpecialistEntity(world, eid, 'sapper');
+    registerSpecialistEntity(world, eid, 'bombardier');
     beginSpecialistAssignment(world, eid);
     placePendingSpecialistAssignment(world, 220, 160);
     world.selection = [eid];

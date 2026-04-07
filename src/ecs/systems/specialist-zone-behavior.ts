@@ -44,15 +44,12 @@ export function specialistZoneBehaviorSystem(world: GameWorld): void {
         handleGatherSpecialist(world, eid, EntityKind.PearlBed);
         break;
       case 'guard':
-      case 'legacy_saboteur':
+      case 'bombardier':
         handleAreaCombatSpecialist(world, eid);
         break;
       case 'ranger':
       case 'lookout':
         syncAreaPatrol(world, eid);
-        break;
-      case 'bombardier':
-        handleAreaCombatSpecialist(world, eid);
         break;
       case 'shaman':
         handleAreaSupportSpecialist(world, eid);

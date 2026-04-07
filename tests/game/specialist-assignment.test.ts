@@ -36,7 +36,7 @@ describe('specialist assignment', () => {
 
   it('begins assignment mode with the correct prompt', () => {
     const { world, eid } = createPositionedEntity(50, 75);
-    registerSpecialistEntity(world, eid, 'guardian');
+    registerSpecialistEntity(world, eid, 'guard');
 
     expect(beginSpecialistAssignment(world, eid)).toBe('Tap terrain to set operating area');
     expect(world.pendingSpecialistAssignment).toEqual({ eid, mode: 'single_zone' });

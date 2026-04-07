@@ -11,12 +11,10 @@
     "fisher": { "hp": 25, "damage": 0, "speed": 2.0, "cost": { "fish": 12 }, "role": "auto_gather_fish", "autoTarget": "fish_node" },
     "digger": { "hp": 25, "damage": 0, "speed": 1.8, "cost": { "fish": 16 }, "role": "auto_gather_rocks", "autoTarget": "rock_deposit" },
     "logger": { "hp": 25, "damage": 0, "speed": 1.8, "cost": { "fish": 12 }, "role": "auto_gather_logs", "autoTarget": "tree_cluster" },
-    "guardian": { "hp": 80, "damage": 6, "speed": 1.2, "cost": { "fish": 20 }, "role": "auto_defend", "autoTarget": "lodge_area" },
-    "hunter": { "hp": 50, "damage": 10, "speed": 2.0, "cost": { "fish": 24 }, "role": "auto_attack", "autoTarget": "nearest_enemy" },
+    "guard": { "hp": 80, "damage": 6, "speed": 1.2, "cost": { "fish": 20 }, "role": "auto_hold_line", "autoTarget": "assigned_area" },
     "ranger": { "hp": 40, "damage": 6, "speed": 2.5, "cost": { "fish": 22, "logs": 8 }, "role": "auto_patrol", "autoTarget": "patrol_route" },
     "shaman": { "hp": 20, "damage": 0, "speed": 1.5, "cost": { "fish": 18, "logs": 6 }, "role": "auto_heal", "autoTarget": "nearest_wounded" },
     "lookout": { "hp": 15, "damage": 0, "speed": 3.0, "cost": { "fish": 10 }, "role": "auto_scout", "autoTarget": "fog_edge" },
-    "sapper": { "hp": 40, "damage": 15, "speed": 1.5, "cost": { "fish": 25, "rocks": 15 }, "role": "siege", "autoTarget": "enemy_fort" },
-    "saboteur": { "hp": 30, "damage": 5, "speed": 2.5, "cost": { "fish": 20, "rocks": 10 }, "role": "subvert", "autoTarget": "enemy_node" }
+    "bombardier": { "hp": 40, "damage": 15, "speed": 1.5, "cost": { "fish": 25, "rocks": 15 }, "role": "auto_siege", "autoTarget": "enemy_fort" }
   }
 }
