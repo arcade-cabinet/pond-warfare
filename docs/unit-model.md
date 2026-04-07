@@ -78,6 +78,54 @@ Examples:
 - assign a `Shaman` to a frontline radius and it heals wounded units in that zone
 - assign a `Bombardier` to a siege radius and it looks for valuable pressure targets in that zone
 
+## Radius Display Model
+
+Specialist assignment must use map circles, not the current box-drag selection language.
+
+When the player taps a specialist:
+
+- show the specialist's assigned circle or circles on the map
+- show a dotted line from the specialist to the relevant assigned circle so the player can immediately correlate the unit and its zone
+- keep the line and circle visually tied to that specialist via consistent color, icon badge, or both
+
+There are two canonical specialist radius models:
+
+### Single-Zone Specialists
+
+These specialists live and work inside one assigned operating circle.
+
+- `Fisher`
+- `Logger`
+- `Digger`
+- `Guard`
+- `Shaman`
+- `Lookout`
+
+For these units:
+
+- the assigned circle is their home and task area
+- the player sees one circle plus a dotted correlation link when the specialist is selected
+- the primary radius upgrade is `operating radius`
+
+### Dual-Zone Specialists
+
+These specialists hold one safer area while projecting effect into another.
+
+- `Ranger`
+- `Bombardier`
+
+For these units, selection should show:
+
+- an `anchor radius` where the specialist lives or remains entrenched
+- an `engagement radius` where the specialist looks for targets or projected work
+- a dotted link between the anchor and engagement zones
+
+The canonical upgrade axes for dual-zone specialists are:
+
+- `anchor radius`
+- `engagement radius`
+- `projection_range`
+
 ## Pearl Upgrade Philosophy
 
 Pearl specialist progression should scale specialist capability, not bypass gameplay.
@@ -89,6 +137,8 @@ Preferred Pearl tracks:
 - operating radius
 - throughput or efficiency
 - durability or survivability
+
+For dual-zone specialists, `projection_range` is also a first-class upgrade axis.
 
 ## Radius As A Core Upgrade Path
 

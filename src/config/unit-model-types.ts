@@ -8,12 +8,21 @@ export interface UnitModelManualUnit {
   clam_upgrade_axes: string[];
 }
 
+export interface UnitModelRadiusDisplay {
+  mode: 'single_zone' | 'dual_zone';
+  show_dotted_assignment_link: boolean;
+  circle_labels: string[];
+  upgrade_axes: string[];
+  selection_notes: string[];
+}
+
 export interface UnitModelSpecialist {
   id: string;
   label: string;
   domain: string;
   assignment_shape: 'radius';
   behavior: string;
+  radius_display: UnitModelRadiusDisplay;
   pearl_upgrade_axes: string[];
 }
 

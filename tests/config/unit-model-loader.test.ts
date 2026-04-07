@@ -44,6 +44,24 @@ describe('unit-model config', () => {
     ).toBe(true);
   });
 
+  it('splits specialist visuals into single-zone and dual-zone radius models', () => {
+    const specialists = getPearlSpecialistModel();
+    const fisher = specialists.find((entry) => entry.id === 'fisher');
+    const ranger = specialists.find((entry) => entry.id === 'ranger');
+    const bombardier = specialists.find((entry) => entry.id === 'bombardier');
+
+    expect(fisher?.radius_display.mode).toBe('single_zone');
+    expect(fisher?.radius_display.circle_labels).toEqual(['operating_radius']);
+    expect(fisher?.radius_display.show_dotted_assignment_link).toBe(true);
+
+    expect(ranger?.radius_display.mode).toBe('dual_zone');
+    expect(ranger?.radius_display.circle_labels).toEqual(['anchor_radius', 'engagement_radius']);
+    expect(ranger?.radius_display.upgrade_axes).toContain('projection_range');
+
+    expect(bombardier?.radius_display.mode).toBe('dual_zone');
+    expect(bombardier?.radius_display.upgrade_axes).toContain('projection_range');
+  });
+
   it('flags the legacy split-baseline and free auto-deploy model as obsolete', () => {
     const obsolete = getUnitModelConfig().obsolete_assumptions;
     expect(obsolete).toContain('free match-start auto-deploy as the primary Pearl specialist model');

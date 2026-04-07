@@ -151,6 +151,7 @@ The intended gameplay model is:
 - Pearl specialists are unlocked by Pearls but trained with in-match resources
 - specialists are assigned to terrain areas and operate within a Yuka-governed radius
 - specialist radius growth is a first-class Pearl upgrade axis, not a secondary stat
+- selected specialists should reveal their assigned circle(s) plus dotted correlation links on the map; `Ranger` and `Bombardier` are dual-zone by design
 
 The older model of free match-start specialist auto-deploy is considered transitional runtime behavior, not the long-run architecture target.
 

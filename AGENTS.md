@@ -147,6 +147,12 @@ Metagame currencies (between matches):
 
 Pearls unlock specialist blueprints and upgrade their autonomy. Specialists still cost in-match resources to train, and radius growth is a primary Pearl upgrade path.
 
+Specialist assignment visuals are canonical too:
+- selecting a specialist should reveal its assigned circle(s) on the map
+- a dotted line should correlate the specialist to that circle or circles
+- `Ranger` and `Bombardier` are dual-zone specialists with `anchor radius`, `engagement radius`, and upgradeable `projection range`
+- `Fisher`, `Logger`, `Digger`, `Guard`, `Shaman`, and `Lookout` are single-zone specialists with one `operating radius`
+
 ### Enemy Units (6 types)
 
 | Unit | HP | Speed | Damage | Role |

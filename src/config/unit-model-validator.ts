@@ -39,6 +39,50 @@ export function validateUnitModel(data: UnitModelConfig): void {
     if (specialist.assignment_shape !== 'radius') {
       throw new Error(`Unit model validation: expected radius assignment_shape in ${ctx}`);
     }
+    if (!specialist.radius_display) {
+      throw new Error(`Unit model validation: missing radius_display in ${ctx}`);
+    }
+    if (
+      specialist.radius_display.mode !== 'single_zone' &&
+      specialist.radius_display.mode !== 'dual_zone'
+    ) {
+      throw new Error(`Unit model validation: invalid radius_display.mode in ${ctx}`);
+    }
+    if (!specialist.radius_display.show_dotted_assignment_link) {
+      throw new Error(`Unit model validation: show_dotted_assignment_link must be true in ${ctx}`);
+    }
+    assertNonEmptyList(
+      specialist.radius_display.circle_labels,
+      `${ctx}.radius_display.circle_labels`,
+    );
+    assertNonEmptyList(
+      specialist.radius_display.upgrade_axes,
+      `${ctx}.radius_display.upgrade_axes`,
+    );
+    assertNonEmptyList(
+      specialist.radius_display.selection_notes,
+      `${ctx}.radius_display.selection_notes`,
+    );
+    if (
+      specialist.radius_display.mode === 'single_zone' &&
+      specialist.radius_display.circle_labels.length !== 1
+    ) {
+      throw new Error(
+        `Unit model validation: single_zone specialists must have exactly one circle label in ${ctx}`,
+      );
+    }
+    if (specialist.radius_display.mode === 'dual_zone') {
+      if (specialist.radius_display.circle_labels.length < 2) {
+        throw new Error(
+          `Unit model validation: dual_zone specialists must have anchor and engagement labels in ${ctx}`,
+        );
+      }
+      if (!specialist.radius_display.upgrade_axes.includes('projection_range')) {
+        throw new Error(
+          `Unit model validation: dual_zone specialists must expose projection_range in ${ctx}`,
+        );
+      }
+    }
     assertNonEmptyList(specialist.pearl_upgrade_axes, `${ctx}.pearl_upgrade_axes`);
   }
 

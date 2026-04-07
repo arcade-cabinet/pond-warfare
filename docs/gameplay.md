@@ -137,6 +137,15 @@ Pearl specialists are trained during a match after their blueprint is unlocked. 
 - Within that radius, the specialist searches for work matching its role
 - Radius growth is a primary Pearl upgrade path alongside unlock, cap, throughput, and durability
 
+### Specialist Radius UI
+
+Selecting a specialist should reveal its assignment geometry on the map.
+
+- Single-zone specialists show one assigned circle plus a dotted line from the unit to that circle
+- Dual-zone specialists show an `anchor` circle, an `engagement` circle, and a dotted line connecting them
+- The dotted link is not just cosmetic; where appropriate, its reach becomes an upgradeable `projection range`
+- Circle and line styling should visually correlate to the selected specialist via color, glyph, or both
+
 ### Enemy Units (6)
 
 Enemy units scale with progression level: HP +5%/level, Damage +3%/level, Speed +1%/level. All stats in `configs/enemies.json`.
