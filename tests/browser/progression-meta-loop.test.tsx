@@ -3,6 +3,7 @@ import { render } from 'preact';
 import { afterAll, describe, expect, it } from 'vitest';
 import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
 import { game } from '@/game';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { App } from '@/ui/app';
 import { actionButtons } from '@/ui/action-panel';
@@ -205,7 +206,7 @@ describe('progression meta loop', () => {
     const shell = await mountAppShell();
 
     await startSinglePlayer(shell.waitForInit);
-    const baseGathererCount = countPlayerUnits(EntityKind.Gatherer);
+    const baseMudpawChassisCount = countPlayerUnits(MUDPAW_KIND);
     const baseGatherSpeed = game.world.gatherSpeedMod;
     expect(baseGatherSpeed).toBe(1);
 
@@ -245,17 +246,17 @@ describe('progression meta loop', () => {
     expect(storeV3.prestigeState.value.upgradeRanks.blueprint_fisher).toBe(1);
 
     await startSinglePlayer(shell.waitForInit);
-    const blueprintGathererCount = countPlayerUnits(EntityKind.Gatherer);
+    const blueprintMudpawChassisCount = countPlayerUnits(MUDPAW_KIND);
     const preClamGatherSpeed = game.world.gatherSpeedMod;
-    expect(blueprintGathererCount).toBe(baseGathererCount);
+    expect(blueprintMudpawChassisCount).toBe(baseMudpawChassisCount);
     expect(game.world.specialistBlueprintCaps.fisher).toBe(1);
     game.world.selection = [];
     game.syncUIStore();
     await waitFor(() => actionButtons.value.some((button) => button.title === 'Fisher'));
     actionButtons.value.find((button) => button.title === 'Fisher')?.onClick();
     await delay(100);
-    const afterTrainingGathererCount = countPlayerUnits(EntityKind.Gatherer);
-    expect(afterTrainingGathererCount).toBeGreaterThan(blueprintGathererCount);
+    const afterTrainingMudpawChassisCount = countPlayerUnits(MUDPAW_KIND);
+    expect(afterTrainingMudpawChassisCount).toBeGreaterThan(blueprintMudpawChassisCount);
     expect(preClamGatherSpeed).toBe(baseGatherSpeed);
 
     setRewardsState({

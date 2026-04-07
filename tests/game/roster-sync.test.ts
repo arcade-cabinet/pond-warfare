@@ -8,6 +8,13 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SAPPER_KIND,
+  SHAMAN_KIND,
+} from '@/game/live-unit-kinds';
 import { syncRosters } from '@/game/roster-sync';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type { RosterGroup } from '@/ui/roster-types';
@@ -37,11 +44,11 @@ describe('syncRosters', () => {
   });
 
   it('groups units by role correctly', () => {
-    spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
-    spawnEntity(world, EntityKind.Brawler, 200, 200, Faction.Player);
-    spawnEntity(world, EntityKind.Healer, 300, 300, Faction.Player);
-    spawnEntity(world, EntityKind.Shaman, 350, 350, Faction.Player);
-    spawnEntity(world, EntityKind.Scout, 400, 400, Faction.Player);
+    spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
+    spawnEntity(world, MEDIC_KIND, 300, 300, Faction.Player);
+    spawnEntity(world, SHAMAN_KIND, 350, 350, Faction.Player);
+    spawnEntity(world, LOOKOUT_KIND, 400, 400, Faction.Player);
     spawnEntity(world, EntityKind.Commander, 500, 500, Faction.Player);
 
     syncRosters(world);
@@ -53,9 +60,9 @@ describe('syncRosters', () => {
   });
 
   it('sorts idle units to top within a group', () => {
-    const g1 = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
-    const g2 = spawnEntity(world, EntityKind.Gatherer, 200, 200, Faction.Player);
-    const g3 = spawnEntity(world, EntityKind.Gatherer, 300, 300, Faction.Player);
+    const g1 = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const g2 = spawnEntity(world, MUDPAW_KIND, 200, 200, Faction.Player);
+    const g3 = spawnEntity(world, MUDPAW_KIND, 300, 300, Faction.Player);
     UnitStateMachine.state[g1] = UnitState.Gathering;
     UnitStateMachine.state[g2] = UnitState.Idle;
     UnitStateMachine.state[g3] = UnitState.Gathering;
@@ -67,7 +74,7 @@ describe('syncRosters', () => {
   });
 
   it('maps UnitState.Idle to idle task', () => {
-    const eid = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const eid = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
     UnitStateMachine.state[eid] = UnitState.Idle;
     syncRosters(world);
     expect(findGroup('combat').units[0].task).toBe('idle');
@@ -75,9 +82,9 @@ describe('syncRosters', () => {
 
   it('maps GatherMove to gathering-fish when targeting Clambed', () => {
     const clambed = spawnEntity(world, EntityKind.Clambed, 150, 150, Faction.Neutral);
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.GatherMove;
-    UnitStateMachine.targetEntity[gatherer] = clambed;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.GatherMove;
+    UnitStateMachine.targetEntity[mudpaw] = clambed;
 
     syncRosters(world);
     const unit = findGroup('generalist').units[0];
@@ -88,37 +95,37 @@ describe('syncRosters', () => {
 
   it('maps GatherMove to gathering-logs when targeting Cattail', () => {
     const cattail = spawnEntity(world, EntityKind.Cattail, 150, 150, Faction.Neutral);
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.GatherMove;
-    UnitStateMachine.targetEntity[gatherer] = cattail;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.GatherMove;
+    UnitStateMachine.targetEntity[mudpaw] = cattail;
 
     syncRosters(world);
     expect(findGroup('generalist').units[0].task).toBe('gathering-logs');
   });
 
   it('maps Attacking state to attacking task', () => {
-    const eid = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const eid = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
     UnitStateMachine.state[eid] = UnitState.Attacking;
     syncRosters(world);
     expect(findGroup('combat').units[0].task).toBe('attacking');
   });
 
   it('maps AttackMovePatrol to patrolling task', () => {
-    const eid = spawnEntity(world, EntityKind.Brawler, 100, 100, Faction.Player);
+    const eid = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
     UnitStateMachine.state[eid] = UnitState.AttackMovePatrol;
     syncRosters(world);
     expect(findGroup('combat').units[0].task).toBe('patrolling');
   });
 
   it('detects TaskOverride on units', () => {
-    const eid = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    const eid = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
     TaskOverride.active[eid] = 1;
     syncRosters(world);
     expect(store.unitRoster.value[0].units[0].hasOverride).toBe(true);
   });
 
   it('reads auto-behavior toggles from world', () => {
-    spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
+    spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
     world.autoBehaviors.gatherer = true;
     syncRosters(world);
     expect(findGroup('generalist').autoEnabled).toBe(true);
@@ -126,7 +133,7 @@ describe('syncRosters', () => {
 
   it('excludes enemy units from roster', () => {
     spawnEntity(world, EntityKind.Gator, 100, 100, Faction.Enemy);
-    spawnEntity(world, EntityKind.Gatherer, 200, 200, Faction.Player);
+    spawnEntity(world, MUDPAW_KIND, 200, 200, Faction.Player);
     syncRosters(world);
     expect(store.unitRoster.value).toHaveLength(1);
     expect(store.unitRoster.value[0].role).toBe('generalist');
@@ -137,7 +144,7 @@ describe('syncRosters', () => {
     Building.progress[lodge] = 100;
     TrainingQueue.count[lodge] = 1;
     TrainingQueue.timer[lodge] = 150;
-    trainingQueueSlots.set(lodge, [EntityKind.Gatherer]);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND]);
 
     syncRosters(world);
     const bldgs = store.buildingRoster.value;
@@ -146,8 +153,8 @@ describe('syncRosters', () => {
     expect(bldgs[0].queueItems).toEqual(['Mudpaw']);
     expect(bldgs[0].queueProgress).toBeCloseTo(0.5, 1);
     expect(bldgs[0].canTrain).toEqual([
-      EntityKind.Gatherer,
-      EntityKind.Healer,
+      MUDPAW_KIND,
+      MEDIC_KIND,
       EntityKind.Sapper,
       EntityKind.Saboteur,
     ]);
@@ -156,8 +163,8 @@ describe('syncRosters', () => {
   });
 
   it('uses specialist labels instead of collapsing autonomous gather specialists into Gatherer', () => {
-    const fisher = spawnEntity(world, EntityKind.Gatherer, 100, 100, Faction.Player);
-    const logger = spawnEntity(world, EntityKind.Gatherer, 140, 100, Faction.Player);
+    const fisher = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const logger = spawnEntity(world, MUDPAW_KIND, 140, 100, Faction.Player);
     world.specialistAssignments.set(fisher, {
       runtimeId: 'fisher',
       canonicalId: 'fisher',

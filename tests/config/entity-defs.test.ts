@@ -129,8 +129,14 @@ describe('entityKindFromString', () => {
   it('should convert string names to EntityKind', () => {
     expect(entityKindFromString('gatherer')).toBe(EntityKind.Gatherer);
     expect(entityKindFromString('mudpaw')).toBe(EntityKind.Gatherer);
+    expect(entityKindFromString('fisher')).toBe(EntityKind.Gatherer);
+    expect(entityKindFromString('logger')).toBe(EntityKind.Gatherer);
+    expect(entityKindFromString('digger')).toBe(EntityKind.Gatherer);
     expect(entityKindFromString('medic')).toBe(EntityKind.Healer);
     expect(entityKindFromString('lookout')).toBe(EntityKind.Scout);
+    expect(entityKindFromString('guard')).toBe(EntityKind.Sapper);
+    expect(entityKindFromString('ranger')).toBe(EntityKind.Saboteur);
+    expect(entityKindFromString('bombardier')).toBe(EntityKind.Sapper);
     expect(entityKindFromString('predator_nest')).toBe(EntityKind.PredatorNest);
   });
 

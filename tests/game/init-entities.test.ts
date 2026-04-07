@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { EntityTypeTag, FactionTag, Position, Resource } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { spawnInitialEntities } from '@/game/init-entities';
+import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 import type { MapScenario } from '@/ui/store';
 
@@ -108,8 +109,8 @@ describe('init-entities determinism', () => {
       .filter((eid) => FactionTag.faction[eid] === Faction.Player)
       .map((eid) => EntityTypeTag.kind[eid] as EntityKind);
 
-    expect(playerKinds.filter((kind) => kind === EntityKind.Gatherer)).toHaveLength(3);
-    expect(playerKinds.filter((kind) => kind === EntityKind.Scout)).toHaveLength(0);
+    expect(playerKinds.filter((kind) => kind === MUDPAW_KIND)).toHaveLength(3);
+    expect(playerKinds.filter((kind) => kind === LOOKOUT_KIND)).toHaveLength(0);
     expect(playerKinds.filter((kind) => kind === EntityKind.Commander)).toHaveLength(1);
     expect(playerKinds.filter((kind) => kind === EntityKind.Lodge)).toHaveLength(1);
   });

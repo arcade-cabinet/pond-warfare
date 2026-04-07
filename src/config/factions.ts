@@ -5,6 +5,7 @@
  * When the player picks a faction, the other faction is controlled by the AI.
  */
 
+import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 export type PlayableFaction = 'otter' | 'predator';
@@ -40,11 +41,11 @@ export interface FactionConfig {
 export const OTTER_FACTION: FactionConfig = {
   name: 'Otters',
   lodgeKind: EntityKind.Lodge,
-  gathererKind: EntityKind.Gatherer,
+  gathererKind: MUDPAW_KIND,
   meleeKind: EntityKind.Brawler,
   rangedKind: EntityKind.Sniper,
   tankKind: EntityKind.Shieldbearer,
-  supportKind: EntityKind.Healer,
+  supportKind: MEDIC_KIND,
   siegeKind: EntityKind.Catapult,
   heroKind: EntityKind.Commander,
   techTree: ['gathering', 'combat', 'defense', 'utility', 'economy', 'siege'],

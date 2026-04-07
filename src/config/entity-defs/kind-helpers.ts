@@ -5,6 +5,9 @@ export function entityKindFromString(name: string): EntityKind {
   const map: Record<string, EntityKind> = {
     gatherer: EntityKind.Gatherer,
     mudpaw: EntityKind.Gatherer,
+    fisher: EntityKind.Gatherer,
+    logger: EntityKind.Gatherer,
+    digger: EntityKind.Gatherer,
     // Historical compatibility melee/ranged ids.
     brawler: EntityKind.Brawler,
     sniper: EntityKind.Sniper,
@@ -24,6 +27,9 @@ export function entityKindFromString(name: string): EntityKind {
     shieldbearer: EntityKind.Shieldbearer,
     scout: EntityKind.Scout,
     lookout: EntityKind.Scout,
+    guard: EntityKind.Sapper,
+    ranger: EntityKind.Saboteur,
+    bombardier: EntityKind.Sapper,
     catapult: EntityKind.Catapult,
     wall: EntityKind.Wall,
     scout_post: EntityKind.ScoutPost,
@@ -56,7 +62,7 @@ export function entityKindFromString(name: string): EntityKind {
     sapper: EntityKind.Sapper,
     saboteur: EntityKind.Saboteur,
   };
-  const kind = map[name];
+  const kind = map[name.trim().toLowerCase()];
   if (kind === undefined) {
     throw new Error(`Unknown entity kind: "${name}"`);
   }

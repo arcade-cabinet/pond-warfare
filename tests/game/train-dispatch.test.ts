@@ -19,6 +19,7 @@ import {
   trainingQueueSlots,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { train } from '@/input/selection';
 import { EntityKind, Faction } from '@/types';
 
@@ -61,12 +62,12 @@ describe('train dispatch', () => {
 
   it('deducts resources and enqueues unit', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
-    const def = ENTITY_DEFS[EntityKind.Gatherer];
+    const def = ENTITY_DEFS[MUDPAW_KIND];
 
     train(
       world,
       lodge,
-      EntityKind.Gatherer,
+      MUDPAW_KIND,
       def.fishCost ?? 0,
       def.logCost ?? 0,
       def.foodCost ?? 1,
@@ -75,7 +76,7 @@ describe('train dispatch', () => {
     expect(world.resources.fish).toBe(500 - (def.fishCost ?? 0));
     expect(TrainingQueue.count[lodge]).toBe(1);
     const slots = trainingQueueSlots.get(lodge) ?? [];
-    expect(slots[0]).toBe(EntityKind.Gatherer);
+    expect(slots[0]).toBe(MUDPAW_KIND);
   });
 
   it('does not enqueue when resources insufficient', () => {
@@ -101,12 +102,12 @@ describe('train dispatch', () => {
 
   it('adds to TrainingQueue with correct timer on first enqueue', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
-    const def = ENTITY_DEFS[EntityKind.Healer];
+    const def = ENTITY_DEFS[MEDIC_KIND];
 
     train(
       world,
       lodge,
-      EntityKind.Healer,
+      MEDIC_KIND,
       def.fishCost ?? 0,
       def.logCost ?? 0,
       def.foodCost ?? 1,

@@ -9,6 +9,7 @@ import {
 } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
 import { useAirdrop } from '@/game/abilities';
+import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { airdropCooldown, airdropsRemaining } from '@/ui/store';
 import { EntityKind, Faction } from '@/types';
 import { spawnEntity } from '@/ecs/archetypes';
@@ -38,9 +39,9 @@ describe('useAirdrop', () => {
 
     const spawnedKinds = playerUnits.map((eid) => EntityTypeTag.kind[eid]).sort((a, b) => a - b);
     expect(spawnedKinds).toEqual([
-      EntityKind.Gatherer,
-      EntityKind.Gatherer,
-      EntityKind.Healer,
+      MUDPAW_KIND,
+      MUDPAW_KIND,
+      MEDIC_KIND,
     ]);
 
     expect(world.resources.fish - initialFish).toBe(200);

@@ -13,6 +13,12 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
+import {
+  BOMBARDIER_KIND,
+  FISHER_KIND,
+  GUARD_KIND,
+  LOOKOUT_KIND,
+} from '@/game/live-unit-kinds';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { EntityKind, Faction, UnitState } from '@/types';
 
@@ -46,7 +52,7 @@ describe('deploySpecialistsAtMatchStart', () => {
       lodge,
     );
 
-    const fisher = findPlayerUnit(world, EntityKind.Gatherer);
+    const fisher = findPlayerUnit(world, FISHER_KIND);
     expect(Health.max[fisher]).toBe(25);
     expect(Health.current[fisher]).toBe(25);
     expect(Combat.damage[fisher]).toBe(0);
@@ -74,7 +80,7 @@ describe('deploySpecialistsAtMatchStart', () => {
       lodge,
     );
 
-    const guard = findPlayerUnit(world, EntityKind.Sapper);
+    const guard = findPlayerUnit(world, GUARD_KIND);
     expect(Health.max[guard]).toBe(80);
     expect(Combat.damage[guard]).toBe(6);
     expect(Velocity.speed[guard]).toBeCloseTo(1.2);
@@ -100,7 +106,7 @@ describe('deploySpecialistsAtMatchStart', () => {
       lodge,
     );
 
-    const lookout = findPlayerUnit(world, EntityKind.Scout);
+    const lookout = findPlayerUnit(world, LOOKOUT_KIND);
     const route = world.patrolWaypoints.get(lookout) ?? [];
 
     expect(Health.max[lookout]).toBe(15);
@@ -132,7 +138,7 @@ describe('deploySpecialistsAtMatchStart', () => {
       lodge,
     );
 
-    const bombardier = findPlayerUnit(world, EntityKind.Sapper);
+    const bombardier = findPlayerUnit(world, BOMBARDIER_KIND);
     const assignment = world.specialistAssignments.get(bombardier);
 
     expect(Combat.attackRange[bombardier]).toBe(340);

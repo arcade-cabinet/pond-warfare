@@ -12,6 +12,13 @@ export const MEDIC_KIND = EntityKind.Healer;
 export const LOOKOUT_KIND = EntityKind.Scout;
 export const SAPPER_KIND = EntityKind.Sapper;
 export const SABOTEUR_KIND = EntityKind.Saboteur;
+export const FISHER_KIND = MUDPAW_KIND;
+export const LOGGER_KIND = MUDPAW_KIND;
+export const DIGGER_KIND = MUDPAW_KIND;
+export const GUARD_KIND = SAPPER_KIND;
+export const RANGER_KIND = SABOTEUR_KIND;
+export const BOMBARDIER_KIND = SAPPER_KIND;
+export const SHAMAN_KIND = EntityKind.Shaman;
 
 export function isMudpawKind(kind: EntityKind | number): boolean {
   return kind === MUDPAW_KIND;

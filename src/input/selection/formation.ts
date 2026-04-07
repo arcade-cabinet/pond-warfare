@@ -6,6 +6,7 @@
  */
 
 import { EntityTypeTag } from '@/ecs/components';
+import { LOOKOUT_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 const FORMATION_SPACING = 60;
@@ -21,9 +22,21 @@ export function calculateFormationPositions(
 
   for (const eid of units) {
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    if (kind === EntityKind.Brawler || kind === EntityKind.Gator) {
+    if (
+      kind === SAPPER_KIND ||
+      kind === SABOTEUR_KIND ||
+      kind === EntityKind.Brawler ||
+      kind === EntityKind.Gator ||
+      kind === EntityKind.ArmoredGator ||
+      kind === EntityKind.Berserker
+    ) {
       melee.push(eid);
-    } else if (kind === EntityKind.Sniper) {
+    } else if (
+      kind === LOOKOUT_KIND ||
+      kind === EntityKind.Sniper ||
+      kind === EntityKind.Catapult ||
+      kind === EntityKind.VenomSnake
+    ) {
       ranged.push(eid);
     } else {
       support.push(eid);
