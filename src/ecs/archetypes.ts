@@ -19,6 +19,7 @@ import {
   Sprite,
   Stance,
   StanceMode,
+  TaskOverride,
   TowerAI,
   TrainingQueue,
   UnitStateMachine,
@@ -232,6 +233,12 @@ export function spawnEntity(
 
     addComponent(world.ecs, eid, Carrying);
     Carrying.resourceType[eid] = 0; // None
+
+    addComponent(world.ecs, eid, TaskOverride);
+    TaskOverride.active[eid] = 0;
+    TaskOverride.task[eid] = 0;
+    TaskOverride.targetEntity[eid] = 0;
+    TaskOverride.resourceKind[eid] = 0;
 
     addComponent(world.ecs, eid, Veterancy);
     Veterancy.rank[eid] = 0;

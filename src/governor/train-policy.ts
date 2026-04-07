@@ -37,7 +37,7 @@ export function getGovernorGathererTarget(): number {
   if (hasImmediatePressure()) return 2;
 
   const stage = currentStage();
-  if (stage >= 6) return 2;
+  if (stage >= 6) return 1;
   if (stage >= 4) return 3;
   return 4;
 }

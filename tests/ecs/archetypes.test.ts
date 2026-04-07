@@ -20,6 +20,7 @@ import {
   Position,
   Resource,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
   Veterancy,
@@ -43,6 +44,7 @@ describe('spawnEntity', () => {
     expect(hasComponent(world.ecs, eid, Velocity)).toBe(true);
     expect(hasComponent(world.ecs, eid, UnitStateMachine)).toBe(true);
     expect(hasComponent(world.ecs, eid, Carrying)).toBe(true);
+    expect(hasComponent(world.ecs, eid, TaskOverride)).toBe(true);
     expect(hasComponent(world.ecs, eid, Veterancy)).toBe(true);
     expect(Position.x[eid]).toBe(100);
     expect(Position.y[eid]).toBe(200);

@@ -164,12 +164,11 @@ describe('TrainEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.42);
   });
 
-  it('lowers the gatherer target on stage 6 so combat training can start earlier', () => {
+  it('opens stage-6 combat training once the first gatherer is online', () => {
     storeV3.progressionLevel.value = 6;
     store.unitRoster.value = [
       makeGroup('gatherer', [
         { eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer },
-        { eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer },
       ]),
     ];
 

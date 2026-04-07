@@ -135,9 +135,10 @@ override persistence, specialist governor lockout, prestige population
 accounting, the combat counter-scaling fix, governor attack-party reuse, safer
 governor attack pacing, bottom-row-only rare resource placement, deterministic
 match-event bonus-node placement, transient training-queue reset on fresh world
-creation, deterministic seeded weather in `createTestWorld()`, and a shared
-mocked `game.world` reference across the balance harness files. Those fixes
-removed multiple false negatives from the progression reports.
+creation, deterministic seeded weather in `createTestWorld()`, attaching the
+`TaskOverride` ECS component to spawned units, and a shared mocked
+`game.world` reference across the balance harness files. Those fixes removed
+multiple false negatives from the progression reports.
 
 ## Exhaustive Broad Reports
 
@@ -177,7 +178,8 @@ Current isolated readout:
 - Pearl rank 1:
   - opening window, 1200 frames:
     - the opening slice is still not a release-budget signal; it is a fast early-expression check
-    - after the governor bootstrap fix, the opening trace now reaches an attack window instead of flatlining
+    - after correcting override-component accounting, the sampled stage-6 full-governor trace no longer pretends to reach an attack window
+    - the opening trace currently averages about `1.8` ready combat units and the 2400-frame trace about `2.4`, but still opens `0` real attack windows across sampled seeds
     - `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `gather_multiplier` still read strongly negative here because the first 1200 frames are dominated by early setup and the first defend cycle
   - long-run window, 2400 frames:
     - `auto_deploy_fisher` is now strongest at about `6.42%` `meta_mean_pct`
@@ -248,7 +250,8 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
   - the attack controller now issues shared-target attack orders instead of splitting units across the line by default
   - the governor now waits for a safer attack army size in full play, avoids launching just before a wave, and avoids launching off a damaged Lodge
   - regular attack parties are now reassignable back into defense instead of getting stranded behind their old governor-issued attack overrides, while prestige-locked specialists stay on their fixed roles
-  - it still converts that into only trivial or zero kills in the short skirmish slice, which makes the attack path a concrete remaining gap rather than a scoring artifact
+  - the short skirmish slice still under-converts into kills, but the sampled full-governor stage-6 trace now points one step earlier: it is still failing to open committed attack-party windows at all
+  - that makes attack readiness under pressure the next bottleneck, not just order-to-contact conversion once an attack is already underway
 
 ## Interpretation
 
@@ -261,9 +264,10 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
 - Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.
 - The Pearl broad scan is now trustworthy enough to use as one release-budget input, and the Clam scan is no longer directionally wrong now that it uses a post-match purchase loop.
 - The missing Frontier lens is no longer missing. The corrected frontier ladder report shows the current pacing is now in a usable band, and no step is materially harmful, but the stage-2, stage-3, and stage-6 edge steps are still slightly under budget in the short-match lens.
-- The targeted governor trace is now healthier: the stage-6 opening window reaches an attack scoring window at about `14s`, the opening slice averages about `2.2` ready combat units instead of `1.2`, and the 2400-frame trace averages about `3.1` ready combat units. That means the short Pearl scan is no longer dominated by a pure gatherer bootstrap stall.
+- The targeted governor trace is cleaner but still not healthy enough on stage 6. After the stage-aware opener change, the sampled full-governor trace averages about `1.8` ready combat units in the opening slice and about `2.4` over 2400 frames, but still opens `0` committed attack windows across seeds `11/42/77`.
 - The dual-window Pearl report moved materially after the score-model fix as well as the governor/bootstrap fixes. The 2400-frame scan is now mostly positive: `auto_deploy_fisher` lands around `6.42% meta_mean_pct`, `auto_deploy_digger` around `3.33%`, `rare_resource_access` around `1.20%`, `hp_multiplier` around `0.68%`, and `combat_multiplier` around `0.50%`.
 - The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, and `hp_multiplier` reads as small-but-positive instead of looking inert.
+- The new full-trace attack conversion diagnostic shows the current blocker more honestly: in the sampled stage-6 full-governor trace, baseline and `combat_multiplier` variants both open `0` real attack-party windows, so there is no meaningful contact/churn signal to measure yet.
 - The rare-resource prestige path is no longer a map-generation trap. Its opening-window wobble now looks like ordinary governor valuation noise rather than a fundamentally harmful spawn pattern.
 - The suspicious long-run Pearl set is much narrower now: `gather_multiplier` is the only row still slightly negative, while `combat_multiplier` and `hp_multiplier` are now positive but still reading under budget.
 - The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the stage-aware gatherer target and baseline Lodge-generalist alignment, but attack still fails to cash in its later army strength as well as it should over the longer governor run.
@@ -280,7 +284,7 @@ Short-term tuning heuristic:
 ## Next Steps
 
 1. Improve the weak Frontier edge steps, especially `Frontier Expansion I`, `II`, and `V`, which are now only slightly negative instead of catastrophically misbudgeted.
-2. Investigate the remaining attack-controller conversion gap, since the governor now reaches attack windows earlier but still does not convert later army strength into enough kills.
+2. Investigate the remaining stage-6 governor attack-readiness gap, since the sampled full-governor trace still opens `0` real attack windows across seeds `11/42/77`.
 3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
 4. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under budget in the long-run broad scan.
 5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.
