@@ -27,6 +27,7 @@ import {
 } from '@/ecs/components';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { LOOKOUT_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { issueContextCommand } from '@/input/selection';
 import { cleanupEntityAnimation, entityScales, triggerAttackLunge } from '@/rendering/animations';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -110,44 +111,44 @@ describe('Command Voice Acknowledgements', () => {
   });
 
   it('plays move command voice on ground right-click', () => {
-    const unit = createUnit(world, 100, 100, EntityKind.Brawler, Faction.Player);
+    const unit = createUnit(world, 100, 100, SAPPER_KIND, Faction.Player);
     world.selection = [unit];
 
     issueContextCommand(world, null, 500, 500);
 
-    expect(audio.playCommandVoice).toHaveBeenCalledWith(EntityKind.Brawler, 'move');
+    expect(audio.playCommandVoice).toHaveBeenCalledWith(SAPPER_KIND, 'move');
   });
 
   it('plays attack command voice when targeting enemy', () => {
-    const unit = createUnit(world, 100, 100, EntityKind.Brawler, Faction.Player);
+    const unit = createUnit(world, 100, 100, SAPPER_KIND, Faction.Player);
     const enemy = createUnit(world, 200, 200, EntityKind.Gator, Faction.Enemy);
     world.selection = [unit];
 
     issueContextCommand(world, enemy, 200, 200);
 
-    expect(audio.playCommandVoice).toHaveBeenCalledWith(EntityKind.Brawler, 'attack');
+    expect(audio.playCommandVoice).toHaveBeenCalledWith(SAPPER_KIND, 'attack');
   });
 
   it('plays gather command voice when targeting resource', () => {
-    const unit = createUnit(world, 100, 100, EntityKind.Gatherer, Faction.Player);
+    const unit = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
     const res = createResource(world, 200, 200, EntityKind.Cattail);
     world.selection = [unit];
 
     issueContextCommand(world, res, 200, 200);
 
-    expect(audio.playCommandVoice).toHaveBeenCalledWith(EntityKind.Gatherer, 'gather');
+    expect(audio.playCommandVoice).toHaveBeenCalledWith(MUDPAW_KIND, 'gather');
   });
 
   it('plays voice for leader only in group selection', () => {
-    const unit1 = createUnit(world, 100, 100, EntityKind.Brawler, Faction.Player);
-    const unit2 = createUnit(world, 120, 100, EntityKind.Sniper, Faction.Player);
+    const unit1 = createUnit(world, 100, 100, SAPPER_KIND, Faction.Player);
+    const unit2 = createUnit(world, 120, 100, LOOKOUT_KIND, Faction.Player);
     world.selection = [unit1, unit2];
 
     issueContextCommand(world, null, 500, 500);
 
     // Only the first unit's voice should play
     expect(audio.playCommandVoice).toHaveBeenCalledTimes(1);
-    expect(audio.playCommandVoice).toHaveBeenCalledWith(EntityKind.Brawler, 'move');
+    expect(audio.playCommandVoice).toHaveBeenCalledWith(SAPPER_KIND, 'move');
   });
 });
 
@@ -191,10 +192,10 @@ describe('Staggered Gathering Rhythm', () => {
   });
 
   it('staggers gather SFX per entity instead of all at once', () => {
-    // Create two gatherers with different eids
-    const g1 = createUnit(world, 100, 100, EntityKind.Gatherer, Faction.Player);
+    // Create two Mudpaws with different eids.
+    const g1 = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
     const r1 = createResource(world, 100, 100, EntityKind.Cattail);
-    const g2 = createUnit(world, 200, 200, EntityKind.Gatherer, Faction.Player);
+    const g2 = createUnit(world, 200, 200, MUDPAW_KIND, Faction.Player);
     const r2 = createResource(world, 200, 200, EntityKind.Clambed);
 
     UnitStateMachine.state[g1] = UnitState.Gathering;
@@ -223,12 +224,12 @@ describe('Staggered Gathering Rhythm', () => {
       // Track simultaneous ticks (both on same frame = old behavior)
     }
 
-    // At least one gatherer should tick independently of the other
+    // At least one Mudpaw should tick independently of the other.
     expect(g1Ticked || g2Ticked).toBe(true);
   });
 
   it('plays pickup sound when gather timer completes', () => {
-    const gatherer = createUnit(world, 100, 100, EntityKind.Gatherer, Faction.Player);
+    const gatherer = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
     const res = createResource(world, 100, 100, EntityKind.Cattail);
 
     UnitStateMachine.state[gatherer] = UnitState.Gathering;

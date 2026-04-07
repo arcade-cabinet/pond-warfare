@@ -14,7 +14,7 @@ import type { SpecialistDef } from '@/config/v3-types';
 
 // ── Types ─────────────────────────────────────────────────────────
 
-/** A specialist unit to spawn at match start. */
+/** A specialist blueprint-cap snapshot request used by harnesses. */
 export interface SpecialistSpawnRequest {
   /** Specialist unit ID from units.json (e.g. "fisher"). */
   unitId: string;
@@ -30,7 +30,7 @@ export interface SpecialistSpawnRequest {
   speed: number;
 }
 
-/** Result of computing all specialist spawns. */
+/** Result of computing the specialist field-cap snapshot. */
 export interface SpecialistDeployPlan {
   /** All specialist units to spawn. */
   spawns: SpecialistSpawnRequest[];

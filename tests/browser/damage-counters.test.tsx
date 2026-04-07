@@ -19,6 +19,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { mountCurrentGame } from './helpers/mount-current-game';
@@ -96,20 +97,20 @@ describe('Damage counter system', () => {
     return { damageTaken, defenderHpBefore, defenderHpAfter, attacker, defender };
   }
 
-  it('legacy melee compatibility chassis deals damage to Gator', async () => {
+  it('Sapper deals damage to Gator in live browser combat', async () => {
     const { damageTaken } = await testDamage(
-      EntityKind.Brawler, Faction.Player,
+      SAPPER_KIND, Faction.Player,
       EntityKind.Gator, Faction.Enemy,
-      'Brawler vs Gator',
+      'Sapper vs Gator',
     );
     expect(damageTaken).toBeGreaterThan(0);
   });
 
-  it('legacy melee compatibility chassis damages a fragile support target in live browser combat', async () => {
+  it('Sapper damages a fragile support target in live browser combat', async () => {
     const { damageTaken: vsHealer } = await testDamage(
-      EntityKind.Brawler, Faction.Player,
+      SAPPER_KIND, Faction.Player,
       EntityKind.Healer, Faction.Enemy,
-      'Brawler vs Healer',
+      'Sapper vs Healer',
     );
     expect(vsHealer).toBeGreaterThan(0);
   });
@@ -147,7 +148,7 @@ describe('Damage counter system', () => {
 
   it('enemy units can damage player units', async () => {
     const { x: baseX, y: baseY } = nextScenarioOrigin();
-    const player = spawnTestUnit(EntityKind.Brawler, Faction.Player, baseX, baseY);
+    const player = spawnTestUnit(SAPPER_KIND, Faction.Player, baseX, baseY);
     const enemy = spawnTestUnit(EntityKind.Gator, Faction.Enemy, baseX + 20, baseY, player);
 
     const hpBefore = Health.current[player];
@@ -160,7 +161,7 @@ describe('Damage counter system', () => {
     const { x: baseX, y: baseY } = nextScenarioOrigin();
     const victim = spawnTestUnit(EntityKind.Snake, Faction.Enemy, baseX, baseY);
     Health.current[victim] = 1; // nearly dead
-    spawnTestUnit(EntityKind.Brawler, Faction.Player, baseX + 20, baseY, victim);
+    spawnTestUnit(SAPPER_KIND, Faction.Player, baseX + 20, baseY, victim);
 
     await waitFrames(300);
     expect(Health.current[victim]).toBeLessThanOrEqual(0);

@@ -13,6 +13,7 @@ import {
   GatherEvaluator,
   TrainEvaluator,
 } from '@/governor/evaluators';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -73,10 +74,10 @@ describe('Governor viability decisions', () => {
     // will focus on assignment rather than more early generalists.
     store.unitRoster.value = [
       makeGroup('generalist', [
-        { eid: 1, task: 'idle', kind: EntityKind.Gatherer },
-        { eid: 2, task: 'idle', kind: EntityKind.Gatherer },
-        { eid: 3, task: 'gathering-fish', kind: EntityKind.Gatherer },
-        { eid: 4, task: 'gathering-logs', kind: EntityKind.Gatherer },
+        { eid: 1, task: 'idle', kind: MUDPAW_KIND },
+        { eid: 2, task: 'idle', kind: MUDPAW_KIND },
+        { eid: 3, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 4, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
     ];
     store.buildingRoster.value = [
@@ -96,10 +97,10 @@ describe('Governor viability decisions', () => {
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
     store.unitRoster.value = [
       makeGroup('generalist', [
-        { eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer },
-        { eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer },
-        { eid: 3, task: 'gathering-logs', kind: EntityKind.Gatherer },
-        { eid: 4, task: 'gathering-logs', kind: EntityKind.Gatherer },
+        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 3, task: 'gathering-logs', kind: MUDPAW_KIND },
+        { eid: 4, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
     ];
     store.fish.value = 200;
@@ -116,8 +117,8 @@ describe('Governor viability decisions', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 3;
     store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Sapper }]),
-      makeGroup('generalist', [{ eid: 2, task: 'idle', kind: EntityKind.Gatherer }]),
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
+      makeGroup('generalist', [{ eid: 2, task: 'idle', kind: MUDPAW_KIND }]),
     ];
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
 
@@ -135,8 +136,8 @@ describe('Governor viability decisions', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 1;
     store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Sapper }]),
-      makeGroup('generalist', [{ eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
+      makeGroup('generalist', [{ eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND }]),
     ];
     store.buildingRoster.value = [{ eid: 10, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] }];
 

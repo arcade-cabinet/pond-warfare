@@ -12,6 +12,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Selectable, UnitStateMachine } from '@/ecs/components';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { issueContextCommand } from '@/input/selection';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getRadialOptions, type RadialGameState } from '@/ui/radial-menu-options';
@@ -65,14 +66,14 @@ describe('Touch-Only Gameplay Flow', () => {
     expect(ids).not.toContain('train_medic');
   });
 
-  it('tap gatherer then tap resource issues gather-move command', () => {
+  it('tap Mudpaw then tap resource issues gather-move command', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 200, Faction.Player);
+    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 200, Faction.Player);
     const resource = spawnResource(world, 300, 200);
 
-    // Select the gatherer (simulating tap)
+    // Select the Mudpaw (simulating tap)
     Selectable.selected[gatherer] = 1;
     world.selection = [gatherer];
 
@@ -84,11 +85,11 @@ describe('Touch-Only Gameplay Flow', () => {
     expect(UnitStateMachine.targetEntity[gatherer]).toBe(resource);
   });
 
-  it('tap on empty ground with fighter selected issues move command', () => {
+  it('tap on empty ground with Sapper selected issues move command', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const fighter = spawnEntity(world, EntityKind.Brawler, 200, 200, Faction.Player);
+    const fighter = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
     Selectable.selected[fighter] = 1;
     world.selection = [fighter];
 
@@ -98,11 +99,11 @@ describe('Touch-Only Gameplay Flow', () => {
     expect(UnitStateMachine.state[fighter]).toBe(UnitState.Move);
   });
 
-  it('tap on enemy with fighter selected issues attack command', () => {
+  it('tap on enemy with Sapper selected issues attack command', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const fighter = spawnEntity(world, EntityKind.Brawler, 200, 200, Faction.Player);
+    const fighter = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
     const enemy = spawnEntity(world, EntityKind.Gator, 400, 200, Faction.Enemy);
 
     Selectable.selected[fighter] = 1;
@@ -129,11 +130,11 @@ describe('Touch-Only Gameplay Flow', () => {
     expect(options.length).toBeGreaterThan(0);
     expect(options.map((o) => o.id)).toContain('train_mudpaw');
 
-    // Step 2: Spawn a gatherer (simulating training completion)
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 400, 420, Faction.Player);
+    // Step 2: Spawn a Mudpaw (simulating training completion)
+    const gatherer = spawnEntity(world, MUDPAW_KIND, 400, 420, Faction.Player);
     const resource = spawnResource(world, 600, 300);
 
-    // Step 3: Tap gatherer to select
+    // Step 3: Tap Mudpaw to select
     Selectable.selected[gatherer] = 1;
     world.selection = [gatherer];
 
