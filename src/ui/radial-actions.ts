@@ -22,6 +22,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
+import { cycleStanceForSelection } from '@/game/input-setup';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { beginSpecialistAssignment } from '@/game/specialist-assignment';
 import { train } from '@/input/selection';
@@ -30,6 +31,7 @@ import { COLORS } from '@/ui/design-tokens';
 import { radialMenuTargetEntityId } from '@/ui/store-radial';
 import { pushGameEvent } from './game-events';
 import { handleFortifyAction, handleFortTypeAction } from './radial-fort-actions';
+import * as store from './store';
 
 // Re-export for pointer-click.ts
 export { tryPlaceFortAtPosition } from './radial-fort-actions';
@@ -150,15 +152,11 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
       game.syncUIStore();
       return true;
     case 'cmd_patrol':
-      import('./store').then((s) => {
-        s.patrolModeActive.value = true;
-      });
+      store.patrolModeActive.value = true;
       return true;
     case 'cmd_stance':
-      import('../game/input-setup').then(({ cycleStanceForSelection }) => {
-        cycleStanceForSelection(world);
-        game.syncUIStore();
-      });
+      cycleStanceForSelection(world);
+      game.syncUIStore();
       return true;
     case 'cmd_return':
       returnToLodge(world);

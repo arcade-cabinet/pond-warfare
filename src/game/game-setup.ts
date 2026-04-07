@@ -19,6 +19,7 @@ import {
   wireWebGLHandlers,
 } from '@/game/game-init';
 import type { GameLoopState } from '@/game/game-loop';
+import { setupAudio } from '@/game/game-lifecycle';
 import { PhysicsManager } from '@/physics/physics-world';
 import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
@@ -124,7 +125,6 @@ export async function runGameSetup(cfg: SetupInputs): Promise<SetupOutputs> {
   document.addEventListener('visibilitychange', boundVisibilityChange);
 
   // Audio
-  const { setupAudio } = await import('@/game/game-lifecycle');
   const audioRefs = {
     audioInitialized: cfg.audioInitialized,
     audioInitPromise: null as Promise<void> | null,
