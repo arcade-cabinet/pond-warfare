@@ -113,13 +113,13 @@ From [balance-track-shifts.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfa
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| clam_gather_t1 | 0.00 | 0.90 | 2.70 |
-| clam_yield_t1 | 0.17 | 1.08 | 2.78 |
-| clam_clam_bonus_t1 | 0.00 | 0.78 | 2.33 |
-| pearl_clam_earnings_rank_1 | 0.39 | 0.43 | 0.46 |
-| pearl_gather_rank_2 | 0.25 | 0.75 | 1.28 |
-| pearl_auto_deploy_fisher | 0.00 | 0.83 | 1.77 |
-| pearl_starting_tier_1 | 0.90 | 1.27 | 1.79 |
+| clam_gather_t1 | 0.00 | 0.11 | 0.33 |
+| clam_yield_t1 | 0.21 | 0.32 | 0.42 |
+| clam_clam_bonus_t1 | 0.16 | 0.16 | 0.16 |
+| pearl_clam_earnings_rank_1 | 0.36 | 0.38 | 0.42 |
+| pearl_gather_rank_2 | 0.00 | 0.14 | 0.33 |
+| pearl_auto_deploy_fisher | 0.00 | 0.00 | 0.00 |
+| pearl_starting_tier_1 | 0.44 | 0.88 | 1.57 |
 
 These sampled Pearl rows now compare against a rank-matched Pearl baseline, so
 the shifts represent the upgrade itself instead of accidentally including the
@@ -137,8 +137,16 @@ governor attack pacing, bottom-row-only rare resource placement, deterministic
 match-event bonus-node placement, transient training-queue reset on fresh world
 creation, deterministic seeded weather in `createTestWorld()`, attaching the
 `TaskOverride` ECS component to spawned units, and a shared mocked
-`game.world` reference across the balance harness files. Those fixes removed
-multiple false negatives from the progression reports.
+`game.world` reference across the balance harness files.
+
+The latest correction is bigger than the earlier bookkeeping fixes: the
+balance/governor harnesses now share
+[run-sim-frame.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/helpers/run-sim-frame.ts),
+which runs the live defensive stack instead of a stripped-down loop. That
+means the reports now include `buildingSystem`, `fortificationTickSystem`,
+`projectileSystem`, and `shamanHealSystem` in the same frame flow as the live
+game. This materially changed the stage-6 numbers and removed another class of
+false negatives from the balance reports.
 
 ## Exhaustive Broad Reports
 
@@ -165,30 +173,30 @@ Current isolated readout:
   - the old frame-zero exhaustive scan has now been replaced by a post-match purchase loop
   - the Clam broad report now does: warmup match to earn real Clams, buy one T1 node between matches, then score the next match
   - in that real between-match loop, the first current-run relief rows are directionally correct:
-    - `economy_node_yield_t0` lands around `0.25%` `meta_mean_pct`
-    - the three basic gather rows land around `0.39%`, now with about `0.93%` `economy_mean_pct`
-    - `economy_clam_bonus_t0` lands around `0.14%` with about `0.93%` `economy_mean_pct`
+    - `economy_node_yield_t0` lands around `0.56%` `meta_mean_pct`
+    - the three basic gather rows land around `0.38%`, with about `0.81%` `economy_mean_pct`
+    - `economy_clam_bonus_t0` lands around `0.15%`, with about `0.99%` `economy_mean_pct`
   - most other T1 rows are currently flat in this harness instead of falsely negative, which is a better read but still tells us many categories are not expressing enough value in the immediate next-match window
 - Frontier Expansion path:
   - [frontier-progression-report.test.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/e2e/frontier-progression-report.test.ts) now runs the actual prestige-cycle frontier ladder: earn Clams at the current stage, buy the next required path and Frontier diamond when affordable, then score the first match at the newly unlocked stage
   - the earlier extreme negative Frontier readout was contaminated by a diagnostic bug: it was comparing stage-entry runs against a stage-1 baseline instead of a fresh same-stage baseline
-  - with that corrected, plus the reward/frontier tuning pass, the current 30-second match lens is much healthier: mean total matches to first exposure are about `2` for stage 2, `5.33` for stage 3, `14.67` for stage 4, `23.67` for stage 5, and `42.67` for stage 6
-  - corrected stage-entry relief is now mostly neutral-to-positive: `Frontier Expansion I` lands around `-0.48%` `meta_mean_pct`, `II` around `-0.88%`, `III` around `+10.58%`, `IV` around `+0.79%`, and `V` around `-0.58%`
+  - in the current live-stack 30-second lens, mean total matches to first exposure are about `2` for stage 2, `7` for stage 3, `13.67` for stage 4, `20.67` for stage 5, and `34.33` for stage 6
+  - corrected stage-entry relief is now near-neutral overall: `Frontier Expansion I` lands around `-0.41%` `meta_mean_pct`, `II` around `+0.06%`, `III` around `+0.16%`, `IV` around `-0.46%`, and `V` around `+0.08%`
   - all five stage-entry rows still survive the next match at `100%` across seeds, so the baseline rule is intact; the remaining issue is light under-budget expression on the early/late edge steps, not hard progression failure
 - Pearl rank 1:
   - opening window, 1200 frames:
     - the opening slice is still not a release-budget signal; it is a fast early-expression check
-    - after correcting override-component accounting, the sampled stage-6 full-governor trace no longer pretends to reach an attack window
-    - the opening trace currently averages about `1.8` ready combat units and the 2400-frame trace about `2.4`, but still opens `0` real attack windows across sampled seeds
-    - `combat_multiplier`, `hp_multiplier`, `auto_heal_behavior`, and `gather_multiplier` still read strongly negative here because the first 1200 frames are dominated by early setup and the first defend cycle
+    - `auto_deploy_guardian` is strongest at about `1.88%` `meta_mean_pct`, with `auto_deploy_hunter` around `1.56%` and `auto_deploy_fisher` around `1.09%`
+    - `hp_multiplier` is mildly positive around `0.54%`
+    - `gather_multiplier`, `combat_multiplier`, and `auto_heal_behavior` are still effectively flat here
+    - the worst opening-window Pearl rows are now `auto_deploy_logger` and `auto_deploy_digger`, both materially negative in this short slice
   - long-run window, 2400 frames:
-    - `auto_deploy_fisher` is now strongest at about `6.42%` `meta_mean_pct`
-    - `auto_deploy_digger` is about `3.33%`, `auto_deploy_guardian` about `2.25%`, and `auto_deploy_hunter` about `1.30%`
-    - `rare_resource_access` is positive at about `1.20%`
-    - `hp_multiplier` is positive at about `0.68%`
-    - `combat_multiplier` is positive at about `0.50%`
-    - `clam_earnings_multiplier` remains economy-led, with about `2.65%` `economy_mean_pct` and about `0.51%` `meta_mean_pct`
-    - the only still-negative long-run Pearl row in the broad scan is now `gather_multiplier` at about `-0.01%`; `hp_multiplier` and `combat_multiplier` remain under budget, but they are no longer directionally negative
+    - `auto_deploy_guardian` is strongest at about `2.20%` `meta_mean_pct`, with `auto_deploy_hunter` around `1.51%`, `auto_deploy_ranger` around `0.95%`, and `auto_deploy_shaman` around `0.90%`
+    - `starting_tier` is about `0.70%`
+    - `hp_multiplier` is about `0.47%`, `gather_multiplier` about `0.38%`, `combat_multiplier` about `0.32%`, and `auto_heal_behavior` about `0.14%`
+    - `clam_earnings_multiplier` remains economy-led, with about `2.19%` `economy_mean_pct` and about `0.35%` `meta_mean_pct`
+    - `auto_deploy_fisher` is only near-neutral in the long-run broad scan at about `0.04%`
+    - the main still-negative long-run Pearl rows are `auto_deploy_logger` around `-3.60%`, `auto_deploy_digger` around `-3.88%`, plus smaller negatives on `rare_resource_access` and `auto_deploy_lookout`
 
 ## Combat-Pressure Diagnostic
 
@@ -196,9 +204,9 @@ From [pearl-combat-pressure-diagnostics.test.ts](/Users/jbogaty/src/arcade-cabin
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
-| combat_multiplier | 0.35 | 0.35 | 0.35 |
-| hp_multiplier | 2.05 | 2.05 | 2.05 |
-| auto_heal_behavior | 3.11 | 3.11 | 3.11 |
+| combat_multiplier | 0.35 | 0.64 | 1.20 |
+| hp_multiplier | 1.91 | 2.00 | 2.05 |
+| auto_heal_behavior | 2.68 | 2.97 | 3.11 |
 | auto_repair_behavior | 3.18 | 3.18 | 3.18 |
 
 This is not a tuning success. It is a diagnostic finding:
@@ -219,9 +227,9 @@ tracks actually help?
 
 Current reading:
 
-- `auto_repair_behavior` and `auto_heal_behavior` are clearly real and strongly expressed in the scenario they are meant to help. Sample runs regularly show them beating baseline by wide margins once the hold turns into a war of attrition.
-- `combat_multiplier` is only modestly positive on mean and can swing a lot across seeds, which makes sense for a sustain scenario that is not primarily about raw DPS
-- `hp_multiplier` is still only near-neutral to low-single-digit positive here, which means it now registers as real durability but still does not dominate the sustain picture
+- `auto_repair_behavior` and `auto_heal_behavior` are clearly real and strongly expressed in the scenario they are meant to help. In this narrow hold scenario they now show triple-digit mean lift, so the main takeaway is expression, not budget size.
+- `combat_multiplier` is only modestly positive on mean, which makes sense for a sustain scenario that is not primarily about raw DPS.
+- `hp_multiplier` is effectively flat in this specific harness right now, so it still looks real in pressure slices but under-expressed in longer sustain-only scoring.
 - this closes the biggest remaining ambiguity from the broad Pearl scan: `hp_multiplier` and `auto_heal_behavior` are not missing runtime consumers, they are just poorly represented by the opening-window and general long-run reports
 
 ## Controller Diagnostics
@@ -238,39 +246,35 @@ was incorrectly reporting `auto_deploy_hunter` without spawning a hunter.
   - `auto_deploy_digger` and `auto_deploy_logger` do increase rock/log collection when the gather controller is forced to care about those tracks
   - `rare_resource_access` now adds rare nodes only in the bottom-row panels, which keeps the runtime consumer active without luring gatherers into the hostile top row
 - Build controller:
-  - the new controller slice exposed a real bug: wing-building placement offsets were too small, so the build controller could repeatedly fail to place Armory wings near the Lodge
-  - after fixing [build-goal.ts](/Users/jbogaty/src/arcade-cabinet/pond-warfare/src/governor/goals/build-goal.ts), the build controller now reaches Armory within a few controller cycles instead of stalling indefinitely
+  - the wing-placement bug is fixed: the build controller now reaches Armory around frame `360` in the baseline slice and around frame `240` in the stronger variants instead of stalling indefinitely
+  - standalone tower/burrow follow-up is still weak in that slice, with `buildingsBuilt` staying at `0` after the Armory step
 - Train controller:
   - the prestige population fix removed a real false-negative path: `auto_deploy_fisher` no longer steals a training slot by consuming baseline food
   - short-window training throughput is still bottlenecked by queue timing and building cadence more than raw fish income
 - Defend controller:
-  - `auto_repair_behavior`, `hp_multiplier`, and `auto_heal_behavior` all improve raw Lodge survival in the defend-only slice
+  - `auto_repair_behavior`, `hp_multiplier`, and `auto_heal_behavior` all improve raw Lodge survival in the defend-only slice, with `auto_heal_behavior` currently showing the largest kill-side bump there
   - that means the strongly negative blended pressure scores are not purely missing runtime effects; they are interactions inside the full governor loop
 - Attack controller:
-  - the attack controller now issues shared-target attack orders instead of splitting units across the line by default
-  - the governor now waits for a safer attack army size in full play, avoids launching just before a wave, and avoids launching off a damaged Lodge
-  - regular attack parties are now reassignable back into defense instead of getting stranded behind their old governor-issued attack overrides, while prestige-locked specialists stay on their fixed roles
-  - the short skirmish slice still under-converts into kills, but the sampled full-governor stage-6 trace now points one step earlier: it is still failing to open committed attack-party windows at all
-  - that makes attack readiness under pressure the next bottleneck, not just order-to-contact conversion once an attack is already underway
+  - the attack controller does convert better in the micro slice now: baseline commits `4` units for `2` kills, and `auto_deploy_hunter` improves that to `4` kills with only `2` enemies left
+  - the full-governor stage-6 trace is still the bigger issue: it opens `0` committed attack windows, so the remaining blocker is sustained safety under siege, not shared-target contact conversion
 
 ## Interpretation
 
-- Cheap first-rank Clam tracks are currently landing around **0.8% to 1.1% sampled mean relief** in the smaller stage-6 report.
+- Cheap first-rank Clam tracks are currently landing around **0.1% to 0.4% mean relief** in the stricter live-stack sampled stage-6 report, while the post-match Clam report shows clearer economy-side value.
 - The post-match Clam broad scan now agrees directionally with the sampled Clam rows: basic gather, node-yield, and clam-bonus T1 purchases are positive once they are measured as real between-match purchases instead of frame-zero injections.
 - The remaining Clam broad-report gap is narrower now: many non-gather T1 rows are still flat in the very next match, which means they either need a different expression harness or stronger gameplay impact.
-- Early sampled Pearl tracks are directionally positive across the selected rows, and the long-run broad Pearl scan is now mostly positive as well, but the non-specialist Pearl rows still land below the strongest specialist auto-deploys.
+- Early sampled Pearl tracks are mostly flat-to-positive now, and the long-run broad Pearl scan is mixed rather than broadly positive: Guardian/Hunter/Ranger/Shaman lead, while Logger/Digger remain the strongest negative anomalies.
 - Under forced early combat pressure, all four tested Pearl combat/repair tracks are now positive, with `combat_multiplier`, `hp_multiplier`, and `auto_heal_behavior` showing the strongest gains.
 - The negative minimums mean the current balance is still not stable enough to guarantee every upgrade helps under every seed/governor path.
 - Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.
-- The Pearl broad scan is now trustworthy enough to use as one release-budget input, and the Clam scan is no longer directionally wrong now that it uses a post-match purchase loop.
-- The missing Frontier lens is no longer missing. The corrected frontier ladder report shows the current pacing is now in a usable band, and no step is materially harmful, but the stage-2, stage-3, and stage-6 edge steps are still slightly under budget in the short-match lens.
-- The targeted governor trace is cleaner but still not healthy enough on stage 6. After the stage-aware opener change, the sampled full-governor trace averages about `1.8` ready combat units in the opening slice and about `2.4` over 2400 frames, but still opens `0` committed attack windows across seeds `11/42/77`.
-- The dual-window Pearl report moved materially after the score-model fix as well as the governor/bootstrap fixes. The 2400-frame scan is now mostly positive: `auto_deploy_fisher` lands around `6.42% meta_mean_pct`, `auto_deploy_digger` around `3.33%`, `rare_resource_access` around `1.20%`, `hp_multiplier` around `0.68%`, and `combat_multiplier` around `0.50%`.
-- The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, and `hp_multiplier` reads as small-but-positive instead of looking inert.
-- The new full-trace attack conversion diagnostic shows the current blocker more honestly: in the sampled stage-6 full-governor trace, baseline and `combat_multiplier` variants both open `0` real attack-party windows, so there is no meaningful contact/churn signal to measure yet.
+- The Pearl broad scan is now trustworthy enough to use as one release-budget input, and the Clam scan is no longer directionally wrong now that it uses a post-match purchase loop and the full live defensive stack.
+- The Frontier ladder is now a pacing problem, not a survival problem. All five steps survive at `100%`, but the step-to-step relief is still only near-neutral in the short-match lens.
+- The targeted governor trace is cleaner but still not healthy enough on stage 6. In the corrected live-stack trace it averages about `1.8` ready combat units in the opening slice and about `2.4` over 2400 frames, reaches `readyForAttackPct = 75%` in the long slice, but still opens `0` committed attack windows because heavy base pressure stays active for about `61%` to `64%` of samples with average threat count around `7` to `8`.
+- The corrected full-stack viability run is materially healthier than the older harness implied: a fresh stage-6 no-upgrade run now stays alive through the 1800-frame baseline check with Lodge HP around `1354` and `5` kills.
+- The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, while `hp_multiplier` still needs a better bridge between pressure slices and sustain scoring.
 - The rare-resource prestige path is no longer a map-generation trap. Its opening-window wobble now looks like ordinary governor valuation noise rather than a fundamentally harmful spawn pattern.
-- The suspicious long-run Pearl set is much narrower now: `gather_multiplier` is the only row still slightly negative, while `combat_multiplier` and `hp_multiplier` are now positive but still reading under budget.
-- The controller split still makes the attack path the next highest-signal controller problem. The train path is cleaner after the stage-aware gatherer target and baseline Lodge-generalist alignment, but attack still fails to cash in its later army strength as well as it should over the longer governor run.
+- The suspicious long-run Pearl set is now clearer: Logger and Digger auto-deploys are still materially negative in the broad scan, while Fisher is only near-neutral and the plain multiplier tracks are modestly positive.
+- The controller split still makes the attack/stabilization path the next highest-signal controller problem. The train path is cleaner after the stage-aware gatherer target and baseline Lodge-generalist alignment, but build follow-up and siege relief still lag once the Armory step is complete.
 
 ## How To Use This
 
@@ -283,8 +287,8 @@ Short-term tuning heuristic:
 
 ## Next Steps
 
-1. Improve the weak Frontier edge steps, especially `Frontier Expansion I`, `II`, and `V`, which are now only slightly negative instead of catastrophically misbudgeted.
-2. Investigate the remaining stage-6 governor attack-readiness gap, since the sampled full-governor trace still opens `0` real attack windows across seeds `11/42/77`.
-3. Improve the sampled and controller gather slices so `gather_multiplier` is measured in a window that is less dominated by travel time.
-4. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under budget in the long-run broad scan.
+1. Investigate why the full-governor stage-6 run stays under heavy siege pressure even when `readyForAttackPct` reaches `75%`, with special focus on tower/burrow follow-up after the Armory step.
+2. Improve the weak Frontier edge steps, especially `Frontier Expansion I` and `IV`, which are still slightly negative in the short-match lens.
+3. Improve the sampled and controller gather slices so `gather_multiplier`, `auto_deploy_fisher`, `auto_deploy_digger`, and `auto_deploy_logger` are measured in a window that is less dominated by travel time and panel mix.
+4. Bridge the sustain harness back into the broader Pearl budgeting view for `hp_multiplier`, since it is locally real but still under-expressed in both the broad and sustain reports.
 5. Tie the measured mean relief bands to payout formulas so Clam rewards and Pearl rank-up rewards can be budgeted intentionally.

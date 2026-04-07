@@ -4,15 +4,6 @@ import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { EntityTypeTag, FactionTag, Health, Position, TaskOverride } from '@/ecs/components';
-import { cleanupSystem } from '@/ecs/systems/cleanup';
-import { combatSystem } from '@/ecs/systems/combat';
-import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
-import { gatheringSystem } from '@/ecs/systems/gathering';
-import { healthSystem } from '@/ecs/systems/health';
-import { movementSystem } from '@/ecs/systems/movement';
-import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behaviors';
-import { trainingSystem } from '@/ecs/systems/training';
-import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
@@ -31,6 +22,7 @@ import { createPrestigeState, isAutoBehaviorUnlocked, type PrestigeState } from 
 import { SeededRandom } from '@/utils/random';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
+import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 vi.mock('@/game', () => ({
@@ -60,21 +52,7 @@ const DEFEND_CONTROLLER_SEED = 401;
 const ATTACK_CONTROLLER_SEED = 501;
 
 function tickWorld(world: GameWorld): void {
-  world.frameCount++;
-  world.yukaManager.update(1 / 60, world.ecs);
-  world.spatialHash.clear();
-  for (const eid of query(world.ecs, [Position, Health])) {
-    if (Health.current[eid] > 0) world.spatialHash.insert(eid, Position.x[eid], Position.y[eid]);
-  }
-  weatherSystem(world);
-  movementSystem(world);
-  gatheringSystem(world);
-  combatSystem(world);
-  commanderPassivesSystem(world);
-  trainingSystem(world);
-  healthSystem(world);
-  prestigeAutoBehaviorSystem(world);
-  cleanupSystem(world);
+  runSimFrame(world, { runMatchEvents: false, runPrestigeAutoBehaviors: true, syncSignals: false });
 }
 
 function setupWorld(

@@ -7,20 +7,8 @@ import {
   TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
-import { aiSystem } from '@/ecs/systems/ai';
 import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { autoTrainSystem } from '@/ecs/systems/auto-train';
-import { cleanupSystem } from '@/ecs/systems/cleanup';
-import { combatSystem } from '@/ecs/systems/combat';
-import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
-import { evolutionSystem } from '@/ecs/systems/evolution';
-import { gatheringSystem } from '@/ecs/systems/gathering';
-import { healthSystem } from '@/ecs/systems/health';
 import { matchEventRunnerSystem, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
-import { movementSystem } from '@/ecs/systems/movement';
-import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behaviors';
-import { trainingSystem } from '@/ecs/systems/training';
-import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { isAutoBehaviorUnlocked, type PrestigeState } from '@/config/prestige-logic';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
@@ -35,38 +23,11 @@ import * as storeV3 from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
+import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 export function runGovernorFrame(world: GameWorld, governor: Governor): void {
-  world.frameCount++;
-  world.yukaManager.update(1 / 60, world.ecs);
-  world.spatialHash.clear();
-  for (const eid of query(world.ecs, [Position, Health])) {
-    if (Health.current[eid] > 0) {
-      world.spatialHash.insert(eid, Position.x[eid], Position.y[eid]);
-    }
-  }
-
-  weatherSystem(world);
-  movementSystem(world);
-  gatheringSystem(world);
-  combatSystem(world);
-  commanderPassivesSystem(world);
-  trainingSystem(world);
-  aiSystem(world);
-  evolutionSystem(world);
-  autoTrainSystem(world);
-  healthSystem(world);
-  prestigeAutoBehaviorSystem(world);
-  matchEventRunnerSystem(world, storeV3.progressionLevel.value);
-  autoSymbolSystem(world);
-  cleanupSystem(world);
-
-  if (world.frameCount % 30 === 0) {
-    syncGovernorSignals(world);
-  }
-
-  governor.tick();
+  runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
 }
 
 export function createGovernorTraceWorld(

@@ -10,23 +10,11 @@ import {
 import { type BalanceVariantConfig } from '@/balance/track-variants';
 import { generateUpgradeWeb } from '@/config/upgrade-web';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
-import { aiSystem } from '@/ecs/systems/ai';
 import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { autoTrainSystem } from '@/ecs/systems/auto-train';
-import { cleanupSystem } from '@/ecs/systems/cleanup';
-import { combatSystem } from '@/ecs/systems/combat';
-import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
-import { evolutionSystem } from '@/ecs/systems/evolution';
-import { gatheringSystem } from '@/ecs/systems/gathering';
-import { healthSystem } from '@/ecs/systems/health';
 import {
   getEventsCompletedCount,
-  matchEventRunnerSystem,
   resetMatchEventRunner,
 } from '@/ecs/systems/match-event-runner';
-import { movementSystem } from '@/ecs/systems/movement';
-import { trainingSystem } from '@/ecs/systems/training';
-import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { calculateMatchReward } from '@/game/match-rewards';
@@ -43,6 +31,7 @@ import { createSnapshotScoreCache } from './balance-score-cache';
 import { BALANCE_REPORT_SEEDS, type BalanceReportRow } from './balance-report-sim';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
+import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 vi.mock('@/game', () => ({
@@ -66,37 +55,6 @@ export const CLAM_POSTMATCH_EVAL_FRAMES = 2400;
 interface MatchRunResult {
   snapshot: BalanceSnapshot;
   earnedClams: number;
-}
-
-function runFrame(world: GameWorld, governor: Governor): void {
-  world.frameCount++;
-  world.yukaManager.update(1 / 60, world.ecs);
-  world.spatialHash.clear();
-  for (const eid of query(world.ecs, [Position, Health])) {
-    if (Health.current[eid] > 0) {
-      world.spatialHash.insert(eid, Position.x[eid], Position.y[eid]);
-    }
-  }
-
-  weatherSystem(world);
-  movementSystem(world);
-  gatheringSystem(world);
-  combatSystem(world);
-  commanderPassivesSystem(world);
-  trainingSystem(world);
-  aiSystem(world);
-  evolutionSystem(world);
-  autoTrainSystem(world);
-  healthSystem(world);
-  matchEventRunnerSystem(world, storeV3.progressionLevel.value);
-  autoSymbolSystem(world);
-  cleanupSystem(world);
-
-  if (world.frameCount % 30 === 0) {
-    syncGovernorSignals(world);
-  }
-
-  governor.tick();
 }
 
 function snapshotWorld(world: GameWorld): MatchRunResult {
@@ -170,7 +128,7 @@ function runMatch(seed: number, purchasedNodeIds: string[], clams: number, frame
   const governor = new Governor();
   governor.enabled = true;
   for (let frame = 0; frame < frames; frame += 1) {
-    runFrame(world, governor);
+    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
   }
 
   return snapshotWorld(world);

@@ -67,7 +67,7 @@ export function syncThreatAndObjectives(world: GameWorld): void {
 
   // --- Base under attack detection: enemies within 400px of any player Lodge ---
   const BASE_THREAT_RADIUS_SQ = 400 * 400;
-  let baseAttacked = false;
+  let baseThreatCount = 0;
   const lodgePositions: { x: number; y: number }[] = [];
   const enemyPositions: { x: number; y: number }[] = [];
 
@@ -88,17 +88,17 @@ export function syncThreatAndObjectives(world: GameWorld): void {
     }
   }
 
-  outer: for (const lodge of lodgePositions) {
+  for (const lodge of lodgePositions) {
     for (const enemy of enemyPositions) {
       const dx = lodge.x - enemy.x;
       const dy = lodge.y - enemy.y;
       if (dx * dx + dy * dy < BASE_THREAT_RADIUS_SQ) {
-        baseAttacked = true;
-        break outer;
+        baseThreatCount += 1;
       }
     }
   }
-  store.baseUnderAttack.value = baseAttacked;
+  store.baseThreatCount.value = baseThreatCount;
+  store.baseUnderAttack.value = baseThreatCount > 0;
 
   // --- Objective tracking: enemy nest counts ---
   let aliveNests = 0;

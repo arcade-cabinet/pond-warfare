@@ -49,6 +49,24 @@ function nextWaveCountdown(): number | null {
   return store.waveCountdown.value === -1 ? null : store.waveCountdown.value;
 }
 
+function baseThreatCount(): number {
+  return Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
+}
+
+function lightPressureSkirmishWindow(totalArmy: number, readyArmy: number): boolean {
+  const threats = baseThreatCount();
+  const lodgeHp = lodgeHpRatio();
+  const waveCountdown = nextWaveCountdown();
+  return (
+    store.baseUnderAttack.value &&
+    threats === 1 &&
+    lodgeHp >= 0.97 &&
+    (waveCountdown === null || waveCountdown > 14) &&
+    totalArmy >= MIN_ATTACK_ARMY + 1 &&
+    readyArmy >= MIN_ATTACK_ARMY
+  );
+}
+
 function safeAttackArmyThreshold(totalArmy: number): number {
   const lodgeHp = lodgeHpRatio();
   const waveCountdown = nextWaveCountdown();
@@ -94,7 +112,7 @@ export class BuildEvaluator extends GoalEvaluator {
     if (!hasWingOrBuilding(EntityKind.Armory) && store.fish.value >= 180 && store.logs.value >= 120)
       return 0.85;
     if (store.food.value >= store.maxFood.value - 1 && store.logs.value >= 75) return 0.75;
-    if (store.baseUnderAttack.value && store.fish.value >= 200) return 0.8;
+    if (baseThreatCount() >= 2 && store.fish.value >= 200) return 0.8;
     return 0;
   }
 
@@ -147,7 +165,18 @@ export class TrainEvaluator extends GoalEvaluator {
 export class DefendEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     if (!store.baseUnderAttack.value) return 0;
-    return 0.95;
+    const threats = baseThreatCount();
+    const lodgeHp = lodgeHpRatio();
+    const army = combatUnitCount();
+    const combatTarget = getGovernorCombatTarget();
+
+    if (lodgeHp < 0.7 || threats >= 3) return 0.95;
+    if (lodgeHp < 0.85 || threats >= 2) return 0.88;
+    if (threats === 1 && lodgeHp >= 0.97 && army >= Math.max(combatTarget, MIN_ATTACK_ARMY + 1)) {
+      return 0.54;
+    }
+    if (army < combatTarget) return 0.72;
+    return 0.82;
   }
 
   override setGoal(owner: GameEntity): void {
@@ -160,19 +189,26 @@ export class DefendEvaluator extends GoalEvaluator {
 /** High score when army is large enough and no immediate threats. */
 export class AttackEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
-    if (store.baseUnderAttack.value) return 0;
     const totalArmy = combatUnitCount();
     const readyArmy = countAvailableAttackers();
+    const skirmishWindow = lightPressureSkirmishWindow(totalArmy, readyArmy);
+    if (store.baseUnderAttack.value && !skirmishWindow) return 0;
     const safeAttackArmy = safeAttackArmyThreshold(totalArmy);
-    if (readyArmy < safeAttackArmy) return 0;
-    if (!Number.isFinite(safeAttackArmy)) return 0;
+    if (!skirmishWindow && readyArmy < safeAttackArmy) return 0;
+    if (!skirmishWindow && !Number.isFinite(safeAttackArmy)) return 0;
 
-    const openingWindow =
-      safeAttackArmy === MIN_ATTACK_ARMY ? 0.66 : safeAttackArmy === MIN_ATTACK_ARMY + 1 ? 0.58 : 0.34;
+    const openingWindow = skirmishWindow
+      ? 0.62
+      : safeAttackArmy === MIN_ATTACK_ARMY
+        ? 0.66
+        : safeAttackArmy === MIN_ATTACK_ARMY + 1
+          ? 0.58
+          : 0.34;
     const armyPressure = Math.min((readyArmy - safeAttackArmy) * 0.08, 0.24);
     const reservePressure = Math.min(Math.max(totalArmy - readyArmy, 0) * 0.03, 0.09);
     const fishReservePressure = Math.min(Math.max(store.fish.value - 60, 0) / 320, 0.14);
-    return Math.min(openingWindow + armyPressure + reservePressure + fishReservePressure, 0.82);
+    const lightPressureTax = skirmishWindow ? 0.06 : 0;
+    return Math.min(openingWindow + armyPressure + reservePressure + fishReservePressure - lightPressureTax, 0.82);
   }
 
   override setGoal(owner: GameEntity): void {

@@ -15,7 +15,7 @@ import {
   GatherEvaluator,
   TrainEvaluator,
 } from '@/governor/evaluators';
-import { countAvailableAttackers } from '@/governor/goals/attack-goal';
+import { countAvailableAttackers, MIN_ATTACK_ARMY } from '@/governor/goals/attack-goal';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { Governor } from '@/governor/governor';
 import { BUILDING_KINDS, EntityKind, Faction, UnitState } from '@/types';
@@ -72,6 +72,11 @@ interface TraceSummary {
   avgDefenders: number;
   avgLodgeHp: number;
   baseThreatPct: number;
+  avgThreatCount: number;
+  lightThreatPct: number;
+  heavyThreatPct: number;
+  readyForAttackPct: number;
+  skirmishWindowPct: number;
   kills: number;
   unitsTrained: number;
   gathered: number;
@@ -132,18 +137,37 @@ function runVariant(
   let attackersTotal = 0;
   let defendersTotal = 0;
   let lodgeHpTotal = 0;
+  let threatCountTotal = 0;
   let threatFrames = 0;
+  let lightThreatFrames = 0;
+  let heavyThreatFrames = 0;
   let samples = 0;
+  let readyForAttackTicks = 0;
+  let skirmishWindowTicks = 0;
 
   for (let frame = 0; frame < window.frames; frame += 1) {
     runGovernorFrame(world, governor);
     if (world.frameCount % 120 === 0) {
       const combatArmy = combatArmySize();
       const readyArmy = countAvailableAttackers();
+      const lodgeHp = lodgeHpRatio(world);
+      const waveCountdown = store.waveCountdown.value === -1 ? null : store.waveCountdown.value;
+      const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
       const { bestName: choice, attackScore } = scoreDecisionWindow();
       decisionCounts.set(choice, (decisionCounts.get(choice) ?? 0) + 1);
       combatArmyTotal += combatArmy;
       readyArmyTotal += readyArmy;
+      if (readyArmy >= MIN_ATTACK_ARMY) readyForAttackTicks += 1;
+      if (
+        store.baseUnderAttack.value &&
+        threats === 1 &&
+        lodgeHp >= 0.97 &&
+        (waveCountdown === null || waveCountdown > 14) &&
+        combatArmy >= MIN_ATTACK_ARMY + 1 &&
+        readyArmy >= MIN_ATTACK_ARMY
+      ) {
+        skirmishWindowTicks += 1;
+      }
       if (attackScore > 0) {
         attackOpportunityTicks += 1;
         if (firstAttackOpportunityFrame == null) firstAttackOpportunityFrame = world.frameCount;
@@ -158,7 +182,11 @@ function runVariant(
       attackersTotal += countTaskUnits(world, UnitState.AttackMove);
       defendersTotal += countTaskUnits(world, UnitState.AttackMovePatrol);
       lodgeHpTotal += lodgeHpRatio(world);
+      const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
+      threatCountTotal += threats;
       if (store.baseUnderAttack.value) threatFrames += 1;
+      if (threats === 1) lightThreatFrames += 1;
+      if (threats >= 2) heavyThreatFrames += 1;
       samples += 1;
     }
   }
@@ -195,6 +223,15 @@ function runVariant(
     avgDefenders: Number((defendersTotal / Math.max(samples, 1)).toFixed(2)),
     avgLodgeHp: Number((lodgeHpTotal / Math.max(samples, 1)).toFixed(3)),
     baseThreatPct: Number(((threatFrames / Math.max(samples, 1)) * 100).toFixed(1)),
+    avgThreatCount: Number((threatCountTotal / Math.max(samples, 1)).toFixed(2)),
+    lightThreatPct: Number(((lightThreatFrames / Math.max(samples, 1)) * 100).toFixed(1)),
+    heavyThreatPct: Number(((heavyThreatFrames / Math.max(samples, 1)) * 100).toFixed(1)),
+    readyForAttackPct: Number(
+      ((readyForAttackTicks / Math.max(window.frames / 120, 1)) * 100).toFixed(1),
+    ),
+    skirmishWindowPct: Number(
+      ((skirmishWindowTicks / Math.max(window.frames / 120, 1)) * 100).toFixed(1),
+    ),
     kills: world.stats.unitsKilled,
     unitsTrained: world.stats.unitsTrained,
     gathered: world.stats.resourcesGathered,
@@ -243,6 +280,11 @@ describe('governor decision diagnostics', () => {
       expect(Number.isFinite(row.avgDefenders)).toBe(true);
       expect(Number.isFinite(row.avgLodgeHp)).toBe(true);
       expect(Number.isFinite(row.baseThreatPct)).toBe(true);
+      expect(Number.isFinite(row.avgThreatCount)).toBe(true);
+      expect(Number.isFinite(row.lightThreatPct)).toBe(true);
+      expect(Number.isFinite(row.heavyThreatPct)).toBe(true);
+      expect(Number.isFinite(row.readyForAttackPct)).toBe(true);
+      expect(Number.isFinite(row.skirmishWindowPct)).toBe(true);
       expect(Number.isFinite(row.avgCombatArmy)).toBe(true);
       expect(Number.isFinite(row.avgReadyArmy)).toBe(true);
       expect(Number.isFinite(row.attackDecisionTicks)).toBe(true);

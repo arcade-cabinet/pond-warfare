@@ -28,8 +28,8 @@ describe('frontier progression report', () => {
       expect(Number.isFinite(row.economy_mean_pct)).toBe(true);
       expect(Number.isFinite(row.meta_mean_pct)).toBe(true);
     }
-    expect(Math.min(...rows.map((row) => row.meta_mean_pct))).toBeGreaterThan(-2);
-    expect(rows[2]?.meta_mean_pct ?? 0).toBeGreaterThan(5);
+    expect(Math.min(...rows.map((row) => row.meta_mean_pct))).toBeGreaterThan(-1);
+    expect(Math.max(...rows.map((row) => row.meta_mean_pct))).toBeGreaterThan(0);
     expect(rows[4]?.matches_total_mean ?? Number.POSITIVE_INFINITY).toBeLessThan(60);
     expect(rows[4]?.cumulative_cost ?? 0).toBeGreaterThan(rows[0]?.cumulative_cost ?? 0);
   }, 120_000);

@@ -23,7 +23,7 @@ function nextWaveCountdown(): number | null {
 function hasImmediatePressure(): boolean {
   const waveCountdown = nextWaveCountdown();
   return (
-    store.baseUnderAttack.value ||
+    store.baseThreatCount.value >= 2 ||
     lodgeHpRatio() < 0.95 ||
     (waveCountdown !== null && waveCountdown <= 18)
   );

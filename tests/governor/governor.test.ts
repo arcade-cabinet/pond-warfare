@@ -95,6 +95,7 @@ describe('BuildEvaluator', () => {
     store.food.value = 2;
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
   });
 
   it('returns high score when no armory exists', () => {
@@ -121,6 +122,7 @@ describe('TrainEvaluator', () => {
     store.food.value = 2;
     store.maxFood.value = 8;
     store.waveCountdown.value = -1;
+    store.baseThreatCount.value = 0;
     storeV3.progressionLevel.value = 1;
   });
 
@@ -174,18 +176,66 @@ describe('TrainEvaluator', () => {
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.75);
   });
+
+  it('keeps stage-6 combat training active under light single-enemy pressure', () => {
+    storeV3.progressionLevel.value = 6;
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.unitRoster.value = [
+      makeGroup('gatherer', [{ eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.75);
+  });
 });
 
 describe('DefendEvaluator', () => {
   const evaluator = new DefendEvaluator();
 
-  it('returns 0.95 when base under attack', () => {
+  it('returns 0.95 under severe base pressure', () => {
     store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 3;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.95);
+  });
+
+  it('backs off defend under light pressure so training can continue', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
+    ];
+    storeV3.progressionLevel.value = 6;
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.72);
+  });
+
+  it('yields light pressure once a healthy attack reserve exists', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('combat', Array.from({ length: 5 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: EntityKind.Brawler,
+      }))),
+    ];
+    storeV3.progressionLevel.value = 6;
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.54);
   });
 
   it('returns 0 when base is safe', () => {
     store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
 });
@@ -195,6 +245,7 @@ describe('AttackEvaluator', () => {
 
   beforeEach(() => {
     store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
     store.unitRoster.value = [];
     store.buildingRoster.value = [];
     store.waveCountdown.value = -1;
@@ -245,6 +296,25 @@ describe('AttackEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
 
+  it('opens a light-pressure skirmish window when reserve army exists', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: EntityKind.Brawler,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.7);
+  });
+
   it('opens an earlier attack window with 3 ready units when the lodge is healthy and the next wave is far away', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
@@ -275,15 +345,41 @@ describe('Governor brain arbitration', () => {
     store.food.value = 2;
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
   });
 
   it('picks defend when base under attack', () => {
     store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 3;
     store.unitRoster.value = [
       makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
     ];
     governor.brain.arbitrate();
     expect(governor.brain.subgoals.length).toBe(1);
+  });
+
+  it('can pick attack through light pressure when the army reserve is healthy', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    storeV3.progressionLevel.value = 6;
+    store.unitRoster.value = [
+      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: EntityKind.Brawler,
+      }))),
+      makeGroup('gatherer', [{ eid: 20, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+    ];
+
+    governor.brain.arbitrate();
+    expect(governor.brain.subgoals).toHaveLength(1);
+    expect(governor.brain.subgoals[0]?.constructor.name).toBe('AttackGoal');
   });
 
   it('does not tick when disabled', () => {

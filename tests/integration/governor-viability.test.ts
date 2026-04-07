@@ -16,6 +16,7 @@ import {
 import { EntityKind } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 
 vi.mock('@/game', () => ({
   game: {
@@ -63,6 +64,8 @@ describe('Governor viability decisions', () => {
     store.food.value = 2;
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
+    storeV3.progressionLevel.value = 1;
   });
 
   it('with idle gatherers, GatherEvaluator scores highest', () => {
@@ -111,6 +114,7 @@ describe('Governor viability decisions', () => {
 
   it('under attack, DefendEvaluator scores highest', () => {
     store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 3;
     store.unitRoster.value = [
       makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
       makeGroup('gatherer', [{ eid: 2, task: 'idle', kind: EntityKind.Gatherer }]),
@@ -124,5 +128,23 @@ describe('Governor viability decisions', () => {
     expect(defend).toBe(0.95);
     expect(defend).toBeGreaterThan(gather);
     expect(defend).toBeGreaterThan(build);
+  });
+
+  it('light single-enemy pressure still leaves TrainEvaluator above DefendEvaluator', () => {
+    storeV3.progressionLevel.value = 6;
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.unitRoster.value = [
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
+      makeGroup('gatherer', [{ eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer }]),
+    ];
+    store.buildingRoster.value = [{ eid: 10, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] }];
+
+    const defend = new DefendEvaluator().calculateDesirability(owner);
+    const train = new TrainEvaluator().calculateDesirability(owner);
+
+    expect(defend).toBe(0.72);
+    expect(train).toBe(0.75);
+    expect(train).toBeGreaterThan(defend);
   });
 });

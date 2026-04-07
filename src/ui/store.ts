@@ -73,6 +73,8 @@ export const peaceWarningCountdown = signal(-1);
 
 /** True when enemies are within 400px of the player's Lodge. */
 export const baseUnderAttack = signal(false);
+/** Number of enemy mobile units currently within the Lodge threat radius. */
+export const baseThreatCount = signal(0);
 
 // ---- Counts ----
 export const idleWorkerCount = signal(0);

@@ -32,6 +32,7 @@ import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
 import * as storeV3 from '@/ui/store-v3';
+import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestWorld } from '../helpers/world-factory';
 
 vi.mock('@/audio/audio-system', () => ({
@@ -48,25 +49,6 @@ interface SustainVariant {
 const SEEDS = [11, 42, 77];
 const TEST_FRAMES = 1500;
 const WAVE_INTERVAL = 300;
-
-function runFrame(world: GameWorld): void {
-  world.frameCount++;
-  world.yukaManager.update(1 / 60, world.ecs);
-  world.spatialHash.clear();
-  for (const eid of query(world.ecs, [Position, Health])) {
-    if (Health.current[eid] > 0) {
-      world.spatialHash.insert(eid, Position.x[eid], Position.y[eid]);
-    }
-  }
-
-  weatherSystem(world);
-  movementSystem(world);
-  combatSystem(world);
-  commanderPassivesSystem(world);
-  healthSystem(world);
-  prestigeAutoBehaviorSystem(world);
-  cleanupSystem(world);
-}
 
 function createSustainWorld(seed: number, prestigeState: PrestigeState): { world: GameWorld; lodge: number } {
   storeV3.progressionLevel.value = 4;
@@ -178,7 +160,7 @@ function runSustainVariant(seed: number, variant: SustainVariant): BalanceSnapsh
     if (frame > 0 && frame % WAVE_INTERVAL === 0) {
       spawnEnemyWave(world, lodge, Math.floor(frame / WAVE_INTERVAL));
     }
-    runFrame(world);
+    runSimFrame(world, { runMatchEvents: false, runPrestigeAutoBehaviors: true, syncSignals: false });
   }
 
   return snapshotWorld(world, lodge);
