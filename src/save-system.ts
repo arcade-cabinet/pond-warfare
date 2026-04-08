@@ -85,10 +85,10 @@ export function isValidSave(json: string): boolean {
 }
 
 function restoreAutoBehaviors(world: GameWorld, autoBehaviors: SaveData['autoBehaviors']): void {
-  world.autoBehaviors.generalist = autoBehaviors.generalist ?? autoBehaviors.gatherer ?? false;
+  world.autoBehaviors.generalist = autoBehaviors.generalist ?? false;
   world.autoBehaviors.combat = autoBehaviors.combat ?? false;
-  world.autoBehaviors.support = autoBehaviors.support ?? autoBehaviors.healer ?? false;
-  world.autoBehaviors.recon = autoBehaviors.recon ?? autoBehaviors.scout ?? false;
+  world.autoBehaviors.support = autoBehaviors.support ?? false;
+  world.autoBehaviors.recon = autoBehaviors.recon ?? false;
 }
 
 /** Load a saved game into an existing world, clearing all current entities first. */
@@ -122,7 +122,7 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.enemyResources.fish = data.enemyResources.fish;
   world.enemyResources.logs = data.enemyResources.logs;
 
-  // Restore per-role automation state. Accept legacy save keys for compatibility.
+  // Restore per-role automation state.
   if (data.autoBehaviors) {
     restoreAutoBehaviors(world, data.autoBehaviors);
   }

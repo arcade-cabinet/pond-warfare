@@ -5,8 +5,8 @@
  * - Herons ignore terrain speed modifiers (handled in terrain-grid.ts).
  * - Rendered with y-offset -10px (handled in entity-renderer).
  * - Fast scouts: fly toward player base, harass Mudpaws, then flee.
- * - Countered by ranged legacy saboteur chassis and Towers (1.5x),
- *   weak vs melee legacy sapper chassis (0.5x).
+ * - Countered by ranged compatibility saboteur chassis and Towers (1.5x),
+ *   weak vs melee compatibility sapper chassis (0.5x).
  *   Damage multipliers are in damage-multipliers.ts.
  */
 

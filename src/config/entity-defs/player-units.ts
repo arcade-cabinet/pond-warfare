@@ -86,7 +86,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 100,
     foodCost: 1,
   },
-  // Compatibility scout chassis. The live autonomous recon specialist is
+  // Compatibility recon chassis. The live autonomous recon specialist is
   // `Lookout`, which currently rides this lower-level entity kind.
   [LOOKOUT_KIND]: {
     hp: 20,

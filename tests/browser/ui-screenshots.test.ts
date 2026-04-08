@@ -1106,7 +1106,7 @@ describe('Enemy Economy HUD screenshots', () => {
     onCtrlGroupClick: noop,
   };
 
-  it('HUD - enemy economy indicator after scouting', async () => {
+  it('HUD - enemy economy indicator after recon', async () => {
     store.enemyEconomyVisible.value = true;
     store.enemyFish.value = 450;
     store.enemyLogs.value = 300;

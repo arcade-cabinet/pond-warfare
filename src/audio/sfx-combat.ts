@@ -6,9 +6,9 @@
 
 import type { SfxManager } from './sfx';
 
-// ---- Legacy Saboteur Chassis / Ranged Skirmisher ----
+// ---- Compatibility Saboteur Chassis / Ranged Skirmisher ----
 
-/** Sharp crack when the legacy ranged skirmisher chassis fires. */
+/** Sharp crack when the compatibility ranged skirmisher chassis fires. */
 export function sniperShootEffect(mgr: SfxManager, worldX?: number): void {
   mgr.playAt(1400, 'triangle', 0.06, 0.07, 2000, worldX);
 }

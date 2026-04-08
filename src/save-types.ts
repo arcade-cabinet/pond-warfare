@@ -39,9 +39,6 @@ export interface SaveData {
     combat?: boolean;
     support?: boolean;
     recon?: boolean;
-    gatherer?: boolean;
-    healer?: boolean;
-    scout?: boolean;
   };
   tech: Record<string, boolean>;
   stats: {

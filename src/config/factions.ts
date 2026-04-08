@@ -36,7 +36,7 @@ export interface FactionConfig {
 }
 
 /**
- * Otter faction: legacy compatibility mapping for the original player side.
+ * Otter faction: compatibility mapping for the original player side.
  *
  * Important: the live vertical-mode roster no longer exposes the old internal
  * combat archetype split as player-facing manual units. Older helpers should

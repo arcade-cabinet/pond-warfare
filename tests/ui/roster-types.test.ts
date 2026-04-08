@@ -14,7 +14,6 @@ describe('formatUnitTaskLabel', () => {
     ['patrolling', 'Patrolling'],
     ['healing', 'Healing'],
     ['recon', 'Recon'],
-    ['scouting', 'Recon'],
     ['dead', 'Dead'],
   ];
 

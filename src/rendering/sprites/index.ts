@@ -53,7 +53,8 @@ import {
   drawRubble,
 } from './resources';
 import {
-  drawBrawler,
+  drawCompatSaboteurChassis,
+  drawCompatSapperChassis,
   drawCommander,
   drawDiver,
   drawEngineer,
@@ -64,7 +65,6 @@ import {
   drawScout,
   drawShaman,
   drawShieldbearer,
-  drawSniper,
   drawSwimmer,
   drawTrapper,
 } from './units';
@@ -161,8 +161,8 @@ const LARGE_TYPES = new Set([
 /** Map sprite type names to their draw functions. */
 const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   mudpaw: drawGatherer,
-  compat_sapper_chassis: drawBrawler,
-  compat_saboteur_chassis: drawSniper,
+  compat_sapper_chassis: drawCompatSapperChassis,
+  compat_saboteur_chassis: drawCompatSaboteurChassis,
   gator: drawGator,
   snake: drawSnake,
   lodge: drawLodge,

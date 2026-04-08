@@ -47,19 +47,19 @@ describe('save-system auto-behavior compatibility', () => {
     });
   });
 
-  it('loads legacy gatherer/healer/scout save keys into the canonical runtime shape', () => {
+  it('loads canonical per-role automation keys into the runtime shape', () => {
     const world = createGameWorld();
-    const legacySave: SaveData = {
+    const save: SaveData = {
       ...makeBaseSave(),
       autoBehaviors: {
-        gatherer: true,
+        generalist: true,
         combat: true,
-        healer: true,
-        scout: true,
+        support: true,
+        recon: true,
       },
     };
 
-    expect(loadGame(world, JSON.stringify(legacySave))).toBe(true);
+    expect(loadGame(world, JSON.stringify(save))).toBe(true);
     expect(world.autoBehaviors.generalist).toBe(true);
     expect(world.autoBehaviors.combat).toBe(true);
     expect(world.autoBehaviors.support).toBe(true);

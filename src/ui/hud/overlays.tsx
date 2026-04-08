@@ -53,7 +53,7 @@ export function Overlays() {
         </div>
       )}
 
-      {/* Enemy economy indicator (visible after scouting a nest) */}
+      {/* Enemy economy indicator (visible after recon reveals a nest) */}
       {enemyEconomyVisible.value && (
         <div
           class="absolute top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded px-2 py-0.5 text-[10px] md:text-xs"

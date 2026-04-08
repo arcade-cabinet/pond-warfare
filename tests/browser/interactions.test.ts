@@ -907,7 +907,7 @@ describe('Enemy economy display', () => {
     expect(hasEnemyLabel).toBe(false);
   });
 
-  it('enemy economy indicator visible after scouting with resource values', async () => {
+  it('enemy economy indicator visible after recon with resource values', async () => {
     store.enemyEconomyVisible.value = true;
     store.enemyFish.value = 350;
     store.enemyLogs.value = 200;

@@ -13,14 +13,7 @@
 export { entityKindToRole } from './radial-entity-roles';
 
 export type RadialMenuMode = 'lodge' | 'unit';
-export type RadialUnitRole =
-  | 'generalist'
-  | 'combat'
-  | 'support'
-  | 'recon'
-  | 'gather'
-  | 'heal'
-  | 'scout';
+export type RadialUnitRole = 'generalist' | 'combat' | 'support' | 'recon';
 
 export interface RadialOption {
   id: string;
@@ -120,31 +113,6 @@ const GENERALIST_OPTIONS: RadialOption[] = [
   },
 ];
 
-const GATHER_OPTIONS: RadialOption[] = [
-  {
-    id: 'cmd_gather',
-    label: 'Gather',
-    icon: '\u{1F33E}',
-    tooltip: 'Send to resource',
-    color: 'success',
-  },
-  { id: 'cmd_hold', label: 'Hold', icon: '\u270B', tooltip: 'Hold position', color: 'warning' },
-  {
-    id: 'cmd_patrol',
-    label: 'Patrol',
-    icon: '\u{1F6B6}',
-    tooltip: 'Patrol between points',
-    color: 'vine-base',
-  },
-  {
-    id: 'cmd_return',
-    label: 'Return',
-    icon: '\u{1F3E0}',
-    tooltip: 'Return to Lodge',
-    color: 'otter',
-  },
-];
-
 const COMBAT_OPTIONS: RadialOption[] = [
   {
     id: 'cmd_attack',
@@ -177,7 +145,7 @@ const COMBAT_OPTIONS: RadialOption[] = [
   },
 ];
 
-const HEAL_OPTIONS: RadialOption[] = [
+const SUPPORT_OPTIONS: RadialOption[] = [
   {
     id: 'cmd_heal',
     label: 'Heal',
@@ -250,11 +218,8 @@ const GENERIC_OPTIONS: RadialOption[] = [
 const ROLE_OPTIONS: Record<RadialUnitRole, RadialOption[]> = {
   generalist: GENERALIST_OPTIONS,
   combat: COMBAT_OPTIONS,
-  support: HEAL_OPTIONS,
+  support: SUPPORT_OPTIONS,
   recon: RECON_OPTIONS,
-  gather: GATHER_OPTIONS,
-  heal: HEAL_OPTIONS,
-  scout: RECON_OPTIONS,
 };
 
 /** Game state used to filter Lodge radial options. */

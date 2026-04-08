@@ -6,7 +6,7 @@
  * player-facing model those chassis map to:
  * - `drawGatherer` -> Mudpaw and gather-specialist bodies
  * - `drawScout` -> Lookout body
- * - `drawBrawler` / `drawSniper` -> compatibility-only combat bodies
+ * - `drawCompatSapperChassis` / `drawCompatSaboteurChassis` -> compatibility-only combat bodies
  */
 
 import { PALETTE } from '@/constants';
@@ -72,13 +72,13 @@ export function drawGatherer(d: DrawCtx): void {
   d.rect(3, 5, 2, 2, PALETTE.clamShell);
 }
 
-export function drawBrawler(d: DrawCtx): void {
+export function drawCompatSapperChassis(d: DrawCtx): void {
   drawOtterBase(d);
   d.rect(12, 4, 2, 7, PALETTE.reedBrown);
   d.rect(6, 1, 4, 2, PALETTE.clamShell);
 }
 
-export function drawSniper(d: DrawCtx): void {
+export function drawCompatSaboteurChassis(d: DrawCtx): void {
   drawOtterBase(d);
   d.rect(13, 4, 1, 8, PALETTE.reedBrown);
   d.rect(12, 4, 1, 1, PALETTE.stoneL);

@@ -66,14 +66,8 @@ function getHubLabel(mode: 'lodge' | 'unit', role: RadialUnitRole | null): strin
     case 'combat':
       return 'Combat';
     case 'support':
-      return 'Heal';
+      return 'Support';
     case 'recon':
-      return 'Recon';
-    case 'gather':
-      return 'Gather';
-    case 'heal':
-      return 'Heal';
-    case 'scout':
       return 'Recon';
     default:
       return 'Unit';
