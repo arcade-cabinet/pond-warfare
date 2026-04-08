@@ -109,7 +109,7 @@ describe('Damage counter system', () => {
   it('Sapper damages a fragile support target in live browser combat', async () => {
     const { damageTaken: vsHealer } = await testDamage(
       SAPPER_KIND, Faction.Player,
-      EntityKind.Healer, Faction.Enemy,
+      EntityKind.Medic, Faction.Enemy,
       'Sapper vs Healer',
     );
     expect(vsHealer).toBeGreaterThan(0);

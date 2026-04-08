@@ -24,14 +24,14 @@ export enum UnitState {
 /**
  * Shared compatibility-stable entity ids.
  *
- * Some older chassis names remain here to preserve saved data, sprite ids,
- * and broad ECS compatibility. Canonical live player-facing aliases live in
- * `src/game/live-unit-kinds.ts`.
+ * Numeric ids remain compatibility-stable for saved data and ECS state, while
+ * the member names reflect the canonical live roster and explicit compatibility
+ * chassis where those ids still exist.
  */
 export enum EntityKind {
-  Gatherer = 0,
-  Brawler = 1,
-  Sniper = 2,
+  Mudpaw = 0,
+  CompatSapperChassis = 1,
+  CompatSaboteurChassis = 2,
   Gator = 3,
   Snake = 4,
   Lodge = 5,
@@ -41,11 +41,11 @@ export enum EntityKind {
   PredatorNest = 9,
   Cattail = 10,
   Clambed = 11,
-  Healer = 12,
+  Medic = 12,
   Watchtower = 13,
   BossCroc = 14,
   Shieldbearer = 15,
-  Scout = 16,
+  Lookout = 16,
   Catapult = 17,
   Wall = 18,
   LookoutPost = 19,
@@ -107,13 +107,13 @@ export enum ResourceType {
 /**
  * Shared compatibility-stable sprite ids.
  *
- * Like `EntityKind`, these ids retain historical names for stability even
- * when the live roster uses canonical aliases such as Mudpaw and Lookout.
+ * Like `EntityKind`, these numeric ids stay stable while the member names
+ * follow the canonical live roster and explicit compatibility chassis.
  */
 export enum SpriteId {
-  Gatherer = 0,
-  Brawler = 1,
-  Sniper = 2,
+  Mudpaw = 0,
+  CompatSapperChassis = 1,
+  CompatSaboteurChassis = 2,
   Gator = 3,
   Snake = 4,
   Lodge = 5,
@@ -123,11 +123,11 @@ export enum SpriteId {
   PredatorNest = 9,
   Cattail = 10,
   Clambed = 11,
-  Healer = 12,
+  Medic = 12,
   Watchtower = 13,
   BossCroc = 14,
   Shieldbearer = 15,
-  Scout = 16,
+  Lookout = 16,
   Catapult = 17,
   Wall = 18,
   LookoutPost = 19,

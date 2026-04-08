@@ -7,21 +7,21 @@ import { EntityKind, SpriteId } from '@/types';
  * combat chassis ids that remain for compatibility, but live player/runtime
  * code should speak in canonical roster terms wherever possible.
  */
-export const MUDPAW_KIND = EntityKind.Gatherer;
-export const MEDIC_KIND = EntityKind.Healer;
-export const LOOKOUT_KIND = EntityKind.Scout;
-export const ENEMY_HARVESTER_KIND = EntityKind.Gatherer;
+export const MUDPAW_KIND = EntityKind.Mudpaw;
+export const MEDIC_KIND = EntityKind.Medic;
+export const LOOKOUT_KIND = EntityKind.Lookout;
+export const ENEMY_HARVESTER_KIND = EntityKind.Mudpaw;
 export const SAPPER_KIND = EntityKind.Sapper;
 export const SABOTEUR_KIND = EntityKind.Saboteur;
-export const COMPAT_SAPPER_CHASSIS_KIND = EntityKind.Brawler;
-export const COMPAT_SABOTEUR_CHASSIS_KIND = EntityKind.Sniper;
-export const MUDPAW_SPRITE_ID = SpriteId.Gatherer;
-export const MEDIC_SPRITE_ID = SpriteId.Healer;
-export const LOOKOUT_SPRITE_ID = SpriteId.Scout;
+export const COMPAT_SAPPER_CHASSIS_KIND = EntityKind.CompatSapperChassis;
+export const COMPAT_SABOTEUR_CHASSIS_KIND = EntityKind.CompatSaboteurChassis;
+export const MUDPAW_SPRITE_ID = SpriteId.Mudpaw;
+export const MEDIC_SPRITE_ID = SpriteId.Medic;
+export const LOOKOUT_SPRITE_ID = SpriteId.Lookout;
 export const SAPPER_SPRITE_ID = SpriteId.Sapper;
 export const SABOTEUR_SPRITE_ID = SpriteId.Saboteur;
-export const COMPAT_SAPPER_CHASSIS_SPRITE_ID = SpriteId.Brawler;
-export const COMPAT_SABOTEUR_CHASSIS_SPRITE_ID = SpriteId.Sniper;
+export const COMPAT_SAPPER_CHASSIS_SPRITE_ID = SpriteId.CompatSapperChassis;
+export const COMPAT_SABOTEUR_CHASSIS_SPRITE_ID = SpriteId.CompatSaboteurChassis;
 export const FISHER_KIND = MUDPAW_KIND;
 export const LOGGER_KIND = MUDPAW_KIND;
 export const DIGGER_KIND = MUDPAW_KIND;

@@ -119,7 +119,7 @@ export function combatSystem(world: GameWorld): void {
     const dmg = Combat.damage[eid];
 
     // Support units move toward wounded allies so their healing auras matter.
-    const isSupportUnit = kind === EntityKind.Healer || kind === EntityKind.Shaman;
+    const isSupportUnit = kind === EntityKind.Medic || kind === EntityKind.Shaman;
     if (isSupportUnit && state === UnitState.Idle && world.frameCount % 30 === 0) {
       const supportRadius = kind === EntityKind.Shaman ? 220 : 150;
       const assignedAlly =

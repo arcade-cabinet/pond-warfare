@@ -5,7 +5,7 @@ import { EntityKind } from '@/types';
 
 const CANONICAL_UNIT_SKIN_TARGETS = new Set([
   MUDPAW_KIND,
-  EntityKind.Healer,
+  EntityKind.Medic,
   EntityKind.Sapper,
   EntityKind.Saboteur,
   LOOKOUT_KIND,

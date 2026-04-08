@@ -225,7 +225,7 @@ describe('processHealerAura', () => {
   });
 
   it('does NOT heal allies beyond 80px range', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const ally = spawnUnit(world, 300, 100, 40, 60, UnitState.Idle);
 
     processHealerAura(world);
@@ -234,7 +234,7 @@ describe('processHealerAura', () => {
   });
 
   it('heals at most 3 allies per healer', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const allies: number[] = [];
     for (let i = 0; i < 5; i++) {
       allies.push(spawnUnit(world, 110 + i * 5, 100, 40, 60, UnitState.Idle));
@@ -247,7 +247,7 @@ describe('processHealerAura', () => {
   });
 
   it('does NOT heal full-HP allies', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const ally = spawnUnit(world, 130, 100, 60, 60, UnitState.Idle);
 
     processHealerAura(world);

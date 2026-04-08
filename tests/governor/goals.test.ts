@@ -240,7 +240,7 @@ describe('TrainGoal', () => {
         maxHp: 1500,
         queueItems: [],
         queueProgress: 0,
-        canTrain: [MUDPAW_KIND, EntityKind.Healer, SAPPER_KIND, SABOTEUR_KIND],
+        canTrain: [MUDPAW_KIND, EntityKind.Medic, SAPPER_KIND, SABOTEUR_KIND],
       } satisfies RosterBuilding,
     ];
     store.unitRoster.value = [
