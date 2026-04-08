@@ -602,4 +602,52 @@ describe('TrainGoal', () => {
     expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Medic);
   });
 
+  it('skips filler training when train-speed upgrades are active and stage-six fish reserves are low', async () => {
+    const { TrainGoal } = await import('@/governor/goals/train-goal');
+
+    const lodgeEid = addEntity(world.ecs);
+    addComponent(world.ecs, lodgeEid, TrainingQueue);
+    addComponent(world.ecs, lodgeEid, FactionTag);
+    addComponent(world.ecs, lodgeEid, IsBuilding);
+    FactionTag.faction[lodgeEid] = Faction.Player;
+    TrainingQueue.count[lodgeEid] = 0;
+
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['utility_train_speed_t0'];
+    store.buildingRoster.value = [
+      {
+        eid: lodgeEid,
+        kind: EntityKind.Lodge,
+        hp: 1500,
+        maxHp: 1500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [MUDPAW_KIND, EntityKind.Medic, SAPPER_KIND, SABOTEUR_KIND],
+      } satisfies RosterBuilding,
+    ];
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
+        rosterUnit(2, MUDPAW_KIND, 'gathering-logs'),
+      ]),
+      rosterGroup('combat', [
+        rosterUnit(10, SAPPER_KIND, 'idle'),
+        rosterUnit(11, SAPPER_KIND, 'idle'),
+        rosterUnit(12, SAPPER_KIND, 'idle'),
+        rosterUnit(13, SAPPER_KIND, 'idle'),
+        rosterUnit(14, SABOTEUR_KIND, 'idle'),
+      ]),
+    ];
+    world.resources.fish = 80;
+    store.fish.value = 80;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+
+    const goal = new TrainGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.FAILED);
+    expect(TrainingQueue.count[lodgeEid]).toBe(0);
+  });
+
 });

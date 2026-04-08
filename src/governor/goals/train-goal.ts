@@ -20,6 +20,7 @@ import { train } from '@/input/selection/queries';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
+import { hasCurrentRunTrack } from '../current-run-upgrades';
 import { getGovernorCombatUnits, getGovernorGatherUnits } from '../roster-units';
 import {
   getGovernorCombatTarget,
@@ -96,9 +97,19 @@ export class TrainGoal extends Goal {
   private pickUnit(trainable: EntityKind[]): EntityKind | null {
     const combatTarget = getGovernorCombatTarget();
     const wantsSupportUnit = trainable.includes(MEDIC_KIND) && shouldTrainSupportUnit();
+    const trainSpeedTrackActive = hasCurrentRunTrack('utility_train_speed');
+    const healPowerTrackActive = hasCurrentRunTrack('utility_heal_power');
+    const lowReserveFillerWindow =
+      trainSpeedTrackActive &&
+      storeV3.progressionLevel.value >= 6 &&
+      store.fish.value < 120 &&
+      armySize() >= combatTarget;
 
     if (trainable.includes(MUDPAW_KIND) && mudpawCount() < getGovernorMudpawTarget()) {
       return MUDPAW_KIND;
+    }
+    if (lowReserveFillerWindow && !healPowerTrackActive) {
+      return null;
     }
 
     if (wantsSupportUnit) {

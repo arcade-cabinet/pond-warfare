@@ -75,6 +75,21 @@ function lodgePosition(): { x: number; y: number } | null {
   return { x: Position.x[lodge.eid], y: Position.y[lodge.eid] };
 }
 
+function towerPlacement(
+  lodge: { x: number; y: number },
+  forwardBiasStrong: boolean,
+): { x: number; y: number } {
+  const angleSpread = forwardBiasStrong ? Math.PI / 5 : Math.PI / 3;
+  const angle = -Math.PI / 2 + (game.world.gameRng.next() - 0.5) * angleSpread;
+  const baseRadius = forwardBiasStrong ? 170 : 190;
+  const radiusJitter = forwardBiasStrong ? 30 : 60;
+  const radius = baseRadius + (game.world.gameRng.next() - 0.5) * radiusJitter;
+  return {
+    x: lodge.x + Math.cos(angle) * radius,
+    y: lodge.y + Math.sin(angle) * radius,
+  };
+}
+
 export class BuildGoal extends Goal {
   override activate(): void {
     const need = BUILD_PRIORITIES.find((b) => b.needed());
@@ -117,14 +132,22 @@ export class BuildGoal extends Goal {
       w.selection = generalists.slice(0, builderCount).map((unit) => unit.eid);
     }
 
-    // Place near the lodge, but keep wing buildings outside the lodge's own
-    // footprint so the placement check does not reject every attempt.
-    const isWing = isWingBuilding(need.kind);
-    const angle = w.gameRng.next() * Math.PI * 2;
-    const baseRadius = isWing ? 140 : 200;
-    const radiusJitter = isWing ? 24 : 80;
-    const radius = baseRadius + (w.gameRng.next() - 0.5) * radiusJitter;
-    placeBuilding(w, lodge.x + Math.cos(angle) * radius, lodge.y + Math.sin(angle) * radius);
+    if (need.kind === EntityKind.Tower) {
+      const placement = towerPlacement(
+        lodge,
+        hasCurrentRunTrack('defense_tower_damage') || currentStage() >= 6,
+      );
+      placeBuilding(w, placement.x, placement.y);
+    } else {
+      // Place near the lodge, but keep wing buildings outside the lodge's own
+      // footprint so the placement check does not reject every attempt.
+      const isWing = isWingBuilding(need.kind);
+      const angle = w.gameRng.next() * Math.PI * 2;
+      const baseRadius = isWing ? 140 : 200;
+      const radiusJitter = isWing ? 24 : 80;
+      const radius = baseRadius + (w.gameRng.next() - 0.5) * radiusJitter;
+      placeBuilding(w, lodge.x + Math.cos(angle) * radius, lodge.y + Math.sin(angle) * radius);
+    }
     w.placingBuilding = null;
 
     this.status = Goal.STATUS.COMPLETED;

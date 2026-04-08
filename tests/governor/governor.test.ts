@@ -15,7 +15,7 @@ import {
   TrainEvaluator,
 } from '@/governor/evaluators';
 import { Governor } from '@/governor/governor';
-import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -389,6 +389,30 @@ describe('TrainEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.12);
   });
 
+  it('backs off filler training when train-speed upgrades are active and stage-six fish reserves are low', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['utility_train_speed_t0'];
+    store.waveCountdown.value = 24;
+    store.fish.value = 80;
+    store.logs.value = 140;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
+      ]),
+      makeGroup('combat', Array.from({ length: 5 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: i === 4 ? SABOTEUR_KIND : SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.16);
+  });
+
   it('treats two combat units as enough to start saving for the first proactive tower', () => {
     storeV3.progressionLevel.value = 6;
     store.waveCountdown.value = 24;
@@ -579,7 +603,7 @@ describe('AttackEvaluator', () => {
     ];
     store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
         eid: i + 20,
         task: 'idle',
         kind: SAPPER_KIND,
@@ -587,6 +611,26 @@ describe('AttackEvaluator', () => {
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.4);
+  });
+
+  it('does not count a Mudpaw filler toward the unit-speed mobility attack window', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['utility_unit_speed_t0'];
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 950, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
 });
 

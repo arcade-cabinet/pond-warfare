@@ -48,6 +48,12 @@ function combatUnitCount(): number {
   return getGovernorCombatUnits(store.unitRoster.value).length;
 }
 
+function frontlineCombatUnitCount(): number {
+  return store.unitRoster.value
+    .filter((group) => group.role === 'combat')
+    .reduce((sum, group) => sum + group.units.length, 0);
+}
+
 function lodgeHpRatio(): number {
   const lodge = store.buildingRoster.value.find((b) => b.kind === EntityKind.Lodge);
   if (!lodge || lodge.maxHp <= 0) return 1;
@@ -80,6 +86,7 @@ function safeAttackArmyThreshold(totalArmy: number): number {
   const lodgeHp = lodgeHpRatio();
   const waveCountdown = nextWaveCountdown();
   const mobilityTrackActive = hasCurrentRunTrack('utility_unit_speed');
+  const frontlineArmy = frontlineCombatUnitCount();
 
   if (lodgeHp < 0.85) return Number.POSITIVE_INFINITY;
   if (waveCountdown !== null && waveCountdown <= 10) return Number.POSITIVE_INFINITY;
@@ -94,7 +101,7 @@ function safeAttackArmyThreshold(totalArmy: number): number {
 
   if (
     mobilityTrackActive &&
-    totalArmy >= MIN_ATTACK_ARMY + 1 &&
+    frontlineArmy >= MIN_ATTACK_ARMY + 1 &&
     lodgeHp >= 0.95 &&
     (waveCountdown === null || waveCountdown > 18)
   ) {
@@ -109,11 +116,13 @@ function canOpenMobilityAttackWindow(
   readyArmy: number,
   threshold: number,
 ): boolean {
+  const frontlineArmy = frontlineCombatUnitCount();
   return (
     hasCurrentRunTrack('utility_unit_speed') &&
     threshold > MIN_ATTACK_ARMY &&
     readyArmy >= threshold - 1 &&
-    totalArmy >= threshold
+    totalArmy >= threshold &&
+    frontlineArmy >= threshold
   );
 }
 
@@ -224,10 +233,18 @@ export class TrainEvaluator extends GoalEvaluator {
     const army = combatUnitCount();
     const readyArmy = countAvailableAttackers();
     const combatTarget = getGovernorCombatTarget();
+    const lowReserveFillerWindow =
+      trainSpeedTrackActive &&
+      storeV3.progressionLevel.value >= 6 &&
+      army >= combatTarget &&
+      store.fish.value < 120;
     if (army < combatTarget && store.fish.value >= 20 && canPressureSafely(army, readyArmy)) {
       return 0.44;
     }
     if (army < combatTarget && store.fish.value >= 20) return 0.75;
+    if (lowReserveFillerWindow) {
+      return canPressureSafely(army, readyArmy) ? 0.16 : 0.22;
+    }
 
     // Keep training if we can afford it
     if (store.fish.value >= 20 && canPressureSafely(army, readyArmy)) {

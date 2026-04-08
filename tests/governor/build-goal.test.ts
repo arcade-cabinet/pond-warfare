@@ -1,7 +1,7 @@
 import { query } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
-import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { BuildGoal } from '@/governor/goals/build-goal';
@@ -196,12 +196,16 @@ describe('BuildGoal', () => {
 
     new BuildGoal().activate();
 
-    const placedKinds = Array.from(query(world.ecs, [EntityTypeTag, FactionTag, Health]))
-      .filter((eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0)
-      .map((eid) => EntityTypeTag.kind[eid]);
+    const placedBuildings = Array.from(query(world.ecs, [EntityTypeTag, FactionTag, Health])).filter(
+      (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
+    );
+    const placedKinds = placedBuildings.map((eid) => EntityTypeTag.kind[eid]);
+    const tower = placedBuildings.find((eid) => EntityTypeTag.kind[eid] === EntityKind.Tower);
 
     expect(placedKinds).toContain(EntityKind.Tower);
     expect(placedKinds).not.toContain(EntityKind.Armory);
+    expect(tower).toBeDefined();
+    expect(Position.y[tower!]).toBeLessThan(Position.y[lodge]);
     expect(world.selection).toEqual([builderA, builderB, builderC]);
   });
 
