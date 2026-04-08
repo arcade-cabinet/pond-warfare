@@ -53,9 +53,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'pickup', function (this: Self, wx?: number) {
     this.sfxMgr.pickup(wx);
   });
-  def(proto, 'sniperHit', function (this: Self, wx?: number) {
-    this.sfxMgr.sniperHit(wx);
-  });
   def(proto, 'catapultImpact', function (this: Self, wx?: number) {
     this.sfxMgr.catapultImpact(wx);
   });
@@ -180,10 +177,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'shoot', function (this: Self, wx?: number) {
     this.cueMgr.combatStinger();
     this.sfxMgr.shoot(wx);
-  });
-  def(proto, 'sniperShoot', function (this: Self, wx?: number) {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.sniperShoot(wx);
   });
   def(proto, 'catapultShoot', function (this: Self, wx?: number) {
     this.cueMgr.combatStinger();

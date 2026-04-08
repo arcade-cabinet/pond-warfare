@@ -11,13 +11,43 @@ import { EntityKind } from '@/types';
 import type { UnitDef } from './unit-def';
 
 /**
- * Stats for player-side and compatibility otter units plus ambient neutral critters.
+ * Stats for player-side otter units plus ambient neutral critters.
  *
  * Important:
  * - The live player-facing manual roster is `Mudpaw / Medic / Sapper / Saboteur`.
- * - Some older combat chassis ids still exist for compatibility scenarios,
- *   balance tables, and compatibility tests.
+ * - Reserved alias ids still exist in the enum, but they now collapse onto the
+ *   live Sapper/Saboteur stat lines instead of carrying a separate combat model.
  */
+const SAPPER_DEF: UnitDef = {
+  hp: 40,
+  speed: 1.5,
+  damage: 15,
+  attackRange: 40,
+  isBuilding: false,
+  isResource: false,
+  spriteSize: 16,
+  spriteScale: 2.5,
+  fishCost: 25,
+  rockCost: 15,
+  logCost: 0,
+  foodCost: 1,
+};
+
+const SABOTEUR_DEF: UnitDef = {
+  hp: 30,
+  speed: 2.5,
+  damage: 5,
+  attackRange: 40,
+  isBuilding: false,
+  isResource: false,
+  spriteSize: 16,
+  spriteScale: 2.5,
+  fishCost: 20,
+  rockCost: 10,
+  logCost: 0,
+  foodCost: 1,
+};
+
 export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
   // Canonical live manual generalist chassis (`Mudpaw` display label).
   [MUDPAW_KIND]: {
@@ -33,33 +63,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  // Compatibility otter combat chassis retained for internal coverage.
-  [COMPAT_SAPPER_CHASSIS_KIND]: {
-    hp: 60,
-    speed: 1.8,
-    damage: 6,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 20,
-    logCost: 0,
-    foodCost: 1,
-  },
-  [COMPAT_SABOTEUR_CHASSIS_KIND]: {
-    hp: 40,
-    speed: 1.6,
-    damage: 8,
-    attackRange: 180,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 20,
-    logCost: 0,
-    foodCost: 1,
-  },
+  [COMPAT_SAPPER_CHASSIS_KIND]: SAPPER_DEF,
+  [COMPAT_SABOTEUR_CHASSIS_KIND]: SABOTEUR_DEF,
   [MEDIC_KIND]: {
     hp: 35,
     speed: 1.8,
@@ -86,8 +91,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 100,
     foodCost: 1,
   },
-  // Compatibility recon chassis. The live autonomous recon specialist is
-  // `Lookout`, which currently rides this lower-level entity kind.
+  // Shared recon chassis. The live autonomous recon specialist is `Lookout`,
+  // which currently rides this lower-level entity kind.
   [LOOKOUT_KIND]: {
     hp: 20,
     speed: 3.0,
@@ -218,34 +223,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     foodCost: 1,
   },
   // --- Canonical live late-stage manual units ---
-  [SAPPER_KIND]: {
-    hp: 40,
-    speed: 1.5,
-    damage: 15,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 25,
-    rockCost: 15,
-    logCost: 0,
-    foodCost: 1,
-  },
-  [SABOTEUR_KIND]: {
-    hp: 30,
-    speed: 2.5,
-    damage: 5,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 20,
-    rockCost: 10,
-    logCost: 0,
-    foodCost: 1,
-  },
+  [SAPPER_KIND]: SAPPER_DEF,
+  [SABOTEUR_KIND]: SABOTEUR_DEF,
   // Ambient critters (no cost, no combat role)
   [EntityKind.Frog]: {
     hp: 5,

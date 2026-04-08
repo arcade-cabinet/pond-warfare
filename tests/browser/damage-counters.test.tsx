@@ -19,7 +19,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { COMPAT_SABOTEUR_CHASSIS_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { mountCurrentGame } from './helpers/mount-current-game';
@@ -115,10 +115,10 @@ describe('Damage counter system', () => {
     expect(vsMedic).toBeGreaterThan(0);
   });
 
-  it('legacy ranged compatibility chassis still deals damage from range', async () => {
+  it('Saboteur deals close-range damage in live browser combat', async () => {
     const { x: baseX, y: baseY } = nextScenarioOrigin();
     const defender = spawnTestUnit(EntityKind.Gator, Faction.Enemy, baseX, baseY);
-    spawnTestUnit(COMPAT_SABOTEUR_CHASSIS_KIND, Faction.Player, baseX + 80, baseY, defender);
+    spawnTestUnit(SABOTEUR_KIND, Faction.Player, baseX + 20, baseY, defender);
     const hpBefore = Health.current[defender];
     await waitFrames(240);
     const hpAfter = Health.current[defender];

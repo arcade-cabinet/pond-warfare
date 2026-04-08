@@ -62,7 +62,7 @@ describe('projectileSystem', () => {
 
   it('should not apply projectile damage multipliers twice on impact', () => {
     const target = createTarget(world, 100, 100, 100);
-    // Legacy saboteur chassis hit: final damage already includes matchup scaling.
+    // Projectile damage is already pre-scaled before impact.
     spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 6, -1, 0.75);
 
     projectileSystem(world);

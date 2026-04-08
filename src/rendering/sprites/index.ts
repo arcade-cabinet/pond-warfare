@@ -53,8 +53,6 @@ import {
   drawRubble,
 } from './resources';
 import {
-  drawCompatSaboteurChassis,
-  drawCompatSapperChassis,
   drawCommander,
   drawDiver,
   drawEngineer,
@@ -74,14 +72,13 @@ import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } f
  * Names used internally to map to SpriteId enum values.
  *
  * These are local sprite-registry keys, not the canonical shared enum names.
- * Live roster units use canonical keys where possible, while compatibility-only
- * chassis keep explicit `compat_*` names so the registry stops teaching the
- * dead split roster by default.
+ * Live roster units use canonical keys where possible. Reserved alias ids reuse
+ * the same live sprite bodies through `*_alias` registry keys.
  */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'mudpaw', id: MUDPAW_SPRITE_ID },
-  { name: 'compat_sapper_chassis', id: COMPAT_SAPPER_CHASSIS_SPRITE_ID },
-  { name: 'compat_saboteur_chassis', id: COMPAT_SABOTEUR_CHASSIS_SPRITE_ID },
+  { name: 'sapper_alias', id: COMPAT_SAPPER_CHASSIS_SPRITE_ID },
+  { name: 'saboteur_alias', id: COMPAT_SABOTEUR_CHASSIS_SPRITE_ID },
   { name: 'gator', id: SpriteId.Gator },
   { name: 'snake', id: SpriteId.Snake },
   { name: 'lodge', id: SpriteId.Lodge },
@@ -161,8 +158,8 @@ const LARGE_TYPES = new Set([
 /** Map sprite type names to their draw functions. */
 const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   mudpaw: drawMudpaw,
-  compat_sapper_chassis: drawCompatSapperChassis,
-  compat_saboteur_chassis: drawCompatSaboteurChassis,
+  sapper_alias: drawSapper,
+  saboteur_alias: drawSaboteur,
   gator: drawGator,
   snake: drawSnake,
   lodge: drawLodge,

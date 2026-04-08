@@ -12,6 +12,7 @@ import {
   Building,
   Combat,
   Health,
+  IsProjectile,
   Position,
   Sprite,
   UnitStateMachine,
@@ -20,7 +21,8 @@ import {
 import { combatSystem } from '@/ecs/systems/combat';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { COMPAT_SABOTEUR_CHASSIS_KIND, COMPAT_SAPPER_CHASSIS_KIND } from '@/game/live-unit-kinds';
+import { query } from 'bitecs';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /* ------------------------------------------------------------------ */
@@ -35,14 +37,9 @@ describe('Combat', () => {
     world.frameCount = 0;
   });
 
-  it('legacy sapper chassis should deal 1.5x damage to legacy saboteur chassis', () => {
-    const mult = getDamageMultiplier(COMPAT_SAPPER_CHASSIS_KIND, COMPAT_SABOTEUR_CHASSIS_KIND);
-    expect(mult).toBe(1.5);
-  });
-
-  it('legacy saboteur chassis should deal 0.75x damage to legacy sapper chassis', () => {
-    const mult = getDamageMultiplier(COMPAT_SABOTEUR_CHASSIS_KIND, COMPAT_SAPPER_CHASSIS_KIND);
-    expect(mult).toBe(0.75);
+  it('live Sapper and Saboteur use neutral direct-damage matchups', () => {
+    expect(getDamageMultiplier(EntityKind.Sapper, EntityKind.Saboteur)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.Saboteur, EntityKind.Sapper)).toBe(1.0);
   });
 
   it('tower should auto-attack nearest enemy in range', () => {
@@ -67,23 +64,31 @@ describe('Combat', () => {
 
   it('melee counter multipliers are applied once, not twice', () => {
     const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
-    const compatSapperChassis = spawnEntity(
-      world,
-      COMPAT_SAPPER_CHASSIS_KIND,
-      140,
-      100,
-      Faction.Player,
-    );
+    const shieldbearer = spawnEntity(world, EntityKind.Shieldbearer, 140, 100, Faction.Player);
     Sprite.facingLeft[gator] = 0;
 
-    UnitStateMachine.state[compatSapperChassis] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[compatSapperChassis] = gator;
-    Combat.attackCooldown[compatSapperChassis] = 0;
+    UnitStateMachine.state[shieldbearer] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[shieldbearer] = gator;
+    Combat.attackCooldown[shieldbearer] = 0;
 
     combatSystem(world);
 
-    // Legacy sapper chassis base damage 6 vs Gator 0.75x => round(4.5) = 5 damage.
-    expect(Health.current[gator]).toBe(55);
+    // Shieldbearer base damage 3 vs Gator 0.75x => round(2.25) = 2 damage.
+    expect(Health.current[gator]).toBe(58);
+  });
+
+  it('Saboteur attacks deal direct damage without spawning projectile entities', () => {
+    const snake = spawnEntity(world, EntityKind.Snake, 120, 100, Faction.Enemy);
+    const saboteur = spawnEntity(world, EntityKind.Saboteur, 100, 100, Faction.Player);
+
+    UnitStateMachine.state[saboteur] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[saboteur] = snake;
+    Combat.attackCooldown[saboteur] = 0;
+
+    combatSystem(world);
+
+    expect(Health.current[snake]).toBeLessThan(Health.max[snake]);
+    expect(query(world.ecs, [IsProjectile]).length).toBe(0);
   });
 
   it('catapult should deal AoE damage', () => {
@@ -124,29 +129,23 @@ describe('Combat', () => {
 
   it('boss croc should enrage below 30% HP', () => {
     const boss = spawnEntity(world, EntityKind.BossCroc, 100, 100, Faction.Enemy);
-    const compatSapperChassis = spawnEntity(
-      world,
-      COMPAT_SAPPER_CHASSIS_KIND,
-      120,
-      100,
-      Faction.Player,
-    );
+    const sapper = spawnEntity(world, SAPPER_KIND, 120, 100, Faction.Player);
 
     // Set boss to low HP (below 30%)
     Health.current[boss] = Math.floor(Health.max[boss] * 0.2);
     UnitStateMachine.state[boss] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[boss] = compatSapperChassis;
+    UnitStateMachine.targetEntity[boss] = sapper;
     Combat.attackCooldown[boss] = 0;
 
     // Place them within attack range
-    const compatSapperChassisHpBefore = Health.current[compatSapperChassis];
+    const sapperHpBefore = Health.current[sapper];
 
     // Populate spatial hash for AoE stomp
     world.spatialHash.clear();
     world.spatialHash.insert(
-      compatSapperChassis,
-      Position.x[compatSapperChassis],
-      Position.y[compatSapperChassis],
+      sapper,
+      Position.x[sapper],
+      Position.y[sapper],
     );
     world.spatialHash.insert(boss, Position.x[boss], Position.y[boss]);
 
@@ -154,7 +153,7 @@ describe('Combat', () => {
 
     // Boss should have dealt enraged damage (2x) via AoE stomp
     // Normal boss damage is 15, enraged = 30
-    expect(Health.current[compatSapperChassis]).toBeLessThan(compatSapperChassisHpBefore);
+    expect(Health.current[sapper]).toBeLessThan(sapperHpBefore);
     // Should see "ENRAGED!" floating text
     const enrageText = world.floatingTexts.find((t) => t.text === 'ENRAGED!');
     expect(enrageText).toBeDefined();
@@ -181,23 +180,16 @@ describe('Combat', () => {
 
   it('venom snake should apply poison DoT', () => {
     const snake = spawnEntity(world, EntityKind.VenomSnake, 100, 100, Faction.Enemy);
-    const compatSapperChassis = spawnEntity(
-      world,
-      COMPAT_SAPPER_CHASSIS_KIND,
-      120,
-      100,
-      Faction.Player,
-    );
+    const sapper = spawnEntity(world, SAPPER_KIND, 120, 100, Faction.Player);
 
     UnitStateMachine.state[snake] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[snake] = compatSapperChassis;
+    UnitStateMachine.targetEntity[snake] = sapper;
     Combat.attackCooldown[snake] = 0;
 
     combatSystem(world);
 
-    // Legacy sapper chassis should be poisoned (5 ticks)
-    expect(world.poisonTimers.has(compatSapperChassis)).toBe(true);
-    expect(world.poisonTimers.get(compatSapperChassis)).toBe(5);
+    expect(world.poisonTimers.has(sapper)).toBe(true);
+    expect(world.poisonTimers.get(sapper)).toBe(5);
   });
 
   it('alpha predator should buff nearby enemy damage by 20%', () => {

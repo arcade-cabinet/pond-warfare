@@ -41,7 +41,6 @@ export interface AudioDelegateMethods {
   deposit(worldX?: number): void;
   trade(worldX?: number): void;
   pickup(worldX?: number): void;
-  sniperHit(worldX?: number): void;
   catapultImpact(worldX?: number): void;
   towerHit(worldX?: number): void;
   deathMelee(worldX?: number): void;
@@ -82,7 +81,6 @@ export interface AudioDelegateMethods {
   statTotal(): void;
   hit(worldX?: number): void;
   shoot(worldX?: number): void;
-  sniperShoot(worldX?: number): void;
   catapultShoot(worldX?: number): void;
   towerShoot(worldX?: number): void;
   win(): void;

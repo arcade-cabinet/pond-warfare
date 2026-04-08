@@ -11,14 +11,10 @@ import { EntityKind } from '@/types';
 import { BUILDING_DEFS } from './buildings';
 
 const ENTITY_KIND_ALIASES: Record<string, EntityKind> = {
-  gatherer: MUDPAW_KIND,
   mudpaw: MUDPAW_KIND,
   fisher: MUDPAW_KIND,
   logger: MUDPAW_KIND,
   digger: MUDPAW_KIND,
-  // Historical compatibility melee/ranged ids.
-  brawler: COMPAT_SAPPER_CHASSIS_KIND,
-  sniper: COMPAT_SABOTEUR_CHASSIS_KIND,
   gator: EntityKind.Gator,
   snake: EntityKind.Snake,
   lodge: EntityKind.Lodge,

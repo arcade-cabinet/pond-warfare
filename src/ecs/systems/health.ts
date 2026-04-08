@@ -10,7 +10,7 @@
  * 1. Adversarial: opponent Commander/Lodge destroyed -> WIN, ours -> LOSE
  * 2. Commander death: enemy Commander killed -> WIN, player Commander killed -> LOSE
  * 3. Lodge + extermination: Lodge destroyed + no units -> LOSE (Commander mode)
- * 4. Legacy (no Commanders): Lodge destroyed -> LOSE, all nests destroyed -> WIN
+ * 4. Fallback (no Commanders): Lodge destroyed -> LOSE, all nests destroyed -> WIN
  * 5. Wave-survival (stage 1): survive N waves -> WIN
  * 6. Co-op: both-survive rules via coop-rules module
  */
@@ -66,7 +66,7 @@ export function healthSystem(world: GameWorld): void {
   // Regeneration tech (every 300 frames, all units)
   if (world.frameCount % 300 === 0 && world.tech.regeneration) processRegeneration(world);
 
-  // Healer aura (every 60 frames)
+  // Support aura (every 60 frames)
   if (world.frameCount % 60 === 0) processHealerAura(world);
 
   // Herbalist hut heal (every 120 frames)

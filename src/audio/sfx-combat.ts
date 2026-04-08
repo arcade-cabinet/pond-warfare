@@ -6,18 +6,6 @@
 
 import type { SfxManager } from './sfx';
 
-// ---- Compatibility Saboteur Chassis / Ranged Skirmisher ----
-
-/** Sharp crack when the compatibility ranged skirmisher chassis fires. */
-export function sniperShootEffect(mgr: SfxManager, worldX?: number): void {
-  mgr.playAt(1400, 'triangle', 0.06, 0.07, 2000, worldX);
-}
-
-/** Precise "thwip" on ranged skirmisher projectile impact. */
-export function sniperHitEffect(mgr: SfxManager, worldX?: number): void {
-  mgr.playAt(1800, 'sine', 0.04, 0.06, 800, worldX);
-}
-
 // ---- Catapult ----
 
 /** Low thud when catapult fires. */

@@ -10,8 +10,6 @@ import {
   deathMeleeEffect,
   deathRangedEffect,
   rampageEffect,
-  sniperHitEffect,
-  sniperShootEffect,
   towerHitEffect,
   towerShootEffect,
   tripleKillEffect,
@@ -267,12 +265,6 @@ export class SfxManager {
   }
 
   // ---- Differentiated combat sounds ----
-  sniperShoot(worldX?: number): void {
-    sniperShootEffect(this, worldX);
-  }
-  sniperHit(worldX?: number): void {
-    sniperHitEffect(this, worldX);
-  }
   catapultShoot(worldX?: number): void {
     catapultShootEffect(this, worldX);
   }

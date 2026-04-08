@@ -5,9 +5,9 @@
  * - Herons ignore terrain speed modifiers (handled in terrain-grid.ts).
  * - Rendered with y-offset -10px (handled in entity-renderer).
  * - Fast scouts: fly toward player base, harass Mudpaws, then flee.
- * - Countered by ranged compatibility saboteur chassis and Towers (1.5x),
- *   weak vs melee compatibility sapper chassis (0.5x).
- *   Damage multipliers are in damage-multipliers.ts.
+ * - Countered primarily by Towers (1.5x) and otherwise pressures exposed
+ *   Mudpaws and lightly defended lanes. Damage multipliers are in
+ *   damage-multipliers.ts.
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -60,7 +60,7 @@ function edgeSpawnPosition(world: GameWorld): { sx: number; sy: number } {
   }
 }
 
-/** Find the nearest player Mudpaw to target. */
+/** Find the nearest player Mudpaw to harass. */
 function findNearestMudpaw(world: GameWorld, x: number, y: number): number {
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   let best = -1;

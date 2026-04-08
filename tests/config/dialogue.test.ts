@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pickDialogue } from '@/config/dialogue';
-import {
-  COMPAT_SABOTEUR_CHASSIS_KIND,
-  COMPAT_SAPPER_CHASSIS_KIND,
-  LOOKOUT_KIND,
-  MUDPAW_KIND,
-} from '@/game/live-unit-kinds';
+import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 describe('pickDialogue', () => {
@@ -17,16 +12,8 @@ describe('pickDialogue', () => {
     expect(pickDialogue(EntityKind.Sapper, 'attack')).toBeTruthy();
   });
 
-  it('routes legacy sapper chassis bark lookups through the Sapper pool', () => {
-    expect(pickDialogue(COMPAT_SAPPER_CHASSIS_KIND, 'attack')).toBeTruthy();
-  });
-
   it('returns Saboteur attack barks', () => {
     expect(pickDialogue(EntityKind.Saboteur, 'attack')).toBeTruthy();
-  });
-
-  it('routes legacy saboteur chassis bark lookups through the Saboteur pool', () => {
-    expect(pickDialogue(COMPAT_SABOTEUR_CHASSIS_KIND, 'attack')).toBeTruthy();
   });
 
   it('returns Shaman healing barks', () => {

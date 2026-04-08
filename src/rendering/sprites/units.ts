@@ -1,18 +1,17 @@
 /**
  * Otter-type unit sprites.
  *
- * Some sprite functions still use long-lived internal chassis names because
- * they are keyed off shared enums and sprite registries. In the live
- * player-facing model those chassis map to:
+ * Sprite bodies for live otter units. A few reserved enum ids reuse these same
+ * draw functions, but the player-facing roster is:
  * - `drawMudpaw` -> Mudpaw and gather-specialist bodies
  * - `drawLookout` -> Lookout body
- * - `drawCompatSapperChassis` / `drawCompatSaboteurChassis` -> compatibility-only combat bodies
+ * - `drawSapper` / `drawSaboteur` -> live combat bodies
  */
 
 import { PALETTE } from '@/constants';
 import { type DrawCtx, OTTER_NOSE_HIGHLIGHT, OTTER_OUTLINE } from './draw-helpers';
 
-/** Draw the base otter body shared by Mudpaw and other compatibility otter units. */
+/** Draw the base otter body shared by Mudpaw and a few alias-backed otter units. */
 function drawOtterBase(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   // Shadow under feet
@@ -70,19 +69,6 @@ function drawOtterBodyMinimal(d: DrawCtx): void {
 export function drawMudpaw(d: DrawCtx): void {
   drawOtterBase(d);
   d.rect(3, 5, 2, 2, PALETTE.clamShell);
-}
-
-export function drawCompatSapperChassis(d: DrawCtx): void {
-  drawOtterBase(d);
-  d.rect(12, 4, 2, 7, PALETTE.reedBrown);
-  d.rect(6, 1, 4, 2, PALETTE.clamShell);
-}
-
-export function drawCompatSaboteurChassis(d: DrawCtx): void {
-  drawOtterBase(d);
-  d.rect(13, 4, 1, 8, PALETTE.reedBrown);
-  d.rect(12, 4, 1, 1, PALETTE.stoneL);
-  d.rect(12, 11, 1, 1, PALETTE.stoneL);
 }
 
 export function drawMedic(d: DrawCtx): void {

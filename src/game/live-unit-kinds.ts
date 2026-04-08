@@ -3,8 +3,7 @@ import { EntityKind, SpriteId } from '@/types';
 /**
  * Canonical live player-facing unit mappings.
  *
- * The ECS enum still carries long-lived shared generalist/recon ids plus older
- * combat chassis ids that remain for compatibility, but live player/runtime
+ * The ECS enum still carries a few reserved alias ids, but live player/runtime
  * code should speak in canonical roster terms wherever possible.
  */
 export const MUDPAW_KIND = EntityKind.Mudpaw;
@@ -40,12 +39,4 @@ export function isMedicKind(kind: EntityKind | number): boolean {
 
 export function isLookoutKind(kind: EntityKind | number): boolean {
   return kind === LOOKOUT_KIND;
-}
-
-export function isCompatSapperChassisKind(kind: EntityKind | number): boolean {
-  return kind === COMPAT_SAPPER_CHASSIS_KIND;
-}
-
-export function isCompatSaboteurChassisKind(kind: EntityKind | number): boolean {
-  return kind === COMPAT_SABOTEUR_CHASSIS_KIND;
 }

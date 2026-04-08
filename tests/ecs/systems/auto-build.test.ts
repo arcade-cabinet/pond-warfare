@@ -118,7 +118,7 @@ describe('autoBuildSystem', () => {
     expect(world.floatingTexts.length).toBe(0);
   });
 
-  it('should not build when no idle gatherer is available', () => {
+  it('should not build when no idle Mudpaw is available', () => {
     world.autoBehaviors.generalist = true;
     world.resources.fish = 10000;
     world.resources.logs = 10000;

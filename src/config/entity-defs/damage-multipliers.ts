@@ -1,9 +1,4 @@
-import {
-  COMPAT_SABOTEUR_CHASSIS_KIND,
-  COMPAT_SAPPER_CHASSIS_KIND,
-  MEDIC_KIND,
-  MUDPAW_KIND,
-} from '@/game/live-unit-kinds';
+import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 /**
@@ -12,58 +7,20 @@ import { EntityKind } from '@/types';
  * Entries < 1.0 mean the attacker is weak against that defender.
  * Missing entries default to 1.0 (neutral).
  *
- * Note: several pairings still reference historical internal otter combat
- * chassis ids. Those are compatibility-facing low-level kinds, not the
- * canonical player-facing roster names.
+ * This table now describes only live unit/counter relationships. Reserved enum
+ * aliases fall back to neutral 1.0 behavior.
  */
 export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<EntityKind, number>>>> =
   {
-    [COMPAT_SAPPER_CHASSIS_KIND]: {
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
-      [MEDIC_KIND]: 1.5,
-      [EntityKind.Gator]: 0.75,
-      [EntityKind.FlyingHeron]: 0.5, // Melee weak vs flying
-    },
-    [COMPAT_SABOTEUR_CHASSIS_KIND]: {
-      [MEDIC_KIND]: 1.5,
-      [EntityKind.Snake]: 1.5,
-      [COMPAT_SAPPER_CHASSIS_KIND]: 0.75,
-      [EntityKind.FlyingHeron]: 1.5, // Ranged counters flying
-    },
-    [EntityKind.Gator]: {
-      [COMPAT_SAPPER_CHASSIS_KIND]: 1.5,
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 0.75,
-    },
-    [EntityKind.Snake]: {
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
-      [COMPAT_SAPPER_CHASSIS_KIND]: 0.75,
-    },
     [EntityKind.Shieldbearer]: {
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
       [EntityKind.Gator]: 0.75,
-    },
-    [EntityKind.ArmoredGator]: {
-      [COMPAT_SAPPER_CHASSIS_KIND]: 1.5,
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 0.75,
-    },
-    [EntityKind.VenomSnake]: {
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
-      [COMPAT_SAPPER_CHASSIS_KIND]: 0.75,
     },
     [EntityKind.SwampDrake]: {
       [MUDPAW_KIND]: 1.5,
       [EntityKind.Shieldbearer]: 0.75,
     },
-    [EntityKind.SiegeTurtle]: {
-      [COMPAT_SAPPER_CHASSIS_KIND]: 0.5,
-    },
-    [EntityKind.AlphaPredator]: {
-      [COMPAT_SAPPER_CHASSIS_KIND]: 1.25,
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.25,
-    },
     // v1.5.0 new units
     [EntityKind.Diver]: {
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5, // Ambush flanker vs fragile ranged
       [EntityKind.Shieldbearer]: 0.75, // Weak vs heavy armor
     },
     [EntityKind.BurrowingWorm]: {
@@ -82,7 +39,6 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [EntityKind.Shieldbearer]: 0.75, // Armor resists splash
     },
     [EntityKind.Berserker]: {
-      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5, // Fast melee closes on ranged
       [EntityKind.Shieldbearer]: 0.75, // Armor absorbs reckless attacks
     },
   };

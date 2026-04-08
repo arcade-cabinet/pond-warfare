@@ -171,7 +171,6 @@ export const SymbolType = {
   Attack: 2,
   Heal: 3,
   Recon: 4,
-  Scout: 4, // legacy alias
 } as const;
 
 // Commander component (one per commander entity)

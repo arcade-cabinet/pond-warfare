@@ -22,7 +22,7 @@ import {
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import {
-  COMPAT_SABOTEUR_CHASSIS_KIND,
+  LOOKOUT_KIND,
   SABOTEUR_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
@@ -31,13 +31,11 @@ import { EntityKind, Faction, UnitState } from '@/types';
 
 // Mock audio to track calls
 vi.mock('@/audio/audio-system', () => ({
-  audio: {
-    hit: vi.fn(),
-    shoot: vi.fn(),
-    sniperShoot: vi.fn(),
-    sniperHit: vi.fn(),
-    catapultShoot: vi.fn(),
-    catapultImpact: vi.fn(),
+    audio: {
+      hit: vi.fn(),
+      shoot: vi.fn(),
+      catapultShoot: vi.fn(),
+      catapultImpact: vi.fn(),
     towerShoot: vi.fn(),
     towerHit: vi.fn(),
     deathUnit: vi.fn(),
@@ -108,19 +106,8 @@ describe('Combat weight – projectile sourceKind', () => {
 
   it('spawnProjectile stores sourceKind on the projectile entity', () => {
     const target = createUnit(world, EntityKind.Gator, Faction.Enemy);
-    const proj = spawnProjectile(
-      world,
-      0,
-      0,
-      100,
-      100,
-      target,
-      10,
-      -1,
-      1.0,
-      COMPAT_SABOTEUR_CHASSIS_KIND,
-    );
-    expect(ProjectileData.sourceKind[proj]).toBe(COMPAT_SABOTEUR_CHASSIS_KIND);
+    const proj = spawnProjectile(world, 0, 0, 100, 100, target, 10, -1, 1.0, SABOTEUR_KIND);
+    expect(ProjectileData.sourceKind[proj]).toBe(SABOTEUR_KIND);
   });
 
   it('spawnProjectile defaults sourceKind to -1 when not specified', () => {
@@ -199,11 +186,11 @@ describe('Combat weight – differentiated death sounds', () => {
     expect(audio.deathRanged).not.toHaveBeenCalled();
   });
 
-  it('legacy saboteur chassis death plays deathRanged', async () => {
+  it('Lookout death plays deathRanged', async () => {
     const { audio } = await import('@/audio/audio-system');
     const { processDeath } = await import('@/ecs/systems/health/death');
 
-    const eid = createUnit(world, COMPAT_SABOTEUR_CHASSIS_KIND, Faction.Player, 1);
+    const eid = createUnit(world, LOOKOUT_KIND, Faction.Player, 1);
     Health.current[eid] = 0;
     processDeath(world, eid);
 

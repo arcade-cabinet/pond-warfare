@@ -102,7 +102,7 @@ describe('init-entities determinism', () => {
     expect(hasDifference).toBe(true);
   });
 
-  it('legacy scenario bootstrap uses Mudpaws instead of a free starter scout', () => {
+  it('legacy scenario bootstrap uses Mudpaws instead of a free starter recon unit', () => {
     const world = spawnWithSeed(TEST_SEED, 'standard');
     const eids = query(world.ecs, [Position, EntityTypeTag, FactionTag]);
     const playerKinds = eids

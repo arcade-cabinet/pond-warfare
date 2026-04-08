@@ -209,7 +209,7 @@ describe('Commander Game-Over', () => {
     createCommander(world, Faction.Enemy, 100);
     createLodge(world, 0); // destroyed
     // No nests, but enemy Commander alive — game continues
-    // Player has living units (Commander + one brawler)
+    // Player has living units (Commander + one Sapper)
     createUnit(world, SAPPER_KIND, Faction.Player, 50);
 
     healthSystem(world);

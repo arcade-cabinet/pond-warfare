@@ -2,7 +2,7 @@
  * Attack State Processing
  *
  * Handles the Attacking state for all unit types: melee direct damage,
- * compatibility ranged projectiles, catapult AoE, boss croc stomp, siege turtle,
+ * catapult AoE, boss croc stomp, siege turtle,
  * trapper slow, plus damage modifiers from auras, tech, and positional
  * bonuses (flanking + elevation).
  */
@@ -27,7 +27,6 @@ import {
 import { takeDamage } from '@/ecs/systems/health';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
-import { isCompatSaboteurChassisKind, COMPAT_SABOTEUR_CHASSIS_KIND } from '@/game/live-unit-kinds';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { isStealthed } from '../diver-stealth';
@@ -143,9 +142,7 @@ function executeAttack(
   hasSpatial: boolean,
   allTargetable: ArrayLike<number>,
 ): void {
-  if (isCompatSaboteurChassisKind(kind)) {
-    executeSaboteurChassisAttack(world, eid, tEnt, ex, ey, dmg, kind);
-  } else if (kind === EntityKind.Catapult) {
+  if (kind === EntityKind.Catapult) {
     executeCatapultAttack(world, eid, tEnt, ex, ey, dmg, faction, hasSpatial, allTargetable);
   } else if (kind === EntityKind.BossCroc) {
     executeBossCrocAttack(world, eid, ex, ey, dmg, faction, hasSpatial, allTargetable);
@@ -187,53 +184,6 @@ function executeAttack(
   // Combat bark
   if (faction === Faction.Player && world.gameRng.next() < 0.1) {
     showBark(world, eid, ex, ey, kind, 'combat', { color: '#ef4444' });
-  }
-}
-
-function executeSaboteurChassisAttack(
-  world: GameWorld,
-  eid: number,
-  tEnt: number,
-  ex: number,
-  ey: number,
-  dmg: number,
-  kind: EntityKind,
-): void {
-  const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
-  let mult = getDamageMultiplier(kind, targetKind);
-  // Piercing Shot still applies to the historical ranged chassis id.
-  if (world.tech.piercingShot) {
-    mult *= 1.3;
-  }
-  let projectileDmg = Math.round(dmg * mult);
-
-  // Positional bonuses for ranged attacks
-  const positional = calculatePositionalBonuses(world, eid, tEnt);
-  projectileDmg = Math.round(projectileDmg * positional.multiplier);
-
-  if (world.commanderEnemyDebuff.has(eid)) {
-    projectileDmg = Math.round(projectileDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
-  }
-  if (world.warDrumsBuff.has(eid)) {
-    projectileDmg = Math.round(projectileDmg * 1.15);
-  }
-  audio.sniperShoot(ex);
-  spawnProjectile(
-    world,
-    ex,
-    ey - 10,
-    Position.x[tEnt],
-    Position.y[tEnt],
-    tEnt,
-    projectileDmg,
-    eid,
-    mult,
-    COMPAT_SABOTEUR_CHASSIS_KIND,
-  );
-
-  // Emit positional bonus text
-  if (positional.flanking || positional.elevationUp) {
-    emitPositionalBonusText(world, tEnt, positional);
   }
 }
 
