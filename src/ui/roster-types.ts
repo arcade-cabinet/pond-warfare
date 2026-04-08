@@ -23,6 +23,25 @@ export type UnitTask =
   | 'scouting'
   | 'dead';
 
+const UNIT_TASK_LABELS: Record<UnitTask, string> = {
+  idle: 'Idle',
+  'gathering-fish': 'Gathering Fish',
+  'gathering-logs': 'Gathering Logs',
+  'gathering-rocks': 'Gathering Rocks',
+  building: 'Building',
+  moving: 'Moving',
+  attacking: 'Attacking',
+  defending: 'Defending',
+  patrolling: 'Patrolling',
+  healing: 'Healing',
+  scouting: 'Recon',
+  dead: 'Dead',
+};
+
+export function formatUnitTaskLabel(task: UnitTask): string {
+  return UNIT_TASK_LABELS[task];
+}
+
 /** A single unit's data for the Forces tab roster display. */
 export interface RosterUnit {
   eid: number;

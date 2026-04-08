@@ -16,6 +16,7 @@ import {
   toggleColorBlind,
 } from './game-actions';
 import { SelectionPanel } from './selection-panel';
+import { formatUnitTaskLabel } from './roster-types';
 import * as store from './store';
 
 type PanelTab = 'map' | 'forces' | 'buildings' | 'act' | 'menu';
@@ -33,13 +34,7 @@ interface CommandPanelProps {
   onClose: () => void;
 }
 
-function TabButton({
-  tab,
-  label,
-}: {
-  tab: PanelTab;
-  label: string;
-}) {
+function TabButton({ tab, label }: { tab: PanelTab; label: string }) {
   const active = activePanelTab.value === tab;
   return (
     <button
@@ -146,7 +141,7 @@ function ForcesTab() {
                 <span class="font-heading">{unit.label ?? entityKindName(unit.kind)}</span>
                 <span style={{ color: 'var(--pw-text-muted)' }}>
                   {' '}
-                  • {unit.task} • {unit.hp}/{unit.maxHp}
+                  • {formatUnitTaskLabel(unit.task)} • {unit.hp}/{unit.maxHp}
                 </span>
               </button>
             ))}
@@ -224,7 +219,11 @@ function MenuTab() {
       <button type="button" class="rts-btn min-h-[44px]" onClick={() => toggleColorBlind()}>
         Color Blind {store.colorBlindMode.value ? 'On' : 'Off'}
       </button>
-      <button type="button" class="rts-btn min-h-[44px] col-span-2" onClick={() => openKeyboardRef()}>
+      <button
+        type="button"
+        class="rts-btn min-h-[44px] col-span-2"
+        onClick={() => openKeyboardRef()}
+      >
         Shortcuts
       </button>
     </div>
