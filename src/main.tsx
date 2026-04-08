@@ -14,8 +14,8 @@ import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
 import { hydrateSaveAvailability } from '@/game/menu-start';
 import {
   registerMountedGameRefs,
-  releaseMountedGameLock,
   startMountedGameFromMenu,
+  teardownMountedGameSession,
 } from '@/game/shell-session';
 import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { initDatabase } from '@/storage';
@@ -82,7 +82,7 @@ function startGame(): Promise<boolean> {
     // Subscribe to menu state changes from PLAY or CONTINUE.
     menuState.subscribe((state) => {
       if (state === 'main') {
-        releaseMountedGameLock();
+        teardownMountedGameSession();
         return;
       }
       if (state === 'playing') {

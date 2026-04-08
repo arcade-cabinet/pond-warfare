@@ -17,6 +17,7 @@ vi.mock('@/game', () => ({
   game: {
     init: vi.fn().mockResolvedValue(undefined),
     syncUIStore: vi.fn(),
+    destroy: vi.fn(),
   },
 }));
 
@@ -32,6 +33,7 @@ import {
   releaseMountedGameLock,
   restartMountedGameSession,
   startMountedGameFromMenu,
+  teardownMountedGameSession,
 } from '@/game/shell-session';
 import { handleGameInitFailure } from '@/ui/game-init-failure';
 import * as store from '@/ui/store';
@@ -45,6 +47,7 @@ const refs = {
 
 describe('shell-session', () => {
   beforeEach(() => {
+    teardownMountedGameSession();
     vi.clearAllMocks();
     releaseMountedGameLock();
     registerMountedGameRefs(refs);
@@ -86,6 +89,25 @@ describe('shell-session', () => {
     expect(store.paused.value).toBe(false);
     expect(store.evacuationActive.value).toBe(false);
     expect(store.mobilePanelOpen.value).toBe(false);
+    expect(store.gameLoading.value).toBe(false);
+  });
+
+  it('tears down the mounted session when returning to the menu', async () => {
+    await expect(startMountedGameFromMenu()).resolves.toBe(true);
+
+    teardownMountedGameSession();
+
+    expect(game.destroy).toHaveBeenCalledTimes(1);
+    expect(store.gameLoading.value).toBe(false);
+
+    await expect(startMountedGameFromMenu()).resolves.toBe(true);
+    expect(startMenuGame).toHaveBeenCalledTimes(2);
+  });
+
+  it('menu teardown stays no-op when no session booted yet', () => {
+    teardownMountedGameSession();
+
+    expect(game.destroy).not.toHaveBeenCalled();
     expect(store.gameLoading.value).toBe(false);
   });
 

@@ -6,6 +6,7 @@ import * as store from '@/ui/store';
 
 let mountedRefs: MenuStartRefs | null = null;
 let startLocked = false;
+let sessionActive = false;
 
 export function registerMountedGameRefs(refs: MenuStartRefs | null): void {
   mountedRefs = refs;
@@ -15,16 +16,26 @@ export function releaseMountedGameLock(): void {
   startLocked = false;
 }
 
+export function teardownMountedGameSession(): void {
+  startLocked = false;
+  store.gameLoading.value = false;
+  if (!sessionActive) return;
+  game.destroy();
+  sessionActive = false;
+}
+
 export async function startMountedGameFromMenu(): Promise<boolean> {
   if (!mountedRefs || startLocked) return false;
   startLocked = true;
   try {
     const started = await startMenuGame(mountedRefs);
+    sessionActive = started;
     if (!started) {
       startLocked = false;
     }
     return started;
   } catch (error) {
+    sessionActive = false;
     startLocked = false;
     throw error;
   }
@@ -61,9 +72,11 @@ export async function restartMountedGameSession(): Promise<boolean> {
       mountedRefs.fogCanvas,
       mountedRefs.lightCanvas,
     );
+    sessionActive = true;
     game.syncUIStore();
     return true;
   } catch (error) {
+    sessionActive = false;
     startLocked = false;
     handleGameInitFailure(error);
     return false;
