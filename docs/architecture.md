@@ -42,7 +42,6 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
 4. **ECS Systems** - Execute in order (see `src/game/systems-runner.ts`):
    - `weatherSystem` - Weather transitions (clear/rain/fog/wind), speed/vision modifiers
    - `dayNightSystem` - Time of day, ambient darkness, fireflies
-   - `diverStealthSystem` - Water-based stealth mechanics
    - `movementSystem` - Unit pathfinding via Yuka steering
    - `collisionSystem` - Planck.js broadphase overlap resolution
    - `gatheringSystem` - Resource collection and dropoff (both factions)
@@ -50,7 +49,6 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `combatSystem` - Tower auto-attack, idle aggro (10-frame scan), melee/ranged with damage multipliers, immediate retarget after kill
    - `fortificationTickSystem` - Fort slot towers attack nearest enemy in range
    - `commanderPassivesSystem` - Commander passive upkeep, Marshal/Shadowfang active-state cleanup, Stormcaller lightning
-   - `berserkerSystem` - Berserker rage mechanic
    - `projectileSystem` - Projectile movement and impact
    - `trainingSystem` - Unit production from buildings
    - `aiSystem` - Enemy economy, training, combat, defense, building (6 sub-systems)
@@ -62,7 +60,6 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `moraleSystem` - Morale effects, commander death demoralize
    - `autoRetreatSystem` - Automatic retreat for low-HP units
    - `shamanHealSystem` - Shaman auto-healing
-   - `wallGateSystem` - Wall gate open/close mechanics
    - `veterancySystem` - Kill tracking, rank-up bonuses (HP/damage/speed)
    - `fogOfWarSystem` - Visibility based on unit positions
    - `branchCosmeticsSystem` - Visual branch unlocks

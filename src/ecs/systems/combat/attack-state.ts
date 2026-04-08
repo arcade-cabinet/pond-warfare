@@ -29,7 +29,6 @@ import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
-import { isStealthed } from '../diver-stealth';
 import { executeBossCrocAttack, executeMeleeAttack } from './melee-attacks';
 import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
@@ -53,7 +52,7 @@ function findNextTarget(
     if (FactionTag.faction[t] === faction || FactionTag.faction[t] === Faction.Neutral) continue;
     if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
     if (hasComponent(world.ecs, t, IsResource)) continue;
-    if (faction === Faction.Enemy && isStealthed(world, t)) continue;
+    if (faction === Faction.Enemy && world.stealthEntities.has(t)) continue;
     const dx = Position.x[t] - ex;
     const dy = Position.y[t] - ey;
     const d = dx * dx + dy * dy;
@@ -85,7 +84,7 @@ export function processAttackState(
     tEnt === -1 ||
     !hasComponent(world.ecs, tEnt, Health) ||
     Health.current[tEnt] <= 0 ||
-    (faction === Faction.Enemy && isStealthed(world, tEnt))
+    (faction === Faction.Enemy && world.stealthEntities.has(tEnt))
   ) {
     // Immediate retarget: scan for next enemy instead of going idle.
     // Eliminates the 30-frame aggro re-check delay between kills.

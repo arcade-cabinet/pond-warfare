@@ -248,7 +248,6 @@ export interface GameWorld {
 
   // Diver stealth: set of entity IDs currently in stealth
   stealthEntities: Set<number>;
-  stealthAmbushReady: Set<number>;
 
   // Burrowing Worm: entity ID -> remaining burrow frames before emergence
   wormBurrowTimers: Map<number, number>;
@@ -256,9 +255,7 @@ export interface GameWorld {
 
   // --- v2.0.0 ---
   weather: WeatherState;
-  berserkerCombatFrames: Map<number, number>;
   shrineUsed: Set<number>;
-  wallGateFaction: Map<number, number>;
 
   // --- v2.1.0 ---
   extendedStats?: Partial<ExtendedStats>;

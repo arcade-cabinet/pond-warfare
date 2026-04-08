@@ -95,10 +95,6 @@ export interface AudioDelegateMethods {
   // Environment & unit-specific sounds
   weatherTransition(weatherType: WeatherType): void;
   shrineActivation(ability: ShrineAbility, worldX?: number): void;
-  berserkerRage(worldX?: number): void;
-  berserkerFury(worldX?: number): void;
-  diverSubmerge(worldX?: number): void;
-  diverEmerge(worldX?: number): void;
   wormEmergence(worldX?: number): void;
   heronScreech(worldX?: number): void;
   // UI navigation sounds

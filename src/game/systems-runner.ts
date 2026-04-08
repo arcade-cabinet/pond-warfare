@@ -7,7 +7,6 @@ import { autoBuildSystem } from '@/ecs/systems/auto-build';
 import { autoRetreatSystem } from '@/ecs/systems/auto-retreat';
 import { autoSymbolSystem } from '@/ecs/systems/auto-symbol';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
-import { berserkerSystem } from '@/ecs/systems/berserker';
 import { branchCosmeticsSystem } from '@/ecs/systems/branch-cosmetics';
 import { buildingSystem } from '@/ecs/systems/building';
 import { cleanupSystem } from '@/ecs/systems/cleanup';
@@ -15,7 +14,6 @@ import { collisionSystem } from '@/ecs/systems/collision';
 import { combatSystem } from '@/ecs/systems/combat';
 import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { dayNightSystem } from '@/ecs/systems/day-night';
-import { diverStealthSystem } from '@/ecs/systems/diver-stealth';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { fogOfWarSystem } from '@/ecs/systems/fog-of-war';
 import { fortificationTickSystem } from '@/ecs/systems/fortification';
@@ -32,7 +30,6 @@ import { shamanHealSystem } from '@/ecs/systems/shaman-heal';
 import { specialistZoneBehaviorSystem } from '@/ecs/systems/specialist-zone-behavior';
 import { trainingSystem } from '@/ecs/systems/training';
 import { veterancySystem } from '@/ecs/systems/veterancy';
-import { wallGateSystem } from '@/ecs/systems/wall-gate';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import type { PhysicsManager } from '@/physics/physics-world';
@@ -46,7 +43,6 @@ export function runSystems(
 ): void {
   weatherSystem(world);
   dayNightSystem(world);
-  diverStealthSystem(world);
   specialistZoneBehaviorSystem(world);
   movementSystem(world);
   collisionSystem(world, physicsManager);
@@ -55,7 +51,6 @@ export function runSystems(
   combatSystem(world);
   fortificationTickSystem(world);
   commanderPassivesSystem(world);
-  berserkerSystem(world);
   projectileSystem(world);
   trainingSystem(world);
   if (!throttleAI) aiSystem(world);
@@ -68,7 +63,6 @@ export function runSystems(
   moraleSystem(world);
   autoRetreatSystem(world);
   shamanHealSystem(world);
-  wallGateSystem(world);
   veterancySystem(world);
   fogOfWarSystem(world);
   branchCosmeticsSystem(world);

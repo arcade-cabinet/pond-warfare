@@ -105,7 +105,7 @@ function syncCommanderAbilityState(world: GameWorld): void {
 
     if (vanishActive) {
       world.stealthEntities.add(eid);
-    } else if ((EntityTypeTag.kind[eid] as EntityKind) !== EntityKind.Diver) {
+    } else {
       world.stealthEntities.delete(eid);
     }
   }

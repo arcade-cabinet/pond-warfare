@@ -104,46 +104,6 @@ export function shrineActivationEffect(
   }
 }
 
-// ---- Berserker Rage Sound ----
-
-/** Rage growl when Berserker drops below 50% HP. */
-export function berserkerRageEffect(mgr: SfxManager, worldX?: number): void {
-  mgr.playAt(70, 'sawtooth', 0.2, 0.07, 50, worldX);
-}
-
-/** Escalated rage at 25% HP: deeper, more intense. */
-export function berserkerFuryEffect(
-  mgr: SfxManager,
-  getMuted: () => boolean,
-  getStarted: () => boolean,
-  worldX?: number,
-): void {
-  mgr.playAt(50, 'sawtooth', 0.25, 0.09, 30, worldX);
-  setTimeout(() => {
-    if (!getMuted() && getStarted()) mgr.playAt(40, 'square', 0.2, 0.07, 25, worldX);
-  }, 100);
-}
-
-// ---- Diver Stealth Sounds ----
-
-/** Subtle water splash when Diver enters stealth. */
-export function diverSubmergeEffect(mgr: SfxManager, worldX?: number): void {
-  mgr.playAt(400, 'sine', 0.12, 0.04, 200, worldX);
-}
-
-/** Dramatic emergence when stealth breaks on attack. */
-export function diverEmergeEffect(
-  mgr: SfxManager,
-  getMuted: () => boolean,
-  getStarted: () => boolean,
-  worldX?: number,
-): void {
-  mgr.playAt(200, 'triangle', 0.15, 0.07, 500, worldX);
-  setTimeout(() => {
-    if (!getMuted() && getStarted()) mgr.playAt(400, 'sine', 0.1, 0.05, 700, worldX);
-  }, 80);
-}
-
 // ---- Worm Emergence Sound ----
 
 /** Rumbling/cracking sound when a Burrowing Worm surfaces. */

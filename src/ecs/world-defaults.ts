@@ -214,14 +214,11 @@ export function createGameWorld(): GameWorld {
     gameEndPrevSpeed: 1,
     gameOverReason: null,
     stealthEntities: new Set(),
-    stealthAmbushReady: new Set(),
     wormBurrowTimers: new Map(),
     lastWormSpawnFrame: 0,
     // v2.0.0
     weather: createWeatherState(defaultSeed, 0),
-    berserkerCombatFrames: new Map(),
     shrineUsed: new Set(),
-    wallGateFaction: new Map(),
     // v2.1.0
     extendedStats: {},
     // Co-op multiplayer

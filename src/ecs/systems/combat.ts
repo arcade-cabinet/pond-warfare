@@ -35,7 +35,6 @@ import { EntityKind, Faction, UnitState } from '@/types';
 import { processAttackState } from './combat/attack-state';
 import { commanderAura } from './combat/commander-aura';
 import { warDrumsAura } from './combat/war-drums';
-import { isStealthed } from './diver-stealth';
 
 export function combatSystem(world: GameWorld): void {
   commanderAura(world);
@@ -73,7 +72,7 @@ export function combatSystem(world: GameWorld): void {
       if (FactionTag.faction[t] === faction) continue;
       if (Health.current[t] <= 0) continue;
       if (hasComponent(world.ecs, t, IsResource)) continue;
-      if (isStealthed(world, t)) continue; // Skip stealthed Divers
+      if (world.stealthEntities.has(t)) continue;
       const dx = Position.x[t] - ex;
       const dy = Position.y[t] - ey;
       const d = Math.sqrt(dx * dx + dy * dy);
@@ -201,7 +200,7 @@ export function combatSystem(world: GameWorld): void {
           continue;
         if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
-        if (isStealthed(world, t)) continue; // Skip stealthed Divers
+        if (world.stealthEntities.has(t)) continue;
         if (!isPointInSpecialistArea(world, eid, Position.x[t], Position.y[t])) continue;
         const dx = Position.x[t] - ex,
           dy = Position.y[t] - ey;
@@ -233,7 +232,7 @@ export function combatSystem(world: GameWorld): void {
           continue;
         if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
-        if (isStealthed(world, t)) continue; // Skip stealthed Divers
+        if (world.stealthEntities.has(t)) continue;
         if (!isPointInSpecialistArea(world, eid, Position.x[t], Position.y[t])) continue;
         const dx = Position.x[t] - ex,
           dy = Position.y[t] - ey;
