@@ -228,7 +228,7 @@ The central building. If it falls, the match is lost.
 - **Clam upgrades**: Clams can strengthen or specialize a building during the current prestige run, but they should not be the gate for a required building to exist.
 - **Pearl upgrades**: Pearls can permanently unlock optional automation, commander/loadout progression, and non-essential building variants.
 - **Building wings**: Armory, Burrow, FishingHut, HerbalistHut, Market, and Dock are Lodge wings rather than standalone structures. They appear as ECS entities for gameplay purposes but are conceptually attached to the Lodge.
-- **Manual training surface**: The Lodge is the player-facing manual production building. Armory and Burrow should not expose obsolete combat-worker production queues in the live UI.
+- **Manual training surface**: The Lodge is the player-facing manual production building. Armory and Burrow should not expose obsolete split-roster production queues in the live UI.
 - **Prestige glow**: Visual effect based on prestige rank
 
 ## Match Events

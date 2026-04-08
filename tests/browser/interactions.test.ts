@@ -20,8 +20,24 @@ import * as store from '@/ui/store';
 // v3: NewGameModal removed -- stub for remaining test references
 const NewGameModal = () => null;
 
-// Mock animation module
-vi.mock('@/rendering/animations', () => new Proxy({}, { get: () => vi.fn() }));
+// Mock animation module with explicit overrides so isolated browser runs stay stable.
+vi.mock('@/rendering/animations', async () => {
+  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
+    '@/rendering/animations',
+  );
+  return {
+    ...actual,
+    animateGameOverStats: vi.fn(),
+    animateIntroTitle: vi.fn(),
+    animateIntroSubtitle: vi.fn(),
+    cleanupEntityAnimation: vi.fn(),
+    triggerCommandPulse: vi.fn(),
+    triggerHitRecoil: vi.fn(),
+    triggerBuildingComplete: vi.fn(),
+    triggerSpawnPop: vi.fn(),
+    triggerAttackLunge: vi.fn(),
+  };
+});
 
 import '@/styles/main.css';
 
@@ -349,7 +365,7 @@ describe('Selection Panel interactions', () => {
       ),
     );
 
-    const xBtn = document.querySelector('#selection-info button');
+    const xBtn = document.querySelector('button[aria-label="Clear selection"]');
     expect(xBtn).toBeNull();
   });
 });
@@ -727,7 +743,7 @@ describe('HUD conditional element visibility', () => {
       ),
     );
 
-    const pauseOverlay = document.querySelector('.pointer-events-none');
+    const pauseOverlay = document.querySelector('button[aria-label="Tap to resume"]');
     expect(pauseOverlay).toBeTruthy();
     expect(pauseOverlay?.textContent).toContain('PAUSED');
   });
@@ -1050,7 +1066,7 @@ describe.skip('New Game Modal interactions (removed in v3.0)', () => {
 // ---------------------------------------------------------------------------
 // Pearl Resource Display
 // ---------------------------------------------------------------------------
-describe('Pearl resource display', () => {
+describe('Rock resource display', () => {
   it('pearl display hidden when pearls = 0', async () => {
     store.rocks.value = 0;
 
@@ -1071,13 +1087,14 @@ describe('Pearl resource display', () => {
       ),
     );
 
-    // No element should contain "Pearls" text
-    const pearlLabels = document.querySelectorAll('span');
-    const hasPearlLabel = Array.from(pearlLabels).some((el) => el.textContent?.includes('Pearls'));
-    expect(hasPearlLabel).toBe(false);
+    const resourceStatuses = document.querySelectorAll('[role="status"]');
+    const hasRocksStatus = Array.from(resourceStatuses).some((el) =>
+      el.getAttribute('aria-label')?.includes('Rocks:'),
+    );
+    expect(hasRocksStatus).toBe(true);
   });
 
-  it('pearl display visible when pearls > 0', async () => {
+  it('rock display reflects current rock count when rocks > 0', async () => {
     store.rocks.value = 15;
 
     render(
@@ -1097,9 +1114,12 @@ describe('Pearl resource display', () => {
       ),
     );
 
-    const pearlLabels = document.querySelectorAll('span');
-    const hasPearlLabel = Array.from(pearlLabels).some((el) => el.textContent?.includes('Pearls'));
-    expect(hasPearlLabel).toBe(true);
+    const resourceStatuses = document.querySelectorAll('[role="status"]');
+    const rocksStatus = Array.from(resourceStatuses).find((el) =>
+      el.getAttribute('aria-label')?.includes('Rocks:'),
+    );
+    expect(rocksStatus).toBeTruthy();
+    expect(rocksStatus?.textContent).toContain('15');
   });
 });
 
@@ -1260,9 +1280,11 @@ describe('Settings panel interactions', () => {
       ),
     );
 
-    // Find speed buttons by their text content (1x, 2x, 3x)
+    // Find gameplay speed buttons without matching the accessibility UI-scale buttons.
     const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    const speedButtons = Array.from(allBtns).filter((btn) => btn.textContent?.match(/^[123]x$/));
+    const speedButtons = Array.from(allBtns).filter((btn) =>
+      btn.getAttribute('aria-label')?.startsWith('Game speed '),
+    );
     expect(speedButtons.length).toBe(3);
 
     speedButtons[0].click();

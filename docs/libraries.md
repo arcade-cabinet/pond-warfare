@@ -50,7 +50,7 @@ Smooth pathfinding, collision avoidance, and formation movement for ALL units (p
 - `AlignmentBehavior` (weight 0.3) - formation movement heading alignment
 - `CohesionBehavior` (weight 0.4) - formation movement group cohesion
 - `WanderBehavior` - organic idle patrol for auto-defend
-- `FleeBehavior` - Mudpaw and worker retreat behavior when attacked (1.5s duration)
+- `FleeBehavior` - Mudpaw and harvester retreat behavior when attacked (1.5s duration)
 - `EvadeBehavior` - specialist and enemy evasive movement when under fire
 - Faction-agnostic: `addUnit()` / `removeUnit()` for any entity
 - `setFormation()` - enable flocking for group move commands
@@ -77,7 +77,7 @@ Complete audio system with procedural synthesis and unit-specific SFX.
 
 **Usage:**
 - **SFX** (25+ effects): `Synth` with pooled synth+panner pairs (16 pre-allocated)
-- **Selection/command voices**: Palette-based by role rather than a fixed old roster table. Current player-facing mapping centers on Mudpaw (`worker`), Medic/Shaman/Lookout (`support`), Guard/Ranger (`skirmisher`), Bombardier and siege heavies (`heavy`), and Commander (`leader`). Some low-level internal entity kinds still back those palettes.
+- **Selection/command voices**: Palette-based by role rather than a fixed old roster table. Current player-facing mapping centers on Mudpaw (`generalist`), Medic/Shaman/Lookout (`support`), Guard/Ranger (`skirmisher`), Bombardier and siege heavies (`heavy`), and Commander (`leader`). Some low-level internal entity kinds still back those palettes.
 - **Contextual effects**: building placement, research complete, airdrop incoming, train complete, build complete, unit death, building destruction, heal, error
 - **Spatial panning**: SFX panned left/right based on world position relative to camera
 - **Music**: Procedural chiptune via `Sequence` - peaceful (C major, 100 BPM) / hunting (C minor, 140 BPM)
