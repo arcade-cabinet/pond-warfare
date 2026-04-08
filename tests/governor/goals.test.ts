@@ -221,7 +221,7 @@ describe('TrainGoal', () => {
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
   });
 
-  it('leans on Mudpaws earlier on higher-pressure stages', async () => {
+  it('switches to Sappers on higher-pressure stages once the Mudpaw floor is met', async () => {
     const { TrainGoal } = await import('@/governor/goals/train-goal');
 
     const lodgeEid = addEntity(world.ecs);
@@ -257,6 +257,6 @@ describe('TrainGoal', () => {
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
-    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(MUDPAW_KIND);
+    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(SAPPER_KIND);
   });
 });

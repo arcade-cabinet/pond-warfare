@@ -94,6 +94,11 @@ export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     const idle = findIdleMudpaws();
     if (idle.length === 0) return 0;
+    const totalArmy = combatUnitCount();
+    const readyArmy = countAvailableAttackers();
+    if (lightPressureSkirmishWindow(totalArmy, readyArmy) || canPressureSafely(totalArmy, readyArmy)) {
+      return 0.46 + Math.min(idle.length * 0.02, 0.06);
+    }
     return 0.85 + Math.min(idle.length * 0.03, 0.1);
   }
 
@@ -195,12 +200,12 @@ export class AttackEvaluator extends GoalEvaluator {
     if (!skirmishWindow && !Number.isFinite(safeAttackArmy)) return 0;
 
     const openingWindow = skirmishWindow
-      ? 0.62
+      ? 0.64
       : safeAttackArmy === MIN_ATTACK_ARMY
-        ? 0.66
+        ? 0.78
         : safeAttackArmy === MIN_ATTACK_ARMY + 1
-          ? 0.58
-          : 0.34;
+          ? 0.68
+          : 0.42;
     const armyPressure = Math.min((readyArmy - safeAttackArmy) * 0.08, 0.24);
     const reservePressure = Math.min(Math.max(totalArmy - readyArmy, 0) * 0.03, 0.09);
     const fishReservePressure = Math.min(Math.max(store.fish.value - 60, 0) / 320, 0.14);

@@ -42,6 +42,12 @@ function scoutCount(): number {
     .reduce((sum, g) => sum + g.units.length, 0);
 }
 
+function preferredCombatUnit(trainable: EntityKind[]): EntityKind | null {
+  if (trainable.includes(SAPPER_KIND)) return SAPPER_KIND;
+  if (trainable.includes(SABOTEUR_KIND)) return SABOTEUR_KIND;
+  return null;
+}
+
 function trainableUnits(buildingKind: EntityKind, canTrain: EntityKind[]): EntityKind[] {
   if (buildingKind === EntityKind.Lodge) {
     const stage = Math.max(1, Math.trunc(storeV3.progressionLevel.value || 1));
@@ -82,19 +88,26 @@ export class TrainGoal extends Goal {
   }
 
   private pickUnit(trainable: EntityKind[]): EntityKind | null {
+    const combatTarget = getGovernorCombatTarget();
+
     if (trainable.includes(MUDPAW_KIND) && mudpawCount() < getGovernorMudpawTarget()) {
       return MUDPAW_KIND;
     }
-    if (trainable.includes(MUDPAW_KIND) && armySize() < getGovernorCombatTarget()) {
+
+    const dedicatedCombatUnit = preferredCombatUnit(trainable);
+    if (dedicatedCombatUnit && armySize() < combatTarget) {
+      return dedicatedCombatUnit;
+    }
+    if (trainable.includes(MUDPAW_KIND) && armySize() < combatTarget) {
       return MUDPAW_KIND;
     }
     if (trainable.includes(MEDIC_KIND) && shouldTrainSupportUnit()) {
       return MEDIC_KIND;
     }
-    if (trainable.includes(SABOTEUR_KIND) && armySize() >= Math.max(4, getGovernorCombatTarget())) {
+    if (trainable.includes(SABOTEUR_KIND) && armySize() >= Math.max(4, combatTarget)) {
       return SABOTEUR_KIND;
     }
-    if (trainable.includes(SAPPER_KIND) && armySize() >= Math.max(2, getGovernorCombatTarget() - 1)) {
+    if (trainable.includes(SAPPER_KIND) && armySize() >= Math.max(2, combatTarget - 1)) {
       return SAPPER_KIND;
     }
     if (trainable.includes(MEDIC_KIND)) return MEDIC_KIND;

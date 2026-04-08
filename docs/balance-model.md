@@ -270,7 +270,7 @@ was incorrectly reporting a deleted Pearl combat specialist instead of the real 
   - that means the strongly negative blended pressure scores are not purely missing runtime effects; they are interactions inside the full governor loop
 - Attack controller:
   - the attack controller does convert better in the micro slice now, and that attack-specific diagnostic now uses the canonical `blueprint_guard` specialist instead of the obsolete Hunter path
-  - the full-governor stage-6 trace is still the bigger issue: it opens `0` committed attack windows, so the remaining blocker is sustained safety under siege, not shared-target contact conversion
+  - the full-governor stage-6 trace is materially healthier after the governor train/arbitration fix: the sampled baseline now opens `1` committed attack window instead of `0`, so the remaining blocker is sustained safety and post-Armory defensive follow-up rather than total failure to convert readiness into pressure
 
 ## Interpretation
 
@@ -283,12 +283,12 @@ was incorrectly reporting a deleted Pearl combat specialist instead of the real 
 - Basic Clam gather/yield/clam-bonus tracks are confirmed as positive again after the gather-override persistence fix and fresh-world training-queue reset.
 - The Pearl broad scan is now trustworthy enough to use as one release-budget input, and the Clam scan is no longer directionally wrong now that it uses a post-match purchase loop and the full live defensive stack.
 - The Frontier ladder is now a pacing problem, not a survival problem. All five steps survive at `100%`, but the step-to-step relief is still only near-neutral in the short-match lens.
-- The targeted governor trace is cleaner but still not healthy enough on stage 6. In the corrected live-stack trace it averages about `1.8` ready combat units in the opening slice and about `2.4` over 2400 frames, reaches `readyForAttackPct = 75%` in the long slice, but still opens `0` committed attack windows because heavy base pressure stays active for about `61%` to `64%` of samples with average threat count around `7` to `8`.
+- The targeted governor trace is cleaner and now materially better on stage 6. In the refreshed live-stack trace it averages about `2.3` ready combat units in the opening slice and about `3.15` over 2400 frames, still reaches `readyForAttackPct = 75%` in the long slice, and now opens `1` committed attack window in the sampled baseline rows. The remaining weakness is sustained siege pressure and static-defense follow-up: base pressure is still active for roughly `50%` to `56%` of long-run samples with average threat count around `4` to `5`.
 - The corrected full-stack viability run is materially healthier than the older harness implied: a fresh stage-6 no-upgrade run now stays alive through the 1800-frame baseline check with Lodge HP around `1354` and `5` kills.
 - The new sustain harness closes the other side of that gap. `auto_heal_behavior` and `auto_repair_behavior` now have a dedicated post-army scenario where they express strongly, while `hp_multiplier` still needs a better bridge between pressure slices and sustain scoring.
 - The rare-resource prestige path is no longer a map-generation trap. Its opening-window wobble now looks like ordinary governor valuation noise rather than a fundamentally harmful spawn pattern.
 - The suspicious long-run Pearl set is now clearer: Logger and Digger specialist-cap tracks are still materially negative in the broad scan, while Fisher is only near-neutral and the plain multiplier tracks are modestly positive.
-- The controller split still makes the attack/stabilization path the next highest-signal controller problem. The train path is cleaner after the stage-aware gatherer target and baseline Lodge-generalist alignment, but build follow-up and siege relief still lag once the Armory step is complete.
+- The controller split still makes the attack/stabilization path the next highest-signal controller problem, but the center of gravity has shifted. The train path is now materially cleaner after the stage-aware combat-queue fix and attack-window arbitration pass; build follow-up and siege relief now look like the bigger remaining bottleneck once the Armory step is complete.
 
 ## How To Use This
 

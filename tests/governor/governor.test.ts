@@ -383,6 +383,30 @@ describe('Governor brain arbitration', () => {
     expect(governor.brain.subgoals[0]?.constructor.name).toBe('AttackGoal');
   });
 
+  it('prefers attack over idle-gather assignment when a safe opening window is already live', () => {
+    store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    storeV3.progressionLevel.value = 6;
+    store.unitRoster.value = [
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+      makeGroup('generalist', [{ eid: 20, task: 'idle', kind: MUDPAW_KIND }]),
+    ];
+
+    governor.brain.arbitrate();
+    expect(governor.brain.subgoals).toHaveLength(1);
+    expect(governor.brain.subgoals[0]?.constructor.name).toBe('AttackGoal');
+  });
+
   it('does not tick when disabled', () => {
     governor.enabled = false;
     store.unitRoster.value = [
