@@ -22,16 +22,16 @@ export enum UnitState {
 }
 
 /**
- * Shared compatibility-stable entity ids.
+ * Shared stable entity ids.
  *
- * Numeric ids remain compatibility-stable for saved data and ECS state, while
- * the member names reflect the canonical live roster and explicit compatibility
- * chassis where those ids still exist.
+ * Numeric ids remain stable for saved data and ECS state, while the member
+ * names reflect the canonical live roster and the shared chassis that still
+ * back a few runtime mappings.
  */
 export enum EntityKind {
   Mudpaw = 0,
-  CompatSapperChassis = 1,
-  CompatSaboteurChassis = 2,
+  SharedSapperChassis = 1,
+  SharedSaboteurChassis = 2,
   Gator = 3,
   Snake = 4,
   Lodge = 5,
@@ -105,15 +105,15 @@ export enum ResourceType {
 }
 
 /**
- * Shared compatibility-stable sprite ids.
+ * Shared stable sprite ids.
  *
  * Like `EntityKind`, these numeric ids stay stable while the member names
- * follow the canonical live roster and explicit compatibility chassis.
+ * follow the canonical live roster and the shared chassis still used under it.
  */
 export enum SpriteId {
   Mudpaw = 0,
-  CompatSapperChassis = 1,
-  CompatSaboteurChassis = 2,
+  SharedSapperChassis = 1,
+  SharedSaboteurChassis = 2,
   Gator = 3,
   Snake = 4,
   Lodge = 5,

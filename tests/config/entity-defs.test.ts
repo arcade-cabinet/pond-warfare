@@ -90,8 +90,8 @@ describe('ENTITY_DEFS', () => {
   });
 
   it('reserved alias ids mirror the live Sapper and Saboteur defs', () => {
-    expect(ENTITY_DEFS[EntityKind.CompatSapperChassis]).toEqual(ENTITY_DEFS[SAPPER_KIND]);
-    expect(ENTITY_DEFS[EntityKind.CompatSaboteurChassis]).toEqual(ENTITY_DEFS[SABOTEUR_KIND]);
+    expect(ENTITY_DEFS[EntityKind.SharedSapperChassis]).toEqual(ENTITY_DEFS[SAPPER_KIND]);
+    expect(ENTITY_DEFS[EntityKind.SharedSaboteurChassis]).toEqual(ENTITY_DEFS[SABOTEUR_KIND]);
   });
 });
 
@@ -173,8 +173,8 @@ describe('getDamageMultiplier', () => {
   });
 
   it('reserved alias ids now fall back to neutral damage behavior', () => {
-    expect(getDamageMultiplier(EntityKind.CompatSapperChassis, EntityKind.Gator)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.CompatSaboteurChassis, EntityKind.Snake)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.SharedSapperChassis, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.SharedSaboteurChassis, EntityKind.Snake)).toBe(1.0);
   });
 
   it('should only contain multipliers for entities with damage', () => {

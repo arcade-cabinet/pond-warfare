@@ -1,10 +1,10 @@
 import {
-  COMPAT_SABOTEUR_CHASSIS_KIND,
-  COMPAT_SAPPER_CHASSIS_KIND,
   LOOKOUT_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
   SABOTEUR_KIND,
+  SHARED_SABOTEUR_CHASSIS_KIND,
+  SHARED_SAPPER_CHASSIS_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
@@ -63,8 +63,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [COMPAT_SAPPER_CHASSIS_KIND]: SAPPER_DEF,
-  [COMPAT_SABOTEUR_CHASSIS_KIND]: SABOTEUR_DEF,
+  [SHARED_SAPPER_CHASSIS_KIND]: SAPPER_DEF,
+  [SHARED_SABOTEUR_CHASSIS_KIND]: SABOTEUR_DEF,
   [MEDIC_KIND]: {
     hp: 35,
     speed: 1.8,

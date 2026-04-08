@@ -75,8 +75,8 @@ import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } f
  */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'mudpaw', id: MUDPAW_SPRITE_ID },
-  { name: 'compat_sapper_chassis', id: SpriteId.CompatSapperChassis },
-  { name: 'compat_saboteur_chassis', id: SpriteId.CompatSaboteurChassis },
+  { name: 'shared_sapper_chassis', id: SpriteId.SharedSapperChassis },
+  { name: 'shared_saboteur_chassis', id: SpriteId.SharedSaboteurChassis },
   { name: 'gator', id: SpriteId.Gator },
   { name: 'snake', id: SpriteId.Snake },
   { name: 'lodge', id: SpriteId.Lodge },
@@ -156,8 +156,8 @@ const LARGE_TYPES = new Set([
 /** Map sprite type names to their draw functions. */
 const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   mudpaw: drawMudpaw,
-  compat_sapper_chassis: drawSapper,
-  compat_saboteur_chassis: drawSaboteur,
+  shared_sapper_chassis: drawSapper,
+  shared_saboteur_chassis: drawSaboteur,
   gator: drawGator,
   snake: drawSnake,
   lodge: drawLodge,

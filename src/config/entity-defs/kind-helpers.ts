@@ -1,10 +1,10 @@
 import {
-  COMPAT_SABOTEUR_CHASSIS_KIND,
-  COMPAT_SAPPER_CHASSIS_KIND,
   LOOKOUT_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
   SABOTEUR_KIND,
+  SHARED_SABOTEUR_CHASSIS_KIND,
+  SHARED_SAPPER_CHASSIS_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
@@ -67,8 +67,8 @@ const ENTITY_KIND_ALIASES: Record<string, EntityKind> = {
 
 const ENTITY_KIND_LABELS: Record<EntityKind, string> = {
   [MUDPAW_KIND]: 'Mudpaw',
-  [COMPAT_SAPPER_CHASSIS_KIND]: 'Sapper',
-  [COMPAT_SABOTEUR_CHASSIS_KIND]: 'Saboteur',
+  [SHARED_SAPPER_CHASSIS_KIND]: 'Sapper',
+  [SHARED_SABOTEUR_CHASSIS_KIND]: 'Saboteur',
   [EntityKind.Gator]: 'Gator',
   [EntityKind.Snake]: 'Snake',
   [EntityKind.Lodge]: 'Lodge',

@@ -41,8 +41,8 @@ import type { GameWorld } from './world';
 
 const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [MUDPAW_KIND]: MUDPAW_SPRITE_ID,
-  [EntityKind.CompatSapperChassis]: SAPPER_SPRITE_ID,
-  [EntityKind.CompatSaboteurChassis]: SABOTEUR_SPRITE_ID,
+  [EntityKind.SharedSapperChassis]: SAPPER_SPRITE_ID,
+  [EntityKind.SharedSaboteurChassis]: SABOTEUR_SPRITE_ID,
   [EntityKind.Gator]: SpriteId.Gator,
   [EntityKind.Snake]: SpriteId.Snake,
   [EntityKind.Lodge]: SpriteId.Lodge,
