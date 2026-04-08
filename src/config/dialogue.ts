@@ -92,12 +92,12 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
 
   [MEDIC_KIND]: pool({
     select: ['How can I help?', 'Healing ready.', "Who's hurt?", "I'm here."],
-    select_repeat: ["I'm a healer, not a miracle worker.", 'Yes, still healing.'],
+    select_repeat: ["I'm a medic, not a miracle worker.", 'Yes, still healing.'],
     select_spam: ['Heal yourself!', 'I charge extra for this.', 'My bedside manner has limits.'],
     move: ['On my way to help.', 'Coming!', 'Hold on!'],
     heal: ['This might sting.', "You'll be fine.", 'Hold still.', 'Good as new!'],
     idle: ['Everyone healthy? Good.', '*organizes herbs*', 'An otter a day keeps the gator away.'],
-    combat: ["I'm a healer!", 'Protect me!', 'Behind you!'],
+    combat: ["I'm a medic!", 'Protect me!', 'Behind you!'],
     low_hp: ['Physician, heal thyself...', 'I need healing too!'],
     death: ["I couldn't... save myself..."],
   }),
@@ -105,7 +105,7 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
   [LOOKOUT_KIND]: pool({
     select: ['Eyes up.', 'Watching the marsh.', 'Recon ready.'],
     select_repeat: ['Still watching.', 'I have the perimeter.', 'Nothing slips past me twice.'],
-    select_spam: ['The marsh is not getting clearer by tapping me.', 'I can scout and complain at the same time.', 'Yes, yes, still on watch.'],
+    select_spam: ['The marsh is not getting clearer by tapping me.', 'I can run recon and complain at the same time.', 'Yes, yes, still on watch.'],
     move: ['Sweeping ahead.', 'I have the edge.', 'Taking point.'],
     discover: ['Movement ahead!', 'Found an opening!', 'Enemy position marked!', 'New ground sighted!'],
     idle: ['*scans horizon*', 'Fog is shifting...', 'Keeping watch.'],

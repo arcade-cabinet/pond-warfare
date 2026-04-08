@@ -2,7 +2,7 @@
  * Combat System
  *
  * Orchestrator that delegates aura processing to sub-modules and handles
- * tower auto-attack, idle auto-aggro, attack-move scanning, healer auto-follow,
+ * tower auto-attack, idle auto-aggro, attack-move scanning, support auto-follow,
  * and attack-move resume inline.
  */
 

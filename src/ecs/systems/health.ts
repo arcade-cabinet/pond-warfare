@@ -4,7 +4,7 @@
  * Delegates to focused sub-modules:
  * - take-damage.ts: damage application, retaliation, ally assist
  * - death.ts: entity death processing, stats, corpses
- * - healing.ts: passive healing, healer aura, herbalist hut
+ * - healing.ts: passive healing, support aura, herbalist hut
  *
  * Win/lose conditions (priority order):
  * 1. Adversarial: opponent Commander/Lodge destroyed -> WIN, ours -> LOSE

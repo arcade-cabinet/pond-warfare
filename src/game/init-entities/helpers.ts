@@ -130,7 +130,7 @@ export interface SpawnContext {
  *
  * Legacy horizontal scenarios still use this helper, but they should boot the
  * same canonical manual baseline as the live vertical game: no free starter
- * scout, just the reusable Mudpaw chassis plus the Commander.
+ * Lookout, just the reusable Mudpaw chassis plus the Commander.
  */
 export function spawnPlayerBase(ctx: SpawnContext): number {
   const { world, sx, sy } = ctx;
