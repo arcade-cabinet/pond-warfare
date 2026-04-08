@@ -179,6 +179,25 @@ describe('gatheringSystem', () => {
     expect(TaskOverride.targetEntity[mudpaw]).toBe(backup);
   });
 
+  it('expands player same-type retarget radius with the gather radius upgrade', () => {
+    const mudpaw = createMudpaw(world, 100, 100);
+    const depleted = createResource(world, 100, 100, EntityKind.Cattail);
+    const backup = createResource(world, 420, 100, EntityKind.Cattail);
+
+    world.playerGatherRadiusMultiplier = 1.5;
+    Resource.amount[depleted] = 0;
+    Resource.amount[backup] = 1000;
+
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = depleted;
+    UnitStateMachine.gatherTimer[mudpaw] = 5;
+
+    gatheringSystem(world);
+
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(backup);
+  });
+
   it('keeps specialist gather overrides inside the assigned area', () => {
     const mudpaw = createMudpaw(world, 100, 100);
     const depleted = createResource(world, 100, 100, EntityKind.Cattail);

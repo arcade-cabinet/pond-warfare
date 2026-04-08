@@ -143,5 +143,7 @@ function ensureFortState(world: GameWorld): void {
   if (lodgeEid < 0) return;
   const lx = Position.x[lodgeEid];
   const ly = Position.y[lodgeEid];
-  world.fortifications = initFortificationState(progressionLevel.value, lx, ly);
+  world.fortifications = initFortificationState(progressionLevel.value, lx, ly, {
+    wallHpMultiplier: world.playerWallHpMultiplier,
+  });
 }

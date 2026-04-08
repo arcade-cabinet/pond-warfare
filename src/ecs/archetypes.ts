@@ -155,6 +155,17 @@ export function spawnEntity(
     maxHp += 300;
   }
 
+  if (faction === Faction.Player && def.isBuilding) {
+    if (kind === EntityKind.Lodge && world.playerLodgeHpMultiplier > 1) {
+      hp = Math.round(hp * world.playerLodgeHpMultiplier);
+      maxHp = Math.round(maxHp * world.playerLodgeHpMultiplier);
+    }
+    if (kind === EntityKind.Wall && world.playerWallHpMultiplier > 1) {
+      hp = Math.round(hp * world.playerWallHpMultiplier);
+      maxHp = Math.round(maxHp * world.playerWallHpMultiplier);
+    }
+  }
+
   addComponent(world.ecs, eid, Health);
   Health.max[eid] = maxHp;
   Health.flashTimer[eid] = 0;

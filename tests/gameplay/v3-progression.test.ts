@@ -287,6 +287,17 @@ describe('T39: Upgrade effects apply in-game', () => {
     expect(world.playerCarryCapacityMultiplier).toBeCloseTo(1.1, 2);
   });
 
+  it('applies economy gather radius to playerGatherRadiusMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'economy_gather_radius_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerGatherRadiusMultiplier).toBeCloseTo(1.1, 2);
+  });
+
   it('applies utility unit speed to playerUnitSpeedMultiplier', () => {
     const web = generateUpgradeWeb();
     const state = createUpgradeWebState(10000);
@@ -340,6 +351,39 @@ describe('T39: Upgrade effects apply in-game', () => {
     applyUpgradeEffects(world, state, createPrestigeState());
 
     expect(world.playerTowerDamageMultiplier).toBeCloseTo(1.15, 2);
+  });
+
+  it('applies defense lodge hp to playerLodgeHpMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_lodge_hp_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerLodgeHpMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies defense wall hp to playerWallHpMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_wall_hp_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerWallHpMultiplier).toBeCloseTo(1.1, 2);
+  });
+
+  it('applies defense repair speed to playerRepairSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_repair_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerRepairSpeedMultiplier).toBeCloseTo(1.08, 2);
   });
 });
 

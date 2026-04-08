@@ -88,4 +88,22 @@ describe('spawnEntity', () => {
 
     expect(Combat.damage[eid]).toBe(Math.round(ENTITY_DEFS[EntityKind.Tower].damage * 1.25));
   });
+
+  it('applies player lodge hp multiplier to spawned lodges', () => {
+    world.playerLodgeHpMultiplier = 1.15;
+
+    const eid = spawnEntity(world, EntityKind.Lodge, 300, 400, Faction.Player);
+
+    expect(Health.max[eid]).toBe(Math.round(ENTITY_DEFS[EntityKind.Lodge].hp * 1.15));
+    expect(Health.current[eid]).toBe(Health.max[eid]);
+  });
+
+  it('applies player wall hp multiplier to spawned walls', () => {
+    world.playerWallHpMultiplier = 1.15;
+
+    const eid = spawnEntity(world, EntityKind.Wall, 300, 400, Faction.Player);
+
+    expect(Health.max[eid]).toBe(Math.round(ENTITY_DEFS[EntityKind.Wall].hp * 1.15));
+    expect(Health.current[eid]).toBe(1);
+  });
 });

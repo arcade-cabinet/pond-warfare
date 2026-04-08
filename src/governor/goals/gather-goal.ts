@@ -23,13 +23,17 @@ const GATHER_TASKS = [
   { task: 'gathering-rocks' as const, signal: () => store.rocks.value },
 ];
 
-const PREFERRED_GATHER_DISTANCE_SQ = 450 * 450;
 type GatherTask = (typeof GATHER_TASKS)[number]['task'];
 type GatherPlan = {
   tasks: GatherTask[];
   rotateAssignments: boolean;
   hardFocusPrimary: boolean;
 };
+
+function preferredGatherDistanceSq(): number {
+  const radius = 450 * Math.max(1, game.world.playerGatherRadiusMultiplier);
+  return radius * radius;
+}
 
 function isGatherTask(task: string): task is GatherTask {
   return GATHER_TASKS.some((entry) => entry.task === task);
@@ -213,7 +217,7 @@ export class GatherGoal extends Goal {
         const candidate = findNearestGatherTaskTarget(game.world, gatherers[i].eid, task);
         if (candidate == null || candidate.target === -1) continue;
 
-        if (candidate.distanceSq <= PREFERRED_GATHER_DISTANCE_SQ) {
+        if (candidate.distanceSq <= preferredGatherDistanceSq()) {
           dispatchTaskOverride(game.world, gatherers[i].eid, task);
           fallbackTask = null;
           break;

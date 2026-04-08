@@ -211,6 +211,35 @@ describe('GatherGoal', () => {
     expect(UnitStateMachine.targetEntity[eid1]).toBe(farLogs);
   });
 
+  it('accepts a farther low-stockpile node when gather radius is upgraded', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const farLogs = createResource(EntityKind.Cattail, ResourceType.Logs, 560, 100);
+    const nearFish = createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.fish.value = 200;
+    store.logs.value = 0;
+    store.rocks.value = 0;
+    world.playerGatherRadiusMultiplier = 1.1;
+    storeV3.currentRunPurchasedNodeIds.value = ['economy_gather_radius_t0'];
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[eid1]).toBe(farLogs);
+    expect(UnitStateMachine.targetEntity[eid1]).not.toBe(nearFish);
+  });
+
   it('focuses logs when the missing armory is still log-gated', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 

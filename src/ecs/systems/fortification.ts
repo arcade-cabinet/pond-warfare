@@ -59,6 +59,8 @@ export interface FortificationState {
   slots: FortSlot[];
   /** Total rock cost spent on fortifications this match. */
   totalRockCost: number;
+  /** Match-scoped wall HP modifier from pre-match upgrades. */
+  wallHpMultiplier: number;
 }
 
 // ── Constants ────────────────────────────────────────────────────
@@ -79,6 +81,7 @@ export function initFortificationState(
   progressionLevel: number,
   lodgeX: number,
   lodgeY: number,
+  options?: { wallHpMultiplier?: number },
 ): FortificationState {
   const slotCount = getFortSlotCount(progressionLevel);
   const offsets = generateFortSlotPositions(slotCount);
@@ -97,7 +100,11 @@ export function initFortificationState(
     lastAttackFrame: 0,
   }));
 
-  return { slots, totalRockCost: 0 };
+  return {
+    slots,
+    totalRockCost: 0,
+    wallHpMultiplier: options?.wallHpMultiplier ?? 1,
+  };
 }
 
 /**
@@ -141,10 +148,15 @@ export function placeFortification(
   }
 
   // Place the fortification
+  let maxHp = def.hp;
+  if (def.blocks_movement === true && state.wallHpMultiplier > 1) {
+    maxHp = Math.round(maxHp * state.wallHpMultiplier);
+  }
+
   slot.status = 'active';
   slot.fortType = fortType;
-  slot.currentHp = def.hp;
-  slot.maxHp = def.hp;
+  slot.currentHp = maxHp;
+  slot.maxHp = maxHp;
   slot.damage = def.damage ?? 0;
   slot.range = def.range ?? 0;
   slot.lastAttackFrame = 0;

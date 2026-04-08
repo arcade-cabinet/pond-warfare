@@ -113,6 +113,7 @@ export interface GameWorld {
   playerAttackSpeedMultiplier: number;
   playerCriticalHitChance: number;
   playerDamageTakenMultiplier: number;
+  playerGatherRadiusMultiplier: number;
   playerCarryCapacityMultiplier: number;
   playerUnitCostMultiplier: number;
   playerUnitHpMultiplier: number;
@@ -120,6 +121,9 @@ export interface GameWorld {
   playerHealMultiplier: number;
   playerTrainSpeedMultiplier: number;
   playerTowerDamageMultiplier: number;
+  playerLodgeHpMultiplier: number;
+  playerWallHpMultiplier: number;
+  playerRepairSpeedMultiplier: number;
   evolutionSpeedMod: number;
   fogOfWarMode: 'full' | 'explored' | 'revealed';
   heroMode: boolean;

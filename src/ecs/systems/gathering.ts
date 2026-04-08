@@ -56,6 +56,7 @@ export function gatheringSystem(world: GameWorld): void {
     Health,
     Building,
   ]);
+  const playerGatherRadius = Math.max(1, world.playerGatherRadiusMultiplier);
 
   for (let i = 0; i < gatheringUnits.length; i++) {
     const eid = gatheringUnits[i];
@@ -94,7 +95,7 @@ export function gatheringSystem(world: GameWorld): void {
             }
           }
         } else {
-          let minDist = AUTO_GATHER_RADIUS;
+          let minDist = AUTO_GATHER_RADIUS * (faction === Faction.Player ? playerGatherRadius : 1);
           for (let j = 0; j < resources.length; j++) {
             const r = resources[j];
             if (Resource.amount[r] <= 0) continue;
@@ -130,7 +131,7 @@ export function gatheringSystem(world: GameWorld): void {
         const ex = Position.x[eid];
         const ey = Position.y[eid];
         let closest = -1;
-        let minDist = 300;
+        let minDist = 300 * (faction === Faction.Player ? playerGatherRadius : 1);
 
         for (let j = 0; j < resources.length; j++) {
           const r = resources[j];

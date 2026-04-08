@@ -83,6 +83,7 @@ export function spawnVerticalEntities(
     stage,
     layout.lodgeX,
     layout.lodgeY,
+    { wallHpMultiplier: world.playerWallHpMultiplier },
   );
 
   // Scale Lodge HP with tier

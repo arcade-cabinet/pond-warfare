@@ -73,6 +73,11 @@ export function applyUpgradeEffects(
     world.playerCarryCapacityMultiplier *= 1 + carryCapacity;
   }
 
+  const gatherRadius = effects.get('economy_gather_radius') ?? 0;
+  if (gatherRadius > 0) {
+    world.playerGatherRadiusMultiplier *= 1 + gatherRadius;
+  }
+
   const unitCostReduction = effects.get('economy_unit_cost_reduction') ?? 0;
   if (unitCostReduction > 0) {
     world.playerUnitCostMultiplier *= Math.max(0.1, 1 - unitCostReduction);
@@ -96,6 +101,21 @@ export function applyUpgradeEffects(
   const towerDamage = effects.get('defense_tower_damage') ?? 0;
   if (towerDamage > 0) {
     world.playerTowerDamageMultiplier *= 1 + towerDamage;
+  }
+
+  const lodgeHp = effects.get('defense_lodge_hp') ?? 0;
+  if (lodgeHp > 0) {
+    world.playerLodgeHpMultiplier *= 1 + lodgeHp;
+  }
+
+  const wallHp = effects.get('defense_wall_hp') ?? 0;
+  if (wallHp > 0) {
+    world.playerWallHpMultiplier *= 1 + wallHp;
+  }
+
+  const repairSpeed = effects.get('defense_repair_speed') ?? 0;
+  if (repairSpeed > 0) {
+    world.playerRepairSpeedMultiplier *= 1 + repairSpeed;
   }
 
   // Pearl upgrade multipliers (prestige-persistent)

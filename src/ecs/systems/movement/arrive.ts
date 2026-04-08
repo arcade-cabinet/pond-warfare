@@ -22,6 +22,7 @@ import {
 import { resumeGatherOverride, retargetGatherOverride } from '@/ecs/systems/gathering/gather-override';
 import { getWeatherGatherMult } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerRepairTimer } from '@/game/repair-timer';
 import { Faction, ResourceType, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
@@ -71,7 +72,8 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
       break;
     case UnitState.RepairMove:
       UnitStateMachine.state[eid] = UnitState.Repairing;
-      UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
+      UnitStateMachine.gatherTimer[eid] =
+        FactionTag.faction[eid] === Faction.Player ? getPlayerRepairTimer(world) : REPAIR_TIMER;
       break;
     case UnitState.Retreat:
       // Arrived at building safely; go idle
