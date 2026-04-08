@@ -129,14 +129,15 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
 
 export function shouldTrainSupportUnit(): boolean {
   if (unitCount('support') > 0) return false;
-  if (
-    hasCurrentRunTrack('utility_heal_power') &&
-    woundedCombatUnitCount() >= 2 &&
-    unitCount('combat') >= Math.max(3, getGovernorCombatTarget() - 1)
-  ) {
-    return true;
+  const combatUnits = unitCount('combat');
+  const combatTarget = getGovernorCombatTarget();
+  if (hasCurrentRunTrack('utility_heal_power') && currentStage() >= 6) {
+    const nearCombatTarget = combatUnits >= Math.max(3, combatTarget - 1);
+    if (nearCombatTarget && (woundedCombatUnitCount() >= 1 || hasImmediatePressure())) {
+      return true;
+    }
   }
-  return unitCount('combat') >= Math.max(4, getGovernorCombatTarget());
+  return combatUnits >= Math.max(4, combatTarget);
 }
 
 export function shouldTrainReconUnit(): boolean {

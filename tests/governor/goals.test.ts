@@ -602,6 +602,54 @@ describe('TrainGoal', () => {
     expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Medic);
   });
 
+  it('queues a Medic earlier under stage-six pressure when heal-power upgrades are active', async () => {
+    const { TrainGoal } = await import('@/governor/goals/train-goal');
+
+    const lodgeEid = addEntity(world.ecs);
+    addComponent(world.ecs, lodgeEid, TrainingQueue);
+    addComponent(world.ecs, lodgeEid, FactionTag);
+    addComponent(world.ecs, lodgeEid, IsBuilding);
+    FactionTag.faction[lodgeEid] = Faction.Player;
+    TrainingQueue.count[lodgeEid] = 0;
+
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['utility_heal_power_t0'];
+    store.baseThreatCount.value = 2;
+    store.waveCountdown.value = 24;
+    store.buildingRoster.value = [
+      {
+        eid: lodgeEid,
+        kind: EntityKind.Lodge,
+        hp: 1500,
+        maxHp: 1500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [MUDPAW_KIND, EntityKind.Medic, SAPPER_KIND, SABOTEUR_KIND],
+      } satisfies RosterBuilding,
+    ];
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
+        rosterUnit(2, MUDPAW_KIND, 'gathering-logs'),
+      ]),
+      rosterGroup('combat', [
+        rosterUnit(10, SAPPER_KIND, 'defending', 30, 30),
+        rosterUnit(11, SAPPER_KIND, 'attacking', 30, 30),
+        rosterUnit(12, SAPPER_KIND, 'idle', 30, 30),
+        rosterUnit(13, SABOTEUR_KIND, 'attacking', 30, 30),
+      ]),
+    ];
+    store.food.value = 2;
+    store.maxFood.value = 8;
+
+    const goal = new TrainGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(TrainingQueue.count[lodgeEid]).toBe(1);
+    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Medic);
+  });
+
   it('skips filler training when train-speed upgrades are active and stage-six fish reserves are low', async () => {
     const { TrainGoal } = await import('@/governor/goals/train-goal');
 

@@ -13,10 +13,15 @@ run pnpm exec tsc --noEmit
 run pnpm test
 run pnpm exec vitest run \
   --config vitest.browser.config.ts \
-  --maxWorkers=1 \
-  tests/browser/progression-meta-loop.test.tsx \
-  tests/browser/interactions.test.ts \
-  tests/browser/ui-and-controls.test.tsx \
+  tests/browser/progression-meta-loop.test.tsx
+run pnpm exec vitest run \
+  --config vitest.browser.config.ts \
+  tests/browser/interactions.test.ts
+run pnpm exec vitest run \
+  --config vitest.browser.config.ts \
+  tests/browser/ui-and-controls.test.tsx
+run pnpm exec vitest run \
+  --config vitest.browser.config.ts \
   tests/browser/buildings.test.tsx
 run pnpm build
 run pnpm build:android
