@@ -26,6 +26,7 @@ import { hydrateV3StoreFromDb } from '@/ui/store-v3-persistence';
 installGlobalErrorHandlers();
 
 import { App } from '@/ui/app';
+import { ErrorBoundary } from '@/ui/error-boundary';
 import { handleGameInitFailure } from '@/ui/game-init-failure';
 import { menuState } from '@/ui/store';
 
@@ -67,15 +68,17 @@ function startGame(): Promise<boolean> {
   const root = document.getElementById('app');
   if (root) {
     render(
-      <App
-        onMount={(refs) => {
-          registerMountedGameRefs(refs);
-          // If menu is already 'playing' (edge case), start immediately
-          if (menuState.value === 'playing') {
-            return startGame().then(() => {});
-          }
-        }}
-      />,
+      <ErrorBoundary>
+        <App
+          onMount={(refs) => {
+            registerMountedGameRefs(refs);
+            // If menu is already 'playing' (edge case), start immediately
+            if (menuState.value === 'playing') {
+              return startGame().then(() => {});
+            }
+          }}
+        />
+      </ErrorBoundary>,
       root,
     );
 
