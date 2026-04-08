@@ -78,6 +78,7 @@ export function executeMeleeAttack(
   const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
   const mult = getDamageMultiplier(kind, targetKind);
   let meleeDmg = Math.round(dmg * mult);
+  let criticalHit = false;
 
   // Positional bonuses (flanking + elevation)
   const positional = calculatePositionalBonuses(world, eid, tEnt);
@@ -104,12 +105,31 @@ export function executeMeleeAttack(
     meleeDmg = Math.round(meleeDmg * 1.15);
   }
 
+  if (
+    faction === Faction.Player &&
+    world.playerCriticalHitChance > 0 &&
+    world.gameRng.next() < world.playerCriticalHitChance
+  ) {
+    meleeDmg *= 2;
+    criticalHit = true;
+  }
+
   takeDamage(world, tEnt, meleeDmg, eid, mult);
   triggerAttackLunge(eid, tEnt);
 
   // Emit floating text for positional bonuses
   if (positional.flanking || positional.elevationUp) {
     emitPositionalBonusText(world, tEnt, positional);
+  }
+
+  if (criticalHit) {
+    world.floatingTexts.push({
+      x: Position.x[tEnt],
+      y: Position.y[tEnt] - 24,
+      text: 'CRIT!',
+      color: '#facc15',
+      life: 30,
+    });
   }
 
   if (kind === EntityKind.VenomSnake) {

@@ -111,6 +111,8 @@ export interface GameWorld {
   gatherSpeedMod: number;
   playerUnitDamageMultiplier: number;
   playerAttackSpeedMultiplier: number;
+  playerCriticalHitChance: number;
+  playerDamageTakenMultiplier: number;
   playerCarryCapacityMultiplier: number;
   playerUnitHpMultiplier: number;
   playerUnitSpeedMultiplier: number;

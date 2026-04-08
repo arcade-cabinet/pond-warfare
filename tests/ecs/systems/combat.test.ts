@@ -189,6 +189,32 @@ describe('combatSystem', () => {
     expect(world.warDrumsBuff.has(ally)).toBe(false);
   });
 
+  it('applies player critical hits to melee damage', () => {
+    const baselineWorld = createGameWorld();
+    baselineWorld.spatialHash = undefined as never;
+    const baselineAttacker = createCombatUnit(baselineWorld, 100, 100, Faction.Player, SAPPER_KIND);
+    const baselineTarget = createCombatUnit(baselineWorld, 110, 100, Faction.Enemy, EntityKind.Gator);
+    UnitStateMachine.state[baselineAttacker] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[baselineAttacker] = baselineTarget;
+    Combat.attackCooldown[baselineAttacker] = 0;
+    combatSystem(baselineWorld);
+    const baselineDamage = 60 - Health.current[baselineTarget];
+
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
+    const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
+
+    world.playerCriticalHitChance = 1.0;
+    world.gameRng.next = () => 0;
+    UnitStateMachine.state[attacker] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[attacker] = target;
+    Combat.attackCooldown[attacker] = 0;
+
+    combatSystem(world);
+
+    expect(60 - Health.current[target]).toBe(baselineDamage * 2);
+    expect(world.floatingTexts.some((text) => text.text === 'CRIT!')).toBe(true);
+  });
+
   it('skips idle auto-aggro for gather overrides', () => {
     world.frameCount = 10;
     const mudpaw = createCombatUnit(world, 100, 100, Faction.Player, MUDPAW_KIND);

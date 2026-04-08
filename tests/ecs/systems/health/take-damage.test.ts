@@ -262,6 +262,28 @@ describe('takeDamage', () => {
     });
   });
 
+  describe('player armor upgrade', () => {
+    it('reduces incoming damage for player units', () => {
+      world.playerDamageTakenMultiplier = 0.8;
+      const target = spawnUnit(world, 100, 100, 50, 60, Faction.Player);
+      const attacker = spawnUnit(world, 120, 100, 60, 60, Faction.Enemy);
+
+      takeDamage(world, target, 20, attacker);
+
+      expect(Health.current[target]).toBe(34);
+    });
+
+    it('does not reduce damage for player buildings', () => {
+      world.playerDamageTakenMultiplier = 0.8;
+      const building = spawnBuilding(world, 100, 100, 200, 200, Faction.Player);
+      const attacker = spawnUnit(world, 120, 100, 60, 60, Faction.Enemy);
+
+      takeDamage(world, building, 30, attacker);
+
+      expect(Health.current[building]).toBe(170);
+    });
+  });
+
   describe('overkill / lethal damage', () => {
     it('allows HP to go below zero (death processed separately)', () => {
       const target = spawnUnit(world, 100, 100, 5, 60, Faction.Player);

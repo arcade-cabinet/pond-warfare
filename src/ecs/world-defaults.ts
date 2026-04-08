@@ -112,6 +112,8 @@ export function createGameWorld(): GameWorld {
     gatherSpeedMod: 1.0,
     playerUnitDamageMultiplier: 1.0,
     playerAttackSpeedMultiplier: 1.0,
+    playerCriticalHitChance: 0.0,
+    playerDamageTakenMultiplier: 1.0,
     playerCarryCapacityMultiplier: 1.0,
     playerUnitHpMultiplier: 1.0,
     playerUnitSpeedMultiplier: 1.0,

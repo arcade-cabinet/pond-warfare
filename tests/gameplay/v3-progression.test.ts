@@ -243,6 +243,17 @@ describe('T39: Upgrade effects apply in-game', () => {
     expect(world.playerUnitDamageMultiplier).toBeCloseTo(1.08, 2);
   });
 
+  it('applies combat armor to playerDamageTakenMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_armor_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerDamageTakenMultiplier).toBeCloseTo(0.92, 2);
+  });
+
   it('applies combat attack speed to playerAttackSpeedMultiplier', () => {
     const web = generateUpgradeWeb();
     const state = createUpgradeWebState(10000);
@@ -252,6 +263,17 @@ describe('T39: Upgrade effects apply in-game', () => {
     applyUpgradeEffects(world, state, createPrestigeState());
 
     expect(world.playerAttackSpeedMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies combat critical hit to playerCriticalHitChance', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_critical_hit_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerCriticalHitChance).toBeCloseTo(0.08, 2);
   });
 
   it('applies gathering carry capacity to playerCarryCapacityMultiplier', () => {

@@ -289,7 +289,11 @@ export function fortificationTickSystem(world: GameWorld): void {
       }
     }
     if (bestEid !== -1) {
-      takeDamage(world, bestEid, tower.damage, -1);
+      let damage = tower.damage;
+      if (world.playerTowerDamageMultiplier > 1) {
+        damage = Math.round(damage * world.playerTowerDamageMultiplier);
+      }
+      takeDamage(world, bestEid, damage, -1);
       recordTowerAttack(tower, world.frameCount);
     }
   }

@@ -53,9 +53,19 @@ export function applyUpgradeEffects(
     world.playerUnitDamageMultiplier *= 1 + attackPower;
   }
 
+  const armor = effects.get('combat_armor') ?? 0;
+  if (armor > 0) {
+    world.playerDamageTakenMultiplier *= Math.max(0.1, 1 - armor);
+  }
+
   const attackSpeed = effects.get('combat_attack_speed') ?? 0;
   if (attackSpeed > 0) {
     world.playerAttackSpeedMultiplier *= 1 + attackSpeed;
+  }
+
+  const criticalHit = effects.get('combat_critical_hit') ?? 0;
+  if (criticalHit > 0) {
+    world.playerCriticalHitChance = Math.min(0.95, world.playerCriticalHitChance + criticalHit);
   }
 
   const carryCapacity = effects.get('gathering_carry_capacity') ?? 0;

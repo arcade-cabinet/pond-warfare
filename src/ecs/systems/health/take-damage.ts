@@ -57,6 +57,16 @@ export function takeDamage(
     effectiveAmount = Math.max(1, Math.round(effectiveAmount * 0.85));
   }
 
+  if (
+    effectiveAmount > 0 &&
+    hasComponent(world.ecs, targetEid, FactionTag) &&
+    FactionTag.faction[targetEid] === Faction.Player &&
+    !hasComponent(world.ecs, targetEid, IsBuilding) &&
+    world.playerDamageTakenMultiplier < 1
+  ) {
+    effectiveAmount = Math.max(1, Math.round(effectiveAmount * world.playerDamageTakenMultiplier));
+  }
+
   if (effectiveAmount === 0) return;
 
   Health.current[targetEid] -= effectiveAmount;
