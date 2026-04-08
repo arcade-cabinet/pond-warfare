@@ -184,7 +184,7 @@ export function UnitCommands(props: UnitCommandsProps) {
             <button
               type="button"
               class="cmd-btn border-2 px-4 py-2 rounded-full font-bold flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
-              style={{ borderColor: 'var(--pw-scout-dark)', color: 'var(--pw-scout)' }}
+              style={{ borderColor: 'var(--pw-recon-dark)', color: 'var(--pw-recon)' }}
               title="Save selection to a control group"
               onClick={(e) => {
                 e.stopPropagation();
@@ -198,7 +198,7 @@ export function UnitCommands(props: UnitCommandsProps) {
               class="flex gap-1 items-center rounded-full px-2 py-1 shadow-lg"
               style={{
                 background: 'var(--pw-overlay-heavy)',
-                border: '1px solid var(--pw-scout-dark)',
+                border: '1px solid var(--pw-recon-dark)',
               }}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
@@ -208,8 +208,8 @@ export function UnitCommands(props: UnitCommandsProps) {
                   class="w-7 h-7 rounded font-numbers font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
                   style={{
                     background: 'var(--pw-bg-surface)',
-                    border: '1px solid var(--pw-scout-dark)',
-                    color: 'var(--pw-scout)',
+                    border: '1px solid var(--pw-recon-dark)',
+                    color: 'var(--pw-recon)',
                   }}
                   title={`Save to group ${n}`}
                   onClick={(e) => {

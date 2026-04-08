@@ -101,7 +101,7 @@ const GENERALIST_OPTIONS: RadialOption[] = [
     label: 'Recon',
     icon: '\u{1F441}\uFE0F',
     tooltip: 'Survey area',
-    color: 'scout',
+    color: 'recon',
   },
   { id: 'cmd_hold', label: 'Hold', icon: '\u270B', tooltip: 'Hold position', color: 'warning' },
   {
@@ -202,13 +202,13 @@ const HEAL_OPTIONS: RadialOption[] = [
   },
 ];
 
-const SCOUT_OPTIONS: RadialOption[] = [
+const RECON_OPTIONS: RadialOption[] = [
   {
     id: 'cmd_scout',
     label: 'Recon',
     icon: '\u{1F441}\uFE0F',
     tooltip: 'Survey area',
-    color: 'scout',
+    color: 'recon',
   },
   { id: 'cmd_hold', label: 'Hold', icon: '\u270B', tooltip: 'Hold position', color: 'warning' },
   {
@@ -251,10 +251,10 @@ const ROLE_OPTIONS: Record<RadialUnitRole, RadialOption[]> = {
   generalist: GENERALIST_OPTIONS,
   combat: COMBAT_OPTIONS,
   support: HEAL_OPTIONS,
-  recon: SCOUT_OPTIONS,
+  recon: RECON_OPTIONS,
   gather: GATHER_OPTIONS,
   heal: HEAL_OPTIONS,
-  scout: SCOUT_OPTIONS,
+  scout: RECON_OPTIONS,
 };
 
 /** Game state used to filter Lodge radial options. */

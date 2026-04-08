@@ -47,14 +47,14 @@ function getSpecialistAssignOption(mode: 'single_zone' | 'dual_zone'): RadialOpt
         label: 'Zones',
         icon: '\u25CE',
         tooltip: 'Assign anchor and engagement zones',
-        color: 'scout',
+        color: 'recon',
       }
     : {
         id: 'cmd_assign_area',
         label: 'Area',
         icon: '\u25CE',
         tooltip: 'Assign operating area',
-        color: 'scout',
+        color: 'recon',
       };
 }
 
