@@ -17,7 +17,11 @@ import { findIdleMudpaws, GatherGoal } from './goals/gather-goal';
 import { TrainGoal } from './goals/train-goal';
 import type { Governor } from './governor';
 import { getGovernorCombatUnits, getGovernorGatherUnits } from './roster-units';
-import { getGovernorCombatTarget, getGovernorMudpawTarget } from './train-policy';
+import {
+  getGovernorCombatTarget,
+  getGovernorMudpawTarget,
+  getGovernorReservedBuildKind,
+} from './train-policy';
 
 function hasBuilding(kind: EntityKind): boolean {
   return store.buildingRoster.value.some((b) => b.kind === kind);
@@ -155,6 +159,7 @@ export class TrainEvaluator extends GoalEvaluator {
 
     const mudpaws = getGovernorGatherUnits(store.unitRoster.value).length;
     const idleMudpaws = findIdleMudpaws().length;
+    const reservedBuildKind = getGovernorReservedBuildKind();
 
     // Need Mudpaws for economy — but the target drops on higher-pressure stages.
     if (mudpaws < getGovernorMudpawTarget()) {
@@ -166,6 +171,7 @@ export class TrainEvaluator extends GoalEvaluator {
     const army = combatUnitCount();
     const readyArmy = countAvailableAttackers();
     const combatTarget = getGovernorCombatTarget();
+    if (reservedBuildKind !== null) return 0.18;
     if (army < combatTarget && store.fish.value >= 20 && canPressureSafely(army, readyArmy)) {
       return 0.44;
     }

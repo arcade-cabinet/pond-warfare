@@ -206,6 +206,48 @@ describe('TrainEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.75);
   });
 
+  it('backs off training to preserve a near-complete proactive tower budget', () => {
+    storeV3.progressionLevel.value = 6;
+    store.waveCountdown.value = 24;
+    store.fish.value = 170;
+    store.logs.value = 210;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND }]),
+      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);
+  });
+
+  it('treats three combat units as enough to start saving for the first proactive tower', () => {
+    storeV3.progressionLevel.value = 6;
+    store.waveCountdown.value = 24;
+    store.fish.value = 170;
+    store.logs.value = 210;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND }]),
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);
+  });
+
   it('keeps stage-6 combat training active under light single-enemy pressure', () => {
     storeV3.progressionLevel.value = 6;
     store.baseUnderAttack.value = true;

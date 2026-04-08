@@ -1,3 +1,4 @@
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
@@ -17,6 +18,14 @@ function lodgeHpRatio(): number {
   const lodge = store.buildingRoster.value.find((building) => building.kind === EntityKind.Lodge);
   if (!lodge || lodge.maxHp <= 0) return 1;
   return lodge.hp / lodge.maxHp;
+}
+
+function hasBuilding(kind: EntityKind): boolean {
+  return store.buildingRoster.value.some((building) => building.kind === kind);
+}
+
+function hasCompletedBuilding(kind: EntityKind): boolean {
+  return store.buildingRoster.value.some((building) => building.kind === kind && building.hp >= building.maxHp);
 }
 
 function nextWaveCountdown(): number | null {
@@ -51,6 +60,40 @@ export function getGovernorCombatTarget(): number {
   if (stage >= 6) return 5;
   if (stage >= 4) return 4;
   return 3;
+}
+
+function nearBuildBudget(kind: EntityKind, fishSlack: number, logSlack: number): boolean {
+  const def = ENTITY_DEFS[kind];
+  const fishCost = def.fishCost ?? 0;
+  const logCost = def.logCost ?? 0;
+  return store.fish.value >= Math.max(0, fishCost - fishSlack) && store.logs.value >= Math.max(0, logCost - logSlack);
+}
+
+function combatFloorForBuildSavings(): number {
+  return Math.max(3, getGovernorCombatTarget() - 2);
+}
+
+export function getGovernorReservedBuildKind(): EntityKind | null {
+  if (unitCount('combat') < combatFloorForBuildSavings()) return null;
+
+  const stage = currentStage();
+  const waveCountdown = nextWaveCountdown();
+  const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
+  const lodgeHp = lodgeHpRatio();
+
+  if (
+    stage >= 6 &&
+    hasCompletedBuilding(EntityKind.Armory) &&
+    !hasBuilding(EntityKind.Tower) &&
+    lodgeHp >= 0.82 &&
+    threats <= 2 &&
+    (waveCountdown === null || waveCountdown > 10) &&
+    nearBuildBudget(EntityKind.Tower, 60, 70)
+  ) {
+    return EntityKind.Tower;
+  }
+
+  return null;
 }
 
 export function shouldTrainSupportUnit(): boolean {

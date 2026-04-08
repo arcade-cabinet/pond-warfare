@@ -24,6 +24,7 @@ import { getGovernorCombatUnits, getGovernorGatherUnits } from '../roster-units'
 import {
   getGovernorCombatTarget,
   getGovernorMudpawTarget,
+  getGovernorReservedBuildKind,
   shouldTrainSupportUnit,
 } from '../train-policy';
 
@@ -64,6 +65,8 @@ export class TrainGoal extends Goal {
   override activate(): void {
     const buildings = store.buildingRoster.value;
     let trained = false;
+    const reservedBuildKind = getGovernorReservedBuildKind();
+    const combatTarget = getGovernorCombatTarget();
 
     for (const b of buildings) {
       const trainable = trainableUnits(b.kind, b.canTrain);
@@ -71,6 +74,9 @@ export class TrainGoal extends Goal {
 
       const unitKind = this.pickUnit(trainable);
       if (unitKind === null) continue;
+      if (reservedBuildKind !== null && armySize() >= Math.max(3, combatTarget - 1)) {
+        continue;
+      }
 
       const def = ENTITY_DEFS[unitKind];
       const fishCost = def.fishCost ?? 0;
