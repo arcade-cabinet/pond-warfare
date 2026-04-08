@@ -40,7 +40,7 @@ export interface FactionConfig {
  *
  * Important: the live vertical-mode roster no longer exposes the old internal
  * combat archetype split as player-facing manual units. Older helpers should
- * treat the compatibility slots here as the closest canonical live roster
+ * treat the reserved slots here as the nearest canonical live-roster
  * equivalents until the horizontal/adversarial layer is fully reauthored.
  */
 export const OTTER_FACTION: FactionConfig = {

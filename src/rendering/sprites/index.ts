@@ -70,8 +70,8 @@ import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } f
  * Names used internally to map to SpriteId enum values.
  *
  * These are local sprite-registry keys, not the canonical shared enum names.
- * Live roster units use canonical keys where possible. Reserved compatibility
- * ids reuse the same live sprite bodies through explicit `compat_*` keys.
+ * Live roster units use canonical keys where possible. Reserved shared-chassis
+ * ids reuse the same live sprite bodies through explicit `shared_*` keys.
  */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'mudpaw', id: MUDPAW_SPRITE_ID },
