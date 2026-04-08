@@ -442,6 +442,7 @@ describe('TrainGoal', () => {
     store.fish.value = 500;
     store.logs.value = 500;
     storeV3.progressionLevel.value = 1;
+    storeV3.currentRunPurchasedNodeIds.value = [];
   });
 
   it('queues a Mudpaw at the Lodge when few Mudpaws exist', async () => {
@@ -516,4 +517,5 @@ describe('TrainGoal', () => {
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
     expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(SAPPER_KIND);
   });
+
 });

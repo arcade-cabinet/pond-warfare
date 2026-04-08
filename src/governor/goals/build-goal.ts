@@ -16,6 +16,7 @@ import { placeBuilding } from '@/input/selection/queries';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
+import { hasCurrentRunTrack } from '../current-run-upgrades';
 
 /** Building priorities: what to build and when. */
 interface BuildNeed {
@@ -101,7 +102,11 @@ export class BuildGoal extends Goal {
       .filter((u) => u.kind === MUDPAW_KIND);
     if (generalists.length > 0) {
       const builderCount =
-        need.kind === EntityKind.Armory || need.kind === EntityKind.Tower ? 2 : 1;
+        need.kind === EntityKind.Tower && hasCurrentRunTrack('defense_tower_damage')
+          ? 3
+          : need.kind === EntityKind.Armory || need.kind === EntityKind.Tower
+            ? 2
+            : 1;
       w.selection = generalists.slice(0, builderCount).map((unit) => unit.eid);
     }
 

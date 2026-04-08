@@ -14,15 +14,15 @@
       "subcategories": {
         "attack_power": { "label": "Attack Power", "base_effect": 0.08, "base_cost": 12 },
         "attack_speed": { "label": "Attack Speed", "base_effect": 0.08, "base_cost": 15 },
-        "armor": { "label": "Armor", "base_effect": 0.08, "base_cost": 12 },
-        "critical_hit": { "label": "Critical Hit", "base_effect": 0.08, "base_cost": 20 }
+        "armor": { "label": "Armor", "base_effect": 0.12, "base_cost": 12 },
+        "critical_hit": { "label": "Critical Hit", "base_effect": 0.15, "base_cost": 20 }
       }
     },
     "defense": {
       "label": "Defense",
       "subcategories": {
         "wall_hp": { "label": "Wall HP", "base_effect": 0.10, "base_cost": 10 },
-        "tower_damage": { "label": "Tower Damage", "base_effect": 0.08, "base_cost": 15 },
+        "tower_damage": { "label": "Tower Damage", "base_effect": 0.15, "base_cost": 15 },
         "lodge_hp": { "label": "Lodge HP", "base_effect": 0.08, "base_cost": 12 },
         "repair_speed": { "label": "Repair Speed", "base_effect": 0.08, "base_cost": 10 }
       }
@@ -30,10 +30,10 @@
     "utility": {
       "label": "Utility",
       "subcategories": {
-        "unit_speed": { "label": "Unit Speed", "base_effect": 0.03, "base_cost": 12 },
+        "unit_speed": { "label": "Unit Speed", "base_effect": 0.06, "base_cost": 12 },
         "vision_range": { "label": "Vision Range", "base_effect": 0.05, "base_cost": 10 },
-        "heal_power": { "label": "Heal Power", "base_effect": 0.05, "base_cost": 15 },
-        "train_speed": { "label": "Train Speed", "base_effect": 0.04, "base_cost": 12 }
+        "heal_power": { "label": "Heal Power", "base_effect": 0.08, "base_cost": 15 },
+        "train_speed": { "label": "Train Speed", "base_effect": 0.08, "base_cost": 12 }
       }
     },
     "economy": {

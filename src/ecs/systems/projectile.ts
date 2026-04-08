@@ -15,10 +15,10 @@
 import { addComponent, addEntity, hasComponent, query, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { PROJECTILE_SPEED } from '@/constants';
-import { Health, IsProjectile, Position, ProjectileData } from '@/ecs/components';
+import { FactionTag, Health, IsProjectile, Position, ProjectileData } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind } from '@/types';
+import { EntityKind, Faction } from '@/types';
 import { getWeatherProjectileOffset } from './weather';
 
 /**
@@ -99,7 +99,28 @@ export function projectileSystem(world: GameWorld): void {
       ) {
         const owner = ProjectileData.ownerEntity[eid];
         const mult = ProjectileData.damageMultiplier[eid] ?? 1.0;
-        takeDamage(world, targetEnt, ProjectileData.damage[eid], owner, mult);
+        let damage = ProjectileData.damage[eid];
+        let criticalHit = false;
+        if (
+          owner !== -1 &&
+          hasComponent(world.ecs, owner, FactionTag) &&
+          FactionTag.faction[owner] === Faction.Player &&
+          world.playerCriticalHitChance > 0 &&
+          world.gameRng.next() < world.playerCriticalHitChance
+        ) {
+          damage *= 2;
+          criticalHit = true;
+        }
+        takeDamage(world, targetEnt, damage, owner, mult);
+        if (criticalHit) {
+          world.floatingTexts.push({
+            x: Position.x[targetEnt],
+            y: Position.y[targetEnt] - 24,
+            text: 'CRIT!',
+            color: '#facc15',
+            life: 30,
+          });
+        }
       }
 
       // Play differentiated impact sound based on source unit kind

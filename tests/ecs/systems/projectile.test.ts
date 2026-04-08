@@ -7,9 +7,10 @@
 import { addComponent, addEntity, hasComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { PROJECTILE_SPEED } from '@/constants';
-import { Health, IsProjectile, Position } from '@/ecs/components';
+import { FactionTag, Health, IsProjectile, Position } from '@/ecs/components';
 import { projectileSystem, spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { Faction } from '@/types';
 
 /** Create a simple target entity with health. */
 function createTarget(world: GameWorld, x: number, y: number, hp: number): number {
@@ -79,5 +80,20 @@ describe('projectileSystem', () => {
 
     // Projectile should have been removed (no longer has IsProjectile)
     expect(hasComponent(world.ecs, projEid, IsProjectile)).toBe(false);
+  });
+
+  it('applies player critical hits to projectile damage', () => {
+    const owner = addEntity(world.ecs);
+    addComponent(world.ecs, owner, FactionTag);
+    FactionTag.faction[owner] = Faction.Player;
+    world.playerCriticalHitChance = 1;
+
+    const target = createTarget(world, 100, 100, 100);
+    spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 15, owner);
+
+    projectileSystem(world);
+
+    expect(Health.current[target]).toBe(70);
+    expect(world.floatingTexts.some((text) => text.text === 'CRIT!')).toBe(true);
   });
 });

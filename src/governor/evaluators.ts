@@ -11,6 +11,7 @@ import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
 import { AttackGoal, countAvailableAttackers, MIN_ATTACK_ARMY } from './goals/attack-goal';
+import { hasCurrentRunTrack } from './current-run-upgrades';
 import { BuildGoal } from './goals/build-goal';
 import { DefendGoal } from './goals/defend-goal';
 import { findIdleMudpaws, GatherGoal, needsGatherRebalance } from './goals/gather-goal';
@@ -78,6 +79,7 @@ function lightPressureSkirmishWindow(totalArmy: number, readyArmy: number): bool
 function safeAttackArmyThreshold(totalArmy: number): number {
   const lodgeHp = lodgeHpRatio();
   const waveCountdown = nextWaveCountdown();
+  const mobilityTrackActive = hasCurrentRunTrack('utility_unit_speed');
 
   if (lodgeHp < 0.85) return Number.POSITIVE_INFINITY;
   if (waveCountdown !== null && waveCountdown <= 10) return Number.POSITIVE_INFINITY;
@@ -90,12 +92,38 @@ function safeAttackArmyThreshold(totalArmy: number): number {
     return MIN_ATTACK_ARMY + 1;
   }
 
+  if (
+    mobilityTrackActive &&
+    totalArmy >= MIN_ATTACK_ARMY + 1 &&
+    lodgeHp >= 0.95 &&
+    (waveCountdown === null || waveCountdown > 18)
+  ) {
+    return MIN_ATTACK_ARMY + 1;
+  }
+
   return Math.max(MIN_ATTACK_ARMY + 2, 5);
+}
+
+function canOpenMobilityAttackWindow(
+  totalArmy: number,
+  readyArmy: number,
+  threshold: number,
+): boolean {
+  return (
+    hasCurrentRunTrack('utility_unit_speed') &&
+    threshold > MIN_ATTACK_ARMY &&
+    readyArmy >= threshold - 1 &&
+    totalArmy >= threshold
+  );
 }
 
 function canPressureSafely(totalArmy: number, readyArmy: number): boolean {
   const threshold = safeAttackArmyThreshold(totalArmy);
-  return Number.isFinite(threshold) && threshold <= MIN_ATTACK_ARMY + 1 && readyArmy >= threshold;
+  return (
+    Number.isFinite(threshold) &&
+    threshold <= MIN_ATTACK_ARMY + 1 &&
+    (readyArmy >= threshold || canOpenMobilityAttackWindow(totalArmy, readyArmy, threshold))
+  );
 }
 
 function proactiveTowerWindowReady(): boolean {
@@ -179,8 +207,9 @@ export class TrainEvaluator extends GoalEvaluator {
     const mudpaws = getGovernorGatherUnits(store.unitRoster.value).length;
     const idleMudpaws = findIdleMudpaws().length;
     const reservedBuildKind = getGovernorReservedBuildKind();
+    const trainSpeedTrackActive = hasCurrentRunTrack('utility_train_speed');
 
-    if (reservedBuildKind !== null) return 0.18;
+    if (reservedBuildKind !== null) return trainSpeedTrackActive ? 0.12 : 0.18;
 
     // Need Mudpaws for economy — but the target drops on higher-pressure stages.
     if (mudpaws < getGovernorMudpawTarget()) {
@@ -198,8 +227,12 @@ export class TrainEvaluator extends GoalEvaluator {
     if (army < combatTarget && store.fish.value >= 20) return 0.75;
 
     // Keep training if we can afford it
-    if (store.fish.value >= 20 && canPressureSafely(army, readyArmy)) return 0.42;
-    if (store.fish.value >= 20) return 0.5;
+    if (store.fish.value >= 20 && canPressureSafely(army, readyArmy)) {
+      return trainSpeedTrackActive ? 0.34 : 0.42;
+    }
+    if (store.fish.value >= 20) {
+      return trainSpeedTrackActive && army >= combatTarget ? 0.38 : 0.5;
+    }
     return 0;
   }
 
@@ -243,7 +276,13 @@ export class AttackEvaluator extends GoalEvaluator {
     const skirmishWindow = lightPressureSkirmishWindow(totalArmy, readyArmy);
     if (store.baseUnderAttack.value && !skirmishWindow) return 0;
     const safeAttackArmy = safeAttackArmyThreshold(totalArmy);
-    if (!skirmishWindow && readyArmy < safeAttackArmy) return 0;
+    if (
+      !skirmishWindow &&
+      readyArmy < safeAttackArmy &&
+      !canOpenMobilityAttackWindow(totalArmy, readyArmy, safeAttackArmy)
+    ) {
+      return 0;
+    }
     if (!skirmishWindow && !Number.isFinite(safeAttackArmy)) return 0;
 
     const openingWindow = skirmishWindow

@@ -251,7 +251,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, createPrestigeState());
 
-    expect(world.playerDamageTakenMultiplier).toBeCloseTo(0.92, 2);
+    expect(world.playerDamageTakenMultiplier).toBeCloseTo(0.88, 2);
   });
 
   it('applies combat attack speed to playerAttackSpeedMultiplier', () => {
@@ -273,7 +273,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, createPrestigeState());
 
-    expect(world.playerCriticalHitChance).toBeCloseTo(0.08, 2);
+    expect(world.playerCriticalHitChance).toBeCloseTo(0.15, 2);
   });
 
   it('applies gathering carry capacity to playerCarryCapacityMultiplier', () => {
@@ -295,7 +295,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, createPrestigeState());
 
-    expect(world.playerUnitSpeedMultiplier).toBeCloseTo(1.03, 2);
+    expect(world.playerUnitSpeedMultiplier).toBeCloseTo(1.06, 2);
   });
 
   it('applies utility heal power to playerHealMultiplier', () => {
@@ -306,7 +306,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, createPrestigeState());
 
-    expect(world.playerHealMultiplier).toBeCloseTo(1.05, 2);
+    expect(world.playerHealMultiplier).toBeCloseTo(1.08, 2);
   });
 
   it('applies utility train speed to playerTrainSpeedMultiplier', () => {
@@ -317,7 +317,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, createPrestigeState());
 
-    expect(world.playerTrainSpeedMultiplier).toBeCloseTo(1.04, 2);
+    expect(world.playerTrainSpeedMultiplier).toBeCloseTo(1.08, 2);
   });
 
   it('applies defense tower damage to playerTowerDamageMultiplier', () => {
@@ -328,7 +328,7 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     applyUpgradeEffects(world, state, createPrestigeState());
 
-    expect(world.playerTowerDamageMultiplier).toBeCloseTo(1.08, 2);
+    expect(world.playerTowerDamageMultiplier).toBeCloseTo(1.15, 2);
   });
 });
 
