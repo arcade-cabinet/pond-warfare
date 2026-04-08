@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/errors', async () => {
+  const actual = await vi.importActual<typeof import('@/errors')>('@/errors');
+  return {
+    ...actual,
+    logError: vi.fn(),
+  };
+});
+
 vi.mock('@/save-system', () => ({
   loadGame: vi.fn().mockReturnValue(true),
 }));
@@ -16,6 +24,7 @@ vi.mock('@/game', () => ({
   },
 }));
 
+import { logError } from '@/errors';
 import { loadGame } from '@/save-system';
 import { getLatestSave } from '@/storage';
 import { game } from '@/game';
@@ -55,7 +64,7 @@ describe('menu-start', () => {
   });
 
   it('starts a fresh match without loading a save by default', async () => {
-    await startMenuGame(refs);
+    await expect(startMenuGame(refs)).resolves.toBe(true);
 
     expect(game.init).toHaveBeenCalledWith(
       refs.container,
@@ -73,7 +82,7 @@ describe('menu-start', () => {
       ReturnType<typeof getLatestSave>
     >);
 
-    await startMenuGame(refs);
+    await expect(startMenuGame(refs)).resolves.toBe(true);
 
     expect(loadGame).toHaveBeenCalledWith(game.world, '{"version":3}');
     expect(game.syncUIStore).toHaveBeenCalled();
@@ -81,14 +90,34 @@ describe('menu-start', () => {
     expect(store.hasSaveGame.value).toBe(true);
   });
 
-  it('falls back to a new match when CONTINUE has no save to load', async () => {
+  it('returns to the menu when CONTINUE has no save to load', async () => {
     store.continueRequested.value = true;
+    store.menuState.value = 'playing';
     vi.mocked(getLatestSave).mockResolvedValue(null);
 
-    await startMenuGame(refs);
+    await expect(startMenuGame(refs)).resolves.toBe(false);
 
+    expect(game.init).not.toHaveBeenCalled();
     expect(loadGame).not.toHaveBeenCalled();
     expect(store.continueRequested.value).toBe(false);
     expect(store.hasSaveGame.value).toBe(false);
+    expect(store.menuState.value).toBe('main');
+    expect(logError).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns to the menu when CONTINUE points to an invalid save payload', async () => {
+    store.continueRequested.value = true;
+    store.menuState.value = 'playing';
+    vi.mocked(getLatestSave).mockResolvedValue({ data: '{"version":3}' } as Awaited<
+      ReturnType<typeof getLatestSave>
+    >);
+    vi.mocked(loadGame).mockReturnValueOnce(false);
+
+    await expect(startMenuGame(refs)).resolves.toBe(false);
+
+    expect(game.init).toHaveBeenCalled();
+    expect(store.hasSaveGame.value).toBe(false);
+    expect(store.menuState.value).toBe('main');
+    expect(logError).toHaveBeenCalledTimes(1);
   });
 });

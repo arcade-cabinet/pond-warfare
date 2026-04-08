@@ -5,10 +5,11 @@
  * share the same init path.
  */
 
+import { GameError, logError } from '@/errors';
 import { loadGame } from '@/save-system';
 import { getLatestSave } from '@/storage';
 import { game } from '@/game';
-import { continueRequested, hasSaveGame } from '@/ui/store';
+import { continueRequested, hasSaveGame, menuState } from '@/ui/store';
 
 export interface MenuStartRefs {
   container: HTMLDivElement;
@@ -26,21 +27,32 @@ export async function hydrateSaveAvailability(): Promise<void> {
   }
 }
 
-/** Start a game from the menu and optionally continue from the latest save. */
-export async function startMenuGame(refs: MenuStartRefs): Promise<void> {
-  await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-
-  if (!continueRequested.value) return;
+function abortContinue(message: string): false {
   continueRequested.value = false;
+  hasSaveGame.value = false;
+  menuState.value = 'main';
+  logError(new GameError(message, 'game/menu-start.startMenuGame'));
+  return false;
+}
+
+/** Start a game from the menu and optionally continue from the latest save. */
+export async function startMenuGame(refs: MenuStartRefs): Promise<boolean> {
+  if (!continueRequested.value) {
+    await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
+    return true;
+  }
 
   const save = await getLatestSave().catch(() => null);
+  continueRequested.value = false;
   if (!save?.data) {
-    hasSaveGame.value = false;
-    return;
+    return abortContinue('Continue requested but no saved match was available');
   }
 
+  await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
   hasSaveGame.value = true;
-  if (loadGame(game.world, save.data)) {
-    game.syncUIStore();
+  if (!loadGame(game.world, save.data)) {
+    return abortContinue('Continue requested but the latest save could not be loaded');
   }
+  game.syncUIStore();
+  return true;
 }

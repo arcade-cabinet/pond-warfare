@@ -39,10 +39,14 @@ let gameStarted = false;
 function startGame() {
   if (!storedRefs || gameStarted) return;
   gameStarted = true;
-  startMenuGame(storedRefs).catch((error) => {
-    gameStarted = false;
-    handleGameInitFailure(error);
-  });
+  startMenuGame(storedRefs)
+    .then((started) => {
+      if (!started) gameStarted = false;
+    })
+    .catch((error) => {
+      gameStarted = false;
+      handleGameInitFailure(error);
+    });
 }
 
 // Initialize database then mount the Preact application
