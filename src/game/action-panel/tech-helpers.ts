@@ -24,7 +24,8 @@ export function buildTrainingQueueItems(
   const slots = trainingQueueSlots.get(buildingEid) ?? [];
   for (let qi = 0; qi < slots.length; qi++) {
     const unitKind = slots[qi] as EntityKind;
-    const progress = qi === 0 ? getPlayerTrainProgress(w, TrainingQueue.timer[buildingEid]) : 0;
+    const progress =
+      qi === 0 ? getPlayerTrainProgress(w, TrainingQueue.timer[buildingEid], unitKind) : 0;
     const idx = qi;
     qItems.push({
       label: getPlayerTrainableDisplayName(unitKind).charAt(0),

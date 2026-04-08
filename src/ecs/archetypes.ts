@@ -223,7 +223,11 @@ export function spawnEntity(
     addComponent(world.ecs, eid, Velocity);
     let speed = def.speed;
     if (faction === Faction.Player && world.tech.swiftPaws) speed *= 1.15;
-    if (faction === Faction.Player && world.playerUnitSpeedMultiplier > 1) {
+    if (
+      faction === Faction.Player &&
+      !isMudpawKind(kind) &&
+      world.playerUnitSpeedMultiplier > 1
+    ) {
       speed *= world.playerUnitSpeedMultiplier;
     }
     if (faction === Faction.Player && isPlayerSiegeKind(kind) && world.playerSiegeSpeedMultiplier > 1) {

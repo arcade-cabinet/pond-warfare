@@ -240,7 +240,7 @@ export function train(
       trainingQueueCostSlots.set(buildingEid, costSlots);
       TrainingQueue.count[buildingEid] = count + 1;
       if (count === 0) {
-        TrainingQueue.timer[buildingEid] = getPlayerTrainTimer(world);
+        TrainingQueue.timer[buildingEid] = getPlayerTrainTimer(world, kind);
       }
     }
   }
@@ -269,7 +269,7 @@ export function cancelTrain(world: GameWorld, buildingEid: number, index: number
   TrainingQueue.count[buildingEid] = count - 1;
 
   if (index === 0 && count - 1 > 0) {
-    TrainingQueue.timer[buildingEid] = getPlayerTrainTimer(world);
+    TrainingQueue.timer[buildingEid] = getPlayerTrainTimer(world, slots[0] as EntityKind);
   }
   if (count - 1 === 0) {
     TrainingQueue.timer[buildingEid] = 0;

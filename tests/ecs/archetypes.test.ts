@@ -27,7 +27,7 @@ import {
   Veterancy,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 describe('spawnEntity', () => {
@@ -79,6 +79,14 @@ describe('spawnEntity', () => {
     const eid = spawnEntity(world, SAPPER_KIND, 100, 200, Faction.Player);
 
     expect(Velocity.speed[eid]).toBeCloseTo(ENTITY_DEFS[SAPPER_KIND].speed * 1.25, 5);
+  });
+
+  it('does not apply player unit speed multiplier to spawned Mudpaws', () => {
+    world.playerUnitSpeedMultiplier = 1.25;
+
+    const eid = spawnEntity(world, MUDPAW_KIND, 100, 200, Faction.Player);
+
+    expect(Velocity.speed[eid]).toBeCloseTo(ENTITY_DEFS[MUDPAW_KIND].speed, 5);
   });
 
   it('applies player tower damage multiplier to spawned towers', () => {

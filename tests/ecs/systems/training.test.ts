@@ -21,7 +21,7 @@ import {
 } from '@/ecs/components';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { getPlayerTrainTimer } from '@/game/train-timer';
 import { EntityKind, Faction } from '@/types';
 
@@ -134,5 +134,21 @@ describe('trainingSystem', () => {
     expect(TrainingQueue.count[lodge]).toBe(1);
     expect(TrainingQueue.timer[lodge]).toBe(getPlayerTrainTimer(world));
     expect(TrainingQueue.timer[lodge]).toBeLessThan(TRAIN_TIMER);
+  });
+
+  it('does not reduce Mudpaw queue timers with the player train speed multiplier', () => {
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
+    world.playerTrainSpeedMultiplier = 1.5;
+
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, SABOTEUR_KIND]);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = 1;
+
+    trainingSystem(world);
+
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    expect(trainingQueueSlots.get(lodge)?.[0]).toBe(SABOTEUR_KIND);
+    expect(TrainingQueue.timer[lodge]).toBe(getPlayerTrainTimer(world, SABOTEUR_KIND));
+    expect(getPlayerTrainTimer(world, MUDPAW_KIND)).toBe(TRAIN_TIMER);
   });
 });

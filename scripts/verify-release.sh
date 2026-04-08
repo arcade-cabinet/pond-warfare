@@ -13,6 +13,7 @@ run pnpm exec tsc --noEmit
 run pnpm test
 run pnpm exec vitest run \
   --config vitest.browser.config.ts \
+  --maxWorkers=1 \
   tests/browser/progression-meta-loop.test.tsx \
   tests/browser/interactions.test.ts \
   tests/browser/ui-and-controls.test.tsx \

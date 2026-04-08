@@ -98,7 +98,7 @@ export function trainingSystem(world: GameWorld): void {
 
       // Set timer for next unit if queue still has entries
       if (TrainingQueue.count[eid] > 0) {
-        TrainingQueue.timer[eid] = getPlayerTrainTimer(world);
+        TrainingQueue.timer[eid] = getPlayerTrainTimer(world, slots[0] as EntityKind);
       }
 
       // Training complete sound + unit selection voice

@@ -53,7 +53,7 @@ export function syncThreatAndObjectives(world: GameWorld): void {
     const slots = trainingQueueSlots.get(eid) ?? [];
     if (slots.length === 0) continue;
     const unitKind = slots[0] as EntityKind;
-    const progress = getPlayerTrainProgress(w, TrainingQueue.timer[eid]);
+    const progress = getPlayerTrainProgress(w, TrainingQueue.timer[eid], unitKind);
     prodQueue.push({
       buildingKind: EntityTypeTag.kind[eid],
       unitLabel: getPlayerTrainableDisplayName(unitKind),
