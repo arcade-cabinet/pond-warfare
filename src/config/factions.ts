@@ -20,23 +20,23 @@ export interface FactionConfig {
   name: string;
   lodgeKind: EntityKind;
   /**
-   * Legacy compatibility slots retained for horizontal scenarios and older
-   * adversarial helpers. The canonical player-facing otter roster is defined
-   * elsewhere as Mudpaw/Medic/Sapper/Saboteur.
+   * Neutral role slots retained for horizontal scenarios and older adversarial
+   * helpers. The canonical player-facing otter roster is defined elsewhere as
+   * Mudpaw/Medic/Sapper/Saboteur.
    */
-  gathererKind: EntityKind;
-  meleeKind: EntityKind;
-  rangedKind: EntityKind;
-  tankKind: EntityKind;
+  generalistKind: EntityKind;
+  frontlineKind: EntityKind;
+  skirmisherKind: EntityKind;
+  heavyKind: EntityKind;
   supportKind: EntityKind;
   siegeKind: EntityKind;
-  heroKind: EntityKind;
+  commanderKind: EntityKind;
   /** Tech IDs available to this faction (v3: upgrade web categories). */
   techTree: string[];
 }
 
 /**
- * Otter faction: compatibility mapping for the original player side.
+ * Otter faction: neutral role mapping for the original player side.
  *
  * Important: the live vertical-mode roster no longer exposes the old internal
  * combat archetype split as player-facing manual units. Older helpers should
@@ -46,13 +46,13 @@ export interface FactionConfig {
 export const OTTER_FACTION: FactionConfig = {
   name: 'Otters',
   lodgeKind: EntityKind.Lodge,
-  gathererKind: MUDPAW_KIND,
-  meleeKind: SAPPER_KIND,
-  rangedKind: SABOTEUR_KIND,
-  tankKind: SAPPER_KIND,
+  generalistKind: MUDPAW_KIND,
+  frontlineKind: SAPPER_KIND,
+  skirmisherKind: SABOTEUR_KIND,
+  heavyKind: SAPPER_KIND,
   supportKind: MEDIC_KIND,
   siegeKind: SAPPER_KIND,
-  heroKind: EntityKind.Commander,
+  commanderKind: EntityKind.Commander,
   techTree: ['gathering', 'combat', 'defense', 'utility', 'economy', 'siege'],
 };
 
@@ -60,13 +60,13 @@ export const OTTER_FACTION: FactionConfig = {
 export const PREDATOR_FACTION: FactionConfig = {
   name: 'Predators',
   lodgeKind: EntityKind.PredatorNest,
-  gathererKind: ENEMY_HARVESTER_KIND,
-  meleeKind: EntityKind.Gator,
-  rangedKind: EntityKind.VenomSnake,
-  tankKind: EntityKind.ArmoredGator,
+  generalistKind: ENEMY_HARVESTER_KIND,
+  frontlineKind: EntityKind.Gator,
+  skirmisherKind: EntityKind.VenomSnake,
+  heavyKind: EntityKind.ArmoredGator,
   supportKind: EntityKind.SwampDrake,
   siegeKind: EntityKind.SiegeTurtle,
-  heroKind: EntityKind.BossCroc,
+  commanderKind: EntityKind.BossCroc,
   techTree: ['gathering', 'combat', 'defense', 'utility'],
 };
 

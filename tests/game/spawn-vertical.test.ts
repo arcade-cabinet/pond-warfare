@@ -40,10 +40,10 @@ vi.mock('@/ecs/components', () => ({
 vi.mock('@/config/factions', () => ({
   getFactionConfig: (_faction: string) => ({
     lodgeKind: EntityKind.Lodge,
-    gathererKind: MUDPAW_KIND,
-    meleeKind: SAPPER_KIND,
+    generalistKind: MUDPAW_KIND,
+    frontlineKind: SAPPER_KIND,
     supportKind: MEDIC_KIND,
-    heroKind: EntityKind.Commander,
+    commanderKind: EntityKind.Commander,
   }),
 }));
 

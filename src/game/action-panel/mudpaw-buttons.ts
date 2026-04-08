@@ -98,7 +98,7 @@ export function buildMudpawButtons(w: GameWorld): ActionButtonDef[] {
     },
   });
   if (w.tech.cartography) {
-    const spDef = ENTITY_DEFS[EntityKind.ScoutPost];
+    const spDef = ENTITY_DEFS[EntityKind.LookoutPost];
     btns.push({
       title: 'Lookout Post',
       cost: `${spDef.fishCost}F ${spDef.logCost}L`,
@@ -110,7 +110,7 @@ export function buildMudpawButtons(w: GameWorld): ActionButtonDef[] {
       costBreakdown: { fish: spDef.fishCost, logs: spDef.logCost },
       requires: 'Requires: Cartography',
       onClick: () => {
-        w.placingBuilding = 'scout_post';
+        w.placingBuilding = 'lookout_post';
       },
     });
   }

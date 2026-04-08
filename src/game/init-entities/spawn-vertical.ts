@@ -198,7 +198,7 @@ function spawnEnemyCommander(world: GameWorld, layout: VerticalMapLayout, rng: S
   for (let i = 0; i < guardCount; i++) {
     spawnEntity(
       world,
-      aiFactionCfg.meleeKind,
+      aiFactionCfg.frontlineKind,
       spawnPos.x + rng.float(-60, 60),
       spawnPos.y + rng.float(30, 80),
       Faction.Enemy,
@@ -251,7 +251,7 @@ function spawnEnemyNests(world: GameWorld, layout: VerticalMapLayout, rng: Seede
     for (let i = 0; i < 2; i++) {
       spawnEntity(
         world,
-        aiFactionCfg.meleeKind,
+        aiFactionCfg.frontlineKind,
         spawn.x + rng.float(-60, 60),
         spawn.y + rng.float(-30, 30),
         Faction.Enemy,

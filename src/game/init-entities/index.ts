@@ -155,7 +155,7 @@ export function spawnInitialEntities(world: GameWorld): void {
     const angle = (i / Math.max(extraUnits, 1)) * Math.PI * 2;
     spawnEntity(
       world,
-      playerFactionCfg.gathererKind,
+      playerFactionCfg.generalistKind,
       sx + Math.cos(angle) * 50,
       sy + Math.sin(angle) * 50 + 40,
       Faction.Player,

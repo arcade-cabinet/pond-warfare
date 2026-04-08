@@ -73,7 +73,7 @@ describe('ENTITY_DEFS', () => {
       EntityKind.PredatorNest,
       EntityKind.Watchtower,
       EntityKind.Wall,
-      EntityKind.ScoutPost,
+      EntityKind.LookoutPost,
     ];
     for (const kind of buildings) {
       expect(ENTITY_DEFS[kind].isBuilding).toBe(true);
@@ -113,7 +113,7 @@ describe('isWingBuilding', () => {
     expect(isWingBuilding(EntityKind.Tower)).toBe(false);
     expect(isWingBuilding(EntityKind.Watchtower)).toBe(false);
     expect(isWingBuilding(EntityKind.Wall)).toBe(false);
-    expect(isWingBuilding(EntityKind.ScoutPost)).toBe(false);
+    expect(isWingBuilding(EntityKind.LookoutPost)).toBe(false);
     expect(isWingBuilding(EntityKind.PredatorNest)).toBe(false);
   });
 

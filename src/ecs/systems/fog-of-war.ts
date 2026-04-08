@@ -59,14 +59,14 @@ export function fogOfWarSystem(world: GameWorld): void {
     if (FactionTag.faction[eid] !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
 
-    // Buildings get a larger reveal radius; the Lookout chassis and ScoutPost get extra
+    // Buildings get a larger reveal radius; the Lookout chassis and Lookout Post get extra
     const isBuilding = hasComponent(world.ecs, eid, IsBuilding);
     const kind = hasComponent(world.ecs, eid, EntityTypeTag)
       ? (EntityTypeTag.kind[eid] as EntityKind)
       : undefined;
     let rad = isBuilding ? 16 : 10;
     if (kind !== undefined && isLookoutKind(kind)) rad = 16;
-    if (kind === EntityKind.ScoutPost) rad = 24;
+    if (kind === EntityKind.LookoutPost) rad = 24;
     // Cartography: +25% fog reveal radius for all units
     if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
 
@@ -97,7 +97,7 @@ export function fogOfWarSystem(world: GameWorld): void {
         ? (EntityTypeTag.kind[eid] as EntityKind)
         : undefined;
       let rad = 16;
-      if (kind === EntityKind.ScoutPost) rad = 24;
+      if (kind === EntityKind.LookoutPost) rad = 24;
       if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
       rad = Math.ceil(rad * visionMult);
       if (rad > maxBuildingRad) maxBuildingRad = rad;

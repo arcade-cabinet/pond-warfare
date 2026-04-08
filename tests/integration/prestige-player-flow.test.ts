@@ -40,18 +40,18 @@ vi.mock('@/config/factions', () => ({
     if (faction === 'predator') {
       return {
         lodgeKind: EntityKind.PredatorNest,
-        gathererKind: EntityKind.Gator,
-        meleeKind: EntityKind.Gator,
+        generalistKind: EntityKind.Gator,
+        frontlineKind: EntityKind.Gator,
         supportKind: EntityKind.Gator,
-        heroKind: EntityKind.Commander,
+        commanderKind: EntityKind.Commander,
       };
     }
     return {
       lodgeKind: EntityKind.Lodge,
-      gathererKind: MUDPAW_KIND,
-      meleeKind: SAPPER_KIND,
+      generalistKind: MUDPAW_KIND,
+      frontlineKind: SAPPER_KIND,
       supportKind: MEDIC_KIND,
-      heroKind: EntityKind.Commander,
+      commanderKind: EntityKind.Commander,
     };
   },
 }));

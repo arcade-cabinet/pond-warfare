@@ -158,7 +158,7 @@ function resolvePlacementSpriteId(buildingType: string): SpriteIdType | null {
   if (buildingType === 'watchtower') return SpriteId.Watchtower;
   if (buildingType === 'lodge') return SpriteId.Lodge;
   if (buildingType === 'wall') return SpriteId.Wall;
-  if (buildingType === 'scout_post') return SpriteId.ScoutPost;
+  if (buildingType === 'lookout_post') return SpriteId.LookoutPost;
   return null;
 }
 

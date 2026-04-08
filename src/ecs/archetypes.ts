@@ -63,7 +63,7 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [LOOKOUT_KIND]: LOOKOUT_SPRITE_ID,
   [EntityKind.Catapult]: SpriteId.Catapult,
   [EntityKind.Wall]: SpriteId.Wall,
-  [EntityKind.ScoutPost]: SpriteId.ScoutPost,
+  [EntityKind.LookoutPost]: SpriteId.LookoutPost,
   [EntityKind.ArmoredGator]: SpriteId.ArmoredGator,
   [EntityKind.VenomSnake]: SpriteId.VenomSnake,
   [EntityKind.SwampDrake]: SpriteId.SwampDrake,

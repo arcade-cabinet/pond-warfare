@@ -1,6 +1,6 @@
 /**
  * Building sprites: lodge, burrow, armory, tower, watchtower, predator_nest,
- * wall, scout_post, fishing_hut, herbalist_hut, market.
+ * wall, lookout_post, fishing_hut, herbalist_hut, market.
  */
 
 import { PALETTE } from '@/constants';
@@ -105,7 +105,7 @@ export function drawWall(d: DrawCtx): void {
   rect(6, 8, 20, 2, PALETTE.reedBrown);
 }
 
-export function drawScoutPost(d: DrawCtx): void {
+export function drawLookoutPost(d: DrawCtx): void {
   const { rect } = d;
   rect(14, 4, 4, 24, PALETTE.reedBrown);
   rect(10, 4, 12, 3, PALETTE.mudLight);

@@ -89,7 +89,7 @@ export const BUILDING_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     fishCost: 0,
     logCost: 50,
   },
-  [EntityKind.ScoutPost]: {
+  [EntityKind.LookoutPost]: {
     hp: 200,
     speed: 0,
     damage: 0,

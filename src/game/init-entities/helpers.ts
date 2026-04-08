@@ -138,7 +138,7 @@ export function spawnPlayerBase(ctx: SpawnContext): number {
 
   spawnEntity(world, factionCfg.lodgeKind, sx, sy, Faction.Player);
 
-  const commanderEid = spawnEntity(world, factionCfg.heroKind, sx, sy + 40, Faction.Player);
+  const commanderEid = spawnEntity(world, factionCfg.commanderKind, sx, sy + 40, Faction.Player);
   world.selection = [commanderEid];
 
   // Hero mode: boost commander HP, damage, and speed
@@ -149,8 +149,8 @@ export function spawnPlayerBase(ctx: SpawnContext): number {
     Velocity.speed[commanderEid] = Velocity.speed[commanderEid] * 1.25;
   }
 
-  spawnEntity(world, factionCfg.gathererKind, sx - 40, sy + 40, Faction.Player);
-  spawnEntity(world, factionCfg.gathererKind, sx + 40, sy + 40, Faction.Player);
+  spawnEntity(world, factionCfg.generalistKind, sx - 40, sy + 40, Faction.Player);
+  spawnEntity(world, factionCfg.generalistKind, sx + 40, sy + 40, Faction.Player);
 
   const mapCenterX = WORLD_WIDTH / 2;
   const mapCenterY = WORLD_HEIGHT / 2;
@@ -167,7 +167,7 @@ export function spawnPlayerBase(ctx: SpawnContext): number {
   }
   spawnEntity(
     world,
-    factionCfg.gathererKind,
+    factionCfg.generalistKind,
     sx + dirX * 60,
     sy + dirY * 60,
     Faction.Player,
@@ -217,14 +217,14 @@ export function spawnEnemyCamp(
   for (let j = 0; j < unitsPerNest; j++) {
     spawnEntity(
       world,
-      aiFactionCfg.meleeKind,
+      aiFactionCfg.frontlineKind,
       loc.x + rng.float(-75, 75),
       loc.y + rng.float(-75, 75),
       Faction.Enemy,
     );
     spawnEntity(
       world,
-      aiFactionCfg.rangedKind,
+      aiFactionCfg.skirmisherKind,
       loc.x + rng.float(-75, 75),
       loc.y + rng.float(-75, 75),
       Faction.Enemy,

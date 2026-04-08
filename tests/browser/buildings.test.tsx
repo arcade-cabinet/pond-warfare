@@ -310,20 +310,24 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   });
 
   // ========================================================================
-  // 7. ScoutPost -- 200 HP
+  // 7. LookoutPost -- 200 HP
   // ========================================================================
 
-  describe('7. ScoutPost', () => {
-    it('ScoutPost HP matches entity-defs (200)', () => {
-      const def = ENTITY_DEFS[EntityKind.ScoutPost];
+  describe('7. LookoutPost', () => {
+    it('LookoutPost HP matches entity-defs (200)', () => {
+      const def = ENTITY_DEFS[EntityKind.LookoutPost];
       expect(def.hp).toBe(200);
     });
 
-    it('ScoutPost placement creates entity', () => {
+    it('LookoutPost placement creates entity', () => {
       const lodge = getUnits(EntityKind.Lodge)[0];
-      const before = getUnits(EntityKind.ScoutPost).length;
-      spawnIncompleteBuilding(EntityKind.ScoutPost, Position.x[lodge] - 200, Position.y[lodge] + 200);
-      const after = getUnits(EntityKind.ScoutPost).length;
+      const before = getUnits(EntityKind.LookoutPost).length;
+      spawnIncompleteBuilding(
+        EntityKind.LookoutPost,
+        Position.x[lodge] - 200,
+        Position.y[lodge] + 200,
+      );
+      const after = getUnits(EntityKind.LookoutPost).length;
       expect(after).toBe(before + 1);
     });
   });
@@ -758,7 +762,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
         EntityKind.Tower,
         EntityKind.Watchtower,
         EntityKind.Wall,
-        EntityKind.ScoutPost,
+        EntityKind.LookoutPost,
         EntityKind.FishingHut,
         EntityKind.HerbalistHut,
         EntityKind.PredatorNest,
@@ -777,7 +781,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
         EntityKind.Tower,
         EntityKind.Watchtower,
         EntityKind.Wall,
-        EntityKind.ScoutPost,
+        EntityKind.LookoutPost,
         EntityKind.FishingHut,
         EntityKind.HerbalistHut,
       ];
