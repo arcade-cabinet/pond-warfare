@@ -9,7 +9,7 @@
  * optional disabled state.
  */
 
-// Re-export entityKindToRole from extracted module for backward compatibility
+// Re-export entityKindToRole from the extracted shared role module.
 export { entityKindToRole } from './radial-entity-roles';
 
 export type RadialMenuMode = 'lodge' | 'unit';
