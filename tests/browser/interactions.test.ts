@@ -62,7 +62,7 @@ function resetStore() {
   store.lowFish.value = false;
   store.lowLogs.value = false;
   store.attackMoveActive.value = false;
-  store.idleWorkerCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
   store.idleGeneralistCount.value = 0;
@@ -130,7 +130,7 @@ describe('HUD button interactions', () => {
           onSpeedClick,
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -156,7 +156,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick,
           onAttackMoveClick: vi.fn(),
@@ -182,7 +182,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick,
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -208,7 +208,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle,
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -235,7 +235,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick,
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -263,7 +263,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick,
@@ -290,7 +290,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -611,8 +611,8 @@ describe('Game Over interactions', () => {
 // HUD conditional visibility checks
 // ---------------------------------------------------------------------------
 describe('HUD conditional element visibility', () => {
-  it('idle worker button hidden when no idle workers', async () => {
-    store.idleWorkerCount.value = 0;
+  it('idle Mudpaw button hidden when no idle Mudpaws', async () => {
+    store.idleGeneralistCount.value = 0;
 
     render(
       h(
@@ -622,7 +622,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -631,7 +631,7 @@ describe('HUD conditional element visibility', () => {
       ),
     );
 
-    expect(document.getElementById('idle-worker-btn')).toBeNull();
+    expect(document.getElementById('idle-generalist-btn')).toBeNull();
   });
 
   it('army button hidden when no army units', async () => {
@@ -645,7 +645,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -669,7 +669,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -694,7 +694,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -718,7 +718,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -748,7 +748,7 @@ describe('Keyboard Reference overlay interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1062,7 +1062,7 @@ describe('Pearl resource display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1088,7 +1088,7 @@ describe('Pearl resource display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1118,7 +1118,7 @@ describe('Enemy economy display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1145,7 +1145,7 @@ describe('Enemy economy display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),

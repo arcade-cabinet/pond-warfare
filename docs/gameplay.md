@@ -172,7 +172,7 @@ Commanders are permanent Pearl/loadout progression. Their bonuses must hook live
 | Commander | Primary Effect | Secondary Effect |
 |----------|----------------|------------------|
 | **Marshal** | Nearby units deal +15% damage | None |
-| **Sage** | Nearby workers gain +25% gather rate | Mudpaws gain +10% gather rate globally |
+| **Sage** | Nearby Mudpaws gain +25% gather rate | Mudpaws gain +10% gather rate globally |
 | **Warden** | Nearby buildings gain +200 HP | Towers attack 20% faster |
 | **Tidekeeper** | All nearby units gain +0.4 speed | Fishers cost 50% less to field |
 | **Shadowfang** | Enemies in aura deal -10% damage | Rangers gain +50% projection range |

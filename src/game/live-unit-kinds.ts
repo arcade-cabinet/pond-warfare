@@ -3,7 +3,7 @@ import { EntityKind, SpriteId } from '@/types';
 /**
  * Canonical live player-facing unit mappings.
  *
- * The ECS enum still carries long-lived shared worker/recon and legacy combat
+ * The ECS enum still carries long-lived shared generalist/recon and legacy combat
  * chassis ids, but live player/runtime code should speak in canonical roster
  * terms wherever possible.
  */

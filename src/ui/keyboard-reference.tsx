@@ -50,7 +50,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
     entries: [
       { keys: 'Ctrl+1-9', label: 'Save group' },
       { keys: '1-9', label: 'Recall group' },
-      { keys: '.', label: 'Select idle workers' },
+      { keys: '.', label: 'Select idle Mudpaw' },
       { keys: ',', label: 'Select army' },
       { keys: 'Tab', label: 'Cycle buildings' },
     ],

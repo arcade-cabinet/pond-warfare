@@ -25,7 +25,10 @@ export interface UISyncState {
 export function syncUIStore(state: UISyncState): void {
   const w = state.world;
 
-  const { idleWorkers, armyUnits, maxFoodCap } = syncPopulationAndTimers(w, state.exploredCtx);
+  const { idleGeneralists, armyUnits, maxFoodCap } = syncPopulationAndTimers(
+    w,
+    state.exploredCtx,
+  );
 
   store.muted.value = audio.muted;
   store.hasPlayerUnits.value = hasPlayerUnitsSelected(w);
@@ -50,7 +53,7 @@ export function syncUIStore(state: UISyncState): void {
   }
 
   // Selection info
-  syncSelectionInfo(w, idleWorkers, armyUnits, maxFoodCap);
+  syncSelectionInfo(w, idleGeneralists, armyUnits, maxFoodCap);
 
   // Action panel buttons and queue
   buildActionPanel(w, state.recorder);

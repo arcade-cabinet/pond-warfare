@@ -61,7 +61,7 @@ vi.mock('bitecs', () => ({
 vi.mock('@/input/selection', () => ({
   hasPlayerUnitsSelected: vi.fn(() => true),
   selectArmy: vi.fn(),
-  selectIdleWorker: vi.fn(),
+  selectIdleGeneralist: vi.fn(),
 }));
 
 vi.mock('@/rendering/pixi-app', () => ({
@@ -81,11 +81,11 @@ vi.mock('@/storage', () => ({
 import { audio } from '@/audio/audio-system';
 import { UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
-import { selectArmy, selectIdleWorker } from '@/input/selection';
+import { selectArmy, selectIdleGeneralist } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import {
   activateAttackMove,
-  cycleIdleWorker,
+  cycleIdleGeneralist,
   deselect,
   haltSelection,
   selectAllUnits,
@@ -150,9 +150,9 @@ describe('game-actions', () => {
     expect(game.syncUIStore).toHaveBeenCalled();
   });
 
-  it('cycleIdleWorker calls selectIdleWorker and syncs', () => {
-    cycleIdleWorker();
-    expect(selectIdleWorker).toHaveBeenCalled();
+  it('cycleIdleGeneralist calls selectIdleGeneralist and syncs', () => {
+    cycleIdleGeneralist();
+    expect(selectIdleGeneralist).toHaveBeenCalled();
     expect(game.syncUIStore).toHaveBeenCalled();
   });
 

@@ -1,7 +1,7 @@
 /**
  * Group Selection Commands
  *
- * Select idle workers (with cycling) and select all army units.
+ * Select idle Mudpaws/generalists (with cycling) and select all army units.
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -20,8 +20,8 @@ import type { GameWorld } from '@/ecs/world';
 import { isMudpawKind } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
-/** Select idle worker with cycling. */
-export function selectIdleWorker(world: GameWorld): void {
+/** Select idle Mudpaw/generalist with cycling. */
+export function selectIdleGeneralist(world: GameWorld): void {
   audio.selectUnit();
   const ents = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   const idles = ents.filter(
@@ -32,17 +32,17 @@ export function selectIdleWorker(world: GameWorld): void {
   );
 
   if (idles.length > 0) {
-    world.idleWorkerIdx = world.idleWorkerIdx % idles.length;
+    world.idleGeneralistIdx = world.idleGeneralistIdx % idles.length;
     for (const eid of world.selection) {
       if (hasComponent(world.ecs, eid, Selectable)) {
         Selectable.selected[eid] = 0;
       }
     }
-    const target = idles[world.idleWorkerIdx];
+    const target = idles[world.idleGeneralistIdx];
     world.selection = [target];
     Selectable.selected[target] = 1;
     world.isTracking = true;
-    world.idleWorkerIdx++;
+    world.idleGeneralistIdx++;
   }
 }
 

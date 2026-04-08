@@ -182,23 +182,23 @@ describe('commanderAura — Sage gather aura', () => {
     };
   });
 
-  it('marks nearby worker units for gather-rate aura', () => {
+  it('marks nearby Mudpaws for gather-rate aura', () => {
     const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
-    const worker = spawnUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
+    const mudpaw = spawnUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
 
     world.frameCount = 60;
     commanderAura(world);
 
-    expect(world.commanderGatherBuff.has(worker)).toBe(true);
+    expect(world.commanderGatherBuff.has(mudpaw)).toBe(true);
   });
 
   it('clears gather aura when the commander dies', () => {
     const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
-    const worker = spawnUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
+    const mudpaw = spawnUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
 
     world.frameCount = 60;
     commanderAura(world);
-    expect(world.commanderGatherBuff.has(worker)).toBe(true);
+    expect(world.commanderGatherBuff.has(mudpaw)).toBe(true);
 
     Health.current[cmd] = 0;
     world.frameCount = 61;

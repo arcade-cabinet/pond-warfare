@@ -81,7 +81,7 @@ function resetStore() {
   store.lowFish.value = false;
   store.lowLogs.value = false;
   store.attackMoveActive.value = false;
-  store.idleWorkerCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
   store.idleGeneralistCount.value = 0;
@@ -136,7 +136,7 @@ describe('HUD screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,
@@ -239,8 +239,8 @@ describe('HUD screenshots', () => {
     await page.screenshot({ path: 'screenshots/hud-attack-move.png', element: document.body });
   });
 
-  it('HUD - idle workers and army buttons', async () => {
-    store.idleWorkerCount.value = 3;
+  it('HUD - idle Mudpaws and army buttons', async () => {
+    store.idleGeneralistCount.value = 3;
     store.armyCount.value = 7;
     store.hasPlayerUnits.value = true;
     store.selectionCount.value = 2;
@@ -654,7 +654,7 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuOpen.value = true;
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 5;
+    store.idleGeneralistCount.value = 5;
 
     render(
       h(
@@ -664,7 +664,7 @@ describe('Radial Menu screenshots', () => {
           onSpeedClick: noop,
           onMuteClick: noop,
           onColorBlindToggle: noop,
-          onIdleWorkerClick: noop,
+          onIdleGeneralistClick: noop,
           onArmyClick: noop,
           onPauseClick: noop,
           onAttackMoveClick: noop,
@@ -683,7 +683,7 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuOpen.value = true;
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 3;
+    store.idleGeneralistCount.value = 3;
 
     render(
       h(
@@ -693,7 +693,7 @@ describe('Radial Menu screenshots', () => {
           onSpeedClick: noop,
           onMuteClick: noop,
           onColorBlindToggle: noop,
-          onIdleWorkerClick: noop,
+          onIdleGeneralistClick: noop,
           onArmyClick: noop,
           onPauseClick: noop,
           onAttackMoveClick: noop,
@@ -714,7 +714,7 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuOpen.value = true;
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 8;
+    store.idleGeneralistCount.value = 8;
 
     render(
       h(
@@ -724,7 +724,7 @@ describe('Radial Menu screenshots', () => {
           onSpeedClick: noop,
           onMuteClick: noop,
           onColorBlindToggle: noop,
-          onIdleWorkerClick: noop,
+          onIdleGeneralistClick: noop,
           onArmyClick: noop,
           onPauseClick: noop,
           onAttackMoveClick: noop,
@@ -977,7 +977,7 @@ describe('Contextual Idle Menu screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,
@@ -985,7 +985,7 @@ describe('Contextual Idle Menu screenshots', () => {
   };
 
   it('Idle menu expanded - Mudpaws idle (Gather + Build)', async () => {
-    store.idleWorkerCount.value = 5;
+    store.idleGeneralistCount.value = 5;
     store.idleGeneralistCount.value = 5;
     store.idleCombatCount.value = 0;
     store.gameTimeDisplay.value = 'Day 3 - 10:00';
@@ -1007,7 +1007,7 @@ describe('Contextual Idle Menu screenshots', () => {
   });
 
   it('Idle menu expanded - combat idle (Attack + Defend)', async () => {
-    store.idleWorkerCount.value = 4;
+    store.idleGeneralistCount.value = 4;
     store.idleGeneralistCount.value = 0;
     store.idleCombatCount.value = 4;
     store.gameTimeDisplay.value = 'Day 5 - 16:00';
@@ -1029,7 +1029,7 @@ describe('Contextual Idle Menu screenshots', () => {
   });
 
   it('Idle menu expanded - mixed idle with all auto toggles on', async () => {
-    store.idleWorkerCount.value = 8;
+    store.idleGeneralistCount.value = 8;
     store.idleGeneralistCount.value = 3;
     store.idleCombatCount.value = 3;
     store.idleHealerCount.value = 1;
@@ -1061,7 +1061,7 @@ describe('Pearl Resource HUD screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,
@@ -1099,7 +1099,7 @@ describe('Enemy Economy HUD screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,

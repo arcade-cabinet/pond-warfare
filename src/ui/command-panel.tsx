@@ -5,7 +5,7 @@ import { canDockPanels, screenClass } from '@/platform';
 import { ActionPanel } from './action-panel';
 import {
   activateAttackMove,
-  cycleIdleWorker,
+  cycleIdleGeneralist,
   deselect,
   haltSelection,
   openKeyboardRef,
@@ -194,7 +194,7 @@ function ActTab() {
     <div class="flex h-full min-h-0 flex-col">
       <SelectionPanel
         onDeselect={deselect}
-        onIdleWorkerClick={cycleIdleWorker}
+        onIdleGeneralistClick={cycleIdleGeneralist}
         onArmyClick={selectArmyUnits}
         onAttackMoveClick={activateAttackMove}
         onHaltClick={haltSelection}

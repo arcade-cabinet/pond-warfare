@@ -8,7 +8,7 @@
  * - canPlaceBuilding() – overlap and bounds validation
  * - getEntityAt() – click detection with priority ordering
  * - hasPlayerUnitsSelected() – selection predicate
- * - selectIdleWorker() – idle worker cycling
+ * - selectIdleGeneralist() – idle Mudpaw cycling
  * - selectArmy() – full army selection
  * - train() – training queue management and resource costs
  * - cancelTrain() – cancellation and refunds
@@ -52,7 +52,7 @@ import {
   hasPlayerUnitsSelected,
   issueContextCommand,
   selectArmy,
-  selectIdleWorker,
+  selectIdleGeneralist,
   train,
 } from '@/input/selection';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -346,20 +346,20 @@ describe('hasPlayerUnitsSelected()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// selectIdleWorker
+// selectIdleGeneralist
 // ---------------------------------------------------------------------------
 
-describe('selectIdleWorker()', () => {
+describe('selectIdleGeneralist()', () => {
   let world: GameWorld;
 
   beforeEach(() => {
     world = createGameWorld();
     world.selection = [];
-    world.idleWorkerIdx = 0;
+    world.idleGeneralistIdx = 0;
   });
 
   it('does nothing when no idle Mudpaws exist', () => {
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     expect(world.selection).toHaveLength(0);
   });
 
@@ -367,7 +367,7 @@ describe('selectIdleWorker()', () => {
     const eid = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     UnitStateMachine.state[eid] = UnitState.Idle;
 
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     expect(world.selection).toContain(eid);
   });
 
@@ -375,7 +375,7 @@ describe('selectIdleWorker()', () => {
     const eid = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     UnitStateMachine.state[eid] = UnitState.Idle;
 
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     expect(Selectable.selected[eid]).toBe(1);
   });
 
@@ -384,7 +384,7 @@ describe('selectIdleWorker()', () => {
     UnitStateMachine.state[eid] = UnitState.Idle;
     world.isTracking = false;
 
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     expect(world.isTracking).toBe(true);
   });
 
@@ -394,13 +394,13 @@ describe('selectIdleWorker()', () => {
     UnitStateMachine.state[eid1] = UnitState.Idle;
     UnitStateMachine.state[eid2] = UnitState.Idle;
 
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     const firstSelection = [...world.selection];
 
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     const secondSelection = [...world.selection];
 
-    // Should select a different idle worker (or cycle back if only 2)
+    // Should select a different idle Mudpaw (or cycle back if only 2)
     expect(firstSelection).not.toEqual(secondSelection);
   });
 
@@ -408,7 +408,7 @@ describe('selectIdleWorker()', () => {
     const eid = createPlayerUnit(world, 100, 100, MUDPAW_KIND);
     UnitStateMachine.state[eid] = UnitState.Move; // Not idle
 
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     expect(world.selection).toHaveLength(0);
   });
 
@@ -416,7 +416,7 @@ describe('selectIdleWorker()', () => {
     const sapper = createPlayerUnit(world, 100, 100, SAPPER_KIND);
     UnitStateMachine.state[sapper] = UnitState.Idle;
 
-    selectIdleWorker(world);
+    selectIdleGeneralist(world);
     expect(world.selection).toHaveLength(0);
   });
 });

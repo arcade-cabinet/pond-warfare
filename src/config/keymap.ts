@@ -11,7 +11,7 @@ export interface KeyMap {
   pause: string;
   mute: string;
   speed: string;
-  idleWorker: string;
+  idleGeneralist: string;
   selectArmy: string;
   centerSelection: string;
   cycleBuildings: string;
@@ -33,7 +33,7 @@ export const DEFAULT_KEYMAP: KeyMap = {
   pause: 'p',
   mute: 'm',
   speed: 'f',
-  idleWorker: '.',
+  idleGeneralist: '.',
   selectArmy: ',',
   centerSelection: ' ',
   cycleBuildings: 'tab',
@@ -59,7 +59,7 @@ function deepCopyKeymap(keymap: KeyMap): KeyMap {
     pause: keymap.pause,
     mute: keymap.mute,
     speed: keymap.speed,
-    idleWorker: keymap.idleWorker,
+    idleGeneralist: keymap.idleGeneralist,
     selectArmy: keymap.selectArmy,
     centerSelection: keymap.centerSelection,
     cycleBuildings: keymap.cycleBuildings,
@@ -87,7 +87,7 @@ export function setKeymap(keymap: Partial<KeyMap>): void {
   if (keymap.pause !== undefined) merged.pause = keymap.pause;
   if (keymap.mute !== undefined) merged.mute = keymap.mute;
   if (keymap.speed !== undefined) merged.speed = keymap.speed;
-  if (keymap.idleWorker !== undefined) merged.idleWorker = keymap.idleWorker;
+  if (keymap.idleGeneralist !== undefined) merged.idleGeneralist = keymap.idleGeneralist;
   if (keymap.selectArmy !== undefined) merged.selectArmy = keymap.selectArmy;
   if (keymap.centerSelection !== undefined) merged.centerSelection = keymap.centerSelection;
   if (keymap.cycleBuildings !== undefined) merged.cycleBuildings = keymap.cycleBuildings;
@@ -154,7 +154,7 @@ function isValidPartialKeyMap(obj: any): boolean {
   if (obj.pause !== undefined && typeof obj.pause !== 'string') return false;
   if (obj.mute !== undefined && typeof obj.mute !== 'string') return false;
   if (obj.speed !== undefined && typeof obj.speed !== 'string') return false;
-  if (obj.idleWorker !== undefined && typeof obj.idleWorker !== 'string') return false;
+  if (obj.idleGeneralist !== undefined && typeof obj.idleGeneralist !== 'string') return false;
   if (obj.selectArmy !== undefined && typeof obj.selectArmy !== 'string') return false;
   if (obj.centerSelection !== undefined && typeof obj.centerSelection !== 'string') return false;
   if (obj.cycleBuildings !== undefined && typeof obj.cycleBuildings !== 'string') return false;

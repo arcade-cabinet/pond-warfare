@@ -12,7 +12,7 @@ import { SPEED_LEVELS } from '@/constants';
 import { Selectable, UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
 import { cycleStanceForSelection } from '@/game/input-setup';
-import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
+import { hasPlayerUnitsSelected, selectArmy, selectIdleGeneralist } from '@/input/selection';
 import { setColorBlindMode } from '@/rendering/pixi-app';
 import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
@@ -71,9 +71,9 @@ export function selectAllUnits(): void {
   game.syncUIStore();
 }
 
-/** Cycle through idle workers. */
-export function cycleIdleWorker(): void {
-  selectIdleWorker(game.world);
+/** Cycle through idle Mudpaws/generalists. */
+export function cycleIdleGeneralist(): void {
+  selectIdleGeneralist(game.world);
   game.syncUIStore();
 }
 

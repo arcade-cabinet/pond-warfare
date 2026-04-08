@@ -5,7 +5,7 @@
  */
 
 export { issueContextCommand } from './selection/commands';
-export { selectArmy, selectIdleWorker } from './selection/group-select';
+export { selectArmy, selectIdleGeneralist } from './selection/group-select';
 export {
   cancelTrain,
   canPlaceBuilding,

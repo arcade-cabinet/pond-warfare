@@ -13,6 +13,6 @@ export {
   issueContextCommand,
   placeBuilding,
   selectArmy,
-  selectIdleWorker,
+  selectIdleGeneralist,
   train,
 } from './selection';

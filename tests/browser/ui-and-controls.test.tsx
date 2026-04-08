@@ -596,11 +596,11 @@ describe('UI panels and keyboard controls', () => {
   });
 
   // ======================================================================
-  // 16. Keyboard period (.) cycles idle workers
+  // 16. Keyboard period (.) cycles idle Mudpaws
   // ======================================================================
 
-  describe('16. Keyboard period cycles idle workers', () => {
-    it('pressing . selects an idle worker', async () => {
+  describe('16. Keyboard period cycles idle Mudpaws', () => {
+    it('pressing . selects an idle Mudpaw', async () => {
       await deselectAll();
       await delay(100);
 
@@ -615,8 +615,8 @@ describe('UI panels and keyboard controls', () => {
       pressKey('.');
       await delay(200);
 
-      // Should have selected something (if idle workers exist)
-      if (store.idleWorkerCount.value > 0 || mudpaws.some(
+      // Should have selected something (if idle Mudpaws exist)
+      if (store.idleGeneralistCount.value > 0 || mudpaws.some(
         (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
       )) {
         expect(game.world.selection.length).toBeGreaterThan(0);

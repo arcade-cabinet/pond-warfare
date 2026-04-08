@@ -84,7 +84,7 @@ export interface GameWorld {
   // Input state
   placingBuilding: string | null;
   attackMoveMode: boolean;
-  idleWorkerIdx: number;
+  idleGeneralistIdx: number;
   specialistAssignments: Map<number, SpecialistAssignment>;
   pendingSpecialistAssignment: PendingSpecialistAssignment | null;
   specialistBlueprintCaps: Record<string, number>;

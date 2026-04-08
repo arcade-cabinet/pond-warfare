@@ -104,7 +104,7 @@ export function generateVerticalMapLayout(
 
   // Rare node spawning: keep prestige bonus nodes in the player's accessible
   // half of the map so the unlock accelerates economy instead of baiting
-  // workers into the hostile top row.
+  // Mudpaws into the hostile top row.
   if (options.hasRareResourceAccess) {
     const rarePanels = activePanels.filter((panelId) => panelGrid.getPanelDef(panelId).row === 1);
     for (const panelId of rarePanels) {

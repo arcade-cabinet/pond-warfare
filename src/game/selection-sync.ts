@@ -27,13 +27,13 @@ import * as store from '@/ui/store';
 
 /**
  * Sync the selection info portion of the UI store.
- * @param idleWorkers - idle worker count (computed by population-sync)
+ * @param idleGeneralists - idle Mudpaw/generalist count (computed by population-sync)
  * @param armyUnits - army unit count (computed by population-sync)
  * @param maxFoodCap - max food capacity (computed by population-sync)
  */
 export function syncSelectionInfo(
   world: GameWorld,
-  idleWorkers: number,
+  idleGeneralists: number,
   armyUnits: number,
   maxFoodCap: number,
 ): void {
@@ -46,7 +46,7 @@ export function syncSelectionInfo(
     store.selectionNameColor.value = '';
     store.selectionShowHpBar.value = false;
     store.selectionIsMulti.value = false;
-    store.selectionStatsHtml.value = `Idle: ${idleWorkers} | Army: ${armyUnits} | Pop: ${w.resources.food}/${maxFoodCap}`;
+    store.selectionStatsHtml.value = `Idle Mudpaws: ${idleGeneralists} | Army: ${armyUnits} | Pop: ${w.resources.food}/${maxFoodCap}`;
     store.selectionDesc.value = '';
     store.selectionSpriteData.value = null;
     store.selectionKills.value = 0;

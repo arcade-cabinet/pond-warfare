@@ -5,7 +5,7 @@
  *
  * WASD/arrow camera pan, Escape (cancel placement/attack-move/deselect),
  * A (attack-move mode), H (halt), Ctrl+1-9 (save groups), 1-9 (recall groups),
- * M (mute), F (speed cycle), . (idle worker), , (army select), Space (center
+ * M (mute), F (speed cycle), . (idle Mudpaw), , (army select), Space (center
  * on selection), Tab (cycle buildings), Q/W/E/R (action hotkeys).
  */
 
@@ -18,7 +18,7 @@ import { fpsCounterVisible } from '@/ui/store';
 export interface KeyboardCallbacks {
   onToggleMute: () => void;
   onCycleSpeed: () => void;
-  onSelectIdleWorker: () => void;
+  onSelectIdleGeneralist: () => void;
   onSelectArmy: () => void;
   onUpdateUI: () => void;
   onPlaySound: (name: 'selectUnit' | 'selectBuild' | 'click') => void;
@@ -196,8 +196,8 @@ export class KeyboardHandler {
     // Speed (F)
     if (k === keymap.speed) this.cb.onCycleSpeed();
 
-    // Period for idle worker
-    if (k === keymap.idleWorker) this.cb.onSelectIdleWorker();
+    // Period for idle Mudpaw/generalist
+    if (k === keymap.idleGeneralist) this.cb.onSelectIdleGeneralist();
 
     // Comma for army select
     if (k === keymap.selectArmy) this.cb.onSelectArmy();

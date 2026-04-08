@@ -36,7 +36,7 @@ describe('DEFAULT_KEYMAP', () => {
       'pause',
       'mute',
       'speed',
-      'idleWorker',
+      'idleGeneralist',
       'selectArmy',
       'centerSelection',
       'cycleBuildings',

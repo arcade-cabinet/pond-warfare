@@ -72,7 +72,7 @@ export const COMMANDERS: CommanderDef[] = [
     id: 'sage',
     name: 'Otter Sage',
     title: 'The Sage',
-    auraDesc: '+25% gather rate to nearby workers',
+    auraDesc: '+25% gather rate to nearby Mudpaws',
     passiveDesc: 'Mudpaws +10% gather rate',
     auraDamageBonus: 0,
     auraSpeedBonus: 0,

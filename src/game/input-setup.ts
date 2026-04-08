@@ -33,7 +33,7 @@ import {
   issueContextCommand,
   placeBuilding,
   selectArmy,
-  selectIdleWorker,
+  selectIdleGeneralist,
 } from '@/input/selection';
 import { triggerCommandPulse } from '@/rendering/animations';
 import type { ReplayRecorder } from '@/replay';
@@ -56,8 +56,8 @@ export function buildKeyboardCallbacks(deps: InputSetupDeps): KeyboardCallbacks 
       store.muted.value = audio.muted;
     },
     onCycleSpeed: () => cycleSpeed(),
-    onSelectIdleWorker: () => {
-      selectIdleWorker(world);
+    onSelectIdleGeneralist: () => {
+      selectIdleGeneralist(world);
       syncUIStore();
     },
     onSelectArmy: () => {

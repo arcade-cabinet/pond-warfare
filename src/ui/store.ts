@@ -77,7 +77,6 @@ export const baseUnderAttack = signal(false);
 export const baseThreatCount = signal(0);
 
 // ---- Counts ----
-export const idleWorkerCount = signal(0);
 export const armyCount = signal(0);
 
 /** Per-role idle unit counts for contextual auto-behavior menu */

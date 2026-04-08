@@ -70,7 +70,7 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [MUDPAW_KIND]: 1.5, // Targets economy
     },
     [EntityKind.FlyingHeron]: {
-      [MUDPAW_KIND]: 1.5, // Harasses workers
+      [MUDPAW_KIND]: 1.5, // Harasses Mudpaws
       [EntityKind.Shieldbearer]: 0.5, // Terrible vs tanks
     },
     [EntityKind.Tower]: {

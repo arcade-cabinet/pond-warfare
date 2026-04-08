@@ -128,7 +128,7 @@ export function createGameWorld(): GameWorld {
     gameRng: new SeededRandom(defaultSeed ^ 0x9e3779b9),
     placingBuilding: null,
     attackMoveMode: false,
-    idleWorkerIdx: 0,
+    idleGeneralistIdx: 0,
     specialistAssignments: new Map(),
     pendingSpecialistAssignment: null,
     specialistBlueprintCaps: {},
