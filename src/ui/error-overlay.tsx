@@ -21,14 +21,8 @@ import { restartMountedGameSession } from '@/game/shell-session';
 import * as store from '@/ui/store';
 import { Frame9Slice } from './components/frame';
 
-/** Fatal error modal — blocks the screen until dismissed. */
-function FatalErrorModal({
-  error,
-  onDismiss,
-}: {
-  error: Error;
-  onDismiss: () => void;
-}) {
+/** Fatal error modal — blocks the screen until the session is safely recovered. */
+function FatalErrorModal({ error }: { error: Error }) {
   const handleRecovery = () => {
     clearFatalError();
     if (store.menuState.value === 'playing') {
@@ -47,6 +41,9 @@ function FatalErrorModal({
           <div class="p-6">
             <h2 class="font-title text-2xl text-[var(--pw-enemy)] mb-4">Fatal Error</h2>
             <p class="font-game text-[var(--pw-text-primary)] mb-2">{error.message}</p>
+            <p class="font-game text-xs text-[var(--pw-text-muted)]">
+              The current session cannot continue until it is safely restarted.
+            </p>
             {error.stack && (
               <pre class="font-numbers text-[10px] text-[var(--pw-text-muted)] bg-black/40 p-3 rounded mt-2 max-h-40 overflow-auto whitespace-pre-wrap">
                 {error.stack}
@@ -59,13 +56,6 @@ function FatalErrorModal({
                 onClick={handleRecovery}
               >
                 {store.menuState.value === 'playing' ? 'Retry Session' : 'Return to Menu'}
-              </button>
-              <button
-                type="button"
-                class="hud-btn px-4 py-2 min-h-[44px] font-heading text-sm"
-                onClick={onDismiss}
-              >
-                Dismiss
               </button>
             </div>
           </div>
@@ -127,15 +117,7 @@ export function ErrorOverlay() {
   return (
     <>
       {/* Fatal error modal */}
-      {fatalErr && (
-        <FatalErrorModal
-          error={fatalErr}
-          onDismiss={() => {
-            clearFatalError();
-            setFatalErr(null);
-          }}
-        />
-      )}
+      {fatalErr && <FatalErrorModal error={fatalErr} />}
 
       {/* Error toasts (bottom-right corner) */}
       {toasts.length > 0 && (
