@@ -64,6 +64,16 @@ describe('GatherEvaluator', () => {
 
   beforeEach(() => {
     store.unitRoster.value = [];
+    store.buildingRoster.value = [];
+    store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
+    store.waveCountdown.value = -1;
+    store.fish.value = 200;
+    store.logs.value = 200;
+    store.rocks.value = 0;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 1;
   });
 
   it('returns 0 when no idle Mudpaws', () => {
@@ -98,6 +108,25 @@ describe('GatherEvaluator', () => {
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.44);
+  });
+
+  it('retasks active Mudpaws for the first tower budget even when none are idle', () => {
+    storeV3.progressionLevel.value = 6;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-rocks', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
+      ]),
+    ];
+    store.fish.value = 80;
+    store.logs.value = 70;
+    store.rocks.value = 0;
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.89);
   });
 });
 

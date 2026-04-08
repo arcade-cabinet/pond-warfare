@@ -13,7 +13,7 @@ import * as storeV3 from '@/ui/store-v3';
 import { AttackGoal, countAvailableAttackers, MIN_ATTACK_ARMY } from './goals/attack-goal';
 import { BuildGoal } from './goals/build-goal';
 import { DefendGoal } from './goals/defend-goal';
-import { findIdleMudpaws, GatherGoal } from './goals/gather-goal';
+import { findIdleMudpaws, GatherGoal, needsGatherRebalance } from './goals/gather-goal';
 import { TrainGoal } from './goals/train-goal';
 import type { Governor } from './governor';
 import { getGovernorCombatUnits, getGovernorGatherUnits } from './roster-units';
@@ -117,7 +117,14 @@ function canAffordBuild(kind: EntityKind): boolean {
 export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     const idle = findIdleMudpaws();
-    if (idle.length === 0) return 0;
+    if (idle.length === 0) {
+      if (!needsGatherRebalance()) return 0;
+      const towerFollowUpActive =
+        storeV3.progressionLevel.value >= 6 &&
+        hasCompletedBuilding(EntityKind.Armory) &&
+        !hasBuilding(EntityKind.Tower);
+      return towerFollowUpActive ? 0.89 : 0.62;
+    }
     if (proactiveTowerWindowReady()) {
       return 0.42 + Math.min(idle.length * 0.02, 0.04);
     }

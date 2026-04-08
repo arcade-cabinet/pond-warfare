@@ -24,6 +24,15 @@ const GATHER_TASKS = [
 
 const PREFERRED_GATHER_DISTANCE_SQ = 450 * 450;
 type GatherTask = (typeof GATHER_TASKS)[number]['task'];
+type GatherPlan = {
+  tasks: GatherTask[];
+  rotateAssignments: boolean;
+  hardFocusPrimary: boolean;
+};
+
+function isGatherTask(task: string): task is GatherTask {
+  return GATHER_TASKS.some((entry) => entry.task === task);
+}
 
 function hasBuilding(kind: EntityKind): boolean {
   return store.buildingRoster.value.some((building) => building.kind === kind);
@@ -44,7 +53,7 @@ function currentStage(): number {
 function prioritizeBuildResources(
   kind: EntityKind,
   fallback: GatherTask[],
-): { tasks: GatherTask[]; rotateAssignments: boolean; hardFocusPrimary: boolean } {
+): GatherPlan {
   const def = ENTITY_DEFS[kind];
   const fishCost = def.fishCost ?? 0;
   const logCost = def.logCost ?? 0;
@@ -82,7 +91,7 @@ function prioritizeBuildResources(
   return { tasks: fallback, rotateAssignments: true, hardFocusPrimary: false };
 }
 
-function preferredGatherPlan(): { tasks: GatherTask[]; rotateAssignments: boolean; hardFocusPrimary: boolean } {
+function preferredGatherPlan(): GatherPlan {
   const sorted = [...GATHER_TASKS].sort((a, b) => a.signal() - b.signal()).map((entry) => entry.task);
 
   if (currentStage() >= 6 && !hasBuilding(EntityKind.Armory)) {
@@ -103,6 +112,53 @@ function preferredGatherPlan(): { tasks: GatherTask[]; rotateAssignments: boolea
   return { tasks: sorted, rotateAssignments: true, hardFocusPrimary: false };
 }
 
+function gatherAssignableMudpaws(plan: GatherPlan): RosterUnit[] {
+  const gatherers = getGovernorGatherUnits(store.unitRoster.value).filter(
+    (unit) => unit.task === 'idle' || isGatherTask(unit.task),
+  );
+  if (!plan.hardFocusPrimary) {
+    return gatherers.filter((unit) => unit.task === 'idle' && !unit.hasOverride);
+  }
+  return gatherers;
+}
+
+export function needsGatherRebalance(): boolean {
+  const plan = preferredGatherPlan();
+  if (!plan.hardFocusPrimary) return false;
+
+  const gatherers = gatherAssignableMudpaws(plan);
+  if (gatherers.length === 0) return false;
+
+  const allowedTasks = new Set(plan.tasks);
+  if (
+    gatherers.some(
+      (unit) => unit.task !== 'idle' && isGatherTask(unit.task) && !allowedTasks.has(unit.task),
+    )
+  ) {
+    return true;
+  }
+
+  if (!plan.rotateAssignments) {
+    const primary = plan.tasks[0];
+    return gatherers.some((unit) => unit.task !== primary);
+  }
+
+  const primary = plan.tasks[0];
+  const secondary = plan.tasks[1];
+  const primaryWeight = plan.tasks.filter((task) => task === primary).length;
+  const targetPrimaryCount = Math.max(
+    1,
+    Math.round((gatherers.length * primaryWeight) / plan.tasks.length),
+  );
+
+  const currentPrimaryCount = gatherers.filter((unit) => unit.task === primary).length;
+  const currentSecondaryCount = gatherers.filter((unit) => unit.task === secondary).length;
+  return (
+    currentPrimaryCount < targetPrimaryCount ||
+    (gatherers.length >= 2 && currentSecondaryCount === 0)
+  );
+}
+
 /**
  * Find truly idle Mudpaws — those not yet assigned to any task.
  * Mudpaws with a TaskOverride are between gather trips (idle momentarily
@@ -117,8 +173,9 @@ export function findIdleMudpaws(): RosterUnit[] {
 
 export class GatherGoal extends Goal {
   override activate(): void {
-    const idle = findIdleMudpaws();
-    if (idle.length === 0) {
+    const plan = preferredGatherPlan();
+    const gatherers = gatherAssignableMudpaws(plan);
+    if (gatherers.length === 0) {
       this.status = Goal.STATUS.COMPLETED;
       return;
     }
@@ -126,26 +183,26 @@ export class GatherGoal extends Goal {
     // Assign each idle Mudpaw to the lowest-stockpiled resource, but prefer
     // nearby available nodes so early-stage layouts do not send Mudpaws on
     // dead-end marches toward distant or absent resource types. When the
-    // next build is resource-gated, focus that bottleneck instead of rotating.
-    const plan = preferredGatherPlan();
-    for (let i = 0; i < idle.length; i++) {
+    // next build is resource-gated, retask the active economy instead of
+    // waiting for every Mudpaw to go fully idle first.
+    for (let i = 0; i < gatherers.length; i++) {
       let fallbackTask: (typeof GATHER_TASKS)[number]['task'] | null = null;
       let fallbackDistSq = Infinity;
 
       const offset = plan.rotateAssignments ? i : 0;
       for (let attempt = 0; attempt < plan.tasks.length; attempt += 1) {
         const task = plan.tasks[(offset + attempt) % plan.tasks.length];
-        const candidate = findNearestGatherTaskTarget(game.world, idle[i].eid, task);
+        const candidate = findNearestGatherTaskTarget(game.world, gatherers[i].eid, task);
         if (candidate == null || candidate.target === -1) continue;
 
         if (candidate.distanceSq <= PREFERRED_GATHER_DISTANCE_SQ) {
-          dispatchTaskOverride(game.world, idle[i].eid, task);
+          dispatchTaskOverride(game.world, gatherers[i].eid, task);
           fallbackTask = null;
           break;
         }
 
         if (plan.hardFocusPrimary && attempt === 0) {
-          dispatchTaskOverride(game.world, idle[i].eid, task);
+          dispatchTaskOverride(game.world, gatherers[i].eid, task);
           fallbackTask = null;
           break;
         }
@@ -157,7 +214,7 @@ export class GatherGoal extends Goal {
       }
 
       if (fallbackTask !== null) {
-        dispatchTaskOverride(game.world, idle[i].eid, fallbackTask);
+        dispatchTaskOverride(game.world, gatherers[i].eid, fallbackTask);
       }
     }
 

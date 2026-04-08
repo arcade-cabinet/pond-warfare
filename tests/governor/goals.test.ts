@@ -352,6 +352,44 @@ describe('GatherGoal', () => {
     expect(targets.filter((target) => target === fishNode)).toHaveLength(2);
   });
 
+  it('retasks already-gathering Mudpaws away from rocks for the first tower budget', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const eid2 = createUnit(MUDPAW_KIND, 115, 105);
+    const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+    const logNode = createResource(EntityKind.Cattail, ResourceType.Logs, 145, 125);
+    const rockNode = createResource(EntityKind.PearlBed, ResourceType.Rocks, 160, 140);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(eid1, MUDPAW_KIND, 'gathering-rocks'),
+        rosterUnit(eid2, MUDPAW_KIND, 'gathering-fish'),
+      ]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.baseUnderAttack.value = false;
+    store.fish.value = 80;
+    store.logs.value = 70;
+    store.rocks.value = 0;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    const targets = [UnitStateMachine.targetEntity[eid1], UnitStateMachine.targetEntity[eid2]];
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(targets).toContain(fishNode);
+    expect(targets).toContain(logNode);
+    expect(targets).not.toContain(rockNode);
+  });
+
   it('completes immediately with no idle Mudpaws', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 
