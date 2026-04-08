@@ -39,7 +39,7 @@ import { resumeGatherOverride, retargetGatherOverride } from './gathering/gather
 import { applyPassiveIncome } from './gathering/passive-income';
 
 export function gatheringSystem(world: GameWorld): void {
-  const gatherers = query(world.ecs, [
+  const gatheringUnits = query(world.ecs, [
     Position,
     UnitStateMachine,
     Health,
@@ -57,8 +57,8 @@ export function gatheringSystem(world: GameWorld): void {
     Building,
   ]);
 
-  for (let i = 0; i < gatherers.length; i++) {
-    const eid = gatherers[i];
+  for (let i = 0; i < gatheringUnits.length; i++) {
+    const eid = gatheringUnits[i];
     if (Health.current[eid] <= 0) continue;
 
     const state = UnitStateMachine.state[eid] as UnitState;
@@ -245,7 +245,7 @@ export function gatheringSystem(world: GameWorld): void {
       // Find return building: Lodge for player, nearest PredatorNest for enemy
       let returnBuilding = -1;
       if (faction === Faction.Enemy) {
-        // Enemy gatherers return to nearest PredatorNest
+        // Enemy harvesters return to the nearest Predator Nest
         let minDist = Infinity;
         const ex = Position.x[eid];
         const ey = Position.y[eid];
@@ -262,7 +262,7 @@ export function gatheringSystem(world: GameWorld): void {
           }
         }
       } else {
-        // Player gatherers return to nearest completed Lodge
+        // Player Mudpaws return to the nearest completed Lodge
         let minDist = Infinity;
         const ex = Position.x[eid];
         const ey = Position.y[eid];

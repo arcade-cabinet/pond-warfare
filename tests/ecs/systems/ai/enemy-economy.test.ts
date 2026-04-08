@@ -1,8 +1,8 @@
 /**
  * Enemy Economy System Tests
  *
- * Validates gatherer spawning from nests, resource limits, peace timer
- * gating, max gatherer caps, and resource deduction on spawn.
+ * Validates harvester spawning from nests, resource limits, peace timer
+ * gating, max harvester caps, and resource deduction on spawn.
  *
  * NOTE: bitECS SoA components are global typed arrays, so entities from
  * parallel test files can pollute queries. We create minimal entities and
@@ -13,9 +13,9 @@ import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
-  ENEMY_GATHERER_COST,
-  ENEMY_GATHERER_SPAWN_INTERVAL,
-  ENEMY_MAX_GATHERERS_PER_NEST,
+  ENEMY_HARVESTER_COST,
+  ENEMY_HARVESTER_SPAWN_INTERVAL,
+  ENEMY_MAX_HARVESTERS_PER_NEST,
 } from '@/constants';
 import {
   Building,
@@ -113,15 +113,15 @@ describe('enemyEconomyTick', () => {
   beforeEach(() => {
     world = createGameWorld();
     world.peaceTimer = 0;
-    world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL;
+    world.frameCount = ENEMY_HARVESTER_SPAWN_INTERVAL;
     world.enemyResources.fish = 10000;
     world.enemyResources.logs = 10000;
   });
 
   describe('peace timer gating', () => {
     it('should not spawn harvester units during peace period', () => {
-      world.peaceTimer = ENEMY_GATHERER_SPAWN_INTERVAL + 100;
-      world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL;
+      world.peaceTimer = ENEMY_HARVESTER_SPAWN_INTERVAL + 100;
+      world.frameCount = ENEMY_HARVESTER_SPAWN_INTERVAL;
 
       createEnemyNest(world, 500, 500);
       createResourceNode(world, 600, 500);
@@ -139,12 +139,12 @@ describe('enemyEconomyTick', () => {
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
 
     it('should spawn when frameCount exactly equals peaceTimer', () => {
-      world.peaceTimer = ENEMY_GATHERER_SPAWN_INTERVAL;
-      world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL;
+      world.peaceTimer = ENEMY_HARVESTER_SPAWN_INTERVAL;
+      world.frameCount = ENEMY_HARVESTER_SPAWN_INTERVAL;
 
       createEnemyNest(world, 500, 500);
       createResourceNode(world, 600, 500);
@@ -153,7 +153,7 @@ describe('enemyEconomyTick', () => {
       enemyEconomyTick(world);
 
       // frameCount === peaceTimer means isPeaceful is false (frameCount < peaceTimer is false)
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
   });
 
@@ -164,7 +164,7 @@ describe('enemyEconomyTick', () => {
       createEnemyNest(world, nestX, nestY);
       createResourceNode(world, 600, 500);
 
-      for (let i = 0; i < ENEMY_MAX_GATHERERS_PER_NEST; i++) {
+      for (let i = 0; i < ENEMY_MAX_HARVESTERS_PER_NEST; i++) {
         createEnemyHarvester(world, nestX + i * 10, nestY);
       }
 
@@ -186,7 +186,7 @@ describe('enemyEconomyTick', () => {
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
 
     it('should not count harvester units far from the nest', () => {
@@ -195,8 +195,8 @@ describe('enemyEconomyTick', () => {
       createEnemyNest(world, nestX, nestY);
       createResourceNode(world, 600, 500);
 
-      // Place max harvester units far from the nest (beyond ENEMY_GATHERER_RADIUS)
-      for (let i = 0; i < ENEMY_MAX_GATHERERS_PER_NEST; i++) {
+      // Place max harvester units far from the nest (beyond ENEMY_HARVESTER_RADIUS)
+      for (let i = 0; i < ENEMY_MAX_HARVESTERS_PER_NEST; i++) {
         createEnemyHarvester(world, nestX + 2000, nestY + 2000);
       }
 
@@ -204,7 +204,7 @@ describe('enemyEconomyTick', () => {
       enemyEconomyTick(world);
 
       // Distant harvester units should not be counted, so a new one spawns
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
   });
 
@@ -216,11 +216,11 @@ describe('enemyEconomyTick', () => {
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
 
-    it('should not spawn gatherer when fish is below cost', () => {
-      world.enemyResources.fish = ENEMY_GATHERER_COST - 1;
+    it('should not spawn harvester when fish is below cost', () => {
+      world.enemyResources.fish = ENEMY_HARVESTER_COST - 1;
 
       createEnemyNest(world, 500, 500);
       createResourceNode(world, 600, 500);
@@ -240,14 +240,14 @@ describe('enemyEconomyTick', () => {
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      // Each nest should spawn one gatherer: 2 * ENEMY_GATHERER_COST deducted
-      expect(world.enemyResources.fish).toBe(fishBefore - 2 * ENEMY_GATHERER_COST);
+      // Each nest should spawn one harvester: 2 * ENEMY_HARVESTER_COST deducted
+      expect(world.enemyResources.fish).toBe(fishBefore - 2 * ENEMY_HARVESTER_COST);
     });
   });
 
   describe('spawn interval', () => {
     it('should not spawn when frameCount is not a multiple of spawn interval', () => {
-      world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL + 1;
+      world.frameCount = ENEMY_HARVESTER_SPAWN_INTERVAL + 1;
 
       createEnemyNest(world, 500, 500);
       createResourceNode(world, 600, 500);
@@ -259,7 +259,7 @@ describe('enemyEconomyTick', () => {
     });
 
     it('should spawn on exact spawn interval multiples', () => {
-      world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL * 3;
+      world.frameCount = ENEMY_HARVESTER_SPAWN_INTERVAL * 3;
 
       createEnemyNest(world, 500, 500);
       createResourceNode(world, 600, 500);
@@ -267,12 +267,12 @@ describe('enemyEconomyTick', () => {
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
   });
 
   describe('resource node requirements', () => {
-    it('should not spawn gatherer when no resource nodes exist', () => {
+    it('should not spawn harvester when no resource nodes exist', () => {
       createEnemyNest(world, 500, 500);
       // No resource node created
 
@@ -282,7 +282,7 @@ describe('enemyEconomyTick', () => {
       expect(world.enemyResources.fish).toBe(fishBefore);
     });
 
-    it('should not spawn gatherer when all resource nodes are depleted', () => {
+    it('should not spawn harvester when all resource nodes are depleted', () => {
       createEnemyNest(world, 500, 500);
       const resEid = createResourceNode(world, 600, 500);
       Resource.amount[resEid] = 0; // Depleted
@@ -297,8 +297,8 @@ describe('enemyEconomyTick', () => {
   describe('difficulty scaling', () => {
     it('should have shorter spawn interval on hard difficulty', () => {
       world.difficulty = 'hard';
-      // Hard spawn interval = floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.75)
-      const hardInterval = Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.75);
+      // Hard spawn interval = floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 0.75)
+      const hardInterval = Math.floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 0.75);
       world.frameCount = hardInterval;
 
       createEnemyNest(world, 500, 500);
@@ -307,13 +307,13 @@ describe('enemyEconomyTick', () => {
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
 
     it('should have longer spawn interval on easy difficulty', () => {
       world.difficulty = 'easy';
-      // Easy spawn interval = floor(ENEMY_GATHERER_SPAWN_INTERVAL * 1.5)
-      const easyInterval = Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 1.5);
+      // Easy spawn interval = floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 1.5)
+      const easyInterval = Math.floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 1.5);
       world.frameCount = easyInterval;
 
       createEnemyNest(world, 500, 500);
@@ -322,7 +322,7 @@ describe('enemyEconomyTick', () => {
       const fishBefore = world.enemyResources.fish;
       enemyEconomyTick(world);
 
-      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_GATHERER_COST);
+      expect(world.enemyResources.fish).toBe(fishBefore - ENEMY_HARVESTER_COST);
     });
   });
 });

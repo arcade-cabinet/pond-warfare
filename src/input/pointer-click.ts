@@ -95,7 +95,7 @@ export function handleClick(
       const wasAlreadySelected = world.selection.includes(clicked);
 
       // When re-tapping an already-selected unit, check for a resource
-      // underneath. If the selection contains gatherers, prefer gathering
+      // underneath. If the selection contains generalists, prefer gathering
       // over opening the radial menu -- this is the core gameplay loop.
       if (wasAlreadySelected && !isShiftDown()) {
         const resourceUnder = cb.getResourceAt(mouse.worldX, mouse.worldY);

@@ -252,7 +252,7 @@ export function spawnEntity(
     Veterancy.rank[eid] = 0;
     Veterancy.appliedRank[eid] = 0;
 
-    // Stance: gatherers/healers default Defensive, combat units Aggressive
+    // Stance: generalists/support units default Defensive, combat units Aggressive
     addComponent(world.ecs, eid, Stance);
     Stance.mode[eid] =
       isMudpawKind(kind) || kind === MEDIC_KIND ? StanceMode.Defensive : StanceMode.Aggressive;

@@ -303,7 +303,7 @@ describe('Pointer Interactions (tap-only)', () => {
     expect(cb.issueContextCommand).not.toHaveBeenCalledWith(resource);
   });
 
-  it('selected specialist gatherers do not trigger the manual gather shortcut', () => {
+  it('selected specialist harvesters do not trigger the manual gather shortcut', () => {
     const world = createGameWorld();
     const entities = new Map<string, number>();
     const specialist = createUnit(world, 200, 200, MUDPAW_KIND, Faction.Player);

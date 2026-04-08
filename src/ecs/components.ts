@@ -73,7 +73,7 @@ export const Resource = soa({
   amount: [] as number[],
 });
 
-// Carrying resource (for gatherers returning resources)
+// Carrying resource for units returning a harvested payload
 export const Carrying = soa({
   resourceType: [] as number[],
   resourceAmount: [] as number[],

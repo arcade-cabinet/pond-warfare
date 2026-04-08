@@ -162,7 +162,7 @@ describe('Enemy AI systems', () => {
 
       const harvestersBefore = getUnits(ENEMY_HARVESTER_KIND, Faction.Enemy).length;
 
-      // Wait for harvester spawn interval (ENEMY_GATHERER_SPAWN_INTERVAL=900 frames)
+      // Wait for harvester spawn interval (ENEMY_HARVESTER_SPAWN_INTERVAL=900 frames)
       // Give generous time for the AI to tick
       await waitFrames(2400);
 

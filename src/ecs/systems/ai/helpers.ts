@@ -261,7 +261,7 @@ export function startEnemyConstruction(world: GameWorld, buildingEid: number): v
     const dx = Position.x[eid] - bx;
     const dy = Position.y[eid] - by;
     const dSq = dx * dx + dy * dy;
-    if (dSq > 600 * 600) continue; // Only nearby gatherers
+    if (dSq > 600 * 600) continue; // Only nearby harvesters
 
     UnitStateMachine.targetEntity[eid] = buildingEid;
     UnitStateMachine.targetX[eid] = bx;

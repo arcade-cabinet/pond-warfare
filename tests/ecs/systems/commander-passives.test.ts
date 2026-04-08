@@ -112,7 +112,7 @@ describe('commander passives', () => {
     trainingQueueSlots.clear();
   });
 
-  it('Sage: nearby gatherers receive the aura gather bonus', () => {
+  it('Sage: nearby Mudpaws receive the aura gather bonus', () => {
     world.commanderModifiers.auraGatherBonus = 0.25;
     const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
     const gatherer = createUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);

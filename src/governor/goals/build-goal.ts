@@ -80,11 +80,11 @@ export class BuildGoal extends Goal {
     w.placingBuilding = kindName;
 
     // Select a Mudpaw/generalist to be the builder (placeBuilding assigns them)
-    const gatherers = store.unitRoster.value
+    const generalists = store.unitRoster.value
       .flatMap((g) => g.units)
       .filter((u) => u.kind === MUDPAW_KIND);
-    if (gatherers.length > 0) {
-      w.selection = [gatherers[0].eid];
+    if (generalists.length > 0) {
+      w.selection = [generalists[0].eid];
     }
 
     // Place near the lodge, but keep wing buildings outside the lodge's own

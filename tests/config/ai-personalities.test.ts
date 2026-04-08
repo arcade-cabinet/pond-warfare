@@ -27,14 +27,14 @@ describe('AI Personality Differentiation', () => {
     expect(rush.minArmyForAttack).toBeLessThanOrEqual(3);
     expect(rush.towerBuildRate).toBe(0);
     expect(rush.expansionRate).toBe(0);
-    expect(rush.gathererRate).toBeLessThan(0.5);
+    expect(rush.harvesterRate).toBeLessThan(0.5);
     expect(rush.trainingPreference).toBe('melee');
   });
 
-  it('economic expands to 3+ nests with 2x gatherers', () => {
+  it('economic expands to 3+ nests with 2x harvesters', () => {
     const economic = AI_PERSONALITIES.economic;
     expect(economic.targetNestCount).toBeGreaterThanOrEqual(3);
-    expect(economic.gathererRate).toBeGreaterThanOrEqual(2.0);
+    expect(economic.harvesterRate).toBeGreaterThanOrEqual(2.0);
     expect(economic.expansionRate).toBeGreaterThanOrEqual(2.0);
     expect(economic.buildPriority).toBe('economy');
   });
@@ -44,7 +44,7 @@ describe('AI Personality Differentiation', () => {
     expect(balanced.attackThresholdMult).toBe(1.0);
     expect(balanced.towerBuildRate).toBe(1.0);
     expect(balanced.expansionRate).toBe(1.0);
-    expect(balanced.gathererRate).toBe(1.0);
+    expect(balanced.harvesterRate).toBe(1.0);
   });
 
   it('each personality has unique combination of values', () => {
@@ -59,7 +59,7 @@ describe('AI Personality Differentiation', () => {
         if (a.towerBuildRate !== b.towerBuildRate) differences++;
         if (a.expansionRate !== b.expansionRate) differences++;
         if (a.trainingPreference !== b.trainingPreference) differences++;
-        if (a.gathererRate !== b.gathererRate) differences++;
+        if (a.harvesterRate !== b.harvesterRate) differences++;
         if (a.minArmyForAttack !== b.minArmyForAttack) differences++;
         expect(differences).toBeGreaterThanOrEqual(3);
       }

@@ -23,10 +23,10 @@ export const STARTING_LOGS = 150; // Enough to build an Armory (120L) immediatel
 
 export const ENEMY_STARTING_FISH = 500;
 export const ENEMY_STARTING_LOGS = 200;
-export const ENEMY_GATHERER_SPAWN_INTERVAL = 900; // Faster early eco (was 1200)
-export const ENEMY_GATHERER_COST = 50;
-export const ENEMY_MAX_GATHERERS_PER_NEST = 4; // More gatherers for stronger eco
-export const ENEMY_GATHERER_RADIUS = 500;
+export const ENEMY_HARVESTER_SPAWN_INTERVAL = 900; // Faster early eco (was 1200)
+export const ENEMY_HARVESTER_COST = 50;
+export const ENEMY_MAX_HARVESTERS_PER_NEST = 4; // More harvesters for stronger eco
+export const ENEMY_HARVESTER_RADIUS = 500;
 
 // Enemy AI building construction
 export const ENEMY_BUILD_CHECK_INTERVAL = 1800; // Check every 30 seconds

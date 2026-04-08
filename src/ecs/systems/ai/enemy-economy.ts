@@ -9,10 +9,10 @@ import { hasComponent, query } from 'bitecs';
 import { resolvePersonality } from '@/config/ai-personalities';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
-  ENEMY_GATHERER_COST,
-  ENEMY_GATHERER_RADIUS,
-  ENEMY_GATHERER_SPAWN_INTERVAL,
-  ENEMY_MAX_GATHERERS_PER_NEST,
+  ENEMY_HARVESTER_COST,
+  ENEMY_HARVESTER_RADIUS,
+  ENEMY_HARVESTER_SPAWN_INTERVAL,
+  ENEMY_MAX_HARVESTERS_PER_NEST,
 } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
@@ -34,19 +34,19 @@ import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
 import { getEnemyNests } from './helpers';
 
-/** Get difficulty-adjusted enemy harvester spawn interval */
-function getGathererSpawnInterval(world: GameWorld): number {
+/** Get difficulty-adjusted enemy harvester spawn interval. */
+function getHarvesterSpawnInterval(world: GameWorld): number {
   switch (world.difficulty) {
     case 'easy':
-      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 1.5);
+      return Math.floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 1.5);
     case 'hard':
-      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.75);
+      return Math.floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 0.75);
     case 'nightmare':
-      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.5);
+      return Math.floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 0.5);
     case 'ultraNightmare':
-      return Math.floor(ENEMY_GATHERER_SPAWN_INTERVAL * 0.33);
+      return Math.floor(ENEMY_HARVESTER_SPAWN_INTERVAL * 0.33);
     default:
-      return ENEMY_GATHERER_SPAWN_INTERVAL;
+      return ENEMY_HARVESTER_SPAWN_INTERVAL;
   }
 }
 
@@ -54,7 +54,7 @@ function getGathererSpawnInterval(world: GameWorld): number {
 export function enemyEconomyTick(world: GameWorld): void {
   const isPeaceful = world.frameCount < world.peaceTimer;
   if (isPeaceful) return;
-  const spawnInterval = getGathererSpawnInterval(world);
+  const spawnInterval = getHarvesterSpawnInterval(world);
   if (world.frameCount % spawnInterval !== 0) return;
 
   const nestEids = getEnemyNests(world);
@@ -62,7 +62,7 @@ export function enemyEconomyTick(world: GameWorld): void {
   const resourceNodes = query(world.ecs, [Position, Resource, IsResource]);
 
   for (const nestEid of nestEids) {
-    if (world.enemyResources.fish < ENEMY_GATHERER_COST) continue;
+    if (world.enemyResources.fish < ENEMY_HARVESTER_COST) continue;
 
     const nx = Position.x[nestEid];
     const ny = Position.y[nestEid];
@@ -79,18 +79,18 @@ export function enemyEconomyTick(world: GameWorld): void {
       const dx = Position.x[u] - nx;
       const dy = Position.y[u] - ny;
       const dSq = dx * dx + dy * dy;
-      if (dSq < ENEMY_GATHERER_RADIUS * ENEMY_GATHERER_RADIUS) {
+      if (dSq < ENEMY_HARVESTER_RADIUS * ENEMY_HARVESTER_RADIUS) {
         harvesterCount++;
       }
     }
 
     // AI personality adjusts max harvester units per nest
     const personality = resolvePersonality(world.aiPersonality, world.frameCount);
-    const maxGatherers = Math.max(
+    const maxHarvesters = Math.max(
       1,
-      Math.round(ENEMY_MAX_GATHERERS_PER_NEST * personality.gathererRate),
+      Math.round(ENEMY_MAX_HARVESTERS_PER_NEST * personality.harvesterRate),
     );
-    if (harvesterCount >= Math.min(maxGatherers, personality.maxGatherersPerNest)) continue;
+    if (harvesterCount >= Math.min(maxHarvesters, personality.maxHarvestersPerNest)) continue;
 
     // Find nearest resource node
     let closestResource = -1;
@@ -119,7 +119,7 @@ export function enemyEconomyTick(world: GameWorld): void {
     triggerSpawnPop(gEid);
     spawnDustBurst(world, sx, sy);
 
-    world.enemyResources.fish -= ENEMY_GATHERER_COST;
+    world.enemyResources.fish -= ENEMY_HARVESTER_COST;
 
     UnitStateMachine.targetEntity[gEid] = closestResource;
     UnitStateMachine.targetX[gEid] = Position.x[closestResource];
