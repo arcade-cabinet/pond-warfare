@@ -245,19 +245,3 @@ export function drawDiver(d: DrawCtx): void {
   rect(4, 13, 3, 1, '#0284c7');
   rect(9, 13, 3, 1, '#0284c7');
 }
-
-/** Engineer -- brown otter with hammer for bridge building. */
-export function drawEngineer(d: DrawCtx): void {
-  drawOtterBase(d);
-  const { p, rect } = d;
-  // Tool belt across belly
-  rect(5, 8, 6, 1, '#92400e');
-  p(6, 8, '#f59e0b');
-  // Hammer in right hand
-  rect(12, 4, 1, 5, '#92400e');
-  rect(11, 3, 3, 2, '#6b7280');
-  p(12, 3, '#9ca3af');
-  // Hard hat
-  rect(5, 1, 6, 2, '#f59e0b');
-  rect(4, 2, 8, 1, '#d97706');
-}

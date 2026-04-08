@@ -217,7 +217,6 @@ export function createGameWorld(): GameWorld {
     stealthAmbushReady: new Set(),
     wormBurrowTimers: new Map(),
     lastWormSpawnFrame: 0,
-    engineerBridges: [],
     // v2.0.0
     weather: createWeatherState(defaultSeed, 0),
     berserkerCombatFrames: new Map(),

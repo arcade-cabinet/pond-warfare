@@ -47,7 +47,6 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `collisionSystem` - Planck.js broadphase overlap resolution
    - `gatheringSystem` - Resource collection and dropoff (both factions)
    - `buildingSystem` - Construction progress and repair
-   - `engineerSystem` - Sapper siege mechanics
    - `combatSystem` - Tower auto-attack, idle aggro (10-frame scan), melee/ranged with damage multipliers, immediate retarget after kill
    - `fortificationTickSystem` - Fort slot towers attack nearest enemy in range
    - `commanderPassivesSystem` - Commander passive upkeep, Marshal/Shadowfang active-state cleanup, Stormcaller lightning

@@ -99,7 +99,6 @@ export interface AudioDelegateMethods {
   berserkerFury(worldX?: number): void;
   diverSubmerge(worldX?: number): void;
   diverEmerge(worldX?: number): void;
-  engineerBridge(worldX?: number): void;
   wormEmergence(worldX?: number): void;
   heronScreech(worldX?: number): void;
   // UI navigation sounds

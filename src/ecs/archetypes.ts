@@ -74,7 +74,7 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.Frog]: SpriteId.Frog,
   [EntityKind.Fish]: SpriteId.Fish,
   [EntityKind.Diver]: SpriteId.Diver,
-  [EntityKind.Engineer]: SpriteId.Engineer,
+  [EntityKind.ReservedUnit34]: SpriteId.ReservedSprite34,
   [EntityKind.Shaman]: SpriteId.Shaman,
   [EntityKind.BurrowingWorm]: SpriteId.BurrowingWorm,
   [EntityKind.FlyingHeron]: SpriteId.FlyingHeron,

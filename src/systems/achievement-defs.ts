@@ -24,7 +24,6 @@ export interface AchievementSnapshot {
   // v2.1.0 — extended stats for new achievements
   weatherTypesExperienced: number;
   warshipKills: number;
-  bridgesBuilt: number;
   diverAmbushKills: number;
   marketTrades: number;
   maxBerserkerKills: number;
@@ -216,12 +215,6 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     name: 'Naval Supremacy',
     desc: 'Destroy 5 enemy units with Warships',
     check: (s) => s.warshipKills >= 5,
-  },
-  {
-    id: 'bridge_builder',
-    name: 'Bridge Builder',
-    desc: 'Build 3 temporary bridges in one game',
-    check: (s) => s.bridgesBuilt >= 3,
   },
   {
     id: 'stealth_expert',

@@ -254,9 +254,6 @@ export interface GameWorld {
   wormBurrowTimers: Map<number, number>;
   lastWormSpawnFrame: number;
 
-  // Engineer temporary bridges
-  engineerBridges: { col: number; row: number; revertFrame: number; original: number }[];
-
   // --- v2.0.0 ---
   weather: WeatherState;
   berserkerCombatFrames: Map<number, number>;

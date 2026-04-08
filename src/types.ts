@@ -63,7 +63,7 @@ export enum EntityKind {
   Frog = 31,
   Fish = 32,
   Diver = 33,
-  Engineer = 34,
+  ReservedUnit34 = 34,
   Shaman = 35,
   BurrowingWorm = 36,
   FlyingHeron = 37,
@@ -145,7 +145,7 @@ export enum SpriteId {
   Frog = 31,
   Fish = 32,
   Diver = 33,
-  Engineer = 34,
+  ReservedSprite34 = 34,
   Shaman = 35,
   BurrowingWorm = 36,
   FlyingHeron = 37,
@@ -269,7 +269,6 @@ export interface TooltipData {
 export interface ExtendedStats {
   weatherTypesExperienced: number;
   warshipKills: number;
-  bridgesBuilt: number;
   diverAmbushKills: number;
   marketTrades: number;
   maxBerserkerKills: number;

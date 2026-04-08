@@ -40,7 +40,6 @@ describe('achievements', () => {
       // v2.1.0 fields
       weatherTypesExperienced: 0,
       warshipKills: 0,
-      bridgesBuilt: 0,
       diverAmbushKills: 0,
       marketTrades: 0,
       maxBerserkerKills: 0,
@@ -56,8 +55,8 @@ describe('achievements', () => {
     };
   }
 
-  it('defines exactly 40 achievements', () => {
-    expect(ACHIEVEMENTS).toHaveLength(40);
+  it('defines exactly 39 achievements', () => {
+    expect(ACHIEVEMENTS).toHaveLength(39);
   });
 
   it('all achievements have unique IDs', () => {
@@ -98,12 +97,6 @@ describe('achievements', () => {
     const ach = ACHIEVEMENTS.find((a) => a.id === 'naval_supremacy')!;
     expect(ach.check(makeSnapshot({ warshipKills: 4 }))).toBe(false);
     expect(ach.check(makeSnapshot({ warshipKills: 5 }))).toBe(true);
-  });
-
-  it('Bridge Builder requires 3 bridges', () => {
-    const ach = ACHIEVEMENTS.find((a) => a.id === 'bridge_builder')!;
-    expect(ach.check(makeSnapshot({ bridgesBuilt: 2 }))).toBe(false);
-    expect(ach.check(makeSnapshot({ bridgesBuilt: 3 }))).toBe(true);
   });
 
   it('Stealth Expert requires 5 diver ambush kills', () => {

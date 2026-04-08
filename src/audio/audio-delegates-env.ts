@@ -1,7 +1,7 @@
 /**
  * Audio Environment Delegates
  *
- * Weather, shrine, berserker, diver, engineer, worm, and heron sound
+ * Weather, shrine, berserker, diver, worm, and heron sound
  * delegates extracted from audio-delegates.ts for file size compliance.
  */
 
@@ -13,7 +13,6 @@ import {
   berserkerRageEffect,
   diverEmergeEffect,
   diverSubmergeEffect,
-  engineerBridgeEffect,
   heronScreechEffect,
   shrineActivationEffect,
   weatherTransitionEffect,
@@ -60,14 +59,6 @@ export function installEnvironmentDelegates(
   });
   def(proto, 'diverEmerge', function (this: Self, wx?: number) {
     diverEmergeEffect(
-      this.sfxMgr,
-      () => this.isMuted,
-      () => this.isStarted,
-      wx,
-    );
-  });
-  def(proto, 'engineerBridge', function (this: Self, wx?: number) {
-    engineerBridgeEffect(
       this.sfxMgr,
       () => this.isMuted,
       () => this.isStarted,

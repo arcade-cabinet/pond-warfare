@@ -144,21 +144,6 @@ export function diverEmergeEffect(
   }, 80);
 }
 
-// ---- Engineer Bridge Sound ----
-
-/** Construction/splashing sound when bridge is placed. */
-export function engineerBridgeEffect(
-  mgr: SfxManager,
-  getMuted: () => boolean,
-  getStarted: () => boolean,
-  worldX?: number,
-): void {
-  mgr.playAt(120, 'square', 0.15, 0.06, 80, worldX);
-  setTimeout(() => {
-    if (!getMuted() && getStarted()) mgr.playAt(300, 'sine', 0.1, 0.04, 500, worldX);
-  }, 100);
-}
-
 // ---- Worm Emergence Sound ----
 
 /** Rumbling/cracking sound when a Burrowing Worm surfaces. */

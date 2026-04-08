@@ -53,7 +53,6 @@ import {
 import {
   drawCommander,
   drawDiver,
-  drawEngineer,
   drawLookout,
   drawMedic,
   drawMudpaw,
@@ -111,7 +110,7 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'fish', id: SpriteId.Fish },
   // v1.5.0
   { name: 'diver', id: SpriteId.Diver },
-  { name: 'engineer', id: SpriteId.Engineer },
+  { name: 'reserved_unit_34', id: SpriteId.ReservedSprite34 },
   { name: 'shaman', id: SpriteId.Shaman },
   { name: 'burrowing_worm', id: SpriteId.BurrowingWorm },
   { name: 'flying_heron', id: SpriteId.FlyingHeron },
@@ -192,7 +191,7 @@ const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   fish: drawFish,
   // v1.5.0
   diver: drawDiver,
-  engineer: drawEngineer,
+  reserved_unit_34: drawMudpaw,
   shaman: drawShaman,
   burrowing_worm: drawBurrowingWorm,
   flying_heron: drawFlyingHeron,

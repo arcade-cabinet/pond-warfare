@@ -174,7 +174,6 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     // v2.1.0 -- extended stats
     weatherTypesExperienced: ext.weatherTypesExperienced ?? 0,
     warshipKills: ext.warshipKills ?? 0,
-    bridgesBuilt: ext.bridgesBuilt ?? 0,
     diverAmbushKills: ext.diverAmbushKills ?? 0,
     marketTrades: ext.marketTrades ?? 0,
     maxBerserkerKills: ext.maxBerserkerKills ?? 0,
