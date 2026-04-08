@@ -46,7 +46,6 @@ import { DisconnectOverlay } from './overlays/DisconnectOverlay';
 import { SettingsOverlay } from './overlays/SettingsOverlay';
 import { dispatchRadialAction } from './radial-actions';
 import { RadialMenu } from './radial-menu';
-import { SplashVideo } from './SplashVideo';
 import { RankUpModal } from './screens/RankUpModal';
 import { RewardsScreen } from './screens/RewardsScreen';
 import { UpgradeWebScreen } from './screens/UpgradeWebScreen';
@@ -111,18 +110,6 @@ export function App({ onMount }: AppProps) {
   // ---------- Menu screen ----------
   if (store.menuState.value === 'main') {
     return <MenuScreen />;
-  }
-
-  // ---------- Splash video before new game ----------
-  if (store.showSplashVideo.value) {
-    return (
-      <SplashVideo
-        onComplete={() => {
-          store.showSplashVideo.value = false;
-          store.menuState.value = 'playing';
-        }}
-      />
-    );
   }
 
   // ---------- Game screen ----------

@@ -1,76 +1,79 @@
 {
   "title": "6-Panel Map System Implementation",
   "spec": "docs/superpowers/specs/2026-04-03-panel-map-design.md",
-  "status": "ready",
+  "status": "archived",
+  "updated_at": "2026-04-07",
+  "note": "Historical implementation tracker. The panel-map program shipped. Minimap, airdrop, and splash-video residue were removed. Ability buttons were intentionally retained as live HUD abilities, so the original 'remove ability bar' cut step is superseded rather than unfinished.",
   "phases": [
     {
       "id": 1,
       "name": "Foundation — Config + Panel Grid",
-      "status": "pending",
+      "status": "completed",
       "steps": [
-        { "id": "1a", "desc": "Create configs/panels.json with 6 panel biome definitions", "agent": "config-agent", "status": "pending" },
-        { "id": "1b", "desc": "Update terrain.json to remove hardcoded dimensions, add panel_count tiers", "agent": "config-agent", "status": "pending" },
-        { "id": "1c", "desc": "Add Frontier Expansion I-V diamond nodes to upgrades.json", "agent": "config-agent", "status": "pending" },
-        { "id": "1d", "desc": "Create src/game/panel-grid.ts — PanelGrid class computing panel dimensions from viewport, tracking unlock state, resolving world coords to panel IDs", "agent": "engine-agent", "status": "pending" },
-        { "id": "1e", "desc": "Create TerrainType.ThornWall in terrain-grid.ts — impassable thorn vine terrain for locked panels", "agent": "engine-agent", "status": "pending" }
+        { "id": "1a", "desc": "Create configs/panels.json with 6 panel biome definitions", "agent": "config-agent", "status": "completed" },
+        { "id": "1b", "desc": "Update terrain.json to remove hardcoded dimensions, add panel_count tiers", "agent": "config-agent", "status": "completed" },
+        { "id": "1c", "desc": "Add Frontier Expansion I-V diamond nodes to upgrades.json", "agent": "config-agent", "status": "completed" },
+        { "id": "1d", "desc": "Create src/game/panel-grid.ts — PanelGrid class computing panel dimensions from viewport, tracking unlock state, resolving world coords to panel IDs", "agent": "engine-agent", "status": "completed" },
+        { "id": "1e", "desc": "Create TerrainType.ThornWall in terrain-grid.ts — impassable thorn vine terrain for locked panels", "agent": "engine-agent", "status": "completed" }
       ]
     },
     {
       "id": 2,
       "name": "Map Generation — Panel-Aware Terrain + Spawning",
-      "status": "pending",
+      "status": "completed",
       "depends_on": [1],
       "steps": [
-        { "id": "2a", "desc": "Rewrite vertical-map.ts to generate terrain per-panel using PanelGrid + panels.json biome rules. Thorn wall fill for locked panels.", "agent": "engine-agent", "status": "pending" },
-        { "id": "2b", "desc": "Rewrite spawn-vertical.ts to place Lodge in panel 5 center-bottom, resources per panel biome, enemies at top-row panel edges", "agent": "engine-agent", "status": "pending" },
-        { "id": "2c", "desc": "Wire panel-grid into game-init.ts — compute panels from viewport, generate terrain, spawn entities", "agent": "engine-agent", "status": "pending" }
+        { "id": "2a", "desc": "Rewrite vertical-map.ts to generate terrain per-panel using PanelGrid + panels.json biome rules. Thorn wall fill for locked panels.", "agent": "engine-agent", "status": "completed" },
+        { "id": "2b", "desc": "Rewrite spawn-vertical.ts to place Lodge in panel 5 center-bottom, resources per panel biome, enemies at top-row panel edges", "agent": "engine-agent", "status": "completed" },
+        { "id": "2c", "desc": "Wire panel-grid into game-init.ts — compute panels from viewport, generate terrain, spawn entities", "agent": "engine-agent", "status": "completed" }
       ]
     },
     {
       "id": 3,
       "name": "Camera — Panel-Aware Zoom + Pan",
-      "status": "pending",
+      "status": "completed",
       "depends_on": [1],
       "steps": [
-        { "id": "3a", "desc": "Rewrite camera.ts zoom: base zoom = panel 5 fills screen. Pinch-zoom out to see all unlocked panels. Clamp to unlocked bounds.", "agent": "camera-agent", "status": "pending" },
-        { "id": "3b", "desc": "Rewrite camera.ts pan: drag within unlocked panels only. Cannot pan into thorn walls.", "agent": "camera-agent", "status": "pending" },
-        { "id": "3c", "desc": "Add pinch-zoom gesture to pointer.ts for mobile", "agent": "camera-agent", "status": "pending" }
+        { "id": "3a", "desc": "Rewrite camera.ts zoom: base zoom = panel 5 fills screen. Pinch-zoom out to see all unlocked panels. Clamp to unlocked bounds.", "agent": "camera-agent", "status": "completed" },
+        { "id": "3b", "desc": "Rewrite camera.ts pan: drag within unlocked panels only. Cannot pan into thorn walls.", "agent": "camera-agent", "status": "completed" },
+        { "id": "3c", "desc": "Add pinch-zoom gesture to pointer.ts for mobile", "agent": "camera-agent", "status": "completed" }
       ]
     },
     {
       "id": 4,
-      "name": "Cut — Remove Minimap, Airdrops, Ability Bar",
-      "status": "pending",
+      "name": "Cut/Retain Decisions — Legacy HUD Cleanup",
+      "status": "superseded",
       "depends_on": [1],
       "steps": [
-        { "id": "4a", "desc": "Remove minimap canvas + refs from app.tsx. Make onMount work without minimapCanvasRef/minimapCamRef.", "agent": "cleanup-agent", "status": "pending" },
-        { "id": "4b", "desc": "Remove AirdropButton from app.tsx. Remove airdrop signals/imports. Remove useAirdrop from abilities.ts if no other consumer.", "agent": "cleanup-agent", "status": "pending" },
-        { "id": "4c", "desc": "Remove AbilityBar from app.tsx. Remove ability signals. Keep commander ability logic for future prestige integration.", "agent": "cleanup-agent", "status": "pending" },
-        { "id": "4d", "desc": "Remove minimap-panel.tsx, minimap-renderer.ts, pointer-minimap.ts if no consumers remain.", "agent": "cleanup-agent", "status": "pending" }
+        { "id": "4a", "desc": "Remove minimap canvas + refs from app.tsx. Make onMount work without minimapCanvasRef/minimapCamRef.", "agent": "cleanup-agent", "status": "completed" },
+        { "id": "4b", "desc": "Remove AirdropButton from app.tsx. Remove airdrop signals/imports. Remove useAirdrop from abilities.ts if no other consumer.", "agent": "cleanup-agent", "status": "completed" },
+        { "id": "4c", "desc": "Remove AbilityBar from app.tsx. Remove ability signals. Keep commander ability logic for future prestige integration.", "agent": "cleanup-agent", "status": "superseded" },
+        { "id": "4d", "desc": "Remove minimap-panel.tsx, minimap-renderer.ts, pointer-minimap.ts if no consumers remain.", "agent": "cleanup-agent", "status": "completed" },
+        { "id": "4e", "desc": "Remove dead splash-video route and unused startup branch once no caller remains.", "agent": "cleanup-agent", "status": "completed" }
       ]
     },
     {
       "id": 5,
       "name": "Rendering — Thorn Walls + Panel Biome Visuals",
-      "status": "pending",
+      "status": "completed",
       "depends_on": [2],
       "steps": [
-        { "id": "5a", "desc": "Add thorn wall tile rendering in background.ts — dark murky green with vine silhouettes matching design bible aesthetic", "agent": "render-agent", "status": "pending" },
-        { "id": "5b", "desc": "Distinct biome visuals per panel: grassland(5), muddy forest(2), rocky marsh(1), flooded swamp(3), stone quarry(4), dense thicket(6)", "agent": "render-agent", "status": "pending" },
-        { "id": "5c", "desc": "Mount SVG animated sprites (SpriteOtter/Croc/Snake) on main menu as animated showcase", "agent": "render-agent", "status": "pending" }
+        { "id": "5a", "desc": "Add thorn wall tile rendering in background.ts — dark murky green with vine silhouettes matching design bible aesthetic", "agent": "render-agent", "status": "completed" },
+        { "id": "5b", "desc": "Distinct biome visuals per panel: grassland(5), muddy forest(2), rocky marsh(1), flooded swamp(3), stone quarry(4), dense thicket(6)", "agent": "render-agent", "status": "completed" },
+        { "id": "5c", "desc": "Mount SVG animated sprites (SpriteOtter/Croc/Snake) on main menu as animated showcase", "agent": "render-agent", "status": "completed" }
       ]
     },
     {
       "id": 6,
       "name": "Testing + Verification",
-      "status": "pending",
+      "status": "completed",
       "depends_on": [2, 3, 4, 5],
       "steps": [
-        { "id": "6a", "desc": "Unit tests: panel-grid computation at 375x667, 960x540, 1920x1080 viewports", "agent": "test-agent", "status": "pending" },
-        { "id": "6b", "desc": "Unit tests: panel unlock progression all 6 stages, thorn wall impassability, entity spawning per biome", "agent": "test-agent", "status": "pending" },
-        { "id": "6c", "desc": "Unit tests: camera zoom bounds per stage, pan clamping to unlocked area", "agent": "test-agent", "status": "pending" },
-        { "id": "6d", "desc": "E2E: tap PLAY → panel 5 → Lodge at bottom → units visible → zoom out shows thorns", "agent": "test-agent", "status": "pending" },
-        { "id": "6e", "desc": "Full verification: typecheck + tests + lint + build + screenshot", "agent": "test-agent", "status": "pending" }
+        { "id": "6a", "desc": "Unit tests: panel-grid computation at 375x667, 960x540, 1920x1080 viewports", "agent": "test-agent", "status": "completed" },
+        { "id": "6b", "desc": "Unit tests: panel unlock progression all 6 stages, thorn wall impassability, entity spawning per biome", "agent": "test-agent", "status": "completed" },
+        { "id": "6c", "desc": "Unit tests: camera zoom bounds per stage, pan clamping to unlocked area", "agent": "test-agent", "status": "completed" },
+        { "id": "6d", "desc": "E2E: tap PLAY → panel 5 → Lodge at bottom → units visible → zoom out shows thorns", "agent": "test-agent", "status": "completed" },
+        { "id": "6e", "desc": "Full verification: typecheck + tests + lint + build + screenshot", "agent": "test-agent", "status": "completed" }
       ]
     }
   ],
@@ -78,7 +81,7 @@
     "config-agent": "JSON config updates (panels.json, terrain.json, upgrades.json)",
     "engine-agent": "Core game engine (panel-grid, terrain gen, spawning, game-init)",
     "camera-agent": "Camera system (zoom, pan, pinch, clamping)",
-    "cleanup-agent": "Remove deprecated UI (minimap, airdrops, ability bar)",
+    "cleanup-agent": "Remove deprecated UI and archive superseded cuts",
     "render-agent": "Thorn wall visuals, biome rendering, SVG sprites on menu",
     "test-agent": "All tests + E2E + verification"
   }

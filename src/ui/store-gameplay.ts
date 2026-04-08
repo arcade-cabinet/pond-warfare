@@ -97,6 +97,3 @@ export const globalProductionQueue = signal<QueueItem[]>([]);
 // ---- Roster (Forces + Buildings) ----
 export const unitRoster = signal<RosterGroup[]>([]);
 export const buildingRoster = signal<RosterBuilding[]>([]);
-
-/** True when the splash video should play before a new game. */
-export const showSplashVideo = signal(false);

@@ -252,7 +252,6 @@ export {
   replayTimeDisplay,
   settingsOpen,
   sfxVolume,
-  showSplashVideo,
   tidalSurgeAvailable,
   waveNumber,
 } from './store-gameplay';
