@@ -28,7 +28,7 @@ const MANUAL_BUTTON_SPECS: ManualButtonSpec[] = [
     title: 'Mudpaw',
     hotkey: 'Q',
     requiredStage: 1,
-    description: 'Generalist manual otter. Gathers, fights, scouts, builds, and repairs.',
+    description: 'Generalist manual otter. Gathers, fights, runs recon, builds, and repairs.',
   },
   {
     kind: MEDIC_KIND,
