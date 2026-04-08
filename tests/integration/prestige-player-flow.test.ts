@@ -81,7 +81,7 @@ describe('Prestige player — multiple panels unlocked', () => {
     expect(enemyNests.length).toBeGreaterThanOrEqual(2);
   });
 
-  it.skip('spawns enemy Commander at stage 2+ (needs full ECS context)', () => {
+  it('spawns enemy Commander at stage 2+', () => {
     const world = createTestWorld({ stage: 2 });
     const pg = createTestPanelGrid(2);
     const layout = generateVerticalMapLayout(pg, new SeededRandom(42));
