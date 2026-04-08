@@ -26,7 +26,7 @@ import {
   SABOTEUR_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
-import { canPlaceBuilding } from '@/input/selection';
+import { canPlaceBuilding } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /** Get all alive enemy production buildings (nests or lodges depending on faction setup). */

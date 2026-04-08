@@ -23,7 +23,7 @@ import {
 } from '@/config/prestige-logic';
 import { getPearlUpgrade } from '@/config/config-loader';
 import { COMMANDERS } from '@/config/commanders';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { generateUpgradeWeb } from '@/config/upgrade-web';
 import {
   autoFillToStartingTier,

@@ -11,7 +11,7 @@ import { computed, signal } from '@preact/signals';
 import type { PrestigeState } from '@/config/prestige-logic';
 import type { FortSlot } from '@/ecs/systems/fortification';
 import type { RewardBreakdown } from '@/game/match-rewards';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { COLORS } from './design-tokens';
 
 // ── Prestige ─────────────────────────────────────────────────────

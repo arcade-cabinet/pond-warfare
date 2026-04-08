@@ -8,7 +8,7 @@
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import type { GameWorld } from '@/ecs/world';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind } from '@/types';
 import type { ActionButtonDef } from '@/ui/action-panel';

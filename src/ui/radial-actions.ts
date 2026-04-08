@@ -25,7 +25,7 @@ import { game } from '@/game';
 import { cycleStanceForSelection } from '@/game/input-setup';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { beginSpecialistAssignment } from '@/game/specialist-assignment';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { COLORS } from '@/ui/design-tokens';
 import { radialMenuTargetEntityId } from '@/ui/store-radial';

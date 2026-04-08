@@ -7,7 +7,7 @@ import type { GameWorld } from '@/ecs/world';
 import { buildActionPanel } from '@/game/action-panel';
 import { syncPopulationAndTimers } from '@/game/population-sync';
 import { syncSelectionInfo } from '@/game/selection-sync';
-import { hasPlayerUnitsSelected } from '@/input/selection';
+import { hasPlayerUnitsSelected } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import { checkAchievements } from '@/systems/achievements';
 import * as store from '@/ui/store';

@@ -33,7 +33,7 @@ import { combatSystem } from '@/ecs/systems/combat';
 import { movementSystem } from '@/ecs/systems/movement';
 import type { GameWorld } from '@/ecs/world';
 import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
-import { issueContextCommand } from '@/input/selection';
+import { issueContextCommand } from '@/input/selection/commands';
 import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import { SeededRandom } from '@/utils/random';

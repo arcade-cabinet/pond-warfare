@@ -16,7 +16,7 @@ import {
   SABOTEUR_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';

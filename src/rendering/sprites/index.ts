@@ -15,7 +15,7 @@ import {
   SAPPER_SPRITE_ID,
 } from '@/game/live-unit-kinds';
 import { SpriteId } from '@/types';
-import { registerSpriteTexture } from '../pixi-app';
+import { registerSpriteTexture } from '../pixi';
 import {
   drawArmory,
   drawBurrow,

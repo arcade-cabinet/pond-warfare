@@ -9,7 +9,7 @@ import { TRAIN_TIMER } from '@/constants';
 import { getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { TrainingQueue, trainingQueueSlots } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { cancelTrain } from '@/input/selection';
+import { cancelTrain } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import type { EntityKind } from '@/types';
 import type { QueueItemDef } from '@/ui/action-panel';

@@ -34,7 +34,7 @@ import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { progressionLevel } from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';

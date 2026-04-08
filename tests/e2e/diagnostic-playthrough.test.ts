@@ -48,7 +48,7 @@ import { syncRosters } from '@/game/roster-sync';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 import { progressionLevel } from '@/ui/store-v3';

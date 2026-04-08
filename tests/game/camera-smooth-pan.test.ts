@@ -37,7 +37,7 @@ vi.mock('@/rendering/camera', () => ({
 }));
 
 // Mock rendering/pixi-app
-vi.mock('@/rendering/pixi-app', () => ({
+vi.mock('@/rendering/pixi', () => ({
   resizePixiApp: vi.fn(),
 }));
 

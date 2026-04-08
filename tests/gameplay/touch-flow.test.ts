@@ -13,7 +13,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Selectable, UnitStateMachine } from '@/ecs/components';
 import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
-import { issueContextCommand } from '@/input/selection';
+import { issueContextCommand } from '@/input/selection/commands';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getRadialOptions, type RadialGameState } from '@/ui/radial-menu-options';
 import { createTestWorld } from '../helpers/world-factory';

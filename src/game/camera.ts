@@ -8,7 +8,7 @@
 import { animate } from 'animejs';
 import type { GameWorld } from '@/ecs/world';
 import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera';
-import { resizePixiApp } from '@/rendering/pixi-app';
+import { resizePixiApp } from '@/rendering/pixi';
 
 /** Mutable handle for the running pan animation so the caller can cancel it. */
 export interface PanAnimHandle {

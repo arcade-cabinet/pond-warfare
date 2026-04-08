@@ -15,7 +15,7 @@
 import { render } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { COMMANDER_ABILITIES, COMMANDERS } from '@/config/commanders';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { CommanderAccordionContent } from '@/ui/screens/CommanderAccordionContent';
 
 const DEFAULT_PROFILE: PlayerProfile = {

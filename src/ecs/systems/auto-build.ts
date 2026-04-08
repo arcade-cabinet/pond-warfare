@@ -28,7 +28,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { isMudpawKind } from '@/game/live-unit-kinds';
-import { canPlaceBuilding } from '@/input/selection';
+import { canPlaceBuilding } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 interface BuildCandidate {

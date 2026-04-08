@@ -46,15 +46,16 @@ import {
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
 import {
+  issueContextCommand,
+} from '@/input/selection/commands';
+import { selectArmy, selectIdleGeneralist } from '@/input/selection/group-select';
+import {
   cancelTrain,
   canPlaceBuilding,
   getEntityAt,
   hasPlayerUnitsSelected,
-  issueContextCommand,
-  selectArmy,
-  selectIdleGeneralist,
   train,
-} from '@/input/selection';
+} from '@/input/selection/queries';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 // ---------------------------------------------------------------------------

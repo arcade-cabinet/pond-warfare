@@ -58,13 +58,16 @@ vi.mock('bitecs', () => ({
   hasComponent: () => true,
 }));
 
-vi.mock('@/input/selection', () => ({
-  hasPlayerUnitsSelected: vi.fn(() => true),
+vi.mock('@/input/selection/group-select', () => ({
   selectArmy: vi.fn(),
   selectIdleGeneralist: vi.fn(),
 }));
 
-vi.mock('@/rendering/pixi-app', () => ({
+vi.mock('@/input/selection/queries', () => ({
+  hasPlayerUnitsSelected: vi.fn(() => true),
+}));
+
+vi.mock('@/rendering/pixi', () => ({
   setColorBlindMode: vi.fn(),
 }));
 
@@ -81,8 +84,8 @@ vi.mock('@/storage', () => ({
 import { audio } from '@/audio/audio-system';
 import { UnitStateMachine } from '@/ecs/components';
 import { game } from '@/game';
-import { selectArmy, selectIdleGeneralist } from '@/input/selection';
-import { setColorBlindMode } from '@/rendering/pixi-app';
+import { selectArmy, selectIdleGeneralist } from '@/input/selection/group-select';
+import { setColorBlindMode } from '@/rendering/pixi';
 import {
   activateAttackMove,
   cycleIdleGeneralist,

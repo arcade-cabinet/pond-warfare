@@ -9,7 +9,7 @@ import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
 import { cleanupDeviceSignals, isNative } from '@/platform';
-import { destroyPixiApp } from '@/rendering/pixi-app';
+import { destroyPixiApp } from '@/rendering/pixi';
 import * as store from '@/ui/store';
 import type { PanAnimHandle } from './camera';
 import type { GameLoopState } from './game-loop';

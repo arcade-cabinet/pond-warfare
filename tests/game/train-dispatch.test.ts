@@ -20,7 +20,7 @@ import {
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
 
 function createPlayerBuilding(world: GameWorld, _kind: EntityKind): number {

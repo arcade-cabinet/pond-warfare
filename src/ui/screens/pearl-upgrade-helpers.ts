@@ -7,7 +7,7 @@
 
 import { COMMANDERS } from '@/config/commanders';
 import type { PearlUpgradeDisplay } from '@/config/prestige-logic';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import type { AccordionSection } from '@/ui/components/PondAccordion';
 
 /** Pearl unlock cost per commander (id -> cost). Free commander has no entry. */

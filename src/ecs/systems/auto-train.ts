@@ -30,7 +30,7 @@ import {
   SABOTEUR_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
 
 /** Run auto-training every 120 frames (~2 seconds at 60fps). */

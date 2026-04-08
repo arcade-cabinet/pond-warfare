@@ -5,7 +5,7 @@
  * unlock requirements, and sprite variant identifiers.
  */
 
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 
 export interface CommanderDef {
   id: string;

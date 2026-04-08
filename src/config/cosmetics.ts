@@ -7,7 +7,7 @@
  */
 
 import type { RecolorPreset } from '@/rendering/recolor';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import {
   LOOKOUT_KIND,
   MEDIC_KIND,

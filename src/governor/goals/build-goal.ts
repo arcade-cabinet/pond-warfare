@@ -12,7 +12,7 @@ import { ENTITY_DEFS, entityKindName, isWingBuilding } from '@/config/entity-def
 import { Position } from '@/ecs/components';
 import { game } from '@/game';
 import { MUDPAW_KIND } from '@/game/live-unit-kinds';
-import { placeBuilding } from '@/input/selection';
+import { placeBuilding } from '@/input/selection/queries';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 

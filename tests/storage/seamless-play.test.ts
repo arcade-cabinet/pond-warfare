@@ -21,7 +21,7 @@ vi.mock('@/storage/schema', () => ({
   persist: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/storage/database', () => ({
+vi.mock('@/storage', () => ({
   getPlayerProfile: vi.fn().mockResolvedValue({
     total_wins: 0,
     total_losses: 0,

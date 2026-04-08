@@ -46,7 +46,7 @@ export {
   resizePixiApp,
   setBackground,
   setColorBlindMode,
-} from './pixi-app';
+} from './pixi';
 
 // Sprite recoloring system
 export {
@@ -58,4 +58,4 @@ export {
 } from './recolor';
 
 // Sprites
-export { generateAllSprites, getSpriteSize } from './sprites';
+export { generateAllSprites, getSpriteSize } from './sprites/index';

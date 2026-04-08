@@ -22,7 +22,7 @@ import {
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
-import { cancelTrain } from '@/input/selection';
+import { cancelTrain } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
 
 function createTrainingBuilding(world: GameWorld, kind: EntityKind): number {

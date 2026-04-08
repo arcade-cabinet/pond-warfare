@@ -28,7 +28,7 @@ import {
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { LOOKOUT_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
-import { issueContextCommand } from '@/input/selection';
+import { issueContextCommand } from '@/input/selection/commands';
 import { cleanupEntityAnimation, entityScales, triggerAttackLunge } from '@/rendering/animations';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 

@@ -41,7 +41,7 @@ export function deploySpecialistsAtMatchStart(
         lodgeEid,
         pos.x,
         pos.y,
-        'legacy_snapshot',
+        'snapshot_harness',
       );
       positionIndex++;
     }

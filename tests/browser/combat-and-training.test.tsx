@@ -16,7 +16,7 @@ import {
 } from '@/ecs/components';
 import { game } from '@/game';
 import { MUDPAW_KIND } from '@/game/live-unit-kinds';
-import { canPlaceBuilding, placeBuilding } from '@/input/selection';
+import { canPlaceBuilding, placeBuilding } from '@/input/selection/queries';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
 import { EntityKind, Faction } from '@/types';

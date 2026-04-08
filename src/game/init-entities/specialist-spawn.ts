@@ -40,7 +40,7 @@ import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { spawnEntity } from '@/ecs/archetypes';
 import { EntityKind, Faction, UnitState } from '@/types';
 
-export type SpecialistSpawnMode = 'blueprint' | 'legacy_snapshot';
+export type SpecialistSpawnMode = 'blueprint' | 'snapshot_harness';
 
 const SPECIALIST_KIND_MAP: Record<string, EntityKind> = {
   fisher: FISHER_KIND,
@@ -86,7 +86,7 @@ export function spawnSpecialistUnit(
   if (kind == null) return null;
 
   const eid = spawnEntity(world, kind, x, y, Faction.Player);
-  if (mode === 'legacy_snapshot') {
+  if (mode === 'snapshot_harness') {
     addComponent(world.ecs, eid, LegacySpecialistSnapshot);
   } else {
     addComponent(world.ecs, eid, AutonomousSpecialist);

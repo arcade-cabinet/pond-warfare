@@ -5,14 +5,18 @@ export {
   type PointerState,
 } from './pointer';
 export {
+  issueContextCommand,
+} from './selection/commands';
+export {
+  selectArmy,
+  selectIdleGeneralist,
+} from './selection/group-select';
+export {
   cancelTrain,
   canPlaceBuilding,
   getEntityAt,
   getResourceAt,
   hasPlayerUnitsSelected,
-  issueContextCommand,
   placeBuilding,
-  selectArmy,
-  selectIdleGeneralist,
   train,
-} from './selection';
+} from './selection/queries';

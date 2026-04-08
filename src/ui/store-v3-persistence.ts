@@ -6,7 +6,7 @@
  */
 
 import { createPrestigeState, getStartingTierRank } from '@/config/prestige-logic';
-import { getPlayerProfile } from '@/storage/database';
+import { getPlayerProfile } from '@/storage';
 import {
   isDatabaseReady,
   loadCurrentRun,

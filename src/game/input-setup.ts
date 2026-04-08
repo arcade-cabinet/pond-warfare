@@ -26,15 +26,14 @@ import { useCommanderAbility } from '@/game/commander-abilities';
 import { getSpecialistMenuMode } from '@/game/specialist-assignment';
 import type { KeyboardCallbacks } from '@/input/keyboard';
 import type { PointerCallbacks } from '@/input/pointer';
+import { issueContextCommand } from '@/input/selection/commands';
+import { selectArmy, selectIdleGeneralist } from '@/input/selection/group-select';
 import {
   getEntityAt,
   getResourceAt,
   hasPlayerUnitsSelected,
-  issueContextCommand,
   placeBuilding,
-  selectArmy,
-  selectIdleGeneralist,
-} from '@/input/selection';
+} from '@/input/selection/queries';
 import { triggerCommandPulse } from '@/rendering/animations';
 import type { ReplayRecorder } from '@/replay';
 import { type EntityKind, Faction, UnitState } from '@/types';

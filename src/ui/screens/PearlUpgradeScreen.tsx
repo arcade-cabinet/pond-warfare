@@ -17,7 +17,7 @@ import {
   type PrestigeState,
   purchasePearlUpgrade,
 } from '@/config/prestige-logic';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { Frame9Slice } from '@/ui/components/frame';
 import { type AccordionSection, PondAccordion } from '@/ui/components/PondAccordion';
 import { COLORS } from '@/ui/design-tokens';
