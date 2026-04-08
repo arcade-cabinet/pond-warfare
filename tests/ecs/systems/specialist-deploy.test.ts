@@ -1,7 +1,7 @@
 /**
  * Specialist Blueprint Snapshot Tests (v3.0 — US11)
  *
- * Validates the legacy specialist snapshot helper from prestige state:
+ * Validates the specialist snapshot harness from prestige state:
  * - Field cap matches prestige rank
  * - Area-autonomy metadata resolves correctly per specialist
  * - Generalists are stat-superior to specialists

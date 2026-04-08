@@ -80,7 +80,7 @@ function resetStore() {
   store.hasPlayerUnits.value = false;
   store.idleGeneralistCount.value = 0;
   store.idleCombatCount.value = 0;
-  store.idleHealerCount.value = 0;
+  store.idleSupportCount.value = 0;
   store.idleReconCount.value = 0;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;

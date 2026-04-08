@@ -1,6 +1,6 @@
 # Balance Model
 
-This document now measures a mixed runtime: the player-facing game uses Pearl specialist blueprint caps plus in-match specialist training, while some diagnostics still use the legacy instant-deploy helper as a controlled measurement tool. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where operating radius is a primary upgrade axis. The live prestige config now also includes direct specialist-zone rows for `operating_radius`, `anchor_radius`, `engagement_radius`, and `projection_range`.
+This document now measures a mixed runtime: the player-facing game uses Pearl specialist blueprint caps plus in-match specialist training, while some diagnostics still use the specialist snapshot harness as a controlled measurement tool. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where operating radius is a primary upgrade axis. The live prestige config now also includes direct specialist-zone rows for `operating_radius`, `anchor_radius`, `engagement_radius`, and `projection_range`.
 
 ## Purpose
 
@@ -27,7 +27,7 @@ The goal is not perfect prediction. The goal is a repeatable approximation we ca
 - Enemy counter-training now keys off actual player combat pressure. `Mudpaw`
   economy bodies are intentionally excluded from that signal so small Clam
   economy upgrades do not get "countered" as if they were frontline army tech.
-- The legacy instant-deploy diagnostic helper still excludes those spawned specialists from baseline food-cap accounting so older pressure slices remain comparable while the harnesses are being rewritten.
+- The specialist snapshot harness still excludes those spawned specialists from baseline food-cap accounting so older pressure slices remain comparable while the harnesses are being rewritten.
 - If a building or response is required to clear a pane, it belongs in baseline pane progression, not behind Clams.
 
 ## Current Model

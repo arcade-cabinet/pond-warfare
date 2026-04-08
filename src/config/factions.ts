@@ -38,9 +38,9 @@ export interface FactionConfig {
 /**
  * Otter faction: neutral role mapping for the original player side.
  *
- * Important: the live vertical-mode roster no longer exposes the old internal
+ * Important: the live vertical-mode roster no longer exposes the earlier
  * combat archetype split as player-facing manual units. Older helpers should
- * treat the reserved slots here as the nearest canonical live-roster
+ * treat the neutral role slots here as the nearest canonical live-roster
  * equivalents until the horizontal/adversarial layer is fully reauthored.
  */
 export const OTTER_FACTION: FactionConfig = {

@@ -15,7 +15,7 @@ import { computePopulation } from '@/game/population-counter';
 import { EntityKind, Faction } from '@/types';
 
 describe('computePopulation', () => {
-  it('does not count legacy snapshot specialists against food cap', () => {
+  it('does not count snapshot-harness specialists against food cap', () => {
     const world = createGameWorld();
     const lodge = spawnEntity(world, EntityKind.Lodge, 300, 500, Faction.Player);
     spawnEntity(world, MUDPAW_KIND, 280, 540, Faction.Player);

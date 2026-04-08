@@ -4,7 +4,7 @@
  *
  * Validates entityKindToRole mapping works from both:
  * - Direct import from radial-entity-roles.ts
- * - Re-export from radial-menu-options.ts (backward compat)
+ * - Re-export from radial-menu-options.ts
  */
 
 import { describe, expect, it } from 'vitest';
@@ -53,7 +53,7 @@ describe('entityKindToRole (direct import)', () => {
   });
 });
 
-describe('entityKindToRole (re-export backward compat)', () => {
+describe('entityKindToRole (re-export)', () => {
   it('re-exported function is the same as direct import', () => {
     expect(reExported).toBe(entityKindToRole);
   });

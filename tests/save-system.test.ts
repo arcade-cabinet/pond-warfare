@@ -29,7 +29,7 @@ function makeBaseSave(): SaveData {
   };
 }
 
-describe('save-system auto-behavior compatibility', () => {
+describe('save-system auto-behavior persistence', () => {
   it('serializes the canonical per-role automation keys', () => {
     const world = createGameWorld();
     world.autoBehaviors.generalist = true;

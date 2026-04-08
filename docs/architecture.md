@@ -2,7 +2,7 @@
 
 Pond Warfare uses an Entity Component System (ECS) architecture powered by bitECS, with Preact for UI and PixiJS 8 for rendering.
 
-The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md) and [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). The live player-facing runtime now uses the canonical Lodge/radial roster and in-match specialist blueprints. Some low-level ECS entity kinds still use historical internal names such as `Gatherer`, but Pearl progression no longer uses the deleted free specialist match-start spawn contract.
+The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md) and [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). The live player-facing runtime now uses the canonical Lodge/radial roster and in-match specialist blueprints. The remaining low-level compatibility layer is limited to shared chassis ids and the specialist snapshot harness used by diagnostics; Pearl progression no longer uses the deleted free specialist match-start spawn contract.
 
 ## System Overview
 
@@ -93,21 +93,23 @@ Store is split across 5 files:
 
 ## Enemy AI Architecture
 
-The enemy AI runs a full parallel economy and makes strategic decisions through the `aiSystem` (7 sub-files in `src/ecs/systems/ai/`). In v3, enemies also have role-based behaviors:
+The enemy AI runs a full parallel economy and makes strategic decisions through the `aiSystem` (`src/ecs/systems/ai/`). In v3, enemies also have role-based behaviors:
 
 - **Raiders** (`enemy-raider.ts`) - Target player resource nodes
-- **Healers** (`enemy-healer.ts`) - Restore wounded enemy allies
+- **Support units** (`enemy-support.ts`) - Restore wounded enemy allies
 - **Sappers** (`enemy-sapper.ts`) - Breach player fortifications
 
 ```
 aiSystem()
   |
-  +-- enemyGathererSpawning (every 1200 frames)
-  +-- enemyBuildingConstruction (every 1800 frames)
-  +-- enemyArmyTraining (every 300 frames)
-  +-- enemyAttackDecision (every 600 frames)
-  +-- enemyRetreatLogic (every 60 frames)
-  +-- enemyScoutLogic (every 3600 frames)
+  +-- enemyEconomyTick
+  +-- enemyBuildingTick
+  +-- enemyTrainingTick / enemyTrainingQueueProcess
+  +-- enemyCombatTick
+  +-- enemyRaiderTick
+  +-- enemySupportTick
+  +-- enemySapperTick
+  +-- enemyCommanderTick
   +-- nestDefenseReinforcement (every 600 frames)
   +-- bossWaveLogic (every 3 wave intervals after wave 10)
 ```

@@ -47,7 +47,7 @@ export function computePopulation(world: GameWorld): PopulationResult {
   let idleGeneralists = 0;
   let armyUnits = 0;
   let idleCombat = 0;
-  let idleHealers = 0;
+  let idleSupport = 0;
   let idleRecon = 0;
 
   for (let i = 0; i < allEnts.length; i++) {
@@ -74,7 +74,7 @@ export function computePopulation(world: GameWorld): PopulationResult {
         }
       } else if (kind === MEDIC_KIND) {
         armyUnits++;
-        if (isIdle && !isAutonomousSpecialist) idleHealers++;
+        if (isIdle && !isAutonomousSpecialist) idleSupport++;
       } else if (kind === EntityKind.Commander) {
         // Commander counts toward population but is never auto-assigned;
         // exclude from army counts and idle menus so it stays near the Lodge.
@@ -108,7 +108,7 @@ export function computePopulation(world: GameWorld): PopulationResult {
   store.armyCount.value = armyUnits;
   store.idleGeneralistCount.value = idleGeneralists;
   store.idleCombatCount.value = idleCombat;
-  store.idleHealerCount.value = idleHealers;
+  store.idleSupportCount.value = idleSupport;
   store.idleReconCount.value = idleRecon;
 
   if (armyUnits > w.stats.peakArmy) {

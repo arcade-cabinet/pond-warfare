@@ -4,7 +4,7 @@ import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live
 import { EntityKind } from '@/types';
 
 describe('faction configs', () => {
-  it('maps the otter compatibility faction to the canonical live roster', () => {
+  it('maps the otter faction role slots to the canonical live roster', () => {
     expect(OTTER_FACTION.generalistKind).toBe(MUDPAW_KIND);
     expect(OTTER_FACTION.frontlineKind).toBe(SAPPER_KIND);
     expect(OTTER_FACTION.skirmisherKind).toBe(SABOTEUR_KIND);

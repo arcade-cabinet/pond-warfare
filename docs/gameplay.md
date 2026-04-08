@@ -367,7 +367,7 @@ Rank Up becomes available when `progression_level >= rank_threshold_base * (1 + 
 ## Combat Mechanics
 
 - **Auto-aggro**: Idle combat units engage enemies within aggro radius (200px player, 250px enemy)
-- **Retaliation**: Units under attack fight back (legacy gatherer references should be read as the Mudpaw role)
+- **Retaliation**: Units under attack fight back, including Mudpaws when they are forced into close contact
 - **Ally assist**: Nearby idle allies join combat within 300px
 - **Towers/Watchtowers**: Auto-target nearest enemy within range
 - **Formation movement**: Group move commands arrange units by role (melee front, ranged middle, support back)
@@ -400,9 +400,9 @@ After a player unit completes an order and is deselected, a themed icon (the aut
 
 This provides a non-intrusive way to set up automated economy and defense without micro-managing every unit. Auto-symbols are rendered as PixiJS overlays (`src/rendering/pixi/auto-symbol-overlay.ts`) and driven by the `autoSymbolSystem` ECS system.
 
-## Legacy Automation Note
+## Automation Note
 
-The current runtime still contains legacy auto-behavior toggles and auto-symbol flows from the older generalist model. The canonical direction is to move that automation into Pearl specialist area assignment, as defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
+The current runtime uses two live automation layers. Manual units still use the auto-symbol and per-role automation toggles for repeatable Mudpaw/combat/support/recon behavior, while Pearl specialists use area assignment from [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md). The long-term direction is to keep shrinking the older generalist automation surface as specialist-area control absorbs more of that work.
 
 ## Day/Night Cycle
 

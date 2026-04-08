@@ -86,7 +86,7 @@ function resetStore() {
   store.hasPlayerUnits.value = false;
   store.idleGeneralistCount.value = 0;
   store.idleCombatCount.value = 0;
-  store.idleHealerCount.value = 0;
+  store.idleSupportCount.value = 0;
   store.idleReconCount.value = 0;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
@@ -1032,7 +1032,7 @@ describe('Contextual Idle Menu screenshots', () => {
     store.idleGeneralistCount.value = 8;
     store.idleGeneralistCount.value = 3;
     store.idleCombatCount.value = 3;
-    store.idleHealerCount.value = 1;
+    store.idleSupportCount.value = 1;
     store.idleReconCount.value = 1;
     store.gameTimeDisplay.value = 'Day 8 - 12:00';
 
