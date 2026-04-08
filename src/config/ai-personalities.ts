@@ -26,7 +26,7 @@ export interface PersonalityConfig {
   expansionRate: number;
   /** Preferred unit composition bias. */
   trainingPreference: 'melee' | 'ranged' | 'balanced' | 'siege';
-  /** Multiplier for gatherer spawning rate. >1 = more gatherers, <1 = fewer. */
+  /** Multiplier for enemy harvester spawning rate. >1 = more harvesters, <1 = fewer. */
   gathererRate: number;
   /** Minimum army size before considering an attack (overrides dynamic threshold). */
   minArmyForAttack: number;

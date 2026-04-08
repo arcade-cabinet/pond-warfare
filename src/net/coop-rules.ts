@@ -23,7 +23,7 @@ export const COOP_ENEMY_STAT_MULT = 1.5;
 
 /**
  * Build a resource-sync message from the current player resources.
- * Called after a gatherer deposits resources in co-op mode.
+ * Called after a Mudpaw/generalist deposits resources in co-op mode.
  */
 export function buildResourceSyncMessage(world: GameWorld): NetMessage {
   return {

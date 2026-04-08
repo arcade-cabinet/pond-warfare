@@ -79,7 +79,7 @@ export class BuildGoal extends Goal {
     const kindName = entityKindName(need.kind).toLowerCase().replace(/\s+/g, '_');
     w.placingBuilding = kindName;
 
-    // Select a gatherer to be the builder (placeBuilding assigns them)
+    // Select a Mudpaw/generalist to be the builder (placeBuilding assigns them)
     const gatherers = store.unitRoster.value
       .flatMap((g) => g.units)
       .filter((u) => u.kind === MUDPAW_KIND);

@@ -94,9 +94,9 @@ describe('AudioSystem – biome and faction palettes', () => {
 
   it('exposes canonical selection-sfx aliases for live roster names', async () => {
     const sfxMgr = (sys as any).sfxMgr;
-    const selectGatherer = vi.spyOn(sfxMgr, 'selectGatherer');
-    const selectHealer = vi.spyOn(sfxMgr, 'selectHealer');
-    const selectScout = vi.spyOn(sfxMgr, 'selectScout');
+    const selectMudpaw = vi.spyOn(sfxMgr, 'selectMudpaw');
+    const selectMedic = vi.spyOn(sfxMgr, 'selectMedic');
+    const selectLookout = vi.spyOn(sfxMgr, 'selectLookout');
     const selectSapper = vi.spyOn(sfxMgr, 'selectSapper');
     const selectSaboteur = vi.spyOn(sfxMgr, 'selectSaboteur');
     const selectCatapult = vi.spyOn(sfxMgr, 'selectCatapult');
@@ -111,11 +111,32 @@ describe('AudioSystem – biome and faction palettes', () => {
     sys.selectShaman();
     sys.selectLookout();
 
-    expect(selectGatherer).toHaveBeenCalledTimes(1);
-    expect(selectHealer).toHaveBeenCalledTimes(2);
-    expect(selectScout).toHaveBeenCalledTimes(1);
+    expect(selectMudpaw).toHaveBeenCalledTimes(1);
+    expect(selectMedic).toHaveBeenCalledTimes(2);
+    expect(selectLookout).toHaveBeenCalledTimes(1);
     expect(selectSapper).toHaveBeenCalledTimes(2);
     expect(selectSaboteur).toHaveBeenCalledTimes(2);
     expect(selectCatapult).toHaveBeenCalledTimes(1);
+  });
+
+  it('retains legacy selection aliases as wrappers around canonical methods', async () => {
+    const sfxMgr = (sys as any).sfxMgr;
+    const selectMudpaw = vi.spyOn(sfxMgr, 'selectMudpaw');
+    const selectMedic = vi.spyOn(sfxMgr, 'selectMedic');
+    const selectLookout = vi.spyOn(sfxMgr, 'selectLookout');
+    const selectSapper = vi.spyOn(sfxMgr, 'selectSapper');
+    const selectSaboteur = vi.spyOn(sfxMgr, 'selectSaboteur');
+
+    sys.selectGatherer();
+    sys.selectHealer();
+    sys.selectScout();
+    sys.selectBrawler();
+    sys.selectSniper();
+
+    expect(selectMudpaw).toHaveBeenCalledTimes(1);
+    expect(selectMedic).toHaveBeenCalledTimes(1);
+    expect(selectLookout).toHaveBeenCalledTimes(1);
+    expect(selectSapper).toHaveBeenCalledTimes(1);
+    expect(selectSaboteur).toHaveBeenCalledTimes(1);
   });
 });

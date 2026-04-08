@@ -1,9 +1,9 @@
 /**
  * SFX module - All sound effect methods and synth pool management.
  *
- * Canonical live callers should prefer Mudpaw/Medic/Lookout aliases where
- * available. Older `selectGatherer` / `selectScout` / etc. methods remain for
- * low-level compatibility with historical entity kinds.
+ * Canonical live callers should prefer Mudpaw/Medic/Lookout/Sapper/Saboteur.
+ * Older `selectGatherer` / `selectScout` / `selectBrawler` / etc. methods
+ * remain only as low-level compatibility aliases for historical entity kinds.
  */
 import * as Tone from 'tone';
 import {
@@ -163,7 +163,7 @@ export class SfxManager {
     this.playAt(600, 'sine', 0.1, 0.05, 800);
   }
   selectMudpaw(): void {
-    this.selectGatherer();
+    this.playAt(900, 'triangle', 0.04, 0.04, 600);
   }
   selectGuard(): void {
     this.selectSapper();
@@ -175,30 +175,30 @@ export class SfxManager {
     this.selectCatapult();
   }
   selectSapper(): void {
-    this.selectBrawler();
+    this.playAt(80, 'sine', 0.15, 0.08, 50);
   }
   selectSaboteur(): void {
-    this.selectSniper();
+    this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
   }
   /** Historical compatibility alias for the old internal melee chassis. */
   selectBrawler(): void {
-    this.playAt(80, 'sine', 0.15, 0.08, 50);
+    this.selectSapper();
   }
   /** Historical compatibility alias for the old internal ranged chassis. */
   selectSniper(): void {
-    this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
+    this.selectSaboteur();
   }
   selectMedic(): void {
-    this.selectHealer();
+    selectHealerEffect(this, this._getMuted, this._getStarted);
   }
   selectShaman(): void {
-    this.selectHealer();
+    this.selectMedic();
   }
   selectCatapult(): void {
     this.playAt(60, 'sawtooth', 0.2, 0.06, 40);
   }
   selectGatherer(): void {
-    this.playAt(900, 'triangle', 0.04, 0.04, 600);
+    this.selectMudpaw();
   }
   selectShieldbearer(): void {
     this.playAt(150, 'square', 0.12, 0.07, 90);
@@ -240,13 +240,13 @@ export class SfxManager {
     pingEffect(this, this._getMuted, this._getStarted);
   }
   selectHealer(): void {
-    selectHealerEffect(this, this._getMuted, this._getStarted);
+    this.selectMedic();
   }
   selectLookout(): void {
-    this.selectScout();
+    selectScoutEffect(this, this._getMuted, this._getStarted);
   }
   selectScout(): void {
-    selectScoutEffect(this, this._getMuted, this._getStarted);
+    this.selectLookout();
   }
   selectCommander(): void {
     selectCommanderEffect(this, this._getMuted, this._getStarted);

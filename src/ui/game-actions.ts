@@ -77,7 +77,7 @@ export function cycleIdleGeneralist(): void {
   game.syncUIStore();
 }
 
-/** Select all army (non-building, non-gatherer) units. */
+/** Select all field army units (non-building, non-generalist) units. */
 export function selectArmyUnits(): void {
   selectArmy(game.world);
   game.syncUIStore();
