@@ -7,9 +7,9 @@ import {
   FactionTag,
   Health,
   IsResource,
-  LegacySpecialistSnapshot,
   Position,
   Resource,
+  SnapshotHarnessSpecialist,
   Stance,
   StanceMode,
   TaskOverride,
@@ -87,7 +87,7 @@ export function spawnSpecialistUnit(
 
   const eid = spawnEntity(world, kind, x, y, Faction.Player);
   if (mode === 'snapshot_harness') {
-    addComponent(world.ecs, eid, LegacySpecialistSnapshot);
+    addComponent(world.ecs, eid, SnapshotHarnessSpecialist);
   } else {
     addComponent(world.ecs, eid, AutonomousSpecialist);
   }

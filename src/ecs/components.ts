@@ -146,7 +146,7 @@ export const IsBuilding = {};
 export const IsResource = {};
 export const Dead = {};
 export const IsProjectile = {};
-export const LegacySpecialistSnapshot = {};
+export const SnapshotHarnessSpecialist = {};
 export const AutonomousSpecialist = {};
 
 // Patrol route tracking (waypoints stored externally in world.patrolWaypoints)

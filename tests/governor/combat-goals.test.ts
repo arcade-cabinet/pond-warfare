@@ -12,8 +12,8 @@ import {
   EntityTypeTag,
   FactionTag,
   Health,
-  LegacySpecialistSnapshot,
   Position,
+  SnapshotHarnessSpecialist,
   TaskOverride,
   UnitStateMachine,
   Velocity,
@@ -112,7 +112,7 @@ describe('DefendGoal', () => {
     createPlayerLodge();
     const regular = createUnit(SAPPER_KIND);
     const specialist = createUnit(SAPPER_KIND, 120, 120);
-    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
+    addComponent(world.ecs, specialist, SnapshotHarnessSpecialist);
 
     store.unitRoster.value = [
       rosterGroup('combat', [
@@ -141,7 +141,7 @@ describe('DefendGoal', () => {
     UnitStateMachine.state[regular] = UnitState.AttackMove;
 
     const specialist = createUnit(SAPPER_KIND, 120, 120);
-    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
+    addComponent(world.ecs, specialist, SnapshotHarnessSpecialist);
     TaskOverride.active[specialist] = 1;
     TaskOverride.task[specialist] = UnitState.AttackMove;
     UnitStateMachine.state[specialist] = UnitState.AttackMove;
@@ -177,7 +177,7 @@ describe('AttackGoal', () => {
     const regularB = createUnit(SAPPER_KIND, 120, 100);
     const regularC = createUnit(SAPPER_KIND, 140, 100);
     const specialist = createUnit(SAPPER_KIND, 160, 100);
-    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
+    addComponent(world.ecs, specialist, SnapshotHarnessSpecialist);
     const closeEnemy = createEnemy(EntityKind.Gator, 200, 200);
     createEnemy(EntityKind.Snake, 260, 220);
 
@@ -216,7 +216,7 @@ describe('AttackGoal', () => {
     TaskOverride.task[regularB] = UnitState.AttackMovePatrol;
 
     const specialist = createUnit(SAPPER_KIND, 160, 100);
-    addComponent(world.ecs, specialist, LegacySpecialistSnapshot);
+    addComponent(world.ecs, specialist, SnapshotHarnessSpecialist);
     TaskOverride.active[specialist] = 1;
     TaskOverride.task[specialist] = UnitState.AttackMove;
 

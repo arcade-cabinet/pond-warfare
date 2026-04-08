@@ -6,7 +6,7 @@ import {
   EntityTypeTag,
   FactionTag,
   Health,
-  LegacySpecialistSnapshot,
+  SnapshotHarnessSpecialist,
 } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
@@ -36,7 +36,7 @@ describe('computePopulation', () => {
       (eid) =>
         FactionTag.faction[eid] === Faction.Player &&
         EntityTypeTag.kind[eid] === MUDPAW_KIND &&
-        hasComponent(world.ecs, eid, LegacySpecialistSnapshot),
+        hasComponent(world.ecs, eid, SnapshotHarnessSpecialist),
     );
 
     expect(fisher).toBeDefined();
