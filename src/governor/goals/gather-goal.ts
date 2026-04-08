@@ -48,15 +48,29 @@ function prioritizeBuildResources(
   const def = ENTITY_DEFS[kind];
   const fishCost = def.fishCost ?? 0;
   const logCost = def.logCost ?? 0;
+  const fishShort = fishCost > 0 && store.fish.value < fishCost;
+  const logShort = logCost > 0 && store.logs.value < logCost;
 
-  if (store.logs.value < logCost) {
+  if (fishShort && logShort) {
+    const fishRatio = store.fish.value / fishCost;
+    const logRatio = store.logs.value / logCost;
+    const primary = logRatio <= fishRatio ? 'gathering-logs' : 'gathering-fish';
+    const secondary = primary === 'gathering-logs' ? 'gathering-fish' : 'gathering-logs';
+    return {
+      tasks: [primary, secondary, 'gathering-rocks'],
+      rotateAssignments: true,
+      hardFocusPrimary: true,
+    };
+  }
+
+  if (logShort) {
     return {
       tasks: ['gathering-logs', 'gathering-fish', 'gathering-rocks'],
       rotateAssignments: false,
       hardFocusPrimary: true,
     };
   }
-  if (store.fish.value < fishCost) {
+  if (fishShort) {
     return {
       tasks: ['gathering-fish', 'gathering-logs', 'gathering-rocks'],
       rotateAssignments: false,

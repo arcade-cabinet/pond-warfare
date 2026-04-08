@@ -161,6 +161,8 @@ export class TrainEvaluator extends GoalEvaluator {
     const idleMudpaws = findIdleMudpaws().length;
     const reservedBuildKind = getGovernorReservedBuildKind();
 
+    if (reservedBuildKind !== null) return 0.18;
+
     // Need Mudpaws for economy — but the target drops on higher-pressure stages.
     if (mudpaws < getGovernorMudpawTarget()) {
       if (idleMudpaws > 0) return 0; // Let Gather goal assign them first
@@ -171,7 +173,6 @@ export class TrainEvaluator extends GoalEvaluator {
     const army = combatUnitCount();
     const readyArmy = countAvailableAttackers();
     const combatTarget = getGovernorCombatTarget();
-    if (reservedBuildKind !== null) return 0.18;
     if (army < combatTarget && store.fish.value >= 20 && canPressureSafely(army, readyArmy)) {
       return 0.44;
     }

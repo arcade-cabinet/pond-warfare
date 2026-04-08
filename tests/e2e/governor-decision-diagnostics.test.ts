@@ -82,6 +82,9 @@ interface TraceSummary {
   unitsTrained: number;
   gathered: number;
   stockpile: number;
+  fish: number;
+  logs: number;
+  towers: number;
   clams: number;
   power: number;
 }
@@ -237,6 +240,9 @@ function runVariant(
     unitsTrained: world.stats.unitsTrained,
     gathered: world.stats.resourcesGathered,
     stockpile: world.resources.fish + world.resources.logs + world.resources.rocks,
+    fish: world.resources.fish,
+    logs: world.resources.logs,
+    towers: store.buildingRoster.value.filter((building) => building.kind === EntityKind.Tower).length,
     clams,
     power: Number(
       (() => {

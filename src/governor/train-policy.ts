@@ -49,6 +49,13 @@ export function getGovernorMudpawTarget(): number {
   if (hasImmediatePressure()) return 2;
 
   const stage = currentStage();
+  if (
+    stage >= 6 &&
+    hasCompletedBuilding(EntityKind.Armory) &&
+    !hasBuilding(EntityKind.Tower)
+  ) {
+    return 2;
+  }
   if (stage >= 6) return 1;
   if (stage >= 4) return 3;
   return 4;
@@ -80,16 +87,23 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
   const waveCountdown = nextWaveCountdown();
   const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
   const lodgeHp = lodgeHpRatio();
-
-  if (
+  const canStartTowerSavings =
     stage >= 6 &&
     hasCompletedBuilding(EntityKind.Armory) &&
     !hasBuilding(EntityKind.Tower) &&
-    lodgeHp >= 0.82 &&
+    lodgeHp >= 0.88 &&
     threats <= 2 &&
-    (waveCountdown === null || waveCountdown > 10) &&
+    (waveCountdown === null || waveCountdown > 12) &&
+    unitCount('generalist') >= 2;
+
+  if (
+    canStartTowerSavings &&
     nearBuildBudget(EntityKind.Tower, 60, 70)
   ) {
+    return EntityKind.Tower;
+  }
+
+  if (canStartTowerSavings) {
     return EntityKind.Tower;
   }
 
