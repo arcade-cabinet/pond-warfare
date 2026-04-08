@@ -17,7 +17,7 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
-import { getEnemyUnitRole } from '@/ecs/systems/wave-spawner';
+import { getEnemyBehaviorRole } from '@/ecs/systems/wave-spawner';
 import type { GameWorld } from '@/ecs/world';
 import { Faction, UnitState } from '@/types';
 import { findNearestEntity, findResourceNodes } from './helpers';
@@ -53,7 +53,7 @@ export function enemyRaiderTick(world: GameWorld): void {
     if (Health.current[eid] <= 0) continue;
 
     // Only affect units with raider role
-    const role = getEnemyUnitRole(eid);
+    const role = getEnemyBehaviorRole(eid);
     if (role !== 'raider') continue;
 
     const state = UnitStateMachine.state[eid] as UnitState;

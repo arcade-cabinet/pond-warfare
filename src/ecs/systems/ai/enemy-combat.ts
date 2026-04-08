@@ -3,7 +3,7 @@
  *
  * Attack decisions, retreat logic, and recon pressure (task #14).
  * Attacks when army exceeds threshold, targets weakest player building,
- * groups units before attacking, retreats damaged units, and sends scouts.
+ * groups units before attacking, retreats damaged units, and sends recon fliers.
  */
 
 import { audio } from '@/audio/audio-system';
@@ -16,7 +16,7 @@ import {
   ENEMY_LATE_GAME_FRAME,
   ENEMY_RALLY_RADIUS,
   ENEMY_RETREAT_HP_PERCENT,
-  ENEMY_SCOUT_INTERVAL,
+  ENEMY_RECON_INTERVAL,
   ENEMY_SNAKE_COST_FISH,
   ENEMY_SNAKE_COST_LOGS,
 } from '@/constants';
@@ -45,7 +45,7 @@ export function enemyCombatTick(world: GameWorld): void {
   enemyRetreatLogic(world);
 
   // --- Recon logic ---
-  enemyScoutLogic(world, isPeaceful);
+  enemyReconLogic(world, isPeaceful);
 }
 
 /**
@@ -184,10 +184,10 @@ function enemyRetreatLogic(world: GameWorld): void {
   }
 }
 
-/** Send scout snakes to explore the map (task #14) */
-function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
+/** Send recon fliers to explore the map (task #14) */
+function enemyReconLogic(world: GameWorld, isPeaceful: boolean): void {
   if (isPeaceful) return;
-  if (world.frameCount % ENEMY_SCOUT_INTERVAL !== 0) return;
+  if (world.frameCount % ENEMY_RECON_INTERVAL !== 0) return;
 
   const nestEids = getEnemyNests(world);
   if (nestEids.length === 0) return;
@@ -203,11 +203,11 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
   const sx = nx + (world.gameRng.next() - 0.5) * 60;
   const sy = ny + 30;
 
-  const scoutEid = spawnEntity(world, EntityKind.Snake, sx, sy, Faction.Enemy);
-  if (scoutEid < 0) return;
+  const reconEid = spawnEntity(world, EntityKind.Snake, sx, sy, Faction.Enemy);
+  if (reconEid < 0) return;
 
   // Spawn pop animation + dust
-  triggerSpawnPop(scoutEid);
+  triggerSpawnPop(reconEid);
   for (let j = 0; j < 6; j++) {
     const angle = (j / 6) * Math.PI * 2;
     world.particles.push({
@@ -224,28 +224,28 @@ function enemyScoutLogic(world: GameWorld, isPeaceful: boolean): void {
   res.fish -= ENEMY_SNAKE_COST_FISH;
   res.logs -= ENEMY_SNAKE_COST_LOGS;
 
-  // Send scout to a random location on the map, biased toward player lodge
+  // Send recon unit to a random location on the map, biased toward player lodge
   const lodgeEid = findPlayerLodge(world);
-  let scoutX: number;
-  let scoutY: number;
+  let reconX: number;
+  let reconY: number;
   if (lodgeEid !== -1 && world.gameRng.next() > 0.3) {
-    // 70% chance to scout toward the lodge area
-    scoutX = Position.x[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
-    scoutY = Position.y[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
+    // 70% chance to probe toward the lodge area
+    reconX = Position.x[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
+    reconY = Position.y[lodgeEid] + (world.gameRng.next() - 0.5) * 600;
   } else {
     // Random map exploration — use dynamic world dimensions
     const margin = Math.min(200, world.worldWidth * 0.15);
-    scoutX = margin + world.gameRng.next() * (world.worldWidth - margin * 2);
-    scoutY = margin + world.gameRng.next() * (world.worldHeight - margin * 2);
+    reconX = margin + world.gameRng.next() * (world.worldWidth - margin * 2);
+    reconY = margin + world.gameRng.next() * (world.worldHeight - margin * 2);
   }
 
-  UnitStateMachine.targetX[scoutEid] = scoutX;
-  UnitStateMachine.targetY[scoutEid] = scoutY;
-  UnitStateMachine.state[scoutEid] = UnitState.AttackMovePatrol;
-  UnitStateMachine.hasAttackMoveTarget[scoutEid] = 1;
-  UnitStateMachine.attackMoveTargetX[scoutEid] = scoutX;
-  UnitStateMachine.attackMoveTargetY[scoutEid] = scoutY;
+  UnitStateMachine.targetX[reconEid] = reconX;
+  UnitStateMachine.targetY[reconEid] = reconY;
+  UnitStateMachine.state[reconEid] = UnitState.AttackMovePatrol;
+  UnitStateMachine.hasAttackMoveTarget[reconEid] = 1;
+  UnitStateMachine.attackMoveTargetX[reconEid] = reconX;
+  UnitStateMachine.attackMoveTargetY[reconEid] = reconY;
 
-  const speed = Velocity.speed[scoutEid] || ENTITY_DEFS[EntityKind.Snake]?.speed || 2.0;
-  world.yukaManager.addUnit(scoutEid, sx, sy, speed, scoutX, scoutY);
+  const speed = Velocity.speed[reconEid] || ENTITY_DEFS[EntityKind.Snake]?.speed || 2.0;
+  world.yukaManager.addUnit(reconEid, sx, sy, speed, reconX, reconY);
 }

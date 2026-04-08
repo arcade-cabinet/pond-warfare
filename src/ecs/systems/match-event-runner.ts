@@ -36,8 +36,8 @@ import { EntityKind, Faction } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
 import { eventAlert } from '@/ui/store-v3';
 
-// Re-export role tracking for external consumers
-export { clearEnemyUnitRole, getEnemyUnitRole } from '@/ecs/systems/wave-spawner';
+// Re-export enemy behavior role tracking for external consumers.
+export { clearEnemyUnitRole, getEnemyBehaviorRole } from '@/ecs/systems/wave-spawner';
 
 /** CHECK_INTERVAL: how often to poll for new events (every 2 seconds). */
 const CHECK_INTERVAL = 120;

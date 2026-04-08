@@ -50,7 +50,7 @@ export const ENEMY_TRAIN_TIME = 240; // Frames to train one unit
 export const ENEMY_ATTACK_CHECK_INTERVAL = 600; // Check every 10 seconds
 export const ENEMY_ARMY_ATTACK_THRESHOLD = 5; // Min army size to attack (early game)
 export const ENEMY_RETREAT_HP_PERCENT = 0.2; // Retreat below 20% HP
-export const ENEMY_SCOUT_INTERVAL = 3600; // Send scout every 60 seconds
+export const ENEMY_RECON_INTERVAL = 3600; // Send recon unit every 60 seconds
 export const ENEMY_RALLY_RADIUS = 150; // Rally point radius for grouping
 
 // Enemy AI difficulty scaling over time

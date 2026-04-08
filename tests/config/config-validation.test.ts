@@ -95,13 +95,13 @@ describe('Config Validation — US21', () => {
       const ids = getAllEnemyIds();
       expect(ids).toContain('raider');
       expect(ids).toContain('fighter');
-      expect(ids).toContain('healer');
-      expect(ids).toContain('scout_enemy');
+      expect(ids).toContain('support_enemy');
+      expect(ids).toContain('recon_enemy');
       expect(ids).toContain('sapper_enemy');
       expect(ids).toContain('saboteur_enemy');
     });
 
-    it('all enemy stats should be positive (except healer damage)', () => {
+    it('all enemy stats should be positive (except support damage)', () => {
       const ids = getAllEnemyIds();
       for (const id of ids) {
         const def = getEnemyDef(id);

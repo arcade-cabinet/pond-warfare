@@ -86,7 +86,14 @@ describe('Unit configs', () => {
 });
 
 describe('Enemy configs', () => {
-  const enemyIds = ['raider', 'fighter', 'healer', 'scout_enemy', 'sapper_enemy', 'saboteur_enemy'];
+  const enemyIds = [
+    'raider',
+    'fighter',
+    'support_enemy',
+    'recon_enemy',
+    'sapper_enemy',
+    'saboteur_enemy',
+  ];
 
   it('should load all enemy types with required fields', () => {
     for (const id of enemyIds) {

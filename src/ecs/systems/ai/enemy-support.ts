@@ -1,7 +1,7 @@
 /**
- * AI System - Enemy Healer Behavior (T9)
+ * AI System - Enemy Support Behavior (T9)
  *
- * Enemy healers pathfind to the nearest damaged enemy unit and heal them.
+ * Enemy support units pathfind to the nearest damaged enemy unit and heal them.
  * They stay behind the frontline by targeting damaged allies rather than
  * engaging player units directly. Uses Yuka steering for pathfinding.
  */
@@ -17,29 +17,29 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
-import { getEnemyUnitRole } from '@/ecs/systems/wave-spawner';
+import { getEnemyBehaviorRole } from '@/ecs/systems/wave-spawner';
 import type { GameWorld } from '@/ecs/world';
 import { Faction, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 import { findDamagedEnemyUnits, findNearestEntity } from './helpers';
 
-/** How often to re-evaluate healer targets (every 2 seconds). */
-const HEALER_RETARGET_INTERVAL = 120;
+/** How often to re-evaluate support targets (every 2 seconds). */
+const SUPPORT_RETARGET_INTERVAL = 120;
 
 /** Healing range in pixels. */
-const HEALER_RANGE = 80;
+const SUPPORT_RANGE = 80;
 
 /** HP restored per heal tick. */
 const HEAL_AMOUNT = 3;
 
-/** Max units a healer can heal per tick. */
+/** Max units a support unit can heal per tick. */
 const MAX_HEALS = 2;
 
 /**
- * Enemy healer behavior tick.
- * Healers move toward the nearest damaged enemy unit and heal them.
+ * Enemy support behavior tick.
+ * Support units move toward the nearest damaged enemy unit and heal them.
  */
-export function enemyHealerTick(world: GameWorld): void {
+export function enemySupportTick(world: GameWorld): void {
   if (world.frameCount < world.peaceTimer) return;
 
   const allUnits = query(world.ecs, [
@@ -50,31 +50,31 @@ export function enemyHealerTick(world: GameWorld): void {
     UnitStateMachine,
   ]);
 
-  // Collect healers
-  const healers: number[] = [];
+  // Collect support units
+  const supportUnits: number[] = [];
   for (let i = 0; i < allUnits.length; i++) {
     const eid = allUnits[i];
     if (FactionTag.faction[eid] !== Faction.Enemy) continue;
     if (hasComponent(world.ecs, eid, IsBuilding)) continue;
     if (hasComponent(world.ecs, eid, IsResource)) continue;
     if (Health.current[eid] <= 0) continue;
-    if (getEnemyUnitRole(eid) === 'healer') {
-      healers.push(eid);
+    if (getEnemyBehaviorRole(eid) === 'support_enemy') {
+      supportUnits.push(eid);
     }
   }
 
-  if (healers.length === 0) return;
+  if (supportUnits.length === 0) return;
 
   // Process healing aura every frame (range-based)
-  processHealerAura(world, healers);
+  processSupportAura(world, supportUnits);
 
   // Re-target movement less frequently
-  if (world.frameCount % HEALER_RETARGET_INTERVAL !== 0) return;
+  if (world.frameCount % SUPPORT_RETARGET_INTERVAL !== 0) return;
 
   const damagedAllies = findDamagedEnemyUnits(world);
   if (damagedAllies.length === 0) return;
 
-  for (const hEid of healers) {
+  for (const hEid of supportUnits) {
     const state = UnitStateMachine.state[hEid] as UnitState;
     // Don't redirect if already healing (staying near target)
     if (state === UnitState.Attacking) continue;
@@ -99,15 +99,15 @@ export function enemyHealerTick(world: GameWorld): void {
 }
 
 /** Heal nearby damaged enemy allies within range (aura effect). */
-function processHealerAura(world: GameWorld, healers: number[]): void {
+function processSupportAura(world: GameWorld, supportUnits: number[]): void {
   // Only process every 60 frames for performance
   if (world.frameCount % 60 !== 0) return;
 
-  const rangeSq = HEALER_RANGE * HEALER_RANGE;
+  const rangeSq = SUPPORT_RANGE * SUPPORT_RANGE;
 
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
 
-  for (const hEid of healers) {
+  for (const hEid of supportUnits) {
     const hx = Position.x[hEid];
     const hy = Position.y[hEid];
     let healed = 0;

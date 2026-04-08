@@ -17,12 +17,20 @@ import { getSpawnPositions } from './spawn-positions';
 
 // -- Enemy Role to EntityKind Mapping -------------------------------------
 
+export type EnemyBehaviorRole =
+  | 'fighter'
+  | 'raider'
+  | 'support_enemy'
+  | 'recon_enemy'
+  | 'sapper_enemy'
+  | 'saboteur_enemy';
+
 /** Maps enemies.json role keys to the EntityKind used to spawn that unit. */
-const ENEMY_ROLE_TO_KIND: Record<string, EntityKind> = {
+const ENEMY_ROLE_TO_KIND: Record<EnemyBehaviorRole, EntityKind> = {
   fighter: EntityKind.Gator,
   raider: EntityKind.Snake,
-  healer: EntityKind.VenomSnake,
-  scout_enemy: EntityKind.FlyingHeron,
+  support_enemy: EntityKind.VenomSnake,
+  recon_enemy: EntityKind.FlyingHeron,
   sapper_enemy: EntityKind.SiegeTurtle,
   saboteur_enemy: EntityKind.SwampDrake,
 };
@@ -30,10 +38,10 @@ const ENEMY_ROLE_TO_KIND: Record<string, EntityKind> = {
 // -- Role Tracking --------------------------------------------------------
 
 /** Tag spawned units with their role for behavior systems. */
-const spawnedUnitRoles = new Map<number, string>();
+const spawnedUnitRoles = new Map<number, EnemyBehaviorRole>();
 
-/** Get the role assigned to a spawned enemy unit (for behavior systems). */
-export function getEnemyUnitRole(eid: number): string | undefined {
+/** Get the normalized behavior role assigned to a spawned enemy unit. */
+export function getEnemyBehaviorRole(eid: number): EnemyBehaviorRole | undefined {
   return spawnedUnitRoles.get(eid);
 }
 
@@ -68,11 +76,12 @@ export function spawnEventEnemies(world: GameWorld, template: EventTemplate): vo
   const composition = template.enemy_composition;
   if (!composition || Object.keys(composition).length === 0) return;
 
-  const unitsToSpawn: { role: string; kind: EntityKind }[] = [];
+  const unitsToSpawn: { role: EnemyBehaviorRole; kind: EntityKind }[] = [];
   for (const [enemyType, count] of Object.entries(composition)) {
-    const kind = ENEMY_ROLE_TO_KIND[enemyType] ?? EntityKind.Gator;
+    const role = enemyType as EnemyBehaviorRole;
+    const kind = ENEMY_ROLE_TO_KIND[role] ?? EntityKind.Gator;
     for (let i = 0; i < count; i++) {
-      unitsToSpawn.push({ role: enemyType, kind });
+      unitsToSpawn.push({ role, kind });
     }
   }
 
@@ -99,12 +108,13 @@ export function spawnEventEnemies(world: GameWorld, template: EventTemplate): vo
   }
 
   if (template.boss) {
-    const bossKind = ENEMY_ROLE_TO_KIND[template.boss.type] ?? EntityKind.BossCroc;
+    const bossRole = template.boss.type as EnemyBehaviorRole;
+    const bossKind = ENEMY_ROLE_TO_KIND[bossRole] ?? EntityKind.BossCroc;
     const bossPositions = getSpawnPositions(world, 1);
     const bossPos = bossPositions[0];
     const bossEid = spawnEntity(world, bossKind, bossPos.x, bossPos.y, Faction.Enemy);
     if (bossEid >= 0) {
-      spawnedUnitRoles.set(bossEid, template.boss.type);
+      spawnedUnitRoles.set(bossEid, bossRole);
     }
   }
 }
