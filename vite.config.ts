@@ -90,6 +90,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      crypto: resolve(__dirname, 'src/platform/crypto-shim.ts'),
+      'node:crypto': resolve(__dirname, 'src/platform/crypto-shim.ts'),
     },
   },
   build: {
