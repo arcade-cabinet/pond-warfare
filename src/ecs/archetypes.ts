@@ -2,10 +2,10 @@ import { addComponent, addEntity } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   isMudpawKind,
-  LEGACY_SABOTEUR_CHASSIS_KIND,
-  LEGACY_SABOTEUR_CHASSIS_SPRITE_ID,
-  LEGACY_SAPPER_CHASSIS_KIND,
-  LEGACY_SAPPER_CHASSIS_SPRITE_ID,
+  COMPAT_SABOTEUR_CHASSIS_KIND,
+  COMPAT_SABOTEUR_CHASSIS_SPRITE_ID,
+  COMPAT_SAPPER_CHASSIS_KIND,
+  COMPAT_SAPPER_CHASSIS_SPRITE_ID,
   LOOKOUT_KIND,
   LOOKOUT_SPRITE_ID,
   MEDIC_KIND,
@@ -45,8 +45,8 @@ import type { GameWorld } from './world';
 
 const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [MUDPAW_KIND]: MUDPAW_SPRITE_ID,
-  [LEGACY_SAPPER_CHASSIS_KIND]: LEGACY_SAPPER_CHASSIS_SPRITE_ID,
-  [LEGACY_SABOTEUR_CHASSIS_KIND]: LEGACY_SABOTEUR_CHASSIS_SPRITE_ID,
+  [COMPAT_SAPPER_CHASSIS_KIND]: COMPAT_SAPPER_CHASSIS_SPRITE_ID,
+  [COMPAT_SABOTEUR_CHASSIS_KIND]: COMPAT_SABOTEUR_CHASSIS_SPRITE_ID,
   [EntityKind.Gator]: SpriteId.Gator,
   [EntityKind.Snake]: SpriteId.Snake,
   [EntityKind.Lodge]: SpriteId.Lodge,
@@ -224,7 +224,7 @@ export function spawnEntity(
     Combat.damage[eid] = damage;
 
     let range = def.attackRange;
-    if (kind === LEGACY_SABOTEUR_CHASSIS_KIND && faction === Faction.Player && world.tech.eagleEye)
+    if (kind === COMPAT_SABOTEUR_CHASSIS_KIND && faction === Faction.Player && world.tech.eagleEye)
       range += 50;
     Combat.attackRange[eid] = range;
     Combat.attackCooldown[eid] = 0;

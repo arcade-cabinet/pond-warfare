@@ -6,7 +6,7 @@
  * player-facing model those chassis map to:
  * - `drawGatherer` -> Mudpaw and gather-specialist bodies
  * - `drawScout` -> Lookout body
- * - `drawBrawler` / `drawSniper` -> historical compatibility bodies only
+ * - `drawBrawler` / `drawSniper` -> compatibility-only combat bodies
  */
 
 import { PALETTE } from '@/constants';

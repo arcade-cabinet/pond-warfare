@@ -15,8 +15,8 @@ import {
   isWingBuilding,
 } from '@/config/entity-defs';
 import {
-  LEGACY_SABOTEUR_CHASSIS_KIND,
-  LEGACY_SAPPER_CHASSIS_KIND,
+  COMPAT_SABOTEUR_CHASSIS_KIND,
+  COMPAT_SAPPER_CHASSIS_KIND,
   LOOKOUT_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
@@ -92,8 +92,8 @@ describe('ENTITY_DEFS', () => {
   });
 
   it('historical ranged compatibility unit should outrange historical melee compatibility unit', () => {
-    const sniper = ENTITY_DEFS[LEGACY_SABOTEUR_CHASSIS_KIND];
-    const brawler = ENTITY_DEFS[LEGACY_SAPPER_CHASSIS_KIND];
+    const sniper = ENTITY_DEFS[COMPAT_SABOTEUR_CHASSIS_KIND];
+    const brawler = ENTITY_DEFS[COMPAT_SAPPER_CHASSIS_KIND];
     expect(sniper.attackRange).toBeGreaterThan(brawler.attackRange);
   });
 });
@@ -119,7 +119,7 @@ describe('isWingBuilding', () => {
 
   it('should return false for non-building entities', () => {
     expect(isWingBuilding(MUDPAW_KIND)).toBe(false);
-    expect(isWingBuilding(LEGACY_SAPPER_CHASSIS_KIND)).toBe(false);
+    expect(isWingBuilding(COMPAT_SAPPER_CHASSIS_KIND)).toBe(false);
     expect(isWingBuilding(EntityKind.Gator)).toBe(false);
     expect(isWingBuilding(EntityKind.Cattail)).toBe(false);
   });
@@ -128,8 +128,8 @@ describe('isWingBuilding', () => {
 describe('entityKindName', () => {
   it('should return correct names', () => {
     expect(entityKindName(MUDPAW_KIND)).toBe('Mudpaw');
-    expect(entityKindName(LEGACY_SAPPER_CHASSIS_KIND)).toBe('Sapper');
-    expect(entityKindName(LEGACY_SABOTEUR_CHASSIS_KIND)).toBe('Saboteur');
+    expect(entityKindName(COMPAT_SAPPER_CHASSIS_KIND)).toBe('Sapper');
+    expect(entityKindName(COMPAT_SABOTEUR_CHASSIS_KIND)).toBe('Saboteur');
     expect(entityKindName(MEDIC_KIND)).toBe('Medic');
     expect(entityKindName(LOOKOUT_KIND)).toBe('Lookout');
     expect(entityKindName(EntityKind.PredatorNest)).toBe('Predator Nest');
@@ -158,42 +158,42 @@ describe('entityKindFromString', () => {
 
 describe('getDamageMultiplier', () => {
   it('should return 1.5 for strong matchups', () => {
-    expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
-    expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, MEDIC_KIND)).toBe(1.5);
-    expect(getDamageMultiplier(LEGACY_SABOTEUR_CHASSIS_KIND, MEDIC_KIND)).toBe(1.5);
-    expect(getDamageMultiplier(LEGACY_SABOTEUR_CHASSIS_KIND, EntityKind.Snake)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Gator, LEGACY_SAPPER_CHASSIS_KIND)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Snake, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(COMPAT_SAPPER_CHASSIS_KIND, COMPAT_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(COMPAT_SAPPER_CHASSIS_KIND, MEDIC_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(COMPAT_SABOTEUR_CHASSIS_KIND, MEDIC_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(COMPAT_SABOTEUR_CHASSIS_KIND, EntityKind.Snake)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Gator, COMPAT_SAPPER_CHASSIS_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Snake, COMPAT_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
   });
 
   it('should return 0.75 for weak matchups', () => {
-    expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, EntityKind.Gator)).toBe(0.75);
-    expect(getDamageMultiplier(LEGACY_SABOTEUR_CHASSIS_KIND, LEGACY_SAPPER_CHASSIS_KIND)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.Gator, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.Snake, LEGACY_SAPPER_CHASSIS_KIND)).toBe(0.75);
+    expect(getDamageMultiplier(COMPAT_SAPPER_CHASSIS_KIND, EntityKind.Gator)).toBe(0.75);
+    expect(getDamageMultiplier(COMPAT_SABOTEUR_CHASSIS_KIND, COMPAT_SAPPER_CHASSIS_KIND)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.Gator, COMPAT_SABOTEUR_CHASSIS_KIND)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.Snake, COMPAT_SAPPER_CHASSIS_KIND)).toBe(0.75);
   });
 
   it('should return 1.0 for neutral/unknown matchups', () => {
-    expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, LEGACY_SAPPER_CHASSIS_KIND)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.BossCroc, LEGACY_SAPPER_CHASSIS_KIND)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.BossCroc, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(COMPAT_SAPPER_CHASSIS_KIND, COMPAT_SAPPER_CHASSIS_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.BossCroc, COMPAT_SAPPER_CHASSIS_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.BossCroc, COMPAT_SABOTEUR_CHASSIS_KIND)).toBe(1.0);
     expect(getDamageMultiplier(MUDPAW_KIND, EntityKind.Gator)).toBe(1.0);
-    expect(getDamageMultiplier(MEDIC_KIND, LEGACY_SAPPER_CHASSIS_KIND)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.Lodge, LEGACY_SAPPER_CHASSIS_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(MEDIC_KIND, COMPAT_SAPPER_CHASSIS_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.Lodge, COMPAT_SAPPER_CHASSIS_KIND)).toBe(1.0);
   });
 
   it('should have expected counter triangle symmetry (A strong vs B implies B weak vs A)', () => {
     // Legacy sapper chassis strong vs legacy saboteur chassis, and vice versa.
-    expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
-    expect(getDamageMultiplier(LEGACY_SABOTEUR_CHASSIS_KIND, LEGACY_SAPPER_CHASSIS_KIND)).toBe(0.75);
+    expect(getDamageMultiplier(COMPAT_SAPPER_CHASSIS_KIND, COMPAT_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(COMPAT_SABOTEUR_CHASSIS_KIND, COMPAT_SAPPER_CHASSIS_KIND)).toBe(0.75);
 
     // Gator strong vs legacy sapper chassis, legacy sapper chassis weak vs Gator.
-    expect(getDamageMultiplier(EntityKind.Gator, LEGACY_SAPPER_CHASSIS_KIND)).toBe(1.5);
-    expect(getDamageMultiplier(LEGACY_SAPPER_CHASSIS_KIND, EntityKind.Gator)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.Gator, COMPAT_SAPPER_CHASSIS_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(COMPAT_SAPPER_CHASSIS_KIND, EntityKind.Gator)).toBe(0.75);
 
     // Snake strong vs legacy saboteur chassis, Gator weak vs legacy saboteur chassis.
-    expect(getDamageMultiplier(EntityKind.Snake, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Gator, LEGACY_SABOTEUR_CHASSIS_KIND)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.Snake, COMPAT_SABOTEUR_CHASSIS_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Gator, COMPAT_SABOTEUR_CHASSIS_KIND)).toBe(0.75);
   });
 
   it('should only contain multipliers for entities with damage', () => {

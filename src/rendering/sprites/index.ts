@@ -6,8 +6,8 @@
  */
 
 import {
-  LEGACY_SABOTEUR_CHASSIS_SPRITE_ID,
-  LEGACY_SAPPER_CHASSIS_SPRITE_ID,
+  COMPAT_SABOTEUR_CHASSIS_SPRITE_ID,
+  COMPAT_SAPPER_CHASSIS_SPRITE_ID,
   LOOKOUT_SPRITE_ID,
   MEDIC_SPRITE_ID,
   MUDPAW_SPRITE_ID,
@@ -75,13 +75,13 @@ import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } f
  *
  * These are local sprite-registry keys, not the canonical shared enum names.
  * Live roster units use canonical keys where possible, while compatibility-only
- * chassis keep explicit `legacy_*` names so the registry stops teaching the
+ * chassis keep explicit `compat_*` names so the registry stops teaching the
  * dead split roster by default.
  */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'mudpaw', id: MUDPAW_SPRITE_ID },
-  { name: 'legacy_sapper_chassis', id: LEGACY_SAPPER_CHASSIS_SPRITE_ID },
-  { name: 'legacy_saboteur_chassis', id: LEGACY_SABOTEUR_CHASSIS_SPRITE_ID },
+  { name: 'compat_sapper_chassis', id: COMPAT_SAPPER_CHASSIS_SPRITE_ID },
+  { name: 'compat_saboteur_chassis', id: COMPAT_SABOTEUR_CHASSIS_SPRITE_ID },
   { name: 'gator', id: SpriteId.Gator },
   { name: 'snake', id: SpriteId.Snake },
   { name: 'lodge', id: SpriteId.Lodge },
@@ -161,8 +161,8 @@ const LARGE_TYPES = new Set([
 /** Map sprite type names to their draw functions. */
 const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   mudpaw: drawGatherer,
-  legacy_sapper_chassis: drawBrawler,
-  legacy_saboteur_chassis: drawSniper,
+  compat_sapper_chassis: drawBrawler,
+  compat_saboteur_chassis: drawSniper,
   gator: drawGator,
   snake: drawSnake,
   lodge: drawLodge,

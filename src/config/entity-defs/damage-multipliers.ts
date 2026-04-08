@@ -1,6 +1,6 @@
 import {
-  LEGACY_SABOTEUR_CHASSIS_KIND,
-  LEGACY_SAPPER_CHASSIS_KIND,
+  COMPAT_SABOTEUR_CHASSIS_KIND,
+  COMPAT_SAPPER_CHASSIS_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
 } from '@/game/live-unit-kinds';
@@ -18,52 +18,52 @@ import { EntityKind } from '@/types';
  */
 export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<EntityKind, number>>>> =
   {
-    [LEGACY_SAPPER_CHASSIS_KIND]: {
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 1.5,
+    [COMPAT_SAPPER_CHASSIS_KIND]: {
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
       [MEDIC_KIND]: 1.5,
       [EntityKind.Gator]: 0.75,
       [EntityKind.FlyingHeron]: 0.5, // Melee weak vs flying
     },
-    [LEGACY_SABOTEUR_CHASSIS_KIND]: {
+    [COMPAT_SABOTEUR_CHASSIS_KIND]: {
       [MEDIC_KIND]: 1.5,
       [EntityKind.Snake]: 1.5,
-      [LEGACY_SAPPER_CHASSIS_KIND]: 0.75,
+      [COMPAT_SAPPER_CHASSIS_KIND]: 0.75,
       [EntityKind.FlyingHeron]: 1.5, // Ranged counters flying
     },
     [EntityKind.Gator]: {
-      [LEGACY_SAPPER_CHASSIS_KIND]: 1.5,
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 0.75,
+      [COMPAT_SAPPER_CHASSIS_KIND]: 1.5,
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 0.75,
     },
     [EntityKind.Snake]: {
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 1.5,
-      [LEGACY_SAPPER_CHASSIS_KIND]: 0.75,
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
+      [COMPAT_SAPPER_CHASSIS_KIND]: 0.75,
     },
     [EntityKind.Shieldbearer]: {
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 1.5,
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
       [EntityKind.Gator]: 0.75,
     },
     [EntityKind.ArmoredGator]: {
-      [LEGACY_SAPPER_CHASSIS_KIND]: 1.5,
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 0.75,
+      [COMPAT_SAPPER_CHASSIS_KIND]: 1.5,
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 0.75,
     },
     [EntityKind.VenomSnake]: {
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 1.5,
-      [LEGACY_SAPPER_CHASSIS_KIND]: 0.75,
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5,
+      [COMPAT_SAPPER_CHASSIS_KIND]: 0.75,
     },
     [EntityKind.SwampDrake]: {
       [MUDPAW_KIND]: 1.5,
       [EntityKind.Shieldbearer]: 0.75,
     },
     [EntityKind.SiegeTurtle]: {
-      [LEGACY_SAPPER_CHASSIS_KIND]: 0.5,
+      [COMPAT_SAPPER_CHASSIS_KIND]: 0.5,
     },
     [EntityKind.AlphaPredator]: {
-      [LEGACY_SAPPER_CHASSIS_KIND]: 1.25,
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 1.25,
+      [COMPAT_SAPPER_CHASSIS_KIND]: 1.25,
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.25,
     },
     // v1.5.0 new units
     [EntityKind.Diver]: {
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 1.5, // Ambush flanker vs fragile ranged
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5, // Ambush flanker vs fragile ranged
       [EntityKind.Shieldbearer]: 0.75, // Weak vs heavy armor
     },
     [EntityKind.BurrowingWorm]: {
@@ -82,7 +82,7 @@ export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<Entit
       [EntityKind.Shieldbearer]: 0.75, // Armor resists splash
     },
     [EntityKind.Berserker]: {
-      [LEGACY_SABOTEUR_CHASSIS_KIND]: 1.5, // Fast melee closes on ranged
+      [COMPAT_SABOTEUR_CHASSIS_KIND]: 1.5, // Fast melee closes on ranged
       [EntityKind.Shieldbearer]: 0.75, // Armor absorbs reckless attacks
     },
   };

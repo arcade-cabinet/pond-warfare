@@ -1,6 +1,6 @@
 import {
-  LEGACY_SABOTEUR_CHASSIS_KIND,
-  LEGACY_SAPPER_CHASSIS_KIND,
+  COMPAT_SABOTEUR_CHASSIS_KIND,
+  COMPAT_SAPPER_CHASSIS_KIND,
   LOOKOUT_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
@@ -17,8 +17,8 @@ const ENTITY_KIND_ALIASES: Record<string, EntityKind> = {
   logger: MUDPAW_KIND,
   digger: MUDPAW_KIND,
   // Historical compatibility melee/ranged ids.
-  brawler: LEGACY_SAPPER_CHASSIS_KIND,
-  sniper: LEGACY_SABOTEUR_CHASSIS_KIND,
+  brawler: COMPAT_SAPPER_CHASSIS_KIND,
+  sniper: COMPAT_SABOTEUR_CHASSIS_KIND,
   gator: EntityKind.Gator,
   snake: EntityKind.Snake,
   lodge: EntityKind.Lodge,
@@ -73,8 +73,8 @@ const ENTITY_KIND_ALIASES: Record<string, EntityKind> = {
 
 const ENTITY_KIND_LABELS: Record<EntityKind, string> = {
   [MUDPAW_KIND]: 'Mudpaw',
-  [LEGACY_SAPPER_CHASSIS_KIND]: 'Sapper',
-  [LEGACY_SABOTEUR_CHASSIS_KIND]: 'Saboteur',
+  [COMPAT_SAPPER_CHASSIS_KIND]: 'Sapper',
+  [COMPAT_SABOTEUR_CHASSIS_KIND]: 'Saboteur',
   [EntityKind.Gator]: 'Gator',
   [EntityKind.Snake]: 'Snake',
   [EntityKind.Lodge]: 'Lodge',

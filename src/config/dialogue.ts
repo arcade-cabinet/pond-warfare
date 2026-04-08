@@ -10,8 +10,8 @@
  */
 
 import {
-  LEGACY_SABOTEUR_CHASSIS_KIND,
-  LEGACY_SAPPER_CHASSIS_KIND,
+  COMPAT_SABOTEUR_CHASSIS_KIND,
+  COMPAT_SAPPER_CHASSIS_KIND,
   LOOKOUT_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
@@ -201,8 +201,8 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
 };
 
 function canonicalDialogueKind(kind: EntityKind): EntityKind {
-  if (kind === LEGACY_SAPPER_CHASSIS_KIND) return EntityKind.Sapper;
-  if (kind === LEGACY_SABOTEUR_CHASSIS_KIND) return EntityKind.Saboteur;
+  if (kind === COMPAT_SAPPER_CHASSIS_KIND) return EntityKind.Sapper;
+  if (kind === COMPAT_SABOTEUR_CHASSIS_KIND) return EntityKind.Saboteur;
   return kind;
 }
 

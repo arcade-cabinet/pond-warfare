@@ -22,7 +22,7 @@ import {
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import {
-  LEGACY_SABOTEUR_CHASSIS_KIND,
+  COMPAT_SABOTEUR_CHASSIS_KIND,
   SABOTEUR_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
@@ -118,9 +118,9 @@ describe('Combat weight – projectile sourceKind', () => {
       10,
       -1,
       1.0,
-      LEGACY_SABOTEUR_CHASSIS_KIND,
+      COMPAT_SABOTEUR_CHASSIS_KIND,
     );
-    expect(ProjectileData.sourceKind[proj]).toBe(LEGACY_SABOTEUR_CHASSIS_KIND);
+    expect(ProjectileData.sourceKind[proj]).toBe(COMPAT_SABOTEUR_CHASSIS_KIND);
   });
 
   it('spawnProjectile defaults sourceKind to -1 when not specified', () => {
@@ -203,7 +203,7 @@ describe('Combat weight – differentiated death sounds', () => {
     const { audio } = await import('@/audio/audio-system');
     const { processDeath } = await import('@/ecs/systems/health/death');
 
-    const eid = createUnit(world, LEGACY_SABOTEUR_CHASSIS_KIND, Faction.Player, 1);
+    const eid = createUnit(world, COMPAT_SABOTEUR_CHASSIS_KIND, Faction.Player, 1);
     Health.current[eid] = 0;
     processDeath(world, eid);
 

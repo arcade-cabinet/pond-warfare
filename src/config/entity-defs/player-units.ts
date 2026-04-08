@@ -1,6 +1,6 @@
 import {
-  LEGACY_SABOTEUR_CHASSIS_KIND,
-  LEGACY_SAPPER_CHASSIS_KIND,
+  COMPAT_SABOTEUR_CHASSIS_KIND,
+  COMPAT_SAPPER_CHASSIS_KIND,
   LOOKOUT_KIND,
   MEDIC_KIND,
   MUDPAW_KIND,
@@ -15,7 +15,7 @@ import type { UnitDef } from './unit-def';
  *
  * Important:
  * - The live player-facing manual roster is `Mudpaw / Medic / Sapper / Saboteur`.
- * - Some older internal combat chassis ids still exist for historical scenarios,
+ * - Some older combat chassis ids still exist for compatibility scenarios,
  *   balance tables, and compatibility tests.
  */
 export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
@@ -33,8 +33,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  // Historical internal otter combat kinds retained for compatibility.
-  [LEGACY_SAPPER_CHASSIS_KIND]: {
+  // Compatibility otter combat chassis retained for internal coverage.
+  [COMPAT_SAPPER_CHASSIS_KIND]: {
     hp: 60,
     speed: 1.8,
     damage: 6,
@@ -47,7 +47,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [LEGACY_SABOTEUR_CHASSIS_KIND]: {
+  [COMPAT_SABOTEUR_CHASSIS_KIND]: {
     hp: 40,
     speed: 1.6,
     damage: 8,
@@ -86,7 +86,7 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 100,
     foodCost: 1,
   },
-  // Historical internal scout chassis. The live autonomous recon specialist is
+  // Compatibility scout chassis. The live autonomous recon specialist is
   // `Lookout`, which currently rides this lower-level entity kind.
   [LOOKOUT_KIND]: {
     hp: 20,
