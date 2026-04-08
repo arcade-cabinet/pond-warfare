@@ -19,6 +19,7 @@ run pnpm exec vitest run \
   tests/browser/buildings.test.tsx
 run pnpm build
 run pnpm build:android
+run bash -lc 'cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestSources --no-daemon'
 run pnpm audit --json
 
 printf '\nRelease verification completed successfully.\n'

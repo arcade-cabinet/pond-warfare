@@ -18,6 +18,8 @@ This covers:
 - Android packaging sync build
 - Dependency audit
 
+Before tagging a release, confirm the semantic version in [package.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/package.json) is the one you intend to ship. The tracked [sync-android-shell.js](/Users/jbogaty/src/arcade-cabinet/pond-warfare/scripts/sync-android-shell.js) step now stamps the Android shell from that root package version before native verification runs.
+
 ## Manual Smoke
 
 Run these on at least one real touch device and one desktop browser build:
