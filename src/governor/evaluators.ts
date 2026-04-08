@@ -128,10 +128,11 @@ function canPressureSafely(totalArmy: number, readyArmy: number): boolean {
 
 function proactiveTowerWindowReady(): boolean {
   const def = ENTITY_DEFS[EntityKind.Tower];
+  const towerDamageTrackActive = hasCurrentRunTrack('defense_tower_damage');
   return (
     storeV3.progressionLevel.value >= 6 &&
-    hasCompletedBuilding(EntityKind.Armory) &&
     !hasBuilding(EntityKind.Tower) &&
+    (hasCompletedBuilding(EntityKind.Armory) || towerDamageTrackActive) &&
     store.fish.value >= (def.fishCost ?? 0) &&
     store.logs.value >= (def.logCost ?? 0)
   );
@@ -175,15 +176,17 @@ export class GatherEvaluator extends GoalEvaluator {
 /** High score when a needed building is missing. */
 export class BuildEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
-    // Armory is a Lodge wing — check if it's unlocked rather than placed
-    if (!hasWingOrBuilding(EntityKind.Armory) && store.fish.value >= 180 && store.logs.value >= 120)
-      return 0.85;
+    const towerDamageTrackActive = hasCurrentRunTrack('defense_tower_damage');
     if (
       getGovernorReservedBuildKind() === EntityKind.Tower &&
       canAffordBuild(EntityKind.Tower)
     ) {
       return 0.91;
     }
+    if (towerDamageTrackActive && proactiveTowerWindowReady()) return 0.88;
+    // Armory is a Lodge wing — check if it's unlocked rather than placed
+    if (!hasWingOrBuilding(EntityKind.Armory) && store.fish.value >= 180 && store.logs.value >= 120)
+      return 0.85;
     if (baseThreatCount() >= 2 && store.fish.value >= 200) return 0.8;
     if (proactiveTowerWindowReady()) {
       return 0.79;

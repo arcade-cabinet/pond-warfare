@@ -102,6 +102,19 @@ describe('shamanHealSystem', () => {
     expect(Health.current[ally2]).toBe(32);
   });
 
+  it('accumulates fractional heal-power bonus across repeated shaman ticks', () => {
+    world.playerHealMultiplier = 1.08;
+    createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
+    const ally = createUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 40, 100);
+
+    for (let tick = 0; tick < 7; tick += 1) {
+      world.frameCount = tick * 300;
+      shamanHealSystem(world);
+    }
+
+    expect(Health.current[ally]).toBe(55);
+  });
+
   it('should only run on correct frame interval', () => {
     createUnit(world, 100, 100, Faction.Player, EntityKind.Shaman, 30, 30);
     const ally = createUnit(world, 150, 100, Faction.Player, SAPPER_KIND, 40, 60);

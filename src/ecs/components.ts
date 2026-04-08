@@ -34,6 +34,7 @@ export const Health = soa({
   max: [] as number[],
   flashTimer: [] as number[],
   lastDamagedFrame: [] as number[],
+  healCarry: [] as number[],
 });
 
 // Combat

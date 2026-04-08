@@ -151,6 +151,16 @@ describe('BuildEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.85);
   });
 
+  it('prioritizes a first tower ahead of the armory when tower-damage upgrades are active', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_tower_damage_t0'];
+    store.fish.value = 260;
+    store.logs.value = 320;
+    store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.88);
+  });
+
   it('returns 0 when all buildings present and not at pop cap', () => {
     store.buildingRoster.value = [
       makeBuilding(1, EntityKind.Lodge),

@@ -41,6 +41,13 @@ function currentStage(): number {
 }
 
 const BUILD_PRIORITIES: BuildNeed[] = [
+  {
+    kind: EntityKind.Tower,
+    needed: () =>
+      currentStage() >= 6 &&
+      hasCurrentRunTrack('defense_tower_damage') &&
+      buildingCount(EntityKind.Tower) < 1,
+  },
   // Armory is a Lodge wing — check if unlocked
   { kind: EntityKind.Armory, needed: () => !hasBuilding(EntityKind.Armory) },
   {

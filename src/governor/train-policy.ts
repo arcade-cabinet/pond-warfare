@@ -2,6 +2,7 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
+import { hasCurrentRunTrack } from './current-run-upgrades';
 import { getGovernorCombatUnits, getGovernorGatherUnits } from './roster-units';
 
 type GovernorUnitRole = 'generalist' | 'combat' | 'support' | 'recon';
@@ -12,6 +13,10 @@ function unitCount(role: GovernorUnitRole): number {
   return store.unitRoster.value
     .filter((group) => group.role === role)
     .reduce((sum, group) => sum + group.units.length, 0);
+}
+
+function woundedCombatUnitCount(): number {
+  return getGovernorCombatUnits(store.unitRoster.value).filter((unit) => unit.hp < unit.maxHp).length;
 }
 
 function lodgeHpRatio(): number {
@@ -88,14 +93,25 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
   const waveCountdown = nextWaveCountdown();
   const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
   const lodgeHp = lodgeHpRatio();
+  const towerDamageTrackActive = hasCurrentRunTrack('defense_tower_damage');
   const canStartTowerSavings =
     stage >= 6 &&
-    hasCompletedBuilding(EntityKind.Armory) &&
     !hasBuilding(EntityKind.Tower) &&
-    lodgeHp >= 0.88 &&
-    threats <= 2 &&
-    (waveCountdown === null || waveCountdown > 12) &&
-    unitCount('generalist') >= 2;
+    unitCount('generalist') >= 2 &&
+    (
+      (
+        hasCompletedBuilding(EntityKind.Armory) &&
+        lodgeHp >= 0.88 &&
+        threats <= 2 &&
+        (waveCountdown === null || waveCountdown > 12)
+      ) ||
+      (
+        towerDamageTrackActive &&
+        lodgeHp >= 0.94 &&
+        threats <= 1 &&
+        (waveCountdown === null || waveCountdown > 18)
+      )
+    );
 
   if (
     canStartTowerSavings &&
@@ -113,6 +129,13 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
 
 export function shouldTrainSupportUnit(): boolean {
   if (unitCount('support') > 0) return false;
+  if (
+    hasCurrentRunTrack('utility_heal_power') &&
+    woundedCombatUnitCount() >= 2 &&
+    unitCount('combat') >= Math.max(3, getGovernorCombatTarget() - 1)
+  ) {
+    return true;
+  }
   return unitCount('combat') >= Math.max(4, getGovernorCombatTarget());
 }
 

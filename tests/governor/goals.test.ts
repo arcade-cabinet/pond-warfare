@@ -79,8 +79,14 @@ function createResource(kind: EntityKind, resType: ResourceType, x: number, y: n
   return eid;
 }
 
-function rosterUnit(eid: number, kind: EntityKind, task: string): RosterUnit {
-  return { eid, kind, task: task as 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false };
+function rosterUnit(
+  eid: number,
+  kind: EntityKind,
+  task: string,
+  hp: number = 30,
+  maxHp: number = 30,
+): RosterUnit {
+  return { eid, kind, task: task as 'idle', targetName: '', hp, maxHp, hasOverride: false };
 }
 
 function rosterGroup(role: RosterGroup['role'], units: RosterUnit[]): RosterGroup {
@@ -516,6 +522,51 @@ describe('TrainGoal', () => {
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
     expect(TrainingQueue.count[lodgeEid]).toBe(1);
     expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(SAPPER_KIND);
+  });
+
+  it('queues a Medic when heal-power upgrades meet a wounded stage-six army', async () => {
+    const { TrainGoal } = await import('@/governor/goals/train-goal');
+
+    const lodgeEid = addEntity(world.ecs);
+    addComponent(world.ecs, lodgeEid, TrainingQueue);
+    addComponent(world.ecs, lodgeEid, FactionTag);
+    addComponent(world.ecs, lodgeEid, IsBuilding);
+    FactionTag.faction[lodgeEid] = Faction.Player;
+    TrainingQueue.count[lodgeEid] = 0;
+
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['utility_heal_power_t0'];
+    store.buildingRoster.value = [
+      {
+        eid: lodgeEid,
+        kind: EntityKind.Lodge,
+        hp: 1500,
+        maxHp: 1500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [MUDPAW_KIND, EntityKind.Medic, SAPPER_KIND, SABOTEUR_KIND],
+      } satisfies RosterBuilding,
+    ];
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
+        rosterUnit(2, MUDPAW_KIND, 'gathering-logs'),
+      ]),
+      rosterGroup('combat', [
+        rosterUnit(10, SAPPER_KIND, 'attacking', 18, 30),
+        rosterUnit(11, SAPPER_KIND, 'defending', 22, 30),
+        rosterUnit(12, SAPPER_KIND, 'idle', 30, 30),
+      ]),
+    ];
+    store.food.value = 2;
+    store.maxFood.value = 8;
+
+    const goal = new TrainGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(TrainingQueue.count[lodgeEid]).toBe(1);
+    expect(trainingQueueSlots.get(lodgeEid)?.[0]).toBe(EntityKind.Medic);
   });
 
 });

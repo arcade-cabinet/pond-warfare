@@ -14,6 +14,7 @@ import { EntityKind } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
+import { hasCurrentRunTrack } from '../current-run-upgrades';
 
 /** Resource tasks in priority order: fish first, then logs, then rocks. */
 const GATHER_TASKS = [
@@ -102,6 +103,14 @@ function prioritizeBuildResources(
 
 function preferredGatherPlan(): GatherPlan {
   const sorted = [...GATHER_TASKS].sort((a, b) => a.signal() - b.signal()).map((entry) => entry.task);
+
+  if (
+    currentStage() >= 6 &&
+    hasCurrentRunTrack('defense_tower_damage') &&
+    !hasBuilding(EntityKind.Tower)
+  ) {
+    return prioritizeBuildResources(EntityKind.Tower, sorted);
+  }
 
   if (currentStage() >= 6 && !hasBuilding(EntityKind.Armory)) {
     return prioritizeBuildResources(EntityKind.Armory, sorted);

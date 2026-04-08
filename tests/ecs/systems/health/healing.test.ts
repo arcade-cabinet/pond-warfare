@@ -184,6 +184,17 @@ describe('processPassiveHealing', () => {
     expect(Health.current[eid]).toBe(52);
   });
 
+  it('accumulates fractional passive healing across repeated ticks', () => {
+    world.playerHealMultiplier = 1.08;
+    const eid = spawnUnit(world, 100, 100, 40, 100, UnitState.Idle);
+
+    for (let i = 0; i < 13; i += 1) {
+      processPassiveHealing(world);
+    }
+
+    expect(Health.current[eid]).toBe(54);
+  });
+
   it('does NOT heal buildings', () => {
     const eid = addEntity(world.ecs);
     addComponent(world.ecs, eid, Position);

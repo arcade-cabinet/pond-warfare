@@ -95,9 +95,14 @@ export class TrainGoal extends Goal {
 
   private pickUnit(trainable: EntityKind[]): EntityKind | null {
     const combatTarget = getGovernorCombatTarget();
+    const wantsSupportUnit = trainable.includes(MEDIC_KIND) && shouldTrainSupportUnit();
 
     if (trainable.includes(MUDPAW_KIND) && mudpawCount() < getGovernorMudpawTarget()) {
       return MUDPAW_KIND;
+    }
+
+    if (wantsSupportUnit) {
+      return MEDIC_KIND;
     }
 
     const dedicatedCombatUnit = preferredCombatUnit(trainable);
@@ -106,9 +111,6 @@ export class TrainGoal extends Goal {
     }
     if (trainable.includes(MUDPAW_KIND) && armySize() < combatTarget) {
       return MUDPAW_KIND;
-    }
-    if (trainable.includes(MEDIC_KIND) && shouldTrainSupportUnit()) {
-      return MEDIC_KIND;
     }
     if (trainable.includes(SABOTEUR_KIND) && armySize() >= Math.max(4, combatTarget)) {
       return SABOTEUR_KIND;
