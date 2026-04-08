@@ -7,6 +7,7 @@
 
 import { Goal } from 'yuka';
 import { game } from '@/game';
+import { repairPlayerLodge } from '@/game/lodge-repair';
 import { getGovernorCombatUnits } from '@/governor/roster-units';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import type { RosterUnit } from '@/ui/roster-types';
@@ -20,8 +21,9 @@ function availableDefenders(): RosterUnit[] {
 
 export class DefendGoal extends Goal {
   override activate(): void {
+    const lodgeRepair = repairPlayerLodge(game.world);
     const defenders = availableDefenders();
-    if (defenders.length === 0) {
+    if (defenders.length === 0 && !lodgeRepair.success) {
       this.status = Goal.STATUS.FAILED;
       return;
     }

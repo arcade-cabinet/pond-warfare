@@ -23,6 +23,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
 import { cycleStanceForSelection } from '@/game/input-setup';
+import { repairPlayerLodge } from '@/game/lodge-repair';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { beginSpecialistAssignment } from '@/game/specialist-assignment';
 import { getPlayerTrainingCost } from '@/game/training-costs';
@@ -117,27 +118,22 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
 
 /** Repair the Lodge using Logs. */
 function handleRepairAction(world: GameWorld): boolean {
-  const lodgeEid = findPlayerLodge(world);
-  if (lodgeEid < 0) return false;
-
-  const logCost = 30;
-  if (world.resources.logs < logCost) {
-    pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
-    audio.error();
+  const result = repairPlayerLodge(world);
+  if (!result.success) {
+    if (result.reason === 'not_enough_logs') {
+      pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
+      audio.error();
+    } else if (result.reason === 'full_health') {
+      pushGameEvent('Lodge is at full health', COLORS.feedbackSuccess, world.frameCount);
+    }
     return false;
   }
 
-  const current = Health.current[lodgeEid];
-  const max = Health.max[lodgeEid];
-  if (current >= max) {
-    pushGameEvent('Lodge is at full health', COLORS.feedbackSuccess, world.frameCount);
-    return false;
-  }
-
-  world.resources.logs -= logCost;
-  const healAmount = Math.min(100, max - current);
-  Health.current[lodgeEid] = current + healAmount;
-  pushGameEvent(`Lodge repaired (+${healAmount} HP)`, COLORS.feedbackSuccess, world.frameCount);
+  pushGameEvent(
+    `Lodge repaired (+${result.healAmount} HP)`,
+    COLORS.feedbackSuccess,
+    world.frameCount,
+  );
   audio.click();
   game.syncUIStore();
   return true;

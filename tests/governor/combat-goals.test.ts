@@ -162,6 +162,48 @@ describe('DefendGoal', () => {
     expect(TaskOverride.targetEntity[specialist]).toBe(0);
     expect(UnitStateMachine.state[specialist]).toBe(UnitState.AttackMove);
   });
+
+  it('repairs the lodge during defense pressure before rallying defenders', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = createPlayerLodge(220, 220);
+    Health.current[lodge] = 300;
+    Health.max[lodge] = 500;
+    world.resources.logs = 100;
+    world.playerRepairSpeedMultiplier = 1.1;
+
+    const regular = createUnit(SAPPER_KIND);
+    store.unitRoster.value = [
+      rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')]),
+    ];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(Health.current[lodge]).toBe(410);
+    expect(world.resources.logs).toBe(70);
+    expect(TaskOverride.active[regular]).toBe(1);
+    expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
+  });
+
+  it('can still complete with a lodge repair even when no defenders are available', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = createPlayerLodge(220, 220);
+    Health.current[lodge] = 350;
+    Health.max[lodge] = 500;
+    world.resources.logs = 100;
+
+    store.unitRoster.value = [];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(Health.current[lodge]).toBe(450);
+    expect(world.resources.logs).toBe(70);
+  });
 });
 
 describe('AttackGoal', () => {
