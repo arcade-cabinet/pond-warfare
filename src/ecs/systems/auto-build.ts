@@ -181,8 +181,8 @@ function findBuildPosition(
   return null;
 }
 
-/** Find the first idle player Mudpaw. Returns -1 if none. */
-function findIdleGatherer(world: GameWorld): number {
+/** Find the first idle player Mudpaw/generalist. Returns -1 if none. */
+function findIdleGeneralist(world: GameWorld): number {
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, UnitStateMachine]);
   for (let i = 0; i < units.length; i++) {
     const eid = units[i];
@@ -197,19 +197,19 @@ function findIdleGatherer(world: GameWorld): number {
 
 /**
  * Auto-build system. Runs every 300 frames (~5 seconds) when auto-build
- * is enabled. Evaluates build pressures and assigns an idle gatherer to
+ * is enabled. Evaluates build pressures and assigns an idle Mudpaw/generalist to
  * construct the highest-priority affordable structure.
  */
 export function autoBuildSystem(world: GameWorld): void {
-  if (!world.autoBehaviors.gatherer) return;
+  if (!world.autoBehaviors.generalist) return;
   if (world.frameCount % 300 !== 0) return;
 
   const candidates = evaluateBuildPressures(world);
   if (candidates.length === 0) return;
 
   const best = candidates[0];
-  const gatherer = findIdleGatherer(world);
-  if (gatherer === -1) return;
+  const generalist = findIdleGeneralist(world);
+  if (generalist === -1) return;
 
   const lodge = findPlayerLodge(world);
   if (lodge === -1) return;
@@ -226,11 +226,11 @@ export function autoBuildSystem(world: GameWorld): void {
   world.resources.logs -= logCost;
   const buildingEid = spawnEntity(world, best.kind, pos.x, pos.y, Faction.Player);
 
-  // Send the gatherer to build it
-  UnitStateMachine.targetEntity[gatherer] = buildingEid;
-  UnitStateMachine.targetX[gatherer] = pos.x;
-  UnitStateMachine.targetY[gatherer] = pos.y;
-  UnitStateMachine.state[gatherer] = UnitState.BuildMove;
+  // Send the Mudpaw/generalist to build it
+  UnitStateMachine.targetEntity[generalist] = buildingEid;
+  UnitStateMachine.targetX[generalist] = pos.x;
+  UnitStateMachine.targetY[generalist] = pos.y;
+  UnitStateMachine.state[generalist] = UnitState.BuildMove;
 
   // Show floating text
   const kindName = ENTITY_DEFS[best.kind] ? entityKindLabel(best.kind) : 'Building';

@@ -126,9 +126,9 @@ describe('syncRosters', () => {
 
   it('reads auto-behavior toggles from world', () => {
     spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
-    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.generalist = true;
     syncRosters(world);
-    expect(findGroup('generalist').autoEnabled).toBe(true);
+    expect(findGroup('generalist').automationEnabled).toBe(true);
   });
 
   it('excludes enemy units from roster', () => {

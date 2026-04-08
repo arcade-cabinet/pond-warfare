@@ -42,7 +42,7 @@ function makeGroup(
   return {
     role,
     idleCount: units.filter((u) => u.task === 'idle').length,
-    autoEnabled: false,
+    automationEnabled: false,
     units: units.map((u) => ({
       eid: u.eid,
       kind: u.kind,

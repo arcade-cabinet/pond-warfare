@@ -95,10 +95,10 @@ export interface GameWorld {
 
   // Auto-behavior toggles grouped by role (synced from UI store signals)
   autoBehaviors: {
-    gatherer: boolean;
+    generalist: boolean;
     combat: boolean;
-    healer: boolean;
-    scout: boolean;
+    support: boolean;
+    recon: boolean;
   };
 
   // Difficulty setting (affects enemy eco speed, army size, aggression)

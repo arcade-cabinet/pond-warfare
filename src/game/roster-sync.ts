@@ -70,11 +70,11 @@ function targetNameFor(world: GameWorld, eid: number): string {
   return getEntityDisplayName(world, target) ?? '';
 }
 
-const AUTO_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
-  generalist: 'gatherer',
+const AUTOMATION_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
+  generalist: 'generalist',
   combat: 'combat',
-  support: 'healer',
-  recon: 'scout',
+  support: 'support',
+  recon: 'recon',
   commander: null,
 };
 
@@ -122,12 +122,12 @@ export function syncRosters(world: GameWorld): void {
     const units = groups.get(role) ?? [];
     if (units.length === 0) continue;
     units.sort((a, b) => (a.task === 'idle' ? 0 : 1) - (b.task === 'idle' ? 0 : 1));
-    const autoKey = AUTO_KEY[role];
+    const automationKey = AUTOMATION_KEY[role];
     roster.push({
       role,
       units,
       idleCount: units.filter((u) => u.task === 'idle').length,
-      autoEnabled: autoKey ? world.autoBehaviors[autoKey] : false,
+      automationEnabled: automationKey ? world.autoBehaviors[automationKey] : false,
     });
   }
   store.unitRoster.value = roster;

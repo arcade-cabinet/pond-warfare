@@ -179,7 +179,7 @@ describe('Training & Building', () => {
     await delay(300);
 
     // Enable auto-build so the Mudpaw finishes it
-    game.world.autoBehaviors.gatherer = true;
+    game.world.autoBehaviors.generalist = true;
     await waitFrames(600);
 
     const burrowsAfter = getUnits(EntityKind.Burrow).length;

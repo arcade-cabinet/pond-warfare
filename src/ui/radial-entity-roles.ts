@@ -7,14 +7,15 @@
 
 import { EntityKind } from '@/types';
 import { isLookoutKind, isMudpawKind, MEDIC_KIND } from '@/game/live-unit-kinds';
+import type { RadialUnitRole } from './radial-menu-options';
 
 /**
  * Map an EntityKind numeric value to a v3 role string.
  * Uses the existing entity kinds to determine role.
  */
-export function entityKindToRole(kind: EntityKind | number): string {
+export function entityKindToRole(kind: EntityKind | number): RadialUnitRole {
   if (isMudpawKind(kind)) return 'generalist';
-  if (kind === MEDIC_KIND || kind === EntityKind.Shaman) return 'heal';
-  if (isLookoutKind(kind)) return 'scout';
+  if (kind === MEDIC_KIND || kind === EntityKind.Shaman) return 'support';
+  if (isLookoutKind(kind)) return 'recon';
   return 'combat';
 }

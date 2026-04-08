@@ -111,10 +111,10 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     await delay(1000);
     game.world.gameSpeed = 3;
     // Ensure all auto-behaviors start OFF for a clean slate
-    game.world.autoBehaviors.gatherer = false;
+    game.world.autoBehaviors.generalist = false;
     game.world.autoBehaviors.combat = false;
-    game.world.autoBehaviors.healer = false;
-    game.world.autoBehaviors.scout = false;
+    game.world.autoBehaviors.support = false;
+    game.world.autoBehaviors.recon = false;
   }, 30_000);
 
   // =========================================================================
@@ -124,11 +124,11 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
   describe('Auto-behaviors', () => {
 
     // 1. Toggle auto-generalist ON -> idle Mudpaws can leave Idle
-    it('auto-gatherer toggle sets world.autoBehaviors.gatherer flag', async () => {
-      game.world.autoBehaviors.gatherer = false;
-      expect(game.world.autoBehaviors.gatherer).toBe(false);
-      game.world.autoBehaviors.gatherer = true;
-      expect(game.world.autoBehaviors.gatherer).toBe(true);
+    it('auto-generalist toggle sets world.autoBehaviors.generalist flag', async () => {
+      game.world.autoBehaviors.generalist = false;
+      expect(game.world.autoBehaviors.generalist).toBe(false);
+      game.world.autoBehaviors.generalist = true;
+      expect(game.world.autoBehaviors.generalist).toBe(true);
       // Verify the system reads this flag (it checks every 60 frames)
       await waitFrames(120);
       // Mudpaws should be working if resources exist
@@ -136,12 +136,12 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
         (eid) => UnitStateMachine.state[eid] !== UnitState.Idle,
       );
       expect(working.length).toBeGreaterThanOrEqual(0); // may be 0 if no resources nearby
-      game.world.autoBehaviors.gatherer = false;
+      game.world.autoBehaviors.generalist = false;
     });
 
     // 2. Toggle auto-generalist OFF -> idle Mudpaws stay idle
-    it('toggle auto-gatherer OFF -> new idle gatherers stay idle', async () => {
-      game.world.autoBehaviors.gatherer = false;
+    it('toggle auto-generalist OFF -> new idle Mudpaws stay idle', async () => {
+      game.world.autoBehaviors.generalist = false;
       await waitFrames(60);
 
       const mudpaws = getUnits(MUDPAW_KIND);
@@ -158,7 +158,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
     });
 
     // 3. Toggle auto-generalist ON -> idle Mudpaws can be assigned to auto-build
-    it('toggle auto-gatherer ON -> idle Mudpaws assigned to auto-build', async () => {
+    it('toggle auto-generalist ON -> idle Mudpaws assigned to auto-build', async () => {
       // Give resources for auto-build to work
       game.world.resources.fish = 500;
       game.world.resources.logs = 500;
@@ -173,7 +173,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       UnitStateMachine.targetEntity[gid] = -1;
 
       // Enable auto-generalist economy/build behavior
-      game.world.autoBehaviors.gatherer = true;
+      game.world.autoBehaviors.generalist = true;
 
       // Align the frame count so auto-build runs on the next multiple of 300
       const remainder = 300 - (game.world.frameCount % 300);
@@ -192,7 +192,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
         expect(wasAssigned).toBe(true);
       }
 
-      game.world.autoBehaviors.gatherer = false;
+      game.world.autoBehaviors.generalist = false;
       await page.screenshot({ path: 'tests/browser/screenshots/sys-03-auto-build.png' });
     });
 
@@ -205,22 +205,22 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       game.world.autoBehaviors.combat = false;
     });
 
-    // 5. Toggle auto-healer ON -> idle healers seek wounded allies
-    it('auto-healer toggle sets world.autoBehaviors.healer flag', async () => {
-      game.world.autoBehaviors.healer = false;
-      expect(game.world.autoBehaviors.healer).toBe(false);
-      game.world.autoBehaviors.healer = true;
-      expect(game.world.autoBehaviors.healer).toBe(true);
-      game.world.autoBehaviors.healer = false;
+    // 5. Toggle auto-support ON -> idle healers seek wounded allies
+    it('auto-support toggle sets world.autoBehaviors.support flag', async () => {
+      game.world.autoBehaviors.support = false;
+      expect(game.world.autoBehaviors.support).toBe(false);
+      game.world.autoBehaviors.support = true;
+      expect(game.world.autoBehaviors.support).toBe(true);
+      game.world.autoBehaviors.support = false;
     });
 
-    // 6. Toggle auto-scout ON -> idle Lookouts move to unexplored areas
-    it('auto-scout toggle sets world.autoBehaviors.scout flag', async () => {
-      game.world.autoBehaviors.scout = false;
-      expect(game.world.autoBehaviors.scout).toBe(false);
-      game.world.autoBehaviors.scout = true;
-      expect(game.world.autoBehaviors.scout).toBe(true);
-      game.world.autoBehaviors.scout = false;
+    // 6. Toggle auto-recon ON -> idle Lookouts move to unexplored areas
+    it('auto-recon toggle sets world.autoBehaviors.recon flag', async () => {
+      game.world.autoBehaviors.recon = false;
+      expect(game.world.autoBehaviors.recon).toBe(false);
+      game.world.autoBehaviors.recon = true;
+      expect(game.world.autoBehaviors.recon).toBe(true);
+      game.world.autoBehaviors.recon = false;
     });
   });
 

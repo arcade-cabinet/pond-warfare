@@ -87,7 +87,7 @@ function rosterGroup(role: RosterGroup['role'], units: RosterUnit[]): RosterGrou
   return {
     role,
     idleCount: units.filter((u) => u.task === 'idle').length,
-    autoEnabled: false,
+    automationEnabled: false,
     units,
   };
 }

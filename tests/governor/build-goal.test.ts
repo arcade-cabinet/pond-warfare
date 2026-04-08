@@ -60,7 +60,7 @@ describe('BuildGoal', () => {
       {
         role: 'generalist',
         idleCount: 1,
-        autoEnabled: false,
+        automationEnabled: false,
         units: [{ eid: mudpaw, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false }],
       } satisfies RosterGroup,
     ];

@@ -180,11 +180,11 @@ function reissueCommand(world: GameWorld, eid: number, symType: number): void {
       UnitStateMachine.state[eid] = UnitState.AttackMove;
     }
   }
-  // Heal and recon: enable the corresponding auto-behavior toggle
+  // Heal and recon: enable the corresponding role automation toggle
   else if (symType === SymbolType.Heal) {
-    world.autoBehaviors.healer = true;
+    world.autoBehaviors.support = true;
   } else if (symType === SymbolType.Recon) {
-    world.autoBehaviors.scout = true;
+    world.autoBehaviors.recon = true;
   }
 }
 

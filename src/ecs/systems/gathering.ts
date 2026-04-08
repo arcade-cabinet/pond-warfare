@@ -12,7 +12,7 @@
  * - SFX calls (chop for cattails, mine for clambeds) every 30 frames while gathering
  * - Particle spawning at resource location
  * - Find nearby resource of same type if current resource is depleted
- * - Idle auto-gather: player gatherers near resources auto-start gathering every 30 frames
+ * - Idle auto-gather: player Mudpaws/generalists near resources auto-start gathering every 30 frames
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -69,7 +69,7 @@ export function gatheringSystem(world: GameWorld): void {
       continue;
     }
 
-    const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.gatherer;
+    const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.generalist;
     if (
       state === UnitState.Idle &&
       isMudpawKind(kind) &&
@@ -82,7 +82,7 @@ export function gatheringSystem(world: GameWorld): void {
         const ey = Position.y[eid];
         let closest = -1;
 
-        // Root Network: player gatherers auto-path to the richest resource node
+        // Root Network: player Mudpaws/generalists auto-path to the richest resource node
         if (faction === Faction.Player && world.tech.rootNetwork) {
           let bestAmount = 0;
           for (let j = 0; j < resources.length; j++) {

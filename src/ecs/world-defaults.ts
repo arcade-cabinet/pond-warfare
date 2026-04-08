@@ -101,10 +101,10 @@ export function createGameWorld(): GameWorld {
     ctrlGroups: {},
     yukaManager: new YukaManager(),
     autoBehaviors: {
-      gatherer: false,
+      generalist: false,
       combat: false,
-      healer: false,
-      scout: false,
+      support: false,
+      recon: false,
     },
     difficulty: 'normal',
     permadeath: false,

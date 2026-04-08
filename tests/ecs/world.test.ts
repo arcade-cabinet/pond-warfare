@@ -29,10 +29,10 @@ describe('createGameWorld', () => {
   it('should have all auto-behaviors disabled by default', () => {
     const world = createGameWorld();
 
-    expect(world.autoBehaviors.gatherer).toBe(false);
+    expect(world.autoBehaviors.generalist).toBe(false);
     expect(world.autoBehaviors.combat).toBe(false);
-    expect(world.autoBehaviors.healer).toBe(false);
-    expect(world.autoBehaviors.scout).toBe(false);
+    expect(world.autoBehaviors.support).toBe(false);
+    expect(world.autoBehaviors.recon).toBe(false);
   });
 
   it('should clear transient training queues for a fresh world', () => {

@@ -51,20 +51,21 @@ describe('getRadialOptions — Lodge mode', () => {
   });
 });
 
-describe('getRadialOptions — Unit mode (gather)', () => {
-  const options = getRadialOptions('unit', 'gather');
+describe('getRadialOptions — Unit mode (generalist)', () => {
+  const options = getRadialOptions('unit', 'generalist');
 
-  it('returns gather-specific options', () => {
+  it('returns generalist-specific options', () => {
     const ids = options.map((o) => o.id);
     expect(ids).toContain('cmd_gather');
+    expect(ids).toContain('cmd_attack');
+    expect(ids).toContain('cmd_scout');
     expect(ids).toContain('cmd_hold');
     expect(ids).toContain('cmd_patrol');
     expect(ids).toContain('cmd_return');
   });
 
-  it('does NOT include attack or heal commands', () => {
+  it('does NOT include heal commands', () => {
     const ids = options.map((o) => o.id);
-    expect(ids).not.toContain('cmd_attack');
     expect(ids).not.toContain('cmd_heal');
   });
 
@@ -93,10 +94,10 @@ describe('getRadialOptions — Unit mode (combat)', () => {
   });
 });
 
-describe('getRadialOptions — Unit mode (heal)', () => {
-  const options = getRadialOptions('unit', 'heal');
+describe('getRadialOptions — Unit mode (support)', () => {
+  const options = getRadialOptions('unit', 'support');
 
-  it('returns heal-specific options', () => {
+  it('returns support-specific options', () => {
     const ids = options.map((o) => o.id);
     expect(ids).toContain('cmd_heal');
     expect(ids).toContain('cmd_hold');
@@ -110,10 +111,10 @@ describe('getRadialOptions — Unit mode (heal)', () => {
   });
 });
 
-describe('getRadialOptions — Unit mode (scout)', () => {
-  const options = getRadialOptions('unit', 'scout');
+describe('getRadialOptions — Unit mode (recon)', () => {
+  const options = getRadialOptions('unit', 'recon');
 
-  it('returns scout-specific options', () => {
+  it('returns recon-specific options', () => {
     const ids = options.map((o) => o.id);
     expect(ids).toContain('cmd_scout');
     expect(ids).toContain('cmd_hold');
@@ -143,16 +144,16 @@ describe('entityKindToRole', () => {
     expect(entityKindToRole(SAPPER_KIND)).toBe('combat');
   });
 
-  it('maps Medic chassis to heal', () => {
-    expect(entityKindToRole(MEDIC_KIND)).toBe('heal');
+  it('maps Medic chassis to support', () => {
+    expect(entityKindToRole(MEDIC_KIND)).toBe('support');
   });
 
-  it('maps Lookout chassis to scout', () => {
-    expect(entityKindToRole(LOOKOUT_KIND)).toBe('scout');
+  it('maps Lookout chassis to recon', () => {
+    expect(entityKindToRole(LOOKOUT_KIND)).toBe('recon');
   });
 
-  it('maps Shaman to heal', () => {
-    expect(entityKindToRole(EntityKind.Shaman)).toBe('heal');
+  it('maps Shaman to support', () => {
+    expect(entityKindToRole(EntityKind.Shaman)).toBe('support');
   });
 
   it('maps Commander to combat', () => {

@@ -85,8 +85,8 @@ describe('autoBuildSystem', () => {
     world.frameCount = 300;
   });
 
-  it('should not build when autoBehaviors.build is false', () => {
-    world.autoBehaviors.gatherer = false;
+  it('should not build when generalist automation is disabled', () => {
+    world.autoBehaviors.generalist = false;
     world.resources.fish = 10000;
     world.resources.logs = 10000;
     world.resources.food = world.resources.maxFood; // Pop cap trigger
@@ -103,7 +103,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should not build when player cannot afford any candidate', () => {
-    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.generalist = true;
     world.resources.fish = 0;
     world.resources.logs = 0;
     world.resources.food = world.resources.maxFood;
@@ -119,7 +119,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should not build when no idle gatherer is available', () => {
-    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.generalist = true;
     world.resources.fish = 10000;
     world.resources.logs = 10000;
     world.resources.food = world.resources.maxFood;
@@ -137,7 +137,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should only run every 300 frames', () => {
-    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.generalist = true;
     world.resources.fish = 10000;
     world.resources.logs = 10000;
     world.resources.food = world.resources.maxFood;
@@ -155,7 +155,7 @@ describe('autoBuildSystem', () => {
   });
 
   it('should successfully auto-build when conditions are met', () => {
-    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.generalist = true;
     world.resources.fish = 10000;
     world.resources.logs = 10000;
     // Pop cap reached triggers Burrow build pressure (score 100)

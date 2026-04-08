@@ -234,7 +234,7 @@ describe('TaskOverride integration with auto-behavior', () => {
   it('override prevents auto-behavior from reassigning the unit', () => {
     const world = createGameWorld();
     world.frameCount = 60;
-    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.generalist = true;
 
     const eid = createPlayerUnit(world, MUDPAW_KIND);
     addComponent(world.ecs, eid, TaskOverride);

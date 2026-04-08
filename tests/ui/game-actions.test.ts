@@ -24,7 +24,7 @@ vi.mock('@/game', () => ({
       camY: 0,
       viewWidth: 800,
       viewHeight: 600,
-      autoBehaviors: { gatherer: false, combat: false, healer: false, scout: false },
+      autoBehaviors: { generalist: false, combat: false, support: false, recon: false },
     },
     syncUIStore: vi.fn(),
     cycleSpeed: vi.fn(),
@@ -102,7 +102,7 @@ beforeEach(() => {
   game.world.attackMoveMode = false;
   game.world.paused = false;
   game.world.floatingTexts = [];
-  game.world.autoBehaviors = { gatherer: false, combat: false, healer: false, scout: false };
+  game.world.autoBehaviors = { generalist: false, combat: false, support: false, recon: false };
   store.mobilePanelOpen.value = false;
   store.colorBlindMode.value = false;
   store.muted.value = false;

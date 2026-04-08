@@ -43,7 +43,7 @@ export interface RosterGroup {
   role: UnitRole;
   units: RosterUnit[];
   idleCount: number;
-  autoEnabled: boolean;
+  automationEnabled: boolean;
 }
 
 /** A single building's data for the Buildings tab. */

@@ -52,12 +52,12 @@ describe('openRadialMenu', () => {
 
   it('overrides previous state when called again', () => {
     openRadialMenu(100, 200, 'lodge');
-    openRadialMenu(500, 600, 'unit', 'heal');
+    openRadialMenu(500, 600, 'unit', 'support');
 
     expect(radialMenuX.value).toBe(500);
     expect(radialMenuY.value).toBe(600);
     expect(radialMenuMode.value).toBe('unit');
-    expect(radialMenuUnitRole.value).toBe('heal');
+    expect(radialMenuUnitRole.value).toBe('support');
   });
 });
 

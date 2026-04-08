@@ -28,16 +28,16 @@ describe('entityKindToRole (direct import)', () => {
     expect(entityKindToRole(SAPPER_KIND)).toBe('combat');
   });
 
-  it('maps Medic chassis to heal', () => {
-    expect(entityKindToRole(MEDIC_KIND)).toBe('heal');
+  it('maps Medic chassis to support', () => {
+    expect(entityKindToRole(MEDIC_KIND)).toBe('support');
   });
 
-  it('maps Lookout chassis to scout', () => {
-    expect(entityKindToRole(LOOKOUT_KIND)).toBe('scout');
+  it('maps Lookout chassis to recon', () => {
+    expect(entityKindToRole(LOOKOUT_KIND)).toBe('recon');
   });
 
-  it('maps Shaman to heal', () => {
-    expect(entityKindToRole(EntityKind.Shaman)).toBe('heal');
+  it('maps Shaman to support', () => {
+    expect(entityKindToRole(EntityKind.Shaman)).toBe('support');
   });
 
   it('maps Commander to combat', () => {
@@ -60,8 +60,8 @@ describe('entityKindToRole (re-export backward compat)', () => {
 
   it('maps correctly via re-export', () => {
     expect(reExported(MUDPAW_KIND)).toBe('generalist');
-    expect(reExported(MEDIC_KIND)).toBe('heal');
-    expect(reExported(LOOKOUT_KIND)).toBe('scout');
+    expect(reExported(MEDIC_KIND)).toBe('support');
+    expect(reExported(LOOKOUT_KIND)).toBe('recon');
     expect(reExported(SAPPER_KIND)).toBe('combat');
   });
 });

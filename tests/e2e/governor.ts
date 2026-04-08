@@ -35,10 +35,10 @@ export interface GovernorSnapshot {
   evolutionTier: number;
   champions: number;
   autoBehaviors: {
-    gatherer: boolean;
+    generalist: boolean;
     combat: boolean;
-    healer: boolean;
-    scout: boolean;
+    support: boolean;
+    recon: boolean;
   };
 }
 

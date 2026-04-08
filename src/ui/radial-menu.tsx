@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
 import { COLORS } from '@/ui/design-tokens';
-import type { RadialGameState, RadialOption } from './radial-menu-options';
+import type { RadialGameState, RadialOption, RadialUnitRole } from './radial-menu-options';
 import { getRadialOptions } from './radial-menu-options';
 import { fish, logs, rocks } from './store';
 import {
@@ -58,15 +58,19 @@ function getSpecialistAssignOption(mode: 'single_zone' | 'dual_zone'): RadialOpt
       };
 }
 
-function getHubLabel(mode: 'lodge' | 'unit', role: string | null): string {
+function getHubLabel(mode: 'lodge' | 'unit', role: RadialUnitRole | null): string {
   if (mode === 'lodge') return 'Lodge';
   switch (role) {
     case 'generalist':
       return 'Mudpaw';
-    case 'gather':
-      return 'Gather';
     case 'combat':
       return 'Combat';
+    case 'support':
+      return 'Heal';
+    case 'recon':
+      return 'Recon';
+    case 'gather':
+      return 'Gather';
     case 'heal':
       return 'Heal';
     case 'scout':

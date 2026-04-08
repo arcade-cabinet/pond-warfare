@@ -13,6 +13,14 @@
 export { entityKindToRole } from './radial-entity-roles';
 
 export type RadialMenuMode = 'lodge' | 'unit';
+export type RadialUnitRole =
+  | 'generalist'
+  | 'combat'
+  | 'support'
+  | 'recon'
+  | 'gather'
+  | 'heal'
+  | 'scout';
 
 export interface RadialOption {
   id: string;
@@ -239,10 +247,12 @@ const GENERIC_OPTIONS: RadialOption[] = [
 ];
 
 /** Map unit roles to their radial options. */
-const ROLE_OPTIONS: Record<string, RadialOption[]> = {
+const ROLE_OPTIONS: Record<RadialUnitRole, RadialOption[]> = {
   generalist: GENERALIST_OPTIONS,
-  gather: GATHER_OPTIONS,
   combat: COMBAT_OPTIONS,
+  support: HEAL_OPTIONS,
+  recon: SCOUT_OPTIONS,
+  gather: GATHER_OPTIONS,
   heal: HEAL_OPTIONS,
   scout: SCOUT_OPTIONS,
 };
@@ -291,6 +301,6 @@ export function getRadialOptions(
       }
     });
   }
-  if (unitRole && ROLE_OPTIONS[unitRole]) return ROLE_OPTIONS[unitRole];
+  if (unitRole && unitRole in ROLE_OPTIONS) return ROLE_OPTIONS[unitRole as RadialUnitRole];
   return GENERIC_OPTIONS;
 }

@@ -35,10 +35,13 @@ export interface SaveData {
   };
   enemyResources: { fish: number; logs: number };
   autoBehaviors: {
-    gatherer: boolean;
-    combat: boolean;
-    healer: boolean;
-    scout: boolean;
+    generalist?: boolean;
+    combat?: boolean;
+    support?: boolean;
+    recon?: boolean;
+    gatherer?: boolean;
+    healer?: boolean;
+    scout?: boolean;
   };
   tech: Record<string, boolean>;
   stats: {

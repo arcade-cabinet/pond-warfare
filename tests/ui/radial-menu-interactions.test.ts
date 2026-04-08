@@ -174,8 +174,8 @@ describe('Radial Menu Interactions (tap-only)', () => {
     expect(ids).not.toContain('cmd_gather');
   });
 
-  it('Unit radial shows role-specific options for healer', () => {
-    const options = getRadialOptions('unit', 'heal');
+  it('Unit radial shows role-specific options for support', () => {
+    const options = getRadialOptions('unit', 'support');
     const ids = options.map((o) => o.id);
 
     expect(ids).toContain('cmd_heal');
@@ -183,8 +183,8 @@ describe('Radial Menu Interactions (tap-only)', () => {
     expect(ids).not.toContain('cmd_attack');
   });
 
-  it('Unit radial shows role-specific options for scout', () => {
-    const options = getRadialOptions('unit', 'scout');
+  it('Unit radial shows role-specific options for recon', () => {
+    const options = getRadialOptions('unit', 'recon');
     const ids = options.map((o) => o.id);
 
     expect(ids).toContain('cmd_scout');

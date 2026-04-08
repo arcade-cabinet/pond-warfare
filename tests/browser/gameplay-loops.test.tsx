@@ -508,7 +508,7 @@ describe('Full player journey', () => {
       if (burrows.length === 0) return;
 
       // Assign a Mudpaw to build
-      game.world.autoBehaviors.gatherer = true;
+      game.world.autoBehaviors.generalist = true;
       await waitFrames(600);
 
       const completed = burrows.some((eid) => Building.progress[eid] >= 100);
@@ -637,10 +637,10 @@ describe('Full player journey', () => {
         Carrying.resourceType[other] = ResourceType.Fish;
         Carrying.resourceAmount[other] = 1;
       }
-      game.world.autoBehaviors.gatherer = false;
+      game.world.autoBehaviors.generalist = false;
       await waitFrames(60);
 
-      game.world.autoBehaviors.gatherer = true;
+      game.world.autoBehaviors.generalist = true;
       let progressed = false;
       for (let elapsed = 0; elapsed < 420; elapsed += 60) {
         await waitFrames(60);

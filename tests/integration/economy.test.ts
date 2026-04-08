@@ -88,8 +88,8 @@ describe('Economy Integration', () => {
     expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
   });
 
-  it('legacy auto-gather toggle no longer auto-assigns idle Mudpaws', () => {
-    world.autoBehaviors.gatherer = true;
+  it('legacy auto-generalist toggle no longer auto-assigns idle Mudpaws', () => {
+    world.autoBehaviors.generalist = true;
     world.frameCount = 60;
 
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
@@ -98,7 +98,7 @@ describe('Economy Integration', () => {
     const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
     UnitStateMachine.state[gatherer] = UnitState.Idle;
 
-    // Legacy auto-behavior toggle system removed in v3.0 and replaced by Pearl blueprint/autonomy progression.
+    // Legacy per-role automation toggle system removed in v3.0 and replaced by Pearl blueprint/autonomy progression.
     // Idle Mudpaws no longer auto-assign; player must manually command them
     expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
   });
