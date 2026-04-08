@@ -57,7 +57,9 @@ function prioritizeBuildResources(
     const primary = logRatio <= fishRatio ? 'gathering-logs' : 'gathering-fish';
     const secondary = primary === 'gathering-logs' ? 'gathering-fish' : 'gathering-logs';
     return {
-      tasks: [primary, secondary, 'gathering-rocks'],
+      // Keep extras on the main bottleneck instead of rotating a third
+      // gatherer onto rocks during a tower savings window.
+      tasks: [primary, secondary, primary],
       rotateAssignments: true,
       hardFocusPrimary: true,
     };

@@ -307,6 +307,51 @@ describe('GatherGoal', () => {
     expect(UnitStateMachine.targetEntity[eid1]).not.toBe(UnitStateMachine.targetEntity[eid2]);
   });
 
+  it('keeps extra idle Mudpaws on fish or logs instead of rocks during a dual-short tower budget', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const eid2 = createUnit(MUDPAW_KIND, 115, 105);
+    const eid3 = createUnit(MUDPAW_KIND, 130, 110);
+    const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+    const logNode = createResource(EntityKind.Cattail, ResourceType.Logs, 145, 125);
+    const rockNode = createResource(EntityKind.PearlBed, ResourceType.Rocks, 160, 140);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(eid1, MUDPAW_KIND, 'idle'),
+        rosterUnit(eid2, MUDPAW_KIND, 'idle'),
+        rosterUnit(eid3, MUDPAW_KIND, 'idle'),
+      ]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.baseUnderAttack.value = false;
+    store.fish.value = 40;
+    store.logs.value = 80;
+    store.rocks.value = 0;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    const targets = [
+      UnitStateMachine.targetEntity[eid1],
+      UnitStateMachine.targetEntity[eid2],
+      UnitStateMachine.targetEntity[eid3],
+    ];
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(targets).toContain(fishNode);
+    expect(targets).toContain(logNode);
+    expect(targets).not.toContain(rockNode);
+    expect(targets.filter((target) => target === fishNode)).toHaveLength(2);
+  });
+
   it('completes immediately with no idle Mudpaws', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 

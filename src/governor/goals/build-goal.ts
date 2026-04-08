@@ -43,11 +43,6 @@ const BUILD_PRIORITIES: BuildNeed[] = [
   // Armory is a Lodge wing — check if unlocked
   { kind: EntityKind.Armory, needed: () => !hasBuilding(EntityKind.Armory) },
   {
-    kind: EntityKind.Burrow,
-    needed: () =>
-      store.food.value >= store.maxFood.value - 1 && buildingCount(EntityKind.Burrow) < 3,
-  },
-  {
     kind: EntityKind.Tower,
     needed: () => store.baseUnderAttack.value && buildingCount(EntityKind.Tower) < 2,
   },
@@ -57,6 +52,11 @@ const BUILD_PRIORITIES: BuildNeed[] = [
       currentStage() >= 6 &&
       hasCompletedBuilding(EntityKind.Armory) &&
       buildingCount(EntityKind.Tower) < 1,
+  },
+  {
+    kind: EntityKind.Burrow,
+    needed: () =>
+      store.food.value >= store.maxFood.value - 1 && buildingCount(EntityKind.Burrow) < 3,
   },
 ];
 

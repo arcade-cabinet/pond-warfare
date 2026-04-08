@@ -148,4 +148,68 @@ describe('BuildGoal', () => {
     expect(tower).toBeDefined();
     expect(world.selection).toEqual([builderA, builderB]);
   });
+
+  it('prefers the first stage-six tower over a burrow when both are buildable', () => {
+    const lodge = spawnEntity(world, EntityKind.Lodge, 320, 460, Faction.Player);
+    const builderA = spawnEntity(world, MUDPAW_KIND, 260, 430, Faction.Player);
+    const builderB = spawnEntity(world, MUDPAW_KIND, 300, 430, Faction.Player);
+    const armory = spawnEntity(world, EntityKind.Armory, 360, 420, Faction.Player);
+
+    Health.current[armory] = Health.max[armory];
+    world.resources.fish = 260;
+    world.resources.logs = 320;
+    store.fish.value = 260;
+    store.logs.value = 320;
+    store.food.value = 7;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+    world.gameRng = {
+      next: (() => {
+        const values = [0.25, 0.5];
+        let index = 0;
+        return () => values[index++] ?? 0.5;
+      })(),
+    } as typeof world.gameRng;
+
+    store.buildingRoster.value = [
+      {
+        eid: lodge,
+        kind: EntityKind.Lodge,
+        hp: 1500,
+        maxHp: 1500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [MUDPAW_KIND],
+      } satisfies RosterBuilding,
+      {
+        eid: armory,
+        kind: EntityKind.Armory,
+        hp: Health.current[armory],
+        maxHp: Health.max[armory],
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      } satisfies RosterBuilding,
+    ];
+    store.unitRoster.value = [
+      {
+        role: 'generalist',
+        idleCount: 2,
+        automationEnabled: false,
+        units: [
+          { eid: builderA, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
+          { eid: builderB, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
+        ],
+      } satisfies RosterGroup,
+    ];
+
+    new BuildGoal().activate();
+
+    const placedKinds = Array.from(query(world.ecs, [EntityTypeTag, FactionTag, Health]))
+      .filter((eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0)
+      .map((eid) => EntityTypeTag.kind[eid]);
+
+    expect(placedKinds).toContain(EntityKind.Tower);
+    expect(placedKinds).not.toContain(EntityKind.Burrow);
+  });
 });

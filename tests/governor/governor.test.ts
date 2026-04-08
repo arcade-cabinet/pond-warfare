@@ -139,6 +139,47 @@ describe('BuildEvaluator', () => {
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.79);
   });
+
+  it('prioritizes an affordable proactive tower over generic defend pressure when the savings window is safe', () => {
+    storeV3.progressionLevel.value = 6;
+    store.waveCountdown.value = 24;
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 2;
+    store.fish.value = 260;
+    store.logs.value = 320;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-logs', kind: MUDPAW_KIND },
+      ]),
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.91);
+  });
+
+  it('keeps the first stage-six tower ahead of a pop-cap burrow', () => {
+    storeV3.progressionLevel.value = 6;
+    store.waveCountdown.value = 24;
+    store.fish.value = 260;
+    store.logs.value = 320;
+    store.food.value = 7;
+    store.maxFood.value = 8;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.91);
+  });
 });
 
 describe('TrainEvaluator', () => {

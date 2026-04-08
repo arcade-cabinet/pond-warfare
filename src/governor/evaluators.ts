@@ -6,7 +6,7 @@
  */
 
 import { type GameEntity, GoalEvaluator } from 'yuka';
-import { isWingBuilding } from '@/config/entity-defs';
+import { ENTITY_DEFS, isWingBuilding } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
@@ -108,6 +108,11 @@ function proactiveTowerWindowReady(): boolean {
   );
 }
 
+function canAffordBuild(kind: EntityKind): boolean {
+  const def = ENTITY_DEFS[kind];
+  return store.fish.value >= (def.fishCost ?? 0) && store.logs.value >= (def.logCost ?? 0);
+}
+
 /** High score when idle Mudpaws exist — always beats Train to avoid idle waste. */
 export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
@@ -137,11 +142,17 @@ export class BuildEvaluator extends GoalEvaluator {
     // Armory is a Lodge wing — check if it's unlocked rather than placed
     if (!hasWingOrBuilding(EntityKind.Armory) && store.fish.value >= 180 && store.logs.value >= 120)
       return 0.85;
-    if (store.food.value >= store.maxFood.value - 1 && store.logs.value >= 75) return 0.75;
+    if (
+      getGovernorReservedBuildKind() === EntityKind.Tower &&
+      canAffordBuild(EntityKind.Tower)
+    ) {
+      return 0.91;
+    }
     if (baseThreatCount() >= 2 && store.fish.value >= 200) return 0.8;
     if (proactiveTowerWindowReady()) {
       return 0.79;
     }
+    if (store.food.value >= store.maxFood.value - 1 && store.logs.value >= 75) return 0.75;
     return 0;
   }
 
