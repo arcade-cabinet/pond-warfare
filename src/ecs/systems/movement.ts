@@ -192,6 +192,14 @@ export function movementSystem(world: GameWorld): void {
       state === UnitState.RepairMove
     ) {
       arriveDist = Collider.radius[eid] + targetRad + 15;
+      if (state === UnitState.GatherMove && FactionTag.faction[eid] === Faction.Player) {
+        const gatherRadiusMultiplier =
+          Number.isFinite(world.playerGatherRadiusMultiplier) && world.playerGatherRadiusMultiplier > 1
+            ? world.playerGatherRadiusMultiplier
+            : 1;
+        const gatherRadiusBonus = gatherRadiusMultiplier - 1;
+        arriveDist *= 1 + gatherRadiusBonus * 0.5;
+      }
     }
     if (state === UnitState.AttackMove) {
       // a_move: arrive when the center-to-center distance is within the unit's

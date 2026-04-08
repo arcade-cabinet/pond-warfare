@@ -135,6 +135,29 @@ describe('movementSystem', () => {
     expect(UnitStateMachine.gatherTimer[eid]).toBe(GATHER_TIMER);
   });
 
+  it('extends the player gather arrival radius when gather radius upgrades are active', () => {
+    world.weather.current = 'clear';
+    world.playerGatherRadiusMultiplier = 1.1;
+
+    const eid = createTestUnit(world, 100, 100);
+    const resource = addEntity(world.ecs);
+    addComponent(world.ecs, resource, Position);
+    addComponent(world.ecs, resource, Collider);
+    Position.x[resource] = 149;
+    Position.y[resource] = 100;
+    Collider.radius[resource] = 16;
+
+    UnitStateMachine.state[eid] = UnitState.GatherMove;
+    UnitStateMachine.targetX[eid] = 149;
+    UnitStateMachine.targetY[eid] = 100;
+    UnitStateMachine.targetEntity[eid] = resource;
+
+    movementSystem(world);
+
+    expect(UnitStateMachine.state[eid]).toBe(UnitState.Gathering);
+    expect(UnitStateMachine.gatherTimer[eid]).toBe(GATHER_TIMER);
+  });
+
   it('applies gatherSpeedMod as faster gathering, not slower gathering', () => {
     world.weather.current = 'clear';
     world.gatherSpeedMod = 2;
