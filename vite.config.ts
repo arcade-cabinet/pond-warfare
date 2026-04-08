@@ -1,7 +1,23 @@
+import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf8')) as {
+  version?: string;
+};
+
+function getBuildCommit(): string {
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return 'dev';
+  }
+}
 
 function manualChunks(id: string): string | undefined {
   if (id.includes('node_modules')) {
@@ -86,6 +102,10 @@ function manualChunks(id: string): string | undefined {
 
 export default defineConfig({
   base: process.env.CAPACITOR === 'true' ? '/' : '/pond-warfare/',
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version ?? '0.0.0-dev'),
+    __BUILD_COMMIT__: JSON.stringify(getBuildCommit()),
+  },
   plugins: [preact(), tailwindcss()],
   resolve: {
     alias: {

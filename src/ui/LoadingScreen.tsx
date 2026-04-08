@@ -6,6 +6,7 @@
  */
 
 import { useMemo } from 'preact/hooks';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { COLORS } from '@/ui/design-tokens';
 import { Frame9Slice } from './components/frame';
 import { customGameSettings } from './store';
@@ -88,6 +89,13 @@ export function LoadingScreen() {
             </p>
           </div>
         </Frame9Slice>
+
+        <span
+          class="driftwood inline-flex items-center px-3 py-1 font-numbers text-[10px] tracking-[0.18em] uppercase"
+          style={{ color: COLORS.weatheredSteel }}
+        >
+          {BUILD_STAMP_LABEL}
+        </span>
       </div>
     </div>
   );

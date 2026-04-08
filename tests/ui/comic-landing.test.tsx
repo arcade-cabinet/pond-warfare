@@ -2,6 +2,7 @@
 
 import { cleanup, fireEvent, render } from '@testing-library/preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { ComicLanding, resetComicLandingState } from '@/ui/comic-landing';
 import * as store from '@/ui/store';
 import { multiplayerMenuOpen } from '@/ui/store-multiplayer';
@@ -43,6 +44,7 @@ describe('ComicLanding', () => {
     expect(view.getByText('SETTINGS')).toBeTruthy();
     expect(view.queryByText('CONTINUE')).toBeNull();
     expect(view.queryByText('PRESTIGE')).toBeNull();
+    expect(view.getByText(BUILD_STAMP_LABEL, { exact: false })).toBeTruthy();
   }, LANDING_TEST_TIMEOUT);
 
   it('shows CONTINUE when a save exists', () => {

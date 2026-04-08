@@ -2,6 +2,7 @@
 
 import { cleanup, render } from '@testing-library/preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { DEFAULT_CUSTOM_SETTINGS, customGameSettings } from '@/ui/store';
 import { LOADING_TIPS, LoadingScreen } from '@/ui/LoadingScreen';
 
@@ -34,5 +35,6 @@ describe('LoadingScreen', () => {
 
     expect(view.getByText('Loading Standard Map...')).toBeTruthy();
     expect(view.getByText(LOADING_TIPS[0])).toBeTruthy();
+    expect(view.getByText(BUILD_STAMP_LABEL)).toBeTruthy();
   });
 });

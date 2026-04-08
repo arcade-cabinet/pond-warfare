@@ -15,6 +15,7 @@
 import { signal } from '@preact/signals';
 import { useCallback } from 'preact/hooks';
 import { COLORS } from '@/ui/design-tokens';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { ComicPanel } from './comic-panel';
 import { MenuBackground } from './menu-background';
 import {
@@ -204,8 +205,11 @@ export function ComicLanding() {
       </div>
 
       <div class="relative z-10 pb-1">
-        <span class="font-game text-[10px]" style={{ color: COLORS.weatheredSteel }}>
-          v3.0 &middot; Defend the Pond
+        <span
+          class="driftwood inline-flex items-center px-3 py-1 font-numbers text-[10px] tracking-[0.18em] uppercase"
+          style={{ color: COLORS.weatheredSteel }}
+        >
+          {BUILD_STAMP_LABEL} &middot; Defend the Pond
         </span>
       </div>
     </div>
