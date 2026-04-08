@@ -5,7 +5,7 @@
       "min_progression": 0,
       "max_progression": 999,
       "duration_seconds": 60,
-      "enemy_composition": { "fighter": 3, "raider": 2 },
+      "enemy_composition": { "assault_enemy": 3, "raider": 2 },
       "reward_clams": 5,
       "spawn_pattern": "line",
       "description": "A wave of enemies approaches from the north"
@@ -25,7 +25,7 @@
       "min_progression": 5,
       "max_progression": 999,
       "duration_seconds": 90,
-      "enemy_composition": { "fighter": 5, "sapper_enemy": 2 },
+      "enemy_composition": { "assault_enemy": 5, "sapper_enemy": 2 },
       "reward_clams": 8,
       "spawn_pattern": "v_formation",
       "description": "A heavy assault force in arrow formation"
@@ -35,7 +35,7 @@
       "min_progression": 10,
       "max_progression": 999,
       "duration_seconds": 75,
-      "enemy_composition": { "fighter": 4, "support_enemy": 2 },
+      "enemy_composition": { "assault_enemy": 4, "support_enemy": 2 },
       "reward_clams": 7,
       "spawn_pattern": "v_formation",
       "description": "Enemy support units anchor an assault force"
@@ -65,8 +65,8 @@
       "min_progression": 8,
       "max_progression": 999,
       "duration_seconds": 120,
-      "enemy_composition": { "fighter": 6, "sapper_enemy": 2 },
-      "boss": { "type": "fighter", "hp_multiplier": 5, "damage_multiplier": 3 },
+      "enemy_composition": { "assault_enemy": 6, "sapper_enemy": 2 },
+      "boss": { "type": "assault_enemy", "hp_multiplier": 5, "damage_multiplier": 3 },
       "reward_clams": 15,
       "spawn_pattern": "v_formation",
       "description": "A massive boss croc leads an assault"
@@ -86,7 +86,7 @@
       "min_progression": 12,
       "max_progression": 999,
       "duration_seconds": 120,
-      "enemy_composition": { "fighter": 4, "sapper_enemy": 4 },
+      "enemy_composition": { "assault_enemy": 4, "sapper_enemy": 4 },
       "reward_clams": 10,
       "spawn_pattern": "pincer",
       "description": "Siege forces pincer your fortifications"
@@ -116,7 +116,7 @@
       "min_progression": 10,
       "max_progression": 999,
       "duration_seconds": 90,
-      "enemy_composition": { "fighter": 3, "raider": 3 },
+      "enemy_composition": { "assault_enemy": 3, "raider": 3 },
       "reward_clams": 12,
       "spawn_pattern": "line",
       "description": "Protect a friendly caravan crossing the map"
@@ -126,7 +126,7 @@
       "min_progression": 8,
       "max_progression": 999,
       "duration_seconds": 75,
-      "enemy_composition": { "fighter": 4, "raider": 4 },
+      "enemy_composition": { "assault_enemy": 4, "raider": 4 },
       "reward_clams": 9,
       "spawn_pattern": "pincer",
       "description": "Enemies split and attack from both flanks"
@@ -146,7 +146,7 @@
       "min_progression": 5,
       "max_progression": 15,
       "duration_seconds": 60,
-      "enemy_composition": { "fighter": 4, "raider": 3 },
+      "enemy_composition": { "assault_enemy": 4, "raider": 3 },
       "reward_clams": 7,
       "spawn_pattern": "l_sweep",
       "description": "Enemies sweep along the shoreline in a curved assault"
@@ -156,7 +156,7 @@
       "min_progression": 8,
       "max_progression": 999,
       "duration_seconds": 75,
-      "enemy_composition": { "fighter": 6, "raider": 2, "sapper_enemy": 1 },
+      "enemy_composition": { "assault_enemy": 6, "raider": 2, "sapper_enemy": 1 },
       "reward_clams": 10,
       "spawn_pattern": "t_hammer",
       "description": "Center hammer force with flanking raiders"
@@ -176,7 +176,7 @@
       "min_progression": 15,
       "max_progression": 999,
       "duration_seconds": 90,
-      "enemy_composition": { "fighter": 8, "support_enemy": 2, "sapper_enemy": 2 },
+      "enemy_composition": { "assault_enemy": 8, "support_enemy": 2, "sapper_enemy": 2 },
       "reward_clams": 14,
       "spawn_pattern": "funnel",
       "description": "All forces converge through a narrow chokepoint"

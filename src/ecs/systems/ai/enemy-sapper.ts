@@ -6,7 +6,7 @@
  * defensive structures. Uses Yuka steering for pathfinding.
  *
  * If no fortifications exist, sappers fall back to attacking the weakest
- * player building (same as default fighter behavior).
+ * player building (same as default assault-unit behavior).
  */
 
 import { hasComponent, query } from 'bitecs';

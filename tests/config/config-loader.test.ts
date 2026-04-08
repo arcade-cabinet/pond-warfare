@@ -88,7 +88,7 @@ describe('Unit configs', () => {
 describe('Enemy configs', () => {
   const enemyIds = [
     'raider',
-    'fighter',
+    'assault_enemy',
     'support_enemy',
     'recon_enemy',
     'sapper_enemy',

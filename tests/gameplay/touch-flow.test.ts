@@ -89,30 +89,30 @@ describe('Touch-Only Gameplay Flow', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const fighter = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
-    Selectable.selected[fighter] = 1;
-    world.selection = [fighter];
+    const sapper = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
+    Selectable.selected[sapper] = 1;
+    world.selection = [sapper];
 
     // Tap on empty ground
     const dispatched = issueContextCommand(world, null, 500, 300);
     expect(dispatched).toBe(true);
-    expect(UnitStateMachine.state[fighter]).toBe(UnitState.Move);
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.Move);
   });
 
   it('tap on enemy with Sapper selected issues attack command', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const fighter = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
+    const sapper = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
     const enemy = spawnEntity(world, EntityKind.Gator, 400, 200, Faction.Enemy);
 
-    Selectable.selected[fighter] = 1;
-    world.selection = [fighter];
+    Selectable.selected[sapper] = 1;
+    world.selection = [sapper];
 
     const dispatched = issueContextCommand(world, enemy, 400, 200);
     expect(dispatched).toBe(true);
-    expect(UnitStateMachine.state[fighter]).toBe(UnitState.AttackMove);
-    expect(UnitStateMachine.targetEntity[fighter]).toBe(enemy);
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.AttackMove);
+    expect(UnitStateMachine.targetEntity[sapper]).toBe(enemy);
   });
 
   it('full flow: radial options -> select unit -> issue command', () => {

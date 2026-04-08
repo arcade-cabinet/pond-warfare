@@ -25,7 +25,7 @@ vi.mock('@/utils/particles');
 
 function makeEvent(
   pattern: string,
-  composition: Record<string, number> = { fighter: 5 },
+  composition: Record<string, number> = { assault_enemy: 5 },
 ): EventTemplate {
   return {
     type: 'wave',
@@ -64,7 +64,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(3);
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('scatter', { fighter: 6 }));
+    spawnEventEnemies(world, makeEvent('scatter', { assault_enemy: 6 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(6);
@@ -79,7 +79,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(3);
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('v_formation', { fighter: 7 }));
+    spawnEventEnemies(world, makeEvent('v_formation', { assault_enemy: 7 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(7);
@@ -97,7 +97,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(4); // 4 panels = more edges
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('pincer', { fighter: 8 }));
+    spawnEventEnemies(world, makeEvent('pincer', { assault_enemy: 8 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(8);
@@ -114,7 +114,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(2);
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('line', { fighter: 5 }));
+    spawnEventEnemies(world, makeEvent('line', { assault_enemy: 5 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(5);
@@ -132,7 +132,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(6); // 6 panels = all edges available
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('surround', { fighter: 10 }));
+    spawnEventEnemies(world, makeEvent('surround', { assault_enemy: 10 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(10);
@@ -170,7 +170,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(3); // L-shape: [1,2,5] or [2,3,5]
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('l_sweep', { fighter: 6 }));
+    spawnEventEnemies(world, makeEvent('l_sweep', { assault_enemy: 6 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(6);
@@ -183,7 +183,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(4); // T-shape: [1,2,3,5]
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('t_hammer', { fighter: 10 }));
+    spawnEventEnemies(world, makeEvent('t_hammer', { assault_enemy: 10 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(10);
@@ -202,7 +202,7 @@ describe('Wave Spawn Patterns', () => {
     const world = setupWorld(5); // T+arm: [1,2,3,5,6] or [1,2,3,4,5]
     const beforeCount = getEnemyPositions(world).length;
 
-    spawnEventEnemies(world, makeEvent('flank', { fighter: 8 }));
+    spawnEventEnemies(world, makeEvent('flank', { assault_enemy: 8 }));
 
     const newEnemies = getEnemyPositions(world).slice(beforeCount);
     expect(newEnemies.length).toBe(8);

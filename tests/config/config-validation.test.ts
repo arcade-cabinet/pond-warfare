@@ -94,7 +94,7 @@ describe('Config Validation — US21', () => {
     it('should have all 6 enemy types', () => {
       const ids = getAllEnemyIds();
       expect(ids).toContain('raider');
-      expect(ids).toContain('fighter');
+      expect(ids).toContain('assault_enemy');
       expect(ids).toContain('support_enemy');
       expect(ids).toContain('recon_enemy');
       expect(ids).toContain('sapper_enemy');

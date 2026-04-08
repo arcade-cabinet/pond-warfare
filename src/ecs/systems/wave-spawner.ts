@@ -18,7 +18,7 @@ import { getSpawnPositions } from './spawn-positions';
 // -- Enemy Role to EntityKind Mapping -------------------------------------
 
 export type EnemyBehaviorRole =
-  | 'fighter'
+  | 'assault_enemy'
   | 'raider'
   | 'support_enemy'
   | 'recon_enemy'
@@ -27,7 +27,7 @@ export type EnemyBehaviorRole =
 
 /** Maps enemies.json role keys to the EntityKind used to spawn that unit. */
 const ENEMY_ROLE_TO_KIND: Record<EnemyBehaviorRole, EntityKind> = {
-  fighter: EntityKind.Gator,
+  assault_enemy: EntityKind.Gator,
   raider: EntityKind.Snake,
   support_enemy: EntityKind.VenomSnake,
   recon_enemy: EntityKind.FlyingHeron,

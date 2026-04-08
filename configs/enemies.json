@@ -1,7 +1,7 @@
 {
   "types": {
     "raider": { "hp": 25, "damage": 4, "speed": 2.5, "role": "raid_resources", "description": "Targets resource nodes" },
-    "fighter": { "hp": 60, "damage": 8, "speed": 1.8, "role": "attack", "description": "Direct assault" },
+    "assault_enemy": { "hp": 60, "damage": 8, "speed": 1.8, "role": "attack", "description": "Direct assault" },
     "support_enemy": { "hp": 20, "damage": 0, "speed": 1.5, "role": "heal_allies", "description": "Supports wounded enemy units" },
     "recon_enemy": { "hp": 15, "damage": 1, "speed": 3.0, "role": "detect", "description": "Probes player positions" },
     "sapper_enemy": { "hp": 50, "damage": 20, "speed": 1.0, "role": "breach_walls", "description": "Destroys fortifications" },
