@@ -156,6 +156,22 @@ describe('Economy Integration', () => {
     expect(Carrying.resourceAmount[mudpaw]).toBe(19);
   });
 
+  it('player gatherSpeedMod preserves some per-trip yield on long routes', () => {
+    world.gatherSpeedMod = 1.1;
+    spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
+    const resource = spawnEntity(world, EntityKind.Clambed, 100, 100, Faction.Neutral);
+    Resource.amount[resource] = 4000;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
+
+    gatheringSystem(world);
+
+    expect(Carrying.resourceAmount[mudpaw]).toBe(16);
+  });
+
   it('idle Mudpaws are detected by query helper', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const g1 = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
@@ -169,6 +185,7 @@ describe('Economy Integration', () => {
   });
 
   it('enemy harvester units compete for same resources', () => {
+    world.gatherSpeedMod = 2;
     spawnEntity(world, EntityKind.PredatorNest, 500, 500, Faction.Enemy);
     const resource = spawnEntity(world, EntityKind.Clambed, 300, 300, Faction.Neutral);
     Resource.amount[resource] = GATHER_AMOUNT * 2;
@@ -180,6 +197,7 @@ describe('Economy Integration', () => {
 
     gatheringSystem(world);
 
+    expect(Carrying.resourceAmount[enemyHarvester]).toBe(GATHER_AMOUNT);
     expect(Resource.amount[resource]).toBe(GATHER_AMOUNT);
     expect(Carrying.resourceType[enemyHarvester]).toBe(ResourceType.Fish);
   });

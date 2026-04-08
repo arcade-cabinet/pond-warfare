@@ -233,6 +233,39 @@ describe('GatherGoal', () => {
     expect(UnitStateMachine.targetEntity[eid1]).toBe(logNode);
   });
 
+  it('keeps both Mudpaws on logs when the missing armory is much more log-gated than fish-gated', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const eid2 = createUnit(MUDPAW_KIND, 115, 105);
+    const logNodeA = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
+    const logNodeB = createResource(EntityKind.Cattail, ResourceType.Logs, 145, 125);
+    createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(eid1, MUDPAW_KIND, 'idle'),
+        rosterUnit(eid2, MUDPAW_KIND, 'idle'),
+      ]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.fish.value = 120;
+    store.logs.value = 30;
+    store.rocks.value = 0;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid1]);
+    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid2]);
+  });
+
   it('keeps multiple idle Mudpaws on logs when the first tower is still log-gated', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 

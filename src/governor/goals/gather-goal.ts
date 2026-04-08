@@ -65,6 +65,15 @@ function prioritizeBuildResources(
     const logRatio = store.logs.value / logCost;
     const primary = logRatio <= fishRatio ? 'gathering-logs' : 'gathering-fish';
     const secondary = primary === 'gathering-logs' ? 'gathering-fish' : 'gathering-logs';
+    if (Math.abs(fishRatio - logRatio) >= 0.2) {
+      return {
+        // If one build budget is materially further behind, keep the full
+        // economy on that bottleneck until the gap narrows.
+        tasks: [primary, secondary, 'gathering-rocks'],
+        rotateAssignments: false,
+        hardFocusPrimary: true,
+      };
+    }
     return {
       // Keep extras on the main bottleneck instead of rotating a third
       // gatherer onto rocks during a tower savings window.

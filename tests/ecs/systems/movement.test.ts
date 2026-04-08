@@ -151,6 +151,23 @@ describe('movementSystem', () => {
     expect(UnitStateMachine.gatherTimer[eid]).toBe(Math.round(GATHER_TIMER / 2));
   });
 
+  it('does not apply player gatherSpeedMod to enemy harvesters', () => {
+    world.weather.current = 'clear';
+    world.gatherSpeedMod = 2;
+
+    const eid = createTestUnit(world, 100, 100);
+    FactionTag.faction[eid] = Faction.Enemy;
+    UnitStateMachine.state[eid] = UnitState.GatherMove;
+    UnitStateMachine.targetX[eid] = 101;
+    UnitStateMachine.targetY[eid] = 100;
+    UnitStateMachine.targetEntity[eid] = -1;
+
+    movementSystem(world);
+
+    expect(UnitStateMachine.state[eid]).toBe(UnitState.Gathering);
+    expect(UnitStateMachine.gatherTimer[eid]).toBe(GATHER_TIMER);
+  });
+
   it('should not move idle entities', () => {
     const eid = createTestUnit(world, 100, 100);
     UnitStateMachine.state[eid] = UnitState.Idle;

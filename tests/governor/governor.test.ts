@@ -265,11 +265,23 @@ describe('TrainEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.42);
   });
 
-  it('opens stage-6 combat training once the first Mudpaw is online', () => {
+  it('keeps stage-6 Mudpaw training active until the second Mudpaw is online before the armory', () => {
     storeV3.progressionLevel.value = 6;
     store.unitRoster.value = [
       makeGroup('generalist', [
         { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+      ]),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.8);
+  });
+
+  it('opens stage-6 combat training once two Mudpaws are online before the armory', () => {
+    storeV3.progressionLevel.value = 6;
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
     ];
 
@@ -371,7 +383,7 @@ describe('TrainEvaluator', () => {
       makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
     ];
 
-    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.75);
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.8);
   });
 });
 

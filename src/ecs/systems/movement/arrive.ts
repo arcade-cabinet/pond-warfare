@@ -57,9 +57,12 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
       break;
     case UnitState.GatherMove:
+      // Player gathering upgrades should not accelerate enemy economy.
+      const gatherSpeedMod =
+        FactionTag.faction[eid] === Faction.Player ? world.gatherSpeedMod : 1;
       UnitStateMachine.state[eid] = UnitState.Gathering;
       UnitStateMachine.gatherTimer[eid] = Math.round(
-        (GATHER_TIMER / Math.max(0.1, world.gatherSpeedMod)) * (1 / getWeatherGatherMult(world)),
+        (GATHER_TIMER / Math.max(0.1, gatherSpeedMod)) * (1 / getWeatherGatherMult(world)),
       );
       break;
     case UnitState.BuildMove:

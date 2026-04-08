@@ -213,8 +213,13 @@ export function gatheringSystem(world: GameWorld): void {
 
       // Deplete resource (Tidal Harvest: +25% gathering)
       let gatherAmt = GATHER_AMOUNT;
+      // Preserve some real throughput gain on long travel-heavy maps where
+      // pure timer reductions are too small to change completed trip counts.
+      if (faction === Faction.Player && world.gatherSpeedMod > 1.0) {
+        gatherAmt = Math.round(gatherAmt * (1 + (world.gatherSpeedMod - 1) * 0.5));
+      }
       if (faction === Faction.Player && world.tech.tidalHarvest) {
-        gatherAmt = Math.round(GATHER_AMOUNT * 1.25);
+        gatherAmt = Math.round(gatherAmt * 1.25);
       }
       // Commander bonuses: global gather passive plus Sage-style aura gather rate.
       if (faction === Faction.Player && world.commanderModifiers.passiveGatherBonus > 0) {

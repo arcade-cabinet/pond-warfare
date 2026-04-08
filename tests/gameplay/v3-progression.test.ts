@@ -139,6 +139,17 @@ describe('T39: Upgrade effects apply in-game', () => {
     expect(world.gatherSpeedMod).toBeGreaterThan(origMod);
   });
 
+  it('applies a single Fish Gathering tier at full listed strength', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'gathering_fish_gathering_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.gatherSpeedMod).toBeCloseTo(1.1, 2);
+  });
+
   it('applies Pearl gathering multiplier to gatherSpeedMod', () => {
     const state = createUpgradeWebState(0);
 

@@ -49,6 +49,7 @@ export function getGovernorMudpawTarget(): number {
   if (hasImmediatePressure()) return 2;
 
   const stage = currentStage();
+  if (stage >= 6 && !hasCompletedBuilding(EntityKind.Armory)) return 2;
   if (
     stage >= 6 &&
     hasCompletedBuilding(EntityKind.Armory) &&

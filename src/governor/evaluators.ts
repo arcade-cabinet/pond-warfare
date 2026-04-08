@@ -99,12 +99,13 @@ function canPressureSafely(totalArmy: number, readyArmy: number): boolean {
 }
 
 function proactiveTowerWindowReady(): boolean {
+  const def = ENTITY_DEFS[EntityKind.Tower];
   return (
     storeV3.progressionLevel.value >= 6 &&
     hasCompletedBuilding(EntityKind.Armory) &&
     !hasBuilding(EntityKind.Tower) &&
-    store.fish.value >= 200 &&
-    store.logs.value >= 250
+    store.fish.value >= (def.fishCost ?? 0) &&
+    store.logs.value >= (def.logCost ?? 0)
   );
 }
 

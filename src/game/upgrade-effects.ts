@@ -32,9 +32,9 @@ export function applyUpgradeEffects(
   const fishGather = effects.get('gathering_fish_gathering') ?? 0;
   const rockGather = effects.get('gathering_rock_gathering') ?? 0;
   const logGather = effects.get('gathering_log_gathering') ?? 0;
-  const avgGatherBonus = (fishGather + rockGather + logGather) / 3;
-  if (avgGatherBonus > 0) {
-    world.gatherSpeedMod *= 1 + avgGatherBonus;
+  const strongestGatherBonus = Math.max(fishGather, rockGather, logGather);
+  if (strongestGatherBonus > 0) {
+    world.gatherSpeedMod *= 1 + strongestGatherBonus;
   }
 
   // Resource yield bonus from economy_node_yield
