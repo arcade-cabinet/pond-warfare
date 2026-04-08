@@ -576,6 +576,26 @@ describe('AttackEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.7);
   });
 
+  it('opens a smaller light-pressure skirmish window when armor upgrades are active', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.waveCountdown.value = 16;
+    store.fish.value = 180;
+    storeV3.currentRunPurchasedNodeIds.value = ['combat_armor_t0'];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 950, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.7);
+  });
+
   it('opens an earlier attack window with 3 ready units when the lodge is healthy and the next wave is far away', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
@@ -672,6 +692,31 @@ describe('Governor brain arbitration', () => {
     storeV3.progressionLevel.value = 6;
     store.unitRoster.value = [
       makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+      makeGroup('generalist', [{ eid: 20, task: 'gathering-fish', kind: MUDPAW_KIND }]),
+    ];
+
+    governor.brain.arbitrate();
+    expect(governor.brain.subgoals).toHaveLength(1);
+    expect(governor.brain.subgoals[0]?.constructor.name).toBe('AttackGoal');
+  });
+
+  it('can pick attack under a smaller light-pressure window when armor upgrades are active', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.waveCountdown.value = 16;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      { eid: 1, kind: EntityKind.Lodge, hp: 950, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['combat_armor_t0'];
+    store.unitRoster.value = [
+      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
         eid: i + 1,
         task: 'idle',
         kind: SAPPER_KIND,

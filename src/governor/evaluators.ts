@@ -72,12 +72,13 @@ function lightPressureSkirmishWindow(totalArmy: number, readyArmy: number): bool
   const threats = baseThreatCount();
   const lodgeHp = lodgeHpRatio();
   const waveCountdown = nextWaveCountdown();
+  const armorTrackActive = hasCurrentRunTrack('combat_armor');
   return (
     store.baseUnderAttack.value &&
     threats === 1 &&
-    lodgeHp >= 0.97 &&
-    (waveCountdown === null || waveCountdown > 14) &&
-    totalArmy >= MIN_ATTACK_ARMY + 1 &&
+    lodgeHp >= (armorTrackActive ? 0.95 : 0.97) &&
+    (waveCountdown === null || waveCountdown > (armorTrackActive ? 12 : 14)) &&
+    totalArmy >= (armorTrackActive ? MIN_ATTACK_ARMY : MIN_ATTACK_ARMY + 1) &&
     readyArmy >= MIN_ATTACK_ARMY
   );
 }
@@ -86,10 +87,20 @@ function safeAttackArmyThreshold(totalArmy: number): number {
   const lodgeHp = lodgeHpRatio();
   const waveCountdown = nextWaveCountdown();
   const mobilityTrackActive = hasCurrentRunTrack('utility_unit_speed');
+  const armorTrackActive = hasCurrentRunTrack('combat_armor');
   const frontlineArmy = frontlineCombatUnitCount();
 
   if (lodgeHp < 0.85) return Number.POSITIVE_INFINITY;
   if (waveCountdown !== null && waveCountdown <= 10) return Number.POSITIVE_INFINITY;
+
+  if (
+    armorTrackActive &&
+    totalArmy >= MIN_ATTACK_ARMY &&
+    lodgeHp >= 0.95 &&
+    (waveCountdown === null || waveCountdown > 16)
+  ) {
+    return MIN_ATTACK_ARMY;
+  }
 
   if (totalArmy >= MIN_ATTACK_ARMY && lodgeHp >= 0.97 && (waveCountdown === null || waveCountdown > 18)) {
     return MIN_ATTACK_ARMY;
@@ -218,20 +229,28 @@ export class TrainEvaluator extends GoalEvaluator {
 
     const mudpaws = getGovernorGatherUnits(store.unitRoster.value).length;
     const idleMudpaws = findIdleMudpaws().length;
+    const army = combatUnitCount();
+    const readyArmy = countAvailableAttackers();
     const reservedBuildKind = getGovernorReservedBuildKind();
     const trainSpeedTrackActive = hasCurrentRunTrack('utility_train_speed');
+    const armorTrackActive = hasCurrentRunTrack('combat_armor');
 
     if (reservedBuildKind !== null) return trainSpeedTrackActive ? 0.12 : 0.18;
 
     // Need Mudpaws for economy — but the target drops on higher-pressure stages.
     if (mudpaws < getGovernorMudpawTarget()) {
       if (idleMudpaws > 0) return 0; // Let Gather goal assign them first
+      if (
+        armorTrackActive &&
+        mudpaws >= 1 &&
+        (canPressureSafely(army, readyArmy) || lightPressureSkirmishWindow(army, readyArmy))
+      ) {
+        return 0.4;
+      }
       if (store.fish.value >= 10) return 0.8;
     }
 
     // Need combat units — always desirable when economy is running
-    const army = combatUnitCount();
-    const readyArmy = countAvailableAttackers();
     const combatTarget = getGovernorCombatTarget();
     const lowReserveFillerWindow =
       trainSpeedTrackActive &&
@@ -312,7 +331,9 @@ export class AttackEvaluator extends GoalEvaluator {
         : safeAttackArmy === MIN_ATTACK_ARMY + 1
           ? 0.68
           : 0.42;
-    const armyPressure = Math.min((readyArmy - safeAttackArmy) * 0.08, 0.24);
+    const armyPressure = skirmishWindow
+      ? Math.min(Math.max(readyArmy - MIN_ATTACK_ARMY, 0) * 0.08, 0.24)
+      : Math.min(Math.max(readyArmy - safeAttackArmy, 0) * 0.08, 0.24);
     const reservePressure = Math.min(Math.max(totalArmy - readyArmy, 0) * 0.03, 0.09);
     const fishReservePressure = Math.min(Math.max(store.fish.value - 60, 0) / 320, 0.14);
     const lightPressureTax = skirmishWindow ? 0.06 : 0;
