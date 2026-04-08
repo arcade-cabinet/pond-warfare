@@ -103,12 +103,17 @@ function makeMockContext2D() {
 if (typeof HTMLCanvasElement !== 'undefined') {
   // biome-ignore lint/complexity/noBannedTypes: need generic function type for canvas mock
   const originalGetContext = HTMLCanvasElement.prototype.getContext as Function;
+  const isJsdom =
+    typeof navigator !== 'undefined' && /\bjsdom\b/i.test(navigator.userAgent ?? '');
   HTMLCanvasElement.prototype.getContext = function (
     this: HTMLCanvasElement,
     type: string,
     options?: any,
   ) {
     if (type === '2d') {
+      if (isJsdom) {
+        return makeMockContext2D() as any;
+      }
       try {
         const result = originalGetContext.call(this, type, options);
         if (result) return result;
