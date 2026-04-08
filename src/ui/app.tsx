@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
+import { restartMountedGameSession } from '@/game/shell-session';
 import { handleGameInitFailure } from './game-init-failure';
 import {
   handleClamsChange,
@@ -185,7 +186,11 @@ export function App({ onMount }: AppProps) {
         />
         <canvas ref={lightCanvasRef} id="light-canvas" />
         <WeatherEffects />
-        <GameOverBanner onRestart={() => window.location.reload()} />
+        <GameOverBanner
+          onRestart={() => {
+            void restartMountedGameSession();
+          }}
+        />
         <EvacuationOverlay
           onChoice={(choice) => {
             game.handleEvacuationChoice(choice);

@@ -17,10 +17,29 @@ import {
   subscribeErrors,
   subscribeFatalError,
 } from '@/errors';
+import { restartMountedGameSession } from '@/game/shell-session';
+import * as store from '@/ui/store';
 import { Frame9Slice } from './components/frame';
 
 /** Fatal error modal — blocks the screen until dismissed. */
-function FatalErrorModal({ error, onDismiss }: { error: Error; onDismiss: () => void }) {
+function FatalErrorModal({
+  error,
+  onDismiss,
+}: {
+  error: Error;
+  onDismiss: () => void;
+}) {
+  const handleRecovery = () => {
+    clearFatalError();
+    if (store.menuState.value === 'playing') {
+      void restartMountedGameSession();
+      return;
+    }
+    store.gameLoading.value = false;
+    store.continueRequested.value = false;
+    store.menuState.value = 'main';
+  };
+
   return (
     <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80">
       <div class="max-w-lg w-full mx-4">
@@ -37,9 +56,9 @@ function FatalErrorModal({ error, onDismiss }: { error: Error; onDismiss: () => 
               <button
                 type="button"
                 class="action-btn px-4 py-2 min-h-[44px] font-heading text-sm"
-                onClick={() => window.location.reload()}
+                onClick={handleRecovery}
               >
-                Reload Game
+                {store.menuState.value === 'playing' ? 'Retry Session' : 'Return to Menu'}
               </button>
               <button
                 type="button"

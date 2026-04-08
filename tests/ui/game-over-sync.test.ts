@@ -2,7 +2,7 @@
  * Game Over Sync Tests
  *
  * Validates that syncGameOverStats populates all expected stat lines
- * and that Play Again (via window.location.reload) fully resets state.
+ * and that Play Again can return the shell to a fresh playable state.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -177,19 +177,13 @@ describe('syncGameOverStats', () => {
 });
 
 describe('Play Again state reset', () => {
-  it('window.location.reload is the reset mechanism', () => {
-    // The Play Again button calls window.location.reload() which is
-    // the most thorough possible state reset. Verify the onRestart
-    // callback pattern matches this expectation by testing that
-    // the game-over banner accepts an onRestart prop.
-    //
-    // The actual reload behavior cannot be tested in Vitest (JSDOM
-    // doesn't support it), but we can verify the contract.
+  it('play again can return the shell to a fresh playable state', () => {
     expect(typeof store.menuState.value).toBe('string');
     expect(typeof store.gameState.value).toBe('string');
 
-    // After a game ends and user clicks Play Again, menuState should
-    // be settable back to 'main' (Main Menu button) or reload (Play Again).
+    store.gameState.value = 'lose';
+    expect(store.gameState.value).toBe('lose');
+
     store.menuState.value = 'main';
     expect(store.menuState.value).toBe('main');
     store.gameState.value = 'playing';

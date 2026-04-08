@@ -11,7 +11,12 @@ import '@/styles/main.css';
 import { render } from 'preact';
 import { loadKeymapFromStorage } from '@/config/keymap';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
-import { hydrateSaveAvailability, startMenuGame } from '@/game/menu-start';
+import { hydrateSaveAvailability } from '@/game/menu-start';
+import {
+  registerMountedGameRefs,
+  releaseMountedGameLock,
+  startMountedGameFromMenu,
+} from '@/game/shell-session';
 import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { initDatabase } from '@/storage';
 import { loadPersistedSettings } from '@/storage/settings-persistence';
@@ -24,29 +29,13 @@ import { App } from '@/ui/app';
 import { handleGameInitFailure } from '@/ui/game-init-failure';
 import { menuState } from '@/ui/store';
 
-/** Stored DOM refs from the App component, used to init the game later. */
-let storedRefs: {
-  container: HTMLDivElement;
-  gameCanvas: HTMLCanvasElement;
-  fogCanvas: HTMLCanvasElement;
-  lightCanvas: HTMLCanvasElement;
-} | null = null;
-
-let gameStarted = false;
-
 // PLAY always starts a new match from the current run state.
 // CONTINUE loads the latest saved battle after init completes.
-function startGame() {
-  if (!storedRefs || gameStarted) return;
-  gameStarted = true;
-  startMenuGame(storedRefs)
-    .then((started) => {
-      if (!started) gameStarted = false;
-    })
-    .catch((error) => {
-      gameStarted = false;
-      handleGameInitFailure(error);
-    });
+function startGame(): Promise<boolean> {
+  return startMountedGameFromMenu().catch((error) => {
+    handleGameInitFailure(error);
+    return false;
+  });
 }
 
 // Initialize database then mount the Preact application
@@ -80,10 +69,10 @@ function startGame() {
     render(
       <App
         onMount={(refs) => {
-          storedRefs = refs;
+          registerMountedGameRefs(refs);
           // If menu is already 'playing' (edge case), start immediately
           if (menuState.value === 'playing') {
-            startGame();
+            return startGame().then(() => {});
           }
         }}
       />,
@@ -92,8 +81,12 @@ function startGame() {
 
     // Subscribe to menu state changes from PLAY or CONTINUE.
     menuState.subscribe((state) => {
-      if (state === 'playing' && storedRefs && !gameStarted) {
-        startGame();
+      if (state === 'main') {
+        releaseMountedGameLock();
+        return;
+      }
+      if (state === 'playing') {
+        void startGame();
       }
     });
   }
