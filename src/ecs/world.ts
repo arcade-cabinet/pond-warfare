@@ -255,7 +255,6 @@ export interface GameWorld {
 
   // --- v2.0.0 ---
   weather: WeatherState;
-  shrineUsed: Set<number>;
 
   // --- v2.1.0 ---
   extendedStats?: Partial<ExtendedStats>;

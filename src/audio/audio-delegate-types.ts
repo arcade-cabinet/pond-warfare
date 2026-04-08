@@ -8,7 +8,6 @@
 
 import type { PlayableFaction } from '@/config/factions';
 import type { WeatherType } from '@/config/weather';
-import type { ShrineAbility } from '@/ecs/systems/shrine';
 import type { EntityKind } from '@/types';
 import type { AmbientManager } from './ambient';
 import type { CueManager } from './cues';
@@ -94,7 +93,6 @@ export interface AudioDelegateMethods {
   updateAmbient(darkness: number): void;
   // Environment & unit-specific sounds
   weatherTransition(weatherType: WeatherType): void;
-  shrineActivation(ability: ShrineAbility, worldX?: number): void;
   wormEmergence(worldX?: number): void;
   heronScreech(worldX?: number): void;
   // UI navigation sounds

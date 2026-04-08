@@ -218,7 +218,6 @@ export function createGameWorld(): GameWorld {
     lastWormSpawnFrame: 0,
     // v2.0.0
     weather: createWeatherState(defaultSeed, 0),
-    shrineUsed: new Set(),
     // v2.1.0
     extendedStats: {},
     // Co-op multiplayer

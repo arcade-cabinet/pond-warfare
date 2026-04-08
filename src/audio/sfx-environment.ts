@@ -6,7 +6,6 @@
  */
 
 import type { WeatherType } from '@/config/weather';
-import type { ShrineAbility } from '@/ecs/systems/shrine';
 import type { SfxManager } from './sfx';
 
 // ---- Weather Transition Sounds ----
@@ -50,56 +49,6 @@ export function weatherTransitionEffect(
       setTimeout(() => {
         if (!getMuted() && getStarted()) mgr.playAt(1100, 'triangle', 0.07, 0.025, 1400);
       }, 200);
-      break;
-  }
-}
-
-// ---- Shrine Activation Sounds ----
-
-/** Deep resonant tone with reverb feel, different per ability type. */
-export function shrineActivationEffect(
-  mgr: SfxManager,
-  getMuted: () => boolean,
-  getStarted: () => boolean,
-  ability: ShrineAbility,
-  worldX?: number,
-): void {
-  if (!getStarted() || getMuted()) return;
-  switch (ability) {
-    case 'bloom':
-      // Healing chime: bright ascending
-      mgr.playAt(400, 'sine', 0.3, 0.1, 800, worldX);
-      setTimeout(() => {
-        if (!getMuted() && getStarted()) mgr.playAt(600, 'sine', 0.25, 0.08, 1000, worldX);
-      }, 150);
-      break;
-    case 'meteor':
-      // Impact rumble: deep descending
-      mgr.playAt(80, 'sawtooth', 0.4, 0.12, 30, worldX);
-      setTimeout(() => {
-        if (!getMuted() && getStarted()) mgr.playAt(50, 'square', 0.35, 0.1, 20, worldX);
-      }, 200);
-      break;
-    case 'eclipse':
-      // Dark pulse: ominous low tone
-      mgr.playAt(60, 'square', 0.4, 0.1, 40, worldX);
-      setTimeout(() => {
-        if (!getMuted() && getStarted()) mgr.playAt(90, 'sine', 0.3, 0.08, 50, worldX);
-      }, 250);
-      break;
-    case 'flood':
-      // Rushing water: ascending sweep
-      mgr.playAt(150, 'triangle', 0.35, 0.08, 400, worldX);
-      setTimeout(() => {
-        if (!getMuted() && getStarted()) mgr.playAt(300, 'sine', 0.3, 0.06, 500, worldX);
-      }, 180);
-      break;
-    case 'stoneWall':
-      // Heavy stone: low thud + grind
-      mgr.playAt(70, 'sawtooth', 0.3, 0.1, 40, worldX);
-      setTimeout(() => {
-        if (!getMuted() && getStarted()) mgr.playAt(120, 'square', 0.25, 0.08, 60, worldX);
-      }, 160);
       break;
   }
 }

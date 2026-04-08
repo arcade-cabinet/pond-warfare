@@ -1,16 +1,14 @@
 /**
  * Audio Environment Delegates
  *
- * Weather, shrine, worm, and heron sound
+ * Weather, worm, and heron sound
  * delegates extracted from audio-delegates.ts for file size compliance.
  */
 
 import type { WeatherType } from '@/config/weather';
-import type { ShrineAbility } from '@/ecs/systems/shrine';
 import type { AudioManagers } from './audio-delegate-types';
 import {
   heronScreechEffect,
-  shrineActivationEffect,
   weatherTransitionEffect,
   wormEmergenceEffect,
 } from './sfx-environment';
@@ -28,15 +26,6 @@ export function installEnvironmentDelegates(
       () => this.isMuted,
       () => this.isStarted,
       wt,
-    );
-  });
-  def(proto, 'shrineActivation', function (this: Self, a: ShrineAbility, wx?: number) {
-    shrineActivationEffect(
-      this.sfxMgr,
-      () => this.isMuted,
-      () => this.isStarted,
-      a,
-      wx,
     );
   });
   def(proto, 'wormEmergence', function (this: Self, wx?: number) {

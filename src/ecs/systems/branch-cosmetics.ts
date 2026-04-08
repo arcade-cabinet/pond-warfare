@@ -21,7 +21,7 @@ import { EntityTypeTag, FactionTag, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { BUILDING_KINDS, Faction } from '@/types';
 import { spawnParticle } from '@/utils/particles';
-import { countBranchTechs, type UpgradeCategory } from './shrine';
+import { countBranchTechs, type UpgradeCategory } from './branch-upgrades';
 
 /** Number of upgrades per category required for cosmetic activation. */
 const FULL_BRANCH_COUNT = 5;
