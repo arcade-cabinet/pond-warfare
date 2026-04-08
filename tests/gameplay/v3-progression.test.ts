@@ -309,6 +309,17 @@ describe('T39: Upgrade effects apply in-game', () => {
     expect(world.playerUnitSpeedMultiplier).toBeCloseTo(1.06, 2);
   });
 
+  it('applies utility vision range to playerVisionRangeMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_vision_range_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerVisionRangeMultiplier).toBeCloseTo(1.05, 2);
+  });
+
   it('applies utility heal power to playerHealMultiplier', () => {
     const web = generateUpgradeWeb();
     const state = createUpgradeWebState(10000);
@@ -384,6 +395,50 @@ describe('T39: Upgrade effects apply in-game', () => {
     applyUpgradeEffects(world, state, createPrestigeState());
 
     expect(world.playerRepairSpeedMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies siege damage to playerSiegeDamageMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_siege_damage_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerSiegeDamageMultiplier).toBeCloseTo(1.05, 2);
+  });
+
+  it('applies siege range to playerSiegeRangeMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_siege_range_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerSiegeRangeMultiplier).toBeCloseTo(1.05, 2);
+  });
+
+  it('applies sapper speed to playerSiegeSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_sapper_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerSiegeSpeedMultiplier).toBeCloseTo(1.03, 2);
+  });
+
+  it('applies demolish power to playerDemolishPowerMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_demolish_power_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerDemolishPowerMultiplier).toBeCloseTo(1.05, 2);
   });
 });
 

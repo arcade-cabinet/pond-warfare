@@ -88,6 +88,7 @@ export function registerSpecialistEntity(world: GameWorld, eid: number, runtimeI
   const x = Position.x[eid];
   const y = Position.y[eid];
   const commanderProjectionBonus = getCommanderProjectionBonus(world, runtimeId);
+  const projectionMult = runtimeId === 'bombardier' ? world.playerSiegeRangeMultiplier : 1;
   world.specialistAssignments.set(eid, {
     runtimeId,
     canonicalId: profile.canonicalId,
@@ -105,7 +106,8 @@ export function registerSpecialistEntity(world: GameWorld, eid: number, runtimeI
     engagementY: y,
     projectionRange: Math.round(
       (profile.projectionRange + getSpecialistZoneBonus(world, runtimeId, 'projection_range')) *
-        (1 + commanderProjectionBonus),
+        (1 + commanderProjectionBonus) *
+        projectionMult,
     ),
   });
 }

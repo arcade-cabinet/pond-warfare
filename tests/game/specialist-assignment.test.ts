@@ -82,4 +82,13 @@ describe('specialist assignment', () => {
     expect(assignment?.projectionRange).toBe(280);
     expect(assignment?.engagementX).toBeCloseTo(380);
   });
+
+  it('applies siege range upgrades to Bombardier projection range', () => {
+    const { world, eid } = createPositionedEntity(100, 100);
+    world.playerSiegeRangeMultiplier = 1.05;
+
+    registerSpecialistEntity(world, eid, 'bombardier');
+
+    expect(getSpecialistAssignment(world, eid)?.projectionRange).toBe(263);
+  });
 });

@@ -178,4 +178,16 @@ describe('fogOfWarSystem', () => {
     // Lookout base=16, fog vision mult=0.6: ceil(16*0.6) = 10
     expect(lastArc[2]).toBe(10);
   });
+
+  it('should apply utility vision range to explored reveal radius', () => {
+    world.playerVisionRangeMultiplier = 1.5;
+    createPlayerUnit(world, MUDPAW_KIND, 320, 320);
+
+    fogOfWarSystem(world);
+
+    const arcCalls = mockCtx.arc.mock.calls;
+    expect(arcCalls.length).toBeGreaterThanOrEqual(1);
+    const lastArc = arcCalls[arcCalls.length - 1];
+    expect(lastArc[2]).toBe(15);
+  });
 });

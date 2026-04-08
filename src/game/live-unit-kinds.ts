@@ -40,3 +40,7 @@ export function isMedicKind(kind: EntityKind | number): boolean {
 export function isLookoutKind(kind: EntityKind | number): boolean {
   return kind === LOOKOUT_KIND;
 }
+
+export function isPlayerSiegeKind(kind: EntityKind | number): boolean {
+  return kind === SAPPER_KIND || kind === SHARED_SAPPER_CHASSIS_KIND || kind === SHARED_SIEGE_CHASSIS_KIND;
+}

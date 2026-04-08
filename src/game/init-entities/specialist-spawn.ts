@@ -114,13 +114,23 @@ function applySpecialistStats(world: GameWorld, eid: number, runtimeId: string):
   if (world.playerUnitDamageMultiplier > 1 && damage > 0) {
     damage = Math.round(damage * world.playerUnitDamageMultiplier);
   }
+  if (runtimeId === 'bombardier' && world.playerSiegeDamageMultiplier > 1 && damage > 0) {
+    damage = Math.round(damage * world.playerSiegeDamageMultiplier);
+  }
   Combat.damage[eid] = damage;
   if ('attackRange' in def && typeof def.attackRange === 'number' && def.attackRange > 0) {
-    Combat.attackRange[eid] = def.attackRange;
+    let attackRange = def.attackRange;
+    if (runtimeId === 'bombardier' && world.playerSiegeRangeMultiplier > 1) {
+      attackRange = Math.round(attackRange * world.playerSiegeRangeMultiplier);
+    }
+    Combat.attackRange[eid] = attackRange;
   }
 
   let speed = def.speed;
   if (world.tech.swiftPaws) speed *= 1.15;
+  if (runtimeId === 'bombardier' && world.playerSiegeSpeedMultiplier > 1) {
+    speed *= world.playerSiegeSpeedMultiplier;
+  }
   Velocity.speed[eid] = speed;
 
   Stance.mode[eid] = SPECIALIST_STANCE_MAP[runtimeId] ?? StanceMode.Aggressive;

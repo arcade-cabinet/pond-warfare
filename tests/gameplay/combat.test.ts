@@ -216,4 +216,28 @@ describe('Combat', () => {
     expect(Combat.attackCooldown[sapper]).toBe(Math.round(ATTACK_COOLDOWN / 1.5));
     expect(Combat.attackCooldown[sapper]).toBeLessThan(ATTACK_COOLDOWN);
   });
+
+  it('player demolish power increases Sapper damage against buildings', () => {
+    const baseWorld = createGameWorld();
+    const baseLodge = spawnEntity(baseWorld, EntityKind.Lodge, 120, 100, Faction.Enemy);
+    const baseSapper = spawnEntity(baseWorld, SAPPER_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[baseSapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[baseSapper] = baseLodge;
+    Combat.attackCooldown[baseSapper] = 0;
+    const baseHpBefore = Health.current[baseLodge];
+    combatSystem(baseWorld);
+    const baseDamage = baseHpBefore - Health.current[baseLodge];
+
+    world.playerDemolishPowerMultiplier = 1.5;
+    const lodge = spawnEntity(world, EntityKind.Lodge, 120, 100, Faction.Enemy);
+    const sapper = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[sapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sapper] = lodge;
+    Combat.attackCooldown[sapper] = 0;
+    const lodgeHpBefore = Health.current[lodge];
+    combatSystem(world);
+    const boostedDamage = lodgeHpBefore - Health.current[lodge];
+
+    expect(boostedDamage).toBeGreaterThan(baseDamage);
+  });
 });

@@ -86,7 +86,8 @@ export function drawFog(
     const sx = ex - camX + shakeX;
     const sy = ey - camY + shakeY;
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    const rad = BUILDING_KINDS.has(kind) ? BUILDING_SIGHT_RADIUS : UNIT_SIGHT_RADIUS;
+    const baseRadius = BUILDING_KINDS.has(kind) ? BUILDING_SIGHT_RADIUS : UNIT_SIGHT_RADIUS;
+    const rad = baseRadius * Math.max(0.1, world.playerVisionRangeMultiplier);
     if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(rad) || rad <= 0) {
       continue;
     }

@@ -51,6 +51,7 @@ export function fogOfWarSystem(world: GameWorld): void {
 
   // Weather vision modifier (fog reduces all reveal radii)
   const visionMult = getWeatherVisionMult(world);
+  const playerVisionMult = Math.max(0.1, world.playerVisionRangeMultiplier);
 
   const entities = query(world.ecs, [Position, Health, FactionTag]);
 
@@ -69,6 +70,7 @@ export function fogOfWarSystem(world: GameWorld): void {
     if (kind === EntityKind.LookoutPost) rad = 24;
     // Cartography: +25% fog reveal radius for all units
     if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
+    rad = Math.ceil(rad * playerVisionMult);
 
     // Apply weather vision modifier (fog reduces vision range)
     rad = Math.ceil(rad * visionMult);
@@ -99,6 +101,7 @@ export function fogOfWarSystem(world: GameWorld): void {
       let rad = 16;
       if (kind === EntityKind.LookoutPost) rad = 24;
       if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
+      rad = Math.ceil(rad * playerVisionMult);
       rad = Math.ceil(rad * visionMult);
       if (rad > maxBuildingRad) maxBuildingRad = rad;
     }
@@ -125,6 +128,7 @@ export function fogOfWarSystem(world: GameWorld): void {
     for (const pos of world.partnerUnitPositions) {
       let rad = pos.isBuilding ? 16 : 10;
       if (world.tech.cartography) rad = Math.ceil(rad * 1.25);
+      rad = Math.ceil(rad * playerVisionMult);
       rad = Math.ceil(rad * visionMult);
       const ex = Math.floor(pos.x / EXPLORED_SCALE);
       const ey = Math.floor(pos.y / EXPLORED_SCALE);

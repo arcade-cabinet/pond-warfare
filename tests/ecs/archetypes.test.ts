@@ -89,6 +89,18 @@ describe('spawnEntity', () => {
     expect(Combat.damage[eid]).toBe(Math.round(ENTITY_DEFS[EntityKind.Tower].damage * 1.25));
   });
 
+  it('applies siege damage, range, and speed multipliers to spawned Sappers', () => {
+    world.playerSiegeDamageMultiplier = 1.05;
+    world.playerSiegeRangeMultiplier = 1.05;
+    world.playerSiegeSpeedMultiplier = 1.03;
+
+    const eid = spawnEntity(world, SAPPER_KIND, 100, 200, Faction.Player);
+
+    expect(Combat.damage[eid]).toBe(Math.round(ENTITY_DEFS[SAPPER_KIND].damage * 1.05));
+    expect(Combat.attackRange[eid]).toBe(Math.round(ENTITY_DEFS[SAPPER_KIND].attackRange * 1.05));
+    expect(Velocity.speed[eid]).toBeCloseTo(ENTITY_DEFS[SAPPER_KIND].speed * 1.03, 5);
+  });
+
   it('applies player lodge hp multiplier to spawned lodges', () => {
     world.playerLodgeHpMultiplier = 1.15;
 

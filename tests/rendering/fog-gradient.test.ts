@@ -187,6 +187,22 @@ describe('drawFog gradient softness', () => {
     expect(outerRadius).toBe(BUILDING_SIGHT_RADIUS);
   });
 
+  it('should scale live fog radius with utility vision upgrades', () => {
+    const eid = createPlayerUnit(MUDPAW_KIND, 400, 300);
+    world.playerVisionRangeMultiplier = 1.25;
+
+    const state: FogRendererState = {
+      fogCtx: mockCtx as unknown as CanvasRenderingContext2D,
+      fogPattern: {} as CanvasPattern,
+    };
+
+    drawFog(state, world, [eid], 0, 0);
+
+    const call = mockCtx.createRadialGradient.mock.calls[0];
+    const outerRadius = call[5];
+    expect(outerRadius).toBe(UNIT_SIGHT_RADIUS * 1.25);
+  });
+
   it('should not draw vision for enemy faction entities', () => {
     const eid = addEntity(world.ecs);
     addComponent(world.ecs, eid, Position);

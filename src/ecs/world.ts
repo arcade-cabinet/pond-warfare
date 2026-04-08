@@ -118,6 +118,11 @@ export interface GameWorld {
   playerUnitCostMultiplier: number;
   playerUnitHpMultiplier: number;
   playerUnitSpeedMultiplier: number;
+  playerVisionRangeMultiplier: number;
+  playerSiegeDamageMultiplier: number;
+  playerSiegeRangeMultiplier: number;
+  playerSiegeSpeedMultiplier: number;
+  playerDemolishPowerMultiplier: number;
   playerHealMultiplier: number;
   playerTrainSpeedMultiplier: number;
   playerTowerDamageMultiplier: number;

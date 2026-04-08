@@ -88,6 +88,11 @@ export function applyUpgradeEffects(
     world.playerUnitSpeedMultiplier *= 1 + unitSpeed;
   }
 
+  const visionRange = effects.get('utility_vision_range') ?? 0;
+  if (visionRange > 0) {
+    world.playerVisionRangeMultiplier *= 1 + visionRange;
+  }
+
   const healPower = effects.get('utility_heal_power') ?? 0;
   if (healPower > 0) {
     world.playerHealMultiplier *= 1 + healPower;
@@ -116,6 +121,26 @@ export function applyUpgradeEffects(
   const repairSpeed = effects.get('defense_repair_speed') ?? 0;
   if (repairSpeed > 0) {
     world.playerRepairSpeedMultiplier *= 1 + repairSpeed;
+  }
+
+  const siegeDamage = effects.get('siege_siege_damage') ?? 0;
+  if (siegeDamage > 0) {
+    world.playerSiegeDamageMultiplier *= 1 + siegeDamage;
+  }
+
+  const siegeRange = effects.get('siege_siege_range') ?? 0;
+  if (siegeRange > 0) {
+    world.playerSiegeRangeMultiplier *= 1 + siegeRange;
+  }
+
+  const sapperSpeed = effects.get('siege_sapper_speed') ?? 0;
+  if (sapperSpeed > 0) {
+    world.playerSiegeSpeedMultiplier *= 1 + sapperSpeed;
+  }
+
+  const demolishPower = effects.get('siege_demolish_power') ?? 0;
+  if (demolishPower > 0) {
+    world.playerDemolishPowerMultiplier *= 1 + demolishPower;
   }
 
   // Pearl upgrade multipliers (prestige-persistent)

@@ -8,6 +8,7 @@ import {
   MUDPAW_KIND,
   MUDPAW_SPRITE_ID,
   SHARED_HEAVY_CHASSIS_KIND,
+  isPlayerSiegeKind,
   isMudpawKind,
   SABOTEUR_SPRITE_ID,
   SAPPER_SPRITE_ID,
@@ -225,6 +226,9 @@ export function spawnEntity(
     if (faction === Faction.Player && world.playerUnitSpeedMultiplier > 1) {
       speed *= world.playerUnitSpeedMultiplier;
     }
+    if (faction === Faction.Player && isPlayerSiegeKind(kind) && world.playerSiegeSpeedMultiplier > 1) {
+      speed *= world.playerSiegeSpeedMultiplier;
+    }
     Velocity.speed[eid] = speed;
     Velocity.speedDebuffTimer[eid] = 0;
 
@@ -234,6 +238,9 @@ export function spawnEntity(
     if (faction === Faction.Player && damage > 0 && world.playerUnitDamageMultiplier > 1) {
       damage = Math.round(damage * world.playerUnitDamageMultiplier);
     }
+    if (faction === Faction.Player && damage > 0 && isPlayerSiegeKind(kind) && world.playerSiegeDamageMultiplier > 1) {
+      damage = Math.round(damage * world.playerSiegeDamageMultiplier);
+    }
     // Apply enemy stat multiplier to damage
     if (faction === Faction.Enemy && world.enemyStatMult > 1 && damage > 0)
       damage = Math.round(damage * world.enemyStatMult);
@@ -242,6 +249,9 @@ export function spawnEntity(
     let range = def.attackRange;
     if (kind === EntityKind.Saboteur && faction === Faction.Player && world.tech.eagleEye)
       range += 50;
+    if (faction === Faction.Player && range > 0 && isPlayerSiegeKind(kind) && world.playerSiegeRangeMultiplier > 1) {
+      range = Math.round(range * world.playerSiegeRangeMultiplier);
+    }
     Combat.attackRange[eid] = range;
     Combat.attackCooldown[eid] = 0;
     Combat.kills[eid] = 0;

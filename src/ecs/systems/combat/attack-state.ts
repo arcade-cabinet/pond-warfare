@@ -23,6 +23,7 @@ import {
 } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
+import { isPlayerSiegeKind } from '@/game/live-unit-kinds';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { executeBossCrocAttack, executeMeleeAttack } from './melee-attacks';
@@ -149,7 +150,16 @@ function executeAttack(
       world.shakeTimer = Math.max(world.shakeTimer, 3);
     }
   } else {
-    executeMeleeAttack(world, eid, tEnt, dmg, kind, faction);
+    let adjustedDamage = dmg;
+    if (
+      faction === Faction.Player &&
+      isPlayerSiegeKind(kind) &&
+      hasComponent(world.ecs, tEnt, IsBuilding) &&
+      world.playerDemolishPowerMultiplier > 1
+    ) {
+      adjustedDamage = Math.round(adjustedDamage * world.playerDemolishPowerMultiplier);
+    }
+    executeMeleeAttack(world, eid, tEnt, adjustedDamage, kind, faction);
   }
 
   // Attack cooldown
