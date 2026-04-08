@@ -23,6 +23,7 @@ import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { triggerAttackLunge } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
+import { rollPlayerCriticalHit } from './critical-hits';
 import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
 export function executeBossCrocAttack(
@@ -105,11 +106,7 @@ export function executeMeleeAttack(
     meleeDmg = Math.round(meleeDmg * 1.15);
   }
 
-  if (
-    faction === Faction.Player &&
-    world.playerCriticalHitChance > 0 &&
-    world.gameRng.next() < world.playerCriticalHitChance
-  ) {
+  if (faction === Faction.Player && rollPlayerCriticalHit(world, eid)) {
     meleeDmg *= 2;
     criticalHit = true;
   }

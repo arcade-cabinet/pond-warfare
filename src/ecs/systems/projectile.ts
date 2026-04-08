@@ -19,6 +19,7 @@ import { FactionTag, Health, IsProjectile, Position, ProjectileData } from '@/ec
 import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
+import { rollPlayerCriticalHit } from './combat/critical-hits';
 import { getWeatherProjectileOffset } from './weather';
 
 /**
@@ -105,8 +106,7 @@ export function projectileSystem(world: GameWorld): void {
           owner !== -1 &&
           hasComponent(world.ecs, owner, FactionTag) &&
           FactionTag.faction[owner] === Faction.Player &&
-          world.playerCriticalHitChance > 0 &&
-          world.gameRng.next() < world.playerCriticalHitChance
+          rollPlayerCriticalHit(world, owner)
         ) {
           damage *= 2;
           criticalHit = true;

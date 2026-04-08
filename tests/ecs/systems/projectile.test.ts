@@ -7,7 +7,7 @@
 import { addComponent, addEntity, hasComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { PROJECTILE_SPEED } from '@/constants';
-import { FactionTag, Health, IsProjectile, Position } from '@/ecs/components';
+import { Combat, FactionTag, Health, IsProjectile, Position } from '@/ecs/components';
 import { projectileSystem, spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { Faction } from '@/types';
@@ -84,6 +84,7 @@ describe('projectileSystem', () => {
 
   it('applies player critical hits to projectile damage', () => {
     const owner = addEntity(world.ecs);
+    addComponent(world.ecs, owner, Combat);
     addComponent(world.ecs, owner, FactionTag);
     FactionTag.faction[owner] = Faction.Player;
     world.playerCriticalHitChance = 1;
@@ -95,5 +96,24 @@ describe('projectileSystem', () => {
 
     expect(Health.current[target]).toBe(70);
     expect(world.floatingTexts.some((text) => text.text === 'CRIT!')).toBe(true);
+  });
+
+  it('accumulates low player critical-hit chance across repeated shots', () => {
+    const owner = addEntity(world.ecs);
+    addComponent(world.ecs, owner, Combat);
+    addComponent(world.ecs, owner, FactionTag);
+    FactionTag.faction[owner] = Faction.Player;
+    world.playerCriticalHitChance = 0.25;
+    world.gameRng.next = () => 0.99;
+
+    const target = createTarget(world, 100, 100, 100);
+
+    for (let shot = 0; shot < 4; shot += 1) {
+      spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 10, owner);
+      projectileSystem(world);
+    }
+
+    expect(Health.current[target]).toBe(50);
+    expect(world.floatingTexts.filter((text) => text.text === 'CRIT!')).toHaveLength(1);
   });
 });

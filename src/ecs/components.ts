@@ -43,6 +43,7 @@ export const Combat = soa({
   attackRange: [] as number[],
   attackCooldown: [] as number[],
   kills: [] as number[],
+  critCharge: [] as number[],
 });
 
 // Unit state machine
