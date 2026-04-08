@@ -26,15 +26,10 @@ export function calculateFormationPositions(
       kind === SAPPER_KIND ||
       kind === SABOTEUR_KIND ||
       kind === EntityKind.Gator ||
-      kind === EntityKind.ArmoredGator ||
-      kind === EntityKind.Berserker
+      kind === EntityKind.ArmoredGator
     ) {
       melee.push(eid);
-    } else if (
-      kind === LOOKOUT_KIND ||
-      kind === EntityKind.Catapult ||
-      kind === EntityKind.VenomSnake
-    ) {
+    } else if (kind === LOOKOUT_KIND || kind === EntityKind.VenomSnake) {
       ranged.push(eid);
     } else {
       support.push(eid);

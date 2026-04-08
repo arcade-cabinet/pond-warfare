@@ -6,26 +6,6 @@
 
 import type { SfxManager } from './sfx';
 
-// ---- Catapult ----
-
-/** Low thud when catapult fires. */
-export function catapultShootEffect(mgr: SfxManager, worldX?: number): void {
-  mgr.playAt(80, 'sawtooth', 0.25, 0.1, 40, worldX);
-}
-
-/** Explosion boom on catapult impact. */
-export function catapultImpactEffect(
-  mgr: SfxManager,
-  getMuted: () => boolean,
-  getStarted: () => boolean,
-  worldX?: number,
-): void {
-  mgr.playAt(60, 'sawtooth', 0.3, 0.14, 25, worldX);
-  setTimeout(() => {
-    if (!getMuted() && getStarted()) mgr.playAt(40, 'square', 0.35, 0.1, 20, worldX);
-  }, 80);
-}
-
 // ---- Tower ----
 
 /** Rapid "pew" when tower fires. */

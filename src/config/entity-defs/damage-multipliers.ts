@@ -12,34 +12,17 @@ import { EntityKind } from '@/types';
  */
 export const DAMAGE_MULTIPLIERS: Partial<Record<EntityKind, Partial<Record<EntityKind, number>>>> =
   {
-    [EntityKind.Shieldbearer]: {
-      [EntityKind.Gator]: 0.75,
-    },
     [EntityKind.SwampDrake]: {
       [MUDPAW_KIND]: 1.5,
-      [EntityKind.Shieldbearer]: 0.75,
-    },
-    // v1.5.0 new units
-    [EntityKind.Diver]: {
-      [EntityKind.Shieldbearer]: 0.75, // Weak vs heavy armor
     },
     [EntityKind.BurrowingWorm]: {
       [MUDPAW_KIND]: 1.5, // Targets economy
     },
     [EntityKind.FlyingHeron]: {
       [MUDPAW_KIND]: 1.5, // Harasses Mudpaws
-      [EntityKind.Shieldbearer]: 0.5, // Terrible vs tanks
     },
     [EntityKind.Tower]: {
       [EntityKind.FlyingHeron]: 1.5, // Towers counter flying
-    },
-    // v2.0.0 new units
-    [EntityKind.OtterWarship]: {
-      [MUDPAW_KIND]: 1.5, // Splash damage vs clusters
-      [EntityKind.Shieldbearer]: 0.75, // Armor resists splash
-    },
-    [EntityKind.Berserker]: {
-      [EntityKind.Shieldbearer]: 0.75, // Armor absorbs reckless attacks
     },
   };
 

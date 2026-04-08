@@ -104,10 +104,7 @@ export function projectileSystem(world: GameWorld): void {
 
       // Play differentiated impact sound based on source unit kind
       const kind = ProjectileData.sourceKind[eid];
-      if (kind === EntityKind.Catapult) {
-        audio.catapultImpact(tx);
-        world.shakeTimer = Math.max(world.shakeTimer, 5);
-      } else if (kind === EntityKind.Tower) {
+      if (kind === EntityKind.Tower) {
         audio.towerHit(tx);
       }
 

@@ -5,8 +5,6 @@
  */
 import * as Tone from 'tone';
 import {
-  catapultImpactEffect,
-  catapultShootEffect,
   deathMeleeEffect,
   deathRangedEffect,
   rampageEffect,
@@ -168,7 +166,7 @@ export class SfxManager {
     this.selectSaboteur();
   }
   selectBombardier(): void {
-    this.selectCatapult();
+    this.selectSapper();
   }
   selectSapper(): void {
     this.playAt(80, 'sine', 0.15, 0.08, 50);
@@ -181,12 +179,6 @@ export class SfxManager {
   }
   selectShaman(): void {
     this.selectMedic();
-  }
-  selectCatapult(): void {
-    this.playAt(60, 'sawtooth', 0.2, 0.06, 40);
-  }
-  selectShieldbearer(): void {
-    this.playAt(150, 'square', 0.12, 0.07, 90);
   }
   selectBuild(): void {
     this.playAt(200, 'triangle', 0.1, 0.05, 150);
@@ -265,12 +257,6 @@ export class SfxManager {
   }
 
   // ---- Differentiated combat sounds ----
-  catapultShoot(worldX?: number): void {
-    catapultShootEffect(this, worldX);
-  }
-  catapultImpact(worldX?: number): void {
-    catapultImpactEffect(this, this._getMuted, this._getStarted, worldX);
-  }
   towerShoot(worldX?: number): void {
     towerShootEffect(this, worldX);
   }

@@ -1,8 +1,8 @@
 /**
  * Combat Behavioral Tests
  *
- * Validates damage multiplier tables, special unit abilities (AoE, enrage,
- * siege, poison, speed debuff), tower auto-attack, and alpha predator aura.
+ * Validates damage multiplier tables, live combat behaviors, enrage,
+ * siege, poison, tower auto-attack, and alpha predator aura.
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -62,19 +62,19 @@ describe('Combat', () => {
     expect(Combat.attackCooldown[tower]).toBeGreaterThan(0);
   });
 
-  it('melee counter multipliers are applied once, not twice', () => {
+  it('shared heavy chassis now falls back to direct live-combat behavior', () => {
     const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
-    const shieldbearer = spawnEntity(world, EntityKind.Shieldbearer, 140, 100, Faction.Player);
+    const sharedHeavy = spawnEntity(world, EntityKind.SharedHeavyChassis, 140, 100, Faction.Player);
     Sprite.facingLeft[gator] = 0;
 
-    UnitStateMachine.state[shieldbearer] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[shieldbearer] = gator;
-    Combat.attackCooldown[shieldbearer] = 0;
+    UnitStateMachine.state[sharedHeavy] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sharedHeavy] = gator;
+    Combat.attackCooldown[sharedHeavy] = 0;
 
     combatSystem(world);
 
-    // Shieldbearer base damage 3 vs Gator 0.75x => round(2.25) = 2 damage.
-    expect(Health.current[gator]).toBe(58);
+    expect(Health.current[gator]).toBe(45);
+    expect(query(world.ecs, [IsProjectile]).length).toBe(0);
   });
 
   it('Saboteur attacks deal direct damage without spawning projectile entities', () => {
@@ -91,40 +91,21 @@ describe('Combat', () => {
     expect(query(world.ecs, [IsProjectile]).length).toBe(0);
   });
 
-  it('catapult should deal AoE damage', () => {
-    const catapult = spawnEntity(world, EntityKind.Catapult, 100, 100, Faction.Player);
-    UnitStateMachine.state[catapult] = UnitState.Attacking;
-    Combat.attackCooldown[catapult] = 0;
+  it('shared siege chassis now attacks directly without projectile splash', () => {
+    const sharedSiege = spawnEntity(world, EntityKind.SharedSiegeChassis, 100, 100, Faction.Player);
+    UnitStateMachine.state[sharedSiege] = UnitState.Attacking;
+    Combat.attackCooldown[sharedSiege] = 0;
 
-    // Primary target and a nearby secondary target
-    const target = spawnEntity(world, EntityKind.Gator, 200, 100, Faction.Enemy);
-    const nearby = spawnEntity(world, EntityKind.Snake, 220, 100, Faction.Enemy);
-    UnitStateMachine.targetEntity[catapult] = target;
-
-    // Place them within catapult's attack range
-    const catapultRange = Combat.attackRange[catapult];
-    expect(catapultRange).toBe(250);
-
-    // Ensure distance <= range
-    Position.x[target] = Position.x[catapult] + 200;
-    Position.y[target] = Position.y[catapult];
-
-    // Place nearby enemy within AoE radius (60px) of target
-    Position.x[nearby] = Position.x[target] + 30;
-    Position.y[nearby] = Position.y[target];
-
-    // Populate spatial hash
-    world.spatialHash.clear();
-    world.spatialHash.insert(target, Position.x[target], Position.y[target]);
-    world.spatialHash.insert(nearby, Position.x[nearby], Position.y[nearby]);
-    world.spatialHash.insert(catapult, Position.x[catapult], Position.y[catapult]);
+    const target = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
+    const nearby = spawnEntity(world, EntityKind.Snake, 140, 100, Faction.Enemy);
+    UnitStateMachine.targetEntity[sharedSiege] = target;
 
     const nearbyHpBefore = Health.current[nearby];
-
     combatSystem(world);
 
-    // The nearby unit should have taken AoE damage (50% of catapult damage)
-    expect(Health.current[nearby]).toBeLessThan(nearbyHpBefore);
+    expect(Health.current[target]).toBeLessThan(Health.max[target]);
+    expect(Health.current[nearby]).toBe(nearbyHpBefore);
+    expect(query(world.ecs, [IsProjectile]).length).toBe(0);
   });
 
   it('boss croc should enrage below 30% HP', () => {
@@ -215,32 +196,8 @@ describe('Combat', () => {
     expect(world.alphaDamageBuff.get(gator)).toBe(world.frameCount + 60);
   });
 
-  it('shieldbearer should resist gator damage (0.75x)', () => {
-    const mult = getDamageMultiplier(EntityKind.Shieldbearer, EntityKind.Gator);
-    expect(mult).toBe(0.75);
-  });
-
-  it('trapper should apply speed debuff on attack', () => {
-    const trapper = spawnEntity(world, EntityKind.Trapper, 100, 100, Faction.Player);
-    const gator = spawnEntity(world, EntityKind.Gator, 150, 100, Faction.Enemy);
-
-    UnitStateMachine.state[trapper] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[trapper] = gator;
-    Combat.attackCooldown[trapper] = 0;
-
-    // Place within attack range (trapper range = 100)
-    const dist = Math.sqrt(
-      (Position.x[gator] - Position.x[trapper]) ** 2 +
-        (Position.y[gator] - Position.y[trapper]) ** 2,
-    );
-    expect(dist).toBeLessThanOrEqual(Combat.attackRange[trapper]);
-
-    combatSystem(world);
-
-    // Gator should have a speed debuff timer set
-    expect(Velocity.speedDebuffTimer[gator]).toBe(180);
-    // Should see "TRAPPED!" floating text
-    const trapText = world.floatingTexts.find((t) => t.text === 'TRAPPED!');
-    expect(trapText).toBeDefined();
+  it('reserved compatibility ids use neutral matchup values', () => {
+    expect(getDamageMultiplier(EntityKind.SharedHeavyChassis, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.SharedSiegeChassis, EntityKind.Gator)).toBe(1.0);
   });
 });

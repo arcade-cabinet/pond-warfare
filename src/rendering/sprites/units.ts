@@ -43,7 +43,7 @@ function drawOtterBase(d: DrawCtx): void {
   rect(11, 10, 3, 2, PALETTE.otterBase);
 }
 
-/** Draw the standard otter body without extra outline on feet (Medic/Shieldbearer chassis). */
+/** Draw the standard otter body without extra outline on feet (Medic/shared heavy chassis). */
 function drawOtterBodyMinimal(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -77,7 +77,7 @@ export function drawMedic(d: DrawCtx): void {
   d.rect(6, 8, 4, 1, '#22c55e');
 }
 
-export function drawShieldbearer(d: DrawCtx): void {
+export function drawSharedHeavyChassis(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   d.rect(2, 5, 4, 6, PALETTE.clamShell);
   d.rect(1, 6, 1, 4, PALETTE.stoneL);
@@ -109,7 +109,7 @@ export function drawLookout(d: DrawCtx): void {
   rect(11, 10, 3, 1, PALETTE.otterBase);
 }
 
-export function drawSwimmer(d: DrawCtx): void {
+export function drawReservedUnit28(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.fillRect(3, 12, 10, 1);
@@ -132,7 +132,7 @@ export function drawSwimmer(d: DrawCtx): void {
   rect(1, 9, 1, 1, PALETTE.otterBase);
 }
 
-export function drawTrapper(d: DrawCtx): void {
+export function drawReservedUnit29(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   const { p, rect } = d;
   rect(2, 5, 3, 1, '#f59e0b');
@@ -224,8 +224,8 @@ export function drawShaman(d: DrawCtx): void {
   p(13, 0, '#bbf7d0');
 }
 
-/** Diver -- blue-tinted otter with goggles for stealth. */
-export function drawDiver(d: DrawCtx): void {
+/** Reserved unit slot 33 reusing a blue-tinted otter body. */
+export function drawReservedUnit33(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   const { p, rect } = d;
   // Blue tint on body

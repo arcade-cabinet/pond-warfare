@@ -111,50 +111,6 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
     idle: ['*scans horizon*', 'Fog is shifting...', 'Keeping watch.'],
     death: ['Eyes... closing...'],
   }),
-
-  [EntityKind.Shieldbearer]: pool({
-    select: ['Shield wall!', 'Nothing gets past me.', 'Standing firm.'],
-    select_repeat: ['I AM the wall.', 'Try to move me.'],
-    select_spam: ['You wanna arm-wrestle?', "This shield isn't for decoration."],
-    move: ['Advancing.', 'Shield up, moving out.'],
-    attack: ['SHIELD BASH!', 'Take this!'],
-    combat: ["They can't break through!", 'HOLD!', 'Block everything!'],
-    low_hp: ["Shield's cracking!", 'Need repairs!'],
-    death: ['The shield... holds...'],
-  }),
-
-  [EntityKind.Catapult]: pool({
-    select: ['Ready to launch.', 'Siege weapon standing by.', 'Pick a target.'],
-    select_repeat: ['These things take time to aim.', 'Patience. Big rocks, big damage.'],
-    select_spam: ['Want me to aim at YOU?', 'I could launch you too.'],
-    move: ['Hauling into position...', 'Slowly but surely.', 'Heavy payload moving.'],
-    attack: ['FIRE!', 'INCOMING!', 'Watch your heads!', 'LAUNCH!'],
-    kill: ['Direct hit!', 'BOOM!', 'Flattened.'],
-    idle: ['*polishes boulder*', 'Just waiting for a target...'],
-    death: ['*creak* *SNAP*'],
-  }),
-
-  [EntityKind.Swimmer]: pool({
-    select: ['Making waves!', "Water's fine!", 'Dive ready.'],
-    select_repeat: ["I'm part fish, you know.", 'Splish splash!'],
-    select_spam: ['Stop making me surface!', 'I LIVE in the water.'],
-    move: ['Swimming!', 'Gliding through!', "Current's good!"],
-    attack: ['Surprise attack!', 'From the depths!'],
-    idle: ['*blows bubbles*', '*floats*', 'La la la...'],
-    death: ['*glub glub*'],
-  }),
-
-  [EntityKind.Trapper]: pool({
-    select: ["Trap's set.", 'Careful where you step.', 'Sneaky sneaky.'],
-    select_repeat: ['Watch out for my traps!', 'I lay more than eggs.'],
-    select_spam: ["Don't trigger my traps!", 'I trapped a pun, want to hear it?'],
-    move: ['Creeping forward.', 'Setting up position.'],
-    attack: ['GOTCHA!', 'Snared!', "You're stuck now!"],
-    kill: ['The trap worked!', 'Caught!'],
-    idle: ['*whittles trap*', '*checks snares*'],
-    death: ['Trapped... myself...'],
-  }),
-
   [EntityKind.Shaman]: pool({
     select: ['Spirits listen.', 'Healing current ready.', 'Who needs mending?'],
     select_repeat: ['Calm yourself.', 'The marsh still answers.', 'I am already watching them.'],

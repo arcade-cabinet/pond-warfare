@@ -99,7 +99,6 @@ describe('AudioSystem – biome and faction palettes', () => {
     const selectLookout = vi.spyOn(sfxMgr, 'selectLookout');
     const selectSapper = vi.spyOn(sfxMgr, 'selectSapper');
     const selectSaboteur = vi.spyOn(sfxMgr, 'selectSaboteur');
-    const selectCatapult = vi.spyOn(sfxMgr, 'selectCatapult');
 
     sys.selectMudpaw();
     sys.selectMedic();
@@ -114,8 +113,7 @@ describe('AudioSystem – biome and faction palettes', () => {
     expect(selectMudpaw).toHaveBeenCalledTimes(1);
     expect(selectMedic).toHaveBeenCalledTimes(2);
     expect(selectLookout).toHaveBeenCalledTimes(1);
-    expect(selectSapper).toHaveBeenCalledTimes(2);
+    expect(selectSapper).toHaveBeenCalledTimes(3);
     expect(selectSaboteur).toHaveBeenCalledTimes(2);
-    expect(selectCatapult).toHaveBeenCalledTimes(1);
   });
 });

@@ -7,9 +7,11 @@ import {
   MEDIC_SPRITE_ID,
   MUDPAW_KIND,
   MUDPAW_SPRITE_ID,
+  SHARED_HEAVY_CHASSIS_KIND,
   isMudpawKind,
   SABOTEUR_SPRITE_ID,
   SAPPER_SPRITE_ID,
+  SHARED_SIEGE_CHASSIS_KIND,
 } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
 import {
@@ -55,9 +57,9 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [MEDIC_KIND]: MEDIC_SPRITE_ID,
   [EntityKind.Watchtower]: SpriteId.Watchtower,
   [EntityKind.BossCroc]: SpriteId.BossCroc,
-  [EntityKind.Shieldbearer]: SpriteId.Shieldbearer,
+  [SHARED_HEAVY_CHASSIS_KIND]: SpriteId.SharedHeavyChassis,
   [LOOKOUT_KIND]: LOOKOUT_SPRITE_ID,
-  [EntityKind.Catapult]: SpriteId.Catapult,
+  [SHARED_SIEGE_CHASSIS_KIND]: SpriteId.SharedSiegeChassis,
   [EntityKind.Wall]: SpriteId.Wall,
   [EntityKind.LookoutPost]: SpriteId.LookoutPost,
   [EntityKind.ArmoredGator]: SpriteId.ArmoredGator,
@@ -68,23 +70,23 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.PearlBed]: SpriteId.PearlBed,
   [EntityKind.FishingHut]: SpriteId.FishingHut,
   [EntityKind.HerbalistHut]: SpriteId.HerbalistHut,
-  [EntityKind.Swimmer]: SpriteId.Swimmer,
-  [EntityKind.Trapper]: SpriteId.Trapper,
+  [EntityKind.ReservedUnit28]: SpriteId.ReservedSprite28,
+  [EntityKind.ReservedUnit29]: SpriteId.ReservedSprite29,
   [EntityKind.Commander]: SpriteId.Commander,
   [EntityKind.Frog]: SpriteId.Frog,
   [EntityKind.Fish]: SpriteId.Fish,
-  [EntityKind.Diver]: SpriteId.Diver,
+  [EntityKind.ReservedUnit33]: SpriteId.ReservedSprite33,
   [EntityKind.ReservedUnit34]: SpriteId.ReservedSprite34,
   [EntityKind.Shaman]: SpriteId.Shaman,
   [EntityKind.BurrowingWorm]: SpriteId.BurrowingWorm,
   [EntityKind.FlyingHeron]: SpriteId.FlyingHeron,
   [EntityKind.Market]: SpriteId.Market,
   // v2.0.0
-  [EntityKind.Dock]: SpriteId.Dock,
-  [EntityKind.OtterWarship]: SpriteId.OtterWarship,
-  [EntityKind.Berserker]: SpriteId.Berserker,
-  [EntityKind.WallGate]: SpriteId.WallGate,
-  [EntityKind.Shrine]: SpriteId.Shrine,
+  [EntityKind.ReservedBuilding39]: SpriteId.ReservedSprite39,
+  [EntityKind.ReservedUnit40]: SpriteId.ReservedSprite40,
+  [EntityKind.ReservedUnit41]: SpriteId.ReservedSprite41,
+  [EntityKind.ReservedBuilding42]: SpriteId.ReservedSprite42,
+  [EntityKind.ReservedBuilding43]: SpriteId.ReservedSprite43,
   // v3.0.0
   [EntityKind.Sapper]: SAPPER_SPRITE_ID,
   [EntityKind.Saboteur]: SABOTEUR_SPRITE_ID,
@@ -175,7 +177,7 @@ export function spawnEntity(
       kind === EntityKind.Lodge ||
       kind === EntityKind.Burrow ||
       kind === EntityKind.Armory ||
-      kind === EntityKind.Dock ||
+      kind === EntityKind.ReservedBuilding39 ||
       kind === EntityKind.PredatorNest
     ) {
       addComponent(world.ecs, eid, TrainingQueue);

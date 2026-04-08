@@ -31,7 +31,7 @@ import { spawnDeathParticles } from './death-particles';
 
 /** Ranged or recon bodies that get a "cry" death sound instead of a grunt. */
 function isRangedDeathKind(kind: EntityKind): boolean {
-  return kind === EntityKind.Catapult || isLookoutKind(kind);
+  return isLookoutKind(kind);
 }
 
 export function processDeath(world: GameWorld, eid: number, attackerEid?: number): void {

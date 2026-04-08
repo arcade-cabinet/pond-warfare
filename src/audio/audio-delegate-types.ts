@@ -40,7 +40,6 @@ export interface AudioDelegateMethods {
   deposit(worldX?: number): void;
   trade(worldX?: number): void;
   pickup(worldX?: number): void;
-  catapultImpact(worldX?: number): void;
   towerHit(worldX?: number): void;
   deathMelee(worldX?: number): void;
   deathRanged(worldX?: number): void;
@@ -58,11 +57,9 @@ export interface AudioDelegateMethods {
   selectSapper(): void;
   selectSaboteur(): void;
   selectMedic(): void;
-  selectCatapult(): void;
   selectShaman(): void;
   selectLookout(): void;
   selectCommander(): void;
-  selectShieldbearer(): void;
   selectBuild(): void;
   placeBuilding(): void;
   researchComplete(): void;
@@ -80,7 +77,6 @@ export interface AudioDelegateMethods {
   statTotal(): void;
   hit(worldX?: number): void;
   shoot(worldX?: number): void;
-  catapultShoot(worldX?: number): void;
   towerShoot(worldX?: number): void;
   win(): void;
   lose(): void;

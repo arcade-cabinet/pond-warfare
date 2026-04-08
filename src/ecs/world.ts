@@ -246,7 +246,7 @@ export interface GameWorld {
     | 'adversarial-loss'
     | null;
 
-  // Diver stealth: set of entity IDs currently in stealth
+  // Active stealth state (currently used by commander/passive invisibility)
   stealthEntities: Set<number>;
 
   // Burrowing Worm: entity ID -> remaining burrow frames before emergence

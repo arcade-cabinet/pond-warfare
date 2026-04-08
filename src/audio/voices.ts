@@ -4,6 +4,8 @@ import {
   isMudpawKind,
   MEDIC_KIND,
   SABOTEUR_KIND,
+  SHARED_HEAVY_CHASSIS_KIND,
+  SHARED_SIEGE_CHASSIS_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
@@ -132,8 +134,7 @@ export class VoiceManager {
       kind === MEDIC_KIND ||
       kind === EntityKind.Shaman ||
       isLookoutKind(kind) ||
-      kind === EntityKind.SwampDrake ||
-      kind === EntityKind.Trapper
+      kind === EntityKind.SwampDrake
     ) {
       return 'support';
     }
@@ -145,8 +146,8 @@ export class VoiceManager {
       return 'leader';
     }
     if (
-      kind === EntityKind.Shieldbearer ||
-      kind === EntityKind.Catapult ||
+      kind === SHARED_HEAVY_CHASSIS_KIND ||
+      kind === SHARED_SIEGE_CHASSIS_KIND ||
       kind === EntityKind.ArmoredGator ||
       kind === EntityKind.SiegeTurtle
     ) {

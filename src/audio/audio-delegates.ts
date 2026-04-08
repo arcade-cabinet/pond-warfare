@@ -53,9 +53,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'pickup', function (this: Self, wx?: number) {
     this.sfxMgr.pickup(wx);
   });
-  def(proto, 'catapultImpact', function (this: Self, wx?: number) {
-    this.sfxMgr.catapultImpact(wx);
-  });
   def(proto, 'towerHit', function (this: Self, wx?: number) {
     this.sfxMgr.towerHit(wx);
   });
@@ -108,9 +105,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'selectMedic', function (this: Self) {
     this.sfxMgr.selectMedic();
   });
-  def(proto, 'selectCatapult', function (this: Self) {
-    this.sfxMgr.selectCatapult();
-  });
   def(proto, 'selectShaman', function (this: Self) {
     this.sfxMgr.selectShaman();
   });
@@ -119,9 +113,6 @@ export function installDelegates(proto: any): void {
   });
   def(proto, 'selectCommander', function (this: Self) {
     this.sfxMgr.selectCommander();
-  });
-  def(proto, 'selectShieldbearer', function (this: Self) {
-    this.sfxMgr.selectShieldbearer();
   });
   def(proto, 'selectBuild', function (this: Self) {
     this.sfxMgr.selectBuild();
@@ -177,10 +168,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'shoot', function (this: Self, wx?: number) {
     this.cueMgr.combatStinger();
     this.sfxMgr.shoot(wx);
-  });
-  def(proto, 'catapultShoot', function (this: Self, wx?: number) {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.catapultShoot(wx);
   });
   def(proto, 'towerShoot', function (this: Self, wx?: number) {
     this.cueMgr.combatStinger();

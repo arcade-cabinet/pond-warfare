@@ -67,7 +67,7 @@ export function movementSystem(world: GameWorld): void {
     const ty = UnitStateMachine.targetY[eid];
     let speed = Velocity.speed[eid];
 
-    // Apply speed debuff from Trapper traps (50% slow)
+    // Apply any active speed debuff timer (50% slow)
     if (Velocity.speedDebuffTimer[eid] > 0) {
       speed *= 0.5;
       Velocity.speedDebuffTimer[eid]--;

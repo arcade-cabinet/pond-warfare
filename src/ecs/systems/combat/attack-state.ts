@@ -1,14 +1,12 @@
 /**
  * Attack State Processing
  *
- * Handles the Attacking state for all unit types: melee direct damage,
- * catapult AoE, boss croc stomp, siege turtle,
- * trapper slow, plus damage modifiers from auras, tech, and positional
+ * Handles the Attacking state for all unit types: direct damage,
+ * boss croc stomp, siege turtle, plus damage modifiers from auras, tech, and positional
  * bonuses (flanking + elevation).
  */
 
 import { hasComponent } from 'bitecs';
-import { audio } from '@/audio/audio-system';
 import { showBark } from '@/config/barks';
 import { getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
 import { ATTACK_COOLDOWN } from '@/constants';
@@ -22,15 +20,12 @@ import {
   Position,
   Sprite,
   UnitStateMachine,
-  Velocity,
 } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health';
-import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { executeBossCrocAttack, executeMeleeAttack } from './melee-attacks';
-import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
 /** Scan for the closest enemy within aggro radius after a kill. */
 function findNextTarget(
@@ -141,9 +136,7 @@ function executeAttack(
   hasSpatial: boolean,
   allTargetable: ArrayLike<number>,
 ): void {
-  if (kind === EntityKind.Catapult) {
-    executeCatapultAttack(world, eid, tEnt, ex, ey, dmg, faction, hasSpatial, allTargetable);
-  } else if (kind === EntityKind.BossCroc) {
+  if (kind === EntityKind.BossCroc) {
     executeBossCrocAttack(world, eid, ex, ey, dmg, faction, hasSpatial, allTargetable);
   } else if (kind === EntityKind.SiegeTurtle) {
     const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
@@ -155,17 +148,6 @@ function executeAttack(
     if (isTargetBuilding) {
       world.shakeTimer = Math.max(world.shakeTimer, 3);
     }
-  } else if (kind === EntityKind.Trapper) {
-    if (hasComponent(world.ecs, tEnt, Velocity)) {
-      Velocity.speedDebuffTimer[tEnt] = 180;
-    }
-    world.floatingTexts.push({
-      x: Position.x[tEnt],
-      y: Position.y[tEnt] - 20,
-      text: 'TRAPPED!',
-      color: '#f59e0b',
-      life: 60,
-    });
   } else {
     executeMeleeAttack(world, eid, tEnt, dmg, kind, faction);
   }
@@ -175,64 +157,10 @@ function executeAttack(
   if (faction === Faction.Player && world.tech.battleRoar) {
     cooldown = Math.round(cooldown * 0.9);
   }
-  if (kind === EntityKind.Catapult && world.tech.siegeWorks) {
-    cooldown = Math.round(cooldown * 0.75);
-  }
   Combat.attackCooldown[eid] = cooldown;
 
   // Combat bark
   if (faction === Faction.Player && world.gameRng.next() < 0.1) {
     showBark(world, eid, ex, ey, kind, 'combat', { color: '#ef4444' });
-  }
-}
-
-function executeCatapultAttack(
-  world: GameWorld,
-  eid: number,
-  tEnt: number,
-  ex: number,
-  ey: number,
-  dmg: number,
-  faction: Faction,
-  hasSpatial: boolean,
-  allTargetable: ArrayLike<number>,
-): void {
-  // Positional bonus for catapult primary target
-  const positional = calculatePositionalBonuses(world, eid, tEnt);
-  const adjustedDmg = Math.round(dmg * positional.multiplier);
-
-  audio.catapultShoot(ex);
-  spawnProjectile(
-    world,
-    ex,
-    ey - 10,
-    Position.x[tEnt],
-    Position.y[tEnt],
-    tEnt,
-    adjustedDmg,
-    eid,
-    1.0,
-    EntityKind.Catapult,
-  );
-  const tx = Position.x[tEnt];
-  const ty = Position.y[tEnt];
-  const aoeRadius = 60;
-  const aoeCandidates = hasSpatial ? world.spatialHash.query(tx, ty, aoeRadius) : allTargetable;
-  for (let j = 0; j < aoeCandidates.length; j++) {
-    const t = aoeCandidates[j];
-    if (t === tEnt) continue;
-    if (!hasComponent(world.ecs, t, FactionTag) || FactionTag.faction[t] === faction) continue;
-    if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
-    if (hasComponent(world.ecs, t, IsResource)) continue;
-    const adx = Position.x[t] - tx;
-    const ady = Position.y[t] - ty;
-    if (Math.sqrt(adx * adx + ady * ady) <= aoeRadius) {
-      takeDamage(world, t, Math.round(adjustedDmg * 0.5), eid);
-    }
-  }
-  world.shakeTimer = Math.max(world.shakeTimer, 3);
-
-  if (positional.flanking || positional.elevationUp) {
-    emitPositionalBonusText(world, tEnt, positional);
   }
 }

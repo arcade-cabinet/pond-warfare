@@ -102,7 +102,6 @@ describe('isWingBuilding', () => {
     expect(isWingBuilding(EntityKind.FishingHut)).toBe(true);
     expect(isWingBuilding(EntityKind.HerbalistHut)).toBe(true);
     expect(isWingBuilding(EntityKind.Market)).toBe(true);
-    expect(isWingBuilding(EntityKind.Dock)).toBe(true);
   });
 
   it('should return false for standalone buildings', () => {
@@ -157,12 +156,6 @@ describe('getDamageMultiplier', () => {
     expect(getDamageMultiplier(EntityKind.Tower, EntityKind.FlyingHeron)).toBe(1.5);
   });
 
-  it('should return 0.75 for weak matchups', () => {
-    expect(getDamageMultiplier(EntityKind.Shieldbearer, EntityKind.Gator)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.Diver, EntityKind.Shieldbearer)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.FlyingHeron, EntityKind.Shieldbearer)).toBe(0.5);
-  });
-
   it('should return 1.0 for neutral/unknown matchups', () => {
     expect(getDamageMultiplier(SAPPER_KIND, SABOTEUR_KIND)).toBe(1.0);
     expect(getDamageMultiplier(EntityKind.BossCroc, SAPPER_KIND)).toBe(1.0);
@@ -170,6 +163,8 @@ describe('getDamageMultiplier', () => {
     expect(getDamageMultiplier(MUDPAW_KIND, EntityKind.Gator)).toBe(1.0);
     expect(getDamageMultiplier(MEDIC_KIND, SAPPER_KIND)).toBe(1.0);
     expect(getDamageMultiplier(EntityKind.Lodge, SAPPER_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.SharedHeavyChassis, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.ReservedUnit33, EntityKind.SharedHeavyChassis)).toBe(1.0);
   });
 
   it('reserved alias ids now fall back to neutral damage behavior', () => {

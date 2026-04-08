@@ -34,8 +34,6 @@ vi.mock('@/audio/audio-system', () => ({
     audio: {
       hit: vi.fn(),
       shoot: vi.fn(),
-      catapultShoot: vi.fn(),
-      catapultImpact: vi.fn(),
     towerShoot: vi.fn(),
     towerHit: vi.fn(),
     deathUnit: vi.fn(),
@@ -116,10 +114,21 @@ describe('Combat weight – projectile sourceKind', () => {
     expect(ProjectileData.sourceKind[proj]).toBe(-1);
   });
 
-  it('catapult projectile stores EntityKind.Catapult as sourceKind', () => {
+  it('spawnProjectile preserves shared compatibility source kinds', () => {
     const target = createUnit(world, EntityKind.Gator, Faction.Enemy);
-    const proj = spawnProjectile(world, 0, 0, 100, 100, target, 10, -1, 1.0, EntityKind.Catapult);
-    expect(ProjectileData.sourceKind[proj]).toBe(EntityKind.Catapult);
+    const proj = spawnProjectile(
+      world,
+      0,
+      0,
+      100,
+      100,
+      target,
+      10,
+      -1,
+      1.0,
+      EntityKind.SharedSiegeChassis,
+    );
+    expect(ProjectileData.sourceKind[proj]).toBe(EntityKind.SharedSiegeChassis);
   });
 
   it('tower projectile stores EntityKind.Tower as sourceKind', () => {

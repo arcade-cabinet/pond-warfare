@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { TerrainGrid, TerrainType } from '@/terrain/terrain-grid';
+import { EntityKind } from '@/types';
 
 describe('TerrainGrid', () => {
   const TILE = 32;
@@ -74,17 +75,16 @@ describe('TerrainGrid', () => {
   });
 
   describe('getSpeedMultiplier with entity kinds', () => {
-    it('returns 0 for non-swimmer on water', () => {
+    it('returns 0 for land units on water', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(1, 1, TerrainType.Water);
       expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, SAPPER_KIND)).toBe(0);
     });
 
-    it('returns 0.5 for Swimmer on water', () => {
+    it('returns 0.5 for Fish on water', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(1, 1, TerrainType.Water);
-      // EntityKind.Swimmer = 28
-      expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, 28)).toBe(0.5);
+      expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, EntityKind.Fish)).toBe(0.5);
     });
 
     it('returns 0.5 for Fish on water', () => {
@@ -94,29 +94,29 @@ describe('TerrainGrid', () => {
       expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, 32)).toBe(0.5);
     });
 
-    it('returns normal speed for Swimmer on grass', () => {
+    it('returns normal speed for Fish on grass', () => {
       const grid = new TerrainGrid(W, H, TILE);
-      expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, 28)).toBe(1.0);
+      expect(grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, EntityKind.Fish)).toBe(1.0);
     });
   });
 
   describe('isPassable', () => {
-    it('returns false for non-swimmer on water', () => {
+    it('returns false for land units on water', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(0, 0, TerrainType.Water);
       expect(grid.isPassable(5, 5, SAPPER_KIND)).toBe(false);
     });
 
-    it('returns true for Swimmer on water', () => {
+    it('returns true for Fish on water', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(0, 0, TerrainType.Water);
-      expect(grid.isPassable(5, 5, 28)).toBe(true);
+      expect(grid.isPassable(5, 5, EntityKind.Fish)).toBe(true);
     });
 
     it('returns false for any unit on rocks', () => {
       const grid = new TerrainGrid(W, H, TILE);
       grid.set(0, 0, TerrainType.Rocks);
-      expect(grid.isPassable(5, 5, 28)).toBe(false);
+      expect(grid.isPassable(5, 5, EntityKind.Fish)).toBe(false);
       expect(grid.isPassable(5, 5, SAPPER_KIND)).toBe(false);
     });
   });

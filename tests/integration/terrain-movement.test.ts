@@ -37,12 +37,12 @@ describe('Terrain affects movement', () => {
     expect(grid.isPassable(2 * TILE + 5, 2 * TILE + 5, MUDPAW_KIND)).toBe(false);
   });
 
-  it('Swimmer crosses Water at 0.5x speed', () => {
+  it('Fish crosses Water at 0.5x speed', () => {
     const grid = new TerrainGrid(W, H, TILE);
     grid.set(3, 3, TerrainType.Water);
-    const mult = grid.getSpeedMultiplier(3 * TILE + 5, 3 * TILE + 5, EntityKind.Swimmer);
+    const mult = grid.getSpeedMultiplier(3 * TILE + 5, 3 * TILE + 5, EntityKind.Fish);
     expect(mult).toBe(0.5);
-    expect(grid.isPassable(3 * TILE + 5, 3 * TILE + 5, EntityKind.Swimmer)).toBe(true);
+    expect(grid.isPassable(3 * TILE + 5, 3 * TILE + 5, EntityKind.Fish)).toBe(true);
   });
 
   it('HighGround grants +25% range for ranged attacks (attackRange > 50)', () => {

@@ -238,7 +238,7 @@ Each `TechCard` shows:
 - **Tech name** and **description**
 - **Cost** with pearl cost if applicable
 - **Dependency text badge**: "Needs: Sturdy Mud" (locked) or "From: Sturdy Mud" (available)
-- **Unlock badge**: "🔓 Shieldbearer" for techs that gate units
+- **Unlock badge**: "🔓 Sapper" for techs that gate units
 
 This replaces SVG dependency lines entirely on mobile — no SVG rendering,
 no absolute positioning, just a flowing CSS grid.
