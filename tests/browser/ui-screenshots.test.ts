@@ -350,7 +350,7 @@ describe('Selection Panel screenshots', () => {
     );
 
     await page.screenshot({
-      path: 'screenshots/selection-single-gatherer.png',
+      path: 'screenshots/selection-single-mudpaw.png',
       element: document.body,
     });
   });

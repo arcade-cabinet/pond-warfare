@@ -27,17 +27,17 @@ describe('Forces roster sync', () => {
 
     const roster = store.unitRoster.value;
     expect(roster.length).toBe(2);
-    const gatherers = roster.find((g) => g.role === 'generalist');
+    const generalists = roster.find((g) => g.role === 'generalist');
     const combat = roster.find((g) => g.role === 'combat');
-    expect(gatherers?.units.length).toBe(2);
+    expect(generalists?.units.length).toBe(2);
     expect(combat?.units.length).toBe(1);
   });
 
   it('derives task from unit state machine', () => {
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.GatherMove;
-    const brawler = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
-    UnitStateMachine.state[brawler] = UnitState.AttackMovePatrol;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.GatherMove;
+    const sapper = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
+    UnitStateMachine.state[sapper] = UnitState.AttackMovePatrol;
     syncRosters(world);
     const roster = store.unitRoster.value;
     expect(roster.find((g) => g.role === 'generalist')?.units[0]?.task).toBe('gathering-fish');
@@ -52,16 +52,16 @@ describe('Forces roster sync', () => {
 
     syncRosters(world);
 
-    const gatherers = store.unitRoster.value.find((g) => g.role === 'generalist');
-    expect(gatherers?.idleCount).toBe(1);
+    const generalists = store.unitRoster.value.find((g) => g.role === 'generalist');
+    expect(generalists?.idleCount).toBe(1);
   });
 
   it('reflects HP changes after re-sync', () => {
-    const brawler = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
+    const sapper = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
     syncRosters(world);
     const hpBefore = store.unitRoster.value.find((g) => g.role === 'combat')?.units[0]?.hp ?? 0;
     expect(hpBefore).toBeGreaterThan(0);
-    Health.current[brawler] = 20;
+    Health.current[sapper] = 20;
     syncRosters(world);
     const hpAfter = store.unitRoster.value.find((g) => g.role === 'combat')?.units[0]?.hp ?? 0;
     expect(hpAfter).toBe(20);

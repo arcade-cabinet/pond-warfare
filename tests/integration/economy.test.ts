@@ -28,44 +28,44 @@ describe('Economy Integration', () => {
     const lodge = spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const resource = spawnEntity(world, EntityKind.Clambed, 100, 100, Faction.Neutral);
     Resource.amount[resource] = 4000;
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Fish);
-    expect(Carrying.resourceAmount[gatherer]).toBe(GATHER_AMOUNT);
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.ReturnMove);
-    expect(UnitStateMachine.returnEntity[gatherer]).toBe(lodge);
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Fish);
+    expect(Carrying.resourceAmount[mudpaw]).toBe(GATHER_AMOUNT);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.ReturnMove);
+    expect(UnitStateMachine.returnEntity[mudpaw]).toBe(lodge);
   });
 
   it('Mudpaw collects logs from cattails', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const cattail = spawnEntity(world, EntityKind.Cattail, 100, 100, Faction.Neutral);
     Resource.amount[cattail] = 4000;
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = cattail;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = cattail;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Logs);
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Logs);
   });
 
   it('resource depletes to zero and marks for death', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const resource = spawnEntity(world, EntityKind.Clambed, 100, 100, Faction.Neutral);
     Resource.amount[resource] = GATHER_AMOUNT;
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
@@ -77,15 +77,15 @@ describe('Economy Integration', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const resource = spawnEntity(world, EntityKind.Clambed, 100, 100, Faction.Neutral);
     Resource.amount[resource] = 0;
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 5;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 5;
 
     gatheringSystem(world);
 
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
   });
 
   it('legacy auto-generalist toggle no longer auto-assigns idle Mudpaws', () => {
@@ -95,12 +95,12 @@ describe('Economy Integration', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const resource = spawnEntity(world, EntityKind.Clambed, 120, 120, Faction.Neutral);
     Resource.amount[resource] = 4000;
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
-    UnitStateMachine.state[gatherer] = UnitState.Idle;
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[mudpaw] = UnitState.Idle;
 
     // Legacy per-role automation toggle system removed in v3.0 and replaced by Pearl blueprint/autonomy progression.
     // Idle Mudpaws no longer auto-assign; player must manually command them
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
   });
 
   it('multiple Mudpaws work in parallel without conflict', () => {
@@ -128,15 +128,15 @@ describe('Economy Integration', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const pearl = spawnEntity(world, EntityKind.PearlBed, 100, 100, Faction.Neutral);
     Resource.amount[pearl] = 500;
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = pearl;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = pearl;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Rocks);
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Rocks);
   });
 
   it('tidal harvest tech applies to gather amount', () => {
@@ -144,16 +144,16 @@ describe('Economy Integration', () => {
     spawnEntity(world, EntityKind.Lodge, 200, 200, Faction.Player);
     const resource = spawnEntity(world, EntityKind.Clambed, 100, 100, Faction.Neutral);
     Resource.amount[resource] = 4000;
-    const gatherer = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
     // tidalHarvest: +25% gather amount (15 * 1.25 = 18.75 → 19)
-    expect(Carrying.resourceAmount[gatherer]).toBe(19);
+    expect(Carrying.resourceAmount[mudpaw]).toBe(19);
   });
 
   it('idle Mudpaws are detected by query helper', () => {

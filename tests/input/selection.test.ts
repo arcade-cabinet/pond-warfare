@@ -925,31 +925,31 @@ describe('issueContextCommand()', () => {
     expect(result).toBe(false);
   });
 
-  it('issues move command when Healer targets a wounded ally', () => {
-    const healer = createPlayerUnit(world, 100, 100, MEDIC_KIND);
+  it('issues move command when Medic targets a wounded ally', () => {
+    const medic = createPlayerUnit(world, 100, 100, MEDIC_KIND);
     const wounded = createPlayerUnit(world, 300, 300, SAPPER_KIND);
     Health.current[wounded] = 30; // Wounded
     Health.max[wounded] = 60;
-    world.selection = [healer];
+    world.selection = [medic];
 
     issueContextCommand(world, wounded, 300, 300);
-    expect(UnitStateMachine.state[healer]).toBe(UnitState.Move);
-    expect(UnitStateMachine.targetEntity[healer]).toBe(wounded);
-    expect(UnitStateMachine.targetX[healer]).toBe(Position.x[wounded]);
-    expect(UnitStateMachine.targetY[healer]).toBe(Position.y[wounded]);
+    expect(UnitStateMachine.state[medic]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[medic]).toBe(wounded);
+    expect(UnitStateMachine.targetX[medic]).toBe(Position.x[wounded]);
+    expect(UnitStateMachine.targetY[medic]).toBe(Position.y[wounded]);
   });
 
-  it('does not issue heal-move when Healer targets a full-health ally', () => {
-    const healer = createPlayerUnit(world, 100, 100, MEDIC_KIND);
+  it('does not issue heal-move when Medic targets a full-health ally', () => {
+    const medic = createPlayerUnit(world, 100, 100, MEDIC_KIND);
     const healthy = createPlayerUnit(world, 300, 300, SAPPER_KIND);
     Health.current[healthy] = 60;
     Health.max[healthy] = 60;
-    world.selection = [healer];
+    world.selection = [medic];
 
     issueContextCommand(world, healthy, 300, 300);
     // Should fall through to generic move, not set targetEntity
-    expect(UnitStateMachine.state[healer]).toBe(UnitState.Move);
-    expect(UnitStateMachine.targetEntity[healer]).toBe(-1);
+    expect(UnitStateMachine.state[medic]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[medic]).toBe(-1);
   });
 
   it('non-Medic targeting wounded ally falls through to generic move', () => {

@@ -2,7 +2,7 @@
  * Shaman AoE Healing System
  *
  * The Shaman passively heals all friendly units within 100px for 2 HP
- * every 300 frames (5 seconds). Different from Healer (single-target);
+ * every 300 frames (5 seconds). Different from Medic (single-target);
  * Shaman is AoE. Shows green particle ring on heal tick.
  *
  * Runs every 300 frames.

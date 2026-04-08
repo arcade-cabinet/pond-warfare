@@ -107,12 +107,12 @@ describe('Damage counter system', () => {
   });
 
   it('Sapper damages a fragile support target in live browser combat', async () => {
-    const { damageTaken: vsHealer } = await testDamage(
+    const { damageTaken: vsMedic } = await testDamage(
       SAPPER_KIND, Faction.Player,
       EntityKind.Medic, Faction.Enemy,
-      'Sapper vs Healer',
+      'Sapper vs Medic',
     );
-    expect(vsHealer).toBeGreaterThan(0);
+    expect(vsMedic).toBeGreaterThan(0);
   });
 
   it('legacy ranged compatibility chassis still deals damage from range', async () => {

@@ -231,13 +231,13 @@ describe('Pointer Interactions (tap-only)', () => {
     world.state = 'playing';
     const entities = new Map<string, number>();
 
-    const gatherer = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
+    const mudpaw = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
     const resource = createResource(world, 250, 250);
-    entities.set('gatherer', gatherer);
+    entities.set('mudpaw', mudpaw);
     entities.set('resource', resource);
 
-    Selectable.selected[gatherer] = 1;
-    world.selection = [gatherer];
+    Selectable.selected[mudpaw] = 1;
+    world.selection = [mudpaw];
 
     const cb = makeCallbacks(world, entities);
     const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
@@ -254,14 +254,14 @@ describe('Pointer Interactions (tap-only)', () => {
     const entities = new Map<string, number>();
 
     // Mudpaw and resource at same position (Mudpaw standing on fish node)
-    const gatherer = createUnit(world, 200, 200, MUDPAW_KIND, Faction.Player);
+    const mudpaw = createUnit(world, 200, 200, MUDPAW_KIND, Faction.Player);
     const resource = createResource(world, 200, 200);
-    entities.set('gatherer', gatherer);
+    entities.set('mudpaw', mudpaw);
     entities.set('resource', resource);
 
     // Mudpaw is already selected
-    Selectable.selected[gatherer] = 1;
-    world.selection = [gatherer];
+    Selectable.selected[mudpaw] = 1;
+    world.selection = [mudpaw];
 
     const cb = makeCallbacks(world, entities);
     const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
@@ -282,19 +282,19 @@ describe('Pointer Interactions (tap-only)', () => {
     const entities = new Map<string, number>();
 
     // Sapper (non-Mudpaw) and resource at same position
-    const brawler = createUnit(world, 200, 200, SAPPER_KIND, Faction.Player);
+    const sapper = createUnit(world, 200, 200, SAPPER_KIND, Faction.Player);
     const resource = createResource(world, 200, 200);
-    entities.set('brawler', brawler);
+    entities.set('sapper', sapper);
     entities.set('resource', resource);
 
     // Sapper is already selected
-    Selectable.selected[brawler] = 1;
-    world.selection = [brawler];
+    Selectable.selected[sapper] = 1;
+    world.selection = [sapper];
 
     const cb = makeCallbacks(world, entities);
     const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
 
-    // Tap on the brawler/resource overlap position
+    // Tap on the sapper/resource overlap position
     const mouse = makeMouse(200, 200);
     handleClick(world, mouse, cb, clickState, () => false);
 

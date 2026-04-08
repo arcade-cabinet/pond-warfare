@@ -2,7 +2,7 @@
  * Attack State Processing
  *
  * Handles the Attacking state for all unit types: melee direct damage,
- * sniper projectiles, catapult AoE, boss croc stomp, siege turtle,
+ * compatibility ranged projectiles, catapult AoE, boss croc stomp, siege turtle,
  * trapper slow, plus damage modifiers from auras, tech, and positional
  * bonuses (flanking + elevation).
  */

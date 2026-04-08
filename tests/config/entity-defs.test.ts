@@ -92,9 +92,9 @@ describe('ENTITY_DEFS', () => {
   });
 
   it('historical ranged compatibility unit should outrange historical melee compatibility unit', () => {
-    const sniper = ENTITY_DEFS[COMPAT_SABOTEUR_CHASSIS_KIND];
-    const brawler = ENTITY_DEFS[COMPAT_SAPPER_CHASSIS_KIND];
-    expect(sniper.attackRange).toBeGreaterThan(brawler.attackRange);
+    const compatRangedChassis = ENTITY_DEFS[COMPAT_SABOTEUR_CHASSIS_KIND];
+    const compatMeleeChassis = ENTITY_DEFS[COMPAT_SAPPER_CHASSIS_KIND];
+    expect(compatRangedChassis.attackRange).toBeGreaterThan(compatMeleeChassis.attackRange);
   });
 });
 

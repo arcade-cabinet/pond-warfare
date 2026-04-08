@@ -2,7 +2,7 @@
  * Healing Balance Tests
  *
  * Validates Nature branch healing caps:
- * - Healer aura max 3 concurrent heals per healer
+ * - Medic aura max 3 concurrent heals per Medic
  * - Regeneration requires 5s (300 frames) out of combat
  * - Herbalist Hut range set to 200px
  */
@@ -90,16 +90,16 @@ function makeHerbalistHut(world: GameWorld, x: number, y: number): number {
   return eid;
 }
 
-describe('Healer aura -- max 3 concurrent heals', () => {
+describe('Medic aura -- max 3 concurrent heals', () => {
   let world: GameWorld;
 
   beforeEach(() => {
     world = createGameWorld();
   });
 
-  it('heals at most 3 nearby injured units per healer', () => {
-    const healer = makeUnit(world, 100, 100, Faction.Player, MEDIC_KIND, 60);
-    Health.current[healer] = 60;
+  it('heals at most 3 nearby injured units per Medic', () => {
+    const medic = makeUnit(world, 100, 100, Faction.Player, MEDIC_KIND, 60);
+    Health.current[medic] = 60;
 
     const injured: number[] = [];
     for (let i = 0; i < 5; i++) {

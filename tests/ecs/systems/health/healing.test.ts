@@ -1,7 +1,7 @@
 /**
  * Healing Subsystem Tests
  *
- * Validates passive healing, healer aura, regeneration,
+ * Validates passive healing, Medic aura, regeneration,
  * and herbalist hut area heal.
  */
 
@@ -198,7 +198,7 @@ describe('processPassiveHealing', () => {
   });
 });
 
-describe('processHealerAura', () => {
+describe('processHealerAura (Medic aura)', () => {
   let world: GameWorld;
 
   beforeEach(() => {
@@ -206,7 +206,7 @@ describe('processHealerAura', () => {
     world.spatialHash = undefined as never;
   });
 
-  it('healer heals a nearby damaged ally by 2 HP', () => {
+  it('Medic heals a nearby damaged ally by 2 HP', () => {
     spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
     const ally = spawnUnit(world, 130, 100, 40, 60, UnitState.Idle);
 
@@ -233,7 +233,7 @@ describe('processHealerAura', () => {
     expect(Health.current[ally]).toBe(40);
   });
 
-  it('heals at most 3 allies per healer', () => {
+  it('heals at most 3 allies per Medic', () => {
     spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const allies: number[] = [];
     for (let i = 0; i < 5; i++) {

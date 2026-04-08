@@ -93,76 +93,76 @@ describe('gatheringSystem', () => {
   });
 
   it('should count down gather timer', () => {
-    const gatherer = createMudpaw(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
     const resource = createResource(world, 100, 100, EntityKind.Cattail);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 10;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 10;
 
     gatheringSystem(world);
 
-    expect(UnitStateMachine.gatherTimer[gatherer]).toBeLessThan(10);
+    expect(UnitStateMachine.gatherTimer[mudpaw]).toBeLessThan(10);
   });
 
   it('should go idle if target resource is depleted', () => {
-    const gatherer = createMudpaw(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
     const resource = createResource(world, 100, 100, EntityKind.Cattail);
 
     Resource.amount[resource] = 0;
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 5;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 5;
 
     gatheringSystem(world);
 
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
   });
 
   it('should pick up resource when timer hits zero', () => {
-    const gatherer = createMudpaw(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
     const resource = createResource(world, 100, 100, EntityKind.Cattail);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1; // About to finish
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1; // About to finish
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Logs);
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Logs);
   });
 
   it('retargets a gather override to another same-type node when the first is depleted', () => {
-    const gatherer = createMudpaw(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
     const depleted = createResource(world, 100, 100, EntityKind.Cattail);
     const backup = createResource(world, 500, 100, EntityKind.Cattail);
 
     Resource.amount[depleted] = 0;
     Resource.amount[backup] = 1000;
 
-    TaskOverride.active[gatherer] = 1;
-    TaskOverride.task[gatherer] = UnitState.GatherMove;
-    TaskOverride.targetEntity[gatherer] = depleted;
-    TaskOverride.resourceKind[gatherer] = EntityKind.Cattail;
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = depleted;
-    UnitStateMachine.gatherTimer[gatherer] = 5;
+    TaskOverride.active[mudpaw] = 1;
+    TaskOverride.task[mudpaw] = UnitState.GatherMove;
+    TaskOverride.targetEntity[mudpaw] = depleted;
+    TaskOverride.resourceKind[mudpaw] = EntityKind.Cattail;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = depleted;
+    UnitStateMachine.gatherTimer[mudpaw] = 5;
 
     gatheringSystem(world);
 
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
-    expect(UnitStateMachine.targetEntity[gatherer]).toBe(backup);
-    expect(TaskOverride.targetEntity[gatherer]).toBe(backup);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(backup);
+    expect(TaskOverride.targetEntity[mudpaw]).toBe(backup);
   });
 
   it('keeps specialist gather overrides inside the assigned area', () => {
-    const gatherer = createMudpaw(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
     const depleted = createResource(world, 100, 100, EntityKind.Cattail);
     const outside = createResource(world, 500, 100, EntityKind.Cattail);
     const inside = createResource(world, 180, 160, EntityKind.Cattail);
 
-    world.specialistAssignments.set(gatherer, {
+    world.specialistAssignments.set(mudpaw, {
       runtimeId: 'logger',
       canonicalId: 'logger',
       label: 'Logger',
@@ -180,17 +180,17 @@ describe('gatheringSystem', () => {
     } satisfies SpecialistAssignment);
 
     Resource.amount[depleted] = 0;
-    TaskOverride.active[gatherer] = 1;
-    TaskOverride.task[gatherer] = UnitState.GatherMove;
-    TaskOverride.targetEntity[gatherer] = depleted;
-    TaskOverride.resourceKind[gatherer] = EntityKind.Cattail;
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = depleted;
-    UnitStateMachine.gatherTimer[gatherer] = 5;
+    TaskOverride.active[mudpaw] = 1;
+    TaskOverride.task[mudpaw] = UnitState.GatherMove;
+    TaskOverride.targetEntity[mudpaw] = depleted;
+    TaskOverride.resourceKind[mudpaw] = EntityKind.Cattail;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = depleted;
+    UnitStateMachine.gatherTimer[mudpaw] = 5;
 
     gatheringSystem(world);
 
     expect(outside).toBeGreaterThanOrEqual(0);
-    expect(UnitStateMachine.targetEntity[gatherer]).toBe(inside);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(inside);
   });
 });

@@ -191,20 +191,20 @@ describe('combatSystem', () => {
 
   it('skips idle auto-aggro for gather overrides', () => {
     world.frameCount = 10;
-    const gatherer = createCombatUnit(world, 100, 100, Faction.Player, MUDPAW_KIND);
+    const mudpaw = createCombatUnit(world, 100, 100, Faction.Player, MUDPAW_KIND);
     const enemy = createCombatUnit(world, 120, 100, Faction.Enemy, EntityKind.Snake);
 
-    Combat.damage[gatherer] = 2;
-    TaskOverride.active[gatherer] = 1;
-    TaskOverride.task[gatherer] = UnitState.GatherMove;
-    TaskOverride.targetEntity[gatherer] = 3;
-    TaskOverride.resourceKind[gatherer] = EntityKind.Clambed;
-    UnitStateMachine.targetEntity[gatherer] = -1;
+    Combat.damage[mudpaw] = 2;
+    TaskOverride.active[mudpaw] = 1;
+    TaskOverride.task[mudpaw] = UnitState.GatherMove;
+    TaskOverride.targetEntity[mudpaw] = 3;
+    TaskOverride.resourceKind[mudpaw] = EntityKind.Clambed;
+    UnitStateMachine.targetEntity[mudpaw] = -1;
 
     combatSystem(world);
 
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
-    expect(UnitStateMachine.targetEntity[gatherer]).toBe(-1);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(-1);
     expect(enemy).toBeGreaterThanOrEqual(0);
   });
 

@@ -229,12 +229,12 @@ describe('Staggered Gathering Rhythm', () => {
   });
 
   it('plays pickup sound when gather timer completes', () => {
-    const gatherer = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
+    const mudpaw = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
     const res = createResource(world, 100, 100, EntityKind.Cattail);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = res;
-    UnitStateMachine.gatherTimer[gatherer] = 1; // About to finish
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = res;
+    UnitStateMachine.gatherTimer[mudpaw] = 1; // About to finish
 
     world.frameCount = 1;
     gatheringSystem(world);

@@ -67,12 +67,18 @@ describe('Combat', () => {
 
   it('melee counter multipliers are applied once, not twice', () => {
     const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, COMPAT_SAPPER_CHASSIS_KIND, 140, 100, Faction.Player);
+    const compatSapperChassis = spawnEntity(
+      world,
+      COMPAT_SAPPER_CHASSIS_KIND,
+      140,
+      100,
+      Faction.Player,
+    );
     Sprite.facingLeft[gator] = 0;
 
-    UnitStateMachine.state[brawler] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[brawler] = gator;
-    Combat.attackCooldown[brawler] = 0;
+    UnitStateMachine.state[compatSapperChassis] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[compatSapperChassis] = gator;
+    Combat.attackCooldown[compatSapperChassis] = 0;
 
     combatSystem(world);
 
@@ -118,27 +124,37 @@ describe('Combat', () => {
 
   it('boss croc should enrage below 30% HP', () => {
     const boss = spawnEntity(world, EntityKind.BossCroc, 100, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, COMPAT_SAPPER_CHASSIS_KIND, 120, 100, Faction.Player);
+    const compatSapperChassis = spawnEntity(
+      world,
+      COMPAT_SAPPER_CHASSIS_KIND,
+      120,
+      100,
+      Faction.Player,
+    );
 
     // Set boss to low HP (below 30%)
     Health.current[boss] = Math.floor(Health.max[boss] * 0.2);
     UnitStateMachine.state[boss] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[boss] = brawler;
+    UnitStateMachine.targetEntity[boss] = compatSapperChassis;
     Combat.attackCooldown[boss] = 0;
 
     // Place them within attack range
-    const brawlerHpBefore = Health.current[brawler];
+    const compatSapperChassisHpBefore = Health.current[compatSapperChassis];
 
     // Populate spatial hash for AoE stomp
     world.spatialHash.clear();
-    world.spatialHash.insert(brawler, Position.x[brawler], Position.y[brawler]);
+    world.spatialHash.insert(
+      compatSapperChassis,
+      Position.x[compatSapperChassis],
+      Position.y[compatSapperChassis],
+    );
     world.spatialHash.insert(boss, Position.x[boss], Position.y[boss]);
 
     combatSystem(world);
 
     // Boss should have dealt enraged damage (2x) via AoE stomp
     // Normal boss damage is 15, enraged = 30
-    expect(Health.current[brawler]).toBeLessThan(brawlerHpBefore);
+    expect(Health.current[compatSapperChassis]).toBeLessThan(compatSapperChassisHpBefore);
     // Should see "ENRAGED!" floating text
     const enrageText = world.floatingTexts.find((t) => t.text === 'ENRAGED!');
     expect(enrageText).toBeDefined();
@@ -165,17 +181,23 @@ describe('Combat', () => {
 
   it('venom snake should apply poison DoT', () => {
     const snake = spawnEntity(world, EntityKind.VenomSnake, 100, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, COMPAT_SAPPER_CHASSIS_KIND, 120, 100, Faction.Player);
+    const compatSapperChassis = spawnEntity(
+      world,
+      COMPAT_SAPPER_CHASSIS_KIND,
+      120,
+      100,
+      Faction.Player,
+    );
 
     UnitStateMachine.state[snake] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[snake] = brawler;
+    UnitStateMachine.targetEntity[snake] = compatSapperChassis;
     Combat.attackCooldown[snake] = 0;
 
     combatSystem(world);
 
     // Legacy sapper chassis should be poisoned (5 ticks)
-    expect(world.poisonTimers.has(brawler)).toBe(true);
-    expect(world.poisonTimers.get(brawler)).toBe(5);
+    expect(world.poisonTimers.has(compatSapperChassis)).toBe(true);
+    expect(world.poisonTimers.get(compatSapperChassis)).toBe(5);
   });
 
   it('alpha predator should buff nearby enemy damage by 20%', () => {

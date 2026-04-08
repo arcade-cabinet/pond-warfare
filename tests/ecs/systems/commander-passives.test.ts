@@ -115,21 +115,21 @@ describe('commander passives', () => {
   it('Sage: nearby Mudpaws receive the aura gather bonus', () => {
     world.commanderModifiers.auraGatherBonus = 0.25;
     const _commander = createUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 80);
-    const gatherer = createUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
+    const mudpaw = createUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
     const lodge = createTrainingBuilding(world, 100, 160);
     EntityTypeTag.kind[lodge] = EntityKind.Lodge;
     const fishNode = spawnResource(world, 120, 120, EntityKind.Clambed, 100);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = fishNode;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = fishNode;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     world.frameCount = 60;
     combatSystem(world);
     gatheringSystem(world);
 
-    expect(Carrying.resourceAmount[gatherer]).toBe(19);
-    expect(world.commanderGatherBuff.has(gatherer)).toBe(true);
+    expect(Carrying.resourceAmount[mudpaw]).toBe(19);
+    expect(world.commanderGatherBuff.has(mudpaw)).toBe(true);
   });
 
   it('Tidekeeper: Fishers cost 50% less', () => {
