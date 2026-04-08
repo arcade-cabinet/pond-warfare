@@ -21,6 +21,7 @@ import { hydrateV3StoreFromDb } from '@/ui/store-v3-persistence';
 installGlobalErrorHandlers();
 
 import { App } from '@/ui/app';
+import { handleGameInitFailure } from '@/ui/game-init-failure';
 import { menuState } from '@/ui/store';
 
 /** Stored DOM refs from the App component, used to init the game later. */
@@ -38,7 +39,10 @@ let gameStarted = false;
 function startGame() {
   if (!storedRefs || gameStarted) return;
   gameStarted = true;
-  startMenuGame(storedRefs).catch(reportFatalError);
+  startMenuGame(storedRefs).catch((error) => {
+    gameStarted = false;
+    handleGameInitFailure(error);
+  });
 }
 
 // Initialize database then mount the Preact application

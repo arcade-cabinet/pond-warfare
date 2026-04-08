@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
+import { handleGameInitFailure } from './game-init-failure';
 import {
   handleClamsChange,
   handleClamUpgradeContinue,
@@ -98,8 +99,7 @@ export function App({ onMount }: AppProps) {
         try {
           await onMount(refs);
         } catch (err) {
-          // biome-ignore lint/suspicious/noConsole: surface init failures
-          console.error('Game init failed:', err);
+          handleGameInitFailure(err);
         } finally {
           store.gameLoading.value = false;
         }
