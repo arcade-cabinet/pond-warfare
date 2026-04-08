@@ -260,7 +260,8 @@ was incorrectly reporting a deleted Pearl combat specialist instead of the real 
   - `rare_resource_access` now adds rare nodes only in the bottom-row panels, which keeps the runtime consumer active without luring gatherers into the hostile top row
 - Build controller:
   - the wing-placement bug is fixed: the build controller now reaches Armory around frame `360` in the baseline slice and around frame `240` in the stronger variants instead of stalling indefinitely
-  - standalone tower/burrow follow-up is still weak in that slice, with `buildingsBuilt` staying at `0` after the Armory step
+  - the construction-throughput pass is now also live: the controller completes `1` structure in that slice instead of stalling at `0`, which means the Armory is no longer just being placed and abandoned
+  - the next build-side problem is later follow-up, not first completion: the micro slice still does not progress into a second static-defense structure inside the short window, and the full-governor trace still shows `build:0` in the sampled stage-6 rows
 - Train controller:
   - the prestige population fix removed a real false-negative path: `blueprint_fisher` no longer steals a training slot by consuming baseline food
   - short-window training throughput is still bottlenecked by queue timing and building cadence more than raw fish income

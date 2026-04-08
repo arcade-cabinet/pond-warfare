@@ -97,6 +97,7 @@ describe('BuildEvaluator', () => {
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;
     store.baseThreatCount.value = 0;
+    storeV3.progressionLevel.value = 1;
   });
 
   it('returns high score when no armory exists', () => {
@@ -110,6 +111,18 @@ describe('BuildEvaluator', () => {
       makeBuilding(2, EntityKind.Armory),
     ];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
+  });
+
+  it('requests a proactive tower after a completed armory on stage 6', () => {
+    storeV3.progressionLevel.value = 6;
+    store.fish.value = 240;
+    store.logs.value = 280;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.68);
   });
 });
 

@@ -9,6 +9,7 @@ import { type GameEntity, GoalEvaluator } from 'yuka';
 import { isWingBuilding } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 import { AttackGoal, countAvailableAttackers, MIN_ATTACK_ARMY } from './goals/attack-goal';
 import { BuildGoal } from './goals/build-goal';
 import { DefendGoal } from './goals/defend-goal';
@@ -20,6 +21,10 @@ import { getGovernorCombatTarget, getGovernorMudpawTarget } from './train-policy
 
 function hasBuilding(kind: EntityKind): boolean {
   return store.buildingRoster.value.some((b) => b.kind === kind);
+}
+
+function hasCompletedBuilding(kind: EntityKind): boolean {
+  return store.buildingRoster.value.some((b) => b.kind === kind && b.hp >= b.maxHp);
 }
 
 /**
@@ -117,6 +122,15 @@ export class BuildEvaluator extends GoalEvaluator {
       return 0.85;
     if (store.food.value >= store.maxFood.value - 1 && store.logs.value >= 75) return 0.75;
     if (baseThreatCount() >= 2 && store.fish.value >= 200) return 0.8;
+    if (
+      storeV3.progressionLevel.value >= 6 &&
+      hasCompletedBuilding(EntityKind.Armory) &&
+      !hasBuilding(EntityKind.Tower) &&
+      store.fish.value >= 200 &&
+      store.logs.value >= 250
+    ) {
+      return 0.68;
+    }
     return 0;
   }
 

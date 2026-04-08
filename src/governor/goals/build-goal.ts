@@ -15,6 +15,7 @@ import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { placeBuilding } from '@/input/selection/queries';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 
 /** Building priorities: what to build and when. */
 interface BuildNeed {
@@ -30,6 +31,14 @@ function buildingCount(kind: EntityKind): number {
   return store.buildingRoster.value.filter((b) => b.kind === kind).length;
 }
 
+function hasCompletedBuilding(kind: EntityKind): boolean {
+  return store.buildingRoster.value.some((b) => b.kind === kind && b.hp >= b.maxHp);
+}
+
+function currentStage(): number {
+  return Math.max(1, Math.trunc(storeV3.progressionLevel.value || 1));
+}
+
 const BUILD_PRIORITIES: BuildNeed[] = [
   // Armory is a Lodge wing — check if unlocked
   { kind: EntityKind.Armory, needed: () => !hasBuilding(EntityKind.Armory) },
@@ -41,6 +50,13 @@ const BUILD_PRIORITIES: BuildNeed[] = [
   {
     kind: EntityKind.Tower,
     needed: () => store.baseUnderAttack.value && buildingCount(EntityKind.Tower) < 2,
+  },
+  {
+    kind: EntityKind.Tower,
+    needed: () =>
+      currentStage() >= 6 &&
+      hasCompletedBuilding(EntityKind.Armory) &&
+      buildingCount(EntityKind.Tower) < 1,
   },
 ];
 
@@ -84,7 +100,9 @@ export class BuildGoal extends Goal {
       .flatMap((g) => g.units)
       .filter((u) => u.kind === MUDPAW_KIND);
     if (generalists.length > 0) {
-      w.selection = [generalists[0].eid];
+      const builderCount =
+        need.kind === EntityKind.Armory || need.kind === EntityKind.Tower ? 2 : 1;
+      w.selection = generalists.slice(0, builderCount).map((unit) => unit.eid);
     }
 
     // Place near the lodge, but keep wing buildings outside the lodge's own
