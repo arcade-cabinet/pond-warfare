@@ -148,7 +148,7 @@ describe('Touch-Only Gameplay Flow', () => {
     const generalistOpts = getRadialOptions('unit', 'generalist');
     expect(generalistOpts.map((o) => o.id)).toContain('cmd_gather');
     expect(generalistOpts.map((o) => o.id)).toContain('cmd_attack');
-    expect(generalistOpts.map((o) => o.id)).toContain('cmd_scout');
+    expect(generalistOpts.map((o) => o.id)).toContain('cmd_recon');
 
     // Combat role
     const combatOpts = getRadialOptions('unit', 'combat');
@@ -160,7 +160,7 @@ describe('Touch-Only Gameplay Flow', () => {
     expect(healOpts.map((o) => o.id)).toContain('cmd_heal');
 
     // Recon role
-    const scoutOpts = getRadialOptions('unit', 'recon');
-    expect(scoutOpts.map((o) => o.id)).toContain('cmd_scout');
+    const reconOpts = getRadialOptions('unit', 'recon');
+    expect(reconOpts.map((o) => o.id)).toContain('cmd_recon');
   });
 });

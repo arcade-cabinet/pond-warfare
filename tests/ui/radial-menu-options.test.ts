@@ -58,7 +58,7 @@ describe('getRadialOptions — Unit mode (generalist)', () => {
     const ids = options.map((o) => o.id);
     expect(ids).toContain('cmd_gather');
     expect(ids).toContain('cmd_attack');
-    expect(ids).toContain('cmd_scout');
+    expect(ids).toContain('cmd_recon');
     expect(ids).toContain('cmd_hold');
     expect(ids).toContain('cmd_patrol');
     expect(ids).toContain('cmd_return');
@@ -116,13 +116,13 @@ describe('getRadialOptions — Unit mode (recon)', () => {
 
   it('returns recon-specific options', () => {
     const ids = options.map((o) => o.id);
-    expect(ids).toContain('cmd_scout');
+    expect(ids).toContain('cmd_recon');
     expect(ids).toContain('cmd_hold');
     expect(ids).toContain('cmd_patrol');
   });
 
   it('uses Recon as the player-facing label', () => {
-    expect(options.find((o) => o.id === 'cmd_scout')?.label).toBe('Recon');
+    expect(options.find((o) => o.id === 'cmd_recon')?.label).toBe('Recon');
   });
 });
 

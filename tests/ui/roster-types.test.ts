@@ -13,6 +13,7 @@ describe('formatUnitTaskLabel', () => {
     ['defending', 'Defending'],
     ['patrolling', 'Patrolling'],
     ['healing', 'Healing'],
+    ['recon', 'Recon'],
     ['scouting', 'Recon'],
     ['dead', 'Dead'],
   ];

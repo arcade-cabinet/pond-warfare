@@ -33,6 +33,7 @@ const TASK_TO_STATE: Record<UnitTask, UnitState> = {
   defending: UnitState.AttackMovePatrol,
   patrolling: UnitState.AttackMovePatrol,
   healing: UnitState.Move,
+  recon: UnitState.AttackMovePatrol,
   scouting: UnitState.AttackMovePatrol,
   dead: UnitState.Idle, // dead units can't do anything
 };

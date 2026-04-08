@@ -20,6 +20,7 @@ export type UnitTask =
   | 'defending'
   | 'patrolling'
   | 'healing'
+  | 'recon'
   | 'scouting'
   | 'dead';
 
@@ -34,6 +35,7 @@ const UNIT_TASK_LABELS: Record<UnitTask, string> = {
   defending: 'Defending',
   patrolling: 'Patrolling',
   healing: 'Healing',
+  recon: 'Recon',
   scouting: 'Recon',
   dead: 'Dead',
 };

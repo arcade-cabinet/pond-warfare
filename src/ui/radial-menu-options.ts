@@ -97,7 +97,7 @@ const GENERALIST_OPTIONS: RadialOption[] = [
     color: 'enemy',
   },
   {
-    id: 'cmd_scout',
+    id: 'cmd_recon',
     label: 'Recon',
     icon: '\u{1F441}\uFE0F',
     tooltip: 'Survey area',
@@ -204,7 +204,7 @@ const HEAL_OPTIONS: RadialOption[] = [
 
 const RECON_OPTIONS: RadialOption[] = [
   {
-    id: 'cmd_scout',
+    id: 'cmd_recon',
     label: 'Recon',
     icon: '\u{1F441}\uFE0F',
     tooltip: 'Survey area',

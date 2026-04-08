@@ -172,6 +172,7 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
     case 'cmd_heal':
       pushGameEvent('Tap wounded ally...', COLORS.feedbackInfo, world.frameCount);
       return true;
+    case 'cmd_recon':
     case 'cmd_scout':
       pushGameEvent('Tap terrain to recon...', COLORS.feedbackInfo, world.frameCount);
       return true;

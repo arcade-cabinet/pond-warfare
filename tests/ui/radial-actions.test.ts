@@ -35,7 +35,10 @@ vi.mock('@/game', () => ({
       yukaManager: { removeUnit: vi.fn(), clearFormationBehaviors: vi.fn() },
       fortifications: null,
       specialistAssignments: new Map(),
-      pendingSpecialistAssignment: null as { eid: number; mode: 'single_zone' | 'dual_zone' } | null,
+      pendingSpecialistAssignment: null as {
+        eid: number;
+        mode: 'single_zone' | 'dual_zone';
+      } | null,
     },
     syncUIStore: vi.fn(),
   },
@@ -186,8 +189,8 @@ describe('dispatchRadialAction -- unit commands', () => {
     expect(pushGameEvent).toHaveBeenCalledWith('Tap wounded ally...', '#38bdf8', 100);
   });
 
-  it('cmd_scout shows tap target message', () => {
-    const result = dispatchRadialAction('cmd_scout');
+  it('cmd_recon shows tap target message', () => {
+    const result = dispatchRadialAction('cmd_recon');
     expect(result).toBe(true);
     expect(pushGameEvent).toHaveBeenCalledWith('Tap terrain to recon...', '#38bdf8', 100);
   });

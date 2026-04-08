@@ -52,7 +52,7 @@ beforeEach(() => {
           eid: 2,
           kind: 7,
           label: 'Lookout',
-          task: 'scouting',
+          task: 'recon',
           targetName: '',
           hp: 20,
           maxHp: 20,
