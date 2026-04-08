@@ -720,6 +720,48 @@ describe('AttackEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.4);
   });
 
+  it('opens a safe two-Sapper raid window when demolish upgrades are active', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['siege_demolish_power_t0'];
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
+      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.75);
+  });
+
+  it('keeps the two-Sapper demolish raid window open under light single-threat pressure', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['siege_demolish_power_t0'];
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
+      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
+        eid: i + 20,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.75);
+  });
+
   it('does not count a Mudpaw filler toward the unit-speed mobility attack window', () => {
     storeV3.progressionLevel.value = 6;
     storeV3.currentRunPurchasedNodeIds.value = ['utility_unit_speed_t0'];
@@ -833,6 +875,62 @@ describe('Governor brain arbitration', () => {
         kind: SAPPER_KIND,
       }))),
       makeGroup('generalist', [{ eid: 20, task: 'idle', kind: MUDPAW_KIND }]),
+    ];
+
+    governor.brain.arbitrate();
+    expect(governor.brain.subgoals).toHaveLength(1);
+    expect(governor.brain.subgoals[0]?.constructor.name).toBe('AttackGoal');
+  });
+
+  it('can pick a two-Sapper demolish raid over more training when the window is safe', () => {
+    store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.logs.value = 120;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['siege_demolish_power_t0'];
+    store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 20, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 21, task: 'gathering-logs', kind: MUDPAW_KIND },
+      ]),
+      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
+    ];
+
+    governor.brain.arbitrate();
+    expect(governor.brain.subgoals).toHaveLength(1);
+    expect(governor.brain.subgoals[0]?.constructor.name).toBe('AttackGoal');
+  });
+
+  it('can still pick a two-Sapper demolish raid under light single-threat pressure', () => {
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.waveCountdown.value = 24;
+    store.fish.value = 180;
+    store.logs.value = 120;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['siege_demolish_power_t0'];
+    store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 20, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 21, task: 'gathering-logs', kind: MUDPAW_KIND },
+      ]),
+      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
+        eid: i + 1,
+        task: 'idle',
+        kind: SAPPER_KIND,
+      }))),
     ];
 
     governor.brain.arbitrate();

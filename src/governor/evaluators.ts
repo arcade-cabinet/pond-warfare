@@ -10,7 +10,12 @@ import { ENTITY_DEFS, isWingBuilding } from '@/config/entity-defs';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
-import { AttackGoal, countAvailableAttackers, MIN_ATTACK_ARMY } from './goals/attack-goal';
+import {
+  AttackGoal,
+  countAvailableAttackers,
+  countAvailableSiegeAttackers,
+  MIN_ATTACK_ARMY,
+} from './goals/attack-goal';
 import { hasCurrentRunTrack } from './current-run-upgrades';
 import { BuildGoal } from './goals/build-goal';
 import { DefendGoal } from './goals/defend-goal';
@@ -146,6 +151,21 @@ function canPressureSafely(totalArmy: number, readyArmy: number): boolean {
   );
 }
 
+function demolishRaidWindowReady(totalArmy: number, readyArmy: number): boolean {
+  const waveCountdown = nextWaveCountdown();
+  const threats = baseThreatCount();
+  const lodgeHp = lodgeHpRatio();
+  const raidWindow = threats <= 1 && lodgeHp >= 0.9 && (waveCountdown === null || waveCountdown > 10);
+  return (
+    hasCurrentRunTrack('siege_demolish_power') &&
+    storeV3.progressionLevel.value >= 6 &&
+    raidWindow &&
+    totalArmy >= 2 &&
+    readyArmy >= 2 &&
+    countAvailableSiegeAttackers() >= 2
+  );
+}
+
 function proactiveTowerWindowReady(): boolean {
   const def = ENTITY_DEFS[EntityKind.Tower];
   const towerDamageTrackActive = hasCurrentRunTrack('defense_tower_damage');
@@ -227,6 +247,7 @@ export class BuildEvaluator extends GoalEvaluator {
     if (reservedBuildKind != null && canAffordBuild(reservedBuildKind)) {
       return reservedBuildScore(reservedBuildKind);
     }
+    if (demolishRaidWindowReady(combatUnitCount(), countAvailableAttackers())) return 0.74;
     if (towerDamageTrackActive && proactiveTowerWindowReady()) return 0.88;
     if (defensiveWallWindowReady()) return 0.86;
     // Armory is a Lodge wing — check if it's unlocked rather than placed
@@ -337,6 +358,9 @@ export class AttackEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     const totalArmy = combatUnitCount();
     const readyArmy = countAvailableAttackers();
+    if (demolishRaidWindowReady(totalArmy, readyArmy)) {
+      return 0.8;
+    }
     const skirmishWindow = lightPressureSkirmishWindow(totalArmy, readyArmy);
     if (store.baseUnderAttack.value && !skirmishWindow) return 0;
     const safeAttackArmy = safeAttackArmyThreshold(totalArmy);

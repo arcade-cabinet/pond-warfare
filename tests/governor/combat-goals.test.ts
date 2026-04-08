@@ -375,4 +375,30 @@ describe('AttackGoal', () => {
     expect(TaskOverride.targetEntity[regularC]).toBe(closeEnemy);
     expect(TaskOverride.targetEntity[specialist]).toBe(0);
   });
+
+  it('opens a two-Sapper demolish raid and prefers enemy structures', async () => {
+    const { AttackGoal } = await import('@/governor/goals/attack-goal');
+
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['siege_demolish_power_t0'];
+
+    const regularA = createUnit(SAPPER_KIND, 100, 100);
+    const regularB = createUnit(SAPPER_KIND, 120, 100);
+    const enemyBurrow = createEnemy(EntityKind.Burrow, 220, 200);
+    createEnemy(EntityKind.Gator, 200, 200);
+
+    store.unitRoster.value = [
+      rosterGroup('combat', [
+        rosterUnit(regularA, SAPPER_KIND, 'idle'),
+        rosterUnit(regularB, SAPPER_KIND, 'idle'),
+      ]),
+    ];
+
+    const goal = new AttackGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(TaskOverride.targetEntity[regularA]).toBe(enemyBurrow);
+    expect(TaskOverride.targetEntity[regularB]).toBe(enemyBurrow);
+  });
 });
