@@ -233,7 +233,7 @@ function dispatchTargetCommand(
     Health.current[target] > 0 &&
     Health.current[target] < Health.max[target]
   ) {
-    // Medic heal command: move to wounded ally so healer aura kicks in
+    // Medic heal command: move to the wounded ally so the support aura can take over
     UnitStateMachine.targetEntity[eid] = target;
     UnitStateMachine.targetX[eid] = Position.x[target];
     UnitStateMachine.targetY[eid] = Position.y[target];

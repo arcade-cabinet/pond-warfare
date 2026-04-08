@@ -44,7 +44,7 @@ function drawOtterBase(d: DrawCtx): void {
   rect(11, 10, 3, 2, PALETTE.otterBase);
 }
 
-/** Draw the standard otter body without extra outline on feet (healer/shieldbearer). */
+/** Draw the standard otter body without extra outline on feet (Medic/Shieldbearer chassis). */
 function drawOtterBodyMinimal(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   ctx.fillStyle = 'rgba(0,0,0,0.25)';

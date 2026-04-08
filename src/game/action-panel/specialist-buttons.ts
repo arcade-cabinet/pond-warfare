@@ -67,14 +67,14 @@ const SPECIALIST_BUTTON_SPECS: SpecialistButtonSpec[] = [
     title: 'Shaman',
     hotkey: '7',
     requiredStage: 2,
-    description: 'Autonomous healer that keeps allies alive inside its radius.',
+    description: 'Autonomous support specialist that keeps allies alive inside its radius.',
   },
   {
     unitId: 'lookout',
     title: 'Lookout',
     hotkey: '8',
     requiredStage: 1,
-    description: 'Autonomous scout that patrols and maintains vision in its radius.',
+    description: 'Autonomous recon specialist that patrols and maintains vision in its radius.',
   },
 ];
 
