@@ -39,24 +39,19 @@ describe('achievements', () => {
       onlyShadowTechs: false,
       // v2.1.0 fields
       weatherTypesExperienced: 0,
-      warshipKills: 0,
-      diverAmbushKills: 0,
       marketTrades: 0,
-      maxBerserkerKills: 0,
-      shrineAbilitiesUsed: 0,
       coopMode: false,
       dailyChallengesCompleted: 0,
       playerLevel: 1,
       perfectPuzzleCount: 0,
       randomEventsExperienced: 0,
       wallsBuilt: 0,
-      enemiesBlockedByGates: 0,
       ...overrides,
     };
   }
 
-  it('defines exactly 39 achievements', () => {
-    expect(ACHIEVEMENTS).toHaveLength(39);
+  it('defines exactly 33 achievements', () => {
+    expect(ACHIEVEMENTS).toHaveLength(33);
   });
 
   it('all achievements have unique IDs', () => {
@@ -93,34 +88,10 @@ describe('achievements', () => {
     expect(ach.check(makeSnapshot({ won: false, weatherTypesExperienced: 4 }))).toBe(false);
   });
 
-  it('Naval Supremacy requires 5 warship kills', () => {
-    const ach = ACHIEVEMENTS.find((a) => a.id === 'naval_supremacy')!;
-    expect(ach.check(makeSnapshot({ warshipKills: 4 }))).toBe(false);
-    expect(ach.check(makeSnapshot({ warshipKills: 5 }))).toBe(true);
-  });
-
-  it('Stealth Expert requires 5 diver ambush kills', () => {
-    const ach = ACHIEVEMENTS.find((a) => a.id === 'stealth_expert')!;
-    expect(ach.check(makeSnapshot({ diverAmbushKills: 4 }))).toBe(false);
-    expect(ach.check(makeSnapshot({ diverAmbushKills: 5 }))).toBe(true);
-  });
-
   it('Market Mogul requires 10 trades', () => {
     const ach = ACHIEVEMENTS.find((a) => a.id === 'market_mogul')!;
     expect(ach.check(makeSnapshot({ marketTrades: 9 }))).toBe(false);
     expect(ach.check(makeSnapshot({ marketTrades: 10 }))).toBe(true);
-  });
-
-  it("Berserker's Fury requires 10 kills on single berserker", () => {
-    const ach = ACHIEVEMENTS.find((a) => a.id === 'berserkers_fury')!;
-    expect(ach.check(makeSnapshot({ maxBerserkerKills: 9 }))).toBe(false);
-    expect(ach.check(makeSnapshot({ maxBerserkerKills: 10 }))).toBe(true);
-  });
-
-  it('Shrine Master requires all 5 shrine abilities used', () => {
-    const ach = ACHIEVEMENTS.find((a) => a.id === 'shrine_master')!;
-    expect(ach.check(makeSnapshot({ shrineAbilitiesUsed: 4 }))).toBe(false);
-    expect(ach.check(makeSnapshot({ shrineAbilitiesUsed: 5 }))).toBe(true);
   });
 
   it('Co-op Victory requires win in co-op mode', () => {
@@ -158,12 +129,6 @@ describe('achievements', () => {
     const ach = ACHIEVEMENTS.find((a) => a.id === 'wall_builder')!;
     expect(ach.check(makeSnapshot({ wallsBuilt: 9 }))).toBe(false);
     expect(ach.check(makeSnapshot({ wallsBuilt: 10 }))).toBe(true);
-  });
-
-  it('Gate Keeper requires 20 enemies blocked', () => {
-    const ach = ACHIEVEMENTS.find((a) => a.id === 'gate_keeper')!;
-    expect(ach.check(makeSnapshot({ enemiesBlockedByGates: 19 }))).toBe(false);
-    expect(ach.check(makeSnapshot({ enemiesBlockedByGates: 20 }))).toBe(true);
   });
 
   it('Achievement checks are pure functions (mock SQLite persistence)', async () => {

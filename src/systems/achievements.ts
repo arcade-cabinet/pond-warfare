@@ -173,18 +173,13 @@ function buildSnapshot(world: GameWorld): AchievementSnapshot {
     onlyShadowTechs: techCount > 0 && !hasNonShadowTech,
     // v2.1.0 -- extended stats
     weatherTypesExperienced: ext.weatherTypesExperienced ?? 0,
-    warshipKills: ext.warshipKills ?? 0,
-    diverAmbushKills: ext.diverAmbushKills ?? 0,
     marketTrades: ext.marketTrades ?? 0,
-    maxBerserkerKills: ext.maxBerserkerKills ?? 0,
-    shrineAbilitiesUsed: ext.shrineAbilitiesUsed ?? 0,
     coopMode: ext.coopMode ?? false,
     dailyChallengesCompleted: ext.dailyChallengesCompleted ?? 0,
     playerLevel: ext.playerLevel ?? 1,
     perfectPuzzleCount: ext.perfectPuzzleCount ?? 0,
     randomEventsExperienced: ext.randomEventsExperienced ?? 0,
     wallsBuilt: ext.wallsBuilt ?? 0,
-    enemiesBlockedByGates: ext.enemiesBlockedByGates ?? 0,
   };
 }
 

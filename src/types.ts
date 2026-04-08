@@ -268,16 +268,11 @@ export interface TooltipData {
 /** Extended game stats tracked per match for achievements. */
 export interface ExtendedStats {
   weatherTypesExperienced: number;
-  warshipKills: number;
-  diverAmbushKills: number;
   marketTrades: number;
-  maxBerserkerKills: number;
-  shrineAbilitiesUsed: number;
   coopMode: boolean;
   dailyChallengesCompleted: number;
   playerLevel: number;
   perfectPuzzleCount: number;
   randomEventsExperienced: number;
   wallsBuilt: number;
-  enemiesBlockedByGates: number;
 }
