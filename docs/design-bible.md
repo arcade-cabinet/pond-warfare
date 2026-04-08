@@ -6,6 +6,8 @@
 > `Gatherer` -> `Mudpaw`
 > `free specialist auto-deploy` -> obsolete; specialists are now Pearl blueprints trained in-match
 > `Brawler / Sniper / Shieldbearer / Catapult` -> historical compatibility content, not the live player roster
+>
+> The roster matrices, progression beats, and matchup tables below are preserved for historical art and design context only. They should not be used as live gameplay, balance, or naming truth.
 
 ## Vision
 

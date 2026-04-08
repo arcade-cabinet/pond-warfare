@@ -200,9 +200,9 @@ Enemy units scale with progression level: HP +5%/level, Damage +3%/level, Speed 
 | Unit | HP | Speed | Damage | Role |
 |------|----|-------|--------|------|
 | **Raider** | 25 | 2.5 | 4 | Targets player resource nodes |
-| **Fighter** | 60 | 1.8 | 8 | Direct assault on Lodge and units |
-| **Healer** | 20 | 1.5 | 0 | Restores wounded enemy allies |
-| **Scout (enemy)** | 15 | 3.0 | 1 | Reveals player army composition |
+| **Assault** | 60 | 1.8 | 8 | Direct assault on the Lodge and field units |
+| **Support** | 20 | 1.5 | 0 | Restores wounded enemy allies |
+| **Recon** | 15 | 3.0 | 1 | Probes player composition and exposed lanes |
 | **Sapper (enemy)** | 50 | 1.0 | 20 | Destroys fortifications and walls |
 | **Saboteur (enemy)** | 25 | 2.5 | 3 | Poisons player resource nodes |
 
@@ -239,11 +239,11 @@ Events are the primary challenge mechanic, replacing the old wave system. Define
 
 | Event | Description | Reward (Clams) |
 |-------|-------------|----------------|
-| **Basic Wave** | Fighters and raiders approach | 5 |
+| **Basic Wave** | Assault enemies and raiders approach | 5 |
 | **Raider Wave** | Raiders target resource nodes | 4 |
-| **Heavy Assault** | Fighters with wall-breaker sappers | 8 |
-| **Healer Squad** | Enemy healers support assault | 7 |
-| **Scout Incursion** | Enemy scouts probe defenses | 3 |
+| **Heavy Assault** | Assault enemies push with wall-breaker sappers | 8 |
+| **Support Squad** | Enemy support units sustain the assault | 7 |
+| **Recon Incursion** | Enemy recon units probe defenses | 3 |
 | **Sabotage Raid** | Saboteurs corrupt resource nodes | 6 |
 | **Boss Croc** | Boss enemy with massive HP | 15 |
 | **Alpha Predator** | Elite boss with damage aura | 20 |

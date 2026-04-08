@@ -23,7 +23,7 @@ prestige loop.
 - **Upgrade web**: 240+ procedural nodes from 6 categories x 4 subcategories x 10 tiers, plus diamond nodes for Lodge wings and specialist unlocks
 - **Prestige system**: Rank up to reset Clam upgrades and earn Pearls for permanent specialist blueprints, autonomy upgrades, and multipliers
 - **Simplified units**: canonical direction is `Mudpaw`, `Medic`, `Sapper`, `Saboteur` as the manual run roster, plus Pearl-unlocked trainable specialists
-- **6 enemy types**: Raider, Fighter, Healer, Scout, Sapper, Saboteur with per-level scaling
+- **6 enemy types**: Raider, Assault, Support, Recon, Sapper, Saboteur with per-level scaling
 - **Match events**: JSON-driven waves, bosses, sabotage, escorts, storms replacing old wave/evolution system
 - **Fortification system**: Walls and towers from JSON config with progression-based slot counts
 - **Lodge visual evolution**: Wings unlock via upgrade web diamond nodes, prestige glow
