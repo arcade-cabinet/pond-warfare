@@ -91,7 +91,7 @@ const ENTITY_KIND_LABELS: Record<EntityKind, string> = {
   [LOOKOUT_KIND]: 'Lookout',
   [EntityKind.Catapult]: 'Catapult',
   [EntityKind.Wall]: 'Wall',
-  [EntityKind.ScoutPost]: 'Scout Post',
+  [EntityKind.ScoutPost]: 'Lookout Post',
   [EntityKind.ArmoredGator]: 'Armored Gator',
   [EntityKind.VenomSnake]: 'Venom Snake',
   [EntityKind.SwampDrake]: 'Swamp Drake',

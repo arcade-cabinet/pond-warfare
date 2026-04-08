@@ -100,12 +100,12 @@ export function buildMudpawButtons(w: GameWorld): ActionButtonDef[] {
   if (w.tech.cartography) {
     const spDef = ENTITY_DEFS[EntityKind.ScoutPost];
     btns.push({
-      title: 'Scout Post',
+      title: 'Lookout Post',
       cost: `${spDef.fishCost}F ${spDef.logCost}L`,
       hotkey: 'U',
       affordable:
         w.resources.fish >= (spDef.fishCost ?? 0) && w.resources.logs >= (spDef.logCost ?? 0),
-      description: 'Reveals a large area of the map.',
+      description: 'Recon outpost. Reveals a large area of the map.',
       category: 'build',
       costBreakdown: { fish: spDef.fishCost, logs: spDef.logCost },
       requires: 'Requires: Cartography',
