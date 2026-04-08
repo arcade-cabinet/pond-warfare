@@ -133,6 +133,29 @@ describe('gatheringSystem', () => {
     expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Logs);
   });
 
+  it('scales carried resource amount with player carry capacity multiplier', () => {
+    const baselineWorld = createGameWorld();
+    baselineWorld.frameCount = 1;
+    const baselineMudpaw = createMudpaw(baselineWorld, 100, 100);
+    const baselineResource = createResource(baselineWorld, 100, 100, EntityKind.Cattail);
+    UnitStateMachine.state[baselineMudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[baselineMudpaw] = baselineResource;
+    UnitStateMachine.gatherTimer[baselineMudpaw] = 1;
+    gatheringSystem(baselineWorld);
+    const baselineAmount = Carrying.resourceAmount[baselineMudpaw];
+
+    world.playerCarryCapacityMultiplier = 1.5;
+    const mudpaw = createMudpaw(world, 100, 100);
+    const resource = createResource(world, 100, 100, EntityKind.Cattail);
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
+
+    gatheringSystem(world);
+
+    expect(Carrying.resourceAmount[mudpaw]).toBe(Math.round(baselineAmount * 1.5));
+  });
+
   it('retargets a gather override to another same-type node when the first is depleted', () => {
     const mudpaw = createMudpaw(world, 100, 100);
     const depleted = createResource(world, 100, 100, EntityKind.Cattail);

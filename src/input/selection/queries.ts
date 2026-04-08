@@ -7,7 +7,7 @@
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { ENTITY_DEFS, entityKindFromString } from '@/config/entity-defs';
-import { TILE_SIZE, TRAIN_TIMER } from '@/constants';
+import { TILE_SIZE } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Collider,
@@ -24,6 +24,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { isMudpawKind } from '@/game/live-unit-kinds';
+import { getPlayerTrainTimer } from '@/game/train-timer';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /**
@@ -229,7 +230,7 @@ export function train(
       trainingQueueSlots.set(buildingEid, slots);
       TrainingQueue.count[buildingEid] = count + 1;
       if (count === 0) {
-        TrainingQueue.timer[buildingEid] = TRAIN_TIMER;
+        TrainingQueue.timer[buildingEid] = getPlayerTrainTimer(world);
       }
     }
   }
@@ -255,7 +256,7 @@ export function cancelTrain(world: GameWorld, buildingEid: number, index: number
   TrainingQueue.count[buildingEid] = count - 1;
 
   if (index === 0 && count - 1 > 0) {
-    TrainingQueue.timer[buildingEid] = TRAIN_TIMER;
+    TrainingQueue.timer[buildingEid] = getPlayerTrainTimer(world);
   }
   if (count - 1 === 0) {
     TrainingQueue.timer[buildingEid] = 0;

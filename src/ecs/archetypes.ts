@@ -189,7 +189,11 @@ export function spawnEntity(
     if (kind === EntityKind.Tower || kind === EntityKind.Watchtower) {
       addComponent(world.ecs, eid, TowerAI);
       addComponent(world.ecs, eid, Combat);
-      Combat.damage[eid] = def.damage;
+      let towerDamage = def.damage;
+      if (faction === Faction.Player && world.playerTowerDamageMultiplier > 1) {
+        towerDamage = Math.round(towerDamage * world.playerTowerDamageMultiplier);
+      }
+      Combat.damage[eid] = towerDamage;
       Combat.attackRange[eid] = def.attackRange;
       Combat.attackCooldown[eid] = 0;
       Combat.kills[eid] = 0;
@@ -207,6 +211,9 @@ export function spawnEntity(
     addComponent(world.ecs, eid, Velocity);
     let speed = def.speed;
     if (faction === Faction.Player && world.tech.swiftPaws) speed *= 1.15;
+    if (faction === Faction.Player && world.playerUnitSpeedMultiplier > 1) {
+      speed *= world.playerUnitSpeedMultiplier;
+    }
     Velocity.speed[eid] = speed;
     Velocity.speedDebuffTimer[eid] = 0;
 

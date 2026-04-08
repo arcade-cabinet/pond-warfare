@@ -157,6 +157,9 @@ function executeAttack(
   if (faction === Faction.Player && world.tech.battleRoar) {
     cooldown = Math.round(cooldown * 0.9);
   }
+  if (faction === Faction.Player && world.playerAttackSpeedMultiplier > 1) {
+    cooldown = Math.max(1, Math.round(cooldown / world.playerAttackSpeedMultiplier));
+  }
   Combat.attackCooldown[eid] = cooldown;
 
   // Combat bark

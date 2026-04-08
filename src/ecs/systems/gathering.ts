@@ -218,6 +218,9 @@ export function gatheringSystem(world: GameWorld): void {
       if (faction === Faction.Player && world.gatherSpeedMod > 1.0) {
         gatherAmt = Math.round(gatherAmt * (1 + (world.gatherSpeedMod - 1) * 0.5));
       }
+      if (faction === Faction.Player && world.playerCarryCapacityMultiplier > 1.0) {
+        gatherAmt = Math.round(gatherAmt * world.playerCarryCapacityMultiplier);
+      }
       if (faction === Faction.Player && world.tech.tidalHarvest) {
         gatherAmt = Math.round(gatherAmt * 1.25);
       }

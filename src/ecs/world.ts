@@ -110,7 +110,13 @@ export interface GameWorld {
   // Custom game settings modifiers
   gatherSpeedMod: number;
   playerUnitDamageMultiplier: number;
+  playerAttackSpeedMultiplier: number;
+  playerCarryCapacityMultiplier: number;
   playerUnitHpMultiplier: number;
+  playerUnitSpeedMultiplier: number;
+  playerHealMultiplier: number;
+  playerTrainSpeedMultiplier: number;
+  playerTowerDamageMultiplier: number;
   evolutionSpeedMod: number;
   fogOfWarMode: 'full' | 'explored' | 'revealed';
   heroMode: boolean;

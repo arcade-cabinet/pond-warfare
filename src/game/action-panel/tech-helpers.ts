@@ -5,10 +5,10 @@
  * were removed in v3.0 (replaced by upgrade web).
  */
 
-import { TRAIN_TIMER } from '@/constants';
 import { getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { TrainingQueue, trainingQueueSlots } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerTrainProgress } from '@/game/train-timer';
 import { cancelTrain } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import type { EntityKind } from '@/types';
@@ -24,13 +24,7 @@ export function buildTrainingQueueItems(
   const slots = trainingQueueSlots.get(buildingEid) ?? [];
   for (let qi = 0; qi < slots.length; qi++) {
     const unitKind = slots[qi] as EntityKind;
-    const progress =
-      qi === 0
-        ? Math.max(
-            0,
-            Math.min(100, ((TRAIN_TIMER - TrainingQueue.timer[buildingEid]) / TRAIN_TIMER) * 100),
-          )
-        : 0;
+    const progress = qi === 0 ? getPlayerTrainProgress(w, TrainingQueue.timer[buildingEid]) : 0;
     const idx = qi;
     qItems.push({
       label: getPlayerTrainableDisplayName(unitKind).charAt(0),

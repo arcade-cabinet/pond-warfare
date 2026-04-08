@@ -6,7 +6,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
-import { TRAIN_TIMER, WAVE_INTERVAL } from '@/constants';
+import { WAVE_INTERVAL } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -19,6 +19,7 @@ import {
   trainingQueueSlots,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerTrainProgress } from '@/game/train-timer';
 import { getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { EntityKind, Faction } from '@/types';
 import * as store from '@/ui/store';
@@ -52,10 +53,7 @@ export function syncThreatAndObjectives(world: GameWorld): void {
     const slots = trainingQueueSlots.get(eid) ?? [];
     if (slots.length === 0) continue;
     const unitKind = slots[0] as EntityKind;
-    const progress = Math.max(
-      0,
-      Math.min(100, ((TRAIN_TIMER - TrainingQueue.timer[eid]) / TRAIN_TIMER) * 100),
-    );
+    const progress = getPlayerTrainProgress(w, TrainingQueue.timer[eid]);
     prodQueue.push({
       buildingKind: EntityTypeTag.kind[eid],
       unitLabel: getPlayerTrainableDisplayName(unitKind),

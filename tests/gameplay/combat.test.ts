@@ -7,6 +7,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
+import { ATTACK_COOLDOWN } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
@@ -199,5 +200,20 @@ describe('Combat', () => {
   it('reserved compatibility ids use neutral matchup values', () => {
     expect(getDamageMultiplier(EntityKind.SharedHeavyChassis, EntityKind.Gator)).toBe(1.0);
     expect(getDamageMultiplier(EntityKind.SharedSiegeChassis, EntityKind.Gator)).toBe(1.0);
+  });
+
+  it('player attack speed multiplier reduces attack cooldown', () => {
+    world.playerAttackSpeedMultiplier = 1.5;
+    const snake = spawnEntity(world, EntityKind.Snake, 120, 100, Faction.Enemy);
+    const sapper = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
+
+    UnitStateMachine.state[sapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sapper] = snake;
+    Combat.attackCooldown[sapper] = 0;
+
+    combatSystem(world);
+
+    expect(Combat.attackCooldown[sapper]).toBe(Math.round(ATTACK_COOLDOWN / 1.5));
+    expect(Combat.attackCooldown[sapper]).toBeLessThan(ATTACK_COOLDOWN);
   });
 });

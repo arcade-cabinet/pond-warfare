@@ -175,6 +175,15 @@ describe('processPassiveHealing', () => {
     expect(Health.current[eid]).toBe(60);
   });
 
+  it('scales passive healing with player heal multiplier', () => {
+    world.playerHealMultiplier = 2;
+    const eid = spawnUnit(world, 100, 100, 50, 60, UnitState.Idle);
+
+    processPassiveHealing(world);
+
+    expect(Health.current[eid]).toBe(52);
+  });
+
   it('does NOT heal buildings', () => {
     const eid = addEntity(world.ecs);
     addComponent(world.ecs, eid, Position);
@@ -253,6 +262,16 @@ describe('processSupportAura (Medic aura)', () => {
     processSupportAura(world);
 
     expect(Health.current[ally]).toBe(60);
+  });
+
+  it('scales Medic aura with player heal multiplier', () => {
+    world.playerHealMultiplier = 1.5;
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
+    const ally = spawnUnit(world, 130, 100, 40, 60, UnitState.Idle);
+
+    processSupportAura(world);
+
+    expect(Health.current[ally]).toBe(43);
   });
 });
 

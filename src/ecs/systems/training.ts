@@ -14,7 +14,6 @@
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { entityKindName } from '@/config/entity-defs';
-import { TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
@@ -28,6 +27,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerTrainTimer } from '@/game/train-timer';
 import { getEntityDisplayName } from '@/game/unit-display';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -73,7 +73,7 @@ export function trainingSystem(world: GameWorld): void {
       // Spawn the unit
       const newEid = spawnEntity(world, unitKind, sx, sy, Faction.Player);
       if (newEid < 0) {
-        TrainingQueue.timer[eid] = TRAIN_TIMER;
+        TrainingQueue.timer[eid] = getPlayerTrainTimer(world);
         continue;
       }
 
@@ -94,7 +94,7 @@ export function trainingSystem(world: GameWorld): void {
 
       // Set timer for next unit if queue still has entries
       if (TrainingQueue.count[eid] > 0) {
-        TrainingQueue.timer[eid] = TRAIN_TIMER;
+        TrainingQueue.timer[eid] = getPlayerTrainTimer(world);
       }
 
       // Training complete sound + unit selection voice

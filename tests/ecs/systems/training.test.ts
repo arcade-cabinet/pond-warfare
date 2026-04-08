@@ -22,6 +22,7 @@ import {
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { getPlayerTrainTimer } from '@/game/train-timer';
 import { EntityKind, Faction } from '@/types';
 
 /** Create a completed player building with a training queue. */
@@ -118,5 +119,20 @@ describe('trainingSystem', () => {
     expect(slots[0]).toBe(SABOTEUR_KIND);
     // Timer should be reset for next unit
     expect(TrainingQueue.timer[lodge]).toBe(TRAIN_TIMER);
+  });
+
+  it('resets the next queue timer using player train speed multiplier', () => {
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
+    world.playerTrainSpeedMultiplier = 1.5;
+
+    trainingQueueSlots.set(lodge, [SAPPER_KIND, SABOTEUR_KIND]);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = 1;
+
+    trainingSystem(world);
+
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    expect(TrainingQueue.timer[lodge]).toBe(getPlayerTrainTimer(world));
+    expect(TrainingQueue.timer[lodge]).toBeLessThan(TRAIN_TIMER);
   });
 });

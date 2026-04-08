@@ -7,6 +7,7 @@
 
 import { hasComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
@@ -70,5 +71,21 @@ describe('spawnEntity', () => {
     expect(hasComponent(world.ecs, eid, Resource)).toBe(true);
     expect(hasComponent(world.ecs, eid, Health)).toBe(true);
     expect(Resource.amount[eid]).toBeGreaterThan(0);
+  });
+
+  it('applies player unit speed multiplier to spawned units', () => {
+    world.playerUnitSpeedMultiplier = 1.25;
+
+    const eid = spawnEntity(world, SAPPER_KIND, 100, 200, Faction.Player);
+
+    expect(Velocity.speed[eid]).toBeCloseTo(ENTITY_DEFS[SAPPER_KIND].speed * 1.25, 5);
+  });
+
+  it('applies player tower damage multiplier to spawned towers', () => {
+    world.playerTowerDamageMultiplier = 1.25;
+
+    const eid = spawnEntity(world, EntityKind.Tower, 300, 400, Faction.Player);
+
+    expect(Combat.damage[eid]).toBe(Math.round(ENTITY_DEFS[EntityKind.Tower].damage * 1.25));
   });
 });

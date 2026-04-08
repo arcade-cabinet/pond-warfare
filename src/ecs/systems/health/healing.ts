@@ -31,6 +31,10 @@ const HERBALIST_HUT_RANGE = 200;
 /** Frames since last damage before regen kicks in (5s at 60fps). */
 const REGEN_OUT_OF_COMBAT_FRAMES = 300;
 
+function getPlayerHealAmount(world: GameWorld, baseAmount: number): number {
+  return Math.max(1, Math.round(baseAmount * world.playerHealMultiplier));
+}
+
 /** Passive healing: every 300 frames, player non-building units heal +1 HP when idle/non-combat. */
 export function processPassiveHealing(world: GameWorld): void {
   const units = query(world.ecs, [UnitStateMachine, Health, FactionTag, EntityTypeTag]);
@@ -50,7 +54,7 @@ export function processPassiveHealing(world: GameWorld): void {
       state === UnitState.GatherMove ||
       state === UnitState.ReturnMove
     ) {
-      const healAmount = world.tech.hardenedShells ? 5 : 1;
+      const healAmount = getPlayerHealAmount(world, world.tech.hardenedShells ? 5 : 1);
       Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + healAmount);
 
       if (world.tech.hardenedShells) {
@@ -111,10 +115,11 @@ export function processSupportAura(world: GameWorld): void {
     // Sort by distance and cap at MAX_HEALS_PER_HEALER
     inRange.sort((a, b) => a.distSq - b.distSq);
     const healCount = Math.min(inRange.length, MAX_HEALS_PER_HEALER);
+    const healAmount = getPlayerHealAmount(world, 2);
 
     for (let h = 0; h < healCount; h++) {
       const target = inRange[h].eid;
-      Health.current[target] = Math.min(Health.max[target], Health.current[target] + 2);
+      Health.current[target] = Math.min(Health.max[target], Health.current[target] + healAmount);
       spawnParticle(
         world,
         Position.x[target],
@@ -148,7 +153,7 @@ export function processRegeneration(world: GameWorld): void {
     const lastDmg = Health.lastDamagedFrame[eid];
     if (lastDmg > 0 && world.frameCount - lastDmg < REGEN_OUT_OF_COMBAT_FRAMES) continue;
 
-    Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + 1);
+    Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + getPlayerHealAmount(world, 1));
   }
 }
 
@@ -164,6 +169,7 @@ export function processHerbalistHutHeal(world: GameWorld): void {
 
     const hx = Position.x[hut];
     const hy = Position.y[hut];
+    const healAmount = getPlayerHealAmount(world, 2);
     const nearby = world.spatialHash
       ? world.spatialHash.query(hx, hy, HERBALIST_HUT_RANGE)
       : query(world.ecs, [Position, Health, FactionTag]);
@@ -174,7 +180,7 @@ export function processHerbalistHutHeal(world: GameWorld): void {
       if (hasComponent(world.ecs, uid, IsBuilding)) continue;
       if (!hasComponent(world.ecs, uid, Health)) continue;
       if (Health.current[uid] <= 0 || Health.current[uid] >= Health.max[uid]) continue;
-      Health.current[uid] = Math.min(Health.max[uid], Health.current[uid] + 2);
+      Health.current[uid] = Math.min(Health.max[uid], Health.current[uid] + healAmount);
       spawnParticle(
         world,
         Position.x[uid],

@@ -31,6 +31,10 @@ const SHAMAN_HEAL_AMOUNT = 2;
 /** Interval in frames between heals (5 seconds at 60fps). */
 const SHAMAN_HEAL_INTERVAL = 300;
 
+function getShamanHealAmount(world: GameWorld): number {
+  return Math.max(1, Math.round(SHAMAN_HEAL_AMOUNT * world.playerHealMultiplier));
+}
+
 /**
  * Shaman healing tick. For each living player Shaman, heal all nearby
  * friendly units by SHAMAN_HEAL_AMOUNT, capped at max HP.
@@ -73,7 +77,7 @@ export function shamanHealSystem(world: GameWorld): void {
       if (Math.sqrt(dx * dx + dy * dy) > SHAMAN_HEAL_RADIUS) continue;
 
       // Heal
-      Health.current[t] = Math.min(Health.current[t] + SHAMAN_HEAL_AMOUNT, Health.max[t]);
+      Health.current[t] = Math.min(Health.current[t] + getShamanHealAmount(world), Health.max[t]);
       healedAny = true;
     }
 

@@ -231,6 +231,83 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     expect(world.clamRewardMultiplier).toBeGreaterThan(1.0);
   });
+
+  it('applies combat attack power to playerUnitDamageMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_attack_power_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerUnitDamageMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies combat attack speed to playerAttackSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_attack_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerAttackSpeedMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies gathering carry capacity to playerCarryCapacityMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'gathering_carry_capacity_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerCarryCapacityMultiplier).toBeCloseTo(1.1, 2);
+  });
+
+  it('applies utility unit speed to playerUnitSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_unit_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerUnitSpeedMultiplier).toBeCloseTo(1.03, 2);
+  });
+
+  it('applies utility heal power to playerHealMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_heal_power_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerHealMultiplier).toBeCloseTo(1.05, 2);
+  });
+
+  it('applies utility train speed to playerTrainSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_train_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerTrainSpeedMultiplier).toBeCloseTo(1.04, 2);
+  });
+
+  it('applies defense tower damage to playerTowerDamageMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_tower_damage_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerTowerDamageMultiplier).toBeCloseTo(1.08, 2);
+  });
 });
 
 // ── T40: Prestige flow verification ───────────���─────────────────

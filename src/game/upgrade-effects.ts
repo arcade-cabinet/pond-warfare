@@ -48,6 +48,41 @@ export function applyUpgradeEffects(
     world.clamRewardMultiplier *= 1 + clamBonus;
   }
 
+  const attackPower = effects.get('combat_attack_power') ?? 0;
+  if (attackPower > 0) {
+    world.playerUnitDamageMultiplier *= 1 + attackPower;
+  }
+
+  const attackSpeed = effects.get('combat_attack_speed') ?? 0;
+  if (attackSpeed > 0) {
+    world.playerAttackSpeedMultiplier *= 1 + attackSpeed;
+  }
+
+  const carryCapacity = effects.get('gathering_carry_capacity') ?? 0;
+  if (carryCapacity > 0) {
+    world.playerCarryCapacityMultiplier *= 1 + carryCapacity;
+  }
+
+  const unitSpeed = effects.get('utility_unit_speed') ?? 0;
+  if (unitSpeed > 0) {
+    world.playerUnitSpeedMultiplier *= 1 + unitSpeed;
+  }
+
+  const healPower = effects.get('utility_heal_power') ?? 0;
+  if (healPower > 0) {
+    world.playerHealMultiplier *= 1 + healPower;
+  }
+
+  const trainSpeed = effects.get('utility_train_speed') ?? 0;
+  if (trainSpeed > 0) {
+    world.playerTrainSpeedMultiplier *= 1 + trainSpeed;
+  }
+
+  const towerDamage = effects.get('defense_tower_damage') ?? 0;
+  if (towerDamage > 0) {
+    world.playerTowerDamageMultiplier *= 1 + towerDamage;
+  }
+
   // Pearl upgrade multipliers (prestige-persistent)
   const gatherMult = getStatMultiplier(prestigeState, 'gathering_speed');
   if (gatherMult > 1.0) {
