@@ -96,6 +96,14 @@ describe('GatherGoal', () => {
   beforeEach(() => {
     world = createGameWorld();
     store.unitRoster.value = [];
+    store.buildingRoster.value = [];
+    store.baseUnderAttack.value = false;
+    store.fish.value = 0;
+    store.logs.value = 0;
+    store.rocks.value = 0;
+    store.food.value = 0;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 1;
   });
 
   it('assigns idle Mudpaws to resource tasks', async () => {
@@ -153,9 +161,14 @@ describe('GatherGoal', () => {
     store.unitRoster.value = [
       rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
     ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
     store.fish.value = 200;
     store.logs.value = 0;
     store.rocks.value = 0;
+    storeV3.progressionLevel.value = 1;
 
     const goal = new GatherGoal();
     goal.activate();
@@ -164,6 +177,97 @@ describe('GatherGoal', () => {
     expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
     expect(UnitStateMachine.targetEntity[eid1]).toBe(nearFish);
     expect(UnitStateMachine.targetEntity[eid1]).not.toBe(farLogs);
+  });
+
+  it('accepts a longer march when logs are the next armory bottleneck', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const farLogs = createResource(EntityKind.Cattail, ResourceType.Logs, 1200, 1200);
+    createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.fish.value = 200;
+    store.logs.value = 0;
+    store.rocks.value = 0;
+    storeV3.progressionLevel.value = 6;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[eid1]).toBe(farLogs);
+  });
+
+  it('focuses logs when the missing armory is still log-gated', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const logNode = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
+    createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.fish.value = 220;
+    store.logs.value = 40;
+    store.rocks.value = 0;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[eid1]).toBe(logNode);
+  });
+
+  it('keeps multiple idle Mudpaws on logs when the first tower is still log-gated', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const eid2 = createUnit(MUDPAW_KIND, 115, 105);
+    const logNodeA = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
+    const logNodeB = createResource(EntityKind.Cattail, ResourceType.Logs, 145, 125);
+    createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(eid1, MUDPAW_KIND, 'idle'),
+        rosterUnit(eid2, MUDPAW_KIND, 'idle'),
+      ]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.baseUnderAttack.value = false;
+    store.fish.value = 260;
+    store.logs.value = 80;
+    store.rocks.value = 0;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.state[eid2]).toBe(UnitState.GatherMove);
+    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid1]);
+    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid2]);
   });
 
   it('completes immediately with no idle Mudpaws', async () => {

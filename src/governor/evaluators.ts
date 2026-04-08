@@ -94,11 +94,24 @@ function canPressureSafely(totalArmy: number, readyArmy: number): boolean {
   return Number.isFinite(threshold) && threshold <= MIN_ATTACK_ARMY + 1 && readyArmy >= threshold;
 }
 
+function proactiveTowerWindowReady(): boolean {
+  return (
+    storeV3.progressionLevel.value >= 6 &&
+    hasCompletedBuilding(EntityKind.Armory) &&
+    !hasBuilding(EntityKind.Tower) &&
+    store.fish.value >= 200 &&
+    store.logs.value >= 250
+  );
+}
+
 /** High score when idle Mudpaws exist — always beats Train to avoid idle waste. */
 export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     const idle = findIdleMudpaws();
     if (idle.length === 0) return 0;
+    if (proactiveTowerWindowReady()) {
+      return 0.42 + Math.min(idle.length * 0.02, 0.04);
+    }
     const totalArmy = combatUnitCount();
     const readyArmy = countAvailableAttackers();
     if (lightPressureSkirmishWindow(totalArmy, readyArmy) || canPressureSafely(totalArmy, readyArmy)) {
@@ -122,14 +135,8 @@ export class BuildEvaluator extends GoalEvaluator {
       return 0.85;
     if (store.food.value >= store.maxFood.value - 1 && store.logs.value >= 75) return 0.75;
     if (baseThreatCount() >= 2 && store.fish.value >= 200) return 0.8;
-    if (
-      storeV3.progressionLevel.value >= 6 &&
-      hasCompletedBuilding(EntityKind.Armory) &&
-      !hasBuilding(EntityKind.Tower) &&
-      store.fish.value >= 200 &&
-      store.logs.value >= 250
-    ) {
-      return 0.68;
+    if (proactiveTowerWindowReady()) {
+      return 0.79;
     }
     return 0;
   }

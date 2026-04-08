@@ -84,6 +84,21 @@ describe('GatherEvaluator', () => {
     expect(score).toBeGreaterThan(0.7);
     expect(score).toBeLessThanOrEqual(1.0);
   });
+
+  it('backs off idle-gather desirability when a proactive tower window is ready', () => {
+    storeV3.progressionLevel.value = 6;
+    store.fish.value = 240;
+    store.logs.value = 280;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'idle', kind: MUDPAW_KIND }]),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.44);
+  });
 });
 
 describe('BuildEvaluator', () => {
@@ -122,7 +137,7 @@ describe('BuildEvaluator', () => {
       makeBuilding(2, EntityKind.Armory),
     ];
 
-    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.68);
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.79);
   });
 });
 
@@ -418,6 +433,29 @@ describe('Governor brain arbitration', () => {
     governor.brain.arbitrate();
     expect(governor.brain.subgoals).toHaveLength(1);
     expect(governor.brain.subgoals[0]?.constructor.name).toBe('AttackGoal');
+  });
+
+  it('prefers a proactive tower build over idle gathering once the window is ready', () => {
+    store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
+    store.waveCountdown.value = 24;
+    store.fish.value = 240;
+    store.logs.value = 280;
+    store.food.value = 2;
+    store.maxFood.value = 8;
+    storeV3.progressionLevel.value = 6;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 20, task: 'idle', kind: MUDPAW_KIND }]),
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
+    ];
+
+    governor.brain.arbitrate();
+    expect(governor.brain.subgoals).toHaveLength(1);
+    expect(governor.brain.subgoals[0]?.constructor.name).toBe('BuildGoal');
   });
 
   it('does not tick when disabled', () => {
