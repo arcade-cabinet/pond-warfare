@@ -161,6 +161,18 @@ describe('BuildEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.88);
   });
 
+  it('prioritizes a first wall ahead of the armory when wall-hp upgrades are active under pressure', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 2;
+    store.fish.value = 220;
+    store.logs.value = 150;
+    store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.86);
+  });
+
   it('returns 0 when all buildings present and not at pop cap', () => {
     store.buildingRoster.value = [
       makeBuilding(1, EntityKind.Lodge),

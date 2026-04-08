@@ -48,6 +48,14 @@ const BUILD_PRIORITIES: BuildNeed[] = [
       hasCurrentRunTrack('defense_tower_damage') &&
       buildingCount(EntityKind.Tower) < 1,
   },
+  {
+    kind: EntityKind.Wall,
+    needed: () =>
+      currentStage() >= 6 &&
+      hasCurrentRunTrack('defense_wall_hp') &&
+      buildingCount(EntityKind.Wall) < 1 &&
+      (store.baseUnderAttack.value || store.baseThreatCount.value >= 1),
+  },
   // Armory is a Lodge wing — check if unlocked
   { kind: EntityKind.Armory, needed: () => !hasBuilding(EntityKind.Armory) },
   {
@@ -78,7 +86,14 @@ function lodgePosition(): { x: number; y: number } | null {
 function towerPlacement(
   lodge: { x: number; y: number },
   forwardBiasStrong: boolean,
+  centeredLane: boolean,
 ): { x: number; y: number } {
+  if (centeredLane) {
+    return {
+      x: lodge.x,
+      y: lodge.y - 150,
+    };
+  }
   const angleSpread = forwardBiasStrong ? Math.PI / 5 : Math.PI / 3;
   const angle = -Math.PI / 2 + (game.world.gameRng.next() - 0.5) * angleSpread;
   const baseRadius = forwardBiasStrong ? 170 : 190;
@@ -87,6 +102,13 @@ function towerPlacement(
   return {
     x: lodge.x + Math.cos(angle) * radius,
     y: lodge.y + Math.sin(angle) * radius,
+  };
+}
+
+function wallPlacement(lodge: { x: number; y: number }): { x: number; y: number } {
+  return {
+    x: lodge.x,
+    y: lodge.y - 120,
   };
 }
 
@@ -128,15 +150,21 @@ export class BuildGoal extends Goal {
           ? 3
           : need.kind === EntityKind.Armory || need.kind === EntityKind.Tower
             ? 2
-            : 1;
+          : 1;
       w.selection = generalists.slice(0, builderCount).map((unit) => unit.eid);
     }
 
     if (need.kind === EntityKind.Tower) {
+      const trackDrivenTower =
+        hasCurrentRunTrack('defense_tower_damage') && buildingCount(EntityKind.Tower) < 1;
       const placement = towerPlacement(
         lodge,
-        hasCurrentRunTrack('defense_tower_damage') || currentStage() >= 6,
+        trackDrivenTower || currentStage() >= 6,
+        trackDrivenTower,
       );
+      placeBuilding(w, placement.x, placement.y);
+    } else if (need.kind === EntityKind.Wall) {
+      const placement = wallPlacement(lodge);
       placeBuilding(w, placement.x, placement.y);
     } else {
       // Place near the lodge, but keep wing buildings outside the lodge's own

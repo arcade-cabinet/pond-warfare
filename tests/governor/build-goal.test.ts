@@ -32,6 +32,8 @@ describe('BuildGoal', () => {
     store.logs.value = 150;
     store.food.value = 2;
     store.maxFood.value = 8;
+    store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
     storeV3.progressionLevel.value = 1;
     storeV3.currentRunPurchasedNodeIds.value = [];
   });
@@ -205,8 +207,59 @@ describe('BuildGoal', () => {
     expect(placedKinds).toContain(EntityKind.Tower);
     expect(placedKinds).not.toContain(EntityKind.Armory);
     expect(tower).toBeDefined();
+    expect(Position.x[tower!]).toBe(Position.x[lodge]);
     expect(Position.y[tower!]).toBeLessThan(Position.y[lodge]);
     expect(world.selection).toEqual([builderA, builderB, builderC]);
+  });
+
+  it('places a first wall in front of the lodge when wall-hp upgrades are active under pressure', () => {
+    const lodge = spawnEntity(world, EntityKind.Lodge, 320, 460, Faction.Player);
+    const builder = spawnEntity(world, MUDPAW_KIND, 280, 430, Faction.Player);
+
+    world.resources.fish = 220;
+    world.resources.logs = 150;
+    store.fish.value = 220;
+    store.logs.value = 150;
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 2;
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+
+    store.buildingRoster.value = [
+      {
+        eid: lodge,
+        kind: EntityKind.Lodge,
+        hp: 1500,
+        maxHp: 1500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [MUDPAW_KIND],
+      } satisfies RosterBuilding,
+    ];
+    store.unitRoster.value = [
+      {
+        role: 'generalist',
+        idleCount: 1,
+        automationEnabled: false,
+        units: [
+          { eid: builder, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
+        ],
+      } satisfies RosterGroup,
+    ];
+
+    new BuildGoal().activate();
+
+    const wall = Array.from(query(world.ecs, [EntityTypeTag, FactionTag, Health])).find(
+      (eid) =>
+        EntityTypeTag.kind[eid] === EntityKind.Wall &&
+        FactionTag.faction[eid] === Faction.Player &&
+        Health.current[eid] > 0,
+    );
+
+    expect(wall).toBeDefined();
+    expect(Position.x[wall!]).toBe(Position.x[lodge]);
+    expect(Position.y[wall!]).toBeLessThan(Position.y[lodge]);
+    expect(world.selection).toEqual([builder]);
   });
 
   it('prefers the first stage-six tower over a burrow when both are buildable', () => {

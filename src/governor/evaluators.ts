@@ -158,6 +158,18 @@ function proactiveTowerWindowReady(): boolean {
   );
 }
 
+function defensiveWallWindowReady(): boolean {
+  const def = ENTITY_DEFS[EntityKind.Wall];
+  return (
+    storeV3.progressionLevel.value >= 6 &&
+    hasCurrentRunTrack('defense_wall_hp') &&
+    !hasBuilding(EntityKind.Wall) &&
+    (store.baseUnderAttack.value || store.baseThreatCount.value >= 1) &&
+    store.fish.value >= (def.fishCost ?? 0) &&
+    store.logs.value >= (def.logCost ?? 0)
+  );
+}
+
 function canAffordBuild(kind: EntityKind): boolean {
   const def = ENTITY_DEFS[kind];
   return store.fish.value >= (def.fishCost ?? 0) && store.logs.value >= (def.logCost ?? 0);
@@ -204,6 +216,7 @@ export class BuildEvaluator extends GoalEvaluator {
       return 0.91;
     }
     if (towerDamageTrackActive && proactiveTowerWindowReady()) return 0.88;
+    if (defensiveWallWindowReady()) return 0.86;
     // Armory is a Lodge wing — check if it's unlocked rather than placed
     if (!hasWingOrBuilding(EntityKind.Armory) && store.fish.value >= 180 && store.logs.value >= 120)
       return 0.85;
