@@ -10,7 +10,7 @@ import { hasComponent } from 'bitecs';
 import { getFortDef } from '@/config/config-loader';
 import type { FortDef } from '@/config/v3-types';
 import { FactionTag, Health, Position } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { generateFortSlotPositions, getFortSlotCount } from '@/rendering/lodge-renderer';
 import { Faction } from '@/types';

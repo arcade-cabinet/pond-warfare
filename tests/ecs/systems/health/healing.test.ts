@@ -18,10 +18,10 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import {
-  processHealerAura,
   processHerbalistHutHeal,
   processPassiveHealing,
   processRegeneration,
+  processSupportAura,
 } from '@/ecs/systems/health/healing';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -198,7 +198,7 @@ describe('processPassiveHealing', () => {
   });
 });
 
-describe('processHealerAura (Medic aura)', () => {
+describe('processSupportAura (Medic aura)', () => {
   let world: GameWorld;
 
   beforeEach(() => {
@@ -210,7 +210,7 @@ describe('processHealerAura (Medic aura)', () => {
     spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
     const ally = spawnUnit(world, 130, 100, 40, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(42);
   });
@@ -219,7 +219,7 @@ describe('processHealerAura (Medic aura)', () => {
     spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
     const ally = spawnUnit(world, 130, 100, 59, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(60);
   });
@@ -228,7 +228,7 @@ describe('processHealerAura (Medic aura)', () => {
     spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const ally = spawnUnit(world, 300, 100, 40, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(40);
   });
@@ -240,7 +240,7 @@ describe('processHealerAura (Medic aura)', () => {
       allies.push(spawnUnit(world, 110 + i * 5, 100, 40, 60, UnitState.Idle));
     }
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     const healed = allies.filter((eid) => Health.current[eid] > 40);
     expect(healed).toHaveLength(3);
@@ -250,7 +250,7 @@ describe('processHealerAura (Medic aura)', () => {
     spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const ally = spawnUnit(world, 130, 100, 60, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(60);
   });

@@ -58,7 +58,7 @@ export function shouldTrainSupportUnit(): boolean {
   return unitCount('combat') >= Math.max(4, getGovernorCombatTarget());
 }
 
-export function shouldTrainScoutUnit(): boolean {
+export function shouldTrainReconUnit(): boolean {
   if (unitCount('recon') > 0) return false;
   return unitCount('combat') >= Math.max(3, getGovernorCombatTarget() - 1);
 }

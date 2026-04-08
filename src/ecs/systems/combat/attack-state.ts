@@ -21,7 +21,7 @@ import {
   Sprite,
   UnitStateMachine,
 } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind, Faction, UnitState } from '@/types';

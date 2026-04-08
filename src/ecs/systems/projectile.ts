@@ -16,7 +16,7 @@ import { addComponent, addEntity, hasComponent, query, removeEntity } from 'bite
 import { audio } from '@/audio/audio-system';
 import { PROJECTILE_SPEED } from '@/constants';
 import { Health, IsProjectile, Position, ProjectileData } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind } from '@/types';
 import { getWeatherProjectileOffset } from './weather';

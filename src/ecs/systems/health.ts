@@ -32,10 +32,10 @@ import { checkCoopWinLose } from '@/net/coop-rules';
 import { EntityKind, Faction } from '@/types';
 import { processDeath } from './health/death';
 import {
-  processHealerAura,
   processHerbalistHutHeal,
   processPassiveHealing,
   processRegeneration,
+  processSupportAura,
 } from './health/healing';
 
 // Re-export takeDamage for external consumers
@@ -67,7 +67,7 @@ export function healthSystem(world: GameWorld): void {
   if (world.frameCount % 300 === 0 && world.tech.regeneration) processRegeneration(world);
 
   // Support aura (every 60 frames)
-  if (world.frameCount % 60 === 0) processHealerAura(world);
+  if (world.frameCount % 60 === 0) processSupportAura(world);
 
   // Herbalist hut heal (every 120 frames)
   if (world.frameCount % 120 === 0) processHerbalistHutHeal(world);

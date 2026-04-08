@@ -26,9 +26,8 @@ import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 // Mock takeDamage to avoid side-effect chain (audio, particles, death)
-vi.mock('@/ecs/systems/health', () => ({
+vi.mock('@/ecs/systems/health/take-damage', () => ({
   takeDamage: vi.fn(),
-  healthSystem: vi.fn(),
 }));
 
 // Mock audio
@@ -181,7 +180,7 @@ describe('enemyCommanderTick', () => {
   });
 
   it('should use AoE ability when timer is 0 and player units nearby', async () => {
-    const { takeDamage } = await import('@/ecs/systems/health');
+    const { takeDamage } = await import('@/ecs/systems/health/take-damage');
     (takeDamage as ReturnType<typeof vi.fn>).mockClear();
 
     createEnemyNest(world, 500, 100);
@@ -201,7 +200,7 @@ describe('enemyCommanderTick', () => {
   });
 
   it('should not use AoE when timer is still counting down', async () => {
-    const { takeDamage } = await import('@/ecs/systems/health');
+    const { takeDamage } = await import('@/ecs/systems/health/take-damage');
     (takeDamage as ReturnType<typeof vi.fn>).mockClear();
 
     createEnemyNest(world, 500, 100);

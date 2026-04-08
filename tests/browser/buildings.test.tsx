@@ -36,7 +36,7 @@ import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ---------------------------------------------------------------------------

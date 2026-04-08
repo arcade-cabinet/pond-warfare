@@ -25,9 +25,9 @@ import {
   Velocity,
 } from '@/ecs/components';
 import {
-  processHealerAura,
   processHerbalistHutHeal,
   processRegeneration,
+  processSupportAura,
 } from '@/ecs/systems/health/healing';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -115,7 +115,7 @@ describe('Medic aura -- max 3 concurrent heals', () => {
       injured.push(u);
     }
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     let healed = 0;
     for (const eid of injured) {
@@ -129,7 +129,7 @@ describe('Medic aura -- max 3 concurrent heals', () => {
     const u1 = makeUnit(world, 110, 100, Faction.Player, SAPPER_KIND, 60, 50);
     const u2 = makeUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 60, 50);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[u1]).toBe(52);
     expect(Health.current[u2]).toBe(52);

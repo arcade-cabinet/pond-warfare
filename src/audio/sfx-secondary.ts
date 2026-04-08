@@ -17,7 +17,7 @@ export function pingEffect(
   }, 100);
 }
 
-export function selectHealerEffect(
+export function selectSupportEffect(
   mgr: SfxManager,
   getMuted: () => boolean,
   getStarted: () => boolean,
@@ -28,7 +28,7 @@ export function selectHealerEffect(
   }, 80);
 }
 
-export function selectScoutEffect(
+export function selectReconEffect(
   mgr: SfxManager,
   getMuted: () => boolean,
   getStarted: () => boolean,

@@ -11,7 +11,7 @@
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { FactionTag, Health, Position } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { Faction } from '@/types';
 

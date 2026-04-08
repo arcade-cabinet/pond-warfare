@@ -69,8 +69,8 @@ export function processPassiveHealing(world: GameWorld): void {
   }
 }
 
-/** Medic aura: Medics heal up to 3 nearest friendlies within 80px every 60 frames. */
-export function processHealerAura(world: GameWorld): void {
+/** Support aura: Medics heal up to 3 nearest friendlies within 80px every 60 frames. */
+export function processSupportAura(world: GameWorld): void {
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
 
   const healers: number[] = [];

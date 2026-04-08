@@ -11,7 +11,7 @@ import { spawnEntity } from '@/ecs/archetypes';
 import { FactionTag, Health, UnitStateMachine } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import { createGameWorld } from '@/ecs/world';
 import {
   canUseCommanderAbility,

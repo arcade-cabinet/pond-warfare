@@ -23,8 +23,8 @@ import {
   placeBuildingEffect,
   researchCompleteEffect,
   selectCommanderEffect,
-  selectHealerEffect,
-  selectScoutEffect,
+  selectReconEffect,
+  selectSupportEffect,
   upgradeEffect,
   veteranPromotionEffect,
   winEffect,
@@ -175,7 +175,7 @@ export class SfxManager {
     this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
   }
   selectMedic(): void {
-    selectHealerEffect(this, this._getMuted, this._getStarted);
+    selectSupportEffect(this, this._getMuted, this._getStarted);
   }
   selectShaman(): void {
     this.selectMedic();
@@ -214,7 +214,7 @@ export class SfxManager {
     pingEffect(this, this._getMuted, this._getStarted);
   }
   selectLookout(): void {
-    selectScoutEffect(this, this._getMuted, this._getStarted);
+    selectReconEffect(this, this._getMuted, this._getStarted);
   }
   selectCommander(): void {
     selectCommanderEffect(this, this._getMuted, this._getStarted);
