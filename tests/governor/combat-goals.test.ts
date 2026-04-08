@@ -19,10 +19,11 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type { RosterGroup, RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 
 let world: GameWorld;
 
@@ -104,6 +105,9 @@ describe('DefendGoal', () => {
   beforeEach(() => {
     world = createGameWorld();
     store.unitRoster.value = [];
+    store.buildingRoster.value = [];
+    storeV3.progressionLevel.value = 1;
+    storeV3.currentRunPurchasedNodeIds.value = [];
   });
 
   it('skips locked specialist units with overrides', async () => {
@@ -203,6 +207,62 @@ describe('DefendGoal', () => {
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
     expect(Health.current[lodge]).toBe(450);
     expect(world.resources.logs).toBe(70);
+  });
+
+  it('preserves near-complete wall logs under pressure when the lodge is still healthy', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = createPlayerLodge(220, 220);
+    Health.current[lodge] = 430;
+    Health.max[lodge] = 500;
+    world.resources.logs = 35;
+    store.buildingRoster.value = [{ eid: lodge, kind: EntityKind.Lodge, hp: 430, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] }];
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+
+    const generalist = createUnit(MUDPAW_KIND, 180, 180);
+    const regular = createUnit(SAPPER_KIND);
+    store.unitRoster.value = [
+      rosterGroup('generalist', [rosterUnit(generalist, MUDPAW_KIND, 'gathering-logs', true)]),
+      rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')]),
+    ];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(Health.current[lodge]).toBe(430);
+    expect(world.resources.logs).toBe(35);
+    expect(TaskOverride.active[regular]).toBe(1);
+    expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
+  });
+
+  it('still repairs under pressure when the lodge is too damaged to defer the wall budget', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = createPlayerLodge(220, 220);
+    Health.current[lodge] = 300;
+    Health.max[lodge] = 500;
+    world.resources.logs = 35;
+    store.buildingRoster.value = [{ eid: lodge, kind: EntityKind.Lodge, hp: 300, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] }];
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+
+    const generalist = createUnit(MUDPAW_KIND, 180, 180);
+    const regular = createUnit(SAPPER_KIND);
+    store.unitRoster.value = [
+      rosterGroup('generalist', [rosterUnit(generalist, MUDPAW_KIND, 'gathering-logs', true)]),
+      rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')]),
+    ];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(Health.current[lodge]).toBe(400);
+    expect(world.resources.logs).toBe(5);
+    expect(TaskOverride.active[regular]).toBe(1);
+    expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
   });
 });
 

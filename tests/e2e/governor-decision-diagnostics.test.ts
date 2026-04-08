@@ -28,6 +28,7 @@ import {
   runGovernorFrame,
 } from './governor-diagnostics-harness';
 import { mockedGameRef } from '../helpers/game-world-ref';
+import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
 
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
@@ -249,16 +250,17 @@ function runVariant(
         const playerUnits = getMobilePlayerUnits(world);
         const totalCurrentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
         const totalMaxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
-        return getPowerScore({
-          resourcesGathered: world.stats.resourcesGathered,
-          resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
-          unitsTrained: world.stats.unitsTrained,
-          kills: world.stats.unitsKilled,
-          playerUnits: playerUnits.length,
-          playerUnitHpPool: totalCurrentHp,
-          playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
-          lodgeHpRatio: lodgeHpRatio(world),
-        });
+	        return getPowerScore({
+	          resourcesGathered: world.stats.resourcesGathered,
+	          resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
+	          unitsTrained: world.stats.unitsTrained,
+	          kills: world.stats.unitsKilled,
+	          playerUnits: playerUnits.length,
+	          playerUnitHpPool: totalCurrentHp,
+	          playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
+	          ...getPlayerFortificationSnapshot(world),
+	          lodgeHpRatio: lodgeHpRatio(world),
+	        });
       })().toFixed(3),
     ),
   };

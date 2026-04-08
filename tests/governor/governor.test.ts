@@ -129,12 +129,30 @@ describe('GatherEvaluator', () => {
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.89);
   });
+
+  it('retasks active Mudpaws for the first wall budget even under stage-six pressure', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 2;
+    store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+      ]),
+    ];
+    store.fish.value = 120;
+    store.logs.value = 10;
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.96);
+  });
 });
 
 describe('BuildEvaluator', () => {
   const evaluator = new BuildEvaluator();
 
   beforeEach(() => {
+    store.unitRoster.value = [];
     store.buildingRoster.value = [];
     store.fish.value = 500;
     store.logs.value = 500;
@@ -154,11 +172,19 @@ describe('BuildEvaluator', () => {
   it('prioritizes a first tower ahead of the armory when tower-damage upgrades are active', () => {
     storeV3.progressionLevel.value = 6;
     storeV3.currentRunPurchasedNodeIds.value = ['defense_tower_damage_t0'];
+    store.waveCountdown.value = 24;
     store.fish.value = 260;
     store.logs.value = 320;
     store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-logs', kind: MUDPAW_KIND },
+      ]),
+      makeGroup('combat', [{ eid: 20, task: 'idle', kind: SAPPER_KIND }]),
+    ];
 
-    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.88);
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.94);
   });
 
   it('prioritizes a first wall ahead of the armory when wall-hp upgrades are active under pressure', () => {
@@ -169,8 +195,11 @@ describe('BuildEvaluator', () => {
     store.fish.value = 220;
     store.logs.value = 150;
     store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND }]),
+    ];
 
-    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.86);
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.97);
   });
 
   it('returns 0 when all buildings present and not at pop cap', () => {
@@ -216,22 +245,31 @@ describe('BuildEvaluator', () => {
       }))),
     ];
 
-    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.91);
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.94);
   });
 
   it('keeps the first stage-six tower ahead of a pop-cap burrow', () => {
     storeV3.progressionLevel.value = 6;
     store.waveCountdown.value = 24;
+    store.baseThreatCount.value = 0;
     store.fish.value = 260;
     store.logs.value = 320;
     store.food.value = 7;
     store.maxFood.value = 8;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_tower_damage_t0'];
     store.buildingRoster.value = [
       makeBuilding(1, EntityKind.Lodge),
       makeBuilding(2, EntityKind.Armory),
     ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-logs', kind: MUDPAW_KIND },
+      ]),
+      makeGroup('combat', [{ eid: 20, task: 'idle', kind: SAPPER_KIND }]),
+    ];
 
-    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.91);
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.94);
   });
 });
 
@@ -401,6 +439,27 @@ describe('TrainEvaluator', () => {
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.12);
   });
 
+  it('starts saving for the first tower with only one combat unit when tower-damage upgrades are active', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_tower_damage_t0'];
+    store.waveCountdown.value = 24;
+    store.fish.value = 170;
+    store.logs.value = 210;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+      makeBuilding(2, EntityKind.Armory),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
+      ]),
+      makeGroup('combat', [{ eid: 20, task: 'idle', kind: SAPPER_KIND }]),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);
+  });
+
   it('backs off filler training when train-speed upgrades are active and stage-six fish reserves are low', () => {
     storeV3.progressionLevel.value = 6;
     storeV3.currentRunPurchasedNodeIds.value = ['utility_train_speed_t0'];
@@ -444,6 +503,22 @@ describe('TrainEvaluator', () => {
         task: 'idle',
         kind: SAPPER_KIND,
       }))),
+    ];
+
+    expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);
+  });
+
+  it('backs off training to save for a first wall when wall-hp upgrades are active before pressure lands', () => {
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+    store.fish.value = 120;
+    store.logs.value = 20;
+    store.buildingRoster.value = [
+      makeBuilding(1, EntityKind.Lodge),
+    ];
+    store.unitRoster.value = [
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND }]),
+      makeGroup('combat', [{ eid: 20, task: 'idle', kind: SAPPER_KIND }]),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);

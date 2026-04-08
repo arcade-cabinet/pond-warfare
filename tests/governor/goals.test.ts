@@ -458,6 +458,33 @@ describe('GatherGoal', () => {
     expect(targets).not.toContain(rockNode);
   });
 
+  it('focuses logs for the first wall budget on stage six before pressure lands', async () => {
+    const { GatherGoal } = await import('@/governor/goals/gather-goal');
+
+    const eid1 = createUnit(MUDPAW_KIND, 100, 100);
+    const logNode = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
+    createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+
+    store.unitRoster.value = [
+      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
+    ];
+    store.buildingRoster.value = [
+      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    store.fish.value = 120;
+    store.logs.value = 0;
+    store.rocks.value = 0;
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+
+    const goal = new GatherGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(UnitStateMachine.state[eid1]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[eid1]).toBe(logNode);
+  });
+
   it('completes immediately with no idle Mudpaws', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 

@@ -27,6 +27,7 @@ import { type PrestigeState, createPrestigeState } from '@/config/prestige-logic
 import { SeededRandom } from '@/utils/random';
 import { createSnapshotScoreCache } from './balance-score-cache';
 import { mockedGameRef } from '../helpers/game-world-ref';
+import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
@@ -75,6 +76,7 @@ function getLodgeSnapshot(world: GameWorld): BalanceSnapshot {
   );
   const totalCurrentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
   const totalMaxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
+  const fortificationSnapshot = getPlayerFortificationSnapshot(world);
   const matchClamsEarned = calculateMatchReward({
     result: world.state === 'lose' ? 'loss' : 'win',
     durationSeconds: Math.round(world.frameCount / 60),
@@ -93,6 +95,7 @@ function getLodgeSnapshot(world: GameWorld): BalanceSnapshot {
     playerUnits: playerUnits.length,
     playerUnitHpPool: totalCurrentHp,
     playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
+    ...fortificationSnapshot,
     lodgeHpRatio,
     matchClamsEarned,
   };

@@ -164,7 +164,6 @@ function defensiveWallWindowReady(): boolean {
     storeV3.progressionLevel.value >= 6 &&
     hasCurrentRunTrack('defense_wall_hp') &&
     !hasBuilding(EntityKind.Wall) &&
-    (store.baseUnderAttack.value || store.baseThreatCount.value >= 1) &&
     store.fish.value >= (def.fishCost ?? 0) &&
     store.logs.value >= (def.logCost ?? 0)
   );
@@ -175,12 +174,27 @@ function canAffordBuild(kind: EntityKind): boolean {
   return store.fish.value >= (def.fishCost ?? 0) && store.logs.value >= (def.logCost ?? 0);
 }
 
+function fortificationBudgetRebalanceScore(): number {
+  if (storeV3.progressionLevel.value < 6) return 0;
+  if (hasCurrentRunTrack('defense_wall_hp') && !hasBuilding(EntityKind.Wall)) return 0.96;
+  if (hasCurrentRunTrack('defense_tower_damage') && !hasBuilding(EntityKind.Tower)) return 0.9;
+  return 0;
+}
+
+function reservedBuildScore(kind: EntityKind): number {
+  if (kind === EntityKind.Wall) return 0.97;
+  if (kind === EntityKind.Tower) return 0.94;
+  return 0.91;
+}
+
 /** High score when idle Mudpaws exist — always beats Train to avoid idle waste. */
 export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     const idle = findIdleMudpaws();
     if (idle.length === 0) {
       if (!needsGatherRebalance()) return 0;
+      const fortificationBudgetScore = fortificationBudgetRebalanceScore();
+      if (fortificationBudgetScore > 0) return fortificationBudgetScore;
       const towerFollowUpActive =
         storeV3.progressionLevel.value >= 6 &&
         hasCompletedBuilding(EntityKind.Armory) &&
@@ -209,11 +223,9 @@ export class GatherEvaluator extends GoalEvaluator {
 export class BuildEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     const towerDamageTrackActive = hasCurrentRunTrack('defense_tower_damage');
-    if (
-      getGovernorReservedBuildKind() === EntityKind.Tower &&
-      canAffordBuild(EntityKind.Tower)
-    ) {
-      return 0.91;
+    const reservedBuildKind = getGovernorReservedBuildKind();
+    if (reservedBuildKind != null && canAffordBuild(reservedBuildKind)) {
+      return reservedBuildScore(reservedBuildKind);
     }
     if (towerDamageTrackActive && proactiveTowerWindowReady()) return 0.88;
     if (defensiveWallWindowReady()) return 0.86;

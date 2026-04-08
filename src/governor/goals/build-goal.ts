@@ -53,8 +53,7 @@ const BUILD_PRIORITIES: BuildNeed[] = [
     needed: () =>
       currentStage() >= 6 &&
       hasCurrentRunTrack('defense_wall_hp') &&
-      buildingCount(EntityKind.Wall) < 1 &&
-      (store.baseUnderAttack.value || store.baseThreatCount.value >= 1),
+      buildingCount(EntityKind.Wall) < 1,
   },
   // Armory is a Lodge wing — check if unlocked
   { kind: EntityKind.Armory, needed: () => !hasBuilding(EntityKind.Armory) },
@@ -146,11 +145,13 @@ export class BuildGoal extends Goal {
       .filter((u) => u.kind === MUDPAW_KIND);
     if (generalists.length > 0) {
       const builderCount =
-        need.kind === EntityKind.Tower && hasCurrentRunTrack('defense_tower_damage')
+        need.kind === EntityKind.Wall && hasCurrentRunTrack('defense_wall_hp')
+          ? 2
+          : need.kind === EntityKind.Tower && hasCurrentRunTrack('defense_tower_damage')
           ? 3
           : need.kind === EntityKind.Armory || need.kind === EntityKind.Tower
             ? 2
-          : 1;
+            : 1;
       w.selection = generalists.slice(0, builderCount).map((unit) => unit.eid);
     }
 

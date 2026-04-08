@@ -83,17 +83,31 @@ function nearBuildBudget(kind: EntityKind, fishSlack: number, logSlack: number):
 }
 
 function combatFloorForBuildSavings(): number {
+  if (hasCurrentRunTrack('defense_tower_damage')) return 1;
   return Math.max(3, getGovernorCombatTarget() - 2);
 }
 
 export function getGovernorReservedBuildKind(): EntityKind | null {
-  if (unitCount('combat') < combatFloorForBuildSavings()) return null;
-
   const stage = currentStage();
   const waveCountdown = nextWaveCountdown();
   const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
   const lodgeHp = lodgeHpRatio();
   const towerDamageTrackActive = hasCurrentRunTrack('defense_tower_damage');
+  const wallHpTrackActive = hasCurrentRunTrack('defense_wall_hp');
+
+  const canStartWallSavings =
+    stage >= 6 &&
+    wallHpTrackActive &&
+    !hasBuilding(EntityKind.Wall) &&
+    unitCount('generalist') >= 1 &&
+    lodgeHp >= 0.82;
+
+  if (canStartWallSavings) {
+    return EntityKind.Wall;
+  }
+
+  if (unitCount('combat') < combatFloorForBuildSavings()) return null;
+
   const canStartTowerSavings =
     stage >= 6 &&
     !hasBuilding(EntityKind.Tower) &&

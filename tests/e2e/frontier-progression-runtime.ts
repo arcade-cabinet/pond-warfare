@@ -25,6 +25,7 @@ import * as storeV3 from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { createExploredTestContext } from '../helpers/explored-context';
+import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
@@ -121,6 +122,7 @@ function snapshotWorld(world: GameWorld, initialEnemyNestHp: number): MatchRunRe
   );
   const currentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
   const maxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
+  const fortificationSnapshot = getPlayerFortificationSnapshot(world);
   const earnedClams = calculateMatchReward({
     result: world.state === 'lose' ? 'loss' : 'win',
     durationSeconds: Math.round(world.frameCount / 60),
@@ -143,6 +145,7 @@ function snapshotWorld(world: GameWorld, initialEnemyNestHp: number): MatchRunRe
       playerUnits: playerUnits.length,
       playerUnitHpPool: currentHp,
       playerUnitHpRatio: maxHp > 0 ? currentHp / maxHp : 0,
+      ...fortificationSnapshot,
       exploredPercent: world.exploredPercent,
       enemyNestHpRemovedRatio:
         initialEnemyNestHp > 0

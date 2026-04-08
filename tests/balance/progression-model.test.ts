@@ -123,6 +123,27 @@ describe('progression model', () => {
     expect(getPowerScore(durableArmy)).toBeGreaterThan(getPowerScore(brittleArmy));
   });
 
+  it('credits retained fortifications in the broad power score', () => {
+    const exposedBase = {
+      resourcesGathered: 150,
+      unitsTrained: 4,
+      kills: 3,
+      playerUnits: 6,
+      lodgeHpRatio: 0.7,
+      playerFortificationCount: 0,
+      playerFortificationHpPool: 0,
+      playerFortificationHpRatio: 0,
+    };
+    const fortifiedBase = {
+      ...exposedBase,
+      playerFortificationCount: 2,
+      playerFortificationHpPool: 220,
+      playerFortificationHpRatio: 0.74,
+    };
+
+    expect(getPowerScore(fortifiedBase)).toBeGreaterThan(getPowerScore(exposedBase));
+  });
+
   it('credits map exploration in the broad power score', () => {
     const cautiousRun = {
       resourcesGathered: 150,

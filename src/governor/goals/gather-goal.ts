@@ -110,6 +110,14 @@ function preferredGatherPlan(): GatherPlan {
 
   if (
     currentStage() >= 6 &&
+    hasCurrentRunTrack('defense_wall_hp') &&
+    !hasBuilding(EntityKind.Wall)
+  ) {
+    return prioritizeBuildResources(EntityKind.Wall, sorted);
+  }
+
+  if (
+    currentStage() >= 6 &&
     hasCurrentRunTrack('defense_tower_damage') &&
     !hasBuilding(EntityKind.Tower)
   ) {

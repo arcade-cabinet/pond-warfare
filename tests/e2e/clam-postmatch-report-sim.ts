@@ -4,6 +4,9 @@ import { query } from 'bitecs';
 import { vi } from 'vitest';
 import {
   getDifficultyShiftPercent,
+  getMetaProgressionScore,
+  getPowerScore,
+  getRewardScore,
   summarizeShiftPercents,
   type BalanceSnapshot,
 } from '@/balance/progression-model';
@@ -32,6 +35,7 @@ import { createSnapshotScoreCache } from './balance-score-cache';
 import { BALANCE_REPORT_SEEDS, type BalanceReportRow } from './balance-report-sim';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { createExploredTestContext } from '../helpers/explored-context';
+import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
@@ -57,6 +61,11 @@ export const CLAM_POSTMATCH_EVAL_FRAMES = 2400;
 interface MatchRunResult {
   snapshot: BalanceSnapshot;
   earnedClams: number;
+  fish: number;
+  logs: number;
+  rocks: number;
+  towerCount: number;
+  wallCount: number;
 }
 
 function getAliveEnemyNestHp(world: GameWorld): number {
@@ -83,6 +92,19 @@ function snapshotWorld(world: GameWorld, initialEnemyNestHp: number): MatchRunRe
   );
   const totalCurrentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
   const totalMaxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
+  const fortificationSnapshot = getPlayerFortificationSnapshot(world);
+  const towerCount = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).filter(
+    (eid) =>
+      FactionTag.faction[eid] === Faction.Player &&
+      EntityTypeTag.kind[eid] === EntityKind.Tower &&
+      Health.current[eid] > 0,
+  ).length;
+  const wallCount = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).filter(
+    (eid) =>
+      FactionTag.faction[eid] === Faction.Player &&
+      EntityTypeTag.kind[eid] === EntityKind.Wall &&
+      Health.current[eid] > 0,
+  ).length;
   const earnedClams = calculateMatchReward({
     result: world.state === 'lose' ? 'loss' : 'win',
     durationSeconds: Math.round(world.frameCount / 60),
@@ -95,6 +117,11 @@ function snapshotWorld(world: GameWorld, initialEnemyNestHp: number): MatchRunRe
 
   return {
     earnedClams,
+    fish: world.resources.fish,
+    logs: world.resources.logs,
+    rocks: world.resources.rocks,
+    towerCount,
+    wallCount,
     snapshot: {
       resourcesGathered: world.stats.resourcesGathered,
       resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
@@ -103,6 +130,7 @@ function snapshotWorld(world: GameWorld, initialEnemyNestHp: number): MatchRunRe
       playerUnits: playerUnits.length,
       playerUnitHpPool: totalCurrentHp,
       playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
+      ...fortificationSnapshot,
       exploredPercent: world.exploredPercent,
       enemyNestHpRemovedRatio:
         initialEnemyNestHp > 0
@@ -223,4 +251,66 @@ export function buildPostMatchClamReportRows(
       };
     })
     .sort((a, b) => b.meta_mean_pct - a.meta_mean_pct);
+}
+
+export interface ClamTrackDiagnosticRow {
+  id: string;
+  label: string;
+  seed: number;
+  earnedClams: number;
+  fish: number;
+  logs: number;
+  rocks: number;
+  towers: number;
+  walls: number;
+  fortificationCount: number;
+  fortificationHpPool: number;
+  fortificationHpRatio: number;
+  exploredPercent: number;
+  enemyNestHpRemovedRatio: number;
+  power: number;
+  reward: number;
+  meta: number;
+}
+
+export function buildPostMatchClamDiagnosticRows(
+  variants: BalanceVariantConfig[],
+): ClamTrackDiagnosticRow[] {
+  const cache = new Map<string, MatchRunResult>();
+
+  const getResult = (seed: number, variant: BalanceVariantConfig | undefined): MatchRunResult => {
+    const key = `${seed}:${JSON.stringify(variant ?? null)}`;
+    const cached = cache.get(key);
+    if (cached) return cached;
+    const warmup = runMatch(seed, [], 0, CLAM_POSTMATCH_WARMUP_FRAMES);
+    const purchasedNodeIds = buildPurchasedNodeIds(warmup.earnedClams, variant);
+    const result = runMatch(seed, purchasedNodeIds, warmup.earnedClams, CLAM_POSTMATCH_EVAL_FRAMES);
+    cache.set(key, result);
+    return result;
+  };
+
+  return variants.flatMap((variant) =>
+    BALANCE_REPORT_SEEDS.map((seed) => {
+      const result = getResult(seed, variant);
+      return {
+        id: variant.id,
+        label: variant.label,
+        seed,
+        earnedClams: result.earnedClams,
+        fish: result.fish,
+        logs: result.logs,
+        rocks: result.rocks,
+        towers: result.towerCount,
+        walls: result.wallCount,
+        fortificationCount: result.snapshot.playerFortificationCount ?? 0,
+        fortificationHpPool: result.snapshot.playerFortificationHpPool ?? 0,
+        fortificationHpRatio: Number((result.snapshot.playerFortificationHpRatio ?? 0).toFixed(3)),
+        exploredPercent: Number((result.snapshot.exploredPercent ?? 0).toFixed(2)),
+        enemyNestHpRemovedRatio: Number((result.snapshot.enemyNestHpRemovedRatio ?? 0).toFixed(3)),
+        power: Number(getPowerScore(result.snapshot).toFixed(3)),
+        reward: Number(getRewardScore(result.snapshot).toFixed(3)),
+        meta: Number(getMetaProgressionScore(result.snapshot).toFixed(3)),
+      };
+    }),
+  );
 }
