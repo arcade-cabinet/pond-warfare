@@ -1,4 +1,29 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>
-  <rect fill='#0f2b32' width='16' height='16' rx='2'/>
-  <circle fill='#38bdf8' cx='8' cy='8' r='5'/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#173028"/>
+      <stop offset="100%" stop-color="#21160C"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5C88A"/>
+      <stop offset="100%" stop-color="#8A6D3B"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#A57B4C"/>
+      <stop offset="100%" stop-color="#6A4A2B"/>
+    </linearGradient>
+    <linearGradient id="muzzle" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0E4CF"/>
+      <stop offset="100%" stop-color="#DCC9A9"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#bg)"/>
+  <circle cx="32" cy="32" r="20" fill="#13201A" stroke="url(#ring)" stroke-width="2"/>
+  <circle cx="25" cy="25" r="4.2" fill="url(#fur)"/>
+  <circle cx="39" cy="25" r="4.2" fill="url(#fur)"/>
+  <path d="M18 39C18 29 24 22 32 22C40 22 46 29 46 39C46 45 41 49 32 49C23 49 18 45 18 39Z" fill="url(#fur)"/>
+  <path d="M22 37C22 31 26 27 32 27C38 27 42 31 42 37C42 42 38 45 32 45C26 45 22 42 22 37Z" fill="url(#muzzle)"/>
+  <ellipse cx="28" cy="35" rx="1.7" ry="2.1" fill="#10110F"/>
+  <ellipse cx="36" cy="35" rx="1.7" ry="2.1" fill="#10110F"/>
+  <path d="M28.5 40C29.8 37.8 34.2 37.8 35.5 40C34.2 41.8 33 42.5 32 42.5C31 42.5 29.8 41.8 28.5 40Z" fill="#1C120C"/>
 </svg>

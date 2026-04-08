@@ -1,0 +1,28 @@
+{
+  "name": "Pond Warfare",
+  "short_name": "Pond Warfare",
+  "description": "Mobile-first RTS pond defense with otters, waves, upgrades, and prestige progression.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#10251F",
+  "theme_color": "#21160C",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

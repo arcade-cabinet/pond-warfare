@@ -1,95 +1,140 @@
 /**
- * Generate PWA placeholder icons for Pond Warfare.
+ * Generate production icon assets from checked-in SVG masters.
  *
- * Creates simple colored square PNGs at 192x192 and 512x512.
- * Uses Node.js built-in APIs only (no Canvas dependency) by writing raw PNG data.
+ * Outputs:
+ * - public/icon-192.png
+ * - public/icon-512.png
+ * - public/apple-touch-icon.png
+ * - android launcher PNGs in android/app/src/main/res/mipmap-*
+ * - android adaptive foreground PNGs in android/app/src/main/res/mipmap-*
  *
- * TODO: Replace these placeholders with proper game artwork icons.
+ * Requires either `rsvg-convert` (preferred), macOS `sips`, or ImageMagick (`magick`).
  */
 
-import { writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { deflateSync } from 'node:zlib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const publicDir = resolve(__dirname, '..', 'public');
+const root = resolve(__dirname, '..');
+const publicDir = resolve(root, 'public');
+const androidResDir = resolve(root, 'android', 'app', 'src', 'main', 'res');
 
-function createPNG(size) {
-  // Background: #0c1a1f, Accent square: teal
-  const bg = [0x0c, 0x1a, 0x1f];
-  const fg = [0x4a, 0xc6, 0x9a];
+const fullIconSvg = resolve(publicDir, 'icon-source.svg');
+const foregroundSvg = resolve(publicDir, 'icon-foreground.svg');
 
-  // Build raw pixel data (filter byte + RGB per pixel per row)
-  const rawRows = [];
-  const boxStart = Math.floor(size * 0.25);
-  const boxEnd = Math.floor(size * 0.75);
+const webOutputs = [
+  { size: 192, out: resolve(publicDir, 'icon-192.png') },
+  { size: 512, out: resolve(publicDir, 'icon-512.png') },
+  { size: 180, out: resolve(publicDir, 'apple-touch-icon.png') },
+];
 
-  for (let y = 0; y < size; y++) {
-    const row = [0]; // filter byte: None
-    for (let x = 0; x < size; x++) {
-      const inBox =
-        x >= boxStart && x < boxEnd && y >= boxStart && y < boxEnd;
-      const color = inBox ? fg : bg;
-      row.push(color[0], color[1], color[2]);
-    }
-    rawRows.push(Buffer.from(row));
+const launcherSizes = [
+  ['mipmap-mdpi', 48],
+  ['mipmap-hdpi', 72],
+  ['mipmap-xhdpi', 96],
+  ['mipmap-xxhdpi', 144],
+  ['mipmap-xxxhdpi', 192],
+];
+
+const foregroundSizes = [
+  ['mipmap-mdpi', 108],
+  ['mipmap-hdpi', 162],
+  ['mipmap-xhdpi', 216],
+  ['mipmap-xxhdpi', 324],
+  ['mipmap-xxxhdpi', 432],
+];
+
+function hasCommand(cmd) {
+  return spawnSync('bash', ['-lc', `command -v ${cmd}`], { stdio: 'ignore' }).status === 0;
+}
+
+function ensureFile(path) {
+  if (!existsSync(path)) {
+    throw new Error(`Missing icon source: ${path}`);
   }
-
-  const rawData = Buffer.concat(rawRows);
-  const compressed = deflateSync(rawData, { level: 6 });
-
-  // PNG signature
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-
-  // IHDR chunk
-  const ihdrData = Buffer.alloc(13);
-  ihdrData.writeUInt32BE(size, 0);  // width
-  ihdrData.writeUInt32BE(size, 4);  // height
-  ihdrData.writeUInt8(8, 8);        // bit depth
-  ihdrData.writeUInt8(2, 9);        // color type: RGB
-  ihdrData.writeUInt8(0, 10);       // compression
-  ihdrData.writeUInt8(0, 11);       // filter
-  ihdrData.writeUInt8(0, 12);       // interlace
-  const ihdr = createChunk('IHDR', ihdrData);
-
-  // IDAT chunk
-  const idat = createChunk('IDAT', compressed);
-
-  // IEND chunk
-  const iend = createChunk('IEND', Buffer.alloc(0));
-
-  return Buffer.concat([signature, ihdr, idat, iend]);
 }
 
-function createChunk(type, data) {
-  const length = Buffer.alloc(4);
-  length.writeUInt32BE(data.length, 0);
-
-  const typeBuffer = Buffer.from(type, 'ascii');
-  const crcData = Buffer.concat([typeBuffer, data]);
-
-  const crc = crc32(crcData);
-  const crcBuffer = Buffer.alloc(4);
-  crcBuffer.writeUInt32BE(crc, 0);
-
-  return Buffer.concat([length, typeBuffer, data, crcBuffer]);
+function ensureParent(path) {
+  mkdirSync(dirname(path), { recursive: true });
 }
 
-function crc32(buf) {
-  let crc = 0xffffffff;
-  for (let i = 0; i < buf.length; i++) {
-    crc ^= buf[i];
-    for (let j = 0; j < 8; j++) {
-      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
-    }
+function rasterizeWithRsvg(input, size, output) {
+  execFileSync(
+    'rsvg-convert',
+    ['-w', String(size), '-h', String(size), '-o', output, input],
+    { stdio: 'inherit' },
+  );
+}
+
+function rasterizeWithMagick(input, size, output) {
+  execFileSync(
+    'magick',
+    [
+      '-background',
+      'none',
+      input,
+      '-resize',
+      `${size}x${size}`,
+      '-define',
+      'png:compression-level=9',
+      output,
+    ],
+    { stdio: 'inherit' },
+  );
+}
+
+function rasterizeWithSips(input, size, output) {
+  execFileSync(
+    'sips',
+    ['-s', 'format', 'png', '-z', String(size), String(size), input, '--out', output],
+    { stdio: 'inherit' },
+  );
+}
+
+function rasterize(input, size, output) {
+  ensureParent(output);
+  if (hasCommand('rsvg-convert')) {
+    rasterizeWithRsvg(input, size, output);
+    return;
   }
-  return (crc ^ 0xffffffff) >>> 0;
+  if (hasCommand('sips')) {
+    rasterizeWithSips(input, size, output);
+    return;
+  }
+  if (hasCommand('magick')) {
+    rasterizeWithMagick(input, size, output);
+    return;
+  }
+  throw new Error('Icon generation requires `rsvg-convert`, macOS `sips`, or ImageMagick (`magick`).');
 }
 
-for (const size of [192, 512]) {
-  const png = createPNG(size);
-  const outPath = resolve(publicDir, `icon-${size}.png`);
-  writeFileSync(outPath, png);
-  console.log(`wrote ${outPath} (${png.length} bytes)`);
+function writeAndroidBackgroundColor() {
+  const colorXml = resolve(androidResDir, 'values', 'ic_launcher_background.xml');
+  writeFileSync(
+    colorXml,
+    `<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#10251F</color>\n</resources>\n`,
+  );
 }
+
+ensureFile(fullIconSvg);
+ensureFile(foregroundSvg);
+
+for (const { size, out } of webOutputs) {
+  rasterize(fullIconSvg, size, out);
+  console.log(`wrote ${out}`);
+}
+
+for (const [dir, size] of launcherSizes) {
+  rasterize(fullIconSvg, size, resolve(androidResDir, dir, 'ic_launcher.png'));
+  rasterize(fullIconSvg, size, resolve(androidResDir, dir, 'ic_launcher_round.png'));
+}
+
+for (const [dir, size] of foregroundSizes) {
+  rasterize(foregroundSvg, size, resolve(androidResDir, dir, 'ic_launcher_foreground.png'));
+}
+
+writeAndroidBackgroundColor();
+
+console.log('Icon generation complete.');

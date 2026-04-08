@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Pond Warfare adaptive icon foreground">
+  <defs>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5C88A"/>
+      <stop offset="52%" stop-color="#C5A059"/>
+      <stop offset="100%" stop-color="#8A6D3B"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#725137"/>
+      <stop offset="100%" stop-color="#3B2616"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#A57B4C"/>
+      <stop offset="100%" stop-color="#6A4A2B"/>
+    </linearGradient>
+    <linearGradient id="muzzle" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0E4CF"/>
+      <stop offset="100%" stop-color="#DCC9A9"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4FC8A9"/>
+      <stop offset="100%" stop-color="#8EE0D0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#08100D" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(0 18)" filter="url(#shadow)">
+    <circle cx="512" cy="512" r="312" fill="#13201A" opacity="0.92"/>
+    <circle cx="512" cy="512" r="312" fill="none" stroke="url(#ring)" stroke-width="26"/>
+
+    <path
+      d="M512 256
+         C618 256 690 316 690 420
+         L690 592
+         C690 714 614 792 512 840
+         C410 792 334 714 334 592
+         L334 420
+         C334 316 406 256 512 256Z"
+      fill="url(#wood)"
+      stroke="#C5A059"
+      stroke-width="20"
+    />
+
+    <circle cx="418" cy="378" r="50" fill="url(#fur)"/>
+    <circle cx="606" cy="378" r="50" fill="url(#fur)"/>
+    <path
+      d="M386 570
+         C386 440 446 350 512 350
+         C578 350 638 440 638 570
+         C638 638 590 694 512 694
+         C434 694 386 638 386 570Z"
+      fill="url(#fur)"
+    />
+    <path
+      d="M432 540
+         C432 478 466 434 512 434
+         C558 434 592 478 592 540
+         C592 596 558 632 512 632
+         C466 632 432 596 432 540Z"
+      fill="url(#muzzle)"
+    />
+    <ellipse cx="470" cy="512" rx="16" ry="20" fill="#10110F"/>
+    <ellipse cx="554" cy="512" rx="16" ry="20" fill="#10110F"/>
+    <path
+      d="M478 578
+         C492 550 532 550 546 578
+         C534 594 522 602 512 602
+         C502 602 490 594 478 578Z"
+      fill="#1C120C"
+    />
+    <path d="M472 620C494 638 530 638 552 620" fill="none" stroke="#6A3F2C" stroke-width="12" stroke-linecap="round"/>
+
+    <g fill="none" stroke="url(#water)" stroke-width="20" stroke-linecap="round">
+      <path d="M396 700C448 672 576 672 628 700"/>
+      <path d="M372 740C444 714 580 714 652 740"/>
+    </g>
+  </g>
+</svg>
