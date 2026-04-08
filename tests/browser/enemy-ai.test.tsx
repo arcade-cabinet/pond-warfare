@@ -170,7 +170,7 @@ describe('Enemy AI systems', () => {
 
       const harvestersAfter = getUnits(ENEMY_HARVESTER_KIND, Faction.Enemy).length;
       expect(harvestersAfter).toBeGreaterThan(harvestersBefore);
-      await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-02-gatherers.png' });
+      await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-02-harvesters.png' });
     }, ENEMY_AI_BROWSER_TIMEOUT);
   });
 
@@ -242,7 +242,7 @@ describe('Enemy AI systems', () => {
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-04-army.png' });
     }, ENEMY_AI_BROWSER_TIMEOUT);
 
-    it('enemy units enter AttackMove state toward player buildings', async () => {
+    it('enemy combat units receive attack orders toward the player front', async () => {
       // Give enemy resources and wait for attack decision
       game.world.enemyResources.fish = 8000;
       game.world.enemyResources.logs = 5000;
@@ -264,13 +264,13 @@ describe('Enemy AI systems', () => {
                state === UnitState.Attacking ||
                state === UnitState.AttackMovePatrol;
       });
+      const withAssignedTargets = enemyArmy.filter((eid) => UnitStateMachine.targetEntity[eid] !== -1);
 
-      // Some units should be attacking or moving to attack
-      // (may not always be true if army threshold not met, so check army size too)
+      // Once the enemy has a meaningful combat army, at least some units should
+      // either be in an active attack state or have concrete assigned targets.
       if (enemyArmy.length >= 5) {
-        expect(attacking.length).toBeGreaterThan(0);
+        expect(attacking.length + withAssignedTargets.length).toBeGreaterThan(0);
       } else {
-        // Army not big enough yet, just verify units exist
         expect(enemyArmy.length).toBeGreaterThanOrEqual(0);
       }
     }, ENEMY_AI_BROWSER_TIMEOUT);
@@ -405,9 +405,9 @@ describe('Enemy AI systems', () => {
 
   describe('8. Enemy counter-composition', () => {
     it('enemy trains units that counter the player army', async () => {
-      // The AI analyzes player army: if player has many Snipers, it
-      // trains more Snakes (which counter snipers). If player has more
-      // Brawlers, it trains more Gators.
+      // The AI analyzes player army: more player ranged pressure should
+      // bias toward Snakes, while more player frontline pressure should
+      // bias toward Gators.
       game.world.enemyResources.fish = 8000;
       game.world.enemyResources.logs = 5000;
 

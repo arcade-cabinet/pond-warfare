@@ -2,8 +2,6 @@
  * SFX module - All sound effect methods and synth pool management.
  *
  * Canonical live callers should prefer Mudpaw/Medic/Lookout/Sapper/Saboteur.
- * Older `selectGatherer` / `selectScout` / `selectBrawler` / etc. methods
- * remain only as low-level compatibility aliases for historical entity kinds.
  */
 import * as Tone from 'tone';
 import {
@@ -180,14 +178,6 @@ export class SfxManager {
   selectSaboteur(): void {
     this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
   }
-  /** Historical compatibility alias for the old internal melee chassis. */
-  selectBrawler(): void {
-    this.selectSapper();
-  }
-  /** Historical compatibility alias for the old internal ranged chassis. */
-  selectSniper(): void {
-    this.selectSaboteur();
-  }
   selectMedic(): void {
     selectHealerEffect(this, this._getMuted, this._getStarted);
   }
@@ -196,9 +186,6 @@ export class SfxManager {
   }
   selectCatapult(): void {
     this.playAt(60, 'sawtooth', 0.2, 0.06, 40);
-  }
-  selectGatherer(): void {
-    this.selectMudpaw();
   }
   selectShieldbearer(): void {
     this.playAt(150, 'square', 0.12, 0.07, 90);
@@ -236,14 +223,8 @@ export class SfxManager {
   ping(): void {
     pingEffect(this, this._getMuted, this._getStarted);
   }
-  selectHealer(): void {
-    this.selectMedic();
-  }
   selectLookout(): void {
     selectScoutEffect(this, this._getMuted, this._getStarted);
-  }
-  selectScout(): void {
-    this.selectLookout();
   }
   selectCommander(): void {
     selectCommanderEffect(this, this._getMuted, this._getStarted);

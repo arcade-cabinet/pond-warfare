@@ -144,7 +144,7 @@ function executeAttack(
   allTargetable: ArrayLike<number>,
 ): void {
   if (isLegacySaboteurChassisKind(kind)) {
-    executeSniperAttack(world, eid, tEnt, ex, ey, dmg, kind);
+    executeSaboteurChassisAttack(world, eid, tEnt, ex, ey, dmg, kind);
   } else if (kind === EntityKind.Catapult) {
     executeCatapultAttack(world, eid, tEnt, ex, ey, dmg, faction, hasSpatial, allTargetable);
   } else if (kind === EntityKind.BossCroc) {
@@ -190,7 +190,7 @@ function executeAttack(
   }
 }
 
-function executeSniperAttack(
+function executeSaboteurChassisAttack(
   world: GameWorld,
   eid: number,
   tEnt: number,
@@ -201,21 +201,21 @@ function executeSniperAttack(
 ): void {
   const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
   let mult = getDamageMultiplier(kind, targetKind);
-  // Piercing Shot: ignore 30% of target's armor (always applies to ranged)
+  // Piercing Shot still applies to the historical ranged chassis id.
   if (world.tech.piercingShot) {
     mult *= 1.3;
   }
-  let sniperDmg = Math.round(dmg * mult);
+  let projectileDmg = Math.round(dmg * mult);
 
   // Positional bonuses for ranged attacks
   const positional = calculatePositionalBonuses(world, eid, tEnt);
-  sniperDmg = Math.round(sniperDmg * positional.multiplier);
+  projectileDmg = Math.round(projectileDmg * positional.multiplier);
 
   if (world.commanderEnemyDebuff.has(eid)) {
-    sniperDmg = Math.round(sniperDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
+    projectileDmg = Math.round(projectileDmg * (1 - world.commanderModifiers.auraEnemyDamageReduction));
   }
   if (world.warDrumsBuff.has(eid)) {
-    sniperDmg = Math.round(sniperDmg * 1.15);
+    projectileDmg = Math.round(projectileDmg * 1.15);
   }
   audio.sniperShoot(ex);
   spawnProjectile(
@@ -225,7 +225,7 @@ function executeSniperAttack(
     Position.x[tEnt],
     Position.y[tEnt],
     tEnt,
-    sniperDmg,
+    projectileDmg,
     eid,
     mult,
     LEGACY_SABOTEUR_CHASSIS_KIND,

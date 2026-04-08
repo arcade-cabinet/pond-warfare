@@ -9,7 +9,13 @@
  * repeatedly escalates through tiers (normal → annoyed → exasperated).
  */
 
-import { LOOKOUT_KIND, MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
+import {
+  LEGACY_SABOTEUR_CHASSIS_KIND,
+  LEGACY_SAPPER_CHASSIS_KIND,
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 export type DialogueTrigger =
@@ -195,8 +201,8 @@ export const UNIT_DIALOGUE: Partial<Record<EntityKind, DialoguePool>> = {
 };
 
 function canonicalDialogueKind(kind: EntityKind): EntityKind {
-  if (kind === EntityKind.Brawler) return EntityKind.Sapper;
-  if (kind === EntityKind.Sniper) return EntityKind.Saboteur;
+  if (kind === LEGACY_SAPPER_CHASSIS_KIND) return EntityKind.Sapper;
+  if (kind === LEGACY_SABOTEUR_CHASSIS_KIND) return EntityKind.Saboteur;
   return kind;
 }
 

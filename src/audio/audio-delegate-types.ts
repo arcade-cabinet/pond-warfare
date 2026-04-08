@@ -59,18 +59,11 @@ export interface AudioDelegateMethods {
   selectBombardier(): void;
   selectSapper(): void;
   selectSaboteur(): void;
-  /** Historical compatibility aliases for old internal chassis names. */
-  selectBrawler(): void;
-  selectSniper(): void;
   selectMedic(): void;
   selectCatapult(): void;
   selectShaman(): void;
   selectLookout(): void;
   selectCommander(): void;
-  /** Historical compatibility aliases for old internal support/recon names. */
-  selectHealer(): void;
-  selectScout(): void;
-  selectGatherer(): void;
   selectShieldbearer(): void;
   selectBuild(): void;
   placeBuilding(): void;

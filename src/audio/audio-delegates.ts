@@ -108,13 +108,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'selectSaboteur', function (this: Self) {
     this.sfxMgr.selectSaboteur();
   });
-  // Historical compatibility aliases for old internal melee/ranged chassis names.
-  def(proto, 'selectBrawler', function (this: Self) {
-    this.sfxMgr.selectBrawler();
-  });
-  def(proto, 'selectSniper', function (this: Self) {
-    this.sfxMgr.selectSniper();
-  });
   def(proto, 'selectMedic', function (this: Self) {
     this.sfxMgr.selectMedic();
   });
@@ -127,18 +120,8 @@ export function installDelegates(proto: any): void {
   def(proto, 'selectLookout', function (this: Self) {
     this.sfxMgr.selectLookout();
   });
-  // Historical compatibility aliases for old internal support/recon/generalist names.
-  def(proto, 'selectHealer', function (this: Self) {
-    this.sfxMgr.selectHealer();
-  });
-  def(proto, 'selectScout', function (this: Self) {
-    this.sfxMgr.selectScout();
-  });
   def(proto, 'selectCommander', function (this: Self) {
     this.sfxMgr.selectCommander();
-  });
-  def(proto, 'selectGatherer', function (this: Self) {
-    this.sfxMgr.selectGatherer();
   });
   def(proto, 'selectShieldbearer', function (this: Self) {
     this.sfxMgr.selectShieldbearer();
