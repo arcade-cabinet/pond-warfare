@@ -19,6 +19,7 @@ import {
   IsResource,
   Position,
   trainingQueueSlots,
+  trainingQueueCostSlots,
 } from '@/ecs/components';
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES } from '@/ecs/systems/morale';
 import type { GameWorld } from '@/ecs/world';
@@ -172,6 +173,7 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
   world.yukaManager.removeUnit(eid);
   world.championEnemies.delete(eid);
   trainingQueueSlots.delete(eid);
+  trainingQueueCostSlots.delete(eid);
 
   const selIdx = world.selection.indexOf(eid);
   if (selIdx > -1) {

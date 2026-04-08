@@ -30,6 +30,7 @@ import {
   SABOTEUR_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
+import { getPlayerTrainingCost } from '@/game/training-costs';
 import { train } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
 
@@ -92,18 +93,16 @@ function findTrainableBuildings(world: GameWorld, kind: EntityKind): number[] {
 
 /** Try to train a unit at the first available building. Returns true if queued. */
 function tryTrain(world: GameWorld, buildingEid: number, unitKind: EntityKind): boolean {
-  const def = ENTITY_DEFS[unitKind];
-  const fishCost = def.fishCost ?? 0;
-  const logCost = def.logCost ?? 0;
-  const foodCost = def.foodCost ?? 1;
+  const cost = getPlayerTrainingCost(world, unitKind);
 
   // Check affordability before calling train() (train handles it too, but early-out is cheaper)
-  if (world.resources.fish < fishCost) return false;
-  if (world.resources.logs < logCost) return false;
-  if (world.resources.food + foodCost > world.resources.maxFood) return false;
+  if (world.resources.fish < cost.fish) return false;
+  if (world.resources.logs < cost.logs) return false;
+  if (world.resources.rocks < cost.rocks) return false;
+  if (world.resources.food + cost.food > world.resources.maxFood) return false;
 
   const prevCount = TrainingQueue.count[buildingEid];
-  train(world, buildingEid, unitKind, fishCost, logCost, foodCost);
+  train(world, buildingEid, unitKind, cost.fish, cost.logs, cost.food, cost.rocks);
   return TrainingQueue.count[buildingEid] > prevCount;
 }
 

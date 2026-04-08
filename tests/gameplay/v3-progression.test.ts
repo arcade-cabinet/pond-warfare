@@ -320,6 +320,17 @@ describe('T39: Upgrade effects apply in-game', () => {
     expect(world.playerTrainSpeedMultiplier).toBeCloseTo(1.08, 2);
   });
 
+  it('applies economy unit cost reduction to playerUnitCostMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'economy_unit_cost_reduction_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerUnitCostMultiplier).toBeCloseTo(0.97, 2);
+  });
+
   it('applies defense tower damage to playerTowerDamageMultiplier', () => {
     const web = generateUpgradeWeb();
     const state = createUpgradeWebState(10000);

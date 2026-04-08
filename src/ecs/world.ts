@@ -114,6 +114,7 @@ export interface GameWorld {
   playerCriticalHitChance: number;
   playerDamageTakenMultiplier: number;
   playerCarryCapacityMultiplier: number;
+  playerUnitCostMultiplier: number;
   playerUnitHpMultiplier: number;
   playerUnitSpeedMultiplier: number;
   playerHealMultiplier: number;

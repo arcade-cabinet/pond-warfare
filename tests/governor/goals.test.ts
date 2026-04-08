@@ -513,6 +513,10 @@ describe('TrainGoal', () => {
         rosterUnit(2, MUDPAW_KIND, 'gathering-fish'),
       ]),
     ];
+    world.resources.fish = 40;
+    world.resources.rocks = 20;
+    store.fish.value = 40;
+    store.rocks.value = 20;
     store.food.value = 2;
     store.maxFood.value = 8;
 

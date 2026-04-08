@@ -8,6 +8,7 @@
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import type { GameWorld } from '@/ecs/world';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { getPlayerTrainingCost } from '@/game/training-costs';
 import { train } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind } from '@/types';
@@ -65,10 +66,11 @@ export function buildLodgeButtons(
     if (stage < spec.requiredStage) continue;
 
     const def = ENTITY_DEFS[spec.kind];
-    const fishCost = def.fishCost ?? 0;
-    const logCost = def.logCost ?? 0;
-    const rockCost = def.rockCost ?? 0;
-    const foodCost = def.foodCost ?? 1;
+    const adjustedCost = getPlayerTrainingCost(w, spec.kind);
+    const fishCost = adjustedCost.fish;
+    const logCost = adjustedCost.logs;
+    const rockCost = adjustedCost.rocks;
+    const foodCost = adjustedCost.food;
 
     btns.push({
       title: spec.title,

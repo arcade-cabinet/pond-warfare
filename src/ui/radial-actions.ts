@@ -25,6 +25,7 @@ import { game } from '@/game';
 import { cycleStanceForSelection } from '@/game/input-setup';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { beginSpecialistAssignment } from '@/game/specialist-assignment';
+import { getPlayerTrainingCost } from '@/game/training-costs';
 import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { COLORS } from '@/ui/design-tokens';
@@ -75,10 +76,11 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   if (unitKind === undefined || !configKey) return false;
 
   const def = getUnitDef(configKey);
-  const fishCost = def.cost.fish ?? 0;
-  const logCost = def.cost.logs ?? 0;
-  const rocksCost = def.cost.rocks ?? 0;
-  const foodCost = ENTITY_DEFS[unitKind].foodCost ?? 1;
+  const adjustedCost = getPlayerTrainingCost(world, unitKind);
+  const fishCost = adjustedCost.fish;
+  const logCost = adjustedCost.logs;
+  const rocksCost = adjustedCost.rocks;
+  const foodCost = adjustedCost.food;
 
   if (world.resources.fish < fishCost) {
     pushGameEvent('Not enough Fish!', COLORS.feedbackError, world.frameCount);

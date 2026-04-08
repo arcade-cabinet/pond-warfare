@@ -19,11 +19,13 @@ import {
   Position,
   Sprite,
   TrainingQueue,
+  trainingQueueCostSlots,
   trainingQueueSlots,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { isMudpawKind } from '@/game/live-unit-kinds';
+import { getPlayerTrainingCost } from '@/game/training-costs';
 import { getPlayerTrainTimer } from '@/game/train-timer';
 import { EntityKind, Faction, UnitState } from '@/types';
 
@@ -196,8 +198,13 @@ export function train(
   foodCost: number,
   rockCost = 0,
 ): void {
+  void fishCost;
+  void logCost;
+  void foodCost;
+  void rockCost;
   const count = TrainingQueue.count[buildingEid];
   if (count >= 8) return;
+  const adjustedCost = getPlayerTrainingCost(world, kind);
 
   let queuedFood = 0;
   const allTrainingBldgs = query(world.ecs, [TrainingQueue, FactionTag, IsBuilding]);
@@ -214,20 +221,23 @@ export function train(
   world.resources.food = Math.max(world.resources.food, queuedFood);
 
   if (
-    world.resources.fish >= fishCost &&
-    world.resources.logs >= logCost &&
-    world.resources.rocks >= rockCost &&
-    world.resources.food + foodCost <= world.resources.maxFood
+    world.resources.fish >= adjustedCost.fish &&
+    world.resources.logs >= adjustedCost.logs &&
+    world.resources.rocks >= adjustedCost.rocks &&
+    world.resources.food + adjustedCost.food <= world.resources.maxFood
   ) {
-    world.resources.fish -= fishCost;
-    world.resources.logs -= logCost;
-    world.resources.rocks -= rockCost;
-    world.resources.food += foodCost;
+    world.resources.fish -= adjustedCost.fish;
+    world.resources.logs -= adjustedCost.logs;
+    world.resources.rocks -= adjustedCost.rocks;
+    world.resources.food += adjustedCost.food;
 
     {
       const slots = trainingQueueSlots.get(buildingEid) ?? [];
       slots[count] = kind;
       trainingQueueSlots.set(buildingEid, slots);
+      const costSlots = trainingQueueCostSlots.get(buildingEid) ?? [];
+      costSlots[count] = adjustedCost;
+      trainingQueueCostSlots.set(buildingEid, costSlots);
       TrainingQueue.count[buildingEid] = count + 1;
       if (count === 0) {
         TrainingQueue.timer[buildingEid] = getPlayerTrainTimer(world);
@@ -245,14 +255,17 @@ export function cancelTrain(world: GameWorld, buildingEid: number, index: number
   const kind = slots[index] as EntityKind | undefined;
   if (kind == null) return;
 
-  const def = ENTITY_DEFS[kind];
-  world.resources.fish += def.fishCost ?? 0;
-  world.resources.logs += def.logCost ?? 0;
-  world.resources.rocks += def.rockCost ?? 0;
-  world.resources.food = Math.max(0, world.resources.food - (def.foodCost ?? 1));
+  const costSlots = trainingQueueCostSlots.get(buildingEid) ?? [];
+  const queuedCost = costSlots[index] ?? getPlayerTrainingCost(world, kind);
+  world.resources.fish += queuedCost.fish;
+  world.resources.logs += queuedCost.logs;
+  world.resources.rocks += queuedCost.rocks;
+  world.resources.food = Math.max(0, world.resources.food - queuedCost.food);
 
   slots.splice(index, 1);
   trainingQueueSlots.set(buildingEid, slots);
+  costSlots.splice(index, 1);
+  trainingQueueCostSlots.set(buildingEid, costSlots);
   TrainingQueue.count[buildingEid] = count - 1;
 
   if (index === 0 && count - 1 > 0) {

@@ -97,10 +97,18 @@ export const TrainingQueue = soa({
 
 // Training queue slots stored in a plain Map since bitECS SoA doesn't support nested arrays
 export const trainingQueueSlots = new Map<number, number[]>();
+export interface TrainingQueueCost {
+  fish: number;
+  logs: number;
+  rocks: number;
+  food: number;
+}
+export const trainingQueueCostSlots = new Map<number, TrainingQueueCost[]>();
 
 /** Clear world-scoped component state that lives outside bitECS SoA arrays. */
 export function resetTransientComponentState(): void {
   trainingQueueSlots.clear();
+  trainingQueueCostSlots.clear();
 }
 
 // Collider

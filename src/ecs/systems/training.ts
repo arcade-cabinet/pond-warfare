@@ -23,6 +23,7 @@ import {
   Position,
   Sprite,
   TrainingQueue,
+  trainingQueueCostSlots,
   trainingQueueSlots,
   UnitStateMachine,
 } from '@/ecs/components';
@@ -90,6 +91,9 @@ export function trainingSystem(world: GameWorld): void {
       // Shift queue: remove front item
       slots.shift();
       trainingQueueSlots.set(eid, slots);
+      const costSlots = trainingQueueCostSlots.get(eid) ?? [];
+      costSlots.shift();
+      trainingQueueCostSlots.set(eid, costSlots);
       TrainingQueue.count[eid] = slots.length;
 
       // Set timer for next unit if queue still has entries

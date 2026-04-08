@@ -115,6 +115,7 @@ export function createGameWorld(): GameWorld {
     playerCriticalHitChance: 0.0,
     playerDamageTakenMultiplier: 1.0,
     playerCarryCapacityMultiplier: 1.0,
+    playerUnitCostMultiplier: 1.0,
     playerUnitHpMultiplier: 1.0,
     playerUnitSpeedMultiplier: 1.0,
     playerHealMultiplier: 1.0,

@@ -18,11 +18,12 @@ import {
   Position,
   Sprite,
   TrainingQueue,
+  trainingQueueCostSlots,
   trainingQueueSlots,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
-import { cancelTrain } from '@/input/selection/queries';
+import { cancelTrain, train } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
 
 function createTrainingBuilding(world: GameWorld, kind: EntityKind): number {
@@ -59,6 +60,7 @@ describe('cancelTrain', () => {
   beforeEach(() => {
     world = createGameWorld();
     trainingQueueSlots.clear();
+    trainingQueueCostSlots.clear();
   });
 
   it('removes item from queue at the given index', () => {
@@ -92,6 +94,34 @@ describe('cancelTrain', () => {
 
     expect(world.resources.fish).toBe(100 + fishCost);
     expect(world.resources.rocks).toBe(50 + rockCost);
+  });
+
+  it('refunds the discounted queued cost when unit-cost reduction is active', () => {
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge);
+    const sapperDef = ENTITY_DEFS[SAPPER_KIND];
+
+    world.playerUnitCostMultiplier = 0.97;
+    world.resources.fish = 100;
+    world.resources.rocks = 50;
+    world.resources.food = 0;
+    world.resources.maxFood = 8;
+    train(
+      world,
+      lodge,
+      SAPPER_KIND,
+      sapperDef.fishCost ?? 0,
+      sapperDef.logCost ?? 0,
+      sapperDef.foodCost ?? 1,
+      sapperDef.rockCost ?? 0,
+    );
+
+    expect(world.resources.fish).toBe(76);
+    expect(world.resources.rocks).toBe(35);
+
+    cancelTrain(world, lodge, 0);
+
+    expect(world.resources.fish).toBe(100);
+    expect(world.resources.rocks).toBe(50);
   });
 
   it('resets timer when cancelling the active (index 0) item with remaining queue', () => {

@@ -73,6 +73,11 @@ export function applyUpgradeEffects(
     world.playerCarryCapacityMultiplier *= 1 + carryCapacity;
   }
 
+  const unitCostReduction = effects.get('economy_unit_cost_reduction') ?? 0;
+  if (unitCostReduction > 0) {
+    world.playerUnitCostMultiplier *= Math.max(0.1, 1 - unitCostReduction);
+  }
+
   const unitSpeed = effects.get('utility_unit_speed') ?? 0;
   if (unitSpeed > 0) {
     world.playerUnitSpeedMultiplier *= 1 + unitSpeed;
