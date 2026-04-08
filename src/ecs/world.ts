@@ -21,7 +21,6 @@ import type {
   GameState,
   GameStats,
   GroundPing,
-  MinimapPing,
   Particle,
 } from '@/types';
 import type { ObjectPool } from '@/utils/pool';
@@ -40,7 +39,6 @@ export interface GameWorld {
   particles: Particle[];
   floatingTexts: FloatingText[];
   corpses: Corpse[];
-  minimapPings: MinimapPing[];
   groundPings: GroundPing[];
   fireflies: Firefly[];
 
@@ -195,9 +193,7 @@ export interface GameWorld {
   commanderId: string;
   commanderModifiers: CommanderModifiers;
 
-  // Airdrop, checkpoint, evacuation
-  airdropsRemaining: number;
-  airdropCooldownUntil: number;
+  // Checkpoint, evacuation
   checkpoints: string[];
   lastCheckpointFrame: number;
   evacuationTriggered: boolean;

@@ -316,8 +316,7 @@ body {
 }
 
 #game-container,
-#game-canvas,
-#minimap-container {
+#game-canvas {
   touch-action: none;
 }
 

@@ -41,10 +41,6 @@ export const commanderAbilityCooldown = signal(0);
 export const commanderAbilityActive = signal(false);
 export const commanderAbilityName = signal('');
 
-// ---- Airdrop system ----
-export const airdropsRemaining = signal(0);
-export const airdropCooldown = signal(0);
-
 // ---- Checkpoint/Evacuation ----
 export const evacuationActive = signal(false);
 export const checkpointCount = signal(0);

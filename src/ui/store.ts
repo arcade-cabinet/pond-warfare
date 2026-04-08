@@ -211,8 +211,6 @@ export {
   type AchievementToast,
   achievementsOpen,
   activeAchievementToast,
-  airdropCooldown,
-  airdropsRemaining,
   autoPlayEnabled,
   autoSaveEnabled,
   checkpointCount,

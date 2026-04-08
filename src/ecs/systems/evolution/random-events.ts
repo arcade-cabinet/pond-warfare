@@ -48,7 +48,13 @@ function nestFuryBurst(world: GameWorld, nestEid: number): void {
     color: '#f59e0b',
     life: 180,
   });
-  world.minimapPings.push({ x: nx, y: ny, life: 180, maxLife: 180 });
+  world.groundPings.push({
+    x: nx,
+    y: ny,
+    life: 180,
+    maxLife: 180,
+    color: 'rgba(245, 158, 11, 0.85)',
+  });
   audio.alert();
 
   const burstCount = 3 + Math.floor(world.gameRng.next() * 3);
@@ -142,7 +148,13 @@ export function triggerRandomEvent(world: GameWorld): void {
       life: 180,
     });
     world.shakeTimer = Math.max(world.shakeTimer, 12);
-    world.minimapPings.push({ x: sx, y: sy, life: 180, maxLife: 180 });
+    world.groundPings.push({
+      x: sx,
+      y: sy,
+      life: 180,
+      maxLife: 180,
+      color: 'rgba(239, 68, 68, 0.85)',
+    });
     audio.alert();
 
     if (lodgeEid !== -1) {

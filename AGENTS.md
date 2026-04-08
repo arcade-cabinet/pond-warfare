@@ -4,7 +4,7 @@
 
 Pond Warfare is a mobile-first real-time strategy game where otters defend their Lodge from waves of predators in a pond ecosystem. One game mode: defend the Lodge at the bottom of a vertical map against escalating enemy waves from the top. Between matches, spend earned Clams on an upgrade web (240+ nodes) and Pearls on prestige upgrades.
 
-**Feature summary:** 4 canonical manual units (`Mudpaw`, `Medic`, `Sapper`, `Saboteur`) plus 8 Pearl specialist blueprints (`Fisher`, `Logger`, `Digger`, `Guard`, `Ranger`, `Bombardier`, `Shaman`, `Lookout`), 6 enemy types with role-based behaviors (raiders, healers, sappers) and per-level scaling, 6-panel map grid with progression-based unlock, auto-symbol unit autonomy mechanic, 240+ procedural upgrade nodes across 6 categories with Frontier Expansion diamond nodes, prestige system with Pearl upgrades (specialist blueprints, radius/cap/efficiency growth, auto-behaviors, multipliers), JSON-driven wave-survival match events (waves, bosses, sabotage, escorts), post-match reward screen with Clam earnings, Lodge with visual wing evolution, fortification system (walls, towers), deterministic PRNG (zero Math.random in gameplay), unit-specific SFX with spatial panning, Yuka.js steering for all units, terrain system (4 types), weather system (4 types), fog of war, day/night cycle, veterancy ranks, formation movement, auto-behaviors (gather/build/defend/attack/heal/scout), kill streaks, minimap, ctrl groups, hotkeys, comic panel landing page, SQLite persistence, SVG 9-slice panel system with pond watercolor aesthetic, Android APK builds.
+**Feature summary:** 4 canonical manual units (`Mudpaw`, `Medic`, `Sapper`, `Saboteur`) plus 8 Pearl specialist blueprints (`Fisher`, `Logger`, `Digger`, `Guard`, `Ranger`, `Bombardier`, `Shaman`, `Lookout`), 6 enemy types with role-based behaviors (raiders, healers, sappers) and per-level scaling, 6-panel map grid with progression-based unlock, auto-symbol unit autonomy mechanic, 240+ procedural upgrade nodes across 6 categories with Frontier Expansion diamond nodes, prestige system with Pearl upgrades (specialist blueprints, radius/cap/efficiency growth, auto-behaviors, multipliers), JSON-driven wave-survival match events (waves, bosses, sabotage, escorts), post-match reward screen with Clam earnings, Lodge with visual wing evolution, fortification system (walls, towers), deterministic PRNG (zero Math.random in gameplay), unit-specific SFX with spatial panning, Yuka.js steering for all units, terrain system (4 types), weather system (4 types), fog of war, day/night cycle, veterancy ranks, formation movement, auto-behaviors (gather/build/defend/attack/heal/recon), kill streaks, combat alert pings, ctrl groups, hotkeys, comic panel landing page, SQLite persistence, SVG 9-slice panel system with pond watercolor aesthetic, Android APK builds.
 
 Built with bitECS, Preact, PixiJS 8, Yuka.js, Planck.js, Tone.js, and anime.js. Persistence via SQLite (capacitor-sqlite + jeep-sqlite).
 
@@ -331,7 +331,7 @@ Changes every 3-5 minutes, seeded from map seed:
 | `src/rendering/pixi/lodge-visuals.ts` | Lodge wing rendering in PixiJS | |
 | `src/rendering/camera.ts` | Camera system: pan, zoom, shake | ~81 |
 | `src/ecs/systems/match-event-runner.ts` | v3 event system from events.json | |
-| `src/ecs/systems/specialist-deploy.ts` | Transitional prestige specialist spawning logic | |
+| `src/ecs/systems/specialist-deploy.ts` | Harness-only specialist blueprint snapshot helper | |
 | `src/ecs/systems/fortification.ts` | Wall/tower fortification system | |
 | `src/ecs/systems/wave-spawner.ts` | Role-based enemy spawning, panel-aware positions |
 | `src/ecs/systems/spawn-patterns.ts` | Wave spawn pattern functions (10 patterns) |
@@ -490,4 +490,4 @@ Note: bitECS SoA components are global typed arrays. When tests run in parallel,
 - **Store is split into 5 files**: Core signals in `store.ts`, v3 metagame in `store-v3.ts`, weather in `store-weather.ts`, gameplay session state in `store-gameplay.ts`, multiplayer in `store-multiplayer.ts`.
 - **Terrain affects movement**: Speed multipliers per terrain type; water and rocks are impassable.
 - **Weather changes gameplay**: Rain floods shallows, fog reduces vision, wind drifts projectiles. Seeded from map seed for determinism.
-- **Auto-behaviors are optional**: Auto-gather/build/defend/attack/heal/scout are toggled via the idle radial menu, not hardcoded.
+- **Auto-behaviors are optional**: Auto-gather/build/defend/attack/heal/recon are toggled via the idle radial menu, not hardcoded.

@@ -17,18 +17,13 @@ import {
   COOP_ENEMY_STAT_MULT,
   COOP_PING_DURATION,
   checkCoopWinLose,
-  tickCoopPings,
 } from '@/net/coop-rules';
-import * as mp from '@/ui/store-multiplayer';
 
 describe('coop-rules', () => {
   let world: GameWorld;
 
   beforeEach(() => {
     world = createGameWorld();
-    // Reset store signals
-    mp.coopMinimapPings.value = [];
-    mp.coopPartnerLodgeDestroyed.value = false;
   });
 
   // ---- Shared Resource Pool ----
@@ -87,27 +82,19 @@ describe('coop-rules', () => {
       });
     });
 
-    it('applyCoopPing adds ping to world.minimapPings', () => {
-      expect(world.minimapPings).toHaveLength(0);
+    it('applyCoopPing adds a ground ping to the world', () => {
+      expect(world.groundPings).toHaveLength(0);
 
       applyCoopPing(world, 200, 400);
 
-      expect(world.minimapPings).toHaveLength(1);
-      expect(world.minimapPings[0]).toMatchObject({
+      expect(world.groundPings).toHaveLength(1);
+      expect(world.groundPings[0]).toMatchObject({
         x: 200,
         y: 400,
         life: COOP_PING_DURATION,
         maxLife: COOP_PING_DURATION,
-        color: '56, 189, 248',
+        color: 'rgba(56, 189, 248, 0.85)',
       });
-    });
-
-    it('applyCoopPing also updates the store signal', () => {
-      applyCoopPing(world, 100, 200);
-
-      expect(mp.coopMinimapPings.value).toHaveLength(1);
-      expect(mp.coopMinimapPings.value[0].x).toBe(100);
-      expect(mp.coopMinimapPings.value[0].y).toBe(200);
     });
 
     it('COOP_PING_DURATION is 180 frames (3 seconds at 60fps)', () => {
@@ -190,39 +177,6 @@ describe('coop-rules', () => {
 
     it('COOP_ENEMY_STAT_MULT is 1.5', () => {
       expect(COOP_ENEMY_STAT_MULT).toBe(1.5);
-    });
-  });
-
-  // ---- Co-op Ping Tick ----
-
-  describe('tickCoopPings', () => {
-    it('does nothing when coopMode is false', () => {
-      world.coopMode = false;
-      mp.coopMinimapPings.value = [{ x: 0, y: 0, life: 100, maxLife: 180 }];
-
-      tickCoopPings(world);
-
-      expect(mp.coopMinimapPings.value).toHaveLength(1);
-      expect(mp.coopMinimapPings.value[0].life).toBe(100);
-    });
-
-    it('decrements ping life when coopMode is active', () => {
-      world.coopMode = true;
-      mp.coopMinimapPings.value = [{ x: 0, y: 0, life: 100, maxLife: 180 }];
-
-      tickCoopPings(world);
-
-      expect(mp.coopMinimapPings.value).toHaveLength(1);
-      expect(mp.coopMinimapPings.value[0].life).toBe(99);
-    });
-
-    it('removes expired pings', () => {
-      world.coopMode = true;
-      mp.coopMinimapPings.value = [{ x: 0, y: 0, life: 1, maxLife: 180 }];
-
-      tickCoopPings(world);
-
-      expect(mp.coopMinimapPings.value).toHaveLength(0);
     });
   });
 

@@ -36,12 +36,6 @@ export const multiplayerView = signal<MultiplayerView>('menu');
 // ---- In-game lockstep state ----
 export const multiplayerStalled = signal(false);
 
-// ---- Co-op state ----
-/** Active co-op minimap pings from partner (rendered as flashing indicators). */
-export const coopMinimapPings = signal<{ x: number; y: number; life: number; maxLife: number }[]>(
-  [],
-);
-
 /** Whether co-op partner's Lodge has been destroyed (they can still control units). */
 export const coopPartnerLodgeDestroyed = signal(false);
 

@@ -129,8 +129,14 @@ export function buildingSystem(world: GameWorld): void {
             life: 90,
           });
 
-          // Minimap ping on the completed building
-          world.minimapPings.push({ x: bx, y: by, life: 120, maxLife: 120 });
+          // World-space completion ping on the completed building
+          world.groundPings.push({
+            x: bx,
+            y: by,
+            life: 120,
+            maxLife: 120,
+            color: 'rgba(251, 191, 36, 0.85)',
+          });
 
           // Event feed
           pushGameEvent(`${buildingName} complete`, '#fbbf24', world.frameCount);

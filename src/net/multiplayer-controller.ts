@@ -128,9 +128,9 @@ export function startMultiplayerGame(matchMode: MatchMode = 'coop'): void {
   }
 }
 
-// ---- Co-op: Send Minimap Ping ----
+// ---- Co-op: Send Ground Ping ----
 
-/** Broadcast a minimap ping to the co-op partner. */
+/** Broadcast a world-space ground ping to the co-op partner. */
 export function sendCoopPing(x: number, y: number): void {
   connection?.sendMeta({ type: 'coop-ping', x, y });
 }

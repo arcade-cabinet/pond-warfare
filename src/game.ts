@@ -1,6 +1,6 @@
 /** Game Orchestrator -- thin shell that delegates to focused sub-modules. */
 import type { GameWorld } from '@/ecs/world';
-import { useAirdrop, usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
+import { usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
 import { type PanAnimHandle, resizeCanvases, smoothPanTo } from '@/game/camera';
 import { useCommanderAbility } from '@/game/commander-abilities';
 import {
@@ -192,9 +192,6 @@ export class Game {
   }
   useTidalSurge(): boolean {
     return useTidalSurge(this.world);
-  }
-  useAirdrop(): boolean {
-    return useAirdrop(this.world);
   }
   useCommanderAbility(): boolean {
     return useCommanderAbility(this.world);

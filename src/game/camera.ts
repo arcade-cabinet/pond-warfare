@@ -17,7 +17,7 @@ export interface PanAnimHandle {
 
 /**
  * Smooth camera pan to a world position using anime.js.
- * Used for minimap clicks and control group recall.
+ * Used for control group recall and other focus jumps.
  */
 export function smoothPanTo(world: GameWorld, x: number, y: number, handle: PanAnimHandle): void {
   if (handle.anim) handle.anim.pause();

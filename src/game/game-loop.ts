@@ -288,13 +288,6 @@ function updateLogic(state: GameLoopState): void {
     }
   }
 
-  if (w.airdropCooldownUntil > 0 && w.frameCount >= w.airdropCooldownUntil) {
-    w.airdropCooldownUntil = 0;
-    store.airdropCooldown.value = 0;
-  } else if (w.airdropCooldownUntil > w.frameCount) {
-    store.airdropCooldown.value = Math.ceil((w.airdropCooldownUntil - w.frameCount) / 60);
-  }
-
   if (w.frameCount % 60 === 0 && w.state === 'playing') checkEvacuation(w);
   if (w.frameCount % 1800 === 0) checkAchievements(w).catch(() => {});
 }

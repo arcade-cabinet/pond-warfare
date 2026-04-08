@@ -161,9 +161,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'buildComplete', function (this: Self) {
     this.sfxMgr.buildComplete();
   });
-  def(proto, 'airdropIncoming', function (this: Self) {
-    this.sfxMgr.airdropIncoming();
-  });
   def(proto, 'enemyEvolution', function (this: Self) {
     this.sfxMgr.enemyEvolution();
   });

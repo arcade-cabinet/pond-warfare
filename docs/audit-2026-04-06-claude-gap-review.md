@@ -54,8 +54,8 @@ Verification performed:
 
 | Plan step | Current state | Evidence |
 | --- | --- | --- |
-| Remove minimap system residue | Partial | minimap UI is gone from `src/ui/app.tsx`, but `world.minimapPings` and many minimap-ping producers still exist in ECS/system code |
-| Remove airdrop logic | Partial | no airdrop button in `src/ui/app.tsx`, but airdrop state and logic remain in `src/game/abilities.ts`, `src/game/difficulty.ts`, `src/ui/store-gameplay.ts`, `src/ui/store.ts`, `src/ecs/world.ts` |
+| Remove minimap system residue | Resolved after follow-up | minimap UI is gone from `src/ui/app.tsx`; the old `world.minimapPings` path and its producers were removed in favor of live world-space `groundPings` |
+| Remove airdrop logic | Resolved after follow-up | no airdrop button remains in `src/ui/app.tsx`, and the dead airdrop world/store/ability/audio path was removed from the live runtime |
 | Remove ability bar | Not done | `src/ui/app.tsx` still renders `AbilityButtons`; `src/ui/hud/AbilityButtons.tsx` still exposes `Rally Cry`, `Pond Blessing`, `Tidal Surge` |
 | Full current-flow browser/E2E proof | Missing in old suite, replaced here | legacy browser files still assume `New Game`/`START`; new current capture test added as `tests/browser/current-flow-captures.test.tsx` |
 | Plan bookkeeping | Not done | `.claude/plan-state.json` still marks all phases `pending` despite shipped code |
@@ -170,11 +170,11 @@ Outdated in multiple places:
 
 ### `docs/architecture.md`
 
-Partially stale:
+This stale render note was fixed after the audit:
 
-- still says render step includes minimap
-- actual app no longer mounts minimap canvases
-- minimap data structures still exist in world/systems, so code cleanup is incomplete
+- render step no longer claims a minimap overlay
+- actual app still does not mount minimap canvases
+- old minimap data structures were removed from the live world/system path in follow-up cleanup
 
 ### `CLAUDE.md`
 

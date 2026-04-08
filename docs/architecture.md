@@ -73,7 +73,7 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `cleanupSystem` - Particle/corpse/ping decay
 5. **Camera** - Pan velocity, tracking lerp, screen shake
 6. **UI Sync** - Every 30 frames, sync world state to Preact signals
-7. **Render** - PixiJS entities + Canvas2D overlays (fog, light, minimap)
+7. **Render** - PixiJS entities + Canvas2D overlays (fog, light)
 
 ## Data Flow
 

@@ -79,7 +79,7 @@ export function takeDamage(
   // Check if this warrants an under-attack alert
   checkAttackAlert(world, targetEid);
 
-  // Track combat zone for minimap (only cross-faction combat, throttled)
+  // Track combat zones for offscreen-combat cues (only cross-faction combat, throttled)
   if (
     hasComponent(world.ecs, targetEid, FactionTag) &&
     hasComponent(world.ecs, attackerEid, FactionTag) &&
@@ -188,11 +188,6 @@ function processRetaliation(
   const attackerFaction = hasComponent(world.ecs, attackerEid, FactionTag)
     ? (FactionTag.faction[attackerEid] as Faction)
     : Faction.Neutral;
-
-  // Minimap ping for player units attacked by enemies
-  if (targetFaction === Faction.Player && attackerFaction === Faction.Enemy) {
-    world.minimapPings.push({ x: tx, y: ty, life: 120, maxLife: 120 });
-  }
 
   // Target retaliates if in non-combat idle-ish state
   if (

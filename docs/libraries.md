@@ -78,7 +78,7 @@ Complete audio system with procedural synthesis and unit-specific SFX.
 **Usage:**
 - **SFX** (25+ effects): `Synth` with pooled synth+panner pairs (16 pre-allocated)
 - **Selection/command voices**: Palette-based by role rather than a fixed old roster table. Current player-facing mapping centers on Mudpaw (`generalist`), Medic/Shaman/Lookout (`support`), Guard/Ranger (`skirmisher`), Bombardier and siege heavies (`heavy`), and Commander (`leader`). Some low-level internal entity kinds still back those palettes.
-- **Contextual effects**: building placement, research complete, airdrop incoming, train complete, build complete, unit death, building destruction, heal, error
+- **Contextual effects**: building placement, research complete, train complete, build complete, unit death, building destruction, heal, error
 - **Spatial panning**: SFX panned left/right based on world position relative to camera
 - **Music**: Procedural chiptune via `Sequence` - peaceful (C major, 100 BPM) / hunting (C minor, 140 BPM)
 - **Ambient**: Pond bubbles (filtered noise), cricket chirps (night), wind gusts (day)

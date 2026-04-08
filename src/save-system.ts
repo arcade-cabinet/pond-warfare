@@ -107,7 +107,6 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.particles.length = 0;
   world.floatingTexts.length = 0;
   world.corpses.length = 0;
-  world.minimapPings.length = 0;
   world.groundPings.length = 0;
   world.selection.length = 0;
   world.yukaManager.clear();

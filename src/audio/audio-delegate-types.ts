@@ -78,7 +78,6 @@ export interface AudioDelegateMethods {
   upgrade(): void;
   trainComplete(): void;
   buildComplete(): void;
-  airdropIncoming(): void;
   enemyEvolution(): void;
   tripleKill(): void;
   rampage(): void;

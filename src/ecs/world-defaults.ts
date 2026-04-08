@@ -52,7 +52,6 @@ export function createGameWorld(): GameWorld {
     particles: [],
     floatingTexts: [],
     corpses: [],
-    minimapPings: [],
     groundPings: [],
     fireflies: [],
     resources: {
@@ -185,8 +184,6 @@ export function createGameWorld(): GameWorld {
       passiveBombardierProjectionBonus: 0,
       passiveLightningDamage: 0,
     },
-    airdropsRemaining: 2,
-    airdropCooldownUntil: 0,
     checkpoints: [],
     lastCheckpointFrame: 0,
     evacuationTriggered: false,

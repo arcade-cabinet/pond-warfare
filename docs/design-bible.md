@@ -25,7 +25,7 @@ Warcraft II-style RTS in a pond ecosystem. Two playable factions compete for fin
 - **4 ranked tiers** (Bronze, Silver, Gold, Diamond) + leaderboard tracking
 - **6 map scenarios** (Standard, Island, Contested, Labyrinth, River, Peninsula)
 - **15 achievements** + 18 unlockables across 5 categories
-- **Unit-specific SFX** (8 unique select sounds, building/death/tech/airdrop effects)
+- **Unit-specific SFX** (8 unique select sounds, building/death/tech/evolution effects)
 - **Cosmetic system** with unit skins + building themes via sprite recoloring
 - **359 tests** across 29 files
 

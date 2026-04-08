@@ -416,7 +416,7 @@ The current runtime still contains legacy auto-behavior toggles and auto-symbol 
 - Unexplored areas of the map are hidden
 - Player units and buildings reveal a circle around their position
 - Previously explored areas remain dimly visible but don't show current enemies
-- Scouting is essential to locate resource nodes and incoming attacks
+- Recon is essential to locate resource nodes and incoming attacks
 
 ## Kill Streaks
 

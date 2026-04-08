@@ -120,8 +120,14 @@ function enemyAttackDecision(world: GameWorld, isPeaceful: boolean): void {
     color: '#f59e0b',
     life: 150,
   });
-  // Amber minimap ping at the target building
-  world.minimapPings.push({ x: targetX, y: targetY, life: 120, maxLife: 120 });
+  // Amber world-space ping at the target building
+  world.groundPings.push({
+    x: targetX,
+    y: targetY,
+    life: 120,
+    maxLife: 120,
+    color: 'rgba(245, 158, 11, 0.85)',
+  });
 
   // Send them as a group
   for (const eid of idleUnits) {

@@ -8,7 +8,6 @@
  * - Decay and remove expired particles (life--, apply velocity, remove when life <= 0)
  * - Decay and remove expired floating texts (life--, move upward, remove when life <= 0)
  * - Decay and remove expired corpses (life--, remove when life <= 0)
- * - Decay and remove expired minimap pings (life--, remove when life <= 0)
  * - Decay and remove expired ground pings (life--, remove when life <= 0)
  * - Building ambient particles: armory smoke (every 5 frames), lodge water bubbles (every 30 frames)
  */
@@ -88,14 +87,6 @@ export function cleanupSystem(world: GameWorld): void {
     f.y -= 0.5;
     if (f.life <= 0) {
       world.floatingTexts.splice(i, 1);
-    }
-  }
-
-  // --- Minimap ping decay (line 1190) ---
-  for (let i = world.minimapPings.length - 1; i >= 0; i--) {
-    world.minimapPings[i].life--;
-    if (world.minimapPings[i].life <= 0) {
-      world.minimapPings.splice(i, 1);
     }
   }
 

@@ -219,9 +219,6 @@ export class SfxManager {
   trainComplete(): void {
     this.playAt(500, 'sine', 0.1, 0.06, 800);
   }
-  airdropIncoming(): void {
-    this.playAt(1200, 'sine', 0.4, 0.08, 300);
-  }
   /** Short rising tone when resources are deposited at the Lodge. */
   deposit(worldX?: number): void {
     this.playAt(500, 'sine', 0.08, 0.04, 800, worldX);

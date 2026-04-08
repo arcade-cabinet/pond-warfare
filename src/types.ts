@@ -229,14 +229,6 @@ export function resetCorpseIdCounter(): void {
   nextCorpseId = 1;
 }
 
-export interface MinimapPing {
-  x: number;
-  y: number;
-  life: number;
-  maxLife: number;
-  color?: string;
-}
-
 export interface GroundPing {
   x: number;
   y: number;

@@ -65,7 +65,7 @@ describe('Attack Alerts', () => {
 
     expect(world.floatingTexts).toHaveLength(1);
     expect(world.floatingTexts[0].text).toBe('BASE UNDER ATTACK!');
-    expect(world.minimapPings).toHaveLength(1);
+    expect(world.groundPings).toHaveLength(1);
   });
 
   it('cooldown prevents spam — second alert within 600 frames is blocked', () => {
@@ -93,7 +93,7 @@ describe('Attack Alerts', () => {
 
     expect(world.floatingTexts).toHaveLength(1);
     expect(world.floatingTexts[0].text).toBe('Units under attack!');
-    expect(world.minimapPings).toHaveLength(1);
+    expect(world.groundPings).toHaveLength(1);
   });
 
   it('unit attack far from Lodge does not fire alert', () => {

@@ -50,7 +50,13 @@ export function checkAttackAlert(world: GameWorld, targetEid: number): void {
       color: '#ef4444',
       life: 90,
     });
-    world.minimapPings.push({ x: tx, y: ty, life: 120, maxLife: 120 });
+    world.groundPings.push({
+      x: tx,
+      y: ty,
+      life: 120,
+      maxLife: 120,
+      color: 'rgba(239, 68, 68, 0.85)',
+    });
     lastAlertFrame = world.frameCount;
     return;
   }
@@ -65,7 +71,13 @@ export function checkAttackAlert(world: GameWorld, targetEid: number): void {
       color: '#f97316',
       life: 70,
     });
-    world.minimapPings.push({ x: tx, y: ty, life: 90, maxLife: 90 });
+    world.groundPings.push({
+      x: tx,
+      y: ty,
+      life: 90,
+      maxLife: 90,
+      color: 'rgba(249, 115, 22, 0.85)',
+    });
     lastAlertFrame = world.frameCount;
   }
 }
