@@ -4,8 +4,8 @@
  * Some sprite functions still use long-lived internal chassis names because
  * they are keyed off shared enums and sprite registries. In the live
  * player-facing model those chassis map to:
- * - `drawGatherer` -> Mudpaw and gather-specialist bodies
- * - `drawScout` -> Lookout body
+ * - `drawMudpaw` -> Mudpaw and gather-specialist bodies
+ * - `drawLookout` -> Lookout body
  * - `drawCompatSapperChassis` / `drawCompatSaboteurChassis` -> compatibility-only combat bodies
  */
 
@@ -67,7 +67,7 @@ function drawOtterBodyMinimal(d: DrawCtx): void {
   rect(11, 10, 3, 2, PALETTE.otterBase);
 }
 
-export function drawGatherer(d: DrawCtx): void {
+export function drawMudpaw(d: DrawCtx): void {
   drawOtterBase(d);
   d.rect(3, 5, 2, 2, PALETTE.clamShell);
 }
@@ -85,7 +85,7 @@ export function drawCompatSaboteurChassis(d: DrawCtx): void {
   d.rect(12, 11, 1, 1, PALETTE.stoneL);
 }
 
-export function drawHealer(d: DrawCtx): void {
+export function drawMedic(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   d.rect(7, 6, 2, 5, '#22c55e');
   d.rect(6, 8, 4, 1, '#22c55e');
@@ -99,7 +99,7 @@ export function drawShieldbearer(d: DrawCtx): void {
   d.p(3, 9, PALETTE.stone);
 }
 
-export function drawScout(d: DrawCtx): void {
+export function drawLookout(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.fillRect(5, 14, 6, 1);
