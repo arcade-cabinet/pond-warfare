@@ -19,6 +19,15 @@ vi.mock('@/platform', () => ({
   savePreference: (...args: [string, string]) => mockSave(...args),
 }));
 
+const mockLogError = vi.fn();
+vi.mock('@/errors', async () => {
+  const actual = await vi.importActual<typeof import('@/errors')>('@/errors');
+  return {
+    ...actual,
+    logError: (...args: [unknown]) => mockLogError(...args),
+  };
+});
+
 import { loadPersistedSettings, persistSetting } from '@/storage/settings-persistence';
 import * as store from '@/ui/store';
 
@@ -36,6 +45,7 @@ describe('Settings Persistence', () => {
     store.screenShakeEnabled.value = true;
     store.reduceVisualNoise.value = false;
     store.selectedCommander.value = 'marshal';
+    store.autoPlayEnabled.value = false;
   });
 
   describe('loadPersistedSettings', () => {
@@ -99,6 +109,20 @@ describe('Settings Persistence', () => {
       expect(store.masterVolume.value).toBe(80); // unchanged
       expect(store.gameSpeed.value).toBe(1); // unchanged (5 is out of 1-3 range)
     });
+
+    it('logs failed preference reads and keeps loading other settings', async () => {
+      mockLoad.mockImplementation(async (key: string) => {
+        if (key === 'setting-master-volume') throw new Error('prefs offline');
+        if (key === 'setting-auto-play') return 'true';
+        return null;
+      });
+
+      await expect(loadPersistedSettings()).resolves.toBeUndefined();
+
+      expect(store.masterVolume.value).toBe(80);
+      expect(store.autoPlayEnabled.value).toBe(true);
+      expect(mockLogError).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('persistSetting', () => {
@@ -115,6 +139,14 @@ describe('Settings Persistence', () => {
     it('writes correct key/value for string settings', async () => {
       await persistSetting('selectedCommander', 'tactician');
       expect(mockSave).toHaveBeenCalledWith('setting-commander', 'tactician');
+    });
+
+    it('logs failed writes instead of rejecting', async () => {
+      mockSave.mockRejectedValueOnce(new Error('disk full'));
+
+      await expect(persistSetting('masterVolume', 45)).resolves.toBe(false);
+
+      expect(mockLogError).toHaveBeenCalledTimes(1);
     });
   });
 });

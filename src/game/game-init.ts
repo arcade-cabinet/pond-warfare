@@ -11,6 +11,7 @@ import { initFogOfWar } from '@/ecs/systems/fog-of-war';
 import { resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import { resetRandomEvents } from '@/ecs/systems/random-events';
 import type { GameWorld } from '@/ecs/world';
+import { GameError, logError } from '@/errors';
 import { setZoom } from '@/game/camera';
 import { installLifecycleListeners } from '@/game/game-lifecycle';
 import { buildKeyboardCallbacks, buildPointerCallbacks } from '@/game/input-setup';
@@ -121,7 +122,9 @@ export function resetSession(_world: GameWorld): void {
   resetAutoSymbol();
   resetRandomEvents();
   resetMatchEventRunner();
-  loadAchievements().catch(() => {});
+  loadAchievements().catch((error) => {
+    logError(new GameError('Failed to refresh achievements for new session', 'game/resetSession', { cause: error }));
+  });
 }
 
 /** Wire up keyboard and pointer handlers. */

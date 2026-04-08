@@ -1,4 +1,5 @@
 import { loadPreference, savePreference } from '@/platform';
+import { GameError, logError } from '@/errors';
 
 export interface KeyMap {
   panUp: string[];
@@ -171,10 +172,12 @@ function isValidPartialKeyMap(obj: any): boolean {
 const KEYMAP_STORAGE_KEY = 'pond-warfare-keymap';
 
 function warnKeymapStorage(action: string, error: unknown): void {
-  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-    // biome-ignore lint/suspicious/noConsole: dev-only diagnostics
-    console.warn(`[keymap] Failed to ${action} keymap`, error);
-  }
+  logError(
+    new GameError(`Failed to ${action} keymap`, 'keymap-storage', {
+      cause: error,
+      context: { action, storageKey: KEYMAP_STORAGE_KEY },
+    }),
+  );
 }
 
 export async function loadKeymapFromStorage(): Promise<void> {

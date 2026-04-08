@@ -9,6 +9,7 @@
 import { query } from 'bitecs';
 import { EntityTypeTag, FactionTag, Health, Veterancy } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { GameError, logError } from '@/errors';
 import { getSetting, isDatabaseReady, setSetting } from '@/storage';
 import { EntityKind, Faction } from '@/types';
 import { showAchievementToast } from '@/ui/achievement-toast-queue';
@@ -40,6 +41,15 @@ let peakKillStreak = 0;
 /** Track whether Commander has died this match. */
 let commanderDied = false;
 
+function reportAchievementStorageError(action: 'load' | 'save', achievementId: string, error: unknown) {
+  logError(
+    new GameError(`Failed to ${action} achievement "${achievementId}"`, 'systems/achievements', {
+      cause: error,
+      context: { action, achievementId },
+    }),
+  );
+}
+
 /**
  * Load earned achievements from SQLite into memory.
  * Call once at game start (after DB is initialized).
@@ -48,9 +58,13 @@ export async function loadAchievements(): Promise<void> {
   if (!isDatabaseReady()) return;
   allEarned.clear();
   for (const ach of ACHIEVEMENTS) {
-    const val = await getSetting(`achievement_${ach.id}`, '');
-    if (val === 'true') {
-      allEarned.add(ach.id);
+    try {
+      const val = await getSetting(`achievement_${ach.id}`, '');
+      if (val === 'true') {
+        allEarned.add(ach.id);
+      }
+    } catch (error) {
+      reportAchievementStorageError('load', ach.id, error);
     }
   }
   loaded = true;
@@ -207,8 +221,8 @@ export async function checkAchievements(world: GameWorld): Promise<string[]> {
 
       // Persist to SQLite (fire-and-forget)
       if (isDatabaseReady()) {
-        setSetting(`achievement_${ach.id}`, 'true').catch(() => {
-          /* best-effort */
+        setSetting(`achievement_${ach.id}`, 'true').catch((error) => {
+          reportAchievementStorageError('save', ach.id, error);
         });
       }
     }

@@ -5,7 +5,13 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { ACHIEVEMENTS, type AchievementSnapshot } from '@/systems/achievements';
+import { logError } from '@/errors';
+import {
+  ACHIEVEMENTS,
+  getEarnedAchievements,
+  loadAchievements,
+  type AchievementSnapshot,
+} from '@/systems/achievements';
 
 // Mock the @/storage module to avoid SQLite dependency in tests
 vi.mock('@/storage', () => ({
@@ -13,6 +19,14 @@ vi.mock('@/storage', () => ({
   getSetting: vi.fn().mockResolvedValue(''),
   setSetting: vi.fn().mockResolvedValue(undefined),
 }));
+
+vi.mock('@/errors', async () => {
+  const actual = await vi.importActual<typeof import('@/errors')>('@/errors');
+  return {
+    ...actual,
+    logError: vi.fn(),
+  };
+});
 
 describe('achievements', () => {
   /** Build a minimal snapshot with overrides. */
@@ -143,5 +157,19 @@ describe('achievements', () => {
       const result = ach.check(makeSnapshot());
       expect(typeof result).toBe('boolean');
     }
+  });
+
+  it('loadAchievements logs storage failures and continues loading later entries', async () => {
+    const storage = await import('@/storage');
+    vi.mocked(storage.getSetting).mockImplementation(async (key: string) => {
+      if (key === 'achievement_first_blood') throw new Error('db unavailable');
+      if (key === 'achievement_triple_kill') return 'true';
+      return '';
+    });
+
+    await expect(loadAchievements()).resolves.toBeUndefined();
+
+    expect(getEarnedAchievements().has('triple_kill')).toBe(true);
+    expect(logError).toHaveBeenCalled();
   });
 });

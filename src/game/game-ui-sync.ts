@@ -4,6 +4,7 @@
 
 import { audio } from '@/audio/audio-system';
 import type { GameWorld } from '@/ecs/world';
+import { GameError, logError } from '@/errors';
 import { buildActionPanel } from '@/game/action-panel';
 import { syncPopulationAndTimers } from '@/game/population-sync';
 import { syncSelectionInfo } from '@/game/selection-sync';
@@ -47,8 +48,8 @@ export function syncUIStore(state: UISyncState): void {
   if ((w.state === 'win' || w.state === 'lose') && state.audioInitialized && !state.wasGameOver) {
     audio.stopMusic();
     state.wasGameOver = true;
-    checkAchievements(w).catch(() => {
-      /* best-effort */
+    checkAchievements(w).catch((error) => {
+      logError(new GameError('Game-over achievement check failed', 'game/game-ui-sync', { cause: error }));
     });
   }
 

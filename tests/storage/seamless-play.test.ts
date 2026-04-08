@@ -8,6 +8,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const mockLogError = vi.fn();
+
 // Mock SQLite layer
 vi.mock('@/storage/schema', () => ({
   isDatabaseReady: vi.fn().mockReturnValue(true),
@@ -40,6 +42,14 @@ vi.mock('@/storage', () => ({
     player_level: 0,
   }),
 }));
+
+vi.mock('@/errors', async () => {
+  const actual = await vi.importActual<typeof import('@/errors')>('@/errors');
+  return {
+    ...actual,
+    logError: (...args: [unknown]) => mockLogError(...args),
+  };
+});
 
 import {
   isDatabaseReady,
@@ -120,6 +130,23 @@ describe('seamless play -- hydration', () => {
     expect(storeV3.progressionLevel.value).toBe(99);
     expect(loadPrestigeState).not.toHaveBeenCalled();
   });
+
+  it('logs failed hydration reads and still loads later sections', async () => {
+    vi.mocked(loadPrestigeState).mockRejectedValueOnce(new Error('db locked'));
+    vi.mocked(loadCurrentRun).mockResolvedValue({
+      clams: 120,
+      upgrades_purchased: '{"nodes":[],"diamonds":[]}',
+      lodge_state: '{}',
+      progression_level: 3,
+      matches_this_run: 5,
+    });
+
+    await expect(hydrateV3StoreFromDb()).resolves.toBeUndefined();
+
+    expect(storeV3.progressionLevel.value).toBe(3);
+    expect(storeV3.totalClams.value).toBe(120);
+    expect(mockLogError).toHaveBeenCalled();
+  });
 });
 
 describe('seamless play -- auto-save after match', () => {
@@ -173,6 +200,16 @@ describe('seamless play -- auto-save after match', () => {
       progression_level: 1,
       matches_this_run: 1,
     });
+  });
+
+  it('persistCurrentRun logs write failures instead of rejecting', async () => {
+    storeV3.totalClams.value = 50;
+    storeV3.progressionLevel.value = 1;
+    vi.mocked(loadCurrentRun).mockResolvedValue(null);
+    vi.mocked(saveCurrentRun).mockRejectedValueOnce(new Error('write failed'));
+
+    await expect(persistCurrentRun()).resolves.toBe(false);
+    expect(mockLogError).toHaveBeenCalled();
   });
 });
 

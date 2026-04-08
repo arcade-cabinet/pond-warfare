@@ -15,6 +15,7 @@ import {
   Position,
   Selectable,
 } from '@/ecs/components';
+import { GameError, logError } from '@/errors';
 import { syncRosters } from '@/game/roster-sync';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
@@ -271,5 +272,9 @@ function updateLogic(state: GameLoopState): void {
   }
 
   if (w.frameCount % 60 === 0 && w.state === 'playing') checkEvacuation(w);
-  if (w.frameCount % 1800 === 0) checkAchievements(w).catch(() => {});
+  if (w.frameCount % 1800 === 0) {
+    checkAchievements(w).catch((error) => {
+      logError(new GameError('Achievement polling failed', 'game/game-loop', { cause: error }));
+    });
+  }
 }

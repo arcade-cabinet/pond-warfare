@@ -201,8 +201,8 @@ export function syncGameOverStats(world: GameWorld): void {
     storeV3.totalClams.value += breakdown.totalClams;
 
     // Persist prestige + current run state (async, best-effort)
-    persistPrestigeState().catch(() => {});
-    persistCurrentRun().catch(() => {});
+    void persistPrestigeState();
+    void persistCurrentRun();
   }
 
   // Process XP, match record, and daily challenge (async, best-effort)
