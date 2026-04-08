@@ -20,6 +20,7 @@ import { EntityKind } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
 import { canDefendWith } from './combat-roster';
+import { hasCurrentRunTrack } from '../current-run-upgrades';
 import { getGovernorReservedBuildKind } from '../train-policy';
 
 /** Find combat units that can be redirected to defense. */
@@ -29,15 +30,32 @@ function availableDefenders(): RosterUnit[] {
 
 function shouldPreserveLogsForReservedDefenseBuild(): boolean {
   const reservedBuildKind = getGovernorReservedBuildKind();
-  if (reservedBuildKind !== EntityKind.Wall && reservedBuildKind !== EntityKind.Tower) return false;
+  const towerTrackActive =
+    hasCurrentRunTrack('defense_tower_damage') &&
+    !store.buildingRoster.value.some((building) => building.kind === EntityKind.Tower);
+  const preserveForTowerTrack =
+    towerTrackActive && (reservedBuildKind === null || reservedBuildKind === EntityKind.Tower);
+  if (
+    reservedBuildKind !== EntityKind.Wall &&
+    reservedBuildKind !== EntityKind.Tower &&
+    !preserveForTowerTrack
+  ) {
+    return false;
+  }
 
   const lodgeEid = findPlayerLodge(game.world);
   if (lodgeEid < 0 || Health.max[lodgeEid] <= 0) return false;
 
   const lodgeHpRatio = Health.current[lodgeEid] / Health.max[lodgeEid];
-  const buildLogs = ENTITY_DEFS[reservedBuildKind].logCost ?? 0;
-  const logs = game.world.resources.logs;
+  if (preserveForTowerTrack) {
+    if (lodgeHpRatio < 0.9) return false;
+    const towerLogs = ENTITY_DEFS[EntityKind.Tower].logCost ?? 0;
+    return game.world.resources.logs < towerLogs;
+  }
+
   if (lodgeHpRatio < 0.8) return false;
+  const buildLogs = ENTITY_DEFS[reservedBuildKind!].logCost ?? 0;
+  const logs = game.world.resources.logs;
   return logs >= Math.max(0, buildLogs - LODGE_REPAIR_LOG_COST);
 }
 

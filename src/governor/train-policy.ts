@@ -121,9 +121,9 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
       ) ||
       (
         towerDamageTrackActive &&
-        lodgeHp >= 0.94 &&
+        lodgeHp >= 0.9 &&
         threats <= 1 &&
-        (waveCountdown === null || waveCountdown > 18)
+        (waveCountdown === null || waveCountdown > 8)
       )
     );
 

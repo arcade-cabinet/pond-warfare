@@ -264,6 +264,38 @@ describe('DefendGoal', () => {
     expect(TaskOverride.active[regular]).toBe(1);
     expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
   });
+
+  it('preserves tower logs on a healthy lodge even before the explicit tower reserve window fully opens', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = createPlayerLodge(220, 220);
+    Health.current[lodge] = 470;
+    Health.max[lodge] = 500;
+    world.resources.logs = 70;
+    store.buildingRoster.value = [{ eid: lodge, kind: EntityKind.Lodge, hp: 470, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] }];
+    store.baseThreatCount.value = 1;
+    store.waveCountdown.value = 8;
+    storeV3.progressionLevel.value = 6;
+    storeV3.currentRunPurchasedNodeIds.value = ['defense_tower_damage_t0'];
+
+    const regular = createUnit(SAPPER_KIND);
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(createUnit(MUDPAW_KIND, 180, 180), MUDPAW_KIND, 'gathering-logs', true),
+        rosterUnit(createUnit(MUDPAW_KIND, 190, 170), MUDPAW_KIND, 'gathering-fish', true),
+      ]),
+      rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')]),
+    ];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(Health.current[lodge]).toBe(470);
+    expect(world.resources.logs).toBe(70);
+    expect(TaskOverride.active[regular]).toBe(1);
+    expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
+  });
 });
 
 describe('AttackGoal', () => {
