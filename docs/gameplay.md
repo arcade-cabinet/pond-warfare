@@ -32,12 +32,13 @@ Each match takes place on a vertical map. The player's Lodge sits at the bottom.
 ### Match Flow
 
 1. Match starts with Lodge + initial units at bottom of vertical map
-2. Player gathers resources (Fish, Rocks, Logs), trains units, builds fortifications
-3. Events trigger on a timer (waves, boss fights, sabotage raids, etc.)
-4. Player defends Lodge, completes events for bonus Clam rewards
-5. Match ends -> Rewards Screen calculates Clam earnings
-6. Rewards Screen opens -> spend Clams for the next match in the current run
-7. When the run slows down enough, the RANK UP button begins to matter -> prestige for Pearls from the main menu
+2. A first-session HUD coach guides the player through the opening loop: train from the Lodge, select a Mudpaw, then survive the first pressure spike
+3. Player gathers resources (Fish, Rocks, Logs), trains units, builds fortifications
+4. Events trigger on a timer (waves, boss fights, sabotage raids, etc.)
+5. Player defends Lodge, completes events for bonus Clam rewards
+6. Match ends -> Rewards Screen calculates Clam earnings
+7. Rewards Screen opens -> spend Clams for the next match in the current run
+8. When the run slows down enough, the RANK UP button begins to matter -> prestige for Pearls from the main menu
 
 ## Resources
 

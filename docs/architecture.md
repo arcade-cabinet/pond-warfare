@@ -277,7 +277,7 @@ src/
 |   +-- components/      # Reusable UI primitives
 |   |   +-- frame/       # SVG 9-slice panel system
 |   |   +-- sprites/     # SVG unit sprites with idle/attack frames
-|   +-- hud/             # HUD elements (event alerts, onboarding, weather, ctrl-groups)
+|   +-- hud/             # HUD elements (event alerts, contextual onboarding coach, weather, ctrl-groups)
 |   +-- screens/         # UpgradeWebScreen, PearlUpgradeScreen, RewardsScreen, RankUpModal
 |   +-- overlays/        # Modal overlays (settings, etc.)
 +-- utils/              # Utility modules (particles, pool, spatial-hash, random)
