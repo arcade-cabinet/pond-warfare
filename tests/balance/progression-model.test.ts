@@ -123,6 +123,40 @@ describe('progression model', () => {
     expect(getPowerScore(durableArmy)).toBeGreaterThan(getPowerScore(brittleArmy));
   });
 
+  it('credits map exploration in the broad power score', () => {
+    const cautiousRun = {
+      resourcesGathered: 150,
+      unitsTrained: 4,
+      kills: 3,
+      playerUnits: 6,
+      lodgeHpRatio: 0.7,
+      exploredPercent: 18,
+    };
+    const scoutedRun = {
+      ...cautiousRun,
+      exploredPercent: 56,
+    };
+
+    expect(getPowerScore(scoutedRun)).toBeGreaterThan(getPowerScore(cautiousRun));
+  });
+
+  it('credits enemy nest pressure in the broad power score', () => {
+    const untouchedNests = {
+      resourcesGathered: 150,
+      unitsTrained: 4,
+      kills: 3,
+      playerUnits: 6,
+      lodgeHpRatio: 0.7,
+      enemyNestHpRemovedRatio: 0,
+    };
+    const pressuredNests = {
+      ...untouchedNests,
+      enemyNestHpRemovedRatio: 0.45,
+    };
+
+    expect(getPowerScore(pressuredNests)).toBeGreaterThan(getPowerScore(untouchedNests));
+  });
+
   it('captures retained army health for sustain scenarios', () => {
     const brittleHold = {
       resourcesGathered: 0,

@@ -7,6 +7,8 @@ export interface BalanceSnapshot {
   lodgeHpRatio: number;
   playerUnitHpPool?: number;
   playerUnitHpRatio?: number;
+  exploredPercent?: number;
+  enemyNestHpRemovedRatio?: number;
   matchClamsEarned?: number;
 }
 
@@ -48,8 +50,21 @@ export function getPowerScore(snapshot: BalanceSnapshot): number {
   const army = Math.log2(snapshot.playerUnits + 1) * 0.1;
   const hpPool = Math.log2((snapshot.playerUnitHpPool ?? 0) + 1) * 0.1;
   const armyHealthRatio = clamp(snapshot.playerUnitHpRatio ?? 0, 0, 1) * 0.08;
+  const exploration = clamp((snapshot.exploredPercent ?? 0) / 100, 0, 1) * 0.08;
+  const nestPressure = clamp(snapshot.enemyNestHpRemovedRatio ?? 0, 0, 1) * 0.12;
   const lodge = clamp(snapshot.lodgeHpRatio, 0, 1) * 0.1;
-  return resources + stockpile + training + kills + army + hpPool + armyHealthRatio + lodge;
+  return (
+    resources +
+    stockpile +
+    training +
+    kills +
+    army +
+    hpPool +
+    armyHealthRatio +
+    exploration +
+    nestPressure +
+    lodge
+  );
 }
 
 /**

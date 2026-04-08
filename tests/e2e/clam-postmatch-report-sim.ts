@@ -11,6 +11,7 @@ import { type BalanceVariantConfig } from '@/balance/track-variants';
 import { generateUpgradeWeb } from '@/config/upgrade-web';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
 import {
   getEventsCompletedCount,
   resetMatchEventRunner,
@@ -30,6 +31,7 @@ import { SeededRandom } from '@/utils/random';
 import { createSnapshotScoreCache } from './balance-score-cache';
 import { BALANCE_REPORT_SEEDS, type BalanceReportRow } from './balance-report-sim';
 import { mockedGameRef } from '../helpers/game-world-ref';
+import { createExploredTestContext } from '../helpers/explored-context';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
@@ -57,7 +59,15 @@ interface MatchRunResult {
   earnedClams: number;
 }
 
-function snapshotWorld(world: GameWorld): MatchRunResult {
+function getAliveEnemyNestHp(world: GameWorld): number {
+  return Array.from(query(world.ecs, [Health, EntityTypeTag])).reduce((sum, eid) => {
+    if (EntityTypeTag.kind[eid] !== EntityKind.PredatorNest) return sum;
+    if (Health.current[eid] <= 0) return sum;
+    return sum + Health.current[eid];
+  }, 0);
+}
+
+function snapshotWorld(world: GameWorld, initialEnemyNestHp: number): MatchRunResult {
   const lodge = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).find(
     (eid) =>
       FactionTag.faction[eid] === Faction.Player &&
@@ -93,6 +103,11 @@ function snapshotWorld(world: GameWorld): MatchRunResult {
       playerUnits: playerUnits.length,
       playerUnitHpPool: totalCurrentHp,
       playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
+      exploredPercent: world.exploredPercent,
+      enemyNestHpRemovedRatio:
+        initialEnemyNestHp > 0
+          ? Math.min(1, Math.max(0, 1 - getAliveEnemyNestHp(world) / initialEnemyNestHp))
+          : 0,
       lodgeHpRatio:
         lodge == null || Health.max[lodge] <= 0 ? 0 : Health.current[lodge] / Health.max[lodge],
       matchClamsEarned: earnedClams,
@@ -123,15 +138,21 @@ function runMatch(seed: number, purchasedNodeIds: string[], clams: number, frame
   });
   applyUpgradeEffects(world, upgradeState.state, createPrestigeState());
   spawnVerticalEntities(world, layout, new SeededRandom(seed + 100));
+  const initialEnemyNestHp = getAliveEnemyNestHp(world);
+  resetFogOfWar();
+  initFogOfWar(createExploredTestContext(world.worldWidth, world.worldHeight));
   syncGovernorSignals(world);
 
   const governor = new Governor();
   governor.enabled = true;
   for (let frame = 0; frame < frames; frame += 1) {
     runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+    fogOfWarSystem(world);
   }
 
-  return snapshotWorld(world);
+  const result = snapshotWorld(world, initialEnemyNestHp);
+  resetFogOfWar();
+  return result;
 }
 
 function buildPurchasedNodeIds(
