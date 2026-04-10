@@ -1,4 +1,11 @@
-# Pond Warfare - Game Design Bible
+---
+title: Game Design Bible (Historical)
+updated: 2026-04-10
+status: archived
+domain: creative
+---
+
+# Pond Warfare - Game Design Bible (Historical Reference)
 
 > **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), [docs/architecture.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/architecture.md), and [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
 >

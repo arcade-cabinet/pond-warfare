@@ -1,3 +1,10 @@
+---
+title: Playtest Findings (Historical)
+updated: 2026-04-10
+status: stale
+domain: quality
+---
+
 > **NOTE (v3)**: These findings are from v1/v2 playtests. Some terminology is obsolete. References to `Gatherer`, `Brawler`, or other older unit names should be translated through the current unit model in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md). Treat the quoted tutorial prompts and build-order examples below as historical player feedback, not as the live UI or current opening flow.
 
 # Playtest Findings - 5 Player Personas

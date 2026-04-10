@@ -1,3 +1,10 @@
+---
+title: Feature Roadmap
+updated: 2026-04-10
+status: current
+domain: context
+---
+
 # Pond Warfare -- Feature Roadmap
 
 Current state: v3.0 -- Mobile-first single-mode RTS with prestige loop. Test count changes continuously; use CI or `pnpm test` for the current total.

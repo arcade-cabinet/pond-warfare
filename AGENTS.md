@@ -1,3 +1,10 @@
+---
+title: AI Agent Instructions
+updated: 2026-04-10
+status: current
+domain: technical
+---
+
 # AGENTS.md - AI Agent Instructions for Pond Warfare
 
 ## Project Overview

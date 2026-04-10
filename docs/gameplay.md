@@ -1,3 +1,10 @@
+---
+title: Gameplay Design
+updated: 2026-04-10
+status: current
+domain: product
+---
+
 # Gameplay Design (v3)
 
 ## Overview

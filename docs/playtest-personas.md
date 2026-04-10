@@ -1,3 +1,10 @@
+---
+title: Playtest Personas (Historical)
+updated: 2026-04-10
+status: stale
+domain: quality
+---
+
 # Paper Playtest — Persona Walkthroughs
 
 > **Note:** This file predates the canonical `Mudpaw` plus trainable Pearl specialist model. References to `Gatherer`, `Fighter`, free match-start specialist auto-deploy, or the old "deleted ability bar" discussion should be read as historical terminology unless explicitly updated below. See [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).

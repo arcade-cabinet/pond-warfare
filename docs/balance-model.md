@@ -1,3 +1,10 @@
+---
+title: Balance Model
+updated: 2026-04-10
+status: current
+domain: product
+---
+
 # Balance Model
 
 This document now measures a mixed runtime: the player-facing game uses Pearl specialist blueprint caps plus in-match specialist training, while some diagnostics still use the specialist snapshot harness as a controlled measurement tool. The canonical target model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), where operating radius is a primary upgrade axis. The live prestige config now also includes direct specialist-zone rows for `operating_radius`, `anchor_radius`, `engagement_radius`, and `projection_range`.

@@ -1,6 +1,13 @@
-# Pond Warfare - Comprehensive Game Balance Audit
+---
+title: Balance Audit (Historical)
+updated: 2026-04-10
+status: archived
+domain: product
+---
 
-> **Historical note:** This audit predates the canonical `Mudpaw` plus trainable Pearl specialist model. Treat `Gatherer`, `Brawler`, `Armory`, and similar terminology here as historical unless a section has been explicitly updated. For the live model, use [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), and [docs/balance-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/balance-model.md).
+# Pond Warfare - Comprehensive Game Balance Audit (Historical Reference)
+
+> **Historical note:** This audit predates the canonical `Mudpaw` plus trainable Pearl specialist model. Treat `Gatherer`, `Brawler`, `Armory`, and similar terminology here as historical unless a section has been explicitly updated. For the live model, use [docs/unit-model.md](docs/unit-model.md), [docs/gameplay.md](docs/gameplay.md), and [docs/balance-model.md](docs/balance-model.md).
 
 ## Executive Summary
 

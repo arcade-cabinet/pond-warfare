@@ -1,3 +1,10 @@
+---
+title: Responsive Modals Design Reference
+updated: 2026-04-10
+status: current
+domain: product
+---
+
 # Responsive Modals — Design Reference
 
 > Historical note: this document still references the old `TechTreePanel`

@@ -1,3 +1,10 @@
+---
+title: Library Usage
+updated: 2026-04-10
+status: current
+domain: technical
+---
+
 # Library Usage
 
 How each dependency is utilized in Pond Warfare.

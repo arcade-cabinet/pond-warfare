@@ -1,3 +1,10 @@
+---
+title: Architecture
+updated: 2026-04-10
+status: current
+domain: technical
+---
+
 # Architecture
 
 Pond Warfare uses an Entity Component System (ECS) architecture powered by bitECS, with Preact for UI and PixiJS 8 for rendering.
