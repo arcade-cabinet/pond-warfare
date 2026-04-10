@@ -17,6 +17,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 export function getPlayerEntities(world: GameWorld, kind?: EntityKind): number[] {
@@ -49,8 +50,8 @@ export function getEnemyNests(world: GameWorld): number[] {
   );
 }
 
-export function getIdleGatherers(world: GameWorld): number[] {
-  return getPlayerEntities(world, EntityKind.Gatherer).filter(
+export function getIdleMudpaws(world: GameWorld): number[] {
+  return getPlayerEntities(world, MUDPAW_KIND).filter(
     (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
   );
 }
@@ -109,7 +110,7 @@ export function getPlayerArmyUnits(world: GameWorld): number[] {
       Health.current[eid] > 0 &&
       !hasComponent(world.ecs, eid, IsBuilding) &&
       !hasComponent(world.ecs, eid, IsResource) &&
-      EntityTypeTag.kind[eid] !== EntityKind.Gatherer,
+      EntityTypeTag.kind[eid] !== EntityKind.Commander,
   );
 }
 

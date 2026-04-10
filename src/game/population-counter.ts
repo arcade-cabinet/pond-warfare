@@ -1,7 +1,7 @@
 /**
  * Population Counter
  *
- * Computes food, max-food-capacity, idle worker counts, and army size
+ * Computes food, max-food-capacity, idle generalist counts, and army size
  * from the live ECS state every frame. Also handles the queued-food
  * reservation made when the player clicks "Train".
  *
@@ -12,6 +12,7 @@
 import { hasComponent, query } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
+  AutonomousSpecialist,
   Building,
   EntityTypeTag,
   FactionTag,
@@ -19,34 +20,35 @@ import {
   IsBuilding,
   IsResource,
   Position,
+  SnapshotHarnessSpecialist,
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind, MEDIC_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 
 export interface PopulationResult {
-  idleWorkers: number;
+  idleGeneralists: number;
   armyUnits: number;
   maxFoodCap: number;
 }
 
-/** Recount population, army size, and idle workers from ECS; update food signals. */
+/** Recount population, army size, and idle generalists from ECS; update food signals. */
 export function computePopulation(world: GameWorld): PopulationResult {
   const w = world;
   const allEnts = query(w.ecs, [Position, Health, FactionTag, EntityTypeTag]);
 
   let curFood = 0;
   let maxFoodCap = 0;
-  let idleWorkers = 0;
+  let idleGeneralists = 0;
   let armyUnits = 0;
-  let idleGatherers = 0;
   let idleCombat = 0;
-  let idleHealers = 0;
-  let idleScouts = 0;
+  let idleSupport = 0;
+  let idleRecon = 0;
 
   for (let i = 0; i < allEnts.length; i++) {
     const eid = allEnts[i];
@@ -61,24 +63,26 @@ export function computePopulation(world: GameWorld): PopulationResult {
         if (def.foodProvided) maxFoodCap += def.foodProvided;
       }
     } else if (!hasComponent(w.ecs, eid, IsResource)) {
-      curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
+      if (!hasComponent(w.ecs, eid, SnapshotHarnessSpecialist)) {
+        curFood += ENTITY_DEFS[kind]?.foodCost ?? 1;
+      }
+      const isAutonomousSpecialist = hasComponent(w.ecs, eid, AutonomousSpecialist);
       const isIdle = UnitStateMachine.state[eid] === UnitState.Idle;
-      if (kind === EntityKind.Gatherer) {
-        if (isIdle) {
-          idleWorkers++;
-          idleGatherers++;
+      if (isMudpawKind(kind)) {
+        if (isIdle && !isAutonomousSpecialist) {
+          idleGeneralists++;
         }
-      } else if (kind === EntityKind.Healer) {
+      } else if (kind === MEDIC_KIND) {
         armyUnits++;
-        if (isIdle) idleHealers++;
+        if (isIdle && !isAutonomousSpecialist) idleSupport++;
       } else if (kind === EntityKind.Commander) {
         // Commander counts toward population but is never auto-assigned;
         // exclude from army counts and idle menus so it stays near the Lodge.
       } else {
         armyUnits++;
-        if (isIdle) {
+        if (isIdle && !isAutonomousSpecialist) {
           idleCombat++;
-          if (hasComponent(w.ecs, eid, Velocity) && Velocity.speed[eid] >= 2.0) idleScouts++;
+          if (hasComponent(w.ecs, eid, Velocity) && Velocity.speed[eid] >= 2.0) idleRecon++;
         }
       }
     }
@@ -101,16 +105,15 @@ export function computePopulation(world: GameWorld): PopulationResult {
   w.resources.maxFood = maxFoodCap;
   store.food.value = curFood + queuedFood;
   store.maxFood.value = maxFoodCap;
-  store.idleWorkerCount.value = idleWorkers + idleCombat + idleHealers;
   store.armyCount.value = armyUnits;
-  store.idleGathererCount.value = idleGatherers;
+  store.idleGeneralistCount.value = idleGeneralists;
   store.idleCombatCount.value = idleCombat;
-  store.idleHealerCount.value = idleHealers;
-  store.idleScoutCount.value = idleScouts;
+  store.idleSupportCount.value = idleSupport;
+  store.idleReconCount.value = idleRecon;
 
   if (armyUnits > w.stats.peakArmy) {
     w.stats.peakArmy = armyUnits;
   }
 
-  return { idleWorkers, armyUnits, maxFoodCap };
+  return { idleGeneralists, armyUnits, maxFoodCap };
 }

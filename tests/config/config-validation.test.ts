@@ -50,12 +50,12 @@ describe('Config Validation — US21', () => {
       expect(ids.length).toBeGreaterThan(0);
     });
 
-    it('should have 4 generalist types', () => {
+    it('should have the canonical manual roster', () => {
       const allIds = getAllUnitIds();
-      expect(allIds).toContain('gatherer');
-      expect(allIds).toContain('fighter');
+      expect(allIds).toContain('mudpaw');
       expect(allIds).toContain('medic');
-      expect(allIds).toContain('scout');
+      expect(allIds).toContain('sapper');
+      expect(allIds).toContain('saboteur');
     });
 
     it('all unit stats should be positive', () => {
@@ -94,14 +94,14 @@ describe('Config Validation — US21', () => {
     it('should have all 6 enemy types', () => {
       const ids = getAllEnemyIds();
       expect(ids).toContain('raider');
-      expect(ids).toContain('fighter');
-      expect(ids).toContain('healer');
-      expect(ids).toContain('scout_enemy');
+      expect(ids).toContain('assault_enemy');
+      expect(ids).toContain('support_enemy');
+      expect(ids).toContain('recon_enemy');
       expect(ids).toContain('sapper_enemy');
       expect(ids).toContain('saboteur_enemy');
     });
 
-    it('all enemy stats should be positive (except healer damage)', () => {
+    it('all enemy stats should be positive (except support damage)', () => {
       const ids = getAllEnemyIds();
       for (const id of ids) {
         const def = getEnemyDef(id);
@@ -382,6 +382,7 @@ describe('Config Validation — US21', () => {
       expect(config.base_clams).toBeGreaterThan(0);
       expect(config.kill_bonus).toBeGreaterThan(0);
       expect(config.event_bonus).toBeGreaterThan(0);
+      expect(config.resource_bonus_per_100).toBeGreaterThan(0);
       expect(config.survival_bonus_per_minute).toBeGreaterThan(0);
       expect(config.prestige_multiplier_per_rank).toBeGreaterThanOrEqual(0);
     });
@@ -533,12 +534,12 @@ describe('Config Validation — US21', () => {
   // ── Cross-config reference validation ──────────────────────────
 
   describe('Cross-config references', () => {
-    it('auto-deploy Pearl upgrades reference valid specialist unit IDs', () => {
+    it('specialist Pearl upgrades reference valid specialist unit IDs', () => {
       const entries = getAllPearlUpgradeEntries();
       const unitIds = getAllUnitIds();
 
       for (const { id, def } of entries) {
-        if (def.effect.type === 'auto_deploy') {
+        if (def.effect.type === 'specialist_blueprint' || def.effect.type === 'specialist_zone') {
           expect(
             unitIds.includes(def.effect.unit),
             `Pearl upgrade "${id}" references unknown unit "${def.effect.unit}"`,

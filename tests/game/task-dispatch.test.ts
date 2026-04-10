@@ -19,6 +19,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { clearTaskOverride, dispatchTaskOverride } from '@/game/task-dispatch';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
@@ -40,6 +41,10 @@ function createPlayerUnit(world: GameWorld, kind: EntityKind, x = 100, y = 100):
   EntityTypeTag.kind[eid] = kind;
   Velocity.speed[eid] = 2.0;
   UnitStateMachine.state[eid] = UnitState.Idle;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = 0;
+  TaskOverride.resourceKind[eid] = 0;
 
   return eid;
 }
@@ -84,6 +89,23 @@ function createEnemy(world: GameWorld, x: number, y: number): number {
   return eid;
 }
 
+function createPlayerLodge(world: GameWorld, x: number, y: number): number {
+  const eid = addEntity(world.ecs);
+  addComponent(world.ecs, eid, Position);
+  addComponent(world.ecs, eid, Health);
+  addComponent(world.ecs, eid, FactionTag);
+  addComponent(world.ecs, eid, EntityTypeTag);
+
+  Position.x[eid] = x;
+  Position.y[eid] = y;
+  Health.current[eid] = 400;
+  Health.max[eid] = 400;
+  FactionTag.faction[eid] = Faction.Player;
+  EntityTypeTag.kind[eid] = EntityKind.Lodge;
+
+  return eid;
+}
+
 describe('dispatchTaskOverride', () => {
   let world: GameWorld;
 
@@ -92,7 +114,7 @@ describe('dispatchTaskOverride', () => {
   });
 
   it('idle clears override and stops the unit', () => {
-    const eid = createPlayerUnit(world, EntityKind.Gatherer);
+    const eid = createPlayerUnit(world, MUDPAW_KIND);
     // First set an override
     TaskOverride.active[eid] = 1;
     TaskOverride.task[eid] = UnitState.GatherMove;
@@ -107,35 +129,38 @@ describe('dispatchTaskOverride', () => {
   });
 
   it('gathering-fish sets GatherMove and finds nearest clambed', () => {
-    const eid = createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
+    const eid = createPlayerUnit(world, MUDPAW_KIND, 100, 100);
     const farClam = createResource(world, EntityKind.Clambed, ResourceType.Fish, 500, 500);
     const nearClam = createResource(world, EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
-    dispatchTaskOverride(world, eid, 'gathering-fish');
+    const assigned = dispatchTaskOverride(world, eid, 'gathering-fish');
 
+    expect(assigned).toBe(true);
     expect(TaskOverride.active[eid]).toBe(1);
     expect(TaskOverride.task[eid]).toBe(UnitState.GatherMove);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.GatherMove);
     expect(UnitStateMachine.targetEntity[eid]).toBe(nearClam);
     expect(TaskOverride.targetEntity[eid]).toBe(nearClam);
+    expect(TaskOverride.resourceKind[eid]).toBe(EntityKind.Clambed);
     // farClam should not be selected
     expect(UnitStateMachine.targetEntity[eid]).not.toBe(farClam);
   });
 
   it('gathering-logs targets Cattail resources', () => {
-    const eid = createPlayerUnit(world, EntityKind.Gatherer, 100, 100);
+    const eid = createPlayerUnit(world, MUDPAW_KIND, 100, 100);
     // Create a clambed (wrong type) and a cattail (right type)
     createResource(world, EntityKind.Clambed, ResourceType.Fish, 110, 100);
     const cattail = createResource(world, EntityKind.Cattail, ResourceType.Logs, 200, 200);
 
-    dispatchTaskOverride(world, eid, 'gathering-logs');
+    const assigned = dispatchTaskOverride(world, eid, 'gathering-logs');
 
+    expect(assigned).toBe(true);
     expect(UnitStateMachine.targetEntity[eid]).toBe(cattail);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.GatherMove);
   });
 
   it('attacking sets AttackMove and finds nearest enemy', () => {
-    const eid = createPlayerUnit(world, EntityKind.Brawler, 100, 100);
+    const eid = createPlayerUnit(world, SAPPER_KIND, 100, 100);
     const enemy = createEnemy(world, 200, 200);
 
     dispatchTaskOverride(world, eid, 'attacking');
@@ -146,8 +171,24 @@ describe('dispatchTaskOverride', () => {
     expect(UnitStateMachine.targetEntity[eid]).toBe(enemy);
   });
 
+  it('attacking can lock onto an explicit shared target', () => {
+    const eid = createPlayerUnit(world, SAPPER_KIND, 100, 100);
+    createEnemy(world, 120, 120);
+    const focusTarget = createEnemy(world, 300, 320);
+
+    dispatchTaskOverride(world, eid, 'attacking', focusTarget);
+
+    expect(TaskOverride.active[eid]).toBe(1);
+    expect(TaskOverride.task[eid]).toBe(UnitState.AttackMove);
+    expect(TaskOverride.targetEntity[eid]).toBe(focusTarget);
+    expect(UnitStateMachine.state[eid]).toBe(UnitState.AttackMove);
+    expect(UnitStateMachine.targetEntity[eid]).toBe(focusTarget);
+    expect(UnitStateMachine.targetX[eid]).toBe(300);
+    expect(UnitStateMachine.targetY[eid]).toBe(320);
+  });
+
   it('patrolling sets AttackMovePatrol with override', () => {
-    const eid = createPlayerUnit(world, EntityKind.Brawler);
+    const eid = createPlayerUnit(world, SAPPER_KIND);
 
     dispatchTaskOverride(world, eid, 'patrolling');
 
@@ -155,12 +196,27 @@ describe('dispatchTaskOverride', () => {
     expect(TaskOverride.task[eid]).toBe(UnitState.AttackMovePatrol);
     expect(UnitStateMachine.state[eid]).toBe(UnitState.AttackMovePatrol);
   });
+
+  it('defending rallies the unit to the player Lodge', () => {
+    const eid = createPlayerUnit(world, SAPPER_KIND, 100, 100);
+    const lodge = createPlayerLodge(world, 240, 260);
+
+    dispatchTaskOverride(world, eid, 'defending');
+
+    expect(TaskOverride.active[eid]).toBe(1);
+    expect(TaskOverride.task[eid]).toBe(UnitState.AttackMovePatrol);
+    expect(TaskOverride.targetEntity[eid]).toBe(lodge);
+    expect(UnitStateMachine.state[eid]).toBe(UnitState.AttackMovePatrol);
+    expect(UnitStateMachine.targetEntity[eid]).toBe(lodge);
+    expect(UnitStateMachine.targetX[eid]).toBe(240);
+    expect(UnitStateMachine.targetY[eid]).toBe(260);
+  });
 });
 
 describe('clearTaskOverride', () => {
   it('zeros all TaskOverride fields', () => {
     const world = createGameWorld();
-    const eid = createPlayerUnit(world, EntityKind.Gatherer);
+    const eid = createPlayerUnit(world, MUDPAW_KIND);
     TaskOverride.active[eid] = 1;
     TaskOverride.task[eid] = UnitState.GatherMove;
     TaskOverride.targetEntity[eid] = 42;
@@ -170,6 +226,7 @@ describe('clearTaskOverride', () => {
     expect(TaskOverride.active[eid]).toBe(0);
     expect(TaskOverride.task[eid]).toBe(0);
     expect(TaskOverride.targetEntity[eid]).toBe(0);
+    expect(TaskOverride.resourceKind[eid]).toBe(0);
   });
 });
 
@@ -177,9 +234,9 @@ describe('TaskOverride integration with auto-behavior', () => {
   it('override prevents auto-behavior from reassigning the unit', () => {
     const world = createGameWorld();
     world.frameCount = 60;
-    world.autoBehaviors.gatherer = true;
+    world.autoBehaviors.generalist = true;
 
-    const eid = createPlayerUnit(world, EntityKind.Gatherer);
+    const eid = createPlayerUnit(world, MUDPAW_KIND);
     addComponent(world.ecs, eid, TaskOverride);
 
     // Create a resource that auto-gather would normally target

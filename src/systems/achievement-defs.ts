@@ -23,19 +23,13 @@ export interface AchievementSnapshot {
   onlyShadowTechs: boolean;
   // v2.1.0 — extended stats for new achievements
   weatherTypesExperienced: number;
-  warshipKills: number;
-  bridgesBuilt: number;
-  diverAmbushKills: number;
   marketTrades: number;
-  maxBerserkerKills: number;
-  shrineAbilitiesUsed: number;
   coopMode: boolean;
   dailyChallengesCompleted: number;
   playerLevel: number;
   perfectPuzzleCount: number;
   randomEventsExperienced: number;
   wallsBuilt: number;
-  enemiesBlockedByGates: number;
 }
 
 export interface AchievementDef {
@@ -212,40 +206,10 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     check: (s) => s.won && s.weatherTypesExperienced >= 4,
   },
   {
-    id: 'naval_supremacy',
-    name: 'Naval Supremacy',
-    desc: 'Destroy 5 enemy units with Warships',
-    check: (s) => s.warshipKills >= 5,
-  },
-  {
-    id: 'bridge_builder',
-    name: 'Bridge Builder',
-    desc: 'Build 3 temporary bridges in one game',
-    check: (s) => s.bridgesBuilt >= 3,
-  },
-  {
-    id: 'stealth_expert',
-    name: 'Stealth Expert',
-    desc: 'Get 5 ambush kills with Divers in one game',
-    check: (s) => s.diverAmbushKills >= 5,
-  },
-  {
     id: 'market_mogul',
     name: 'Market Mogul',
     desc: 'Complete 10 trades at the Market',
     check: (s) => s.marketTrades >= 10,
-  },
-  {
-    id: 'berserkers_fury',
-    name: "Berserker's Fury",
-    desc: 'Get 10 kills with a single Berserker before it dies',
-    check: (s) => s.maxBerserkerKills >= 10,
-  },
-  {
-    id: 'shrine_master',
-    name: 'Shrine Master',
-    desc: 'Use all 5 Shrine abilities across your career',
-    check: (s) => s.shrineAbilitiesUsed >= 5,
   },
   {
     id: 'coop_victory',
@@ -282,17 +246,5 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     name: 'Wall Builder',
     desc: 'Build 10 Wall segments in one game',
     check: (s) => s.wallsBuilt >= 10,
-  },
-  {
-    id: 'gate_keeper',
-    name: 'Gate Keeper',
-    desc: 'Block 20 enemies with Wall Gates',
-    check: (s) => s.enemiesBlockedByGates >= 20,
-  },
-  {
-    id: 'dock_master',
-    name: 'Dock Master',
-    desc: 'Build a Dock and launch 3 Warships in one game',
-    check: (s) => s.warshipKills >= 1 && s.buildingsBuilt >= 1,
   },
 ];

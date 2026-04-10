@@ -46,7 +46,7 @@ export const selectionIsMulti = signal(false);
 export const selectionSpriteData = signal<string | null>(null);
 export const selectionKills = signal(0);
 
-/** Typed composition breakdown for multi-select, e.g. "2 gatherer, 1 brawler" */
+/** Typed composition breakdown for multi-select, e.g. "2 Mudpaws, 1 Sapper" */
 export const selectionComposition = signal('');
 
 /** Entity IDs of the first 12 selected units, for mini-grid display */
@@ -73,16 +73,17 @@ export const peaceWarningCountdown = signal(-1);
 
 /** True when enemies are within 400px of the player's Lodge. */
 export const baseUnderAttack = signal(false);
+/** Number of enemy mobile units currently within the Lodge threat radius. */
+export const baseThreatCount = signal(0);
 
 // ---- Counts ----
-export const idleWorkerCount = signal(0);
 export const armyCount = signal(0);
 
-/** Per-type idle unit counts for contextual auto-behavior menu */
-export const idleGathererCount = signal(0);
+/** Per-role idle unit counts for contextual auto-behavior menu */
+export const idleGeneralistCount = signal(0);
 export const idleCombatCount = signal(0);
-export const idleHealerCount = signal(0);
-export const idleScoutCount = signal(0);
+export const idleSupportCount = signal(0);
+export const idleReconCount = signal(0);
 
 /** True when the current selection contains at least one player-owned mobile unit */
 export const hasPlayerUnits = signal(false);
@@ -210,8 +211,6 @@ export {
   type AchievementToast,
   achievementsOpen,
   activeAchievementToast,
-  airdropCooldown,
-  airdropsRemaining,
   autoPlayEnabled,
   autoSaveEnabled,
   checkpointCount,
@@ -253,7 +252,6 @@ export {
   replayTimeDisplay,
   settingsOpen,
   sfxVolume,
-  showSplashVideo,
   tidalSurgeAvailable,
   waveNumber,
 } from './store-gameplay';

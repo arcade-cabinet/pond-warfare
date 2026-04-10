@@ -12,7 +12,7 @@
  * - SFX calls (chop for cattails, mine for clambeds) every 30 frames while gathering
  * - Particle spawning at resource location
  * - Find nearby resource of same type if current resource is depleted
- * - Idle auto-gather: player gatherers near resources auto-start gathering every 30 frames
+ * - Idle auto-gather: player Mudpaws/generalists near resources auto-start gathering every 30 frames
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -28,15 +28,18 @@ import {
   IsResource,
   Position,
   Resource,
+  TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } from '@/types';
 import { checkResourceDepletion } from './gathering/depletion-warning';
+import { resumeGatherOverride, retargetGatherOverride } from './gathering/gather-override';
 import { applyPassiveIncome } from './gathering/passive-income';
 
 export function gatheringSystem(world: GameWorld): void {
-  const gatherers = query(world.ecs, [
+  const gatheringUnits = query(world.ecs, [
     Position,
     UnitStateMachine,
     Health,
@@ -53,22 +56,24 @@ export function gatheringSystem(world: GameWorld): void {
     Health,
     Building,
   ]);
+  const playerGatherRadius = Math.max(1, world.playerGatherRadiusMultiplier);
 
-  for (let i = 0; i < gatherers.length; i++) {
-    const eid = gatherers[i];
+  for (let i = 0; i < gatheringUnits.length; i++) {
+    const eid = gatheringUnits[i];
     if (Health.current[eid] <= 0) continue;
 
     const state = UnitStateMachine.state[eid] as UnitState;
     const kind = EntityTypeTag.kind[eid] as EntityKind;
     const faction = FactionTag.faction[eid] as Faction;
 
-    // --- Idle auto-gather ---
-    // Player gatherers only auto-gather when autoBehaviors.gatherer is enabled
-    // Enemy gatherers always auto-gather (AI economy)
-    const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.gatherer;
+    if (isMudpawKind(kind) && state === UnitState.Idle && resumeGatherOverride(world, eid)) {
+      continue;
+    }
+
+    const canAutoGather = faction === Faction.Enemy || world.autoBehaviors.generalist;
     if (
       state === UnitState.Idle &&
-      kind === EntityKind.Gatherer &&
+      isMudpawKind(kind) &&
       canAutoGather &&
       (world.frameCount + eid * 7) % 30 === 0
     ) {
@@ -78,7 +83,7 @@ export function gatheringSystem(world: GameWorld): void {
         const ey = Position.y[eid];
         let closest = -1;
 
-        // Root Network: player gatherers auto-path to the richest resource node
+        // Root Network: player Mudpaws/generalists auto-path to the richest resource node
         if (faction === Faction.Player && world.tech.rootNetwork) {
           let bestAmount = 0;
           for (let j = 0; j < resources.length; j++) {
@@ -90,7 +95,7 @@ export function gatheringSystem(world: GameWorld): void {
             }
           }
         } else {
-          let minDist = AUTO_GATHER_RADIUS;
+          let minDist = AUTO_GATHER_RADIUS * (faction === Faction.Player ? playerGatherRadius : 1);
           for (let j = 0; j < resources.length; j++) {
             const r = resources[j];
             if (Resource.amount[r] <= 0) continue;
@@ -126,7 +131,7 @@ export function gatheringSystem(world: GameWorld): void {
         const ex = Position.x[eid];
         const ey = Position.y[eid];
         let closest = -1;
-        let minDist = 300;
+        let minDist = 300 * (faction === Faction.Player ? playerGatherRadius : 1);
 
         for (let j = 0; j < resources.length; j++) {
           const r = resources[j];
@@ -143,6 +148,9 @@ export function gatheringSystem(world: GameWorld): void {
 
         if (closest !== -1) {
           // cmdGather(closest)
+          if (TaskOverride.active[eid] === 1 && TaskOverride.task[eid] === UnitState.GatherMove) {
+            TaskOverride.targetEntity[eid] = closest;
+          }
           UnitStateMachine.targetEntity[eid] = closest;
           UnitStateMachine.targetX[eid] = Position.x[closest];
           UnitStateMachine.targetY[eid] = Position.y[closest];
@@ -150,6 +158,8 @@ export function gatheringSystem(world: GameWorld): void {
           continue;
         }
       }
+
+      if (retargetGatherOverride(world, eid)) continue;
       UnitStateMachine.state[eid] = UnitState.Idle;
       continue;
     }
@@ -204,12 +214,23 @@ export function gatheringSystem(world: GameWorld): void {
 
       // Deplete resource (Tidal Harvest: +25% gathering)
       let gatherAmt = GATHER_AMOUNT;
-      if (faction === Faction.Player && world.tech.tidalHarvest) {
-        gatherAmt = Math.round(GATHER_AMOUNT * 1.25);
+      // Preserve some real throughput gain on long travel-heavy maps where
+      // pure timer reductions are too small to change completed trip counts.
+      if (faction === Faction.Player && world.gatherSpeedMod > 1.0) {
+        gatherAmt = Math.round(gatherAmt * (1 + (world.gatherSpeedMod - 1) * 0.5));
       }
-      // Commander passive: gather bonus for player gatherers
+      if (faction === Faction.Player && world.playerCarryCapacityMultiplier > 1.0) {
+        gatherAmt = Math.round(gatherAmt * world.playerCarryCapacityMultiplier);
+      }
+      if (faction === Faction.Player && world.tech.tidalHarvest) {
+        gatherAmt = Math.round(gatherAmt * 1.25);
+      }
+      // Commander bonuses: global gather passive plus Sage-style aura gather rate.
       if (faction === Faction.Player && world.commanderModifiers.passiveGatherBonus > 0) {
         gatherAmt = Math.round(gatherAmt * (1 + world.commanderModifiers.passiveGatherBonus));
+      }
+      if (faction === Faction.Player && world.commanderGatherBuff.has(eid)) {
+        gatherAmt = Math.round(gatherAmt * (1 + world.commanderModifiers.auraGatherBonus));
       }
       // Permadeath rewards modifier: +50% gathered resources for player
       if (faction === Faction.Player && world.rewardsModifier > 1.0) {
@@ -233,7 +254,7 @@ export function gatheringSystem(world: GameWorld): void {
       // Find return building: Lodge for player, nearest PredatorNest for enemy
       let returnBuilding = -1;
       if (faction === Faction.Enemy) {
-        // Enemy gatherers return to nearest PredatorNest
+        // Enemy harvesters return to the nearest Predator Nest
         let minDist = Infinity;
         const ex = Position.x[eid];
         const ey = Position.y[eid];
@@ -250,7 +271,7 @@ export function gatheringSystem(world: GameWorld): void {
           }
         }
       } else {
-        // Player gatherers return to nearest completed Lodge
+        // Player Mudpaws return to the nearest completed Lodge
         let minDist = Infinity;
         const ex = Position.x[eid];
         const ey = Position.y[eid];

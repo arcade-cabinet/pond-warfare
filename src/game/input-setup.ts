@@ -23,17 +23,17 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { usePondBlessing, useShadowSprint, useTidalSurge } from '@/game/abilities';
 import { useCommanderAbility } from '@/game/commander-abilities';
+import { getSpecialistMenuMode } from '@/game/specialist-assignment';
 import type { KeyboardCallbacks } from '@/input/keyboard';
 import type { PointerCallbacks } from '@/input/pointer';
+import { issueContextCommand } from '@/input/selection/commands';
+import { selectArmy, selectIdleGeneralist } from '@/input/selection/group-select';
 import {
   getEntityAt,
   getResourceAt,
   hasPlayerUnitsSelected,
-  issueContextCommand,
   placeBuilding,
-  selectArmy,
-  selectIdleWorker,
-} from '@/input/selection';
+} from '@/input/selection/queries';
 import { triggerCommandPulse } from '@/rendering/animations';
 import type { ReplayRecorder } from '@/replay';
 import { type EntityKind, Faction, UnitState } from '@/types';
@@ -55,8 +55,8 @@ export function buildKeyboardCallbacks(deps: InputSetupDeps): KeyboardCallbacks 
       store.muted.value = audio.muted;
     },
     onCycleSpeed: () => cycleSpeed(),
-    onSelectIdleWorker: () => {
-      selectIdleWorker(world);
+    onSelectIdleGeneralist: () => {
+      selectIdleGeneralist(world);
       syncUIStore();
     },
     onSelectArmy: () => {
@@ -242,6 +242,7 @@ export function buildPointerCallbacks(deps: PointerSetupDeps): PointerCallbacks 
           Health.current[eid] > 0,
       );
     },
+    getSpecialistMenuMode: (eid) => getSpecialistMenuMode(world, eid),
     selectEntity: (eid) => {
       Selectable.selected[eid] = 1;
     },

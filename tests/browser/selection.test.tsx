@@ -5,7 +5,6 @@
  * shift-click add/remove, ground click deselect, Escape deselect.
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
@@ -14,9 +13,10 @@ import {
   Position, Selectable, UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -73,22 +73,7 @@ async function deselectAll() {
   await delay(200);
 }
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 async function waitFrames(n: number) {
   const start = game.world.frameCount;
@@ -98,14 +83,14 @@ async function waitFrames(n: number) {
 describe('Selection interactions', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500);
+    await delay(1000);
     game.world.gameSpeed = 3;
   }, 30_000);
 
   it('left-click on unit selects it', async () => {
     await deselectAll();
-    const gid = getUnits(EntityKind.Gatherer)[0];
-    clickWorld(Position.x[gid], Position.y[gid], 0);
+    const mudpawId = getUnits(MUDPAW_KIND)[0];
+    clickWorld(Position.x[mudpawId], Position.y[mudpawId], 0);
     await delay(200);
     expect(game.world.selection.length).toBeGreaterThan(0);
   });
@@ -133,10 +118,10 @@ describe('Selection interactions', () => {
 
   it('double-click selects unit (and all of type if multiple on screen)', async () => {
     await deselectAll();
-    const gatherers = getUnits(EntityKind.Gatherer);
-    if (gatherers.length === 0) return;
-    const gid = gatherers[0];
-    const { x, y } = worldToScreen(Position.x[gid], Position.y[gid]);
+    const mudpaws = getUnits(MUDPAW_KIND);
+    if (mudpaws.length === 0) return;
+    const mudpawId = mudpaws[0];
+    const { x, y } = worldToScreen(Position.x[mudpawId], Position.y[mudpawId]);
     const c = document.getElementById('game-container')!;
     // Double click = two rapid clicks within 350ms
     firePointer(c, 'pointerdown', x, y, 0);
@@ -145,23 +130,23 @@ describe('Selection interactions', () => {
     firePointer(c, 'pointerdown', x, y, 0);
     firePointer(c, 'pointerup', x, y, 0);
     await delay(200);
-    // Should select multiple gatherers (all on screen)
+    // Should select multiple Mudpaws (all on screen)
     // Double-click should select at least the clicked unit
     expect(game.world.selection.length).toBeGreaterThan(0);
   });
 
   it('shift-click adds unit to selection', async () => {
     await deselectAll();
-    const gatherers = getUnits(EntityKind.Gatherer);
-    if (gatherers.length < 2) return;
+    const mudpaws = getUnits(MUDPAW_KIND);
+    if (mudpaws.length < 2) return;
     // Select first
-    clickWorld(Position.x[gatherers[0]], Position.y[gatherers[0]], 0);
+    clickWorld(Position.x[mudpaws[0]], Position.y[mudpaws[0]], 0);
     await delay(150);
     const countBefore = game.world.selection.length;
     // Hold shift via keyboard then click
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift', shiftKey: true, bubbles: true }));
     await delay(50);
-    clickWorld(Position.x[gatherers[1]], Position.y[gatherers[1]], 0);
+    clickWorld(Position.x[mudpaws[1]], Position.y[mudpaws[1]], 0);
     await delay(150);
     window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Shift', shiftKey: false, bubbles: true }));
     await delay(50);
@@ -169,8 +154,8 @@ describe('Selection interactions', () => {
   });
 
   it('clicking empty ground deselects all', async () => {
-    const gid = getUnits(EntityKind.Gatherer)[0];
-    clickWorld(Position.x[gid], Position.y[gid], 0);
+    const mudpawId = getUnits(MUDPAW_KIND)[0];
+    clickWorld(Position.x[mudpawId], Position.y[mudpawId], 0);
     await delay(150);
     expect(game.world.selection.length).toBeGreaterThan(0);
     // Click far from any unit
@@ -183,10 +168,10 @@ describe('Selection interactions', () => {
       (e) => !hasComponent(game.world.ecs, e, IsBuilding),
     );
     if (enemies.length === 0) { await waitFrames(300); } // wait for wave
-    const brawlers = getUnits(EntityKind.Brawler);
-    if (brawlers.length === 0 || enemies.length === 0) return;
+    const sappers = getUnits(SAPPER_KIND);
+    if (sappers.length === 0 || enemies.length === 0) return;
 
-    const bid = brawlers[0];
+    const bid = sappers[0];
     clickWorld(Position.x[bid], Position.y[bid], 0);
     await delay(150);
 

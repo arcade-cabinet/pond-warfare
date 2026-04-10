@@ -6,9 +6,10 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Combat, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
+import { Carrying, Combat, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { commanderAura } from '@/ecs/systems/combat/commander-aura';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 function spawnUnit(
@@ -23,6 +24,7 @@ function spawnUnit(
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);
   addComponent(world.ecs, eid, Combat);
+  addComponent(world.ecs, eid, Carrying);
   addComponent(world.ecs, eid, FactionTag);
   addComponent(world.ecs, eid, EntityTypeTag);
 
@@ -62,7 +64,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
 
   it('should buff unit HP when entering aura range', () => {
     const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
-    const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
+    const unit = spawnUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 100);
 
     runAura();
 
@@ -74,7 +76,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
 
   it('should remove HP buff when unit leaves aura range', () => {
     const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
-    const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
+    const unit = spawnUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 100);
 
     // First tick: unit enters aura
     runAura();
@@ -93,7 +95,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
 
   it('should not stack buff on consecutive ticks in range', () => {
     const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
-    const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
+    const unit = spawnUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 100);
 
     // Tick 1
     runAura();
@@ -107,7 +109,7 @@ describe('commanderAura — Ironpaw HP buff', () => {
 
   it('should re-apply buff when unit re-enters aura', () => {
     const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
-    const unit = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
+    const unit = spawnUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 100);
 
     // Enter range
     runAura();
@@ -128,8 +130,8 @@ describe('commanderAura — Ironpaw HP buff', () => {
 
   it('should remove buff from all units when commander dies', () => {
     const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
-    const unit1 = spawnUnit(world, 120, 100, Faction.Player, EntityKind.Brawler, 100);
-    const unit2 = spawnUnit(world, 130, 100, Faction.Player, EntityKind.Brawler, 80);
+    const unit1 = spawnUnit(world, 120, 100, Faction.Player, SAPPER_KIND, 100);
+    const unit2 = spawnUnit(world, 130, 100, Faction.Player, SAPPER_KIND, 80);
 
     runAura();
     expect(Health.max[unit1]).toBe(120);
@@ -153,12 +155,55 @@ describe('commanderAura — Ironpaw HP buff', () => {
     runAura();
 
     // Spawn a new unit in range
-    const unit = spawnUnit(world, 110, 100, Faction.Player, EntityKind.Brawler, 50);
+    const unit = spawnUnit(world, 110, 100, Faction.Player, SAPPER_KIND, 50);
     world.frameCount = 120;
     commanderAura(world);
 
     // 50 * 0.2 = 10 bonus
     expect(Health.max[unit]).toBe(60);
     expect(Health.current[unit]).toBe(60);
+  });
+});
+
+describe('commanderAura — Sage gather aura', () => {
+  let world: GameWorld;
+
+  beforeEach(() => {
+    world = createGameWorld();
+    world.spatialHash = undefined as never;
+    world.commanderModifiers = {
+      ...world.commanderModifiers,
+      auraGatherBonus: 0.25,
+      auraDamageBonus: 0,
+      auraSpeedBonus: 0,
+      auraHpBonus: 0,
+      auraUnitHpBonus: 0,
+      auraEnemyDamageReduction: 0,
+    };
+  });
+
+  it('marks nearby Mudpaws for gather-rate aura', () => {
+    const _cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const mudpaw = spawnUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
+
+    world.frameCount = 60;
+    commanderAura(world);
+
+    expect(world.commanderGatherBuff.has(mudpaw)).toBe(true);
+  });
+
+  it('clears gather aura when the commander dies', () => {
+    const cmd = spawnUnit(world, 100, 100, Faction.Player, EntityKind.Commander, 200);
+    const mudpaw = spawnUnit(world, 120, 100, Faction.Player, MUDPAW_KIND, 30);
+
+    world.frameCount = 60;
+    commanderAura(world);
+    expect(world.commanderGatherBuff.has(mudpaw)).toBe(true);
+
+    Health.current[cmd] = 0;
+    world.frameCount = 61;
+    commanderAura(world);
+
+    expect(world.commanderGatherBuff.size).toBe(0);
   });
 });

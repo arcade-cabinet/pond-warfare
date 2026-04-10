@@ -1,9 +1,9 @@
 /**
- * Prestige Auto-Deploy Logic
+ * Prestige Pearl Logic
  *
  * Reads from configs/prestige.json to calculate Pearl rewards,
- * determine auto-deploy unit counts per rank, and resolve
- * which auto-behaviors are unlocked at the current prestige state.
+ * determine specialist blueprint caps per rank, and resolve
+ * which permanent auto-behaviors are unlocked at the current prestige state.
  *
  * Display helpers live in prestige-display.ts (extracted for 300 LOC limit).
  */
@@ -17,9 +17,11 @@ import {
 } from './config-loader';
 import type {
   AutoBehaviorEffect,
-  AutoDeployEffect,
   MultiplierEffect,
   PearlUpgradeDef,
+  SpecialistBlueprintEffect,
+  SpecialistZoneEffect,
+  SpecialistZoneStat,
 } from './v3-types';
 
 // Re-export display helpers so existing imports still work
@@ -62,29 +64,65 @@ export function nextPrestigeThreshold(currentRank: number): number {
   return getPrestigeThreshold(currentRank);
 }
 
-// ── Auto-Deploy Calculations ──────────────────────────────────────
+// ── Specialist Blueprint Cap Calculations ────────────────────────
 
-export interface AutoDeploySpec {
+export interface SpecialistBlueprintSpec {
   unitId: string;
-  count: number;
+  cap: number;
   upgradeId: string;
 }
 
-export function getAutoDeployUnits(state: PrestigeState): AutoDeploySpec[] {
-  const result: AutoDeploySpec[] = [];
+export function getSpecialistBlueprints(state: PrestigeState): SpecialistBlueprintSpec[] {
+  const result: SpecialistBlueprintSpec[] = [];
   for (const { id, def } of getAllPearlUpgradeEntries()) {
-    if (def.effect.type !== 'auto_deploy') continue;
-    const effect = def.effect as AutoDeployEffect;
+    if (def.effect.type !== 'specialist_blueprint') continue;
+    const effect = def.effect as SpecialistBlueprintEffect;
     const rank = state.upgradeRanks[id] ?? 0;
     if (rank <= 0) continue;
-    result.push({ unitId: effect.unit, count: effect.count_per_rank * rank, upgradeId: id });
+    result.push({ unitId: effect.unit, cap: effect.cap_per_rank * rank, upgradeId: id });
   }
   return result;
 }
 
-export function getAutoDeployCount(state: PrestigeState, unitId: string): number {
-  const match = getAutoDeployUnits(state).find((d) => d.unitId === unitId);
-  return match?.count ?? 0;
+export function getSpecialistBlueprintCap(state: PrestigeState, unitId: string): number {
+  const match = getSpecialistBlueprints(state).find((d) => d.unitId === unitId);
+  return match?.cap ?? 0;
+}
+
+// ── Specialist Zone Bonuses ──────────────────────────────────────
+
+export interface SpecialistZoneBonus {
+  unitId: string;
+  stat: SpecialistZoneStat;
+  value: number;
+  upgradeId: string;
+}
+
+export function getSpecialistZoneBonuses(state: PrestigeState): SpecialistZoneBonus[] {
+  const result: SpecialistZoneBonus[] = [];
+  for (const { id, def } of getAllPearlUpgradeEntries()) {
+    if (def.effect.type !== 'specialist_zone') continue;
+    const effect = def.effect as SpecialistZoneEffect;
+    const rank = state.upgradeRanks[id] ?? 0;
+    if (rank <= 0) continue;
+    result.push({
+      unitId: effect.unit,
+      stat: effect.stat,
+      value: effect.value_per_rank * rank,
+      upgradeId: id,
+    });
+  }
+  return result;
+}
+
+export function getSpecialistZoneBonus(
+  state: PrestigeState,
+  unitId: string,
+  stat: SpecialistZoneStat,
+): number {
+  return getSpecialistZoneBonuses(state)
+    .filter((entry) => entry.unitId === unitId && entry.stat === stat)
+    .reduce((sum, entry) => sum + entry.value, 0);
 }
 
 // ── Auto-Behavior Unlocks ─────────────────────────────────────────

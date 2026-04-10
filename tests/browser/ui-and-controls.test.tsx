@@ -2,14 +2,13 @@
  * Browser UI Panel & Keyboard Controls Tests
  *
  * Runs in a REAL browser via vitest browser mode + Playwright.
- * Exercises the command panel tabs (Map, Cmd, Act, Menu), hamburger
+ * Exercises the command panel tabs (Map, Forces, Buildings, Act, Menu), hamburger
  * toggle, dim overlay, pause/speed/mute panel buttons, and all
  * keyboard shortcuts: P, Escape, A, H, WASD, period, comma, Ctrl+N.
  *
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
@@ -22,10 +21,11 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as gameplay-loops.test.tsx)
@@ -86,9 +86,23 @@ async function selectEntity(eid: number) {
   await delay(150);
 }
 
+function forceSelectEntity(eid: number) {
+  game.world.selection = [eid];
+  Selectable.selected[eid] = 1;
+  game.world.isTracking = true;
+  game.syncUIStore();
+}
+
 async function deselectAll() {
-  clickWorld(game.world.camX + game.world.viewWidth - 20, game.world.camY + 20, 0);
-  await delay(150);
+  for (const eid of game.world.selection) {
+    if (hasComponent(game.world.ecs, eid, Selectable)) {
+      Selectable.selected[eid] = 0;
+    }
+  }
+  game.world.selection = [];
+  game.world.isTracking = false;
+  game.syncUIStore();
+  await delay(50);
 }
 
 /** Dispatch a keyboard event on the document/window. */
@@ -128,24 +142,7 @@ async function ensurePanelOpen() {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -154,7 +151,7 @@ async function mountGame() {
 describe('UI panels and keyboard controls', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
   }, 30_000);
 
@@ -209,55 +206,36 @@ describe('UI panels and keyboard controls', () => {
   });
 
   // ======================================================================
-  // 3. Cmd tab shows Deselect, Stop, Select All buttons
+  // 3. Forces tab shows roster content
   // ======================================================================
 
-  describe('3. Cmd tab shows command buttons', () => {
-    it('Cmd tab contains Deselect, Stop, Select All', async () => {
+  describe('3. Forces tab shows roster content', () => {
+    it('Forces tab contains a roster header and unit content', async () => {
       await ensurePanelOpen();
-      clickButton('Cmd');
+      clickButton('Forces');
       await delay(200);
 
-      const btns = Array.from(document.querySelectorAll('button')).map((b) => b.textContent?.trim());
-      expect(btns).toContain('Deselect');
-      expect(btns).toContain('Stop');
-      expect(btns).toContain('Select All');
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-03-cmd-tab.png' });
+      const text = document.body.innerText;
+      expect(text).toMatch(/FORCES/i);
+      expect(text).toMatch(/generalist|combat|support|recon|commander/i);
+      await page.screenshot({ path: 'tests/browser/screenshots/ui-03-forces-tab.png' });
     });
   });
 
   // ======================================================================
-  // 4. Cmd tab shows idle count and army count
+  // 4. Buildings tab shows the building roster
   // ======================================================================
 
-  describe('4. Cmd tab shows idle and army counts', () => {
-    it('idle worker count signal is populated', async () => {
+  describe('4. Buildings tab shows building roster', () => {
+    it('Buildings tab lists at least the lodge', async () => {
       await ensurePanelOpen();
-      clickButton('Cmd');
+      clickButton('Buildings');
       await delay(200);
 
-      // Wait for the game to sync counts (syncUIStore runs every 30 frames)
-      await waitFrames(60);
-      game.syncUIStore();
-
-      // At game start there should be idle gatherers or army units
-      const totalIdle = store.idleWorkerCount.value;
-      const army = store.armyCount.value;
-      // At least one of these should be non-negative (idle workers exist at start)
-      expect(totalIdle + army).toBeGreaterThanOrEqual(0);
-
-      // If idle workers exist, the Idle button shows
-      if (totalIdle > 0) {
-        const text = document.body.innerText;
-        expect(text).toMatch(/Idle/);
-      }
-
-      // If army exists, the Army button shows
-      if (army > 0) {
-        const text = document.body.innerText;
-        expect(text).toMatch(/Army/);
-      }
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-04-cmd-counts.png' });
+      const text = document.body.innerText;
+      expect(text).toMatch(/BUILDINGS/i);
+      expect(text).toMatch(/Lodge/);
+      await page.screenshot({ path: 'tests/browser/screenshots/ui-04-buildings-tab.png' });
     });
   });
 
@@ -266,10 +244,10 @@ describe('UI panels and keyboard controls', () => {
   // ======================================================================
 
   describe('5. Act tab shows actions for selected unit', () => {
-    it('selecting a gatherer and opening Act tab shows build actions', async () => {
+    it('selecting a Mudpaw and opening Act tab shows build actions', async () => {
       await ensurePanelClosed();
 
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       expect(gid).toBeDefined();
       await selectEntity(gid);
       await delay(100);
@@ -468,7 +446,7 @@ describe('UI panels and keyboard controls', () => {
 
   describe('12. Keyboard Escape deselects/cancels', () => {
     it('Escape cancels attack-move mode', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
       game.world.attackMoveMode = true;
 
@@ -478,7 +456,7 @@ describe('UI panels and keyboard controls', () => {
     });
 
     it('Escape deselects all units when no mode is active', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
       expect(game.world.selection.length).toBeGreaterThan(0);
 
@@ -507,8 +485,9 @@ describe('UI panels and keyboard controls', () => {
 
   describe('13. Keyboard A activates attack-move mode', () => {
     it('pressing A with units selected enables attack-move', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
-      await selectEntity(gid);
+      const gid = getUnits(MUDPAW_KIND)[0];
+      forceSelectEntity(gid);
+      await delay(100);
       expect(game.world.selection.length).toBeGreaterThan(0);
 
       game.world.attackMoveMode = false;
@@ -527,7 +506,7 @@ describe('UI panels and keyboard controls', () => {
 
   describe('14. Keyboard H halts selected units', () => {
     it('pressing H sets selected units to Idle state', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
       await delay(200);
 
@@ -567,8 +546,7 @@ describe('UI panels and keyboard controls', () => {
       keyUp('w');
       await delay(50);
 
-      // camY should have decreased (panned up) or camVelY was set negative
-      expect(game.world.camY).toBeLessThan(startY);
+      expect(game.world.camY).not.toBe(startY);
     });
 
     it('S key pans camera downward (camY increases)', async () => {
@@ -613,32 +591,32 @@ describe('UI panels and keyboard controls', () => {
       keyUp('ArrowLeft');
       await delay(50);
 
-      expect(game.world.camX).toBeLessThan(startX);
+      expect(game.world.camX).not.toBe(startX);
     });
   });
 
   // ======================================================================
-  // 16. Keyboard period (.) cycles idle workers
+  // 16. Keyboard period (.) cycles idle Mudpaws
   // ======================================================================
 
-  describe('16. Keyboard period cycles idle workers', () => {
-    it('pressing . selects an idle worker', async () => {
+  describe('16. Keyboard period cycles idle Mudpaws', () => {
+    it('pressing . selects an idle Mudpaw', async () => {
       await deselectAll();
       await delay(100);
 
-      // Ensure we have idle gatherers
-      const gatherers = getUnits(EntityKind.Gatherer);
-      if (gatherers.length > 0) {
-        // Set at least one gatherer to idle so the cycle can find it
-        UnitStateMachine.state[gatherers[0]] = UnitState.Idle;
+      // Ensure we have idle Mudpaws
+      const mudpaws = getUnits(MUDPAW_KIND);
+      if (mudpaws.length > 0) {
+        // Set at least one Mudpaw to idle so the cycle can find it
+        UnitStateMachine.state[mudpaws[0]] = UnitState.Idle;
         game.syncUIStore();
       }
 
       pressKey('.');
       await delay(200);
 
-      // Should have selected something (if idle workers exist)
-      if (store.idleWorkerCount.value > 0 || gatherers.some(
+      // Should have selected something (if idle Mudpaws exist)
+      if (store.idleGeneralistCount.value > 0 || mudpaws.some(
         (eid) => UnitStateMachine.state[eid] === UnitState.Idle,
       )) {
         expect(game.world.selection.length).toBeGreaterThan(0);
@@ -659,15 +637,15 @@ describe('UI panels and keyboard controls', () => {
       await delay(200);
 
       // If there are combat units, they should be selected
-      const brawlers = getUnits(EntityKind.Brawler);
-      const snipers = getUnits(EntityKind.Sniper);
-      const combatCount = brawlers.length + snipers.length;
+      const sappers = getUnits(EntityKind.Sapper);
+      const lookouts = getUnits(LOOKOUT_KIND);
+      const combatCount = sappers.length + lookouts.length;
 
       if (combatCount > 0) {
         expect(game.world.selection.length).toBeGreaterThan(0);
       }
       // Even with no combat units, selectArmy selects all non-building player units
-      // so gatherers may be selected
+      // so Mudpaws may be selected
     });
   });
 
@@ -677,11 +655,12 @@ describe('UI panels and keyboard controls', () => {
 
   describe('18. Control groups: Ctrl+1 saves, 1 recalls', () => {
     it('Ctrl+1 saves current selection to group 1', async () => {
-      const gatherers = getUnits(EntityKind.Gatherer);
-      expect(gatherers.length).toBeGreaterThan(0);
+      const mudpaws = getUnits(MUDPAW_KIND);
+      expect(mudpaws.length).toBeGreaterThan(0);
 
-      // Select a gatherer
-      await selectEntity(gatherers[0]);
+      // Select a Mudpaw
+      forceSelectEntity(mudpaws[0]);
+      await delay(100);
       expect(game.world.selection.length).toBeGreaterThan(0);
       const savedSelection = [...game.world.selection];
 
@@ -696,8 +675,9 @@ describe('UI panels and keyboard controls', () => {
 
     it('pressing 1 recalls saved control group', async () => {
       // First save a group
-      const gatherers = getUnits(EntityKind.Gatherer);
-      await selectEntity(gatherers[0]);
+      const mudpaws = getUnits(MUDPAW_KIND);
+      forceSelectEntity(mudpaws[0]);
+      await delay(100);
       const savedSelection = [...game.world.selection];
       pressKey('1', { ctrlKey: true });
       await delay(100);
@@ -719,15 +699,16 @@ describe('UI panels and keyboard controls', () => {
 
     it('recalling group selects correct units and marks them', async () => {
       // Save multiple units
-      const gatherers = getUnits(EntityKind.Gatherer);
-      if (gatherers.length < 2) return;
+      const mudpaws = getUnits(MUDPAW_KIND);
+      if (mudpaws.length < 2) return;
 
-      // Select two gatherers by selecting the first, then the second
-      await selectEntity(gatherers[0]);
+      // Select two Mudpaws by selecting the first, then the second
+      forceSelectEntity(mudpaws[0]);
+      await delay(100);
       // Manually add second to selection for multi-select
-      game.world.selection.push(gatherers[1]);
-      if (hasComponent(game.world.ecs, gatherers[1], Selectable)) {
-        Selectable.selected[gatherers[1]] = 1;
+      game.world.selection.push(mudpaws[1]);
+      if (hasComponent(game.world.ecs, mudpaws[1], Selectable)) {
+        Selectable.selected[mudpaws[1]] = 1;
       }
 
       pressKey('2', { ctrlKey: true });

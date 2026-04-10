@@ -17,11 +17,24 @@ import { SelectionPanel } from '@/ui/selection-panel';
 import { SettingsPanel } from '@/ui/settings-panel';
 import * as store from '@/ui/store';
 
-// v3: NewGameModal removed -- stub for remaining test references
-const NewGameModal = () => null;
-
-// Mock animation module
-vi.mock('@/rendering/animations', () => new Proxy({}, { get: () => vi.fn() }));
+// Mock animation module with explicit overrides so isolated browser runs stay stable.
+vi.mock('@/rendering/animations', async () => {
+  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
+    '@/rendering/animations',
+  );
+  return {
+    ...actual,
+    animateGameOverStats: vi.fn(),
+    animateIntroTitle: vi.fn(),
+    animateIntroSubtitle: vi.fn(),
+    cleanupEntityAnimation: vi.fn(),
+    triggerCommandPulse: vi.fn(),
+    triggerHitRecoil: vi.fn(),
+    triggerBuildingComplete: vi.fn(),
+    triggerSpawnPop: vi.fn(),
+    triggerAttackLunge: vi.fn(),
+  };
+});
 
 import '@/styles/main.css';
 
@@ -62,13 +75,13 @@ function resetStore() {
   store.lowFish.value = false;
   store.lowLogs.value = false;
   store.attackMoveActive.value = false;
-  store.idleWorkerCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
-  store.idleGathererCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.idleCombatCount.value = 0;
-  store.idleHealerCount.value = 0;
-  store.idleScoutCount.value = 0;
+  store.idleSupportCount.value = 0;
+  store.idleReconCount.value = 0;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
@@ -130,7 +143,7 @@ describe('HUD button interactions', () => {
           onSpeedClick,
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -156,7 +169,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick,
           onAttackMoveClick: vi.fn(),
@@ -182,7 +195,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick,
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -208,7 +221,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle,
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -235,7 +248,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick,
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -263,7 +276,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick,
@@ -290,7 +303,7 @@ describe('HUD button interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -318,7 +331,7 @@ describe('Selection Panel interactions', () => {
   it('deselect X button click calls onDeselect', async () => {
     const onDeselect = vi.fn();
     store.selectionCount.value = 1;
-    store.selectionName.value = 'Gatherer';
+    store.selectionName.value = 'Mudpaw';
     store.selectionNameColor.value = 'text-green-400';
 
     render(
@@ -349,7 +362,7 @@ describe('Selection Panel interactions', () => {
       ),
     );
 
-    const xBtn = document.querySelector('#selection-info button');
+    const xBtn = document.querySelector('button[aria-label="Clear selection"]');
     expect(xBtn).toBeNull();
   });
 });
@@ -468,7 +481,7 @@ describe('Action Panel interactions', () => {
 
     actionButtons.value = [
       {
-        title: 'Gatherer',
+        title: 'Mudpaw',
         cost: '50C 1F',
         hotkey: 'Q',
         affordable: true,
@@ -611,8 +624,8 @@ describe('Game Over interactions', () => {
 // HUD conditional visibility checks
 // ---------------------------------------------------------------------------
 describe('HUD conditional element visibility', () => {
-  it('idle worker button hidden when no idle workers', async () => {
-    store.idleWorkerCount.value = 0;
+  it('idle Mudpaw button hidden when no idle Mudpaws', async () => {
+    store.idleGeneralistCount.value = 0;
 
     render(
       h(
@@ -622,7 +635,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -631,7 +644,7 @@ describe('HUD conditional element visibility', () => {
       ),
     );
 
-    expect(document.getElementById('idle-worker-btn')).toBeNull();
+    expect(document.getElementById('idle-generalist-btn')).toBeNull();
   });
 
   it('army button hidden when no army units', async () => {
@@ -645,7 +658,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -669,7 +682,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -694,7 +707,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -718,7 +731,7 @@ describe('HUD conditional element visibility', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -727,7 +740,7 @@ describe('HUD conditional element visibility', () => {
       ),
     );
 
-    const pauseOverlay = document.querySelector('.pointer-events-none');
+    const pauseOverlay = document.querySelector('button[aria-label="Tap to resume"]');
     expect(pauseOverlay).toBeTruthy();
     expect(pauseOverlay?.textContent).toContain('PAUSED');
   });
@@ -748,7 +761,7 @@ describe('Keyboard Reference overlay interactions', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -806,251 +819,9 @@ describe('Keyboard Reference overlay interactions', () => {
 });
 
 // ---------------------------------------------------------------------------
-// New Game Modal removed in v3.0 (single PLAY button replaces it)
-describe.skip('New Game Modal interactions (removed in v3.0)', () => {
-  it('preset selection updates when Easy/Normal/Hard/Nightmare/Ultra clicked', async () => {
-    store.menuState.value = 'main';
-
-    render(
-      h(
-        'div',
-        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
-        h(NewGameModal, null),
-      ),
-    );
-
-    // Preset buttons use title="Apply <Name> preset"
-    const easyBtn = document.querySelector(
-      'button[title="Apply Easy preset"]',
-    ) as HTMLButtonElement;
-    const normalBtn = document.querySelector(
-      'button[title="Apply Normal preset"]',
-    ) as HTMLButtonElement;
-    const hardBtn = document.querySelector(
-      'button[title="Apply Hard preset"]',
-    ) as HTMLButtonElement;
-    const nightmareBtn = document.querySelector(
-      'button[title="Apply Nightmare preset"]',
-    ) as HTMLButtonElement;
-    const ultraBtn = document.querySelector(
-      'button[title="Apply Ultra preset"]',
-    ) as HTMLButtonElement;
-
-    expect(easyBtn).toBeTruthy();
-    expect(normalBtn).toBeTruthy();
-    expect(hardBtn).toBeTruthy();
-    expect(nightmareBtn).toBeTruthy();
-    expect(ultraBtn).toBeTruthy();
-
-    // Default is Normal preset — Normal should show active style
-    // Click Easy
-    easyBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-    // Easy preset color is #22c55e — active background uses that color + "25" alpha suffix
-    expect(easyBtn.style.background).toContain('#22c55e');
-
-    // Click Hard
-    hardBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-    expect(hardBtn.style.background).toContain('#ef4444');
-
-    // Click Nightmare
-    nightmareBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-    expect(nightmareBtn.style.background).toContain('#a855f7');
-
-    // Click Ultra Nightmare
-    ultraBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-    expect(ultraBtn.style.background).toContain('#dc2626');
-  });
-
-  it('permadeath toggle switches on and off in Rules tab', async () => {
-    store.menuState.value = 'main';
-
-    render(
-      h(
-        'div',
-        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
-        h(NewGameModal, null),
-      ),
-    );
-
-    // Navigate to Rules tab — find the RULES tab button
-    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    const rulesTab = Array.from(allBtns).find((btn) => btn.textContent?.trim() === 'RULES');
-    expect(rulesTab).toBeTruthy();
-    must(rulesTab, 'Missing RULES tab').click();
-    await new Promise((r) => setTimeout(r, 50));
-
-    // Find the Permadeath toggle — it is a rounded-full button inside a ToggleRow
-    // Look for the label "PERMADEATH" and its sibling toggle button
-    const spans = document.querySelectorAll('span');
-    const permadeathLabel = Array.from(spans).find((s) =>
-      s.textContent?.toUpperCase().includes('PERMADEATH'),
-    );
-    expect(permadeathLabel).toBeTruthy();
-
-    // The toggle button is in the same parent row
-    const toggleRow = must(permadeathLabel, 'Missing permadeath label').closest('.mb-3');
-    expect(toggleRow).toBeTruthy();
-    const toggleBtn = must(
-      must(toggleRow, 'Missing permadeath toggle row').querySelector('button'),
-      'Missing permadeath toggle button',
-    ) as HTMLButtonElement;
-    expect(toggleBtn).toBeTruthy();
-
-    // Initially off (Normal preset has permadeath: false)
-    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(false);
-
-    // Click to toggle on
-    toggleBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(true);
-
-    // Click to toggle off
-    toggleBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(false);
-  });
-
-  it('permadeath forced on when Ultra Nightmare preset selected', async () => {
-    store.menuState.value = 'main';
-
-    render(
-      h(
-        'div',
-        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
-        h(NewGameModal, null),
-      ),
-    );
-
-    // Select Ultra Nightmare preset
-    const ultraBtn = document.querySelector(
-      'button[title="Apply Ultra preset"]',
-    ) as HTMLButtonElement;
-    expect(ultraBtn).toBeTruthy();
-    ultraBtn.click();
-    await new Promise((r) => setTimeout(r, 100));
-
-    // Navigate to Rules tab to see the Permadeath toggle
-    const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    const rulesTab = Array.from(allBtns).find((btn) => btn.textContent?.trim() === 'RULES');
-    expect(rulesTab).toBeTruthy();
-    must(rulesTab, 'Missing RULES tab').click();
-    await new Promise((r) => setTimeout(r, 50));
-
-    // Find the Permadeath toggle row
-    const spans = document.querySelectorAll('span');
-    const permadeathLabel = Array.from(spans).find((s) =>
-      s.textContent?.toUpperCase().includes('PERMADEATH'),
-    );
-    expect(permadeathLabel).toBeTruthy();
-
-    const toggleRow = must(permadeathLabel, 'Missing permadeath label').closest('.mb-3');
-    expect(toggleRow).toBeTruthy();
-    const toggleBtn = must(
-      must(toggleRow, 'Missing permadeath toggle row').querySelector('button'),
-      'Missing permadeath toggle button',
-    ) as HTMLButtonElement;
-    expect(toggleBtn).toBeTruthy();
-
-    // Ultra Nightmare preset forces permadeath on
-    expect(toggleBtn.classList.contains('toggle-track-active')).toBe(true);
-  });
-
-  it('shuffle button randomizes game name', async () => {
-    store.menuState.value = 'main';
-
-    render(
-      h(
-        'div',
-        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
-        h(NewGameModal, null),
-      ),
-    );
-
-    const nameInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-    expect(nameInput).toBeTruthy();
-    const originalName = nameInput.value;
-
-    // Find shuffle button (title="Randomize name and seed")
-    const shuffleBtn = document.querySelector(
-      'button[title="Randomize name and seed"]',
-    ) as HTMLButtonElement;
-    expect(shuffleBtn).toBeTruthy();
-
-    // Click shuffle several times — at least one should produce a different name
-    let nameChanged = false;
-    for (let i = 0; i < 10; i++) {
-      shuffleBtn.click();
-      await new Promise((r) => setTimeout(r, 50));
-      if (nameInput.value !== originalName) {
-        nameChanged = true;
-        break;
-      }
-    }
-    expect(nameChanged, 'Expected shuffle to produce a different name').toBe(true);
-  });
-
-  it('seed display is clickable and enters edit mode', async () => {
-    store.menuState.value = 'main';
-
-    render(
-      h(
-        'div',
-        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
-        h(NewGameModal, null),
-      ),
-    );
-
-    // Seed is displayed as a clickable button (title="Click to edit seed")
-    const seedBtn = document.querySelector(
-      'button[title="Click to edit seed"]',
-    ) as HTMLButtonElement;
-    expect(seedBtn).toBeTruthy();
-    const seedValue = seedBtn.textContent?.trim() ?? '';
-    expect(Number(seedValue)).toBeGreaterThan(0);
-
-    // Click to enter edit mode
-    seedBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-
-    // After clicking, an input should appear
-    const seedInput = document.querySelector('input.font-numbers[type="text"]') as HTMLInputElement;
-    expect(seedInput).toBeTruthy();
-    expect(seedInput.value).toBe(seedValue);
-  });
-
-  it('start game button transitions menu state to playing', async () => {
-    store.menuState.value = 'main';
-
-    render(
-      h(
-        'div',
-        { style: 'position:relative;width:800px;height:800px;background:#0f172a' },
-        h(NewGameModal, null),
-      ),
-    );
-
-    // Find the START GAME button
-    const startBtn = document.querySelector('button.animate-begin-glow') as HTMLButtonElement;
-    expect(startBtn).toBeTruthy();
-    expect(startBtn.textContent).toContain('START GAME');
-
-    startBtn.click();
-    await new Promise((r) => setTimeout(r, 50));
-
-    // Store should transition to playing
-    expect(store.menuState.value).toBe('playing');
-    expect(store.selectedDifficulty.value).toBeTruthy();
-  });
-});
-
-// ---------------------------------------------------------------------------
 // Pearl Resource Display
 // ---------------------------------------------------------------------------
-describe('Pearl resource display', () => {
+describe('Rock resource display', () => {
   it('pearl display hidden when pearls = 0', async () => {
     store.rocks.value = 0;
 
@@ -1062,7 +833,7 @@ describe('Pearl resource display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1071,13 +842,14 @@ describe('Pearl resource display', () => {
       ),
     );
 
-    // No element should contain "Pearls" text
-    const pearlLabels = document.querySelectorAll('span');
-    const hasPearlLabel = Array.from(pearlLabels).some((el) => el.textContent?.includes('Pearls'));
-    expect(hasPearlLabel).toBe(false);
+    const resourceStatuses = document.querySelectorAll('[role="status"]');
+    const hasRocksStatus = Array.from(resourceStatuses).some((el) =>
+      el.getAttribute('aria-label')?.includes('Rocks:'),
+    );
+    expect(hasRocksStatus).toBe(true);
   });
 
-  it('pearl display visible when pearls > 0', async () => {
+  it('rock display reflects current rock count when rocks > 0', async () => {
     store.rocks.value = 15;
 
     render(
@@ -1088,7 +860,7 @@ describe('Pearl resource display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1097,9 +869,12 @@ describe('Pearl resource display', () => {
       ),
     );
 
-    const pearlLabels = document.querySelectorAll('span');
-    const hasPearlLabel = Array.from(pearlLabels).some((el) => el.textContent?.includes('Pearls'));
-    expect(hasPearlLabel).toBe(true);
+    const resourceStatuses = document.querySelectorAll('[role="status"]');
+    const rocksStatus = Array.from(resourceStatuses).find((el) =>
+      el.getAttribute('aria-label')?.includes('Rocks:'),
+    );
+    expect(rocksStatus).toBeTruthy();
+    expect(rocksStatus?.textContent).toContain('15');
   });
 });
 
@@ -1118,7 +893,7 @@ describe('Enemy economy display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1132,7 +907,7 @@ describe('Enemy economy display', () => {
     expect(hasEnemyLabel).toBe(false);
   });
 
-  it('enemy economy indicator visible after scouting with resource values', async () => {
+  it('enemy economy indicator visible after recon with resource values', async () => {
     store.enemyEconomyVisible.value = true;
     store.enemyFish.value = 350;
     store.enemyLogs.value = 200;
@@ -1145,7 +920,7 @@ describe('Enemy economy display', () => {
           onSpeedClick: vi.fn(),
           onMuteClick: vi.fn(),
           onColorBlindToggle: vi.fn(),
-          onIdleWorkerClick: vi.fn(),
+          onIdleGeneralistClick: vi.fn(),
           onArmyClick: vi.fn(),
           onPauseClick: vi.fn(),
           onAttackMoveClick: vi.fn(),
@@ -1260,9 +1035,11 @@ describe('Settings panel interactions', () => {
       ),
     );
 
-    // Find speed buttons by their text content (1x, 2x, 3x)
+    // Find gameplay speed buttons without matching the accessibility UI-scale buttons.
     const allBtns = document.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-    const speedButtons = Array.from(allBtns).filter((btn) => btn.textContent?.match(/^[123]x$/));
+    const speedButtons = Array.from(allBtns).filter((btn) =>
+      btn.getAttribute('aria-label')?.startsWith('Game speed '),
+    );
     expect(speedButtons.length).toBe(3);
 
     speedButtons[0].click();

@@ -19,11 +19,11 @@ import {
   Position,
   Velocity,
 } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { triggerAttackLunge } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
-import { AMBUSH_DAMAGE_MULT, consumeAmbushBonus } from '../diver-stealth';
+import { rollPlayerCriticalHit } from './critical-hits';
 import { calculatePositionalBonuses, emitPositionalBonusText } from './positional-damage';
 
 export function executeBossCrocAttack(
@@ -79,18 +79,7 @@ export function executeMeleeAttack(
   const targetKind = EntityTypeTag.kind[tEnt] as EntityKind;
   const mult = getDamageMultiplier(kind, targetKind);
   let meleeDmg = Math.round(dmg * mult);
-
-  // Diver ambush bonus: +50% damage on first attack from stealth
-  if (kind === EntityKind.Diver && consumeAmbushBonus(world, eid)) {
-    meleeDmg = Math.round(meleeDmg * AMBUSH_DAMAGE_MULT);
-    world.floatingTexts.push({
-      x: Position.x[tEnt],
-      y: Position.y[tEnt] - 25,
-      text: 'AMBUSH!',
-      color: '#60a5fa',
-      life: 60,
-    });
-  }
+  let criticalHit = false;
 
   // Positional bonuses (flanking + elevation)
   const positional = calculatePositionalBonuses(world, eid, tEnt);
@@ -117,12 +106,27 @@ export function executeMeleeAttack(
     meleeDmg = Math.round(meleeDmg * 1.15);
   }
 
+  if (faction === Faction.Player && rollPlayerCriticalHit(world, eid)) {
+    meleeDmg *= 2;
+    criticalHit = true;
+  }
+
   takeDamage(world, tEnt, meleeDmg, eid, mult);
   triggerAttackLunge(eid, tEnt);
 
   // Emit floating text for positional bonuses
   if (positional.flanking || positional.elevationUp) {
     emitPositionalBonusText(world, tEnt, positional);
+  }
+
+  if (criticalHit) {
+    world.floatingTexts.push({
+      x: Position.x[tEnt],
+      y: Position.y[tEnt] - 24,
+      text: 'CRIT!',
+      color: '#facc15',
+      life: 30,
+    });
   }
 
   if (kind === EntityKind.VenomSnake) {

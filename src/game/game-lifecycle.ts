@@ -9,7 +9,8 @@ import type { KeyboardHandler } from '@/input/keyboard';
 import type { PointerHandler } from '@/input/pointer';
 import type { PhysicsManager } from '@/physics/physics-world';
 import { cleanupDeviceSignals, isNative } from '@/platform';
-import { destroyPixiApp } from '@/rendering/pixi-app';
+import { destroyPixiApp } from '@/rendering/pixi';
+import { handleGameInitFailure } from '@/ui/game-init-failure';
 import * as store from '@/ui/store';
 import type { PanAnimHandle } from './camera';
 import type { GameLoopState } from './game-loop';
@@ -156,8 +157,8 @@ export function handleEvacuationChoice(
   if (choice === 'checkpoint') {
     loadCheckpoint(world);
   } else if (choice === 'restart') {
-    restartInit().catch(() => {
-      window.location.reload();
+    restartInit().catch((error) => {
+      handleGameInitFailure(error);
     });
   } else {
     store.menuState.value = 'main';

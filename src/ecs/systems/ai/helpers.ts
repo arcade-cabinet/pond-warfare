@@ -9,6 +9,7 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import { ENEMY_BUILD_RADIUS, TILE_SIZE } from '@/constants';
 import {
   Building,
+  Combat,
   EntityTypeTag,
   FactionTag,
   Health,
@@ -19,7 +20,13 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { canPlaceBuilding } from '@/input/selection';
+import {
+  ENEMY_HARVESTER_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
+import { canPlaceBuilding } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /** Get all alive enemy production buildings (nests or lodges depending on faction setup). */
@@ -59,7 +66,7 @@ export function findPlayerLodge(world: GameWorld): number {
   return -1;
 }
 
-/** Count alive enemy combat units (not gatherers, not buildings) */
+/** Count alive enemy combat units (not harvester units, not buildings) */
 export function countEnemyArmy(world: GameWorld): number {
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   let count = 0;
@@ -70,7 +77,7 @@ export function countEnemyArmy(world: GameWorld): number {
     if (hasComponent(world.ecs, eid, IsResource)) continue;
     if (Health.current[eid] <= 0) continue;
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    if (kind === EntityKind.Gatherer) continue;
+    if (kind === ENEMY_HARVESTER_KIND) continue;
     count++;
   }
   return count;
@@ -87,7 +94,7 @@ export function getEnemyArmyUnits(world: GameWorld): number[] {
     if (hasComponent(world.ecs, eid, IsResource)) continue;
     if (Health.current[eid] <= 0) continue;
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    if (kind === EntityKind.Gatherer) continue;
+    if (kind === ENEMY_HARVESTER_KIND) continue;
     result.push(eid);
   }
   return result;
@@ -104,6 +111,94 @@ export function countPlayerUnitsOfKind(world: GameWorld, targetKind: EntityKind)
     if (EntityTypeTag.kind[eid] === targetKind) count++;
   }
   return count;
+}
+
+export interface PlayerCombatPressure {
+  frontline: number;
+  projected: number;
+}
+
+/**
+ * Summarize the live player army into the counter buckets enemy training cares
+ * about. Frontline maps to gator-style answers; projected maps to snake-style
+ * answers. Economy, recon, and heal specialists do not contribute here.
+ */
+export function getPlayerCombatPressure(
+  world: Pick<GameWorld, 'ecs' | 'specialistAssignments'>,
+): PlayerCombatPressure {
+  const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
+  let frontline = 0;
+  let projected = 0;
+
+  for (let i = 0; i < allUnits.length; i++) {
+    const eid = allUnits[i];
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource)) {
+      continue;
+    }
+
+    const specialistRole = getSpecialistCounterRole(world, eid);
+    if (specialistRole === 'frontline') {
+      frontline++;
+      continue;
+    }
+    if (specialistRole === 'projected') {
+      projected++;
+      continue;
+    }
+    if (specialistRole === 'ignore') continue;
+
+    const kind = EntityTypeTag.kind[eid] as EntityKind;
+    if (kind === EntityKind.Commander) {
+      frontline++;
+      continue;
+    }
+
+    if (kind === MUDPAW_KIND) continue;
+
+    const def = ENTITY_DEFS[kind];
+    const damage = hasComponent(world.ecs, eid, Combat) ? Combat.damage[eid] : (def?.damage ?? 0);
+    if (damage <= 0) continue;
+    const attackRange = hasComponent(world.ecs, eid, Combat)
+      ? Combat.attackRange[eid]
+      : (def?.attackRange ?? 0);
+    if (attackRange >= 120) projected++;
+    else frontline++;
+  }
+
+  return { frontline, projected };
+}
+
+function getSpecialistCounterRole(
+  world: Pick<GameWorld, 'specialistAssignments'>,
+  eid: number,
+): 'frontline' | 'projected' | 'ignore' | null {
+  const runtimeId = world.specialistAssignments.get(eid)?.runtimeId;
+  if (!runtimeId) return null;
+
+  switch (runtimeId) {
+    case 'guard':
+      return 'frontline';
+    case 'ranger':
+    case 'bombardier':
+      return 'projected';
+    case 'fisher':
+    case 'logger':
+    case 'digger':
+    case 'shaman':
+    case 'lookout':
+      return 'ignore';
+    default:
+      return inferLiveRosterCounterRole(EntityTypeTag.kind[eid] as EntityKind);
+  }
+}
+
+function inferLiveRosterCounterRole(kind: EntityKind): 'frontline' | null {
+  if (kind === SAPPER_KIND || kind === SABOTEUR_KIND) {
+    return 'frontline';
+  }
+  return null;
 }
 
 /** Find a valid placement position near a nest */
@@ -134,7 +229,7 @@ export function findBuildPosition(
 
 /**
  * Set a newly spawned building to 1 HP / 1% progress (construction site)
- * and assign nearby idle enemy gatherers to build it.
+ * and assign nearby idle enemy harvester units to build it.
  */
 export function startEnemyConstruction(world: GameWorld, buildingEid: number): void {
   // Set building to construction state (1 HP, 1% progress)
@@ -144,7 +239,7 @@ export function startEnemyConstruction(world: GameWorld, buildingEid: number): v
   const bx = Position.x[buildingEid];
   const by = Position.y[buildingEid];
 
-  // Find nearby idle enemy gatherers and assign them to build
+  // Find nearby idle enemy harvester units and assign them to build
   const allUnits = query(world.ecs, [
     Position,
     Health,
@@ -156,28 +251,28 @@ export function startEnemyConstruction(world: GameWorld, buildingEid: number): v
   for (let i = 0; i < allUnits.length; i++) {
     const eid = allUnits[i];
     if (FactionTag.faction[eid] !== Faction.Enemy) continue;
-    if (EntityTypeTag.kind[eid] !== EntityKind.Gatherer) continue;
+    if (EntityTypeTag.kind[eid] !== ENEMY_HARVESTER_KIND) continue;
     if (Health.current[eid] <= 0) continue;
 
     const state = UnitStateMachine.state[eid] as UnitState;
-    // Only redirect idle gatherers or those returning resources
+    // Only redirect idle harvester units or those returning resources
     if (state !== UnitState.Idle && state !== UnitState.ReturnMove) continue;
 
     const dx = Position.x[eid] - bx;
     const dy = Position.y[eid] - by;
     const dSq = dx * dx + dy * dy;
-    if (dSq > 600 * 600) continue; // Only nearby gatherers
+    if (dSq > 600 * 600) continue; // Only nearby harvesters
 
     UnitStateMachine.targetEntity[eid] = buildingEid;
     UnitStateMachine.targetX[eid] = bx;
     UnitStateMachine.targetY[eid] = by;
     UnitStateMachine.state[eid] = UnitState.BuildMove;
 
-    const speed = Velocity.speed[eid] || ENTITY_DEFS[EntityKind.Gatherer]?.speed || 2.0;
+    const speed = Velocity.speed[eid] || ENTITY_DEFS[ENEMY_HARVESTER_KIND]?.speed || 2.0;
     world.yukaManager.addUnit(eid, Position.x[eid], Position.y[eid], speed, bx, by);
 
     assigned++;
-    if (assigned >= 2) break; // Send at most 2 gatherers per construction
+    if (assigned >= 2) break; // Send at most 2 harvester units per construction
   }
 }
 

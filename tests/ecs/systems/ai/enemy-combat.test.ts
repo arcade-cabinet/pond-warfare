@@ -443,7 +443,7 @@ describe('enemyCombatTick', () => {
   });
 
   describe('wave announcement', () => {
-    it('should add floating text and minimap ping when attacking', () => {
+    it('should add floating text and ground ping when attacking', () => {
       world.frameCount = ENEMY_ATTACK_CHECK_INTERVAL;
 
       createEnemyNest(world, 1000, 1000);
@@ -454,12 +454,12 @@ describe('enemyCombatTick', () => {
       }
 
       const textsBefore = world.floatingTexts.length;
-      const pingsBefore = world.minimapPings.length;
+      const pingsBefore = world.groundPings.length;
 
       enemyCombatTick(world);
 
       expect(world.floatingTexts.length).toBeGreaterThan(textsBefore);
-      expect(world.minimapPings.length).toBeGreaterThan(pingsBefore);
+      expect(world.groundPings.length).toBeGreaterThan(pingsBefore);
     });
   });
 });

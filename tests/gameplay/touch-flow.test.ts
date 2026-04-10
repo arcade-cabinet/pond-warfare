@@ -12,7 +12,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Selectable, UnitStateMachine } from '@/ecs/components';
-import { issueContextCommand } from '@/input/selection';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { issueContextCommand } from '@/input/selection/commands';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getRadialOptions, type RadialGameState } from '@/ui/radial-menu-options';
 import { createTestWorld } from '../helpers/world-factory';
@@ -45,10 +46,8 @@ describe('Touch-Only Gameplay Flow', () => {
     const options = getRadialOptions('lodge', null, gameState);
     const ids = options.map((o) => o.id);
 
-    expect(ids).toContain('train_gatherer');
-    expect(ids).toContain('train_fighter');
-    expect(ids).toContain('train_medic');
-    expect(ids).toContain('train_scout');
+    expect(ids).toContain('train_mudpaw');
+    expect(ids).not.toContain('train_medic');
   });
 
   it('Lodge radial hides training when broke', () => {
@@ -63,60 +62,57 @@ describe('Touch-Only Gameplay Flow', () => {
     const options = getRadialOptions('lodge', null, gameState);
     const ids = options.map((o) => o.id);
 
-    // 5 fish is not enough for anything
-    expect(ids).not.toContain('train_gatherer');
-    expect(ids).not.toContain('train_fighter');
+    expect(ids).not.toContain('train_mudpaw');
     expect(ids).not.toContain('train_medic');
-    expect(ids).not.toContain('train_scout');
   });
 
-  it('tap gatherer then tap resource issues gather-move command', () => {
+  it('tap Mudpaw then tap resource issues gather-move command', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 100, 200, Faction.Player);
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 100, 200, Faction.Player);
     const resource = spawnResource(world, 300, 200);
 
-    // Select the gatherer (simulating tap)
-    Selectable.selected[gatherer] = 1;
-    world.selection = [gatherer];
+    // Select the Mudpaw (simulating tap)
+    Selectable.selected[mudpaw] = 1;
+    world.selection = [mudpaw];
 
     // Tap on resource to issue gather command
     const dispatched = issueContextCommand(world, resource, 300, 200);
 
     expect(dispatched).toBe(true);
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
-    expect(UnitStateMachine.targetEntity[gatherer]).toBe(resource);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(resource);
   });
 
-  it('tap on empty ground with fighter selected issues move command', () => {
+  it('tap on empty ground with Sapper selected issues move command', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const fighter = spawnEntity(world, EntityKind.Brawler, 200, 200, Faction.Player);
-    Selectable.selected[fighter] = 1;
-    world.selection = [fighter];
+    const sapper = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
+    Selectable.selected[sapper] = 1;
+    world.selection = [sapper];
 
     // Tap on empty ground
     const dispatched = issueContextCommand(world, null, 500, 300);
     expect(dispatched).toBe(true);
-    expect(UnitStateMachine.state[fighter]).toBe(UnitState.Move);
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.Move);
   });
 
-  it('tap on enemy with fighter selected issues attack command', () => {
+  it('tap on enemy with Sapper selected issues attack command', () => {
     const world = createTestWorld({ fish: 50 });
     world.state = 'playing';
 
-    const fighter = spawnEntity(world, EntityKind.Brawler, 200, 200, Faction.Player);
+    const sapper = spawnEntity(world, SAPPER_KIND, 200, 200, Faction.Player);
     const enemy = spawnEntity(world, EntityKind.Gator, 400, 200, Faction.Enemy);
 
-    Selectable.selected[fighter] = 1;
-    world.selection = [fighter];
+    Selectable.selected[sapper] = 1;
+    world.selection = [sapper];
 
     const dispatched = issueContextCommand(world, enemy, 400, 200);
     expect(dispatched).toBe(true);
-    expect(UnitStateMachine.state[fighter]).toBe(UnitState.AttackMove);
-    expect(UnitStateMachine.targetEntity[fighter]).toBe(enemy);
+    expect(UnitStateMachine.state[sapper]).toBe(UnitState.AttackMove);
+    expect(UnitStateMachine.targetEntity[sapper]).toBe(enemy);
   });
 
   it('full flow: radial options -> select unit -> issue command', () => {
@@ -132,26 +128,27 @@ describe('Touch-Only Gameplay Flow', () => {
       lodgeDamaged: false,
     });
     expect(options.length).toBeGreaterThan(0);
-    expect(options.map((o) => o.id)).toContain('train_gatherer');
+    expect(options.map((o) => o.id)).toContain('train_mudpaw');
 
-    // Step 2: Spawn a gatherer (simulating training completion)
-    const gatherer = spawnEntity(world, EntityKind.Gatherer, 400, 420, Faction.Player);
+    // Step 2: Spawn a Mudpaw (simulating training completion)
+    const mudpaw = spawnEntity(world, MUDPAW_KIND, 400, 420, Faction.Player);
     const resource = spawnResource(world, 600, 300);
 
-    // Step 3: Tap gatherer to select
-    Selectable.selected[gatherer] = 1;
-    world.selection = [gatherer];
+    // Step 3: Tap Mudpaw to select
+    Selectable.selected[mudpaw] = 1;
+    world.selection = [mudpaw];
 
     // Step 4: Tap resource to gather
     const dispatched = issueContextCommand(world, resource, 600, 300);
     expect(dispatched).toBe(true);
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.GatherMove);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.GatherMove);
   });
 
   it('unit radial shows correct options for each role via tap', () => {
-    // Gatherer role
-    const gatherOpts = getRadialOptions('unit', 'gather');
-    expect(gatherOpts.map((o) => o.id)).toContain('cmd_gather');
+    const generalistOpts = getRadialOptions('unit', 'generalist');
+    expect(generalistOpts.map((o) => o.id)).toContain('cmd_gather');
+    expect(generalistOpts.map((o) => o.id)).toContain('cmd_attack');
+    expect(generalistOpts.map((o) => o.id)).toContain('cmd_recon');
 
     // Combat role
     const combatOpts = getRadialOptions('unit', 'combat');
@@ -159,11 +156,11 @@ describe('Touch-Only Gameplay Flow', () => {
     expect(combatOpts.map((o) => o.id)).toContain('cmd_amove');
 
     // Heal role
-    const healOpts = getRadialOptions('unit', 'heal');
+    const healOpts = getRadialOptions('unit', 'support');
     expect(healOpts.map((o) => o.id)).toContain('cmd_heal');
 
-    // Scout role
-    const scoutOpts = getRadialOptions('unit', 'scout');
-    expect(scoutOpts.map((o) => o.id)).toContain('cmd_scout');
+    // Recon role
+    const reconOpts = getRadialOptions('unit', 'recon');
+    expect(reconOpts.map((o) => o.id)).toContain('cmd_recon');
   });
 });

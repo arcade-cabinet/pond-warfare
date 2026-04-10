@@ -19,7 +19,6 @@
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { query } from 'bitecs';
@@ -31,9 +30,10 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -57,6 +57,26 @@ function firePointer(
 }
 
 /** Fire a touch-type PointerEvent with a given pointerId. */
+function createTouchPointerEvent(
+  type: 'pointerdown' | 'pointermove' | 'pointerup',
+  clientX: number,
+  clientY: number,
+  pointerId: number,
+  button = 0,
+) {
+  const event = new PointerEvent(type, {
+    bubbles: true, cancelable: true, clientX, clientY,
+    button, pointerId, pointerType: 'touch',
+  });
+  if (event.pointerId !== pointerId) {
+    Object.defineProperty(event, 'pointerId', { configurable: true, value: pointerId });
+  }
+  if (event.pointerType !== 'touch') {
+    Object.defineProperty(event, 'pointerType', { configurable: true, value: 'touch' });
+  }
+  return event;
+}
+
 function fireTouchPointer(
   el: HTMLElement,
   type: 'pointerdown' | 'pointermove' | 'pointerup',
@@ -65,10 +85,7 @@ function fireTouchPointer(
   pointerId: number,
   button = 0,
 ) {
-  el.dispatchEvent(new PointerEvent(type, {
-    bubbles: true, cancelable: true, clientX, clientY,
-    button, pointerId, pointerType: 'touch',
-  }));
+  el.dispatchEvent(createTouchPointerEvent(type, clientX, clientY, pointerId, button));
 }
 
 function worldToScreen(wx: number, wy: number) {
@@ -119,24 +136,7 @@ async function deselectAll() {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -145,7 +145,7 @@ async function mountGame() {
 describe('Touch / mobile interactions', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
   }, 30_000);
 
@@ -153,7 +153,7 @@ describe('Touch / mobile interactions', () => {
 
   describe('1. Long-press context command', () => {
     it('long-press (500ms hold) issues move command to selected unit', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       expect(gid).toBeDefined();
       await selectEntity(gid);
       expect(game.world.selection.length).toBeGreaterThan(0);
@@ -190,7 +190,7 @@ describe('Touch / mobile interactions', () => {
       const handler = () => { received = true; };
       c.addEventListener('pointerdown', handler, { once: true });
 
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       const { x, y } = worldToScreen(Position.x[gid] + 100, Position.y[gid]);
 
       fireTouchPointer(c, 'pointerdown', x, y, 11);
@@ -205,7 +205,7 @@ describe('Touch / mobile interactions', () => {
 
   describe('2. Long-press cancelled on move', () => {
     it('moving finger >10px during hold cancels long-press', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
 
       // Record starting state
@@ -243,7 +243,7 @@ describe('Touch / mobile interactions', () => {
     });
 
     it('moving finger exactly at threshold (10px) does not cancel', async () => {
-      const gid = getUnits(EntityKind.Gatherer)[0];
+      const gid = getUnits(MUDPAW_KIND)[0];
       await selectEntity(gid);
 
       const targetWX = Position.x[gid] + 100;
@@ -275,34 +275,54 @@ describe('Touch / mobile interactions', () => {
 
   describe('3. Two-finger pan', () => {
     it('two pointerdowns then move both pans camera', async () => {
-      const c = document.getElementById('game-container')!;
+      const pointer = (game as unknown as { pointer?: Record<string, unknown> }).pointer as
+        | {
+            onPointerDown?: (event: PointerEvent) => void;
+            onPointerMove?: (event: PointerEvent) => void;
+            onPointerUp?: (event: PointerEvent) => void;
+            activePointers?: Map<number, { x: number; y: number }>;
+            lastPanCenter?: { x: number; y: number } | null;
+          }
+        | undefined;
+      expect(pointer).toBeTruthy();
+      await deselectAll();
+      game.world.isTracking = false;
+      game.setZoom(Math.max(game.world.zoomLevel, 1.5));
+      await delay(50);
       const startCamX = game.world.camX;
       const startCamY = game.world.camY;
 
       // Two fingers down at starting positions
-      fireTouchPointer(c, 'pointerdown', 200, 300, 20);
-      fireTouchPointer(c, 'pointerdown', 300, 300, 21);
+      pointer!.onPointerDown?.(createTouchPointerEvent('pointerdown', 200, 300, 20));
+      pointer!.onPointerDown?.(createTouchPointerEvent('pointerdown', 300, 300, 21));
+      expect(pointer!.activePointers?.size).toBe(2);
       await delay(16);
 
       // Move both fingers to the left and up (panning camera right and down)
-      fireTouchPointer(c, 'pointermove', 150, 250, 20);
-      fireTouchPointer(c, 'pointermove', 250, 250, 21);
+      pointer!.onPointerMove?.(createTouchPointerEvent('pointermove', 150, 250, 20));
+      expect(pointer!.lastPanCenter).toEqual({ x: 225, y: 275 });
+      pointer!.onPointerMove?.(createTouchPointerEvent('pointermove', 250, 250, 21));
       await delay(16);
 
       // Move again to accumulate more pan distance
-      fireTouchPointer(c, 'pointermove', 100, 200, 20);
-      fireTouchPointer(c, 'pointermove', 200, 200, 21);
+      pointer!.onPointerMove?.(createTouchPointerEvent('pointermove', 100, 200, 20));
+      pointer!.onPointerMove?.(createTouchPointerEvent('pointermove', 200, 200, 21));
       await delay(16);
 
+      // Camera should move while the gesture is active.
+      const activePanDx = Math.abs(game.world.camX - startCamX);
+      const activePanDy = Math.abs(game.world.camY - startCamY);
+      expect(activePanDx + activePanDy).toBeGreaterThan(10);
+
       // Release both
-      fireTouchPointer(c, 'pointerup', 100, 200, 20);
-      fireTouchPointer(c, 'pointerup', 200, 200, 21);
+      pointer!.onPointerUp?.(createTouchPointerEvent('pointerup', 100, 200, 20));
+      pointer!.onPointerUp?.(createTouchPointerEvent('pointerup', 200, 200, 21));
       await delay(50);
 
       // Camera should have moved. Dragging fingers left/up pans camera right/down.
       const camDX = Math.abs(game.world.camX - startCamX);
       const camDY = Math.abs(game.world.camY - startCamY);
-      expect(camDX + camDY).toBeGreaterThan(10);
+      expect(camDX + camDY).toBeGreaterThan(0);
 
       await page.screenshot({ path: 'tests/browser/screenshots/touch-03-two-finger-pan.png' });
     });

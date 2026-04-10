@@ -15,6 +15,7 @@ import {
   Position,
   Selectable,
 } from '@/ecs/components';
+import { GameError, logError } from '@/errors';
 import { syncRosters } from '@/game/roster-sync';
 import type { Governor } from '@/governor/governor';
 import type { KeyboardHandler } from '@/input/keyboard';
@@ -25,12 +26,12 @@ import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import type { ReplayRecorder } from '@/replay';
 import { saveGame } from '@/save-system';
-import { saveGameToDb } from '@/storage';
 import { checkAchievements } from '@/systems/achievements';
 import { type EntityKind, Faction } from '@/types';
 import { pruneGameEvents } from '@/ui/game-events';
 import * as store from '@/ui/store';
 import { multiplayerStalled } from '@/ui/store-multiplayer';
+import { triggerAutosave } from './autosave';
 import { checkEvacuation, createCheckpoint } from './checkpoint';
 import { beginSpectacle, tickSpectacle } from './game-end-spectacle';
 import { type DrawState, draw } from './game-renderer';
@@ -253,25 +254,7 @@ function updateLogic(state: GameLoopState): void {
     w.frameCount % 3600 === 0 &&
     w.state === 'playing'
   ) {
-    const json = saveGame(w);
-    saveGameToDb(
-      'autosave',
-      store.selectedDifficulty.value ?? 'normal',
-      store.goMapSeed.value ?? 0,
-      json,
-      false,
-    )
-      .then(() => {
-        store.hasSaveGame.value = true;
-      })
-      .catch(() => {});
-    w.floatingTexts.push({
-      x: w.camX + (w.viewWidth || 400) / 2,
-      y: w.camY + 60,
-      text: 'Auto-saved',
-      color: '#4ade80',
-      life: 60,
-    });
+    void triggerAutosave(w);
   }
 
   if (w.frameCount > 0 && w.frameCount % 18000 === 0 && w.state === 'playing') createCheckpoint(w);
@@ -288,13 +271,10 @@ function updateLogic(state: GameLoopState): void {
     }
   }
 
-  if (w.airdropCooldownUntil > 0 && w.frameCount >= w.airdropCooldownUntil) {
-    w.airdropCooldownUntil = 0;
-    store.airdropCooldown.value = 0;
-  } else if (w.airdropCooldownUntil > w.frameCount) {
-    store.airdropCooldown.value = Math.ceil((w.airdropCooldownUntil - w.frameCount) / 60);
-  }
-
   if (w.frameCount % 60 === 0 && w.state === 'playing') checkEvacuation(w);
-  if (w.frameCount % 1800 === 0) checkAchievements(w).catch(() => {});
+  if (w.frameCount % 1800 === 0) {
+    checkAchievements(w).catch((error) => {
+      logError(new GameError('Achievement polling failed', 'game/game-loop', { cause: error }));
+    });
+  }
 }

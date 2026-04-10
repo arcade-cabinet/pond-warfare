@@ -13,9 +13,11 @@ import {
   GatherEvaluator,
   TrainEvaluator,
 } from '@/governor/evaluators';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 
 vi.mock('@/game', () => ({
   game: {
@@ -31,13 +33,13 @@ vi.mock('@/game', () => ({
 const owner = new GameEntity();
 
 function makeGroup(
-  role: 'gatherer' | 'combat',
+  role: 'generalist' | 'combat',
   units: Array<{ eid: number; task: string; kind: EntityKind }>,
 ): RosterGroup {
   return {
     role,
     idleCount: units.filter((u) => u.task === 'idle').length,
-    autoEnabled: false,
+    automationEnabled: false,
     units: units.map((u) => ({
       eid: u.eid,
       kind: u.kind,
@@ -63,17 +65,19 @@ describe('Governor viability decisions', () => {
     store.food.value = 2;
     store.maxFood.value = 8;
     store.baseUnderAttack.value = false;
+    store.baseThreatCount.value = 0;
+    storeV3.progressionLevel.value = 1;
   });
 
-  it('with idle gatherers, GatherEvaluator scores highest', () => {
-    // 4 total gatherers (2 idle, 2 busy) — enough that TrainEvaluator
-    // won't prioritize gatherer production (it checks gatherers < 4).
+  it('with idle Mudpaws, GatherEvaluator scores highest', () => {
+    // 4 total Mudpaws (2 idle, 2 busy) — enough that TrainEvaluator
+    // will focus on assignment rather than more early generalists.
     store.unitRoster.value = [
-      makeGroup('gatherer', [
-        { eid: 1, task: 'idle', kind: EntityKind.Gatherer },
-        { eid: 2, task: 'idle', kind: EntityKind.Gatherer },
-        { eid: 3, task: 'gathering-fish', kind: EntityKind.Gatherer },
-        { eid: 4, task: 'gathering-logs', kind: EntityKind.Gatherer },
+      makeGroup('generalist', [
+        { eid: 1, task: 'idle', kind: MUDPAW_KIND },
+        { eid: 2, task: 'idle', kind: MUDPAW_KIND },
+        { eid: 3, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 4, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
     ];
     store.buildingRoster.value = [
@@ -92,11 +96,11 @@ describe('Governor viability decisions', () => {
   it('with no armory and enough resources, BuildEvaluator scores highest', () => {
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
     store.unitRoster.value = [
-      makeGroup('gatherer', [
-        { eid: 1, task: 'gathering-fish', kind: EntityKind.Gatherer },
-        { eid: 2, task: 'gathering-fish', kind: EntityKind.Gatherer },
-        { eid: 3, task: 'gathering-logs', kind: EntityKind.Gatherer },
-        { eid: 4, task: 'gathering-logs', kind: EntityKind.Gatherer },
+      makeGroup('generalist', [
+        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
+        { eid: 3, task: 'gathering-logs', kind: MUDPAW_KIND },
+        { eid: 4, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
     ];
     store.fish.value = 200;
@@ -104,16 +108,17 @@ describe('Governor viability decisions', () => {
     const gather = new GatherEvaluator().calculateDesirability(owner);
     const build = new BuildEvaluator().calculateDesirability(owner);
 
-    expect(gather).toBe(0); // no idle gatherers
+    expect(gather).toBe(0); // no idle Mudpaws
     expect(build).toBe(0.85); // no armory -> 0.85
     expect(build).toBeGreaterThan(gather);
   });
 
   it('under attack, DefendEvaluator scores highest', () => {
     store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 3;
     store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: EntityKind.Brawler }]),
-      makeGroup('gatherer', [{ eid: 2, task: 'idle', kind: EntityKind.Gatherer }]),
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
+      makeGroup('generalist', [{ eid: 2, task: 'idle', kind: MUDPAW_KIND }]),
     ];
     store.buildingRoster.value = [makeBuilding(10, EntityKind.Lodge)];
 
@@ -124,5 +129,23 @@ describe('Governor viability decisions', () => {
     expect(defend).toBe(0.95);
     expect(defend).toBeGreaterThan(gather);
     expect(defend).toBeGreaterThan(build);
+  });
+
+  it('light single-enemy pressure still leaves TrainEvaluator above DefendEvaluator', () => {
+    storeV3.progressionLevel.value = 6;
+    store.baseUnderAttack.value = true;
+    store.baseThreatCount.value = 1;
+    store.unitRoster.value = [
+      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
+      makeGroup('generalist', [{ eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND }]),
+    ];
+    store.buildingRoster.value = [{ eid: 10, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] }];
+
+    const defend = new DefendEvaluator().calculateDesirability(owner);
+    const train = new TrainEvaluator().calculateDesirability(owner);
+
+    expect(defend).toBe(0.72);
+    expect(train).toBe(0.8);
+    expect(train).toBeGreaterThan(defend);
   });
 });

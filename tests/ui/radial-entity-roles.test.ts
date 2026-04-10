@@ -4,44 +4,48 @@
  *
  * Validates entityKindToRole mapping works from both:
  * - Direct import from radial-entity-roles.ts
- * - Re-export from radial-menu-options.ts (backward compat)
+ * - Re-export from radial-menu-options.ts
  */
 
 import { describe, expect, it } from 'vitest';
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
+import { EntityKind } from '@/types';
 import { entityKindToRole } from '@/ui/radial-entity-roles';
 import { entityKindToRole as reExported } from '@/ui/radial-menu-options';
 
 describe('entityKindToRole (direct import)', () => {
-  it('maps Gatherer (0) to gather', () => {
-    expect(entityKindToRole(0)).toBe('gather');
+  it('maps Mudpaw chassis to generalist', () => {
+    expect(entityKindToRole(MUDPAW_KIND)).toBe('generalist');
   });
 
-  it('maps Brawler (1) to combat', () => {
-    expect(entityKindToRole(1)).toBe('combat');
+  it('maps Sapper to combat', () => {
+    expect(entityKindToRole(SAPPER_KIND)).toBe('combat');
   });
 
-  it('maps Healer (12) to heal', () => {
-    expect(entityKindToRole(12)).toBe('heal');
+  it('maps Medic chassis to support', () => {
+    expect(entityKindToRole(MEDIC_KIND)).toBe('support');
   });
 
-  it('maps Scout (16) to scout', () => {
-    expect(entityKindToRole(16)).toBe('scout');
+  it('maps Lookout chassis to recon', () => {
+    expect(entityKindToRole(LOOKOUT_KIND)).toBe('recon');
   });
 
-  it('maps Shaman (35) to heal', () => {
-    expect(entityKindToRole(35)).toBe('heal');
+  it('maps Shaman to support', () => {
+    expect(entityKindToRole(EntityKind.Shaman)).toBe('support');
   });
 
-  it('maps Commander (30) to combat', () => {
-    expect(entityKindToRole(30)).toBe('combat');
+  it('maps Commander to combat', () => {
+    expect(entityKindToRole(EntityKind.Commander)).toBe('combat');
   });
 
-  it('maps Sapper (44) to combat', () => {
-    expect(entityKindToRole(44)).toBe('combat');
-  });
-
-  it('maps Saboteur (45) to combat', () => {
-    expect(entityKindToRole(45)).toBe('combat');
+  it('maps Saboteur to combat', () => {
+    expect(entityKindToRole(SABOTEUR_KIND)).toBe('combat');
   });
 
   it('maps unknown kinds to combat (default)', () => {
@@ -49,15 +53,15 @@ describe('entityKindToRole (direct import)', () => {
   });
 });
 
-describe('entityKindToRole (re-export backward compat)', () => {
+describe('entityKindToRole (re-export)', () => {
   it('re-exported function is the same as direct import', () => {
     expect(reExported).toBe(entityKindToRole);
   });
 
   it('maps correctly via re-export', () => {
-    expect(reExported(0)).toBe('gather');
-    expect(reExported(12)).toBe('heal');
-    expect(reExported(16)).toBe('scout');
-    expect(reExported(1)).toBe('combat');
+    expect(reExported(MUDPAW_KIND)).toBe('generalist');
+    expect(reExported(MEDIC_KIND)).toBe('support');
+    expect(reExported(LOOKOUT_KIND)).toBe('recon');
+    expect(reExported(SAPPER_KIND)).toBe('combat');
   });
 });

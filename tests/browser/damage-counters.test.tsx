@@ -6,65 +6,57 @@
  * damage dealt matches expected multiplier.
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { addComponent, addEntity, query } from 'bitecs';
+import { query } from 'bitecs';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
-  Carrying, Collider, Combat, EntityTypeTag, FactionTag, Health,
-  Position, Selectable, Sprite, UnitStateMachine, Velocity,
+  Combat,
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  Position,
+  UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
-import { ENTITY_DEFS } from '@/config/entity-defs';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-function clickButton(text: string) {
-  const btn = Array.from(document.querySelectorAll('button')).find(
-    (b) => b.textContent?.includes(text) && !b.disabled,
-  );
-  if (btn) btn.click();
-}
 
 async function waitFrames(n: number) {
   const start = game.world.frameCount;
   while (game.world.frameCount - start < n) await delay(16);
 }
 
+let scenarioIndex = 0;
+
+function nextScenarioOrigin() {
+  const lodge = Array.from(query(game.world.ecs, [Position, Health, EntityTypeTag, FactionTag])).find(
+    (eid) =>
+      EntityTypeTag.kind[eid] === EntityKind.Lodge &&
+      FactionTag.faction[eid] === Faction.Player &&
+      Health.current[eid] > 0,
+  );
+  const lodgeX = lodge == null ? 1200 : Position.x[lodge];
+  const lodgeY = lodge == null ? 1200 : Position.y[lodge];
+  const x = lodgeX + 300 + (scenarioIndex % 3) * 110;
+  const y = lodgeY - 260 - Math.floor(scenarioIndex / 3) * 110;
+  scenarioIndex += 1;
+  return { x, y };
+}
+
 function spawnTestUnit(kind: EntityKind, faction: Faction, x: number, y: number, target?: number) {
-  const w = game.world;
-  const eid = addEntity(w.ecs);
-  addComponent(w.ecs, eid, Position);
-  addComponent(w.ecs, eid, Velocity);
-  addComponent(w.ecs, eid, UnitStateMachine);
-  addComponent(w.ecs, eid, Sprite);
-  addComponent(w.ecs, eid, Collider);
-  addComponent(w.ecs, eid, Health);
-  addComponent(w.ecs, eid, Combat);
-  addComponent(w.ecs, eid, EntityTypeTag);
-  addComponent(w.ecs, eid, FactionTag);
-  addComponent(w.ecs, eid, Carrying);
-  addComponent(w.ecs, eid, Selectable);
-
-  const def = ENTITY_DEFS[kind];
-
+  const eid = spawnEntity(game.world, kind, x, y, faction);
   Position.x[eid] = x;
   Position.y[eid] = y;
-  Velocity.speed[eid] = def.speed;
-  Health.current[eid] = def.hp;
-  Health.max[eid] = def.hp;
-  Collider.radius[eid] = 10;
-  EntityTypeTag.kind[eid] = kind;
-  FactionTag.faction[eid] = faction;
-  Combat.damage[eid] = def.damage;
-  Combat.attackRange[eid] = def.attackRange;
+  Health.current[eid] = Health.max[eid];
   Combat.attackCooldown[eid] = 0;
 
   if (target !== undefined) {
-    UnitStateMachine.state[eid] = UnitState.AttackMove;
+    UnitStateMachine.state[eid] = UnitState.Attacking;
     UnitStateMachine.targetEntity[eid] = target;
     UnitStateMachine.targetX[eid] = Position.x[target];
     UnitStateMachine.targetY[eid] = Position.y[target];
@@ -76,27 +68,12 @@ function spawnTestUnit(kind: EntityKind, faction: Faction, x: number, y: number,
   return eid;
 }
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 describe('Damage counter system', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500);
+    await delay(1000);
     game.world.gameSpeed = 3;
   }, 30_000);
 
@@ -104,17 +81,15 @@ describe('Damage counter system', () => {
   async function testDamage(
     attackerKind: EntityKind, attackerFaction: Faction,
     defenderKind: EntityKind, defenderFaction: Faction,
-    label: string,
+    _label: string,
   ) {
-    // Spawn far from existing units to avoid interference
-    const baseX = 200 + Math.random() * 1000;
-    const baseY = 200 + Math.random() * 1000;
+    const { x: baseX, y: baseY } = nextScenarioOrigin();
 
     const defender = spawnTestUnit(defenderKind, defenderFaction, baseX, baseY);
-    const attacker = spawnTestUnit(attackerKind, attackerFaction, baseX + 30, baseY, defender);
+    const attacker = spawnTestUnit(attackerKind, attackerFaction, baseX + 20, baseY, defender);
 
     const defenderHpBefore = Health.current[defender];
-    await waitFrames(180);
+    await waitFrames(240);
 
     const defenderHpAfter = Health.current[defender];
     const damageTaken = defenderHpBefore - defenderHpAfter;
@@ -122,40 +97,30 @@ describe('Damage counter system', () => {
     return { damageTaken, defenderHpBefore, defenderHpAfter, attacker, defender };
   }
 
-  it('Brawler deals damage to Gator', async () => {
+  it('Sapper deals damage to Gator in live browser combat', async () => {
     const { damageTaken } = await testDamage(
-      EntityKind.Brawler, Faction.Player,
+      SAPPER_KIND, Faction.Player,
       EntityKind.Gator, Faction.Enemy,
-      'Brawler vs Gator',
+      'Sapper vs Gator',
     );
     expect(damageTaken).toBeGreaterThan(0);
   });
 
-  it('Brawler deals bonus damage to Sniper (1.5x counter)', async () => {
-    const { damageTaken: vsSniper } = await testDamage(
-      EntityKind.Brawler, Faction.Player,
-      EntityKind.Snake, Faction.Enemy,
-      'Brawler vs Snake',
+  it('Sapper damages a fragile support target in live browser combat', async () => {
+    const { damageTaken: vsMedic } = await testDamage(
+      SAPPER_KIND, Faction.Player,
+      EntityKind.Medic, Faction.Enemy,
+      'Sapper vs Medic',
     );
-    const { damageTaken: vsGator } = await testDamage(
-      EntityKind.Brawler, Faction.Player,
-      EntityKind.Gator, Faction.Enemy,
-      'Brawler vs Gator (control)',
-    );
-    // Brawler should deal more to Snake than Gator (due to counters)
-    // Both should deal damage
-    expect(vsSniper).toBeGreaterThan(0);
-    expect(vsGator).toBeGreaterThan(0);
+    expect(vsMedic).toBeGreaterThan(0);
   });
 
-  it('Sniper deals damage from range', async () => {
-    const baseX = 500, baseY = 500;
+  it('Saboteur deals close-range damage in live browser combat', async () => {
+    const { x: baseX, y: baseY } = nextScenarioOrigin();
     const defender = spawnTestUnit(EntityKind.Gator, Faction.Enemy, baseX, baseY);
-    spawnTestUnit(EntityKind.Sniper, Faction.Player, baseX + 80, baseY, defender);
-    // Sniper has 150px range, 80px away = in range
-
+    spawnTestUnit(SABOTEUR_KIND, Faction.Player, baseX + 20, baseY, defender);
     const hpBefore = Health.current[defender];
-    await waitFrames(180);
+    await waitFrames(240);
     const hpAfter = Health.current[defender];
     expect(hpBefore - hpAfter).toBeGreaterThan(0);
   });
@@ -182,23 +147,23 @@ describe('Damage counter system', () => {
   });
 
   it('enemy units can damage player units', async () => {
-    const baseX = 800, baseY = 800;
-    const player = spawnTestUnit(EntityKind.Brawler, Faction.Player, baseX, baseY);
-    const enemy = spawnTestUnit(EntityKind.Gator, Faction.Enemy, baseX + 25, baseY, player);
+    const { x: baseX, y: baseY } = nextScenarioOrigin();
+    const player = spawnTestUnit(SAPPER_KIND, Faction.Player, baseX, baseY);
+    const enemy = spawnTestUnit(EntityKind.Gator, Faction.Enemy, baseX + 20, baseY, player);
 
     const hpBefore = Health.current[player];
-    await waitFrames(180);
+    await waitFrames(240);
     const hpAfter = Health.current[player];
     expect(hpBefore - hpAfter).toBeGreaterThan(0);
   });
 
   it('unit dies when HP reaches 0', async () => {
-    const baseX = 900, baseY = 900;
+    const { x: baseX, y: baseY } = nextScenarioOrigin();
     const victim = spawnTestUnit(EntityKind.Snake, Faction.Enemy, baseX, baseY);
     Health.current[victim] = 1; // nearly dead
-    const attacker = spawnTestUnit(EntityKind.Brawler, Faction.Player, baseX + 25, baseY, victim);
+    spawnTestUnit(SAPPER_KIND, Faction.Player, baseX + 20, baseY, victim);
 
-    await waitFrames(120);
+    await waitFrames(300);
     expect(Health.current[victim]).toBeLessThanOrEqual(0);
   });
 

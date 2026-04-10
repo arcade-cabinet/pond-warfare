@@ -5,7 +5,7 @@
  * stats (HP, Dmg, Kills, Range), status text.
  * Multi-unit: squad count, composition breakdown, mini sprite grid (max 12 shown).
  * Resource: amount remaining, description.
- * No selection: compact overview with idle workers, army count, population.
+ * No selection: compact overview with idle Mudpaws, army count, population.
  */
 
 import { screenClass } from '@/platform';
@@ -15,7 +15,7 @@ import {
   hasPlayerUnits,
   hpBarColor,
   hpPercent,
-  idleWorkerCount,
+  idleGeneralistCount,
   selectionComposition,
   selectionCount,
   selectionDesc,
@@ -55,7 +55,7 @@ const STOP_BTN_STYLE = {
 
 export interface SelectionPanelProps {
   onDeselect?: () => void;
-  onIdleWorkerClick?: () => void;
+  onIdleGeneralistClick?: () => void;
   onArmyClick?: () => void;
   onAttackMoveClick?: () => void;
   onHaltClick?: () => void;
@@ -63,7 +63,7 @@ export interface SelectionPanelProps {
 
 export function SelectionPanel({
   onDeselect,
-  onIdleWorkerClick,
+  onIdleGeneralistClick,
   onArmyClick,
   onAttackMoveClick,
   onHaltClick,
@@ -99,11 +99,11 @@ export function SelectionPanel({
         <div class="flex gap-3 items-center font-game text-xs" style={MUTED_TEXT_STYLE}>
           <button
             type="button"
-            aria-label={`Select idle worker, ${idleWorkerCount.value} idle`}
+            aria-label={`Select idle Mudpaw, ${idleGeneralistCount.value} idle`}
             class="cursor-pointer min-h-[44px] px-2"
-            onClick={() => onIdleWorkerClick?.()}
+            onClick={() => onIdleGeneralistClick?.()}
           >
-            Idle: {idleWorkerCount.value}
+            Idle Mudpaws: {idleGeneralistCount.value}
           </button>
           <button
             type="button"

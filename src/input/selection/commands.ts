@@ -21,6 +21,7 @@ import {
 } from '@/ecs/components';
 import { clearPatrol } from '@/ecs/systems/patrol';
 import type { GameWorld } from '@/ecs/world';
+import { isMedicKind, isMudpawKind } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import { calculateFormationPositions } from './formation';
 import { issuePatrolCommand } from './patrol-command';
@@ -194,7 +195,7 @@ function dispatchTargetCommand(
     if (!barkShown) {
       barkShown = showBark(world, eid, Position.x[eid], Position.y[eid], kind, 'attack');
     }
-  } else if (isTargetResource && kind === EntityKind.Gatherer) {
+  } else if (isTargetResource && isMudpawKind(kind)) {
     UnitStateMachine.targetEntity[eid] = target;
     UnitStateMachine.targetX[eid] = Position.x[target];
     UnitStateMachine.targetY[eid] = Position.y[target];
@@ -206,7 +207,7 @@ function dispatchTargetCommand(
     isTargetBuilding &&
     tFaction === Faction.Player &&
     Building.progress[target] < 100 &&
-    kind === EntityKind.Gatherer
+    isMudpawKind(kind)
   ) {
     UnitStateMachine.targetEntity[eid] = target;
     UnitStateMachine.targetX[eid] = Position.x[target];
@@ -217,7 +218,7 @@ function dispatchTargetCommand(
     }
   } else if (
     EntityTypeTag.kind[target] === EntityKind.Lodge &&
-    kind === EntityKind.Gatherer &&
+    isMudpawKind(kind) &&
     Carrying.resourceType[eid] !== ResourceType.None
   ) {
     UnitStateMachine.returnEntity[eid] = target;
@@ -228,11 +229,11 @@ function dispatchTargetCommand(
     tFaction === Faction.Player &&
     !isTargetBuilding &&
     !isTargetResource &&
-    kind === EntityKind.Healer &&
+    isMedicKind(kind) &&
     Health.current[target] > 0 &&
     Health.current[target] < Health.max[target]
   ) {
-    // Medic heal command: move to wounded ally so healer aura kicks in
+    // Medic heal command: move to the wounded ally so the support aura can take over
     UnitStateMachine.targetEntity[eid] = target;
     UnitStateMachine.targetX[eid] = Position.x[target];
     UnitStateMachine.targetY[eid] = Position.y[target];
@@ -245,7 +246,7 @@ function dispatchTargetCommand(
     tFaction === Faction.Player &&
     Building.progress[target] >= 100 &&
     Health.current[target] < Health.max[target] &&
-    kind === EntityKind.Gatherer
+    isMudpawKind(kind)
   ) {
     UnitStateMachine.targetEntity[eid] = target;
     UnitStateMachine.targetX[eid] = Position.x[target];

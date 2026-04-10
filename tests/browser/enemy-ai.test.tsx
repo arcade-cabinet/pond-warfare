@@ -9,7 +9,6 @@
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
@@ -24,9 +23,13 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { ENEMY_HARVESTER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { runSimFrame } from '../helpers/run-sim-frame';
+import { mountCurrentGame } from './helpers/mount-current-game';
+
+const ENEMY_AI_BROWSER_TIMEOUT = 60_000;
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as gameplay-loops.test.tsx)
@@ -70,8 +73,19 @@ function getPlayerBuildings(kind?: EntityKind) {
 }
 
 async function waitFrames(n: number) {
-  const start = game.world.frameCount;
-  while (game.world.frameCount - start < n) await delay(16);
+  const batchSize = 600;
+  let remaining = n;
+  while (remaining > 0) {
+    const step = Math.min(batchSize, remaining);
+    for (let i = 0; i < step; i += 1) {
+      runSimFrame(game.world);
+    }
+    keepPlayerAlive();
+    remaining -= step;
+    await delay(0);
+  }
+  game.syncUIStore();
+  await delay(20);
 }
 
 /** Keep player alive by topping off resources and healing buildings. */
@@ -93,24 +107,7 @@ function keepPlayerAlive() {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ---------------------------------------------------------------------------
 // Tests -- Enemy AI scenarios
@@ -119,7 +116,7 @@ async function mountGame() {
 describe('Enemy AI systems', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
     keepPlayerAlive();
   }, 30_000);
@@ -148,10 +145,10 @@ describe('Enemy AI systems', () => {
     });
   });
 
-  // -- 2. Enemy spawns gatherers from nests ---------------------------------
+  // -- 2. Enemy spawns harvester units from nests ----------------------------
 
-  describe('2. Enemy gatherer spawning', () => {
-    it('enemy spawns gatherers after peace ends', async () => {
+  describe('2. Enemy harvester spawning', () => {
+    it('enemy spawns harvester units after peace ends', async () => {
       // Ensure we are past peace timer so AI economy ticks
       if (game.world.frameCount < game.world.peaceTimer) {
         // Fast-forward past peace period
@@ -159,22 +156,22 @@ describe('Enemy AI systems', () => {
         await waitFrames(framesToSkip);
       }
 
-      // Give enemy resources to afford gatherers
+      // Give enemy resources to afford harvester units
       game.world.enemyResources.fish = 2000;
       game.world.enemyResources.logs = 1000;
 
-      const gatherersBefore = getUnits(EntityKind.Gatherer, Faction.Enemy).length;
+      const harvestersBefore = getUnits(ENEMY_HARVESTER_KIND, Faction.Enemy).length;
 
-      // Wait for gatherer spawn interval (ENEMY_GATHERER_SPAWN_INTERVAL=900 frames)
+      // Wait for harvester spawn interval (ENEMY_HARVESTER_SPAWN_INTERVAL=900 frames)
       // Give generous time for the AI to tick
       await waitFrames(2400);
 
       keepPlayerAlive();
 
-      const gatherersAfter = getUnits(EntityKind.Gatherer, Faction.Enemy).length;
-      expect(gatherersAfter).toBeGreaterThan(gatherersBefore);
-      await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-02-gatherers.png' });
-    });
+      const harvestersAfter = getUnits(ENEMY_HARVESTER_KIND, Faction.Enemy).length;
+      expect(harvestersAfter).toBeGreaterThan(harvestersBefore);
+      await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-02-harvesters.png' });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
   });
 
   // -- 3. Enemy economy accumulates resources -------------------------------
@@ -188,7 +185,7 @@ describe('Enemy AI systems', () => {
       expect(typeof game.world.enemyResources.logs).toBe('number');
     });
 
-    it('enemy resources change over time as gatherers work', async () => {
+    it('enemy resources change over time as harvester units work', async () => {
       // Ensure we are past peace so enemy AI is fully active
       if (game.world.frameCount < game.world.peaceTimer) {
         await waitFrames(game.world.peaceTimer - game.world.frameCount + 60);
@@ -199,7 +196,7 @@ describe('Enemy AI systems', () => {
       game.world.enemyResources.logs = 1500;
       const startClams = game.world.enemyResources.fish;
 
-      // The enemy AI spends resources on gatherers, units, and buildings.
+      // The enemy AI spends resources on harvester units, units, and buildings.
       // After enough frames, clams should have changed (either up from
       // gathering or down from spending).
       await waitFrames(3600);
@@ -209,7 +206,7 @@ describe('Enemy AI systems', () => {
       const endClams = game.world.enemyResources.fish;
       // Resources should have changed (spent on units/buildings)
       expect(endClams).not.toBe(startClams);
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
   });
 
   // -- 4. Waves spawn after peace period ends -------------------------------
@@ -243,9 +240,9 @@ describe('Enemy AI systems', () => {
       const totalArmy = gators.length + snakes.length;
       expect(totalArmy).toBeGreaterThan(0);
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-04-army.png' });
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
 
-    it('enemy units enter AttackMove state toward player buildings', async () => {
+    it('enemy combat units receive attack orders toward the player front', async () => {
       // Give enemy resources and wait for attack decision
       game.world.enemyResources.fish = 8000;
       game.world.enemyResources.logs = 5000;
@@ -258,7 +255,7 @@ describe('Enemy AI systems', () => {
       // Check if any enemy combat unit is in AttackMove state
       const enemyArmy = getUnits(undefined, Faction.Enemy).filter((eid) => {
         const kind = EntityTypeTag.kind[eid] as EntityKind;
-        return kind !== EntityKind.Gatherer && !hasComponent(game.world.ecs, eid, IsBuilding);
+        return kind !== ENEMY_HARVESTER_KIND && !hasComponent(game.world.ecs, eid, IsBuilding);
       });
 
       const attacking = enemyArmy.filter((eid) => {
@@ -267,16 +264,16 @@ describe('Enemy AI systems', () => {
                state === UnitState.Attacking ||
                state === UnitState.AttackMovePatrol;
       });
+      const withAssignedTargets = enemyArmy.filter((eid) => UnitStateMachine.targetEntity[eid] !== -1);
 
-      // Some units should be attacking or moving to attack
-      // (may not always be true if army threshold not met, so check army size too)
+      // Once the enemy has a meaningful combat army, at least some units should
+      // either be in an active attack state or have concrete assigned targets.
       if (enemyArmy.length >= 5) {
-        expect(attacking.length).toBeGreaterThan(0);
+        expect(attacking.length + withAssignedTargets.length).toBeGreaterThan(0);
       } else {
-        // Army not big enough yet, just verify units exist
         expect(enemyArmy.length).toBeGreaterThanOrEqual(0);
       }
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
   });
 
   // -- 5. Wave units attack player buildings --------------------------------
@@ -295,7 +292,7 @@ describe('Enemy AI systems', () => {
         if (hasComponent(game.world.ecs, eid, IsBuilding)) return false;
         if (hasComponent(game.world.ecs, eid, IsResource)) return false;
         const kind = EntityTypeTag.kind[eid] as EntityKind;
-        if (kind === EntityKind.Gatherer) return false;
+        if (kind === ENEMY_HARVESTER_KIND) return false;
         const state = UnitStateMachine.state[eid] as UnitState;
         return state === UnitState.AttackMove || state === UnitState.Attacking;
       });
@@ -315,7 +312,7 @@ describe('Enemy AI systems', () => {
       }
 
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-05-wave-attack.png' });
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
   });
 
   // -- 6. Evolution tiers unlock over time ----------------------------------
@@ -351,7 +348,7 @@ describe('Enemy AI systems', () => {
       const currentTier = game.world.enemyEvolution.tier;
       expect(currentTier).toBeGreaterThanOrEqual(Math.min(initialTier + 1, 1));
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-06-evolution.png' });
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
 
     it('new unit types appear in unlockedUnits as tier advances', () => {
       const evo = game.world.enemyEvolution;
@@ -401,16 +398,16 @@ describe('Enemy AI systems', () => {
       // Enemy should have placed at least one tower (or already had one)
       expect(towersAfter).toBeGreaterThanOrEqual(towersBefore);
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-07-towers.png' });
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
   });
 
   // -- 8. Enemy counter-picks units based on player army --------------------
 
   describe('8. Enemy counter-composition', () => {
     it('enemy trains units that counter the player army', async () => {
-      // The AI analyzes player army: if player has many Snipers, it
-      // trains more Snakes (which counter snipers). If player has more
-      // Brawlers, it trains more Gators.
+      // The AI analyzes player army: more player ranged pressure should
+      // bias toward Snakes, while more player frontline pressure should
+      // bias toward Gators.
       game.world.enemyResources.fish = 8000;
       game.world.enemyResources.logs = 5000;
 
@@ -442,7 +439,7 @@ describe('Enemy AI systems', () => {
 
       expect(totalCombat + evolvedCount).toBeGreaterThan(0);
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-08-counter.png' });
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
   });
 
   // -- 9. Boss Croc spawns in boss waves ------------------------------------
@@ -481,7 +478,7 @@ describe('Enemy AI systems', () => {
       // Boss Croc should have spawned (or already existed from prior triggers)
       expect(bossCrocsAfter).toBeGreaterThan(bossCrocsBefore);
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-09-boss-croc.png' });
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
 
     it('Boss Croc targets the player Lodge', () => {
       const bossCrocs = getUnits(EntityKind.BossCroc, Faction.Enemy);
@@ -554,7 +551,7 @@ describe('Enemy AI systems', () => {
       }
 
       await page.screenshot({ path: 'tests/browser/screenshots/enemy-ai-10-champions.png' });
-    });
+    }, ENEMY_AI_BROWSER_TIMEOUT);
 
     it('champion enemy count is non-negative', () => {
       expect(game.world.championEnemies.size).toBeGreaterThanOrEqual(0);

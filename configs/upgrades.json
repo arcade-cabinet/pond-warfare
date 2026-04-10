@@ -14,15 +14,15 @@
       "subcategories": {
         "attack_power": { "label": "Attack Power", "base_effect": 0.08, "base_cost": 12 },
         "attack_speed": { "label": "Attack Speed", "base_effect": 0.08, "base_cost": 15 },
-        "armor": { "label": "Armor", "base_effect": 0.08, "base_cost": 12 },
-        "critical_hit": { "label": "Critical Hit", "base_effect": 0.08, "base_cost": 20 }
+        "armor": { "label": "Armor", "base_effect": 0.12, "base_cost": 12 },
+        "critical_hit": { "label": "Critical Hit", "base_effect": 0.15, "base_cost": 20 }
       }
     },
     "defense": {
       "label": "Defense",
       "subcategories": {
         "wall_hp": { "label": "Wall HP", "base_effect": 0.10, "base_cost": 10 },
-        "tower_damage": { "label": "Tower Damage", "base_effect": 0.08, "base_cost": 15 },
+        "tower_damage": { "label": "Tower Damage", "base_effect": 0.15, "base_cost": 15 },
         "lodge_hp": { "label": "Lodge HP", "base_effect": 0.08, "base_cost": 12 },
         "repair_speed": { "label": "Repair Speed", "base_effect": 0.08, "base_cost": 10 }
       }
@@ -30,10 +30,10 @@
     "utility": {
       "label": "Utility",
       "subcategories": {
-        "unit_speed": { "label": "Unit Speed", "base_effect": 0.03, "base_cost": 12 },
+        "unit_speed": { "label": "Unit Speed", "base_effect": 0.06, "base_cost": 12 },
         "vision_range": { "label": "Vision Range", "base_effect": 0.05, "base_cost": 10 },
-        "heal_power": { "label": "Heal Power", "base_effect": 0.05, "base_cost": 15 },
-        "train_speed": { "label": "Train Speed", "base_effect": 0.04, "base_cost": 12 }
+        "heal_power": { "label": "Heal Power", "base_effect": 0.08, "base_cost": 15 },
+        "train_speed": { "label": "Train Speed", "base_effect": 0.08, "base_cost": 12 }
       }
     },
     "economy": {
@@ -103,16 +103,10 @@
       "effect": { "type": "unlock_specialist", "unit": "logger" },
       "cost": 150
     },
-    "guardian_specialist": {
-      "label": "Guardian Unlock",
+    "guard_specialist": {
+      "label": "Guard Unlock",
       "requires": { "defense": { "lodge_hp": 5, "wall_hp": 5 } },
-      "effect": { "type": "unlock_specialist", "unit": "guardian" },
-      "cost": 200
-    },
-    "hunter_specialist": {
-      "label": "Hunter Unlock",
-      "requires": { "combat": { "attack_power": 7 } },
-      "effect": { "type": "unlock_specialist", "unit": "hunter" },
+      "effect": { "type": "unlock_specialist", "unit": "guard" },
       "cost": 200
     },
     "ranger_specialist": {
@@ -133,16 +127,10 @@
       "effect": { "type": "unlock_specialist", "unit": "lookout" },
       "cost": 150
     },
-    "sapper_specialist": {
-      "label": "Sapper Unlock",
+    "bombardier_specialist": {
+      "label": "Bombardier Unlock",
       "requires": { "siege": { "siege_damage": 5, "demolish_power": 5 } },
-      "effect": { "type": "unlock_specialist", "unit": "sapper" },
-      "cost": 250
-    },
-    "saboteur_specialist": {
-      "label": "Saboteur Unlock",
-      "requires": { "siege": { "sapper_speed": 5 }, "economy": { "node_yield": 5 } },
-      "effect": { "type": "unlock_specialist", "unit": "saboteur" },
+      "effect": { "type": "unlock_specialist", "unit": "bombardier" },
       "cost": 250
     },
     "auto_battlements": {
@@ -172,37 +160,37 @@
     "frontier_expansion_1": {
       "label": "Frontier Expansion I",
       "description": "Unlock panel 2 — muddy forest with log groves",
-      "requires": { "gathering": { "log_gathering": 2 } },
+      "requires": { "gathering": { "fish_gathering": 1, "log_gathering": 1 } },
       "effect": { "type": "unlock_panel_stage", "stage": 2 },
-      "cost": 200
+      "cost": 30
     },
     "frontier_expansion_2": {
       "label": "Frontier Expansion II",
       "description": "Unlock panel 1 or 3 — L-shape, multi-directional enemies",
-      "requires": { "defense": { "wall_hp": 3 } },
+      "requires": { "combat": { "attack_power": 2 }, "defense": { "lodge_hp": 1 } },
       "effect": { "type": "unlock_panel_stage", "stage": 3 },
-      "cost": 400
+      "cost": 100
     },
     "frontier_expansion_3": {
       "label": "Frontier Expansion III",
       "description": "Unlock remaining panel 1 or 3 — T-shape, 3 enemy spawns",
-      "requires": { "combat": { "attack_power": 4 }, "gathering": { "fish_gathering": 4 } },
+      "requires": { "combat": { "attack_power": 3 }, "gathering": { "fish_gathering": 3 } },
       "effect": { "type": "unlock_panel_stage", "stage": 4 },
-      "cost": 600
+      "cost": 180
     },
     "frontier_expansion_4": {
       "label": "Frontier Expansion IV",
       "description": "Unlock panel 4 or 6 — flanking routes, fortifications needed",
-      "requires": { "defense": { "tower_damage": 5 }, "economy": { "node_yield": 5 } },
+      "requires": { "combat": { "attack_power": 4 }, "defense": { "lodge_hp": 3 } },
       "effect": { "type": "unlock_panel_stage", "stage": 5 },
-      "cost": 900
+      "cost": 260
     },
     "frontier_expansion_5": {
       "label": "Frontier Expansion V",
       "description": "Unlock full 3×2 grid — all threats, all strategies",
-      "requires": { "siege": { "siege_damage": 5 }, "utility": { "vision_range": 5 } },
+      "requires": { "combat": { "attack_power": 5 }, "defense": { "lodge_hp": 4 } },
       "effect": { "type": "unlock_panel_stage", "stage": 6 },
-      "cost": 1200
+      "cost": 360
     }
   }
 }

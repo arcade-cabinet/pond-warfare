@@ -1,4 +1,20 @@
-# Pond Warfare - Game Design Bible
+---
+title: Game Design Bible (Historical)
+updated: 2026-04-10
+status: archived
+domain: creative
+---
+
+# Pond Warfare - Game Design Bible (Historical Reference)
+
+> **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), [docs/architecture.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/architecture.md), and [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
+>
+> Historical term translation:
+> `Gatherer` -> `Mudpaw`
+> `free specialist auto-deploy` -> obsolete; specialists are now Pearl blueprints trained in-match
+> `Brawler / Sniper / Shieldbearer / Catapult` -> historical compatibility content, not the live player roster
+>
+> The roster matrices, progression beats, and matchup tables below are preserved for historical art and design context only. They should not be used as live gameplay, balance, or naming truth.
 
 ## Vision
 
@@ -18,7 +34,7 @@ Warcraft II-style RTS in a pond ecosystem. Two playable factions compete for fin
 - **4 ranked tiers** (Bronze, Silver, Gold, Diamond) + leaderboard tracking
 - **6 map scenarios** (Standard, Island, Contested, Labyrinth, River, Peninsula)
 - **15 achievements** + 18 unlockables across 5 categories
-- **Unit-specific SFX** (8 unique select sounds, building/death/tech/airdrop effects)
+- **Unit-specific SFX** (8 unique select sounds, building/death/tech/evolution effects)
 - **Cosmetic system** with unit skins + building themes via sprite recoloring
 - **359 tests** across 29 files
 

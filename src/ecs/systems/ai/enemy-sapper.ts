@@ -6,7 +6,7 @@
  * defensive structures. Uses Yuka steering for pathfinding.
  *
  * If no fortifications exist, sappers fall back to attacking the weakest
- * player building (same as default fighter behavior).
+ * player building (same as default assault-unit behavior).
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -20,7 +20,7 @@ import {
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
-import { getEnemyUnitRole } from '@/ecs/systems/wave-spawner';
+import { getEnemyBehaviorRole } from '@/ecs/systems/wave-spawner';
 import type { GameWorld } from '@/ecs/world';
 import { Faction, UnitState } from '@/types';
 import { findNearestEntity, findPlayerFortifications, findWeakestPlayerBuilding } from './helpers';
@@ -53,7 +53,7 @@ export function enemySapperTick(world: GameWorld): void {
     if (hasComponent(world.ecs, eid, IsResource)) continue;
     if (Health.current[eid] <= 0) continue;
 
-    const role = getEnemyUnitRole(eid);
+    const role = getEnemyBehaviorRole(eid);
     if (role !== 'sapper_enemy') continue;
 
     const state = UnitStateMachine.state[eid] as UnitState;

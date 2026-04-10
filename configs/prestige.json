@@ -6,61 +6,145 @@
   "rank_threshold_base": 20,
   "rank_threshold_formula": "rank_threshold_base * (1 + current_rank * 0.5)",
   "pearl_upgrades": {
-    "auto_deploy_fisher": {
-      "label": "Auto-Deploy Fisher",
-      "description": "Spawns fishers at match start",
+    "blueprint_fisher": {
+      "label": "Fisher Blueprint",
+      "description": "Raises your in-match Fisher field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
-      "effect": { "type": "auto_deploy", "unit": "fisher", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "fisher", "cap_per_rank": 1 }
     },
-    "auto_deploy_digger": {
-      "label": "Auto-Deploy Digger",
-      "description": "Spawns diggers at match start",
+    "fisher_radius": {
+      "label": "Fisher Radius",
+      "description": "Expands the Fisher operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 5,
+      "effect": { "type": "specialist_zone", "unit": "fisher", "stat": "operating_radius", "value_per_rank": 24 }
+    },
+    "blueprint_digger": {
+      "label": "Digger Blueprint",
+      "description": "Raises your in-match Digger field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
-      "effect": { "type": "auto_deploy", "unit": "digger", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "digger", "cap_per_rank": 1 }
     },
-    "auto_deploy_logger": {
-      "label": "Auto-Deploy Logger",
-      "description": "Spawns loggers at match start",
+    "digger_radius": {
+      "label": "Digger Radius",
+      "description": "Expands the Digger operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 5,
+      "effect": { "type": "specialist_zone", "unit": "digger", "stat": "operating_radius", "value_per_rank": 24 }
+    },
+    "blueprint_logger": {
+      "label": "Logger Blueprint",
+      "description": "Raises your in-match Logger field cap",
       "cost_per_rank": 3,
       "max_rank": 5,
-      "effect": { "type": "auto_deploy", "unit": "logger", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "logger", "cap_per_rank": 1 }
     },
-    "auto_deploy_guardian": {
-      "label": "Auto-Deploy Guardian",
-      "description": "Spawns guardians at match start",
+    "logger_radius": {
+      "label": "Logger Radius",
+      "description": "Expands the Logger operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 5,
+      "effect": { "type": "specialist_zone", "unit": "logger", "stat": "operating_radius", "value_per_rank": 24 }
+    },
+    "blueprint_guard": {
+      "label": "Guard Blueprint",
+      "description": "Raises your in-match Guard field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "guardian", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "guard", "cap_per_rank": 1 }
     },
-    "auto_deploy_hunter": {
-      "label": "Auto-Deploy Hunter",
-      "description": "Spawns hunters at match start",
+    "guard_radius": {
+      "label": "Guard Radius",
+      "description": "Expands the Guard operating radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "guard", "stat": "operating_radius", "value_per_rank": 20 }
+    },
+    "blueprint_bombardier": {
+      "label": "Bombardier Blueprint",
+      "description": "Raises your in-match Bombardier field cap",
       "cost_per_rank": 5,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "hunter", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "bombardier", "cap_per_rank": 1 }
     },
-    "auto_deploy_ranger": {
-      "label": "Auto-Deploy Ranger",
-      "description": "Spawns rangers at match start",
+    "bombardier_anchor_radius": {
+      "label": "Bombardier Anchor",
+      "description": "Expands the Bombardier anchor radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "bombardier", "stat": "anchor_radius", "value_per_rank": 16 }
+    },
+    "bombardier_engagement_radius": {
+      "label": "Bombardier Siege Radius",
+      "description": "Expands the Bombardier engagement radius",
+      "cost_per_rank": 6,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "bombardier", "stat": "engagement_radius", "value_per_rank": 28 }
+    },
+    "bombardier_projection_range": {
+      "label": "Bombardier Projection",
+      "description": "Extends how far the Bombardier can project its engagement zone",
+      "cost_per_rank": 6,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "bombardier", "stat": "projection_range", "value_per_rank": 24 }
+    },
+    "blueprint_ranger": {
+      "label": "Ranger Blueprint",
+      "description": "Raises your in-match Ranger field cap",
       "cost_per_rank": 4,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "ranger", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "ranger", "cap_per_rank": 1 }
     },
-    "auto_deploy_shaman": {
-      "label": "Auto-Deploy Shaman",
-      "description": "Spawns shamans at match start",
+    "ranger_anchor_radius": {
+      "label": "Ranger Anchor",
+      "description": "Expands the Ranger anchor radius",
+      "cost_per_rank": 4,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "ranger", "stat": "anchor_radius", "value_per_rank": 14 }
+    },
+    "ranger_engagement_radius": {
+      "label": "Ranger Coverage",
+      "description": "Expands the Ranger engagement radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "ranger", "stat": "engagement_radius", "value_per_rank": 24 }
+    },
+    "ranger_projection_range": {
+      "label": "Ranger Projection",
+      "description": "Extends how far the Ranger can project its engagement zone",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "ranger", "stat": "projection_range", "value_per_rank": 20 }
+    },
+    "blueprint_shaman": {
+      "label": "Shaman Blueprint",
+      "description": "Raises your in-match Shaman field cap",
       "cost_per_rank": 4,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "shaman", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "shaman", "cap_per_rank": 1 }
     },
-    "auto_deploy_lookout": {
-      "label": "Auto-Deploy Lookout",
-      "description": "Spawns lookouts at match start",
+    "shaman_radius": {
+      "label": "Shaman Radius",
+      "description": "Expands the Shaman operating radius",
+      "cost_per_rank": 5,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "shaman", "stat": "operating_radius", "value_per_rank": 20 }
+    },
+    "blueprint_lookout": {
+      "label": "Lookout Blueprint",
+      "description": "Raises your in-match Lookout field cap",
       "cost_per_rank": 3,
       "max_rank": 3,
-      "effect": { "type": "auto_deploy", "unit": "lookout", "count_per_rank": 1 }
+      "effect": { "type": "specialist_blueprint", "unit": "lookout", "cap_per_rank": 1 }
+    },
+    "lookout_radius": {
+      "label": "Lookout Radius",
+      "description": "Expands the Lookout operating radius",
+      "cost_per_rank": 4,
+      "max_rank": 4,
+      "effect": { "type": "specialist_zone", "unit": "lookout", "stat": "operating_radius", "value_per_rank": 30 }
     },
     "gather_multiplier": {
       "label": "Gathering Multiplier",
@@ -74,14 +158,14 @@
       "description": "Permanent boost to unit damage",
       "cost_per_rank": 5,
       "max_rank": 10,
-      "effect": { "type": "multiplier", "stat": "damage", "value_per_rank": 0.03 }
+      "effect": { "type": "multiplier", "stat": "damage", "value_per_rank": 0.1 }
     },
     "hp_multiplier": {
       "label": "HP Multiplier",
       "description": "Permanent boost to unit HP",
       "cost_per_rank": 5,
       "max_rank": 10,
-      "effect": { "type": "multiplier", "stat": "hp", "value_per_rank": 0.05 }
+      "effect": { "type": "multiplier", "stat": "hp", "value_per_rank": 0.2 }
     },
     "clam_earnings_multiplier": {
       "label": "Clam Earnings",

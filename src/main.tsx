@@ -11,7 +11,12 @@ import '@/styles/main.css';
 import { render } from 'preact';
 import { loadKeymapFromStorage } from '@/config/keymap';
 import { installGlobalErrorHandlers, reportFatalError } from '@/errors';
-import { game } from '@/game';
+import { hydrateSaveAvailability } from '@/game/menu-start';
+import {
+  registerMountedGameRefs,
+  startMountedGameFromMenu,
+  teardownMountedGameSession,
+} from '@/game/shell-session';
 import { initDeviceSignals, initNativePlatform } from '@/platform';
 import { initDatabase } from '@/storage';
 import { loadPersistedSettings } from '@/storage/settings-persistence';
@@ -21,31 +26,17 @@ import { hydrateV3StoreFromDb } from '@/ui/store-v3-persistence';
 installGlobalErrorHandlers();
 
 import { App } from '@/ui/app';
+import { ErrorBoundary } from '@/ui/error-boundary';
+import { handleGameInitFailure } from '@/ui/game-init-failure';
 import { menuState } from '@/ui/store';
 
-/** Stored DOM refs from the App component, used to init the game later. */
-let storedRefs: {
-  container: HTMLDivElement;
-  gameCanvas: HTMLCanvasElement;
-  fogCanvas: HTMLCanvasElement;
-  lightCanvas: HTMLCanvasElement;
-} | null = null;
-
-let gameStarted = false;
-
-// US7: Seamless PLAY — always starts a new match. Run state (progression,
-// clams, upgrades) is already in store-v3 signals from hydrateV3StoreFromDb().
-// Game.init() reads those signals to apply upgrade effects and difficulty.
-function startGame() {
-  if (!storedRefs || gameStarted) return;
-  gameStarted = true;
-
-  game.init(
-    storedRefs.container,
-    storedRefs.gameCanvas,
-    storedRefs.fogCanvas,
-    storedRefs.lightCanvas,
-  );
+// PLAY always starts a new match from the current run state.
+// CONTINUE loads the latest saved battle after init completes.
+function startGame(): Promise<boolean> {
+  return startMountedGameFromMenu().catch((error) => {
+    handleGameInitFailure(error);
+    return false;
+  });
 }
 
 // Initialize database then mount the Preact application
@@ -69,6 +60,7 @@ function startGame() {
 
   // Hydrate v3 prestige/run signals from SQLite
   await hydrateV3StoreFromDb();
+  await hydrateSaveAvailability();
 
   // Load keymap from Capacitor Preferences
   await loadKeymapFromStorage();
@@ -76,22 +68,28 @@ function startGame() {
   const root = document.getElementById('app');
   if (root) {
     render(
-      <App
-        onMount={(refs) => {
-          storedRefs = refs;
-          // If menu is already 'playing' (edge case), start immediately
-          if (menuState.value === 'playing') {
-            startGame();
-          }
-        }}
-      />,
+      <ErrorBoundary>
+        <App
+          onMount={(refs) => {
+            registerMountedGameRefs(refs);
+            // If menu is already 'playing' (edge case), start immediately
+            if (menuState.value === 'playing') {
+              return startGame().then(() => {});
+            }
+          }}
+        />
+      </ErrorBoundary>,
       root,
     );
 
-    // Subscribe to menu state changes — US7: always new match, no continue flag
+    // Subscribe to menu state changes from PLAY or CONTINUE.
     menuState.subscribe((state) => {
-      if (state === 'playing' && storedRefs && !gameStarted) {
-        startGame();
+      if (state === 'main') {
+        teardownMountedGameSession();
+        return;
+      }
+      if (state === 'playing') {
+        void startGame();
       }
     });
   }

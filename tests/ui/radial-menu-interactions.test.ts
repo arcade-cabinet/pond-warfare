@@ -26,11 +26,10 @@ describe('Radial Menu Interactions (tap-only)', () => {
     const options = getRadialOptions('lodge', null, state);
     const ids = options.map((o) => o.id);
 
-    // With 100 fish, should have all basic training options
-    expect(ids).toContain('train_gatherer');
-    expect(ids).toContain('train_fighter');
-    expect(ids).toContain('train_medic');
-    expect(ids).toContain('train_scout');
+    expect(ids).toContain('train_mudpaw');
+    expect(ids).not.toContain('train_medic');
+    expect(ids).not.toContain('train_sapper');
+    expect(ids).not.toContain('train_saboteur');
   });
 
   it('Lodge radial hides training when fish too low', () => {
@@ -45,14 +44,11 @@ describe('Radial Menu Interactions (tap-only)', () => {
     const options = getRadialOptions('lodge', null, state);
     const ids = options.map((o) => o.id);
 
-    // With only 5 fish, no training should be available
-    expect(ids).not.toContain('train_gatherer'); // costs 10
-    expect(ids).not.toContain('train_fighter'); // costs 20
-    expect(ids).not.toContain('train_medic'); // costs 15
-    expect(ids).not.toContain('train_scout'); // costs 8
+    expect(ids).not.toContain('train_mudpaw');
+    expect(ids).not.toContain('train_medic');
   });
 
-  it('Gatherer is trainable at 10 fish, not at 9', () => {
+  it('Mudpaw is trainable at 10 fish, not at 9', () => {
     const broke: RadialGameState = {
       fish: 9,
       rocks: 0,
@@ -72,41 +68,64 @@ describe('Radial Menu Interactions (tap-only)', () => {
     const brokeOpts = getRadialOptions('lodge', null, broke);
     const affordOpts = getRadialOptions('lodge', null, affordable);
 
-    expect(brokeOpts.map((o) => o.id)).not.toContain('train_gatherer');
-    expect(affordOpts.map((o) => o.id)).toContain('train_gatherer');
+    expect(brokeOpts.map((o) => o.id)).not.toContain('train_mudpaw');
+    expect(affordOpts.map((o) => o.id)).toContain('train_mudpaw');
   });
 
-  it('Sapper and Saboteur require high unlock stage and rocks', () => {
+  it('Medic unlocks at stage 2', () => {
     const earlyGame: RadialGameState = {
       fish: 100,
-      rocks: 50,
-      logs: 50,
+      rocks: 0,
+      logs: 0,
       unlockStage: 1,
       lodgeDamaged: false,
     };
 
-    const lateGame: RadialGameState = {
+    const stageTwo: RadialGameState = {
+      fish: 100,
+      rocks: 0,
+      logs: 0,
+      unlockStage: 2,
+      lodgeDamaged: false,
+    };
+
+    const earlyIds = getRadialOptions('lodge', null, earlyGame).map((o) => o.id);
+    const stageTwoIds = getRadialOptions('lodge', null, stageTwo).map((o) => o.id);
+
+    expect(earlyIds).not.toContain('train_medic');
+    expect(stageTwoIds).toContain('train_medic');
+  });
+
+  it('Sapper and Saboteur require their later frontier stages plus rocks', () => {
+    const stageFive: RadialGameState = {
       fish: 100,
       rocks: 50,
       logs: 50,
       unlockStage: 5,
       lodgeDamaged: false,
     };
+    const stageSix: RadialGameState = {
+      fish: 100,
+      rocks: 50,
+      logs: 50,
+      unlockStage: 6,
+      lodgeDamaged: false,
+    };
 
-    const earlyIds = getRadialOptions('lodge', null, earlyGame).map((o) => o.id);
-    const lateIds = getRadialOptions('lodge', null, lateGame).map((o) => o.id);
+    const stageFiveIds = getRadialOptions('lodge', null, stageFive).map((o) => o.id);
+    const stageSixIds = getRadialOptions('lodge', null, stageSix).map((o) => o.id);
 
-    expect(earlyIds).not.toContain('train_sapper');
-    expect(earlyIds).not.toContain('train_saboteur');
-    expect(lateIds).toContain('train_sapper');
-    expect(lateIds).toContain('train_saboteur');
+    expect(stageFiveIds).toContain('train_sapper');
+    expect(stageFiveIds).not.toContain('train_saboteur');
+    expect(stageSixIds).toContain('train_sapper');
+    expect(stageSixIds).toContain('train_saboteur');
   });
 
   it('Repair option only shows when Lodge is damaged and has logs', () => {
     const undamaged: RadialGameState = {
       fish: 50,
       rocks: 0,
-      logs: 20,
+      logs: 30,
       unlockStage: 3,
       lodgeDamaged: false,
     };
@@ -114,7 +133,7 @@ describe('Radial Menu Interactions (tap-only)', () => {
     const damaged: RadialGameState = {
       fish: 50,
       rocks: 0,
-      logs: 20,
+      logs: 30,
       unlockStage: 3,
       lodgeDamaged: true,
     };
@@ -122,7 +141,7 @@ describe('Radial Menu Interactions (tap-only)', () => {
     const damagedNoLogs: RadialGameState = {
       fish: 50,
       rocks: 0,
-      logs: 0,
+      logs: 20,
       unlockStage: 3,
       lodgeDamaged: true,
     };
@@ -132,15 +151,16 @@ describe('Radial Menu Interactions (tap-only)', () => {
     expect(getRadialOptions('lodge', null, damagedNoLogs).map((o) => o.id)).not.toContain('repair');
   });
 
-  it('Unit radial shows role-specific options for gatherer', () => {
-    const options = getRadialOptions('unit', 'gather');
+  it('Unit radial shows role-specific options for Mudpaw generalists', () => {
+    const options = getRadialOptions('unit', 'generalist');
     const ids = options.map((o) => o.id);
 
     expect(ids).toContain('cmd_gather');
+    expect(ids).toContain('cmd_attack');
+    expect(ids).toContain('cmd_recon');
     expect(ids).toContain('cmd_hold');
     expect(ids).toContain('cmd_patrol');
     expect(ids).toContain('cmd_return');
-    expect(ids).not.toContain('cmd_attack');
   });
 
   it('Unit radial shows role-specific options for combat', () => {
@@ -154,8 +174,8 @@ describe('Radial Menu Interactions (tap-only)', () => {
     expect(ids).not.toContain('cmd_gather');
   });
 
-  it('Unit radial shows role-specific options for healer', () => {
-    const options = getRadialOptions('unit', 'heal');
+  it('Unit radial shows role-specific options for support', () => {
+    const options = getRadialOptions('unit', 'support');
     const ids = options.map((o) => o.id);
 
     expect(ids).toContain('cmd_heal');
@@ -163,14 +183,15 @@ describe('Radial Menu Interactions (tap-only)', () => {
     expect(ids).not.toContain('cmd_attack');
   });
 
-  it('Unit radial shows role-specific options for scout', () => {
-    const options = getRadialOptions('unit', 'scout');
+  it('Unit radial shows role-specific options for recon', () => {
+    const options = getRadialOptions('unit', 'recon');
     const ids = options.map((o) => o.id);
 
-    expect(ids).toContain('cmd_scout');
+    expect(ids).toContain('cmd_recon');
     expect(ids).toContain('cmd_patrol');
     expect(ids).not.toContain('cmd_attack');
     expect(ids).not.toContain('cmd_gather');
+    expect(options.find((o) => o.id === 'cmd_recon')?.label).toBe('Recon');
   });
 
   it('Unknown role falls back to generic options', () => {

@@ -4,9 +4,10 @@
  * At Evolution Tier 2+, periodically spawns Flying Herons from map edges:
  * - Herons ignore terrain speed modifiers (handled in terrain-grid.ts).
  * - Rendered with y-offset -10px (handled in entity-renderer).
- * - Fast scouts: fly toward player base, attack gatherers, then flee.
- * - Countered by Snipers and Towers (1.5x), weak vs melee (0.5x Brawler).
- *   Damage multipliers are in damage-multipliers.ts.
+ * - Fast scouts: fly toward player base, harass Mudpaws, then flee.
+ * - Countered primarily by Towers (1.5x) and otherwise pressures exposed
+ *   Mudpaws and lightly defended lanes. Damage multipliers are in
+ *   damage-multipliers.ts.
  */
 
 import { hasComponent, query } from 'bitecs';
@@ -21,6 +22,7 @@ import {
   Position,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
@@ -58,8 +60,8 @@ function edgeSpawnPosition(world: GameWorld): { sx: number; sy: number } {
   }
 }
 
-/** Find the nearest player gatherer to target. */
-function findNearestGatherer(world: GameWorld, x: number, y: number): number {
+/** Find the nearest player Mudpaw to harass. */
+function findNearestMudpaw(world: GameWorld, x: number, y: number): number {
   const units = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
   let best = -1;
   let bestDist = Infinity;
@@ -70,7 +72,7 @@ function findNearestGatherer(world: GameWorld, x: number, y: number): number {
     if (hasComponent(world.ecs, eid, IsBuilding) || hasComponent(world.ecs, eid, IsResource))
       continue;
     const kind = EntityTypeTag.kind[eid] as EntityKind;
-    if (kind !== EntityKind.Gatherer) continue;
+    if (kind !== MUDPAW_KIND) continue;
     const dx = Position.x[eid] - x;
     const dy = Position.y[eid] - y;
     const d = dx * dx + dy * dy;
@@ -127,8 +129,8 @@ export function heronSpawnerSystem(world: GameWorld): void {
   spawnDustParticles(world, sx, sy);
   audio.heronScreech(sx);
 
-  // Target nearest gatherer, fall back to any player unit
-  let target = findNearestGatherer(world, sx, sy);
+  // Target nearest Mudpaw, fall back to any player unit
+  let target = findNearestMudpaw(world, sx, sy);
   if (target === -1) {
     target = findNearestPlayerUnit(world, sx, sy);
   }

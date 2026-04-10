@@ -24,6 +24,7 @@ import {
 } from '@/ecs/components';
 import { healthSystem } from '@/ecs/systems/health';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 /** Create a generic unit with Health, Position, etc. */
@@ -130,7 +131,7 @@ describe('Commander Game-Over', () => {
     createLodge(world, 0); // destroyed
     createNest(world, 100);
     // Player has a living unit (the Commander itself counts)
-    createUnit(world, EntityKind.Brawler, Faction.Player, 50);
+    createUnit(world, SAPPER_KIND, Faction.Player, 50);
 
     healthSystem(world);
 
@@ -208,8 +209,8 @@ describe('Commander Game-Over', () => {
     createCommander(world, Faction.Enemy, 100);
     createLodge(world, 0); // destroyed
     // No nests, but enemy Commander alive — game continues
-    // Player has living units (Commander + one brawler)
-    createUnit(world, EntityKind.Brawler, Faction.Player, 50);
+    // Player has living units (Commander + one Sapper)
+    createUnit(world, SAPPER_KIND, Faction.Player, 50);
 
     healthSystem(world);
 

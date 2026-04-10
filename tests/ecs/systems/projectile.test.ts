@@ -7,9 +7,10 @@
 import { addComponent, addEntity, hasComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { PROJECTILE_SPEED } from '@/constants';
-import { Health, IsProjectile, Position } from '@/ecs/components';
+import { Combat, FactionTag, Health, IsProjectile, Position } from '@/ecs/components';
 import { projectileSystem, spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { Faction } from '@/types';
 
 /** Create a simple target entity with health. */
 function createTarget(world: GameWorld, x: number, y: number, hp: number): number {
@@ -60,6 +61,16 @@ describe('projectileSystem', () => {
     expect(Health.current[target]).toBeLessThan(100);
   });
 
+  it('should not apply projectile damage multipliers twice on impact', () => {
+    const target = createTarget(world, 100, 100, 100);
+    // Projectile damage is already pre-scaled before impact.
+    spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 6, -1, 0.75);
+
+    projectileSystem(world);
+
+    expect(Health.current[target]).toBe(94);
+  });
+
   it('should be removed after impact', () => {
     const target = createTarget(world, 100, 100, 100);
     // Spawn projectile at the target position (immediate impact)
@@ -69,5 +80,40 @@ describe('projectileSystem', () => {
 
     // Projectile should have been removed (no longer has IsProjectile)
     expect(hasComponent(world.ecs, projEid, IsProjectile)).toBe(false);
+  });
+
+  it('applies player critical hits to projectile damage', () => {
+    const owner = addEntity(world.ecs);
+    addComponent(world.ecs, owner, Combat);
+    addComponent(world.ecs, owner, FactionTag);
+    FactionTag.faction[owner] = Faction.Player;
+    world.playerCriticalHitChance = 1;
+
+    const target = createTarget(world, 100, 100, 100);
+    spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 15, owner);
+
+    projectileSystem(world);
+
+    expect(Health.current[target]).toBe(70);
+    expect(world.floatingTexts.some((text) => text.text === 'CRIT!')).toBe(true);
+  });
+
+  it('accumulates low player critical-hit chance across repeated shots', () => {
+    const owner = addEntity(world.ecs);
+    addComponent(world.ecs, owner, Combat);
+    addComponent(world.ecs, owner, FactionTag);
+    FactionTag.faction[owner] = Faction.Player;
+    world.playerCriticalHitChance = 0.25;
+    world.gameRng.next = () => 0.99;
+
+    const target = createTarget(world, 100, 100, 100);
+
+    for (let shot = 0; shot < 4; shot += 1) {
+      spawnProjectile(world, 100 + PROJECTILE_SPEED - 1, 100, 100, 100, target, 10, owner);
+      projectileSystem(world);
+    }
+
+    expect(Health.current[target]).toBe(50);
+    expect(world.floatingTexts.filter((text) => text.text === 'CRIT!')).toHaveLength(1);
   });
 });

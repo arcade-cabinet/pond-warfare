@@ -8,6 +8,7 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WORLD_BOUNDS_MARGIN } from '@/constants';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -45,7 +46,7 @@ function createUnit(world: GameWorld, x: number, y: number): number {
   Health.max[eid] = 30;
   Velocity.speed[eid] = 2.0;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Gatherer;
+  EntityTypeTag.kind[eid] = MUDPAW_KIND;
 
   return eid;
 }
@@ -128,5 +129,17 @@ describe('collisionSystem', () => {
 
     expect(Position.x[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN - 1);
     expect(Position.y[eid]).toBeGreaterThanOrEqual(WORLD_BOUNDS_MARGIN - 1);
+  });
+
+  it('skips invalid physics bodies instead of poisoning the world step', () => {
+    const invalid = createUnit(world, Number.NaN, 100);
+    const valid = createUnit(world, 140, 100);
+
+    physics.createBody(world.ecs, invalid);
+    physics.createBody(world.ecs, valid);
+
+    expect(physics.hasBody(invalid)).toBe(false);
+    expect(physics.hasBody(valid)).toBe(true);
+    expect(() => collisionSystem(world, physics)).not.toThrow();
   });
 });

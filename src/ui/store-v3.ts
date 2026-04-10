@@ -11,7 +11,7 @@ import { computed, signal } from '@preact/signals';
 import type { PrestigeState } from '@/config/prestige-logic';
 import type { FortSlot } from '@/ecs/systems/fortification';
 import type { RewardBreakdown } from '@/game/match-rewards';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { COLORS } from './design-tokens';
 
 // ── Prestige ─────────────────────────────────────────────────────
@@ -27,6 +27,12 @@ export const totalClams = signal(0);
 
 /** Current progression level (determines event pool, map size). */
 export const progressionLevel = signal(0);
+
+/** Purchased Clam web nodes for the current run. */
+export const currentRunPurchasedNodeIds = signal<string[]>([]);
+
+/** Purchased Clam web diamond nodes for the current run. */
+export const currentRunPurchasedDiamondIds = signal<string[]>([]);
 
 /** Starting tier rank from Pearl upgrades (0 = none). Used at match init for auto-fill. */
 export const startingTierRank = signal(0);

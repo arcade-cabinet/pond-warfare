@@ -1,14 +1,14 @@
 /**
  * v2.0.0 Entity Sprites
  *
- * Dock, OtterWarship, Berserker, WallGate, Shrine.
+ * Reserved historical entity slots 39-43.
  */
 
 import { PALETTE } from '@/constants';
 import { type DrawCtx, FLAME_ORANGE, OTTER_NOSE_HIGHLIGHT, OTTER_OUTLINE } from './draw-helpers';
 
-/** Dock — wooden pier structure on water with mooring posts. */
-export function drawDock(d: DrawCtx): void {
+/** Reserved building slot 39 reusing the old dock sprite. */
+export function drawReservedBuilding39(d: DrawCtx): void {
   const { p, rect } = d;
   // Water base
   rect(2, 24, 28, 6, PALETTE.waterShallow);
@@ -32,8 +32,8 @@ export function drawDock(d: DrawCtx): void {
   p(24, 10, '#a8a29e');
 }
 
-/** Otter Warship — larger vessel sprite (32px). */
-export function drawOtterWarship(d: DrawCtx): void {
+/** Reserved unit slot 40 reusing the old warship sprite. */
+export function drawReservedUnit40(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   // Water ripples
   ctx.fillStyle = 'rgba(56,189,248,0.3)';
@@ -63,8 +63,8 @@ export function drawOtterWarship(d: DrawCtx): void {
   p(25, 18, FLAME_ORANGE);
 }
 
-/** Berserker — aggressive otter with battle scars and war paint. */
-export function drawBerserker(d: DrawCtx): void {
+/** Reserved unit slot 41 reusing the old berserker sprite. */
+export function drawReservedUnit41(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -105,8 +105,8 @@ export function drawBerserker(d: DrawCtx): void {
   p(8, 8, '#dc2626');
 }
 
-/** Wall Gate — arch opening in wall that lets friendlies through. */
-export function drawWallGate(d: DrawCtx): void {
+/** Reserved building slot 42 reusing the old wall-gate sprite. */
+export function drawReservedBuilding42(d: DrawCtx): void {
   const { p, rect } = d;
   // Wall sides
   rect(2, 12, 10, 8, PALETTE.mudDark);
@@ -132,8 +132,8 @@ export function drawWallGate(d: DrawCtx): void {
   for (let i = 0; i < 4; i++) p(13 + i * 2, 20, PALETTE.mudLight);
 }
 
-/** Shrine — mystical stone structure with glowing rune. */
-export function drawShrine(d: DrawCtx): void {
+/** Reserved building slot 43 reusing the old shrine sprite. */
+export function drawReservedBuilding43(d: DrawCtx): void {
   const { p, rect, circle } = d;
   // Base platform
   rect(4, 22, 24, 8, PALETTE.stone);

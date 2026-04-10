@@ -105,7 +105,7 @@ describe('E2E Governor Playthrough', () => {
       for (const snap of snapshots) {
         console.log(
           `[${snap.gameSeconds}s] phase=${snap.phase} ` +
-            `gatherers=${snap.gatherers} army=${snap.army} ` +
+            `mudpaws=${snap.mudpaws} fieldUnits=${snap.fieldUnits} ` +
             `buildings=${snap.buildings} techs=${snap.techResearched.length}`,
         );
       }
@@ -144,7 +144,7 @@ describe('E2E Governor Playthrough', () => {
 
       const at60 = at(60);
       if (at60) {
-        expect(at60.gatherers, 'By 60s: 4+ gatherers').toBeGreaterThanOrEqual(4);
+        expect(at60.mudpaws, 'By 60s: 4+ Mudpaws').toBeGreaterThanOrEqual(4);
       }
 
       const at120 = at(120);
@@ -155,8 +155,8 @@ describe('E2E Governor Playthrough', () => {
       const at180 = at(180);
       if (at180) {
         expect(
-          at180.army,
-          'By 180s: 3+ combat units',
+          at180.fieldUnits,
+          'By 180s: 3+ field units',
         ).toBeGreaterThanOrEqual(3);
       }
 
@@ -169,8 +169,8 @@ describe('E2E Governor Playthrough', () => {
       }
 
       // Army should peak at 5+ units at some point
-      const peakArmy = Math.max(...snapshots.map((s) => s.army));
-      expect(peakArmy, 'Army should peak at 5+ units').toBeGreaterThanOrEqual(5);
+      const peakFieldUnits = Math.max(...snapshots.map((s) => s.fieldUnits));
+      expect(peakFieldUnits, 'Fielded units should peak at 5+').toBeGreaterThanOrEqual(5);
 
       // No critical console errors
       const criticalErrors = consoleErrors.filter(

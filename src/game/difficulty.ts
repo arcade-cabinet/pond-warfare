@@ -109,28 +109,15 @@ export function applyDifficultyModifiers(world: GameWorld): void {
     auraHpBonus: cmdDef.auraHpBonus,
     auraUnitHpBonus: cmdDef.auraUnitHpBonus,
     auraEnemyDamageReduction: cmdDef.auraEnemyDamageReduction,
+    auraGatherBonus: cmdDef.auraGatherBonus,
     passiveGatherBonus: cmdDef.passiveGatherBonus,
-    passiveResearchSpeed: cmdDef.passiveResearchSpeed,
     passiveTowerAttackSpeed: cmdDef.passiveTowerAttackSpeed,
-    passiveSwimmerCostReduction: cmdDef.passiveSwimmerCostReduction,
-    passiveTrapDurationMult: cmdDef.passiveTrapDurationMult,
-    passiveShieldbearerTrainSpeed: cmdDef.passiveShieldbearerTrainSpeed,
-    passiveCatapultRangeBonus: cmdDef.passiveCatapultRangeBonus,
+    passiveFisherCostReduction: cmdDef.passiveFisherCostReduction,
+    passiveGuardCostReduction: cmdDef.passiveGuardCostReduction,
+    passiveRangerProjectionBonus: cmdDef.passiveRangerProjectionBonus,
+    passiveBombardierProjectionBonus: cmdDef.passiveBombardierProjectionBonus,
     passiveLightningDamage: cmdDef.passiveLightningDamage,
   };
-
-  // Airdrops safety net
-  const airdropCounts: Record<string, number> = {
-    easy: 3,
-    normal: 2,
-    hard: 1,
-    nightmare: 0,
-    ultraNightmare: 0,
-  };
-  world.airdropsRemaining = airdropCounts[diff] ?? 2;
-  world.airdropCooldownUntil = 0;
-  store.airdropsRemaining.value = world.airdropsRemaining;
-  store.airdropCooldown.value = 0;
 
   // Player faction & AI personality
   world.playerFaction = store.playerFaction.value;

@@ -5,6 +5,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 const spawnedEntities: { kind: number; x: number; y: number; faction: number }[] = [];
@@ -19,6 +20,7 @@ vi.mock('@/ecs/archetypes', () => ({
 }));
 
 vi.mock('@/ecs/components', () => ({
+  resetTransientComponentState: vi.fn(),
   Resource: { amount: {} as Record<number, number> },
   Commander: {
     commanderType: {} as Record<number, number>,
@@ -38,18 +40,18 @@ vi.mock('@/config/factions', () => ({
     if (faction === 'predator') {
       return {
         lodgeKind: EntityKind.PredatorNest,
-        gathererKind: EntityKind.Gator,
-        meleeKind: EntityKind.Gator,
+        generalistKind: EntityKind.Gator,
+        frontlineKind: EntityKind.Gator,
         supportKind: EntityKind.Gator,
-        heroKind: EntityKind.Commander,
+        commanderKind: EntityKind.Commander,
       };
     }
     return {
       lodgeKind: EntityKind.Lodge,
-      gathererKind: EntityKind.Gatherer,
-      meleeKind: EntityKind.Brawler,
-      supportKind: EntityKind.Healer,
-      heroKind: EntityKind.Commander,
+      generalistKind: MUDPAW_KIND,
+      frontlineKind: SAPPER_KIND,
+      supportKind: MEDIC_KIND,
+      commanderKind: EntityKind.Commander,
     };
   },
 }));
@@ -79,7 +81,7 @@ describe('Prestige player — multiple panels unlocked', () => {
     expect(enemyNests.length).toBeGreaterThanOrEqual(2);
   });
 
-  it.skip('spawns enemy Commander at stage 2+ (needs full ECS context)', () => {
+  it('spawns enemy Commander at stage 2+', () => {
     const world = createTestWorld({ stage: 2 });
     const pg = createTestPanelGrid(2);
     const layout = generateVerticalMapLayout(pg, new SeededRandom(42));

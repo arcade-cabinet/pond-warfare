@@ -1,6 +1,19 @@
 import { EntityKind } from '@/types';
 import type { UnitDef } from './unit-def';
 
+const RESERVED_BUILDING_DEF: UnitDef = {
+  hp: 100,
+  speed: 0,
+  damage: 0,
+  attackRange: 0,
+  isBuilding: true,
+  isResource: false,
+  spriteSize: 32,
+  spriteScale: 3,
+  fishCost: 0,
+  logCost: 0,
+};
+
 /** Stats and costs for all buildings (player and enemy). */
 export const BUILDING_DEFS: Partial<Record<EntityKind, UnitDef>> = {
   [EntityKind.Lodge]: {
@@ -89,7 +102,7 @@ export const BUILDING_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     fishCost: 0,
     logCost: 50,
   },
-  [EntityKind.ScoutPost]: {
+  [EntityKind.LookoutPost]: {
     hp: 200,
     speed: 0,
     damage: 0,
@@ -142,44 +155,7 @@ export const BUILDING_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 100,
     isWing: true,
   },
-  // --- v2.0.0 ---
-  [EntityKind.Dock]: {
-    hp: 120,
-    speed: 0,
-    damage: 0,
-    attackRange: 0,
-    isBuilding: true,
-    isResource: false,
-    spriteSize: 32,
-    spriteScale: 3,
-    fishCost: 200,
-    logCost: 150,
-    foodProvided: 2,
-    isWing: true,
-  },
-  [EntityKind.WallGate]: {
-    hp: 80,
-    speed: 0,
-    damage: 0,
-    attackRange: 0,
-    isBuilding: true,
-    isResource: false,
-    spriteSize: 32,
-    spriteScale: 3,
-    fishCost: 60,
-    logCost: 40,
-  },
-  [EntityKind.Shrine]: {
-    hp: 60,
-    speed: 0,
-    damage: 0,
-    attackRange: 0,
-    isBuilding: true,
-    isResource: false,
-    spriteSize: 32,
-    spriteScale: 3,
-    fishCost: 300,
-    logCost: 200,
-    rockCost: 25,
-  },
+  [EntityKind.ReservedBuilding39]: RESERVED_BUILDING_DEF,
+  [EntityKind.ReservedBuilding42]: RESERVED_BUILDING_DEF,
+  [EntityKind.ReservedBuilding43]: RESERVED_BUILDING_DEF,
 };

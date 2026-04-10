@@ -50,7 +50,7 @@ export interface HUDProps {
   onSpeedClick?: () => void;
   onMuteClick?: () => void;
   onColorBlindToggle?: () => void;
-  onIdleWorkerClick?: () => void;
+  onIdleGeneralistClick?: () => void;
   onArmyClick?: () => void;
   onPauseClick?: () => void;
   onAttackMoveClick?: () => void;
@@ -95,7 +95,7 @@ export function HUD(props: HUDProps) {
       <EventFeed />
       <CtrlGroups onCtrlGroupClick={props.onCtrlGroupClick} />
       <UnitCommands
-        onIdleWorkerClick={props.onIdleWorkerClick}
+        onIdleGeneralistClick={props.onIdleGeneralistClick}
         onArmyClick={props.onArmyClick}
         onAttackMoveClick={props.onAttackMoveClick}
         onHaltClick={props.onHaltClick}

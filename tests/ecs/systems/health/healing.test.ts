@@ -1,12 +1,13 @@
 /**
  * Healing Subsystem Tests
  *
- * Validates passive healing, healer aura, regeneration,
+ * Validates passive healing, Medic aura, regeneration,
  * and herbalist hut area heal.
  */
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEDIC_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   EntityTypeTag,
@@ -17,10 +18,10 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import {
-  processHealerAura,
   processHerbalistHutHeal,
   processPassiveHealing,
   processRegeneration,
+  processSupportAura,
 } from '@/ecs/systems/health/healing';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -42,7 +43,7 @@ function spawnUnit(
   hp: number,
   maxHp: number,
   state: UnitState = UnitState.Idle,
-  kind: EntityKind = EntityKind.Brawler,
+  kind: EntityKind = SAPPER_KIND,
   faction: Faction = Faction.Player,
 ): number {
   const eid = addEntity(world.ecs);
@@ -174,6 +175,26 @@ describe('processPassiveHealing', () => {
     expect(Health.current[eid]).toBe(60);
   });
 
+  it('scales passive healing with player heal multiplier', () => {
+    world.playerHealMultiplier = 2;
+    const eid = spawnUnit(world, 100, 100, 50, 60, UnitState.Idle);
+
+    processPassiveHealing(world);
+
+    expect(Health.current[eid]).toBe(52);
+  });
+
+  it('accumulates fractional passive healing across repeated ticks', () => {
+    world.playerHealMultiplier = 1.08;
+    const eid = spawnUnit(world, 100, 100, 40, 100, UnitState.Idle);
+
+    for (let i = 0; i < 13; i += 1) {
+      processPassiveHealing(world);
+    }
+
+    expect(Health.current[eid]).toBe(54);
+  });
+
   it('does NOT heal buildings', () => {
     const eid = addEntity(world.ecs);
     addComponent(world.ecs, eid, Position);
@@ -197,7 +218,7 @@ describe('processPassiveHealing', () => {
   });
 });
 
-describe('processHealerAura', () => {
+describe('processSupportAura (Medic aura)', () => {
   let world: GameWorld;
 
   beforeEach(() => {
@@ -205,53 +226,63 @@ describe('processHealerAura', () => {
     world.spatialHash = undefined as never;
   });
 
-  it('healer heals a nearby damaged ally by 2 HP', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+  it('Medic heals a nearby damaged ally by 2 HP', () => {
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
     const ally = spawnUnit(world, 130, 100, 40, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(42);
   });
 
   it('does NOT heal allies beyond max HP', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
     const ally = spawnUnit(world, 130, 100, 59, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(60);
   });
 
   it('does NOT heal allies beyond 80px range', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const ally = spawnUnit(world, 300, 100, 40, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(40);
   });
 
-  it('heals at most 3 allies per healer', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+  it('heals at most 3 allies per Medic', () => {
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const allies: number[] = [];
     for (let i = 0; i < 5; i++) {
       allies.push(spawnUnit(world, 110 + i * 5, 100, 40, 60, UnitState.Idle));
     }
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     const healed = allies.filter((eid) => Health.current[eid] > 40);
     expect(healed).toHaveLength(3);
   });
 
   it('does NOT heal full-HP allies', () => {
-    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Healer);
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, EntityKind.Medic);
     const ally = spawnUnit(world, 130, 100, 60, 60, UnitState.Idle);
 
-    processHealerAura(world);
+    processSupportAura(world);
 
     expect(Health.current[ally]).toBe(60);
+  });
+
+  it('scales Medic aura with player heal multiplier', () => {
+    world.playerHealMultiplier = 1.5;
+    spawnUnit(world, 100, 100, 60, 60, UnitState.Idle, MEDIC_KIND);
+    const ally = spawnUnit(world, 130, 100, 40, 60, UnitState.Idle);
+
+    processSupportAura(world);
+
+    expect(Health.current[ally]).toBe(43);
   });
 });
 

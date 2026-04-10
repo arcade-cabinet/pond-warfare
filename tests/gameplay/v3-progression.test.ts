@@ -4,7 +4,7 @@
  * T38: Rewards Clam calculation matches formula
  * T39: Upgrade effects apply in-game
  * T40: Prestige flow verification (buy upgrades, prestige, verify reset)
- * T41: Specialist auto-deploy at match start from Pearl upgrades
+ * T41: Specialist blueprint caps from Pearl upgrades
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -12,7 +12,7 @@ import {
   canPrestige,
   createPrestigeState,
   executePrestige,
-  getAutoDeployUnits,
+  getSpecialistBlueprints,
   nextPrestigeThreshold,
   type PrestigeState,
   purchasePearlUpgrade,
@@ -32,9 +32,9 @@ import { createUpgradeWebState, purchaseNode } from '@/ui/upgrade-web-state';
 describe('T38: Rewards Clam calculation', () => {
   it('calculates correct Clams for known match stats', () => {
     // Formula from rewards.json:
-    // base_clams=10, kill_bonus=1, event_bonus=5, survival_bonus_per_minute=2
+    // base_clams=20, kill_bonus=2, event_bonus=6, resource_bonus_per_100=8, survival_bonus_per_minute=4
     // 10 kills, 5 events, 3 minutes = 180 seconds, rank 0
-    // Expected: 10 + (10 * 1) + (5 * 5) + (3 * 2) = 10 + 10 + 25 + 6 = 51
+    // Expected: 20 + (10 * 2) + (5 * 6) + floor(500/100) * 8 + (3 * 4) = 122
     const stats: MatchStats = {
       result: 'win',
       durationSeconds: 180,
@@ -46,13 +46,14 @@ describe('T38: Rewards Clam calculation', () => {
 
     const breakdown = calculateMatchReward(stats);
 
-    expect(breakdown.base).toBe(10);
-    expect(breakdown.killBonus).toBe(10);
-    expect(breakdown.eventBonus).toBe(25);
-    expect(breakdown.survivalBonus).toBe(6);
-    expect(breakdown.subtotal).toBe(51);
+    expect(breakdown.base).toBe(20);
+    expect(breakdown.killBonus).toBe(20);
+    expect(breakdown.eventBonus).toBe(30);
+    expect(breakdown.resourceBonus).toBe(40);
+    expect(breakdown.survivalBonus).toBe(12);
+    expect(breakdown.subtotal).toBe(122);
     expect(breakdown.prestigeMultiplier).toBe(1.0);
-    expect(breakdown.totalClams).toBe(51);
+    expect(breakdown.totalClams).toBe(122);
     expect(breakdown.isWin).toBe(true);
   });
 
@@ -70,8 +71,8 @@ describe('T38: Rewards Clam calculation', () => {
 
     // Prestige multiplier: 1 + 2 * 0.1 = 1.2
     expect(breakdown.prestigeMultiplier).toBe(1.2);
-    // 51 * 1.2 = 61.2, floored to 61
-    expect(breakdown.totalClams).toBe(61);
+    // 122 * 1.2 = 146.4, floored to 146
+    expect(breakdown.totalClams).toBe(146);
   });
 
   it('applies loss penalty (x0.5)', () => {
@@ -87,8 +88,8 @@ describe('T38: Rewards Clam calculation', () => {
     const breakdown = calculateMatchReward(stats);
 
     expect(breakdown.isWin).toBe(false);
-    // 51 * 0.5 = 25.5, floored to 25
-    expect(breakdown.totalClams).toBe(25);
+    // 122 * 0.5 = 61
+    expect(breakdown.totalClams).toBe(61);
   });
 
   it('handles zero stats (base clams only)', () => {
@@ -103,11 +104,12 @@ describe('T38: Rewards Clam calculation', () => {
 
     const breakdown = calculateMatchReward(stats);
 
-    expect(breakdown.base).toBe(10);
+    expect(breakdown.base).toBe(20);
     expect(breakdown.killBonus).toBe(0);
     expect(breakdown.eventBonus).toBe(0);
+    expect(breakdown.resourceBonus).toBe(0);
     expect(breakdown.survivalBonus).toBe(0);
-    expect(breakdown.totalClams).toBe(10);
+    expect(breakdown.totalClams).toBe(20);
   });
 });
 
@@ -137,6 +139,17 @@ describe('T39: Upgrade effects apply in-game', () => {
     expect(world.gatherSpeedMod).toBeGreaterThan(origMod);
   });
 
+  it('applies a single Fish Gathering tier at full listed strength', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'gathering_fish_gathering_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.gatherSpeedMod).toBeCloseTo(1.1, 2);
+  });
+
   it('applies Pearl gathering multiplier to gatherSpeedMod', () => {
     const state = createUpgradeWebState(0);
 
@@ -155,6 +168,34 @@ describe('T39: Upgrade effects apply in-game', () => {
     // Should be 1.0 * 1.10 = 1.10
     expect(world.gatherSpeedMod).toBeCloseTo(1.1, 2);
     expect(world.gatherSpeedMod).toBeGreaterThan(origMod);
+  });
+
+  it('applies Pearl damage multiplier to playerUnitDamageMultiplier', () => {
+    const state = createUpgradeWebState(0);
+    const prestState: PrestigeState = {
+      rank: 1,
+      pearls: 10,
+      totalPearlsEarned: 10,
+      upgradeRanks: { combat_multiplier: 1 },
+    };
+
+    applyUpgradeEffects(world, state, prestState);
+
+    expect(world.playerUnitDamageMultiplier).toBeCloseTo(1.1, 2);
+  });
+
+  it('applies Pearl HP multiplier to playerUnitHpMultiplier', () => {
+    const state = createUpgradeWebState(0);
+    const prestState: PrestigeState = {
+      rank: 1,
+      pearls: 10,
+      totalPearlsEarned: 10,
+      upgradeRanks: { hp_multiplier: 1 },
+    };
+
+    applyUpgradeEffects(world, state, prestState);
+
+    expect(world.playerUnitHpMultiplier).toBeCloseTo(1.2, 2);
   });
 
   it('empty upgrade state does not change world modifiers', () => {
@@ -178,6 +219,227 @@ describe('T39: Upgrade effects apply in-game', () => {
 
     expect(world.rewardsModifier).toBeGreaterThan(1.0);
   });
+
+  it('applies economy clam bonus to clamRewardMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'economy_clam_bonus_t0');
+
+    const prestState = createPrestigeState();
+    applyUpgradeEffects(world, state, prestState);
+
+    expect(world.clamRewardMultiplier).toBeGreaterThan(1.0);
+  });
+
+  it('applies combat attack power to playerUnitDamageMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_attack_power_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerUnitDamageMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies combat armor to playerDamageTakenMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_armor_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerDamageTakenMultiplier).toBeCloseTo(0.88, 2);
+  });
+
+  it('applies combat attack speed to playerAttackSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_attack_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerAttackSpeedMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies combat critical hit to playerCriticalHitChance', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'combat_critical_hit_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerCriticalHitChance).toBeCloseTo(0.15, 2);
+  });
+
+  it('applies gathering carry capacity to playerCarryCapacityMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'gathering_carry_capacity_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerCarryCapacityMultiplier).toBeCloseTo(1.1, 2);
+  });
+
+  it('applies economy gather radius to playerGatherRadiusMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'economy_gather_radius_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerGatherRadiusMultiplier).toBeCloseTo(1.1, 2);
+  });
+
+  it('applies utility unit speed to playerUnitSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_unit_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerUnitSpeedMultiplier).toBeCloseTo(1.06, 2);
+  });
+
+  it('applies utility vision range to playerVisionRangeMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_vision_range_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerVisionRangeMultiplier).toBeCloseTo(1.05, 2);
+  });
+
+  it('applies utility heal power to playerHealMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_heal_power_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerHealMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies utility train speed to playerTrainSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'utility_train_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerTrainSpeedMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies economy unit cost reduction to playerUnitCostMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'economy_unit_cost_reduction_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerUnitCostMultiplier).toBeCloseTo(0.97, 2);
+  });
+
+  it('applies defense tower damage to playerTowerDamageMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_tower_damage_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerTowerDamageMultiplier).toBeCloseTo(1.15, 2);
+  });
+
+  it('applies defense lodge hp to playerLodgeHpMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_lodge_hp_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerLodgeHpMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies defense wall hp to playerWallHpMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_wall_hp_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerWallHpMultiplier).toBeCloseTo(1.1, 2);
+  });
+
+  it('applies defense repair speed to playerRepairSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'defense_repair_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerRepairSpeedMultiplier).toBeCloseTo(1.08, 2);
+  });
+
+  it('applies siege damage to playerSiegeDamageMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_siege_damage_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerSiegeDamageMultiplier).toBeCloseTo(1.05, 2);
+  });
+
+  it('applies siege range to playerSiegeRangeMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_siege_range_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerSiegeRangeMultiplier).toBeCloseTo(1.05, 2);
+  });
+
+  it('applies sapper speed to playerSiegeSpeedMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_sapper_speed_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerSiegeSpeedMultiplier).toBeCloseTo(1.03, 2);
+  });
+
+  it('applies demolish power to playerDemolishPowerMultiplier', () => {
+    const web = generateUpgradeWeb();
+    const state = createUpgradeWebState(10000);
+
+    purchaseNode(state, web, 'siege_demolish_power_t0');
+
+    applyUpgradeEffects(world, state, createPrestigeState());
+
+    expect(world.playerDemolishPowerMultiplier).toBeCloseTo(1.05, 2);
+  });
 });
 
 // ── T40: Prestige flow verification ───────────���─────────────────
@@ -192,20 +454,20 @@ describe('T40: Prestige flow', () => {
       upgradeRanks: {},
     };
 
-    // 2. Buy 3 upgrades: auto_deploy_fisher (cost 3 each)
-    let result = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    // 2. Buy 3 upgrades: blueprint_fisher (cost 3 each)
+    let result = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.result.success).toBe(true);
     state = result.state;
 
-    result = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    result = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.result.success).toBe(true);
     state = result.state;
 
-    result = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    result = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.result.success).toBe(true);
     state = result.state;
 
-    expect(state.upgradeRanks.auto_deploy_fisher).toBe(3);
+    expect(state.upgradeRanks.blueprint_fisher).toBe(3);
     expect(state.pearls).toBe(50 - 9); // 3 * 3 = 9
 
     // 3. Execute prestige at progression level 25
@@ -221,7 +483,7 @@ describe('T40: Prestige flow', () => {
     expect(newState.pearls).toBe(41 + 12); // previous pearls + earned
 
     // 6. Verify Pearl upgrades PRESERVED (not reset)
-    expect(newState.upgradeRanks.auto_deploy_fisher).toBe(3);
+    expect(newState.upgradeRanks.blueprint_fisher).toBe(3);
 
     // 7. Verify what resets vs persists is documented
     expect(prestigeResult.resets).toContain('clam_upgrades');
@@ -247,22 +509,22 @@ describe('T40: Prestige flow', () => {
   });
 });
 
-// ── T41: Specialist auto-deploy from Pearl upgrades ─────────────
+// ── T41: Specialist blueprint caps from Pearl upgrades ──────────
 
-describe('T41: Specialist auto-deploy', () => {
+describe('T41: Specialist blueprints', () => {
   let _world: GameWorld;
 
   beforeEach(() => {
     _world = createGameWorld();
   });
 
-  it('spawns 3 fishers when auto_deploy_fisher rank is 3', () => {
-    // Set up prestige state with auto_deploy_fisher rank 3
+  it('computes 3 fisher field slots when blueprint_fisher rank is 3', () => {
+    // Set up prestige state with blueprint_fisher rank 3
     const prestigeState: PrestigeState = {
       rank: 1,
       pearls: 20,
       totalPearlsEarned: 50,
-      upgradeRanks: { auto_deploy_fisher: 3 },
+      upgradeRanks: { blueprint_fisher: 3 },
     };
 
     // Verify the deploy plan
@@ -286,27 +548,27 @@ describe('T41: Specialist auto-deploy', () => {
     }
   });
 
-  it('auto-deploy units from prestige state resolve to correct kinds', () => {
+  it('blueprint units from prestige state resolve to correct kinds', () => {
     const prestigeState: PrestigeState = {
       rank: 2,
       pearls: 30,
       totalPearlsEarned: 80,
       upgradeRanks: {
-        auto_deploy_fisher: 2,
-        auto_deploy_guardian: 1,
+        blueprint_fisher: 2,
+        blueprint_guard: 1,
       },
     };
 
-    const deploySpecs = getAutoDeployUnits(prestigeState);
+    const deploySpecs = getSpecialistBlueprints(prestigeState);
     expect(deploySpecs.length).toBe(2);
 
     const fisher = deploySpecs.find((s) => s.unitId === 'fisher');
     expect(fisher).toBeTruthy();
-    expect(fisher?.count).toBe(2);
+    expect(fisher?.cap).toBe(2);
 
-    const guardian = deploySpecs.find((s) => s.unitId === 'guardian');
-    expect(guardian).toBeTruthy();
-    expect(guardian?.count).toBe(1);
+    const guard = deploySpecs.find((s) => s.unitId === 'guard');
+    expect(guard).toBeTruthy();
+    expect(guard?.cap).toBe(1);
   });
 
   it('no specialists deployed with empty prestige state', () => {
@@ -317,16 +579,16 @@ describe('T41: Specialist auto-deploy', () => {
     expect(plan.spawns.length).toBe(0);
   });
 
-  it('multiple auto-deploy upgrades combine correctly', () => {
+  it('multiple blueprint upgrades combine correctly', () => {
     const prestigeState: PrestigeState = {
       rank: 3,
       pearls: 50,
       totalPearlsEarned: 100,
       upgradeRanks: {
-        auto_deploy_fisher: 3,
-        auto_deploy_digger: 2,
-        auto_deploy_guardian: 1,
-        auto_deploy_shaman: 1,
+        blueprint_fisher: 3,
+        blueprint_digger: 2,
+        blueprint_guard: 1,
+        blueprint_shaman: 1,
       },
     };
 

@@ -8,7 +8,6 @@
 
 import type { PlayableFaction } from '@/config/factions';
 import type { WeatherType } from '@/config/weather';
-import type { ShrineAbility } from '@/ecs/systems/shrine';
 import type { EntityKind } from '@/types';
 import type { AmbientManager } from './ambient';
 import type { CueManager } from './cues';
@@ -41,8 +40,6 @@ export interface AudioDelegateMethods {
   deposit(worldX?: number): void;
   trade(worldX?: number): void;
   pickup(worldX?: number): void;
-  sniperHit(worldX?: number): void;
-  catapultImpact(worldX?: number): void;
   towerHit(worldX?: number): void;
   deathMelee(worldX?: number): void;
   deathRanged(worldX?: number): void;
@@ -53,21 +50,22 @@ export interface AudioDelegateMethods {
   error(): void;
   advisorTip(): void;
   selectUnit(): void;
-  selectBrawler(): void;
-  selectSniper(): void;
-  selectHealer(): void;
-  selectCatapult(): void;
-  selectScout(): void;
+  selectMudpaw(): void;
+  selectGuard(): void;
+  selectRanger(): void;
+  selectBombardier(): void;
+  selectSapper(): void;
+  selectSaboteur(): void;
+  selectMedic(): void;
+  selectShaman(): void;
+  selectLookout(): void;
   selectCommander(): void;
-  selectGatherer(): void;
-  selectShieldbearer(): void;
   selectBuild(): void;
   placeBuilding(): void;
   researchComplete(): void;
   upgrade(): void;
   trainComplete(): void;
   buildComplete(): void;
-  airdropIncoming(): void;
   enemyEvolution(): void;
   tripleKill(): void;
   rampage(): void;
@@ -79,8 +77,6 @@ export interface AudioDelegateMethods {
   statTotal(): void;
   hit(worldX?: number): void;
   shoot(worldX?: number): void;
-  sniperShoot(worldX?: number): void;
-  catapultShoot(worldX?: number): void;
   towerShoot(worldX?: number): void;
   win(): void;
   lose(): void;
@@ -93,12 +89,6 @@ export interface AudioDelegateMethods {
   updateAmbient(darkness: number): void;
   // Environment & unit-specific sounds
   weatherTransition(weatherType: WeatherType): void;
-  shrineActivation(ability: ShrineAbility, worldX?: number): void;
-  berserkerRage(worldX?: number): void;
-  berserkerFury(worldX?: number): void;
-  diverSubmerge(worldX?: number): void;
-  diverEmerge(worldX?: number): void;
-  engineerBridge(worldX?: number): void;
   wormEmergence(worldX?: number): void;
   heronScreech(worldX?: number): void;
   // UI navigation sounds

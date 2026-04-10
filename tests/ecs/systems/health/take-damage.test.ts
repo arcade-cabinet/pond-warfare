@@ -15,11 +15,13 @@ import {
   IsBuilding,
   Position,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health/take-damage';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 vi.mock('@/audio/audio-system', () => ({
@@ -44,7 +46,7 @@ function spawnUnit(
   hp: number,
   maxHp: number,
   faction: Faction,
-  kind: EntityKind = EntityKind.Brawler,
+  kind: EntityKind = SAPPER_KIND,
 ): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
@@ -55,6 +57,7 @@ function spawnUnit(
   addComponent(world.ecs, eid, UnitStateMachine);
   addComponent(world.ecs, eid, Velocity);
   addComponent(world.ecs, eid, Combat);
+  addComponent(world.ecs, eid, TaskOverride);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -71,6 +74,10 @@ function spawnUnit(
   Velocity.speed[eid] = 2.0;
   Combat.damage[eid] = 6;
   Combat.attackRange[eid] = 40;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = -1;
+  TaskOverride.resourceKind[eid] = 0;
 
   return eid;
 }
@@ -132,8 +139,10 @@ describe('takeDamage', () => {
 
       takeDamage(world, target, 10, attacker, 1.5);
 
-      // 10 * 1.5 = 15, rounded
-      expect(Health.current[target]).toBe(35);
+      // The optional multiplier now affects damage text styling, not numeric
+      // damage application, because callers already fold matchup math into
+      // the incoming amount.
+      expect(Health.current[target]).toBe(40);
     });
 
     it('sets flash timer on hit', () => {
@@ -172,7 +181,7 @@ describe('takeDamage', () => {
 
       takeDamage(world, target, 1, attacker, 0);
 
-      expect(Health.current[target]).toBe(50);
+      expect(Health.current[target]).toBe(49);
     });
 
     it('clamps negative effective amount to zero', () => {
@@ -253,6 +262,28 @@ describe('takeDamage', () => {
     });
   });
 
+  describe('player armor upgrade', () => {
+    it('reduces incoming damage for player units', () => {
+      world.playerDamageTakenMultiplier = 0.8;
+      const target = spawnUnit(world, 100, 100, 50, 60, Faction.Player);
+      const attacker = spawnUnit(world, 120, 100, 60, 60, Faction.Enemy);
+
+      takeDamage(world, target, 20, attacker);
+
+      expect(Health.current[target]).toBe(34);
+    });
+
+    it('does not reduce damage for player buildings', () => {
+      world.playerDamageTakenMultiplier = 0.8;
+      const building = spawnBuilding(world, 100, 100, 200, 200, Faction.Player);
+      const attacker = spawnUnit(world, 120, 100, 60, 60, Faction.Enemy);
+
+      takeDamage(world, building, 30, attacker);
+
+      expect(Health.current[building]).toBe(170);
+    });
+  });
+
   describe('overkill / lethal damage', () => {
     it('allows HP to go below zero (death processed separately)', () => {
       const target = spawnUnit(world, 100, 100, 5, 60, Faction.Player);
@@ -316,6 +347,28 @@ describe('takeDamage', () => {
 
       // Should merge into one zone, not create two
       expect(world.combatZones.length).toBe(1);
+    });
+  });
+
+  describe('gather override protection', () => {
+    it('does not convert a fleeing gather override into AttackMove on repeated hits', () => {
+      const target = spawnUnit(world, 100, 100, 50, 60, Faction.Player, MUDPAW_KIND);
+      const attacker = spawnUnit(world, 120, 100, 60, 60, Faction.Enemy, EntityKind.Snake);
+
+      Combat.damage[target] = 2;
+      TaskOverride.active[target] = 1;
+      TaskOverride.task[target] = UnitState.GatherMove;
+      TaskOverride.targetEntity[target] = 7;
+      TaskOverride.resourceKind[target] = EntityKind.Clambed;
+      UnitStateMachine.state[target] = UnitState.Move;
+      UnitStateMachine.targetEntity[target] = 7;
+      world.yukaManager.addUnit(target, Position.x[target], Position.y[target], 2, 80, 100);
+      world.yukaManager.setFlee(target, Position.x[attacker], Position.y[attacker]);
+
+      takeDamage(world, target, 5, attacker);
+
+      expect(UnitStateMachine.state[target]).toBe(UnitState.Move);
+      expect(UnitStateMachine.targetEntity[target]).toBe(7);
     });
   });
 });

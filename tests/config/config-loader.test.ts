@@ -37,18 +37,16 @@ import type {
 } from '@/config/v3-types';
 
 describe('Unit configs', () => {
-  const generalistIds = ['gatherer', 'fighter', 'medic', 'scout', 'sapper_unit', 'saboteur_unit'];
+  const generalistIds = ['mudpaw', 'medic', 'sapper', 'saboteur'];
   const specialistIds = [
     'fisher',
     'digger',
     'logger',
-    'guardian',
-    'hunter',
+    'guard',
     'ranger',
     'shaman',
     'lookout',
-    'sapper',
-    'saboteur',
+    'bombardier',
   ];
 
   it('should load all generalists with required fields', () => {
@@ -69,6 +67,7 @@ describe('Unit configs', () => {
       expect(def.hp).toBeGreaterThan(0);
       expect(def.speed).toBeGreaterThan(0);
       expect(def.damage).toBeGreaterThanOrEqual(0);
+      expect(def.cost).toBeDefined();
       expect(def.role).toBeTruthy();
       expect(def.autoTarget).toBeTruthy();
     }
@@ -78,7 +77,7 @@ describe('Unit configs', () => {
     const ids = getAllUnitIds();
     expect(ids).toEqual(expect.arrayContaining(generalistIds));
     expect(ids).toEqual(expect.arrayContaining(specialistIds));
-    expect(ids.length).toBe(generalistIds.length + specialistIds.length);
+      expect(ids.length).toBe(generalistIds.length + specialistIds.length);
   });
 
   it('should throw for unknown unit ID', () => {
@@ -87,7 +86,14 @@ describe('Unit configs', () => {
 });
 
 describe('Enemy configs', () => {
-  const enemyIds = ['raider', 'fighter', 'healer', 'scout_enemy', 'sapper_enemy', 'saboteur_enemy'];
+  const enemyIds = [
+    'raider',
+    'assault_enemy',
+    'support_enemy',
+    'recon_enemy',
+    'sapper_enemy',
+    'saboteur_enemy',
+  ];
 
   it('should load all enemy types with required fields', () => {
     for (const id of enemyIds) {
@@ -298,6 +304,7 @@ describe('Validation error detection', () => {
       base_clams: 0,
       kill_bonus: 0,
       event_bonus: 0,
+      resource_bonus_per_100: 0,
       survival_bonus_per_minute: 0,
       prestige_multiplier_per_rank: 0,
     } as RewardsConfig;

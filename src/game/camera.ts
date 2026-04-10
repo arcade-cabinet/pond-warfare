@@ -8,7 +8,7 @@
 import { animate } from 'animejs';
 import type { GameWorld } from '@/ecs/world';
 import { clampCamera, computeMinZoom, PANEL_MAX_ZOOM } from '@/rendering/camera';
-import { resizePixiApp } from '@/rendering/pixi-app';
+import { resizePixiApp } from '@/rendering/pixi';
 
 /** Mutable handle for the running pan animation so the caller can cancel it. */
 export interface PanAnimHandle {
@@ -17,7 +17,7 @@ export interface PanAnimHandle {
 
 /**
  * Smooth camera pan to a world position using anime.js.
- * Used for minimap clicks and control group recall.
+ * Used for control group recall and other focus jumps.
  */
 export function smoothPanTo(world: GameWorld, x: number, y: number, handle: PanAnimHandle): void {
   if (handle.anim) handle.anim.pause();

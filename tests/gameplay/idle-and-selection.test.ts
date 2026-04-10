@@ -27,6 +27,7 @@ import {
 } from '@/ecs/components';
 import { movementSystem } from '@/ecs/systems/movement';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 // Spy on audio methods
@@ -72,7 +73,7 @@ describe('Idle bob animation', () => {
   });
 
   it('applies a slow sine bob to idle units', () => {
-    const eid = createUnit(world, EntityKind.Brawler);
+    const eid = createUnit(world, SAPPER_KIND);
     Sprite.yOffset[eid] = 0;
 
     movementSystem(world);
@@ -82,7 +83,7 @@ describe('Idle bob animation', () => {
   });
 
   it('does not apply idle bob to dead units', () => {
-    const eid = createUnit(world, EntityKind.Brawler);
+    const eid = createUnit(world, SAPPER_KIND);
     Health.current[eid] = 0;
     Sprite.yOffset[eid] = 0;
 
@@ -92,8 +93,8 @@ describe('Idle bob animation', () => {
   });
 
   it('idle bob varies per entity (phase offset by eid)', () => {
-    const eid1 = createUnit(world, EntityKind.Brawler, 100, 100);
-    const eid2 = createUnit(world, EntityKind.Brawler, 200, 200);
+    const eid1 = createUnit(world, SAPPER_KIND, 100, 100);
+    const eid2 = createUnit(world, SAPPER_KIND, 200, 200);
 
     movementSystem(world);
 
@@ -102,7 +103,7 @@ describe('Idle bob animation', () => {
   });
 
   it('moving units get movement bob, not idle bob', () => {
-    const eid = createUnit(world, EntityKind.Brawler);
+    const eid = createUnit(world, SAPPER_KIND);
     UnitStateMachine.state[eid] = UnitState.Move;
     UnitStateMachine.targetX[eid] = 500;
     UnitStateMachine.targetY[eid] = 500;
@@ -130,9 +131,9 @@ describe('Idle bark audio', () => {
   });
 
   it('showBark with idle trigger plays voice when barked', () => {
-    const eid = createUnit(world, EntityKind.Brawler);
+    const eid = createUnit(world, SAPPER_KIND);
 
-    const barked = showBark(world, eid, 100, 100, EntityKind.Brawler, 'idle');
+    const barked = showBark(world, eid, 100, 100, SAPPER_KIND, 'idle');
     expect(barked).toBe(true);
     expect(world.floatingTexts.length).toBe(1);
 
@@ -141,14 +142,14 @@ describe('Idle bark audio', () => {
   });
 
   it('showBark returns false on cooldown (within 90 frames)', () => {
-    const eid = createUnit(world, EntityKind.Brawler);
+    const eid = createUnit(world, SAPPER_KIND);
 
-    showBark(world, eid, 100, 100, EntityKind.Brawler, 'idle');
+    showBark(world, eid, 100, 100, SAPPER_KIND, 'idle');
     expect(world.floatingTexts.length).toBe(1);
 
     // Try again within cooldown
     world.frameCount = 1050; // 50 frames later, within 90-frame cooldown
-    const barked = showBark(world, eid, 100, 100, EntityKind.Brawler, 'idle');
+    const barked = showBark(world, eid, 100, 100, SAPPER_KIND, 'idle');
     expect(barked).toBe(false);
     expect(world.floatingTexts.length).toBe(1); // No new text
   });
@@ -169,12 +170,12 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 1);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 1);
     await vi.runAllTimersAsync();
 
     expect(sfx.playAt).toHaveBeenCalled();
     const calls = sfx.playAt.mock.calls;
-    // Normal volume for skirmisher role (Brawler)
+    // Normal volume for skirmisher role (Sapper)
     for (const call of calls) {
       expect(call[3]).toBeLessThanOrEqual(0.05);
     }
@@ -184,7 +185,7 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 3);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 3);
     await vi.runAllTimersAsync();
 
     const calls = sfx.playAt.mock.calls;
@@ -199,11 +200,11 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 8);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 8);
     await vi.runAllTimersAsync();
 
     const calls = sfx.playAt.mock.calls;
-    // Brawler (skirmisher role) = 2 base steps + 2 stinger = 4 total
+    // Sapper (skirmisher role) = 2 base steps + 2 stinger = 4 total
     expect(calls.length).toBeGreaterThanOrEqual(4);
 
     // Stinger calls include freq 400 and 500
@@ -216,11 +217,11 @@ describe('Group selection audio (VoiceManager)', () => {
     const sfx = { playAt: vi.fn() } as any;
     const mgr = new VoiceManager(sfx);
 
-    mgr.playGroupSelectionVoice(EntityKind.Brawler, 'otter', 5);
+    mgr.playGroupSelectionVoice(EntityKind.Sapper, 'otter', 5);
     await vi.runAllTimersAsync();
 
     const calls = sfx.playAt.mock.calls;
-    // Brawler = 2 steps, no stinger
+    // Sapper = 2 steps, no stinger
     expect(calls.length).toBe(2);
     const freqs = calls.map((c: number[]) => c[0]);
     expect(freqs).not.toContain(400);
@@ -283,10 +284,10 @@ describe('Repeat-click escalation', () => {
   });
 
   it('showSelectBark plays voice audio for each bark', () => {
-    const eid = createUnit(world, EntityKind.Gatherer);
+    const eid = createUnit(world, MUDPAW_KIND);
 
-    showSelectBark(world, eid, 100, 100, EntityKind.Gatherer);
+    showSelectBark(world, eid, 100, 100, MUDPAW_KIND);
 
-    expect(audio.playSelectionVoice).toHaveBeenCalledWith(EntityKind.Gatherer, 'otter');
+    expect(audio.playSelectionVoice).toHaveBeenCalledWith(MUDPAW_KIND, 'otter');
   });
 });

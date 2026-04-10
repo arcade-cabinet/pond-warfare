@@ -1,12 +1,12 @@
 /**
  * AI System Tests
  *
- * Validates enemy AI economy (gatherer spawning) and the composed aiSystem entry point.
+ * Validates enemy AI economy (harvester spawning) and the composed aiSystem entry point.
  */
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ENEMY_GATHERER_COST, ENEMY_GATHERER_SPAWN_INTERVAL } from '@/constants';
+import { ENEMY_HARVESTER_COST, ENEMY_HARVESTER_SPAWN_INTERVAL } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -74,10 +74,10 @@ describe('enemyEconomyTick', () => {
     world = createGameWorld();
     // Past peace timer and on spawn interval
     world.peaceTimer = 0;
-    world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL;
+    world.frameCount = ENEMY_HARVESTER_SPAWN_INTERVAL;
   });
 
-  it('should not spawn gatherers during peace timer', () => {
+  it('should not spawn harvesters during peace timer', () => {
     world.peaceTimer = 99999;
     world.enemyResources.fish = 1000;
     createEnemyNest(world, 500, 500);
@@ -89,8 +89,8 @@ describe('enemyEconomyTick', () => {
     expect(world.enemyResources.fish).toBe(1000);
   });
 
-  it('should not spawn gatherers when enemy lacks resources', () => {
-    world.enemyResources.fish = ENEMY_GATHERER_COST - 1;
+  it('should not spawn harvesters when enemy lacks resources', () => {
+    world.enemyResources.fish = ENEMY_HARVESTER_COST - 1;
     createEnemyNest(world, 500, 500);
     createResource(world, 520, 500);
 
@@ -101,7 +101,7 @@ describe('enemyEconomyTick', () => {
   });
 
   it('should only run on the spawn interval frame', () => {
-    world.frameCount = ENEMY_GATHERER_SPAWN_INTERVAL + 1; // Not on interval
+    world.frameCount = ENEMY_HARVESTER_SPAWN_INTERVAL + 1; // Not on interval
     world.enemyResources.fish = 1000;
     createEnemyNest(world, 500, 500);
     createResource(world, 520, 500);

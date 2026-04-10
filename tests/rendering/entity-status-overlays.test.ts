@@ -17,6 +17,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 // Mock the PixiJS-dependent overlay functions so we can test
@@ -81,7 +82,7 @@ describe('Idle indicator frame tracking', () => {
   });
 
   it('increments idle frames for idle player units', () => {
-    const eid = createUnit(world, EntityKind.Gatherer, Faction.Player, UnitState.Idle);
+    const eid = createUnit(world, MUDPAW_KIND, Faction.Player, UnitState.Idle);
 
     for (let i = 0; i < 5; i++) {
       updateIdleOverlay(eid, false, false, 100, 100, 32, 0, i, mockEntityLayer);
@@ -91,7 +92,7 @@ describe('Idle indicator frame tracking', () => {
   });
 
   it('resets idle frames when unit starts moving', () => {
-    const eid = createUnit(world, EntityKind.Gatherer, Faction.Player, UnitState.Idle);
+    const eid = createUnit(world, MUDPAW_KIND, Faction.Player, UnitState.Idle);
 
     for (let i = 0; i < 100; i++) {
       updateIdleOverlay(eid, false, false, 100, 100, 32, 0, i, mockEntityLayer);
@@ -134,7 +135,7 @@ describe('Idle indicator frame tracking', () => {
   });
 
   it('reaches 180 frame threshold for idle indicator', () => {
-    const eid = createUnit(world, EntityKind.Brawler, Faction.Player, UnitState.Idle);
+    const eid = createUnit(world, SAPPER_KIND, Faction.Player, UnitState.Idle);
 
     for (let i = 0; i < 179; i++) {
       updateIdleOverlay(eid, false, false, 100, 100, 32, 0, i, mockEntityLayer);
@@ -146,8 +147,8 @@ describe('Idle indicator frame tracking', () => {
   });
 
   it('resetEntityIdleFrames clears all tracking', () => {
-    const eid1 = createUnit(world, EntityKind.Brawler, Faction.Player, UnitState.Idle);
-    const eid2 = createUnit(world, EntityKind.Gatherer, Faction.Player, UnitState.Idle);
+    const eid1 = createUnit(world, SAPPER_KIND, Faction.Player, UnitState.Idle);
+    const eid2 = createUnit(world, MUDPAW_KIND, Faction.Player, UnitState.Idle);
 
     for (let i = 0; i < 50; i++) {
       updateIdleOverlay(eid1, false, false, 100, 100, 32, 0, i, mockEntityLayer);

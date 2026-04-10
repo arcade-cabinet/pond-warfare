@@ -1,10 +1,72 @@
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SHARED_HEAVY_CHASSIS_KIND,
+  SHARED_SABOTEUR_CHASSIS_KIND,
+  SHARED_SAPPER_CHASSIS_KIND,
+  SHARED_SIEGE_CHASSIS_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { UnitDef } from './unit-def';
 
-/** Stats for all player-trainable units plus ambient neutral critters. */
-// v3 costs aligned with configs/units.json (Fish-only for basic generalists)
+/**
+ * Stats for player-side otter units plus ambient neutral critters.
+ *
+ * Important:
+ * - The live player-facing manual roster is `Mudpaw / Medic / Sapper / Saboteur`.
+ * - Reserved alias ids still exist in the enum, but they now collapse onto the
+ *   live Sapper/Saboteur stat lines instead of carrying a separate combat model.
+ */
+const SAPPER_DEF: UnitDef = {
+  hp: 40,
+  speed: 1.5,
+  damage: 15,
+  attackRange: 40,
+  isBuilding: false,
+  isResource: false,
+  spriteSize: 16,
+  spriteScale: 2.5,
+  fishCost: 25,
+  rockCost: 15,
+  logCost: 0,
+  foodCost: 1,
+};
+
+const SABOTEUR_DEF: UnitDef = {
+  hp: 30,
+  speed: 2.5,
+  damage: 5,
+  attackRange: 40,
+  isBuilding: false,
+  isResource: false,
+  spriteSize: 16,
+  spriteScale: 2.5,
+  fishCost: 20,
+  rockCost: 10,
+  logCost: 0,
+  foodCost: 1,
+};
+
+const RESERVED_UNIT_DEF: UnitDef = {
+  hp: 30,
+  speed: 2.0,
+  damage: 0,
+  attackRange: 0,
+  isBuilding: false,
+  isResource: false,
+  spriteSize: 16,
+  spriteScale: 2.5,
+  fishCost: 0,
+  logCost: 0,
+  foodCost: 0,
+};
+
 export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
-  [EntityKind.Gatherer]: {
+  // Canonical live manual generalist chassis (`Mudpaw` display label).
+  [MUDPAW_KIND]: {
     hp: 30,
     speed: 2.0,
     damage: 2,
@@ -17,33 +79,9 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [EntityKind.Brawler]: {
-    hp: 60,
-    speed: 1.8,
-    damage: 6,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 20,
-    logCost: 0,
-    foodCost: 1,
-  },
-  [EntityKind.Sniper]: {
-    hp: 40,
-    speed: 1.6,
-    damage: 8,
-    attackRange: 180,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 20,
-    logCost: 0,
-    foodCost: 1,
-  },
-  [EntityKind.Healer]: {
+  [SHARED_SAPPER_CHASSIS_KIND]: SAPPER_DEF,
+  [SHARED_SABOTEUR_CHASSIS_KIND]: SABOTEUR_DEF,
+  [MEDIC_KIND]: {
     hp: 35,
     speed: 1.8,
     damage: 0,
@@ -56,20 +94,10 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [EntityKind.Shieldbearer]: {
-    hp: 100,
-    speed: 1.4,
-    damage: 3,
-    attackRange: 35,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 150,
-    logCost: 100,
-    foodCost: 1,
-  },
-  [EntityKind.Scout]: {
+  [SHARED_HEAVY_CHASSIS_KIND]: SAPPER_DEF,
+  // Shared recon chassis. The live autonomous recon specialist is `Lookout`,
+  // which currently rides this lower-level entity kind.
+  [LOOKOUT_KIND]: {
     hp: 20,
     speed: 3.0,
     damage: 1,
@@ -82,45 +110,9 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 0,
     foodCost: 1,
   },
-  [EntityKind.Catapult]: {
-    hp: 50,
-    speed: 0.8,
-    damage: 20,
-    attackRange: 250,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 32,
-    spriteScale: 3,
-    fishCost: 300,
-    logCost: 200,
-    foodCost: 1,
-  },
-  [EntityKind.Swimmer]: {
-    hp: 35,
-    speed: 2.8,
-    damage: 4,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 60,
-    logCost: 30,
-    foodCost: 1,
-  },
-  [EntityKind.Trapper]: {
-    hp: 30,
-    speed: 1.6,
-    damage: 0,
-    attackRange: 100,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 80,
-    logCost: 60,
-    foodCost: 1,
-  },
+  [SHARED_SIEGE_CHASSIS_KIND]: SAPPER_DEF,
+  [EntityKind.ReservedUnit28]: RESERVED_UNIT_DEF,
+  [EntityKind.ReservedUnit29]: RESERVED_UNIT_DEF,
   [EntityKind.Commander]: {
     hp: 150,
     speed: 1.8,
@@ -131,33 +123,8 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     spriteSize: 16,
     spriteScale: 5.0,
   },
-  // --- v1.5.0 new player units ---
-  [EntityKind.Diver]: {
-    hp: 25,
-    speed: 2.5,
-    damage: 8,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 60,
-    logCost: 40,
-    foodCost: 1,
-  },
-  [EntityKind.Engineer]: {
-    hp: 40,
-    speed: 1.5,
-    damage: 1,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 80,
-    logCost: 60,
-    foodCost: 1,
-  },
+  [EntityKind.ReservedUnit33]: RESERVED_UNIT_DEF,
+  [EntityKind.ReservedUnit34]: RESERVED_UNIT_DEF,
   [EntityKind.Shaman]: {
     hp: 30,
     speed: 1.6,
@@ -171,62 +138,11 @@ export const PLAYER_UNIT_DEFS: Partial<Record<EntityKind, UnitDef>> = {
     logCost: 50,
     foodCost: 1,
   },
-  // --- v2.0.0 new player units ---
-  [EntityKind.OtterWarship]: {
-    hp: 80,
-    speed: 1.5,
-    damage: 12,
-    attackRange: 200,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 32,
-    spriteScale: 3,
-    fishCost: 200,
-    logCost: 150,
-    foodCost: 1,
-  },
-  [EntityKind.Berserker]: {
-    hp: 60,
-    speed: 2.0,
-    damage: 15,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 120,
-    logCost: 80,
-    foodCost: 1,
-  },
-  // --- v3.0.0 new player units ---
-  [EntityKind.Sapper]: {
-    hp: 40,
-    speed: 1.5,
-    damage: 15,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 25,
-    rockCost: 15,
-    logCost: 0,
-    foodCost: 1,
-  },
-  [EntityKind.Saboteur]: {
-    hp: 30,
-    speed: 2.5,
-    damage: 5,
-    attackRange: 40,
-    isBuilding: false,
-    isResource: false,
-    spriteSize: 16,
-    spriteScale: 2.5,
-    fishCost: 20,
-    rockCost: 10,
-    logCost: 0,
-    foodCost: 1,
-  },
+  [EntityKind.ReservedUnit40]: RESERVED_UNIT_DEF,
+  [EntityKind.ReservedUnit41]: RESERVED_UNIT_DEF,
+  // --- Canonical live late-stage manual units ---
+  [SAPPER_KIND]: SAPPER_DEF,
+  [SABOTEUR_KIND]: SABOTEUR_DEF,
   // Ambient critters (no cost, no combat role)
   [EntityKind.Frog]: {
     hp: 5,

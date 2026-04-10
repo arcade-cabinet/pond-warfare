@@ -32,11 +32,17 @@ function removeUnitHpBuffs(world: GameWorld): void {
 }
 
 export function commanderAura(world: GameWorld): void {
+  world.commanderGatherBuff ??= new Set();
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag, Combat]);
   const shouldRefresh = world.frameCount % 60 === 0;
 
   if (!shouldRefresh) {
-    if (world.commanderDamageBuff.size === 0 && world.commanderSpeedBuff.size === 0) return;
+    if (
+      world.commanderDamageBuff.size === 0 &&
+      world.commanderSpeedBuff.size === 0 &&
+      world.commanderGatherBuff.size === 0
+    )
+      return;
 
     for (let i = 0; i < allUnits.length; i++) {
       const eid = allUnits[i];
@@ -47,6 +53,7 @@ export function commanderAura(world: GameWorld): void {
 
     world.commanderDamageBuff.clear();
     world.commanderSpeedBuff.clear();
+    world.commanderGatherBuff.clear();
     world.commanderEnemyDebuff.clear();
     removeUnitHpBuffs(world);
     return;
@@ -55,6 +62,7 @@ export function commanderAura(world: GameWorld): void {
   // Clear previous buff sets; we rebuild each tick
   world.commanderDamageBuff.clear();
   world.commanderSpeedBuff.clear();
+  world.commanderGatherBuff.clear();
   world.commanderEnemyDebuff.clear();
 
   // Track which units are in range this tick for dynamic HP buff
@@ -103,6 +111,9 @@ export function commanderAura(world: GameWorld): void {
 
         if (mods.auraSpeedBonus > 0) {
           world.commanderSpeedBuff.add(t);
+        }
+        if (mods.auraGatherBonus > 0) {
+          world.commanderGatherBuff.add(t);
         }
 
         // Ironpaw: +20% HP to units in range (dynamic — add on enter, remove on leave)

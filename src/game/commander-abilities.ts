@@ -6,7 +6,7 @@
  * distinct visual + audio effects.
  */
 
-import { query } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { COMMANDER_ABILITIES } from '@/config/commanders';
 import {
@@ -17,7 +17,7 @@ import {
   Position,
   Velocity,
 } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { EntityKind, Faction } from '@/types';
 
@@ -44,16 +44,9 @@ export function useCommanderAbility(world: GameWorld): boolean {
   const ability = COMMANDER_ABILITIES[world.commanderId];
   if (!ability) return false;
 
-  // Set cooldown
-  world.commanderAbilityCooldownUntil = world.frameCount + ability.cooldownFrames;
-
-  // Set active duration if applicable
-  if (ability.durationFrames > 0) {
-    world.commanderAbilityActiveUntil = world.frameCount + ability.durationFrames;
-  }
-
   // Execute ability-specific logic
-  switch (world.commanderId) {
+  const activated = (() => {
+    switch (world.commanderId) {
     case 'marshal':
       return activateCharge(world);
     case 'sage':
@@ -70,11 +63,28 @@ export function useCommanderAbility(world: GameWorld): boolean {
       return activateThunderStrike(world);
     default:
       return false;
-  }
+    }
+  })();
+
+  if (!activated) return false;
+
+  world.commanderAbilityCooldownUntil = world.frameCount + ability.cooldownFrames;
+  world.commanderAbilityActiveUntil =
+    ability.durationFrames > 0 ? world.frameCount + ability.durationFrames : 0;
+  return true;
 }
 
 /** Marshal: "Charge!" — selected units 2x speed for 5s */
 function activateCharge(world: GameWorld): boolean {
+  world.commanderAbilityTargets.clear();
+  for (const eid of world.selection) {
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+    world.commanderAbilityTargets.add(eid);
+  }
+  if (world.commanderAbilityTargets.size === 0) return false;
+
   audio.upgrade();
   world.floatingTexts.push({
     x: world.camX + world.viewWidth / 2,
@@ -86,24 +96,17 @@ function activateCharge(world: GameWorld): boolean {
   return true;
 }
 
-/** Sage: "Eureka!" — instantly unlock the next available tech */
+/** Sage: "Eureka!" — instantly grant a resource spike for the current run */
 function activateEureka(world: GameWorld): boolean {
-  // Find the first unresearched tech and unlock it
-  const techKeys = Object.keys(world.tech) as (keyof typeof world.tech)[];
-  let unlocked = false;
-  for (const key of techKeys) {
-    if (!world.tech[key]) {
-      world.tech[key] = true;
-      unlocked = true;
-      break;
-    }
-  }
+  world.resources.fish += 60;
+  world.resources.logs += 20;
+  world.resources.rocks += 10;
 
   audio.upgrade();
   world.floatingTexts.push({
     x: world.camX + world.viewWidth / 2,
     y: world.camY + 60,
-    text: unlocked ? 'EUREKA! Tech unlocked!' : 'EUREKA! (all tech researched)',
+    text: 'EUREKA! +60F +20L +10R',
     color: '#22c55e',
     life: 120,
   });
@@ -191,6 +194,16 @@ function activateTidalWave(world: GameWorld): boolean {
 
 /** Shadowfang: "Vanish" — all units invisible 8s (handled by fog system) */
 function activateVanish(world: GameWorld): boolean {
+  const allUnits = query(world.ecs, [Position, Health, FactionTag]);
+  let affected = 0;
+  for (const eid of allUnits) {
+    if (FactionTag.faction[eid] !== Faction.Player) continue;
+    if (Health.current[eid] <= 0) continue;
+    if (hasComponent(world.ecs, eid, IsBuilding)) continue;
+    affected++;
+  }
+  if (affected === 0) return false;
+
   audio.upgrade();
   world.floatingTexts.push({
     x: world.camX + world.viewWidth / 2,

@@ -11,6 +11,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { LOOKOUT_KIND, MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { EntityKind } from '@/types';
 import { entityKindToRole, getRadialOptions, type RadialOption } from '@/ui/radial-menu-options';
 
 function assertValidOption(opt: RadialOption): void {
@@ -24,16 +26,14 @@ function assertValidOption(opt: RadialOption): void {
 describe('getRadialOptions — Lodge mode', () => {
   const options = getRadialOptions('lodge', null);
 
-  it('returns all 8 Lodge options', () => {
-    expect(options).toHaveLength(8);
+  it('returns all canonical Lodge options', () => {
+    expect(options).toHaveLength(6);
   });
 
-  it('includes training options for all 6 trainable units', () => {
+  it('includes training options for the canonical manual roster', () => {
     const ids = options.map((o) => o.id);
-    expect(ids).toContain('train_gatherer');
-    expect(ids).toContain('train_fighter');
+    expect(ids).toContain('train_mudpaw');
     expect(ids).toContain('train_medic');
-    expect(ids).toContain('train_scout');
     expect(ids).toContain('train_sapper');
     expect(ids).toContain('train_saboteur');
   });
@@ -51,20 +51,21 @@ describe('getRadialOptions — Lodge mode', () => {
   });
 });
 
-describe('getRadialOptions — Unit mode (gather)', () => {
-  const options = getRadialOptions('unit', 'gather');
+describe('getRadialOptions — Unit mode (generalist)', () => {
+  const options = getRadialOptions('unit', 'generalist');
 
-  it('returns gather-specific options', () => {
+  it('returns generalist-specific options', () => {
     const ids = options.map((o) => o.id);
     expect(ids).toContain('cmd_gather');
+    expect(ids).toContain('cmd_attack');
+    expect(ids).toContain('cmd_recon');
     expect(ids).toContain('cmd_hold');
     expect(ids).toContain('cmd_patrol');
     expect(ids).toContain('cmd_return');
   });
 
-  it('does NOT include attack or heal commands', () => {
+  it('does NOT include heal commands', () => {
     const ids = options.map((o) => o.id);
-    expect(ids).not.toContain('cmd_attack');
     expect(ids).not.toContain('cmd_heal');
   });
 
@@ -93,10 +94,10 @@ describe('getRadialOptions — Unit mode (combat)', () => {
   });
 });
 
-describe('getRadialOptions — Unit mode (heal)', () => {
-  const options = getRadialOptions('unit', 'heal');
+describe('getRadialOptions — Unit mode (support)', () => {
+  const options = getRadialOptions('unit', 'support');
 
-  it('returns heal-specific options', () => {
+  it('returns support-specific options', () => {
     const ids = options.map((o) => o.id);
     expect(ids).toContain('cmd_heal');
     expect(ids).toContain('cmd_hold');
@@ -110,14 +111,18 @@ describe('getRadialOptions — Unit mode (heal)', () => {
   });
 });
 
-describe('getRadialOptions — Unit mode (scout)', () => {
-  const options = getRadialOptions('unit', 'scout');
+describe('getRadialOptions — Unit mode (recon)', () => {
+  const options = getRadialOptions('unit', 'recon');
 
-  it('returns scout-specific options', () => {
+  it('returns recon-specific options', () => {
     const ids = options.map((o) => o.id);
-    expect(ids).toContain('cmd_scout');
+    expect(ids).toContain('cmd_recon');
     expect(ids).toContain('cmd_hold');
     expect(ids).toContain('cmd_patrol');
+  });
+
+  it('uses Recon as the player-facing label', () => {
+    expect(options.find((o) => o.id === 'cmd_recon')?.label).toBe('Recon');
   });
 });
 
@@ -131,28 +136,28 @@ describe('getRadialOptions — unknown role', () => {
 });
 
 describe('entityKindToRole', () => {
-  it('maps Gatherer (0) to gather', () => {
-    expect(entityKindToRole(0)).toBe('gather');
+  it('maps Mudpaw chassis to generalist', () => {
+    expect(entityKindToRole(MUDPAW_KIND)).toBe('generalist');
   });
 
-  it('maps Brawler (1) to combat', () => {
-    expect(entityKindToRole(1)).toBe('combat');
+  it('maps Sapper to combat', () => {
+    expect(entityKindToRole(SAPPER_KIND)).toBe('combat');
   });
 
-  it('maps Healer (12) to heal', () => {
-    expect(entityKindToRole(12)).toBe('heal');
+  it('maps Medic chassis to support', () => {
+    expect(entityKindToRole(MEDIC_KIND)).toBe('support');
   });
 
-  it('maps Scout (16) to scout', () => {
-    expect(entityKindToRole(16)).toBe('scout');
+  it('maps Lookout chassis to recon', () => {
+    expect(entityKindToRole(LOOKOUT_KIND)).toBe('recon');
   });
 
-  it('maps Shaman (35) to heal', () => {
-    expect(entityKindToRole(35)).toBe('heal');
+  it('maps Shaman to support', () => {
+    expect(entityKindToRole(EntityKind.Shaman)).toBe('support');
   });
 
-  it('maps Commander (30) to combat', () => {
-    expect(entityKindToRole(30)).toBe('combat');
+  it('maps Commander to combat', () => {
+    expect(entityKindToRole(EntityKind.Commander)).toBe('combat');
   });
 
   it('maps unknown kinds to combat (default)', () => {

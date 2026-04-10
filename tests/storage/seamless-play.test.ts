@@ -8,6 +8,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const mockLogError = vi.fn();
+
 // Mock SQLite layer
 vi.mock('@/storage/schema', () => ({
   isDatabaseReady: vi.fn().mockReturnValue(true),
@@ -21,7 +23,7 @@ vi.mock('@/storage/schema', () => ({
   persist: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/storage/database', () => ({
+vi.mock('@/storage', () => ({
   getPlayerProfile: vi.fn().mockResolvedValue({
     total_wins: 0,
     total_losses: 0,
@@ -41,6 +43,14 @@ vi.mock('@/storage/database', () => ({
   }),
 }));
 
+vi.mock('@/errors', async () => {
+  const actual = await vi.importActual<typeof import('@/errors')>('@/errors');
+  return {
+    ...actual,
+    logError: (...args: [unknown]) => mockLogError(...args),
+  };
+});
+
 import {
   isDatabaseReady,
   loadCurrentRun,
@@ -58,6 +68,8 @@ describe('seamless play -- hydration', () => {
   beforeEach(() => {
     storeV3.progressionLevel.value = 0;
     storeV3.totalClams.value = 0;
+    storeV3.currentRunPurchasedNodeIds.value = [];
+    storeV3.currentRunPurchasedDiamondIds.value = [];
     storeV3.prestigeRank.value = 0;
     storeV3.totalPearls.value = 0;
     storeV3.prestigeState.value = {
@@ -91,7 +103,8 @@ describe('seamless play -- hydration', () => {
     });
     vi.mocked(loadCurrentRun).mockResolvedValue({
       clams: 120,
-      upgrades_purchased: '{}',
+      upgrades_purchased:
+        '{"nodes":["gathering_fish_gathering_t0"],"diamonds":["dock_wing"]}',
       lodge_state: '{}',
       progression_level: 3,
       matches_this_run: 5,
@@ -101,6 +114,8 @@ describe('seamless play -- hydration', () => {
 
     expect(storeV3.progressionLevel.value).toBe(3);
     expect(storeV3.totalClams.value).toBe(120);
+    expect(storeV3.currentRunPurchasedNodeIds.value).toEqual(['gathering_fish_gathering_t0']);
+    expect(storeV3.currentRunPurchasedDiamondIds.value).toEqual(['dock_wing']);
     expect(storeV3.prestigeRank.value).toBe(2);
     expect(storeV3.totalPearls.value).toBe(50);
   });
@@ -115,6 +130,23 @@ describe('seamless play -- hydration', () => {
     expect(storeV3.progressionLevel.value).toBe(99);
     expect(loadPrestigeState).not.toHaveBeenCalled();
   });
+
+  it('logs failed hydration reads and still loads later sections', async () => {
+    vi.mocked(loadPrestigeState).mockRejectedValueOnce(new Error('db locked'));
+    vi.mocked(loadCurrentRun).mockResolvedValue({
+      clams: 120,
+      upgrades_purchased: '{"nodes":[],"diamonds":[]}',
+      lodge_state: '{}',
+      progression_level: 3,
+      matches_this_run: 5,
+    });
+
+    await expect(hydrateV3StoreFromDb()).resolves.toBeUndefined();
+
+    expect(storeV3.progressionLevel.value).toBe(3);
+    expect(storeV3.totalClams.value).toBe(120);
+    expect(mockLogError).toHaveBeenCalled();
+  });
 });
 
 describe('seamless play -- auto-save after match', () => {
@@ -128,10 +160,12 @@ describe('seamless play -- auto-save after match', () => {
   it('persistCurrentRun saves progression and clams to SQLite', async () => {
     storeV3.totalClams.value = 200;
     storeV3.progressionLevel.value = 4;
+    storeV3.currentRunPurchasedNodeIds.value = ['gathering_fish_gathering_t0'];
+    storeV3.currentRunPurchasedDiamondIds.value = ['dock_wing'];
 
     vi.mocked(loadCurrentRun).mockResolvedValue({
       clams: 100,
-      upgrades_purchased: '{}',
+      upgrades_purchased: '{"nodes":[],"diamonds":[]}',
       lodge_state: '{}',
       progression_level: 3,
       matches_this_run: 2,
@@ -141,7 +175,8 @@ describe('seamless play -- auto-save after match', () => {
 
     expect(saveCurrentRun).toHaveBeenCalledWith({
       clams: 200,
-      upgrades_purchased: '{}',
+      upgrades_purchased:
+        '{"nodes":["gathering_fish_gathering_t0"],"diamonds":["dock_wing"]}',
       lodge_state: '{}',
       progression_level: 4,
       matches_this_run: 3, // incremented from 2
@@ -151,6 +186,8 @@ describe('seamless play -- auto-save after match', () => {
   it('persistCurrentRun handles first match (no existing run)', async () => {
     storeV3.totalClams.value = 50;
     storeV3.progressionLevel.value = 1;
+    storeV3.currentRunPurchasedNodeIds.value = ['gathering_fish_gathering_t0'];
+    storeV3.currentRunPurchasedDiamondIds.value = [];
 
     vi.mocked(loadCurrentRun).mockResolvedValue(null);
 
@@ -158,11 +195,21 @@ describe('seamless play -- auto-save after match', () => {
 
     expect(saveCurrentRun).toHaveBeenCalledWith({
       clams: 50,
-      upgrades_purchased: '{}',
+      upgrades_purchased: '{"nodes":["gathering_fish_gathering_t0"],"diamonds":[]}',
       lodge_state: '{}',
       progression_level: 1,
       matches_this_run: 1,
     });
+  });
+
+  it('persistCurrentRun logs write failures instead of rejecting', async () => {
+    storeV3.totalClams.value = 50;
+    storeV3.progressionLevel.value = 1;
+    vi.mocked(loadCurrentRun).mockResolvedValue(null);
+    vi.mocked(saveCurrentRun).mockRejectedValueOnce(new Error('write failed'));
+
+    await expect(persistCurrentRun()).resolves.toBe(false);
+    expect(mockLogError).toHaveBeenCalled();
   });
 });
 
@@ -170,6 +217,8 @@ describe('seamless play -- prestige reset', () => {
   beforeEach(() => {
     storeV3.progressionLevel.value = 5;
     storeV3.totalClams.value = 300;
+    storeV3.currentRunPurchasedNodeIds.value = ['gathering_fish_gathering_t0'];
+    storeV3.currentRunPurchasedDiamondIds.value = ['dock_wing'];
     vi.clearAllMocks();
     vi.mocked(isDatabaseReady).mockReturnValue(true);
   });
@@ -179,5 +228,7 @@ describe('seamless play -- prestige reset', () => {
 
     expect(storeV3.progressionLevel.value).toBe(0);
     expect(storeV3.totalClams.value).toBe(0);
+    expect(storeV3.currentRunPurchasedNodeIds.value).toEqual([]);
+    expect(storeV3.currentRunPurchasedDiamondIds.value).toEqual([]);
   });
 });

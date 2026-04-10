@@ -140,8 +140,9 @@ describe('rare node spawning', () => {
       hasRareResourceAccess: true,
     });
     const rareNodes6 = layout6.resourcePositions.filter((r) => r.type === 'rare_node');
-    // 6 panels * 1-2 each = 6-12 rare nodes
-    expect(rareNodes6.length).toBeGreaterThanOrEqual(6);
+    // Bottom row panels (4, 5, 6) each get 1-2 rare nodes when unlocked.
+    expect(rareNodes6.length).toBeGreaterThanOrEqual(3);
+    expect(rareNodes6.length).toBeLessThanOrEqual(6);
   });
 });
 

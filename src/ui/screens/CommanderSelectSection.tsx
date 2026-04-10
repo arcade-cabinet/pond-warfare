@@ -8,7 +8,7 @@
 
 import { useCallback } from 'preact/hooks';
 import { COMMANDER_ABILITIES, COMMANDERS, type CommanderDef } from '@/config/commanders';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { CommanderPortrait } from '@/ui/components/sprites/commanders/CommanderPortrait';
 import { COLORS } from '@/ui/design-tokens';
 

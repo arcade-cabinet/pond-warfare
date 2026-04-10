@@ -67,7 +67,7 @@ export function movementSystem(world: GameWorld): void {
     const ty = UnitStateMachine.targetY[eid];
     let speed = Velocity.speed[eid];
 
-    // Apply speed debuff from Trapper traps (50% slow)
+    // Apply any active speed debuff timer (50% slow)
     if (Velocity.speedDebuffTimer[eid] > 0) {
       speed *= 0.5;
       Velocity.speedDebuffTimer[eid]--;
@@ -76,6 +76,14 @@ export function movementSystem(world: GameWorld): void {
     // Commander aura: speed bonus for buffed player units
     if (world.commanderSpeedBuff.has(eid)) {
       speed += world.commanderModifiers.auraSpeedBonus;
+    }
+
+    if (
+      world.commanderId === 'marshal' &&
+      world.frameCount < world.commanderAbilityActiveUntil &&
+      world.commanderAbilityTargets?.has(eid)
+    ) {
+      speed *= 2;
     }
 
     // Shadow Sprint active: +40% speed to all player units while active
@@ -184,6 +192,14 @@ export function movementSystem(world: GameWorld): void {
       state === UnitState.RepairMove
     ) {
       arriveDist = Collider.radius[eid] + targetRad + 15;
+      if (state === UnitState.GatherMove && FactionTag.faction[eid] === Faction.Player) {
+        const gatherRadiusMultiplier =
+          Number.isFinite(world.playerGatherRadiusMultiplier) && world.playerGatherRadiusMultiplier > 1
+            ? world.playerGatherRadiusMultiplier
+            : 1;
+        const gatherRadiusBonus = gatherRadiusMultiplier - 1;
+        arriveDist *= 1 + gatherRadiusBonus * 0.5;
+      }
     }
     if (state === UnitState.AttackMove) {
       // a_move: arrive when the center-to-center distance is within the unit's

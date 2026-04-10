@@ -176,6 +176,7 @@ export function syncGameOverStats(world: GameWorld): void {
       resourcesGathered: w.stats.resourcesGathered,
       eventsCompleted,
       prestigeRank: storeV3.prestigeRank.value,
+      earningsMultiplier: w.clamRewardMultiplier,
     });
 
     storeV3.lastRewardBreakdown.value = breakdown;
@@ -200,8 +201,8 @@ export function syncGameOverStats(world: GameWorld): void {
     storeV3.totalClams.value += breakdown.totalClams;
 
     // Persist prestige + current run state (async, best-effort)
-    persistPrestigeState().catch(() => {});
-    persistCurrentRun().catch(() => {});
+    void persistPrestigeState();
+    void persistCurrentRun();
   }
 
   // Process XP, match record, and daily challenge (async, best-effort)

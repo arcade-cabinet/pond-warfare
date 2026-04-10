@@ -26,6 +26,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { ENEMY_HARVESTER_KIND } from '@/game/live-unit-kinds';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
@@ -51,7 +52,7 @@ export function nestDefenseReinforcement(world: GameWorld): void {
       if (FactionTag.faction[u] !== Faction.Enemy) continue;
       if (hasComponent(world.ecs, u, IsBuilding)) continue;
       if (Health.current[u] <= 0) continue;
-      if (EntityTypeTag.kind[u] === EntityKind.Gatherer) continue;
+      if (EntityTypeTag.kind[u] === ENEMY_HARVESTER_KIND) continue;
 
       const dx = Position.x[u] - nx;
       const dy = Position.y[u] - ny;
@@ -150,7 +151,13 @@ export function bossWaveLogic(world: GameWorld): void {
       color: '#ef4444',
       life: 120,
     });
-    world.minimapPings.push({ x: sx, y: sy, life: 180, maxLife: 180 });
+    world.groundPings.push({
+      x: sx,
+      y: sy,
+      life: 180,
+      maxLife: 180,
+      color: 'rgba(239, 68, 68, 0.85)',
+    });
     world.shakeTimer = Math.max(world.shakeTimer, 15);
 
     if (lodgeEid !== -1) {

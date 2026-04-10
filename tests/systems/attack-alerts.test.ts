@@ -9,6 +9,7 @@ import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { checkAttackAlert, resetAttackAlerts } from '@/systems/attack-alerts';
 import { EntityKind, Faction } from '@/types';
 
@@ -64,7 +65,7 @@ describe('Attack Alerts', () => {
 
     expect(world.floatingTexts).toHaveLength(1);
     expect(world.floatingTexts[0].text).toBe('BASE UNDER ATTACK!');
-    expect(world.minimapPings).toHaveLength(1);
+    expect(world.groundPings).toHaveLength(1);
   });
 
   it('cooldown prevents spam — second alert within 600 frames is blocked', () => {
@@ -86,13 +87,13 @@ describe('Attack Alerts', () => {
     createPlayerBuilding(world, EntityKind.Lodge, 400, 400);
 
     // Place a unit within LODGE_PROXIMITY (300) of the Lodge
-    const unitEid = createPlayerUnit(world, EntityKind.Gatherer, 450, 420);
+    const unitEid = createPlayerUnit(world, MUDPAW_KIND, 450, 420);
 
     checkAttackAlert(world, unitEid);
 
     expect(world.floatingTexts).toHaveLength(1);
     expect(world.floatingTexts[0].text).toBe('Units under attack!');
-    expect(world.minimapPings).toHaveLength(1);
+    expect(world.groundPings).toHaveLength(1);
   });
 
   it('unit attack far from Lodge does not fire alert', () => {
@@ -100,7 +101,7 @@ describe('Attack Alerts', () => {
     createPlayerBuilding(world, EntityKind.Lodge, 400, 400);
 
     // Place a unit far away (> 300 from Lodge)
-    const unitEid = createPlayerUnit(world, EntityKind.Gatherer, 1000, 1000);
+    const unitEid = createPlayerUnit(world, MUDPAW_KIND, 1000, 1000);
 
     checkAttackAlert(world, unitEid);
 

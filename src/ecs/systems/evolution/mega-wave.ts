@@ -152,7 +152,13 @@ export function triggerMegaWave(world: GameWorld, waveNumber: number): void {
           color: '#ef4444',
           life: 120,
         });
-        world.minimapPings.push({ x: sx, y: sy, life: 180, maxLife: 180 });
+        world.groundPings.push({
+          x: sx,
+          y: sy,
+          life: 180,
+          maxLife: 180,
+          color: 'rgba(239, 68, 68, 0.85)',
+        });
       }
     }
   }

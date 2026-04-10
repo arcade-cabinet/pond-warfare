@@ -7,7 +7,15 @@
  */
 
 import type { RecolorPreset } from '@/rendering/recolor';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+  SHAMAN_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 export interface CosmeticDef {
@@ -38,35 +46,23 @@ function wonAtLeast(profile: PlayerProfile, level: string): boolean {
 export const COSMETICS: CosmeticDef[] = [
   // ---- Unit skins ----
   {
-    id: 'skin_golden_brawler',
+    id: 'skin_elite_mudpaw',
     category: 'unit_skin',
-    name: 'Golden Brawler',
-    description: 'A brilliant gold recolor for the Brawler',
-    targetKind: EntityKind.Brawler,
-    recolorPreset: 'hero',
+    name: 'Elite Mudpaw',
+    description: 'Gold-tinted veteran finish for the Mudpaw',
+    targetKind: MUDPAW_KIND,
+    recolorPreset: 'elite',
     unlock: {
-      requirement: 'Win 5 games',
-      check: (p) => p.total_wins >= 5,
+      requirement: 'Play 10 games',
+      check: (p) => p.total_games >= 10,
     },
   },
   {
-    id: 'skin_shadow_sniper',
+    id: 'skin_crystal_medic',
     category: 'unit_skin',
-    name: 'Shadow Sniper',
-    description: 'Dark purple tint for the Sniper',
-    targetKind: EntityKind.Sniper,
-    recolorPreset: 'champion',
-    unlock: {
-      requirement: 'Kill 100 enemies total',
-      check: (p) => p.total_kills >= 100,
-    },
-  },
-  {
-    id: 'skin_crystal_healer',
-    category: 'unit_skin',
-    name: 'Crystal Healer',
-    description: 'Ice-blue glow for the Healer',
-    targetKind: EntityKind.Healer,
+    name: 'Crystal Medic',
+    description: 'Ice-blue restorative glow for the Medic',
+    targetKind: MEDIC_KIND,
     recolorPreset: 'shielded',
     unlock: {
       requirement: 'Win on Hard difficulty',
@@ -74,23 +70,35 @@ export const COSMETICS: CosmeticDef[] = [
     },
   },
   {
-    id: 'skin_flame_catapult',
+    id: 'skin_bog_sapper',
     category: 'unit_skin',
-    name: 'Flame Catapult',
-    description: 'Red-hot enraged look for the Catapult',
-    targetKind: EntityKind.Catapult,
-    recolorPreset: 'enraged',
+    name: 'Bog Sapper',
+    description: 'Marsh-green siege finish for the Sapper chassis',
+    targetKind: SAPPER_KIND,
+    recolorPreset: 'hero',
     unlock: {
-      requirement: 'Win 10 games',
-      check: (p) => p.total_wins >= 10,
+      requirement: 'Win 5 games',
+      check: (p) => p.total_wins >= 5,
     },
   },
   {
-    id: 'skin_venom_scout',
+    id: 'skin_shadow_saboteur',
     category: 'unit_skin',
-    name: 'Venom Scout',
-    description: 'Poisonous green tint for the Scout',
-    targetKind: EntityKind.Scout,
+    name: 'Shadow Saboteur',
+    description: 'Dark purple covert finish for the Saboteur',
+    targetKind: SABOTEUR_KIND,
+    recolorPreset: 'champion',
+    unlock: {
+      requirement: 'Kill 100 enemies total',
+      check: (p) => p.total_kills >= 100,
+    },
+  },
+  {
+    id: 'skin_venom_lookout',
+    category: 'unit_skin',
+    name: 'Venom Lookout',
+    description: 'Poison-tinged vision palette for the Lookout chassis',
+    targetKind: LOOKOUT_KIND,
     recolorPreset: 'poisoned',
     unlock: {
       requirement: 'Kill 200 enemies total',
@@ -98,15 +106,15 @@ export const COSMETICS: CosmeticDef[] = [
     },
   },
   {
-    id: 'skin_elite_gatherer',
+    id: 'skin_storm_shaman',
     category: 'unit_skin',
-    name: 'Elite Gatherer',
-    description: 'Gold-tinted elite look for the Gatherer',
-    targetKind: EntityKind.Gatherer,
-    recolorPreset: 'elite',
+    name: 'Storm Shaman',
+    description: 'Charged blue-green glow for the Shaman',
+    targetKind: SHAMAN_KIND,
+    recolorPreset: 'enraged',
     unlock: {
-      requirement: 'Play 10 games',
-      check: (p) => p.total_games >= 10,
+      requirement: 'Win 10 games',
+      check: (p) => p.total_wins >= 10,
     },
   },
 

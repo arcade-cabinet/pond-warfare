@@ -6,6 +6,7 @@
  */
 
 import { loadPreference, savePreference } from '@/platform';
+import { GameError, logError } from '@/errors';
 import * as store from '@/ui/store';
 
 const SETTINGS_KEYS = {
@@ -24,14 +25,33 @@ const SETTINGS_KEYS = {
 
 export type SettingKey = keyof typeof SETTINGS_KEYS;
 
+function reportSettingsPersistenceError(
+  action: 'load' | 'save',
+  key: SettingKey,
+  prefKey: string,
+  error: unknown,
+): void {
+  logError(
+    new GameError(`Failed to ${action} setting "${key}"`, 'settings-persistence', {
+      cause: error,
+      context: { key, prefKey, action },
+    }),
+  );
+}
+
 /** Load all persisted settings into store signals. Call once at app startup. */
 export async function loadPersistedSettings(): Promise<void> {
   const entries = Object.entries(SETTINGS_KEYS) as [SettingKey, string][];
-  const results = await Promise.all(entries.map(([, prefKey]) => loadPreference(prefKey)));
+  const results = await Promise.allSettled(entries.map(([, prefKey]) => loadPreference(prefKey)));
 
   for (let i = 0; i < entries.length; i++) {
-    const [key] = entries[i];
-    const raw = results[i];
+    const [key, prefKey] = entries[i];
+    const result = results[i];
+    if (result.status === 'rejected') {
+      reportSettingsPersistenceError('load', key, prefKey, result.reason);
+      continue;
+    }
+    const raw = result.value;
     if (raw === null) continue;
 
     switch (key) {
@@ -91,6 +111,13 @@ export async function loadPersistedSettings(): Promise<void> {
 export async function persistSetting(
   key: SettingKey,
   value: string | number | boolean,
-): Promise<void> {
-  await savePreference(SETTINGS_KEYS[key], String(value));
+): Promise<boolean> {
+  const prefKey = SETTINGS_KEYS[key];
+  try {
+    await savePreference(prefKey, String(value));
+    return true;
+  } catch (error) {
+    reportSettingsPersistenceError('save', key, prefKey, error);
+    return false;
+  }
 }

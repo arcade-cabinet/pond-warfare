@@ -20,13 +20,33 @@ export type UnitTask =
   | 'defending'
   | 'patrolling'
   | 'healing'
-  | 'scouting'
+  | 'recon'
   | 'dead';
+
+const UNIT_TASK_LABELS: Record<UnitTask, string> = {
+  idle: 'Idle',
+  'gathering-fish': 'Gathering Fish',
+  'gathering-logs': 'Gathering Logs',
+  'gathering-rocks': 'Gathering Rocks',
+  building: 'Building',
+  moving: 'Moving',
+  attacking: 'Attacking',
+  defending: 'Defending',
+  patrolling: 'Patrolling',
+  healing: 'Healing',
+  recon: 'Recon',
+  dead: 'Dead',
+};
+
+export function formatUnitTaskLabel(task: UnitTask): string {
+  return UNIT_TASK_LABELS[task];
+}
 
 /** A single unit's data for the Forces tab roster display. */
 export interface RosterUnit {
   eid: number;
   kind: EntityKind;
+  label?: string;
   task: UnitTask;
   targetName: string;
   hp: number;
@@ -35,14 +55,14 @@ export interface RosterUnit {
 }
 
 /** Logical role grouping for the Forces tab. */
-export type UnitRole = 'gatherer' | 'combat' | 'support' | 'scout' | 'commander';
+export type UnitRole = 'generalist' | 'combat' | 'support' | 'recon' | 'commander';
 
 /** A group of units sharing the same role, with aggregate idle count. */
 export interface RosterGroup {
   role: UnitRole;
   units: RosterUnit[];
   idleCount: number;
-  autoEnabled: boolean;
+  automationEnabled: boolean;
 }
 
 /** A single building's data for the Buildings tab. */

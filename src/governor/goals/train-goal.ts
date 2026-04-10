@@ -4,48 +4,80 @@
  * Reads buildingRoster to find buildings with available queue slots,
  * then calls the same train() function the BuildingsTab uses.
  *
- * The Lodge trains basic units (Gatherer, Brawler, Scout).
- * The Armory wing (Lodge upgrade) trains advanced units (Sniper, Healer, Shieldbearer).
+ * The Lodge trains the full manual run roster.
  */
 
 import { Goal } from 'yuka';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { game } from '@/game';
-import { train } from '@/input/selection';
+import {
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
+import { train } from '@/input/selection/queries';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
+import { hasCurrentRunTrack } from '../current-run-upgrades';
+import { getGovernorCombatUnits, getGovernorGatherUnits } from '../roster-units';
+import {
+  getGovernorCombatTarget,
+  getGovernorMudpawTarget,
+  getGovernorReservedBuildKind,
+  shouldTrainSupportUnit,
+} from '../train-policy';
 
-/** What each building type can train, in priority order. */
-const BUILDING_TRAINS: Record<number, EntityKind[]> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Brawler, EntityKind.Scout],
-  // Armory is a Lodge wing — trains advanced units when unlocked
-  [EntityKind.Armory]: [EntityKind.Sniper, EntityKind.Healer, EntityKind.Shieldbearer],
-};
-
-/** Count of combat units (non-gatherer, non-healer, non-scout). */
+/** Count of combat units outside the Mudpaw economy chassis. */
 function armySize(): number {
+  return getGovernorCombatUnits(store.unitRoster.value).length;
+}
+
+function mudpawCount(): number {
+  return getGovernorGatherUnits(store.unitRoster.value).length;
+}
+
+function scoutCount(): number {
   return store.unitRoster.value
-    .filter((g) => g.role === 'combat')
+    .filter((g) => g.role === 'recon')
     .reduce((sum, g) => sum + g.units.length, 0);
 }
 
-function gathererCount(): number {
-  return store.unitRoster.value
-    .filter((g) => g.role === 'gatherer')
-    .reduce((sum, g) => sum + g.units.length, 0);
+function preferredCombatUnit(trainable: EntityKind[]): EntityKind | null {
+  if (trainable.includes(SAPPER_KIND)) return SAPPER_KIND;
+  if (trainable.includes(SABOTEUR_KIND)) return SABOTEUR_KIND;
+  return null;
+}
+
+function trainableUnits(buildingKind: EntityKind, canTrain: EntityKind[]): EntityKind[] {
+  if (buildingKind === EntityKind.Lodge) {
+    const stage = Math.max(1, Math.trunc(storeV3.progressionLevel.value || 1));
+    const manualUnits = [MUDPAW_KIND];
+    if (stage >= 2) manualUnits.push(MEDIC_KIND);
+    if (stage >= 5) manualUnits.push(SAPPER_KIND);
+    if (stage >= 6) manualUnits.push(SABOTEUR_KIND);
+    return manualUnits;
+  }
+  return canTrain;
 }
 
 export class TrainGoal extends Goal {
   override activate(): void {
     const buildings = store.buildingRoster.value;
     let trained = false;
+    const reservedBuildKind = getGovernorReservedBuildKind();
+    const combatTarget = getGovernorCombatTarget();
 
     for (const b of buildings) {
-      const trainable = BUILDING_TRAINS[b.kind];
+      const trainable = trainableUnits(b.kind, b.canTrain);
       if (!trainable || b.queueItems.length >= 5) continue;
 
-      const unitKind = this.pickUnit(b.kind);
+      const unitKind = this.pickUnit(trainable);
       if (unitKind === null) continue;
+      if (reservedBuildKind !== null && armySize() >= Math.max(3, combatTarget - 1)) {
+        continue;
+      }
 
       const def = ENTITY_DEFS[unitKind];
       const fishCost = def.fishCost ?? 0;
@@ -62,17 +94,43 @@ export class TrainGoal extends Goal {
     this.status = trained ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
   }
 
-  private pickUnit(buildingKind: EntityKind): EntityKind | null {
-    if (buildingKind === EntityKind.Lodge) {
-      if (gathererCount() < 4) return EntityKind.Gatherer;
-      if (armySize() < 6) return EntityKind.Brawler;
-      return EntityKind.Scout;
+  private pickUnit(trainable: EntityKind[]): EntityKind | null {
+    const combatTarget = getGovernorCombatTarget();
+    const wantsSupportUnit = trainable.includes(MEDIC_KIND) && shouldTrainSupportUnit();
+    const trainSpeedTrackActive = hasCurrentRunTrack('utility_train_speed');
+    const healPowerTrackActive = hasCurrentRunTrack('utility_heal_power');
+    const lowReserveFillerWindow =
+      trainSpeedTrackActive &&
+      storeV3.progressionLevel.value >= 6 &&
+      store.fish.value < 120 &&
+      armySize() >= combatTarget;
+
+    if (trainable.includes(MUDPAW_KIND) && mudpawCount() < getGovernorMudpawTarget()) {
+      return MUDPAW_KIND;
     }
-    // Armory wing trains advanced units
-    if (buildingKind === EntityKind.Armory) {
-      return armySize() % 2 === 0 ? EntityKind.Brawler : EntityKind.Sniper;
+    if (lowReserveFillerWindow && !healPowerTrackActive) {
+      return null;
     }
-    return null;
+
+    if (wantsSupportUnit) {
+      return MEDIC_KIND;
+    }
+
+    const dedicatedCombatUnit = preferredCombatUnit(trainable);
+    if (dedicatedCombatUnit && armySize() < combatTarget) {
+      return dedicatedCombatUnit;
+    }
+    if (trainable.includes(MUDPAW_KIND) && armySize() < combatTarget) {
+      return MUDPAW_KIND;
+    }
+    if (trainable.includes(SABOTEUR_KIND) && armySize() >= Math.max(4, combatTarget)) {
+      return SABOTEUR_KIND;
+    }
+    if (trainable.includes(SAPPER_KIND) && armySize() >= Math.max(2, combatTarget - 1)) {
+      return SAPPER_KIND;
+    }
+    if (trainable.includes(MEDIC_KIND)) return MEDIC_KIND;
+    return trainable[0] ?? null;
   }
 
   override execute(): void {

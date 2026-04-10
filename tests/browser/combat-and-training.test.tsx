@@ -5,19 +5,22 @@
  * unit death, building construction completion, wave survival.
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { hasComponent, query } from 'bitecs';
+import { TILE_SIZE } from '@/constants';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   EntityTypeTag, FactionTag, Health, IsBuilding,
-  Position,
+  Position, Selectable,
 } from '@/ecs/components';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { canPlaceBuilding, placeBuilding } from '@/input/selection/queries';
 import '@/styles/main.css';
 import * as store from '@/ui/store';
 import { EntityKind, Faction } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -74,27 +77,40 @@ async function selectEntity(eid: number) {
   await delay(150);
 }
 
+function forceSelectEntity(eid: number) {
+  game.world.selection = [eid];
+  Selectable.selected[eid] = 1;
+  game.world.isTracking = true;
+  game.syncUIStore();
+}
+
+function findValidPlacement(kind: EntityKind, centerX: number, centerY: number) {
+  const def = ENTITY_DEFS[kind];
+  const spriteW = def.spriteSize * def.spriteScale;
+  const spriteH = def.spriteSize * def.spriteScale;
+
+  for (let ring = 2; ring <= 8; ring += 1) {
+    for (let dx = -ring; dx <= ring; dx += 1) {
+      for (let dy = -ring; dy <= ring; dy += 1) {
+        if (Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue;
+        const x = Math.round((centerX + dx * TILE_SIZE) / TILE_SIZE) * TILE_SIZE;
+        const y = Math.round((centerY + dy * TILE_SIZE) / TILE_SIZE) * TILE_SIZE;
+        if (canPlaceBuilding(game.world, x, y, spriteW, spriteH)) {
+          return { x, y };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 async function waitFrames(n: number) {
   const start = game.world.frameCount;
   while (game.world.frameCount - start < n) await delay(16);
 }
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 async function openPanelTab(tab: string) {
   clickButton('☰');
@@ -113,11 +129,12 @@ async function closePanel() {
 describe('Training & Building', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500);
+    await delay(1000);
     game.world.gameSpeed = 3;
     // Give resources for testing
     game.world.resources.fish = 2000;
     game.world.resources.logs = 1000;
+    game.syncUIStore();
   }, 30_000);
 
   it('lodge can be selected', async () => {
@@ -132,8 +149,8 @@ describe('Training & Building', () => {
     expect(getUnits(EntityKind.Lodge).length).toBeGreaterThan(0);
   });
 
-  it('select gatherer shows build actions in panel', async () => {
-    const gid = getUnits(EntityKind.Gatherer)[0];
+  it('select Mudpaw shows build actions in panel', async () => {
+    const gid = getUnits(MUDPAW_KIND)[0];
     await selectEntity(gid);
     await delay(200);
     await openPanelTab('Act');
@@ -145,21 +162,24 @@ describe('Training & Building', () => {
 
   it('place and build a burrow', async () => {
     const burrowsBefore = getUnits(EntityKind.Burrow).length;
-    const gid = getUnits(EntityKind.Gatherer)[0];
+    const gid = getUnits(MUDPAW_KIND)[0];
     const lodge = getUnits(EntityKind.Lodge)[0];
     const lx = Position.x[lodge], ly = Position.y[lodge];
 
-    await selectEntity(gid);
+    forceSelectEntity(gid);
     await openPanelTab('Act');
     const placed = clickActionBtn('Burrow');
     if (!placed) { await closePanel(); return; }
     await delay(200);
     await closePanel();
-    clickWorld(lx + 130, ly + 90, 0);
+    const placement = findValidPlacement(EntityKind.Burrow, lx, ly);
+    expect(placement).toBeTruthy();
+    placeBuilding(game.world, placement!.x, placement!.y);
+    game.syncUIStore();
     await delay(300);
 
-    // Enable auto-build so gatherer finishes it
-    game.world.autoBehaviors.gatherer = true;
+    // Enable auto-build so the Mudpaw finishes it
+    game.world.autoBehaviors.generalist = true;
     await waitFrames(600);
 
     const burrowsAfter = getUnits(EntityKind.Burrow).length;
@@ -167,12 +187,12 @@ describe('Training & Building', () => {
     await page.screenshot({ path: 'tests/browser/screenshots/ct-burrow-built.png' });
   });
 
-  it('gatherer can be selected and is correct entity type', async () => {
-    const gid = getUnits(EntityKind.Gatherer)[0];
-    await selectEntity(gid);
+  it('Mudpaw can be selected and is correct entity type', async () => {
+    const gid = getUnits(MUDPAW_KIND)[0];
+    forceSelectEntity(gid);
     await delay(200);
     expect(game.world.selection.length).toBeGreaterThan(0);
-    expect(EntityTypeTag.kind[gid]).toBe(EntityKind.Gatherer);
+    expect(EntityTypeTag.kind[gid]).toBe(MUDPAW_KIND);
   });
 
   it('food cap prevents training when full', async () => {
@@ -181,12 +201,11 @@ describe('Training & Building', () => {
     if (food < maxFood) return; // can't test if not at cap
 
     const lodge = getUnits(EntityKind.Lodge)[0];
-    const gatherersBefore = getUnits(EntityKind.Gatherer).length;
     await selectEntity(lodge);
     await openPanelTab('Act');
     // Button should be disabled/grayed
     const btn = Array.from(document.querySelectorAll('.action-btn')).find(
-      (b) => b.textContent?.includes('Gatherer'),
+      (b) => b.textContent?.includes('Mudpaw'),
     ) as HTMLButtonElement | undefined;
     if (btn) {
       expect(btn.disabled || btn.classList.contains('opacity-50')).toBe(true);
@@ -209,13 +228,13 @@ describe('Combat', () => {
   });
 
   it('combat unit attacks enemy and deals damage', async () => {
-    const brawlers = getUnits(EntityKind.Brawler);
+    const sappers = getUnits(EntityKind.Sapper);
     const enemies = getUnits(undefined, Faction.Enemy).filter(
       (e) => !hasComponent(game.world.ecs, e, IsBuilding),
     );
-    if (brawlers.length === 0 || enemies.length === 0) return;
+    if (sappers.length === 0 || enemies.length === 0) return;
 
-    const bid = brawlers[0];
+    const bid = sappers[0];
     const eid = enemies[0];
     const enemyHpBefore = Health.current[eid];
 

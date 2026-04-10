@@ -2,8 +2,9 @@
  * Radial Action Menu (v3.0 -- US9)
  *
  * Contextual circular menu that appears on tap:
- * - Tap Lodge -> Train Gatherer, Train Fighter, Train Medic, Train Scout, Fortify, Repair
- * - Tap selected unit -> role-specific actions (Gather, Attack, Heal, Scout, Hold, Patrol)
+ * - Tap Lodge -> Train Mudpaw/Medic/Sapper/Saboteur, field specialists, Fortify, Repair
+ * - Tap selected manual unit -> role-specific actions (Gather, Attack, Heal, Recon, Hold, Patrol)
+ * - Tap selected specialist -> assign area or zones, then let autonomy handle local work
  *
  * Design bible: vine-frame popup, gritty gold icons, wood plank button backgrounds,
  * design token colors from design-tokens.ts.
@@ -11,13 +12,16 @@
  */
 
 import { useEffect, useRef } from 'preact/hooks';
+import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
 import { COLORS } from '@/ui/design-tokens';
-import type { RadialGameState, RadialOption } from './radial-menu-options';
+import type { RadialGameState, RadialOption, RadialUnitRole } from './radial-menu-options';
 import { getRadialOptions } from './radial-menu-options';
 import { fish, logs, rocks } from './store';
 import {
+  closeRadialMenu,
   radialMenuMode,
   radialMenuOpen,
+  radialMenuSpecialistMode,
   radialMenuUnitRole,
   radialMenuX,
   radialMenuY,
@@ -33,7 +37,41 @@ const AUTO_DISMISS_MS = 8000;
 const ITEM_SIZE = 52; // 52px > 44px minimum touch target
 
 function closeMenu() {
-  radialMenuOpen.value = false;
+  closeRadialMenu();
+}
+
+function getSpecialistAssignOption(mode: 'single_zone' | 'dual_zone'): RadialOption {
+  return mode === 'dual_zone'
+    ? {
+        id: 'cmd_assign_area',
+        label: 'Zones',
+        icon: '\u25CE',
+        tooltip: 'Assign anchor and engagement zones',
+        color: 'recon',
+      }
+    : {
+        id: 'cmd_assign_area',
+        label: 'Area',
+        icon: '\u25CE',
+        tooltip: 'Assign operating area',
+        color: 'recon',
+      };
+}
+
+function getHubLabel(mode: 'lodge' | 'unit', role: RadialUnitRole | null): string {
+  if (mode === 'lodge') return 'Lodge';
+  switch (role) {
+    case 'generalist':
+      return 'Mudpaw';
+    case 'combat':
+      return 'Combat';
+    case 'support':
+      return 'Support';
+    case 'recon':
+      return 'Recon';
+    default:
+      return 'Unit';
+  }
 }
 
 /**
@@ -108,10 +146,14 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
     fish: fish.value,
     rocks: rocks.value,
     logs: logs.value,
-    unlockStage: Math.min(6, Math.floor(storeV3.progressionLevel.value / 10) + 1),
+    unlockStage: getCurrentRunPanelStage(storeV3.currentRunPurchasedDiamondIds.value),
     lodgeDamaged: storeV3.lodgeHp.value < storeV3.lodgeMaxHp.value,
   };
+  const specialistMode = radialMenuSpecialistMode.value;
   const options = getRadialOptions(mode, role, gameState);
+  if (mode === 'unit' && specialistMode) {
+    options.push(getSpecialistAssignOption(specialistMode));
+  }
 
   // Clamp menu center to viewport bounds
   const margin = RADIUS + ITEM_SIZE;
@@ -166,7 +208,7 @@ export function RadialMenu({ onAction }: RadialMenuProps) {
             class="font-heading font-bold text-[10px] text-center leading-tight"
             style={{ color: COLORS.grittyGold }}
           >
-            {mode === 'lodge' ? 'Lodge' : (role ?? 'Unit')}
+            {getHubLabel(mode, role)}
           </span>
         </div>
 

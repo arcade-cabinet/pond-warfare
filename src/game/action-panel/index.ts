@@ -15,6 +15,7 @@ import {
   Position,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind, Faction } from '@/types';
 import {
@@ -24,8 +25,7 @@ import {
   queueItems,
 } from '@/ui/action-panel';
 
-import { buildArmoryButtons } from './armory-buttons';
-import { buildGathererButtons } from './gatherer-buttons';
+import { buildMudpawButtons } from './mudpaw-buttons';
 import { buildLodgeButtons } from './lodge-buttons';
 import { buildMarketButtons } from './market-buttons';
 import { buildTrainingQueueItems } from './tech-helpers';
@@ -65,24 +65,19 @@ export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): v
     const selFaction = FactionTag.faction[selEid] as Faction;
 
     if (selFaction === Faction.Player) {
-      if (selKind === EntityKind.Gatherer) {
-        btns.push(...buildGathererButtons(w));
+      if (isMudpawKind(selKind)) {
+        btns.push(...buildMudpawButtons(w));
       }
 
       if (selKind === EntityKind.Lodge && Building.progress[selEid] >= 100) {
         btns.push(...buildLodgeButtons(w, selEid));
       }
 
-      if (selKind === EntityKind.Armory && Building.progress[selEid] >= 100) {
-        btns.push(...buildArmoryButtons(w, selEid, recorder));
-        buildTrainingQueueItems(w, selEid, qItems);
-      }
-
       if (selKind === EntityKind.Market && Building.progress[selEid] >= 100) {
         btns.push(...buildMarketButtons(w, selEid));
       }
 
-      if (selKind === EntityKind.Lodge || selKind === EntityKind.Burrow) {
+      if (selKind === EntityKind.Lodge) {
         buildTrainingQueueItems(w, selEid, qItems);
       }
     }

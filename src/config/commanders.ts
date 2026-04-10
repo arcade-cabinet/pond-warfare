@@ -5,7 +5,7 @@
  * unlock requirements, and sprite variant identifiers.
  */
 
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 
 export interface CommanderDef {
   id: string;
@@ -18,13 +18,13 @@ export interface CommanderDef {
   auraHpBonus: number;
   auraUnitHpBonus: number;
   auraEnemyDamageReduction: number;
+  auraGatherBonus: number;
   passiveGatherBonus: number;
-  passiveResearchSpeed: number;
   passiveTowerAttackSpeed: number;
-  passiveSwimmerCostReduction: number;
-  passiveTrapDurationMult: number;
-  passiveShieldbearerTrainSpeed: number;
-  passiveCatapultRangeBonus: number;
+  passiveFisherCostReduction: number;
+  passiveGuardCostReduction: number;
+  passiveRangerProjectionBonus: number;
+  passiveBombardierProjectionBonus: number;
   passiveLightningDamage: number;
   spriteVariant: string;
   unlock: { requirement: string; check: (profile: PlayerProfile) => boolean } | null;
@@ -57,13 +57,13 @@ export const COMMANDERS: CommanderDef[] = [
     auraHpBonus: 0,
     auraUnitHpBonus: 0,
     auraEnemyDamageReduction: 0,
+    auraGatherBonus: 0,
     passiveGatherBonus: 0,
-    passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
-    passiveSwimmerCostReduction: 0,
-    passiveTrapDurationMult: 1,
-    passiveShieldbearerTrainSpeed: 0,
-    passiveCatapultRangeBonus: 0,
+    passiveFisherCostReduction: 0,
+    passiveGuardCostReduction: 0,
+    passiveRangerProjectionBonus: 0,
+    passiveBombardierProjectionBonus: 0,
     passiveLightningDamage: 0,
     spriteVariant: 'blue',
     unlock: null,
@@ -72,20 +72,20 @@ export const COMMANDERS: CommanderDef[] = [
     id: 'sage',
     name: 'Otter Sage',
     title: 'The Sage',
-    auraDesc: '+25% tech research speed',
-    passiveDesc: 'Gatherers +10% gather rate',
+    auraDesc: '+25% gather rate to nearby Mudpaws',
+    passiveDesc: 'Mudpaws +10% gather rate',
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
     auraUnitHpBonus: 0,
     auraEnemyDamageReduction: 0,
+    auraGatherBonus: 0.25,
     passiveGatherBonus: 0.1,
-    passiveResearchSpeed: 0.25,
     passiveTowerAttackSpeed: 0,
-    passiveSwimmerCostReduction: 0,
-    passiveTrapDurationMult: 1,
-    passiveShieldbearerTrainSpeed: 0,
-    passiveCatapultRangeBonus: 0,
+    passiveFisherCostReduction: 0,
+    passiveGuardCostReduction: 0,
+    passiveRangerProjectionBonus: 0,
+    passiveBombardierProjectionBonus: 0,
     passiveLightningDamage: 0,
     spriteVariant: 'green',
     unlock: { requirement: 'Win 3 games', check: (p) => p.total_wins >= 3 },
@@ -101,13 +101,13 @@ export const COMMANDERS: CommanderDef[] = [
     auraHpBonus: 200,
     auraUnitHpBonus: 0,
     auraEnemyDamageReduction: 0,
+    auraGatherBonus: 0,
     passiveGatherBonus: 0,
-    passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0.2,
-    passiveSwimmerCostReduction: 0,
-    passiveTrapDurationMult: 1,
-    passiveShieldbearerTrainSpeed: 0,
-    passiveCatapultRangeBonus: 0,
+    passiveFisherCostReduction: 0,
+    passiveGuardCostReduction: 0,
+    passiveRangerProjectionBonus: 0,
+    passiveBombardierProjectionBonus: 0,
     passiveLightningDamage: 0,
     spriteVariant: 'gold',
     unlock: {
@@ -120,19 +120,19 @@ export const COMMANDERS: CommanderDef[] = [
     name: 'Otter Tidekeeper',
     title: 'The Tidekeeper',
     auraDesc: '+0.4 speed to all units',
-    passiveDesc: 'Swimmers cost 50% less',
+    passiveDesc: 'Fishers cost 50% less',
     auraDamageBonus: 0,
     auraSpeedBonus: 0.4,
     auraHpBonus: 0,
     auraUnitHpBonus: 0,
     auraEnemyDamageReduction: 0,
+    auraGatherBonus: 0,
     passiveGatherBonus: 0,
-    passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
-    passiveSwimmerCostReduction: 0.5,
-    passiveTrapDurationMult: 1,
-    passiveShieldbearerTrainSpeed: 0,
-    passiveCatapultRangeBonus: 0,
+    passiveFisherCostReduction: 0.5,
+    passiveGuardCostReduction: 0,
+    passiveRangerProjectionBonus: 0,
+    passiveBombardierProjectionBonus: 0,
     passiveLightningDamage: 0,
     spriteVariant: 'cyan',
     unlock: {
@@ -145,19 +145,19 @@ export const COMMANDERS: CommanderDef[] = [
     name: 'Otter Shadowfang',
     title: 'The Shadowfang',
     auraDesc: 'Enemies in range -10% damage',
-    passiveDesc: 'Trapper traps last 2x longer',
+    passiveDesc: 'Rangers project 50% farther',
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
     auraUnitHpBonus: 0,
     auraEnemyDamageReduction: 0.1,
+    auraGatherBonus: 0,
     passiveGatherBonus: 0,
-    passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
-    passiveSwimmerCostReduction: 0,
-    passiveTrapDurationMult: 2,
-    passiveShieldbearerTrainSpeed: 0.5,
-    passiveCatapultRangeBonus: 0,
+    passiveFisherCostReduction: 0,
+    passiveGuardCostReduction: 0,
+    passiveRangerProjectionBonus: 0.5,
+    passiveBombardierProjectionBonus: 0,
     passiveLightningDamage: 0,
     spriteVariant: 'purple',
     unlock: {
@@ -170,19 +170,19 @@ export const COMMANDERS: CommanderDef[] = [
     name: 'Otter Ironpaw',
     title: 'The Ironpaw',
     auraDesc: '+20% HP to all units',
-    passiveDesc: 'Shieldbearers trained 2x faster',
+    passiveDesc: 'Guards cost 50% less',
     auraDamageBonus: 0,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
     auraUnitHpBonus: 0.2,
     auraEnemyDamageReduction: 0,
+    auraGatherBonus: 0,
     passiveGatherBonus: 0,
-    passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
-    passiveSwimmerCostReduction: 0,
-    passiveTrapDurationMult: 1,
-    passiveShieldbearerTrainSpeed: 0.5,
-    passiveCatapultRangeBonus: 0,
+    passiveFisherCostReduction: 0,
+    passiveGuardCostReduction: 0.5,
+    passiveRangerProjectionBonus: 0,
+    passiveBombardierProjectionBonus: 0,
     passiveLightningDamage: 0,
     spriteVariant: 'red',
     unlock: {
@@ -194,20 +194,20 @@ export const COMMANDERS: CommanderDef[] = [
     id: 'stormcaller',
     name: 'Otter Stormcaller',
     title: 'The Stormcaller',
-    auraDesc: 'Catapults +50% range',
-    passiveDesc: 'Every 15s, deals 10 damage to 3 random enemies in vision range',
-    auraDamageBonus: 0,
+    auraDesc: '+10% damage to nearby units',
+    passiveDesc: 'Bombardiers project 50% farther and call lightning every 15s',
+    auraDamageBonus: 0.1,
     auraSpeedBonus: 0,
     auraHpBonus: 0,
     auraUnitHpBonus: 0,
     auraEnemyDamageReduction: 0,
+    auraGatherBonus: 0,
     passiveGatherBonus: 0,
-    passiveResearchSpeed: 0,
     passiveTowerAttackSpeed: 0,
-    passiveSwimmerCostReduction: 0,
-    passiveTrapDurationMult: 1,
-    passiveShieldbearerTrainSpeed: 0,
-    passiveCatapultRangeBonus: 0.5,
+    passiveFisherCostReduction: 0,
+    passiveGuardCostReduction: 0,
+    passiveRangerProjectionBonus: 0,
+    passiveBombardierProjectionBonus: 0.5,
     passiveLightningDamage: 10,
     spriteVariant: 'yellow',
     unlock: {
@@ -239,7 +239,7 @@ export const COMMANDER_ABILITIES: Record<string, ActiveAbilityDef> = {
   },
   sage: {
     name: 'Eureka!',
-    description: 'Instantly complete current research.',
+    description: 'Instantly grant 60 fish, 20 logs, and 10 rocks.',
     cooldownFrames: 10800, // 180s
     durationFrames: 0, // instant
     hotkey: 'q',
@@ -274,7 +274,7 @@ export const COMMANDER_ABILITIES: Record<string, ActiveAbilityDef> = {
   },
   stormcaller: {
     name: 'Thunder Strike',
-    description: 'Massive AoE damage at target location.',
+    description: 'Massive AoE damage at the camera center.',
     cooldownFrames: 7200, // 120s
     durationFrames: 0, // instant
     hotkey: 'q',

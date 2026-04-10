@@ -7,7 +7,7 @@
  * Each personality produces measurably different game outcomes:
  * - Turtle: 2x towers, walls first, only attacks with army >= 10
  * - Rush: trains melee immediately, attacks within 90s, skips economy
- * - Economic: expands to 3 nests, 2x gatherers, huge late army
+ * - Economic: expands to 3 nests, 2x harvesters, huge late army
  * - Balanced: standard behavior
  * - Random: cycles every 3 minutes
  */
@@ -26,12 +26,12 @@ export interface PersonalityConfig {
   expansionRate: number;
   /** Preferred unit composition bias. */
   trainingPreference: 'melee' | 'ranged' | 'balanced' | 'siege';
-  /** Multiplier for gatherer spawning rate. >1 = more gatherers, <1 = fewer. */
-  gathererRate: number;
+  /** Multiplier for enemy harvester spawning rate. >1 = more harvesters, <1 = fewer. */
+  harvesterRate: number;
   /** Minimum army size before considering an attack (overrides dynamic threshold). */
   minArmyForAttack: number;
-  /** Maximum gatherers per nest. Higher = more economic investment. */
-  maxGatherersPerNest: number;
+  /** Maximum harvesters per nest. Higher = more economic investment. */
+  maxHarvestersPerNest: number;
   /** How many nests the AI tries to build before switching to army. */
   targetNestCount: number;
   /** Multiplier for training speed (lower interval = faster training). */
@@ -47,9 +47,9 @@ export const AI_PERSONALITIES: Record<Exclude<AIPersonality, 'random'>, Personal
     towerBuildRate: 1.0,
     expansionRate: 1.0,
     trainingPreference: 'balanced',
-    gathererRate: 1.0,
+    harvesterRate: 1.0,
     minArmyForAttack: 5,
-    maxGatherersPerNest: 3,
+    maxHarvestersPerNest: 3,
     targetNestCount: 2,
     trainSpeedMult: 1.0,
   },
@@ -61,9 +61,9 @@ export const AI_PERSONALITIES: Record<Exclude<AIPersonality, 'random'>, Personal
     towerBuildRate: 2.5,
     expansionRate: 0.3,
     trainingPreference: 'ranged',
-    gathererRate: 1.2,
+    harvesterRate: 1.2,
     minArmyForAttack: 10,
-    maxGatherersPerNest: 4,
+    maxHarvestersPerNest: 4,
     targetNestCount: 1,
     trainSpeedMult: 0.8,
   },
@@ -75,9 +75,9 @@ export const AI_PERSONALITIES: Record<Exclude<AIPersonality, 'random'>, Personal
     towerBuildRate: 0.0,
     expansionRate: 0.0,
     trainingPreference: 'melee',
-    gathererRate: 0.3,
+    harvesterRate: 0.3,
     minArmyForAttack: 3,
-    maxGatherersPerNest: 1,
+    maxHarvestersPerNest: 1,
     targetNestCount: 1,
     trainSpeedMult: 1.5,
   },
@@ -89,9 +89,9 @@ export const AI_PERSONALITIES: Record<Exclude<AIPersonality, 'random'>, Personal
     towerBuildRate: 0.5,
     expansionRate: 2.5,
     trainingPreference: 'balanced',
-    gathererRate: 2.0,
+    harvesterRate: 2.0,
     minArmyForAttack: 8,
-    maxGatherersPerNest: 6,
+    maxHarvestersPerNest: 6,
     targetNestCount: 3,
     trainSpeedMult: 1.2,
   },

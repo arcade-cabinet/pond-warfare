@@ -5,8 +5,8 @@
  * - Tap ground with units selected = move command
  * - Tap unit = select it
  * - Tap enemy with unit selected = attack command
- * - Tap resource with gatherer selected = gather command
- * - Re-tap selected gatherer near resource = gather command (not radial)
+ * - Tap resource with Mudpaw selected = gather command
+ * - Re-tap selected Mudpaw near resource = gather command (not radial)
  * - Double-tap empty ground = deselect
  *
  * Zero keyboard references in this file.
@@ -29,6 +29,8 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
+import { LOOKOUT_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { type ClickState, handleClick } from '@/input/pointer-click';
 import type { PointerCallbacks, PointerState } from '@/input/pointer-types';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
@@ -150,6 +152,7 @@ function makeCallbacks(world: GameWorld, entityMap: Map<string, number>): Pointe
     getEntityPosition: (eid) => ({ x: Position.x[eid], y: Position.y[eid] }),
     isEntityOnScreen: () => true,
     getAllPlayerUnitsOfKind: () => [],
+    getSpecialistMenuMode: () => null,
     selectEntity: vi.fn((eid: number) => {
       Selectable.selected[eid] = 1;
     }),
@@ -167,7 +170,7 @@ describe('Pointer Interactions (tap-only)', () => {
     const world = createGameWorld();
     world.state = 'playing';
     const entities = new Map<string, number>();
-    const unit = createUnit(world, 100, 100, EntityKind.Gatherer, Faction.Player);
+    const unit = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
     entities.set('unit', unit);
 
     Selectable.selected[unit] = 1;
@@ -187,7 +190,7 @@ describe('Pointer Interactions (tap-only)', () => {
     const world = createGameWorld();
     world.state = 'playing';
     const entities = new Map<string, number>();
-    const unit = createUnit(world, 100, 100, EntityKind.Brawler, Faction.Player);
+    const unit = createUnit(world, 100, 100, SAPPER_KIND, Faction.Player);
     entities.set('unit', unit);
 
     const cb = makeCallbacks(world, entities);
@@ -206,7 +209,7 @@ describe('Pointer Interactions (tap-only)', () => {
     world.state = 'playing';
     const entities = new Map<string, number>();
 
-    const playerUnit = createUnit(world, 100, 100, EntityKind.Brawler, Faction.Player);
+    const playerUnit = createUnit(world, 100, 100, SAPPER_KIND, Faction.Player);
     const enemyUnit = createUnit(world, 300, 300, EntityKind.Gator, Faction.Enemy);
     entities.set('player', playerUnit);
     entities.set('enemy', enemyUnit);
@@ -223,18 +226,18 @@ describe('Pointer Interactions (tap-only)', () => {
     expect(cb.issueContextCommand).toHaveBeenCalledWith(enemyUnit);
   });
 
-  it('tap on resource with gatherer selected issues gather command', () => {
+  it('tap on resource with Mudpaw selected issues gather command', () => {
     const world = createGameWorld();
     world.state = 'playing';
     const entities = new Map<string, number>();
 
-    const gatherer = createUnit(world, 100, 100, EntityKind.Gatherer, Faction.Player);
+    const mudpaw = createUnit(world, 100, 100, MUDPAW_KIND, Faction.Player);
     const resource = createResource(world, 250, 250);
-    entities.set('gatherer', gatherer);
+    entities.set('mudpaw', mudpaw);
     entities.set('resource', resource);
 
-    Selectable.selected[gatherer] = 1;
-    world.selection = [gatherer];
+    Selectable.selected[mudpaw] = 1;
+    world.selection = [mudpaw];
 
     const cb = makeCallbacks(world, entities);
     const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
@@ -245,26 +248,26 @@ describe('Pointer Interactions (tap-only)', () => {
     expect(cb.issueContextCommand).toHaveBeenCalledWith(resource);
   });
 
-  it('re-tap selected gatherer near resource dispatches gather instead of radial', () => {
+  it('re-tap selected Mudpaw near resource dispatches gather instead of radial', () => {
     const world = createGameWorld();
     world.state = 'playing';
     const entities = new Map<string, number>();
 
-    // Gatherer and resource at same position (gatherer standing on fish node)
-    const gatherer = createUnit(world, 200, 200, EntityKind.Gatherer, Faction.Player);
+    // Mudpaw and resource at same position (Mudpaw standing on fish node)
+    const mudpaw = createUnit(world, 200, 200, MUDPAW_KIND, Faction.Player);
     const resource = createResource(world, 200, 200);
-    entities.set('gatherer', gatherer);
+    entities.set('mudpaw', mudpaw);
     entities.set('resource', resource);
 
-    // Gatherer is already selected
-    Selectable.selected[gatherer] = 1;
-    world.selection = [gatherer];
+    // Mudpaw is already selected
+    Selectable.selected[mudpaw] = 1;
+    world.selection = [mudpaw];
 
     const cb = makeCallbacks(world, entities);
     const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
 
-    // Tap on the same position (gatherer + resource overlap)
-    // getEntityAt returns gatherer (non-resource priority), but getResourceAt
+    // Tap on the same position (Mudpaw + resource overlap)
+    // getEntityAt returns the Mudpaw (non-resource priority), but getResourceAt
     // finds the resource underneath.
     const mouse = makeMouse(200, 200);
     handleClick(world, mouse, cb, clickState, () => false);
@@ -273,30 +276,50 @@ describe('Pointer Interactions (tap-only)', () => {
     expect(cb.issueContextCommand).toHaveBeenCalledWith(resource);
   });
 
-  it('non-gatherer selected unit re-tapping resource does NOT dispatch gather', () => {
+  it('non-Mudpaw selected unit re-tapping resource does NOT dispatch gather', () => {
     const world = createGameWorld();
     world.state = 'playing';
     const entities = new Map<string, number>();
 
-    // Brawler (non-gatherer) and resource at same position
-    const brawler = createUnit(world, 200, 200, EntityKind.Brawler, Faction.Player);
+    // Sapper (non-Mudpaw) and resource at same position
+    const sapper = createUnit(world, 200, 200, SAPPER_KIND, Faction.Player);
     const resource = createResource(world, 200, 200);
-    entities.set('brawler', brawler);
+    entities.set('sapper', sapper);
     entities.set('resource', resource);
 
-    // Brawler is already selected
-    Selectable.selected[brawler] = 1;
-    world.selection = [brawler];
+    // Sapper is already selected
+    Selectable.selected[sapper] = 1;
+    world.selection = [sapper];
 
     const cb = makeCallbacks(world, entities);
     const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
 
-    // Tap on the brawler/resource overlap position
+    // Tap on the sapper/resource overlap position
     const mouse = makeMouse(200, 200);
     handleClick(world, mouse, cb, clickState, () => false);
 
-    // Should NOT dispatch gather -- Brawler cannot gather.
-    // The resource shortcut only activates when a Gatherer is selected.
+    // Should NOT dispatch gather -- Sapper cannot gather.
+    // The resource shortcut only activates when a Mudpaw is selected.
+    expect(cb.issueContextCommand).not.toHaveBeenCalledWith(resource);
+  });
+
+  it('selected specialist harvesters do not trigger the manual gather shortcut', () => {
+    const world = createGameWorld();
+    const entities = new Map<string, number>();
+    const specialist = createUnit(world, 200, 200, MUDPAW_KIND, Faction.Player);
+    const resource = createResource(world, 200, 200);
+    entities.set('specialist', specialist);
+    entities.set('resource', resource);
+
+    Selectable.selected[specialist] = 1;
+    world.selection = [specialist];
+
+    const cb = makeCallbacks(world, entities);
+    cb.getSpecialistMenuMode = () => 'single_zone';
+    const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
+
+    handleClick(world, makeMouse(200, 200), cb, clickState, () => false);
+
     expect(cb.issueContextCommand).not.toHaveBeenCalledWith(resource);
   });
 
@@ -311,6 +334,40 @@ describe('Pointer Interactions (tap-only)', () => {
     handleClick(world, makeMouse(500, 500), cb, clickState, () => false);
 
     expect(world.selection).toHaveLength(0);
+    expect(cb.issueContextCommand).not.toHaveBeenCalled();
+  });
+
+  it('pending specialist assignment consumes the click before normal commands', () => {
+    const world = createGameWorld();
+    const entities = new Map<string, number>();
+    const unit = createUnit(world, 100, 100, LOOKOUT_KIND, Faction.Player);
+    entities.set('unit', unit);
+    world.pendingSpecialistAssignment = { eid: unit, mode: 'single_zone' };
+    world.specialistAssignments.set(unit, {
+      runtimeId: 'lookout',
+      canonicalId: 'lookout',
+      label: 'Lookout',
+      mode: 'single_zone',
+      operatingRadius: 210,
+      centerX: 100,
+      centerY: 100,
+      anchorX: 100,
+      anchorY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 100,
+      engagementY: 100,
+      projectionRange: 0,
+    } satisfies SpecialistAssignment);
+
+    const cb = makeCallbacks(world, entities);
+    const clickState: ClickState = { lastClickTime: 0, lastClickEntity: null };
+
+    handleClick(world, makeMouse(220, 240), cb, clickState, () => false);
+
+    expect(world.pendingSpecialistAssignment).toBeNull();
+    expect(world.specialistAssignments.get(unit)?.centerX).toBe(220);
+    expect(world.specialistAssignments.get(unit)?.centerY).toBe(240);
     expect(cb.issueContextCommand).not.toHaveBeenCalled();
   });
 });

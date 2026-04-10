@@ -1,3 +1,10 @@
+---
+title: Changelog
+updated: 2026-04-10
+status: current
+domain: context
+---
+
 # Changelog
 
 ## [1.2.0](https://github.com/arcade-cabinet/pond-warfare/compare/v1.1.0...v1.2.0) (2026-03-30)

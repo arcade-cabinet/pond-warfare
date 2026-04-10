@@ -1,6 +1,17 @@
+---
+title: Library Usage
+updated: 2026-04-10
+status: current
+domain: technical
+---
+
 # Library Usage
 
 How each dependency is utilized in Pond Warfare.
+
+> Historical note: older references to `Gatherer`, `Swimmer`, or other removed
+> player-roster units in this file describe internal or superseded usage. The
+> live player-facing unit model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
 
 ## Runtime Dependencies
 
@@ -46,11 +57,11 @@ Smooth pathfinding, collision avoidance, and formation movement for ALL units (p
 - `AlignmentBehavior` (weight 0.3) - formation movement heading alignment
 - `CohesionBehavior` (weight 0.4) - formation movement group cohesion
 - `WanderBehavior` - organic idle patrol for auto-defend
-- `FleeBehavior` - gatherer escape when attacked (1.5s duration)
-- `EvadeBehavior` - Swimmer evasion when under fire
+- `FleeBehavior` - Mudpaw and harvester retreat behavior when attacked (1.5s duration)
+- `EvadeBehavior` - specialist and enemy evasive movement when under fire
 - Faction-agnostic: `addUnit()` / `removeUnit()` for any entity
 - `setFormation()` - enable flocking for group move commands
-- Used for all 33 entity types including Swimmer (amphibious), evolved enemies, Commander, etc.
+- Used for the full live roster, Pearl specialists, enemies, and Commander units.
 
 **Files:** `src/ai/yuka-manager.ts`, `src/yuka.d.ts`
 
@@ -73,8 +84,8 @@ Complete audio system with procedural synthesis and unit-specific SFX.
 
 **Usage:**
 - **SFX** (25+ effects): `Synth` with pooled synth+panner pairs (16 pre-allocated)
-- **Unit-specific select sounds**: Brawler (drum thud), Sniper (metallic ping), Healer (wind chime), Catapult (wooden creak), Scout (bird chirp), Commander (horn blast), Gatherer (tool clink), Shieldbearer (shield clang)
-- **Contextual effects**: building placement, research complete, airdrop incoming, train complete, build complete, unit death, building destruction, heal, error
+- **Selection/command voices**: Palette-based by role rather than a fixed old roster table. Current player-facing mapping centers on Mudpaw (`generalist`), Medic/Shaman/Lookout (`support`), Guard/Ranger (`skirmisher`), Bombardier and siege heavies (`heavy`), and Commander (`leader`). Some low-level internal entity kinds still back those palettes.
+- **Contextual effects**: building placement, research complete, train complete, build complete, unit death, building destruction, heal, error
 - **Spatial panning**: SFX panned left/right based on world position relative to camera
 - **Music**: Procedural chiptune via `Sequence` - peaceful (C major, 100 BPM) / hunting (C minor, 140 BPM)
 - **Ambient**: Pond bubbles (filtered noise), cricket chirps (night), wind gusts (day)

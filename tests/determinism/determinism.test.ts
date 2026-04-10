@@ -24,6 +24,7 @@ import { evolutionSystem } from '@/ecs/systems/evolution';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { EntityKind, Faction, ResourceType } from '@/types';
 import { SeededRandom } from '@/utils/random';
+import { createTestWorld } from '../helpers/world-factory';
 
 vi.mock('@/audio/audio-system', () => ({
   audio: new Proxy({}, { get: () => vi.fn() }),
@@ -185,5 +186,12 @@ describe('Determinism', () => {
     // During peace, no gameplay randomness should be consumed
     // so the RNG should still be at its initial state
     expect(world.gameRng.next()).toBe(checkpoint.next());
+  });
+
+  it('createTestWorld seeds weather deterministically from the requested seed', () => {
+    const worldA = createTestWorld({ stage: 3, seed: 12345 });
+    const worldB = createTestWorld({ stage: 3, seed: 12345 });
+
+    expect(worldA.weather).toEqual(worldB.weather);
   });
 });

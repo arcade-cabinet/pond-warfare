@@ -6,6 +6,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 const spawnedEntities: { kind: number; x: number; y: number; faction: number }[] = [];
@@ -20,6 +21,7 @@ vi.mock('@/ecs/archetypes', () => ({
 }));
 
 vi.mock('@/ecs/components', () => ({
+  resetTransientComponentState: vi.fn(),
   Resource: { amount: {} as Record<number, number> },
   Commander: {
     commanderType: {} as Record<number, number>,
@@ -37,10 +39,10 @@ vi.mock('@/ecs/components', () => ({
 vi.mock('@/config/factions', () => ({
   getFactionConfig: () => ({
     lodgeKind: EntityKind.Lodge,
-    gathererKind: EntityKind.Gatherer,
-    meleeKind: EntityKind.Brawler,
-    supportKind: EntityKind.Healer,
-    heroKind: EntityKind.Commander,
+    generalistKind: MUDPAW_KIND,
+    frontlineKind: SAPPER_KIND,
+    supportKind: MEDIC_KIND,
+    commanderKind: EntityKind.Commander,
   }),
 }));
 
@@ -85,11 +87,12 @@ describe('New player first match — stage 1', () => {
       resourcesGathered: 100,
     });
 
-    // base(10) + kills(10×1) + events(2×5) + survival(3×2) = 36
-    expect(reward.totalClams).toBe(36);
-    expect(reward.base).toBe(10);
-    expect(reward.killBonus).toBe(10);
-    expect(reward.eventBonus).toBe(10);
+    // base(20) + kills(10×2) + events(2×6) + resources(100/100×8) + survival(3×4) = 72
+    expect(reward.totalClams).toBe(72);
+    expect(reward.base).toBe(20);
+    expect(reward.killBonus).toBe(20);
+    expect(reward.eventBonus).toBe(12);
+    expect(reward.resourceBonus).toBe(8);
   });
 
   it('progression increment logic works', () => {

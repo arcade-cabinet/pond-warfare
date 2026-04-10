@@ -23,7 +23,7 @@ import {
 } from '@/config/prestige-logic';
 import { getPearlUpgrade } from '@/config/config-loader';
 import { COMMANDERS } from '@/config/commanders';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { generateUpgradeWeb } from '@/config/upgrade-web';
 import {
   autoFillToStartingTier,
@@ -85,7 +85,7 @@ describe('Pearl Loadout Builder — US5', () => {
     });
 
     it('getCostForRank falls back to cost_per_rank for flat-cost upgrades', () => {
-      const def = getPearlUpgrade('auto_deploy_fisher');
+      const def = getPearlUpgrade('blueprint_fisher');
       expect(def.cost_schedule).toBeUndefined();
       expect(getCostForRank(def, 0)).toBe(3);
       expect(getCostForRank(def, 4)).toBe(3);

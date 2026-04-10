@@ -39,17 +39,27 @@ import { movementSystem } from '@/ecs/systems/movement';
 import { trainingSystem } from '@/ecs/systems/training';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { computePopulation } from '@/game/population-counter';
 import { syncRosters } from '@/game/roster-sync';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
-import { issueContextCommand, train } from '@/input/selection';
+import { issueContextCommand } from '@/input/selection/commands';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getRadialOptions } from '@/ui/radial-menu-options';
 import * as store from '@/ui/store';
 import { progressionLevel } from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
+
+const TAP_PLAYTHROUGH_TIMEOUT = 90_000;
 
 // ── Mocks (audio, rendering, particles only) ──────────────────────
 vi.mock('@/audio/audio-system', () => ({
@@ -122,15 +132,14 @@ function findPlayerUnits(w: GameWorld, kind: EntityKind): number[] {
   return results;
 }
 
-/** Find all idle player combat units (Brawler, Sniper, etc). */
+/** Find all idle player combat-capable units, including Mudpaws. */
 function findIdleCombatUnits(w: GameWorld): number[] {
   const combatKinds = new Set([
-    EntityKind.Brawler,
-    EntityKind.Sniper,
-    EntityKind.Healer,
-    EntityKind.Scout,
-    EntityKind.Sapper,
-    EntityKind.Saboteur,
+    MUDPAW_KIND,
+    MEDIC_KIND,
+    LOOKOUT_KIND,
+    SAPPER_KIND,
+    SABOTEUR_KIND,
   ]);
   const results: number[] = [];
   for (const eid of query(w.ecs, [EntityTypeTag, FactionTag, Health, UnitStateMachine])) {
@@ -273,12 +282,10 @@ function tapTrainFromRadial(w: GameWorld, lodgeEid: number, unitKind: EntityKind
   const options = getRadialOptions('lodge', null, gameState);
 
   const kindToRadialId: Partial<Record<EntityKind, string>> = {
-    [EntityKind.Gatherer]: 'train_gatherer',
-    [EntityKind.Brawler]: 'train_fighter',
-    [EntityKind.Healer]: 'train_medic',
-    [EntityKind.Scout]: 'train_scout',
-    [EntityKind.Sapper]: 'train_sapper',
-    [EntityKind.Saboteur]: 'train_saboteur',
+    [MUDPAW_KIND]: 'train_mudpaw',
+    [MEDIC_KIND]: 'train_medic',
+    [SAPPER_KIND]: 'train_sapper',
+    [SABOTEUR_KIND]: 'train_saboteur',
   };
 
   const radialId = kindToRadialId[unitKind];
@@ -290,10 +297,11 @@ function tapTrainFromRadial(w: GameWorld, lodgeEid: number, unitKind: EntityKind
   const def = ENTITY_DEFS[unitKind];
   const fc = def.fishCost ?? 0;
   const lc = def.logCost ?? 0;
+  const rc = def.rockCost ?? 0;
   const foodCost = def.foodCost ?? 1;
 
-  if (w.resources.fish >= fc && w.resources.logs >= lc) {
-    train(w, lodgeEid, unitKind, fc, lc, foodCost);
+  if (w.resources.fish >= fc && w.resources.logs >= lc && w.resources.rocks >= rc) {
+    train(w, lodgeEid, unitKind, fc, lc, foodCost, rc);
     return true;
   }
   return false;
@@ -360,7 +368,7 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
     let prevResourcesGathered = world.stats.resourcesGathered;
     let prevKills = world.stats.unitsKilled;
     let prevWaveNumber = world.waveNumber;
-    let gathererTrainAttempts = 0;
+    let mudpawTrainAttempts = 0;
     let fighterTrainAttempts = 0;
 
     const TOTAL_FRAMES = 13200; // 220 seconds — past 3-min peace timer + initial combat
@@ -401,8 +409,10 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
 
       const lodgeX = Position.x[lodge];
       const lodgeY = Position.y[lodge];
-      const gatherers = findPlayerUnits(world, EntityKind.Gatherer);
-      const fighters = findPlayerUnits(world, EntityKind.Brawler);
+      const mudpaws = findPlayerUnits(world, MUDPAW_KIND);
+      const medics = findPlayerUnits(world, MEDIC_KIND);
+      const sappers = findPlayerUnits(world, SAPPER_KIND);
+      const saboteurs = findPlayerUnits(world, SABOTEUR_KIND);
       const baseAttacked = isBaseUnderAttack(world, 500);
 
       // Priority 1: If base is under attack, rally ALL combat units
@@ -421,37 +431,32 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
             tapUnitThenTarget(world, cEid, enemy);
           }
         }
-        for (const fEid of fighters) {
-          if (UnitStateMachine.state[fEid] !== UnitState.Idle) continue;
-          const enemy = findNearestEnemy(world, Position.x[fEid], Position.y[fEid]);
-          if (enemy !== null) {
-            tapUnitThenTarget(world, fEid, enemy);
-          }
-        }
       }
 
       // Priority 2: Train units via Lodge radial menu
-      if (gatherers.length < 4 && gathererTrainAttempts < 10) {
+      if (mudpaws.length < 4 && mudpawTrainAttempts < 10) {
         tapSelect(world, lodge);
-        if (tapTrainFromRadial(world, lodge, EntityKind.Gatherer)) {
-          gathererTrainAttempts++;
+        if (tapTrainFromRadial(world, lodge, MUDPAW_KIND)) {
+          mudpawTrainAttempts++;
         }
-      } else if (fighters.length < 4 && fighterTrainAttempts < 10) {
+      } else if (stage >= 2 && medics.length < 1 && fighterTrainAttempts < 4) {
         tapSelect(world, lodge);
-        if (tapTrainFromRadial(world, lodge, EntityKind.Brawler)) {
+        if (tapTrainFromRadial(world, lodge, MEDIC_KIND)) {
           fighterTrainAttempts++;
         }
+      } else if (stage >= 5 && sappers.length < 1) {
+        tapSelect(world, lodge);
+        tapTrainFromRadial(world, lodge, SAPPER_KIND);
+      } else if (stage >= 6 && saboteurs.length < 1) {
+        tapSelect(world, lodge);
+        tapTrainFromRadial(world, lodge, SABOTEUR_KIND);
       } else if (world.resources.food < world.resources.maxFood) {
         tapSelect(world, lodge);
-        if (fighters.length <= gatherers.length) {
-          tapTrainFromRadial(world, lodge, EntityKind.Brawler);
-        } else {
-          tapTrainFromRadial(world, lodge, EntityKind.Gatherer);
-        }
+        tapTrainFromRadial(world, lodge, MUDPAW_KIND);
       }
 
-      // Priority 3: Send idle gatherers to fish
-      for (const gEid of gatherers) {
+      // Priority 3: Send idle Mudpaws to fish
+      for (const gEid of mudpaws) {
         if (UnitStateMachine.state[gEid] !== UnitState.Idle) continue;
         const fishNode = findNearestResource(
           world,
@@ -464,9 +469,10 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
         }
       }
 
-      // Priority 4: Send idle fighters to proactively attack enemies
+      // Priority 4: Send idle Mudpaws and specialists to proactively attack enemies
       if (!baseAttacked) {
-        for (const fEid of fighters) {
+        const pressureUnits = [...mudpaws, ...medics, ...sappers, ...saboteurs];
+        for (const fEid of pressureUnits) {
           if (UnitStateMachine.state[fEid] !== UnitState.Idle) continue;
           const enemy = findNearestEnemy(world, Position.x[fEid], Position.y[fEid]);
           if (enemy !== null) {
@@ -509,7 +515,7 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
     // At all tiers, first unit should train within 300 frames (5s)
     expect(profile.firstUnitTrained).toBeGreaterThan(0);
     expect(profile.firstUnitTrained).toBeLessThanOrEqual(300);
-  });
+  }, TAP_PLAYTHROUGH_TIMEOUT);
 
   it('prints consolidated profiling table', () => {
     if (profiles.length === 0) {
@@ -548,7 +554,7 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
 
     console.log('-'.repeat(100));
     console.log('  Frames @ 60 FPS. 13200 frames = ~220 seconds. Peace timer = 10800 (3 min).');
-    console.log('  Player strategy: 4 gatherers -> fighters, defend Lodge, gather fish.');
+    console.log('  Player strategy: 4 Mudpaws -> support/siege unlocks, defend Lodge, gather fish.');
     console.log(`${'='.repeat(100)}\n`);
   });
 });

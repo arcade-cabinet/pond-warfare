@@ -8,7 +8,7 @@
  *   effectLayer  -> Particles, projectiles, ground pings, floating text
  *   uiLayer      -> Selection rectangle, building placement preview, rally lines
  *
- * Fog-of-war, dynamic lighting, and minimap remain Canvas2D overlays
+ * Fog-of-war and dynamic lighting remain Canvas2D overlays
  * (they rely on CSS mix-blend-mode compositing that PixiJS cannot replicate).
  */
 

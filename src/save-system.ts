@@ -84,6 +84,13 @@ export function isValidSave(json: string): boolean {
   }
 }
 
+function restoreAutoBehaviors(world: GameWorld, autoBehaviors: SaveData['autoBehaviors']): void {
+  world.autoBehaviors.generalist = autoBehaviors.generalist ?? false;
+  world.autoBehaviors.combat = autoBehaviors.combat ?? false;
+  world.autoBehaviors.support = autoBehaviors.support ?? false;
+  world.autoBehaviors.recon = autoBehaviors.recon ?? false;
+}
+
 /** Load a saved game into an existing world, clearing all current entities first. */
 export function loadGame(world: GameWorld, json: string): boolean {
   if (!isValidSave(json)) return false;
@@ -100,7 +107,6 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.particles.length = 0;
   world.floatingTexts.length = 0;
   world.corpses.length = 0;
-  world.minimapPings.length = 0;
   world.groundPings.length = 0;
   world.selection.length = 0;
   world.yukaManager.clear();
@@ -116,12 +122,9 @@ export function loadGame(world: GameWorld, json: string): boolean {
   world.enemyResources.fish = data.enemyResources.fish;
   world.enemyResources.logs = data.enemyResources.logs;
 
-  // Restore auto-behaviors (per-role format only)
+  // Restore per-role automation state.
   if (data.autoBehaviors) {
-    world.autoBehaviors.gatherer = data.autoBehaviors.gatherer;
-    world.autoBehaviors.combat = data.autoBehaviors.combat;
-    world.autoBehaviors.healer = data.autoBehaviors.healer;
-    world.autoBehaviors.scout = data.autoBehaviors.scout;
+    restoreAutoBehaviors(world, data.autoBehaviors);
   }
 
   // Restore peace timer

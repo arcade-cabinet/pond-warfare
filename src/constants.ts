@@ -23,10 +23,10 @@ export const STARTING_LOGS = 150; // Enough to build an Armory (120L) immediatel
 
 export const ENEMY_STARTING_FISH = 500;
 export const ENEMY_STARTING_LOGS = 200;
-export const ENEMY_GATHERER_SPAWN_INTERVAL = 900; // Faster early eco (was 1200)
-export const ENEMY_GATHERER_COST = 50;
-export const ENEMY_MAX_GATHERERS_PER_NEST = 4; // More gatherers for stronger eco
-export const ENEMY_GATHERER_RADIUS = 500;
+export const ENEMY_HARVESTER_SPAWN_INTERVAL = 900; // Faster early eco (was 1200)
+export const ENEMY_HARVESTER_COST = 50;
+export const ENEMY_MAX_HARVESTERS_PER_NEST = 4; // More harvesters for stronger eco
+export const ENEMY_HARVESTER_RADIUS = 500;
 
 // Enemy AI building construction
 export const ENEMY_BUILD_CHECK_INTERVAL = 1800; // Check every 30 seconds
@@ -50,7 +50,7 @@ export const ENEMY_TRAIN_TIME = 240; // Frames to train one unit
 export const ENEMY_ATTACK_CHECK_INTERVAL = 600; // Check every 10 seconds
 export const ENEMY_ARMY_ATTACK_THRESHOLD = 5; // Min army size to attack (early game)
 export const ENEMY_RETREAT_HP_PERCENT = 0.2; // Retreat below 20% HP
-export const ENEMY_SCOUT_INTERVAL = 3600; // Send scout every 60 seconds
+export const ENEMY_RECON_INTERVAL = 3600; // Send recon unit every 60 seconds
 export const ENEMY_RALLY_RADIUS = 150; // Rally point radius for grouping
 
 // Enemy AI difficulty scaling over time

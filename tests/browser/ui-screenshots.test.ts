@@ -26,13 +26,20 @@ import { SelectionPanel } from '@/ui/selection-panel';
 import * as store from '@/ui/store';
 
 // Mock animejs — the game-over and intro components import animation helpers
-vi.mock('@/rendering/animations', () => ({
-  animateGameOverStats: vi.fn(),
-  animateIntroTitle: vi.fn(),
-  animateIntroSubtitle: vi.fn(),
-  cleanupEntityAnimation: vi.fn(),
-  triggerCommandPulse: vi.fn(),
-}));
+vi.mock('@/rendering/animations', async () => {
+  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
+    '@/rendering/animations',
+  );
+  return {
+    ...actual,
+    animateGameOverStats: vi.fn(),
+    animateIntroTitle: vi.fn(),
+    animateIntroSubtitle: vi.fn(),
+    cleanupEntityAnimation: vi.fn(),
+    triggerCommandPulse: vi.fn(),
+    triggerHitRecoil: vi.fn(),
+  };
+});
 
 /** Import the stylesheet so Tailwind classes render properly */
 import '@/styles/main.css';
@@ -74,13 +81,13 @@ function resetStore() {
   store.lowFish.value = false;
   store.lowLogs.value = false;
   store.attackMoveActive.value = false;
-  store.idleWorkerCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.armyCount.value = 0;
   store.hasPlayerUnits.value = false;
-  store.idleGathererCount.value = 0;
+  store.idleGeneralistCount.value = 0;
   store.idleCombatCount.value = 0;
-  store.idleHealerCount.value = 0;
-  store.idleScoutCount.value = 0;
+  store.idleSupportCount.value = 0;
+  store.idleReconCount.value = 0;
   store.radialMenuOpen.value = false;
   store.radialMenuX.value = 0;
   store.radialMenuY.value = 0;
@@ -129,7 +136,7 @@ describe('HUD screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,
@@ -232,8 +239,8 @@ describe('HUD screenshots', () => {
     await page.screenshot({ path: 'screenshots/hud-attack-move.png', element: document.body });
   });
 
-  it('HUD - idle workers and army buttons', async () => {
-    store.idleWorkerCount.value = 3;
+  it('HUD - idle Mudpaws and army buttons', async () => {
+    store.idleGeneralistCount.value = 3;
     store.armyCount.value = 7;
     store.hasPlayerUnits.value = true;
     store.selectionCount.value = 2;
@@ -252,8 +259,8 @@ describe('HUD screenshots', () => {
 
   it('HUD - production queue', async () => {
     store.globalProductionQueue.value = [
-      { buildingKind: 5, unitLabel: 'Gatherer', progress: 65, entityId: 100 },
-      { buildingKind: 7, unitLabel: 'Brawler', progress: 0, entityId: 101 },
+      { buildingKind: 5, unitLabel: 'Mudpaw', progress: 65, entityId: 100 },
+      { buildingKind: 5, unitLabel: 'Sapper', progress: 0, entityId: 101 },
     ];
     store.gameTimeDisplay.value = 'Day 2 - 09:30';
 
@@ -322,9 +329,9 @@ describe('Selection Panel screenshots', () => {
     await page.screenshot({ path: 'screenshots/selection-empty.png', element: document.body });
   });
 
-  it('SelectionPanel - single unit selected (Gatherer)', async () => {
+  it('SelectionPanel - single unit selected (Mudpaw)', async () => {
     store.selectionCount.value = 1;
-    store.selectionName.value = 'Gatherer';
+    store.selectionName.value = 'Mudpaw';
     store.selectionNameColor.value = 'text-green-400';
     store.selectionHp.value = 80;
     store.selectionMaxHp.value = 100;
@@ -343,19 +350,19 @@ describe('Selection Panel screenshots', () => {
     );
 
     await page.screenshot({
-      path: 'screenshots/selection-single-gatherer.png',
+      path: 'screenshots/selection-single-mudpaw.png',
       element: document.body,
     });
   });
 
-  it('SelectionPanel - single unit low HP (Brawler)', async () => {
+  it('SelectionPanel - single unit low HP (Sapper)', async () => {
     store.selectionCount.value = 1;
-    store.selectionName.value = 'Brawler';
+    store.selectionName.value = 'Sapper';
     store.selectionNameColor.value = 'text-green-400';
     store.selectionHp.value = 15;
-    store.selectionMaxHp.value = 120;
+    store.selectionMaxHp.value = 40;
     store.selectionShowHpBar.value = true;
-    store.selectionStatsHtml.value = 'HP: 15/120 | Dmg: 12 | Range: 30';
+    store.selectionStatsHtml.value = 'HP: 15/40 | Dmg: 15 | Range: 40';
     store.selectionDesc.value = 'Attacking';
     store.selectionKills.value = 4;
 
@@ -426,7 +433,7 @@ describe('Selection Panel screenshots', () => {
     store.selectionName.value = '6 Units';
     store.selectionNameColor.value = 'text-green-400';
     store.selectionIsMulti.value = true;
-    store.selectionComposition.value = '3 Brawler, 2 Sniper, 1 Healer';
+    store.selectionComposition.value = '3 Mudpaw, 2 Sapper, 1 Medic';
     store.selectionShowHpBar.value = false;
 
     render(
@@ -475,7 +482,7 @@ describe('Action Panel screenshots', () => {
     await page.screenshot({ path: 'screenshots/action-empty.png', element: document.body });
   });
 
-  it('ActionPanel - gatherer build buttons', async () => {
+  it('ActionPanel - Mudpaw build buttons', async () => {
     actionButtons.value = [
       {
         title: 'Lodge',
@@ -520,7 +527,7 @@ describe('Action Panel screenshots', () => {
     );
 
     await page.screenshot({
-      path: 'screenshots/action-gatherer-build.png',
+      path: 'screenshots/action-mudpaw-build.png',
       element: document.body,
     });
   });
@@ -528,30 +535,30 @@ describe('Action Panel screenshots', () => {
   it('ActionPanel - lodge train + tech buttons', async () => {
     actionButtons.value = [
       {
-        title: 'Gatherer',
-        cost: '50C 1F',
+        title: 'Mudpaw',
+        cost: '10F',
         hotkey: 'Q',
         affordable: true,
-        description: 'Worker unit',
+        description: 'Manual generalist chassis',
         category: 'train',
         onClick: noop,
       },
       {
-        title: 'Sturdy Mud',
-        cost: '100C 50T',
+        title: 'Medic',
+        cost: '15F',
         hotkey: 'W',
         affordable: true,
-        description: '+20% building HP',
-        category: 'tech',
+        description: 'Manual support responder',
+        category: 'train',
         onClick: noop,
       },
       {
-        title: 'Swift Paws',
-        cost: '75C 75T',
+        title: 'Fisher',
+        cost: '20F',
         hotkey: 'E',
         affordable: false,
-        description: '+15% unit speed',
-        category: 'tech',
+        description: 'Autonomous fish specialist blueprint slot',
+        category: 'train',
         onClick: noop,
       },
     ];
@@ -563,42 +570,42 @@ describe('Action Panel screenshots', () => {
     await page.screenshot({ path: 'screenshots/action-lodge-train.png', element: document.body });
   });
 
-  it('ActionPanel - armory train buttons', async () => {
+  it('ActionPanel - Lodge late-manual and specialist buttons', async () => {
     actionButtons.value = [
       {
-        title: 'Brawler',
-        cost: '80C 30T 2F',
+        title: 'Medic',
+        cost: '15F',
         hotkey: 'Q',
         affordable: true,
-        description: 'Melee fighter',
+        description: 'Manual support responder',
         category: 'train',
         onClick: noop,
       },
       {
-        title: 'Sniper',
-        cost: '60C 40T 2F',
+        title: 'Sapper',
+        cost: '25F 15R',
         hotkey: 'W',
         affordable: true,
-        description: 'Ranged attacker',
+        description: 'Manual siege responder',
         category: 'train',
         onClick: noop,
       },
       {
-        title: 'Healer',
-        cost: '100C 50T 2F',
+        title: 'Saboteur',
+        cost: '20F 10R',
         hotkey: 'E',
         affordable: true,
-        description: 'Heals nearby friendlies',
+        description: 'Manual disruption responder',
         category: 'train',
         onClick: noop,
       },
       {
-        title: 'Sharp Sticks',
-        cost: '150C 100T',
+        title: 'Bombardier',
+        cost: '35F 20R',
         hotkey: 'R',
         affordable: false,
-        description: '+25% melee damage',
-        category: 'tech',
+        description: 'Autonomous siege specialist blueprint slot',
+        category: 'train',
         onClick: noop,
       },
     ];
@@ -607,25 +614,28 @@ describe('Action Panel screenshots', () => {
       h('div', { style: 'width:256px;height:256px;background:#1e293b' }, h(ActionPanel, null)),
     );
 
-    await page.screenshot({ path: 'screenshots/action-armory-train.png', element: document.body });
+    await page.screenshot({
+      path: 'screenshots/action-lodge-specialists.png',
+      element: document.body,
+    });
   });
 
   it('ActionPanel - with training queue', async () => {
     actionButtons.value = [
       {
-        title: 'Gatherer',
-        cost: '50C 1F',
+        title: 'Mudpaw',
+        cost: '10F',
         hotkey: 'Q',
         affordable: true,
-        description: 'Worker unit',
+        description: 'Manual generalist chassis',
         category: 'train',
         onClick: noop,
       },
     ];
     queueItems.value = [
-      { label: 'G', progressPct: 72, onCancel: noop },
-      { label: 'G', progressPct: 0, onCancel: noop },
-      { label: 'G', progressPct: 0, onCancel: noop },
+      { label: 'M', progressPct: 72, onCancel: noop },
+      { label: 'M', progressPct: 0, onCancel: noop },
+      { label: 'M', progressPct: 0, onCancel: noop },
     ];
 
     render(
@@ -644,7 +654,7 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuOpen.value = true;
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 5;
+    store.idleGeneralistCount.value = 5;
 
     render(
       h(
@@ -654,7 +664,7 @@ describe('Radial Menu screenshots', () => {
           onSpeedClick: noop,
           onMuteClick: noop,
           onColorBlindToggle: noop,
-          onIdleWorkerClick: noop,
+          onIdleGeneralistClick: noop,
           onArmyClick: noop,
           onPauseClick: noop,
           onAttackMoveClick: noop,
@@ -673,7 +683,7 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuOpen.value = true;
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 3;
+    store.idleGeneralistCount.value = 3;
 
     render(
       h(
@@ -683,7 +693,7 @@ describe('Radial Menu screenshots', () => {
           onSpeedClick: noop,
           onMuteClick: noop,
           onColorBlindToggle: noop,
-          onIdleWorkerClick: noop,
+          onIdleGeneralistClick: noop,
           onArmyClick: noop,
           onPauseClick: noop,
           onAttackMoveClick: noop,
@@ -704,7 +714,7 @@ describe('Radial Menu screenshots', () => {
     store.radialMenuOpen.value = true;
     store.radialMenuX.value = 400;
     store.radialMenuY.value = 200;
-    store.idleWorkerCount.value = 8;
+    store.idleGeneralistCount.value = 8;
 
     render(
       h(
@@ -714,7 +724,7 @@ describe('Radial Menu screenshots', () => {
           onSpeedClick: noop,
           onMuteClick: noop,
           onColorBlindToggle: noop,
-          onIdleWorkerClick: noop,
+          onIdleGeneralistClick: noop,
           onArmyClick: noop,
           onPauseClick: noop,
           onAttackMoveClick: noop,
@@ -967,16 +977,16 @@ describe('Contextual Idle Menu screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,
     onCtrlGroupClick: noop,
   };
 
-  it('Idle menu expanded - gatherers idle (Gather + Build)', async () => {
-    store.idleWorkerCount.value = 5;
-    store.idleGathererCount.value = 5;
+  it('Idle menu expanded - Mudpaws idle (Gather + Build)', async () => {
+    store.idleGeneralistCount.value = 5;
+    store.idleGeneralistCount.value = 5;
     store.idleCombatCount.value = 0;
     store.gameTimeDisplay.value = 'Day 3 - 10:00';
 
@@ -991,14 +1001,14 @@ describe('Contextual Idle Menu screenshots', () => {
     await new Promise((r) => setTimeout(r, 100));
 
     await page.screenshot({
-      path: 'screenshots/idle-menu-gatherers.png',
+      path: 'screenshots/idle-menu-mudpaws.png',
       element: document.body,
     });
   });
 
   it('Idle menu expanded - combat idle (Attack + Defend)', async () => {
-    store.idleWorkerCount.value = 4;
-    store.idleGathererCount.value = 0;
+    store.idleGeneralistCount.value = 4;
+    store.idleGeneralistCount.value = 0;
     store.idleCombatCount.value = 4;
     store.gameTimeDisplay.value = 'Day 5 - 16:00';
 
@@ -1019,11 +1029,11 @@ describe('Contextual Idle Menu screenshots', () => {
   });
 
   it('Idle menu expanded - mixed idle with all auto toggles on', async () => {
-    store.idleWorkerCount.value = 8;
-    store.idleGathererCount.value = 3;
+    store.idleGeneralistCount.value = 8;
+    store.idleGeneralistCount.value = 3;
     store.idleCombatCount.value = 3;
-    store.idleHealerCount.value = 1;
-    store.idleScoutCount.value = 1;
+    store.idleSupportCount.value = 1;
+    store.idleReconCount.value = 1;
     store.gameTimeDisplay.value = 'Day 8 - 12:00';
 
     render(
@@ -1051,7 +1061,7 @@ describe('Pearl Resource HUD screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,
@@ -1089,14 +1099,14 @@ describe('Enemy Economy HUD screenshots', () => {
     onSpeedClick: noop,
     onMuteClick: noop,
     onColorBlindToggle: noop,
-    onIdleWorkerClick: noop,
+    onIdleGeneralistClick: noop,
     onArmyClick: noop,
     onPauseClick: noop,
     onAttackMoveClick: noop,
     onCtrlGroupClick: noop,
   };
 
-  it('HUD - enemy economy indicator after scouting', async () => {
+  it('HUD - enemy economy indicator after recon', async () => {
     store.enemyEconomyVisible.value = true;
     store.enemyFish.value = 450;
     store.enemyLogs.value = 300;

@@ -54,35 +54,44 @@ describe('Match reward calculation', () => {
     const stats = makeStats({ kills: 0, eventsCompleted: 0, durationSeconds: 0 });
     const reward = calculateMatchReward(stats);
 
-    expect(reward.base).toBe(10); // from config
+    expect(reward.base).toBe(20); // from config
     expect(reward.killBonus).toBe(0);
     expect(reward.eventBonus).toBe(0);
+    expect(reward.resourceBonus).toBe(8);
     expect(reward.survivalBonus).toBe(0);
-    expect(reward.totalClams).toBe(10);
+    expect(reward.totalClams).toBe(28);
   });
 
   it('should add kill bonus', () => {
     const stats = makeStats({ kills: 10 });
     const reward = calculateMatchReward(stats);
 
-    // kill_bonus = 1 per kill
-    expect(reward.killBonus).toBe(10);
+    // kill_bonus = 2 per kill
+    expect(reward.killBonus).toBe(20);
   });
 
   it('should add event bonus', () => {
     const stats = makeStats({ eventsCompleted: 3 });
     const reward = calculateMatchReward(stats);
 
-    // event_bonus = 5 per event
-    expect(reward.eventBonus).toBe(15);
+    // event_bonus = 6 per event
+    expect(reward.eventBonus).toBe(18);
+  });
+
+  it('should add resource bonus based on gathered resources', () => {
+    const stats = makeStats({ resourcesGathered: 250 });
+    const reward = calculateMatchReward(stats);
+
+    // resource_bonus_per_100 = 8, 250 resources = 2 steps
+    expect(reward.resourceBonus).toBe(16);
   });
 
   it('should add survival bonus based on duration', () => {
     const stats = makeStats({ durationSeconds: 600 }); // 10 minutes
     const reward = calculateMatchReward(stats);
 
-    // survival_bonus_per_minute = 2, 10 minutes = 20
-    expect(reward.survivalBonus).toBe(20);
+    // survival_bonus_per_minute = 4, 10 minutes = 40
+    expect(reward.survivalBonus).toBe(40);
   });
 
   it('should apply prestige multiplier', () => {
@@ -98,6 +107,14 @@ describe('Match reward calculation', () => {
     expect(reward3.totalClams).toBeGreaterThan(reward0.totalClams);
   });
 
+  it('should apply earnings multiplier after prestige', () => {
+    const stats = makeStats({ prestigeRank: 2, earningsMultiplier: 1.25 });
+    const reward = calculateMatchReward(stats);
+
+    expect(reward.earningsMultiplier).toBeCloseTo(1.25);
+    expect(reward.totalClams).toBe(Math.floor(reward.subtotal * reward.prestigeMultiplier * 1.25));
+  });
+
   it('should apply loss penalty (50%)', () => {
     const winStats = makeStats({ result: 'win' });
     const loseStats = makeStats({ result: 'loss' });
@@ -110,10 +127,10 @@ describe('Match reward calculation', () => {
   });
 
   it('should calculate a full example correctly', () => {
-    // Base 10 + 20 kills * 1 + 2 events * 5 + 10 minutes * 2 = 60
+    // Base 20 + 20 kills * 2 + 2 events * 6 + resource bonus 8 + 10 minutes * 4 = 120
     // Prestige rank 0: multiplier 1.0
     // Win: no penalty
-    // Total: 60
+    // Total: 120
     const stats = makeStats({
       kills: 20,
       eventsCompleted: 2,
@@ -123,8 +140,8 @@ describe('Match reward calculation', () => {
     });
 
     const reward = calculateMatchReward(stats);
-    expect(reward.subtotal).toBe(60);
-    expect(reward.totalClams).toBe(60);
+    expect(reward.subtotal).toBe(120);
+    expect(reward.totalClams).toBe(120);
   });
 
   it('should floor all values (no fractional Clams)', () => {
@@ -140,9 +157,10 @@ describe('Match reward calculation', () => {
       durationSeconds: 0,
       kills: 0,
       eventsCompleted: 0,
+      resourcesGathered: 0,
     });
     const reward = calculateMatchReward(stats);
-    expect(reward.totalClams).toBe(10); // Just base
+    expect(reward.totalClams).toBe(20); // Just base
   });
 
   it('should scale with high prestige rank', () => {
@@ -191,6 +209,14 @@ describe('Reward stat lines', () => {
     const lines = generateRewardStatLines(stats, breakdown);
 
     expect(lines.some((l) => l.includes('Prestige'))).toBe(true);
+  });
+
+  it('should include earnings multiplier when present', () => {
+    const stats = makeStats({ earningsMultiplier: 1.5 });
+    const breakdown = calculateMatchReward(stats);
+    const lines = generateRewardStatLines(stats, breakdown);
+
+    expect(lines.some((l) => l.includes('Earnings x1.50'))).toBe(true);
   });
 
   it('should include loss penalty when lost', () => {

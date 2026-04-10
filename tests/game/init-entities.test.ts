@@ -8,9 +8,11 @@
 
 import { query } from 'bitecs';
 import { describe, expect, it } from 'vitest';
-import { EntityTypeTag, Position, Resource } from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Position, Resource } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { spawnInitialEntities } from '@/game/init-entities';
+import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { EntityKind, Faction } from '@/types';
 import type { MapScenario } from '@/ui/store';
 
 interface EntitySnapshot {
@@ -98,5 +100,18 @@ describe('init-entities determinism', () => {
         i < snapB.length && (a.x !== snapB[i].x || a.y !== snapB[i].y || a.kind !== snapB[i].kind),
     );
     expect(hasDifference).toBe(true);
+  });
+
+  it('legacy scenario bootstrap uses Mudpaws instead of a free starter recon unit', () => {
+    const world = spawnWithSeed(TEST_SEED, 'standard');
+    const eids = query(world.ecs, [Position, EntityTypeTag, FactionTag]);
+    const playerKinds = eids
+      .filter((eid) => FactionTag.faction[eid] === Faction.Player)
+      .map((eid) => EntityTypeTag.kind[eid] as EntityKind);
+
+    expect(playerKinds.filter((kind) => kind === MUDPAW_KIND)).toHaveLength(3);
+    expect(playerKinds.filter((kind) => kind === LOOKOUT_KIND)).toHaveLength(0);
+    expect(playerKinds.filter((kind) => kind === EntityKind.Commander)).toHaveLength(1);
+    expect(playerKinds.filter((kind) => kind === EntityKind.Lodge)).toHaveLength(1);
   });
 });

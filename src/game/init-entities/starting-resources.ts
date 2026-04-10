@@ -2,9 +2,9 @@
  * Starting Resource Calculator
  *
  * Computes starting Fish/Rocks/Logs from panels.json formula × units.json costs.
- * Each tier defines how many of each unit type the player should be able to afford.
- * The formula multiplies unit counts by actual unit costs so if we rebalance costs,
- * starting resources automatically adjust.
+ * Each stage defines how much of the canonical manual roster the player can
+ * afford at match start. The formula multiplies those counts by live config
+ * costs so economy rebalance stays centralized in JSON.
  */
 
 import { getUnitDef } from '@/config/config-loader';
@@ -57,8 +57,8 @@ export function applyStartingResources(world: GameWorld, layout: VerticalMapLayo
     | undefined;
 
   if (!formulas?.[stageKey]) {
-    // Fallback: enough for 2 gatherers + 1 fighter
-    world.resources.fish = 40;
+    // Fallback: enough for two Mudpaws plus a small buffer.
+    world.resources.fish = 30;
     return;
   }
 

@@ -149,12 +149,13 @@ export function spawnInitialEntities(world: GameWorld): void {
 
   // ---- Spawn extra starting units if configured ----
   const playerFactionCfg = getFactionConfig(world.playerFaction);
+  // Base helper spawns Commander + 3 Mudpaws, so configured extras begin above 4 units.
   const extraUnits = world.startingUnitCount - 4;
   for (let i = 0; i < extraUnits; i++) {
     const angle = (i / Math.max(extraUnits, 1)) * Math.PI * 2;
     spawnEntity(
       world,
-      playerFactionCfg.gathererKind,
+      playerFactionCfg.generalistKind,
       sx + Math.cos(angle) * 50,
       sy + Math.sin(angle) * 50 + 40,
       Faction.Player,

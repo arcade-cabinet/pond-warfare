@@ -168,11 +168,12 @@ function doResourceSurge(world: GameWorld, rng: () => number): void {
   const target = alive[Math.floor(rng() * alive.length)];
   Resource.amount[target] *= 2;
   announce(world, 'The pond reveals hidden riches!', '#f59e0b');
-  world.minimapPings.push({
+  world.groundPings.push({
     x: Position.x[target],
     y: Position.y[target],
     life: 180,
     maxLife: 180,
+    color: 'rgba(245, 158, 11, 0.85)',
   });
 }
 
@@ -204,7 +205,13 @@ function doHealingSpring(world: GameWorld, rng: () => number): void {
   const y = 200 + rng() * (WORLD_HEIGHT - 400);
   activeEvents.push({ type: 'healingSpring', expiryFrame: world.frameCount + 1800, x, y });
   announce(world, 'A healing spring bubbles up!', '#4ade80');
-  world.minimapPings.push({ x, y, life: 180, maxLife: 180 });
+  world.groundPings.push({
+    x,
+    y,
+    life: 180,
+    maxLife: 180,
+    color: 'rgba(74, 222, 128, 0.85)',
+  });
 }
 
 function doFogBank(world: GameWorld): void {
@@ -218,7 +225,13 @@ function doSupplyDrop(world: GameWorld, rng: () => number): void {
   const x = world.camX + rng() * world.viewWidth;
   const y = world.camY + rng() * world.viewHeight;
   announce(world, 'Supplies wash ashore!', '#a78bfa');
-  world.minimapPings.push({ x, y, life: 180, maxLife: 180 });
+  world.groundPings.push({
+    x,
+    y,
+    life: 180,
+    maxLife: 180,
+    color: 'rgba(167, 139, 250, 0.85)',
+  });
 }
 
 function doEarthquake(world: GameWorld): void {

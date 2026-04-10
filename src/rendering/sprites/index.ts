@@ -5,8 +5,15 @@
  * to PixiJS Textures. Every pixel placement matches the original exactly.
  */
 
+import {
+  LOOKOUT_SPRITE_ID,
+  MEDIC_SPRITE_ID,
+  MUDPAW_SPRITE_ID,
+  SABOTEUR_SPRITE_ID,
+  SAPPER_SPRITE_ID,
+} from '@/game/live-unit-kinds';
 import { SpriteId } from '@/types';
-import { registerSpriteTexture } from '../pixi-app';
+import { registerSpriteTexture } from '../pixi';
 import {
   drawArmory,
   drawBurrow,
@@ -15,7 +22,7 @@ import {
   drawLodge,
   drawMarket,
   drawPredatorNest,
-  drawScoutPost,
+  drawLookoutPost,
   drawTower,
   drawWall,
   drawWatchtower,
@@ -35,37 +42,46 @@ import {
 } from './enemies';
 import {
   drawBones,
-  drawCatapult,
   drawCattail,
   drawClambed,
   drawFish,
   drawFrog,
   drawPearlBed,
   drawRubble,
+  drawSharedSiegeChassis,
 } from './resources';
 import {
-  drawBrawler,
   drawCommander,
-  drawDiver,
-  drawEngineer,
-  drawGatherer,
-  drawHealer,
+  drawLookout,
+  drawMedic,
+  drawMudpaw,
+  drawReservedUnit28,
+  drawReservedUnit29,
+  drawReservedUnit33,
   drawSaboteur,
   drawSapper,
-  drawScout,
   drawShaman,
-  drawShieldbearer,
-  drawSniper,
-  drawSwimmer,
-  drawTrapper,
+  drawSharedHeavyChassis,
 } from './units';
-import { drawBerserker, drawDock, drawOtterWarship, drawShrine, drawWallGate } from './v2-entities';
+import {
+  drawReservedBuilding39,
+  drawReservedBuilding42,
+  drawReservedBuilding43,
+  drawReservedUnit40,
+  drawReservedUnit41,
+} from './v2-entities';
 
-/** Names used internally to map to SpriteId enum values. */
+/**
+ * Names used internally to map to SpriteId enum values.
+ *
+ * These are local sprite-registry keys, not the canonical shared enum names.
+ * Live roster units use canonical keys where possible. Reserved shared-chassis
+ * ids reuse the same live sprite bodies through explicit `shared_*` keys.
+ */
 const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
-  { name: 'gatherer', id: SpriteId.Gatherer },
-  { name: 'brawler', id: SpriteId.Brawler },
-  { name: 'sniper', id: SpriteId.Sniper },
+  { name: 'mudpaw', id: MUDPAW_SPRITE_ID },
+  { name: 'shared_sapper_chassis', id: SpriteId.SharedSapperChassis },
+  { name: 'shared_saboteur_chassis', id: SpriteId.SharedSaboteurChassis },
   { name: 'gator', id: SpriteId.Gator },
   { name: 'snake', id: SpriteId.Snake },
   { name: 'lodge', id: SpriteId.Lodge },
@@ -77,14 +93,14 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'clambed', id: SpriteId.Clambed },
   { name: 'bones', id: SpriteId.Bones },
   { name: 'rubble', id: SpriteId.Rubble },
-  { name: 'healer', id: SpriteId.Healer },
+  { name: 'medic', id: MEDIC_SPRITE_ID },
   { name: 'watchtower', id: SpriteId.Watchtower },
   { name: 'boss_croc', id: SpriteId.BossCroc },
-  { name: 'shieldbearer', id: SpriteId.Shieldbearer },
-  { name: 'scout', id: SpriteId.Scout },
-  { name: 'catapult', id: SpriteId.Catapult },
+  { name: 'shared_heavy_chassis', id: SpriteId.SharedHeavyChassis },
+  { name: 'lookout', id: LOOKOUT_SPRITE_ID },
+  { name: 'shared_siege_chassis', id: SpriteId.SharedSiegeChassis },
   { name: 'wall', id: SpriteId.Wall },
-  { name: 'scout_post', id: SpriteId.ScoutPost },
+  { name: 'lookout_post', id: SpriteId.LookoutPost },
   { name: 'armored_gator', id: SpriteId.ArmoredGator },
   { name: 'venom_snake', id: SpriteId.VenomSnake },
   { name: 'swamp_drake', id: SpriteId.SwampDrake },
@@ -93,27 +109,27 @@ const SPRITE_NAMES: { name: string; id: SpriteId }[] = [
   { name: 'pearl_bed', id: SpriteId.PearlBed },
   { name: 'fishing_hut', id: SpriteId.FishingHut },
   { name: 'herbalist_hut', id: SpriteId.HerbalistHut },
-  { name: 'swimmer', id: SpriteId.Swimmer },
-  { name: 'trapper', id: SpriteId.Trapper },
+  { name: 'reserved_unit_28', id: SpriteId.ReservedSprite28 },
+  { name: 'reserved_unit_29', id: SpriteId.ReservedSprite29 },
   { name: 'commander', id: SpriteId.Commander },
   { name: 'frog', id: SpriteId.Frog },
   { name: 'fish', id: SpriteId.Fish },
   // v1.5.0
-  { name: 'diver', id: SpriteId.Diver },
-  { name: 'engineer', id: SpriteId.Engineer },
+  { name: 'reserved_unit_33', id: SpriteId.ReservedSprite33 },
+  { name: 'reserved_unit_34', id: SpriteId.ReservedSprite34 },
   { name: 'shaman', id: SpriteId.Shaman },
   { name: 'burrowing_worm', id: SpriteId.BurrowingWorm },
   { name: 'flying_heron', id: SpriteId.FlyingHeron },
   { name: 'market', id: SpriteId.Market },
   // v2.0.0
-  { name: 'dock', id: SpriteId.Dock },
-  { name: 'otter_warship', id: SpriteId.OtterWarship },
-  { name: 'berserker', id: SpriteId.Berserker },
-  { name: 'wall_gate', id: SpriteId.WallGate },
-  { name: 'shrine', id: SpriteId.Shrine },
+  { name: 'reserved_building_39', id: SpriteId.ReservedSprite39 },
+  { name: 'reserved_unit_40', id: SpriteId.ReservedSprite40 },
+  { name: 'reserved_unit_41', id: SpriteId.ReservedSprite41 },
+  { name: 'reserved_building_42', id: SpriteId.ReservedSprite42 },
+  { name: 'reserved_building_43', id: SpriteId.ReservedSprite43 },
   // v3.0.0
-  { name: 'sapper', id: SpriteId.Sapper },
-  { name: 'saboteur', id: SpriteId.Saboteur },
+  { name: 'sapper', id: SAPPER_SPRITE_ID },
+  { name: 'saboteur', id: SABOTEUR_SPRITE_ID },
 ];
 
 const LARGE_TYPES = new Set([
@@ -125,28 +141,28 @@ const LARGE_TYPES = new Set([
   'rubble',
   'watchtower',
   'boss_croc',
-  'catapult',
+  'shared_siege_chassis',
   'wall',
-  'scout_post',
+  'lookout_post',
   'siege_turtle',
   'alpha_predator',
   'fishing_hut',
   'herbalist_hut',
   'market',
   // v2.0.0 large sprites
-  'dock',
-  'otter_warship',
-  'wall_gate',
-  'shrine',
+  'reserved_building_39',
+  'reserved_unit_40',
+  'reserved_building_42',
+  'reserved_building_43',
   // Resource nodes (large for visibility)
   'clambed',
 ]);
 
 /** Map sprite type names to their draw functions. */
 const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
-  gatherer: drawGatherer,
-  brawler: drawBrawler,
-  sniper: drawSniper,
+  mudpaw: drawMudpaw,
+  shared_sapper_chassis: drawSapper,
+  shared_saboteur_chassis: drawSaboteur,
   gator: drawGator,
   snake: drawSnake,
   lodge: drawLodge,
@@ -158,14 +174,14 @@ const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   clambed: drawClambed,
   bones: drawBones,
   rubble: drawRubble,
-  healer: drawHealer,
+  medic: drawMedic,
   watchtower: drawWatchtower,
   boss_croc: drawBossCroc,
-  shieldbearer: drawShieldbearer,
-  scout: drawScout,
-  catapult: drawCatapult,
+  shared_heavy_chassis: drawSharedHeavyChassis,
+  lookout: drawLookout,
+  shared_siege_chassis: drawSharedSiegeChassis,
   wall: drawWall,
-  scout_post: drawScoutPost,
+  lookout_post: drawLookoutPost,
   armored_gator: drawArmoredGator,
   venom_snake: drawVenomSnake,
   swamp_drake: drawSwampDrake,
@@ -174,24 +190,24 @@ const DRAW_FNS: Record<string, (d: ReturnType<typeof makeDrawCtx>) => void> = {
   pearl_bed: drawPearlBed,
   fishing_hut: drawFishingHut,
   herbalist_hut: drawHerbalistHut,
-  swimmer: drawSwimmer,
-  trapper: drawTrapper,
+  reserved_unit_28: drawReservedUnit28,
+  reserved_unit_29: drawReservedUnit29,
   commander: drawCommander,
   frog: drawFrog,
   fish: drawFish,
   // v1.5.0
-  diver: drawDiver,
-  engineer: drawEngineer,
+  reserved_unit_33: drawReservedUnit33,
+  reserved_unit_34: drawMudpaw,
   shaman: drawShaman,
   burrowing_worm: drawBurrowingWorm,
   flying_heron: drawFlyingHeron,
   market: drawMarket,
   // v2.0.0
-  dock: drawDock,
-  otter_warship: drawOtterWarship,
-  berserker: drawBerserker,
-  wall_gate: drawWallGate,
-  shrine: drawShrine,
+  reserved_building_39: drawReservedBuilding39,
+  reserved_unit_40: drawReservedUnit40,
+  reserved_unit_41: drawReservedUnit41,
+  reserved_building_42: drawReservedBuilding42,
+  reserved_building_43: drawReservedBuilding43,
   // v3.0.0
   sapper: drawSapper,
   saboteur: drawSaboteur,

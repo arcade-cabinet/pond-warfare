@@ -3,7 +3,7 @@
  *
  * Handles actions dispatched from the radial menu:
  * - Lodge actions: queue unit training, fortify, repair
- * - Unit actions: gather, attack, heal, scout, hold, patrol, move
+ * - Unit actions: gather, attack, heal, recon, hold, patrol, move
  *
  * Fort placement logic extracted to radial-fort-actions.ts (300 LOC).
  */
@@ -11,45 +11,47 @@
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { getUnitDef } from '@/config/config-loader';
-import type { GeneralistDef } from '@/config/v3-types';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   EntityTypeTag,
   FactionTag,
   Health,
   IsBuilding,
   Position,
-  TrainingQueue,
-  trainingQueueSlots,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
+import { cycleStanceForSelection } from '@/game/input-setup';
+import { repairPlayerLodge } from '@/game/lodge-repair';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { beginSpecialistAssignment } from '@/game/specialist-assignment';
+import { getPlayerTrainingCost } from '@/game/training-costs';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { COLORS } from '@/ui/design-tokens';
+import { radialMenuTargetEntityId } from '@/ui/store-radial';
 import { pushGameEvent } from './game-events';
 import { handleFortifyAction, handleFortTypeAction } from './radial-fort-actions';
+import * as store from './store';
 
 // Re-export for pointer-click.ts
 export { tryPlaceFortAtPosition } from './radial-fort-actions';
 
 /** Unit kind mapping for training commands. */
 const TRAIN_KIND_MAP: Record<string, EntityKind> = {
-  train_gatherer: EntityKind.Gatherer,
-  train_fighter: EntityKind.Brawler,
-  train_medic: EntityKind.Healer,
-  train_scout: EntityKind.Scout,
-  train_sapper: EntityKind.Sapper,
-  train_saboteur: EntityKind.Saboteur,
+  train_mudpaw: MUDPAW_KIND,
+  train_medic: MEDIC_KIND,
+  train_sapper: SAPPER_KIND,
+  train_saboteur: SABOTEUR_KIND,
 };
 
 /** v3 generalist names for config lookup. */
 const TRAIN_CONFIG_MAP: Record<string, string> = {
-  train_gatherer: 'gatherer',
-  train_fighter: 'fighter',
+  train_mudpaw: 'mudpaw',
   train_medic: 'medic',
-  train_scout: 'scout',
-  train_sapper: 'sapper_unit',
-  train_saboteur: 'saboteur_unit',
+  train_sapper: 'sapper',
+  train_saboteur: 'saboteur',
 };
 
 /**
@@ -74,12 +76,20 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const configKey = TRAIN_CONFIG_MAP[actionId];
   if (unitKind === undefined || !configKey) return false;
 
-  const def = getUnitDef(configKey) as GeneralistDef;
-  const fishCost = def.cost.fish ?? 0;
-  const rocksCost = def.cost.rocks ?? 0;
+  const def = getUnitDef(configKey);
+  const adjustedCost = getPlayerTrainingCost(world, unitKind);
+  const fishCost = adjustedCost.fish;
+  const logCost = adjustedCost.logs;
+  const rocksCost = adjustedCost.rocks;
+  const foodCost = adjustedCost.food;
 
   if (world.resources.fish < fishCost) {
     pushGameEvent('Not enough Fish!', COLORS.feedbackError, world.frameCount);
+    audio.error();
+    return false;
+  }
+  if (logCost > 0 && world.resources.logs < logCost) {
+    pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
     audio.error();
     return false;
   }
@@ -92,23 +102,11 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const lodgeEid = findPlayerLodge(world);
   if (lodgeEid < 0) return false;
 
-  world.resources.fish -= fishCost;
-  if (rocksCost > 0) world.resources.rocks -= rocksCost;
-
-  const slots = trainingQueueSlots.get(lodgeEid) ?? [];
-  slots.push(unitKind);
-  trainingQueueSlots.set(lodgeEid, slots);
-  TrainingQueue.count[lodgeEid] = slots.length;
-
-  if (slots.length === 1) {
-    TrainingQueue.timer[lodgeEid] = def.trainTime * 60;
-  }
+  train(world, lodgeEid, unitKind, fishCost, logCost, foodCost, rocksCost);
 
   const names: Record<string, string> = {
-    train_gatherer: 'Gatherer',
-    train_fighter: 'Fighter',
+    train_mudpaw: 'Mudpaw',
     train_medic: 'Medic',
-    train_scout: 'Scout',
     train_sapper: 'Sapper',
     train_saboteur: 'Saboteur',
   };
@@ -120,27 +118,22 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
 
 /** Repair the Lodge using Logs. */
 function handleRepairAction(world: GameWorld): boolean {
-  const lodgeEid = findPlayerLodge(world);
-  if (lodgeEid < 0) return false;
-
-  const logCost = 30;
-  if (world.resources.logs < logCost) {
-    pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
-    audio.error();
+  const result = repairPlayerLodge(world);
+  if (!result.success) {
+    if (result.reason === 'not_enough_logs') {
+      pushGameEvent('Not enough Logs!', COLORS.feedbackError, world.frameCount);
+      audio.error();
+    } else if (result.reason === 'full_health') {
+      pushGameEvent('Lodge is at full health', COLORS.feedbackSuccess, world.frameCount);
+    }
     return false;
   }
 
-  const current = Health.current[lodgeEid];
-  const max = Health.max[lodgeEid];
-  if (current >= max) {
-    pushGameEvent('Lodge is at full health', COLORS.feedbackSuccess, world.frameCount);
-    return false;
-  }
-
-  world.resources.logs -= logCost;
-  const healAmount = Math.min(100, max - current);
-  Health.current[lodgeEid] = current + healAmount;
-  pushGameEvent(`Lodge repaired (+${healAmount} HP)`, COLORS.feedbackSuccess, world.frameCount);
+  pushGameEvent(
+    `Lodge repaired (+${result.healAmount} HP)`,
+    COLORS.feedbackSuccess,
+    world.frameCount,
+  );
   audio.click();
   game.syncUIStore();
   return true;
@@ -157,29 +150,46 @@ function handleUnitCommand(world: GameWorld, actionId: string): boolean {
       game.syncUIStore();
       return true;
     case 'cmd_patrol':
-      import('./store').then((s) => {
-        s.patrolModeActive.value = true;
-      });
+      store.patrolModeActive.value = true;
       return true;
     case 'cmd_stance':
-      import('../game/input-setup').then(({ cycleStanceForSelection }) => {
-        cycleStanceForSelection(world);
-        game.syncUIStore();
-      });
+      cycleStanceForSelection(world);
+      game.syncUIStore();
       return true;
     case 'cmd_return':
       returnToLodge(world);
       return true;
+    case 'cmd_assign_area':
+      return beginSpecialistAreaAssignment(world);
     case 'cmd_gather':
+      pushGameEvent('Tap resource node...', COLORS.feedbackInfo, world.frameCount);
+      return true;
     case 'cmd_attack':
+      pushGameEvent('Tap enemy...', COLORS.feedbackInfo, world.frameCount);
+      return true;
     case 'cmd_heal':
-    case 'cmd_scout':
+      pushGameEvent('Tap wounded ally...', COLORS.feedbackInfo, world.frameCount);
+      return true;
+    case 'cmd_recon':
+      pushGameEvent('Tap terrain to recon...', COLORS.feedbackInfo, world.frameCount);
+      return true;
     case 'cmd_move':
-      pushGameEvent('Tap target...', COLORS.feedbackInfo, world.frameCount);
+      pushGameEvent('Tap terrain to move...', COLORS.feedbackInfo, world.frameCount);
       return true;
     default:
       return false;
   }
+}
+
+function beginSpecialistAreaAssignment(world: GameWorld): boolean {
+  const targetEid = radialMenuTargetEntityId.value;
+  if (targetEid < 0) return false;
+  const prompt = beginSpecialistAssignment(world, targetEid);
+  if (!prompt) return false;
+  pushGameEvent(prompt, COLORS.feedbackInfo, world.frameCount);
+  audio.click();
+  game.syncUIStore();
+  return true;
 }
 
 function haltSelected(world: GameWorld): void {

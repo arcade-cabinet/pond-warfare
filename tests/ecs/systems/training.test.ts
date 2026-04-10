@@ -21,6 +21,8 @@ import {
 } from '@/ecs/components';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { getPlayerTrainTimer } from '@/game/train-timer';
 import { EntityKind, Faction } from '@/types';
 
 /** Create a completed player building with a training queue. */
@@ -63,59 +65,90 @@ describe('trainingSystem', () => {
   });
 
   it('should count down timer and spawn unit when timer reaches zero', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory, 500, 500);
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
 
-    // Queue one Brawler with timer about to expire
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1; // Will hit 0 after decrement
+    // Queue one Sapper with timer about to expire
+    trainingQueueSlots.set(lodge, [SAPPER_KIND]);
+    TrainingQueue.count[lodge] = 1;
+    TrainingQueue.timer[lodge] = 1; // Will hit 0 after decrement
 
     trainingSystem(world);
 
     // Queue should be empty (unit was spawned)
-    expect(TrainingQueue.count[armory]).toBe(0);
+    expect(TrainingQueue.count[lodge]).toBe(0);
     // Particles should have been spawned (training complete effect)
     expect(world.particles.length).toBeGreaterThan(0);
-    // Verify a Brawler was actually spawned (query for new entities)
+    // Verify a Sapper was actually spawned (query for new entities)
     const units = query(world.ecs, [FactionTag, EntityTypeTag]);
-    const brawlers = units.filter(
+    const sappers = units.filter(
       (eid: number) =>
-        EntityTypeTag.kind[eid] === EntityKind.Brawler &&
+        EntityTypeTag.kind[eid] === SAPPER_KIND &&
         FactionTag.faction[eid] === Faction.Player,
     );
-    expect(brawlers.length).toBe(1);
+    expect(sappers.length).toBe(1);
   });
 
   it('should not train when building is incomplete (progress < 100)', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory, 500, 500);
-    Building.progress[armory] = 50; // Incomplete
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
+    Building.progress[lodge] = 50; // Incomplete
 
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1;
+    trainingQueueSlots.set(lodge, [SAPPER_KIND]);
+    TrainingQueue.count[lodge] = 1;
+    TrainingQueue.timer[lodge] = 1;
 
     trainingSystem(world);
 
     // Queue should be unchanged since building is incomplete
-    expect(TrainingQueue.count[armory]).toBe(1);
-    expect(TrainingQueue.timer[armory]).toBe(1);
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    expect(TrainingQueue.timer[lodge]).toBe(1);
   });
 
   it('should shift queue after training complete', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory, 500, 500);
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
 
-    // Queue two units: Brawler then Sniper
-    trainingQueueSlots.set(armory, [EntityKind.Brawler, EntityKind.Sniper]);
-    TrainingQueue.count[armory] = 2;
-    TrainingQueue.timer[armory] = 1; // About to complete
+    // Queue two units: Sapper then Saboteur
+    trainingQueueSlots.set(lodge, [SAPPER_KIND, SABOTEUR_KIND]);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = 1; // About to complete
 
     trainingSystem(world);
 
-    // First unit (Brawler) should have been removed, Sniper remains
-    expect(TrainingQueue.count[armory]).toBe(1);
-    const slots = trainingQueueSlots.get(armory) ?? [];
-    expect(slots[0]).toBe(EntityKind.Sniper);
+    // First unit (Sapper) should have been removed, Saboteur remains
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    const slots = trainingQueueSlots.get(lodge) ?? [];
+    expect(slots[0]).toBe(SABOTEUR_KIND);
     // Timer should be reset for next unit
-    expect(TrainingQueue.timer[armory]).toBe(TRAIN_TIMER);
+    expect(TrainingQueue.timer[lodge]).toBe(TRAIN_TIMER);
+  });
+
+  it('resets the next queue timer using player train speed multiplier', () => {
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
+    world.playerTrainSpeedMultiplier = 1.5;
+
+    trainingQueueSlots.set(lodge, [SAPPER_KIND, SABOTEUR_KIND]);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = 1;
+
+    trainingSystem(world);
+
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    expect(TrainingQueue.timer[lodge]).toBe(getPlayerTrainTimer(world));
+    expect(TrainingQueue.timer[lodge]).toBeLessThan(TRAIN_TIMER);
+  });
+
+  it('does not reduce Mudpaw queue timers with the player train speed multiplier', () => {
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
+    world.playerTrainSpeedMultiplier = 1.5;
+
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, SABOTEUR_KIND]);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = 1;
+
+    trainingSystem(world);
+
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    expect(trainingQueueSlots.get(lodge)?.[0]).toBe(SABOTEUR_KIND);
+    expect(TrainingQueue.timer[lodge]).toBe(getPlayerTrainTimer(world, SABOTEUR_KIND));
+    expect(getPlayerTrainTimer(world, MUDPAW_KIND)).toBe(TRAIN_TIMER);
   });
 });

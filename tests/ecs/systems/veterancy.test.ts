@@ -20,11 +20,12 @@ import {
 } from '@/ecs/components';
 import { rankFromKills, veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 function createVetUnit(
   world: GameWorld,
-  kind: EntityKind = EntityKind.Brawler,
+  kind: EntityKind = SAPPER_KIND,
   faction: Faction = Faction.Player,
 ): number {
   const eid = addEntity(world.ecs);
@@ -122,8 +123,8 @@ describe('veterancySystem', () => {
   });
 
   it('should rank up to Veteran at 3 kills with correct HP bonus', () => {
-    const eid = createVetUnit(world, EntityKind.Brawler);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const eid = createVetUnit(world, SAPPER_KIND);
+    const def = ENTITY_DEFS[SAPPER_KIND];
     const baseHp = def.hp;
     Combat.kills[eid] = 3;
 
@@ -139,8 +140,8 @@ describe('veterancySystem', () => {
   });
 
   it('should apply correct damage bonus on rank up', () => {
-    const eid = createVetUnit(world, EntityKind.Brawler);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const eid = createVetUnit(world, SAPPER_KIND);
+    const def = ENTITY_DEFS[SAPPER_KIND];
     const baseDmg = def.damage;
     Combat.kills[eid] = 3;
 
@@ -151,8 +152,8 @@ describe('veterancySystem', () => {
   });
 
   it('should not apply speed bonus at Veteran rank', () => {
-    const eid = createVetUnit(world, EntityKind.Brawler);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const eid = createVetUnit(world, SAPPER_KIND);
+    const def = ENTITY_DEFS[SAPPER_KIND];
     const baseSpeed = def.speed;
     Combat.kills[eid] = 3;
 
@@ -163,8 +164,8 @@ describe('veterancySystem', () => {
   });
 
   it('should apply speed bonus at Elite rank', () => {
-    const eid = createVetUnit(world, EntityKind.Brawler);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const eid = createVetUnit(world, SAPPER_KIND);
+    const def = ENTITY_DEFS[SAPPER_KIND];
     const baseSpeed = def.speed;
     Combat.kills[eid] = 7;
 
@@ -176,8 +177,8 @@ describe('veterancySystem', () => {
   });
 
   it('should stack bonuses properly when ranking from Veteran to Elite', () => {
-    const eid = createVetUnit(world, EntityKind.Brawler);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const eid = createVetUnit(world, SAPPER_KIND);
+    const def = ENTITY_DEFS[SAPPER_KIND];
     const baseHp = def.hp;
     const baseDmg = def.damage;
 
@@ -206,8 +207,8 @@ describe('veterancySystem', () => {
   });
 
   it('should stack bonuses all the way to Hero', () => {
-    const eid = createVetUnit(world, EntityKind.Brawler);
-    const def = ENTITY_DEFS[EntityKind.Brawler];
+    const eid = createVetUnit(world, SAPPER_KIND);
+    const def = ENTITY_DEFS[SAPPER_KIND];
     const baseHp = def.hp;
     const baseDmg = def.damage;
     const baseSpeed = def.speed;
@@ -260,8 +261,8 @@ describe('veterancySystem', () => {
   });
 
   it('should not double-apply bonuses when rank unchanged', () => {
-    const eid = createVetUnit(world, EntityKind.Brawler);
-    const _def = ENTITY_DEFS[EntityKind.Brawler];
+    const eid = createVetUnit(world, SAPPER_KIND);
+    const _def = ENTITY_DEFS[SAPPER_KIND];
     Combat.kills[eid] = 3;
 
     veterancySystem(world);

@@ -208,6 +208,31 @@ describe('Fortification Integration', () => {
     expect(totalDamage).toBeGreaterThanOrEqual(tower.damage * 3);
   });
 
+  it('tower damage multiplier increases live fortification shot damage', () => {
+    const world = createTestWorld({ stage: 3, seed: 42 });
+    world.playerTowerDamageMultiplier = 1.5;
+    world.fortifications = initFortificationState(3, 500, 500);
+    const forts = world.fortifications!;
+    placeFortification(forts, 0, 'watchtower', 100);
+    const tower = forts.slots[0];
+
+    const enemyEid = spawnEntity(
+      world,
+      EntityKind.Gator,
+      tower.worldX + 5,
+      tower.worldY + 5,
+      Faction.Enemy,
+    );
+    const hpBefore = Health.current[enemyEid];
+    world.spatialHash.clear();
+    world.spatialHash.insert(enemyEid, Position.x[enemyEid], Position.y[enemyEid]);
+
+    world.frameCount = 100;
+    fortificationTickSystem(world);
+
+    expect(hpBefore - Health.current[enemyEid]).toBe(Math.round(tower.damage * 1.5));
+  });
+
   it('walls are reported by getBlockingForts', () => {
     const world = createTestWorld({ stage: 3, seed: 42 });
     world.fortifications = initFortificationState(3, 500, 500);

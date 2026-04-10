@@ -24,7 +24,7 @@ vi.mock('@/game', () => ({
       camY: 0,
       viewWidth: 800,
       viewHeight: 600,
-      autoBehaviors: { gatherer: false, combat: false, healer: false, scout: false },
+      autoBehaviors: { generalist: false, combat: false, support: false, recon: false },
     },
     syncUIStore: vi.fn(),
     cycleSpeed: vi.fn(),
@@ -58,13 +58,16 @@ vi.mock('bitecs', () => ({
   hasComponent: () => true,
 }));
 
-vi.mock('@/input/selection', () => ({
-  hasPlayerUnitsSelected: vi.fn(() => true),
+vi.mock('@/input/selection/group-select', () => ({
   selectArmy: vi.fn(),
-  selectIdleWorker: vi.fn(),
+  selectIdleGeneralist: vi.fn(),
 }));
 
-vi.mock('@/rendering/pixi-app', () => ({
+vi.mock('@/input/selection/queries', () => ({
+  hasPlayerUnitsSelected: vi.fn(() => true),
+}));
+
+vi.mock('@/rendering/pixi', () => ({
   setColorBlindMode: vi.fn(),
 }));
 
@@ -77,17 +80,29 @@ vi.mock('@/storage', () => ({
   saveGameToDb: vi.fn(() => Promise.resolve()),
   getLatestSave: vi.fn(() => Promise.resolve(null)),
 }));
+vi.mock('@/errors', async () => {
+  const actual = await vi.importActual<typeof import('@/errors')>('@/errors');
+  return {
+    ...actual,
+    logError: vi.fn(),
+  };
+});
 
 import { audio } from '@/audio/audio-system';
 import { UnitStateMachine } from '@/ecs/components';
+import { logError } from '@/errors';
 import { game } from '@/game';
-import { selectArmy, selectIdleWorker } from '@/input/selection';
-import { setColorBlindMode } from '@/rendering/pixi-app';
+import { selectArmy, selectIdleGeneralist } from '@/input/selection/group-select';
+import { setColorBlindMode } from '@/rendering/pixi';
+import { loadGame } from '@/save-system';
+import { getLatestSave, saveGameToDb } from '@/storage';
 import {
   activateAttackMove,
-  cycleIdleWorker,
+  cycleIdleGeneralist,
   deselect,
   haltSelection,
+  quickLoad,
+  quickSave,
   selectAllUnits,
   selectArmyUnits,
   toggleColorBlind,
@@ -102,7 +117,7 @@ beforeEach(() => {
   game.world.attackMoveMode = false;
   game.world.paused = false;
   game.world.floatingTexts = [];
-  game.world.autoBehaviors = { gatherer: false, combat: false, healer: false, scout: false };
+  game.world.autoBehaviors = { generalist: false, combat: false, support: false, recon: false };
   store.mobilePanelOpen.value = false;
   store.colorBlindMode.value = false;
   store.muted.value = false;
@@ -150,9 +165,9 @@ describe('game-actions', () => {
     expect(game.syncUIStore).toHaveBeenCalled();
   });
 
-  it('cycleIdleWorker calls selectIdleWorker and syncs', () => {
-    cycleIdleWorker();
-    expect(selectIdleWorker).toHaveBeenCalled();
+  it('cycleIdleGeneralist calls selectIdleGeneralist and syncs', () => {
+    cycleIdleGeneralist();
+    expect(selectIdleGeneralist).toHaveBeenCalled();
     expect(game.syncUIStore).toHaveBeenCalled();
   });
 
@@ -188,5 +203,77 @@ describe('game-actions', () => {
   it('toggleMute calls audio.toggleMute', () => {
     toggleMute();
     expect(audio.toggleMute).toHaveBeenCalled();
+  });
+
+  it('quickSave persists to DB and shows success feedback', async () => {
+    quickSave();
+    await Promise.resolve();
+
+    expect(saveGameToDb).toHaveBeenCalled();
+    expect(store.hasSaveGame.value).toBe(true);
+    expect(audio.click).toHaveBeenCalled();
+    expect(game.world.floatingTexts.at(-1)).toMatchObject({
+      text: 'Game Saved',
+      color: '#4ade80',
+    });
+  });
+
+  it('quickSave logs a nonfatal error and shows failure feedback when persistence fails', async () => {
+    vi.mocked(saveGameToDb).mockRejectedValueOnce(new Error('db down'));
+
+    quickSave();
+    await vi.waitFor(() => {
+      expect(logError).toHaveBeenCalledTimes(1);
+    });
+
+    expect(audio.click).not.toHaveBeenCalled();
+    expect(game.world.floatingTexts.at(-1)).toMatchObject({
+      text: 'Save Failed',
+      color: '#f87171',
+    });
+  });
+
+  it('quickLoad restores the latest save and shows success feedback', async () => {
+    vi.mocked(getLatestSave).mockResolvedValueOnce({ data: '{"ok":true}' } as Awaited<ReturnType<typeof getLatestSave>>);
+
+    quickLoad();
+    await Promise.resolve();
+
+    expect(loadGame).toHaveBeenCalledWith(game.world, '{"ok":true}');
+    expect(game.syncUIStore).toHaveBeenCalled();
+    expect(audio.click).toHaveBeenCalled();
+    expect(game.world.floatingTexts.at(-1)).toMatchObject({
+      text: 'Game Loaded',
+      color: '#4ade80',
+    });
+  });
+
+  it('quickLoad shows a warning when no save exists', async () => {
+    vi.mocked(getLatestSave).mockResolvedValueOnce(null);
+
+    quickLoad();
+    await Promise.resolve();
+
+    expect(loadGame).not.toHaveBeenCalled();
+    expect(audio.click).not.toHaveBeenCalled();
+    expect(game.world.floatingTexts.at(-1)).toMatchObject({
+      text: 'No Save Found',
+      color: '#f59e0b',
+    });
+  });
+
+  it('quickLoad logs a nonfatal error and shows failure feedback when loading fails', async () => {
+    vi.mocked(getLatestSave).mockRejectedValueOnce(new Error('db read failed'));
+
+    quickLoad();
+    await vi.waitFor(() => {
+      expect(logError).toHaveBeenCalledTimes(1);
+    });
+
+    expect(audio.click).not.toHaveBeenCalled();
+    expect(game.world.floatingTexts.at(-1)).toMatchObject({
+      text: 'Load Failed',
+      color: '#f87171',
+    });
   });
 });

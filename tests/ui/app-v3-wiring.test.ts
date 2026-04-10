@@ -188,9 +188,11 @@ describe('App v3 Screen Wiring', () => {
         base: 10,
         killBonus: 5,
         eventBonus: 3,
+        resourceBonus: 0,
         survivalBonus: 2,
         subtotal: 20,
         prestigeMultiplier: 1,
+        earningsMultiplier: 1,
         totalClams: 20,
         isWin: true,
         durationDisplay: '5m 0s',
@@ -332,13 +334,13 @@ describe('App v3 Screen Wiring', () => {
         rank: 1,
         pearls: 5,
         totalPearlsEarned: 15,
-        upgradeRanks: { auto_deploy_fisher: 3, combat_multiplier: 2 },
+        upgradeRanks: { blueprint_fisher: 3, combat_multiplier: 2 },
       };
       const { state: newState, result } = executePrestige(state, 40);
 
       handleRankUpConfirm(result, newState);
 
-      expect(storeV3.prestigeState.value.upgradeRanks.auto_deploy_fisher).toBe(3);
+      expect(storeV3.prestigeState.value.upgradeRanks.blueprint_fisher).toBe(3);
       expect(storeV3.prestigeState.value.upgradeRanks.combat_multiplier).toBe(2);
 
       // Reset

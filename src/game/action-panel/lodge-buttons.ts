@@ -1,20 +1,58 @@
 /**
  * Action Panel -- Lodge Buttons
  *
- * Train buttons (Gatherer, Scout, Swimmer) shown by Global Command
- * Center and when a completed Lodge is selected.
- *
- * In v3.0 in-match tech research was replaced by the upgrade web.
- * The Swimmer train button is gated on world.tech.aquaticTraining,
- * which is set by the upgrade web.
+ * The player-facing manual roster is now the canonical Mudpaw path:
+ * Mudpaw at stage 1, Medic at stage 2, Sapper at stage 5, Saboteur at stage 6.
  */
 
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import type { GameWorld } from '@/ecs/world';
-import { train } from '@/input/selection';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { getPlayerTrainingCost } from '@/game/training-costs';
+import { train } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import { EntityKind } from '@/types';
 import type { ActionButtonDef } from '@/ui/action-panel';
+import { buildSpecialistButtons } from './specialist-buttons';
+
+interface ManualButtonSpec {
+  kind: EntityKind;
+  title: string;
+  hotkey: string;
+  requiredStage: number;
+  description: string;
+}
+
+const MANUAL_BUTTON_SPECS: ManualButtonSpec[] = [
+  {
+    kind: MUDPAW_KIND,
+    title: 'Mudpaw',
+    hotkey: 'Q',
+    requiredStage: 1,
+    description: 'Generalist manual otter. Gathers, fights, runs recon, builds, and repairs.',
+  },
+  {
+    kind: MEDIC_KIND,
+    title: 'Medic',
+    hotkey: 'W',
+    requiredStage: 2,
+    description: 'Field support manual unit that keeps Mudpaws and siege teams alive.',
+  },
+  {
+    kind: SAPPER_KIND,
+    title: 'Sapper',
+    hotkey: 'E',
+    requiredStage: 5,
+    description: 'Manual siege specialist for breaking late-panel fort pressure.',
+  },
+  {
+    kind: SABOTEUR_KIND,
+    title: 'Saboteur',
+    hotkey: 'R',
+    requiredStage: 6,
+    description: 'Manual disruption specialist for the full six-panel frontier.',
+  },
+];
 
 export function buildLodgeButtons(
   w: GameWorld,
@@ -22,86 +60,54 @@ export function buildLodgeButtons(
   recorder?: ReplayRecorder,
 ): ActionButtonDef[] {
   const btns: ActionButtonDef[] = [];
-  const gDef = ENTITY_DEFS[EntityKind.Gatherer];
-  btns.push({
-    title: 'Gatherer',
-    cost: `${gDef.fishCost}F ${gDef.foodCost}F`,
-    hotkey: 'Q',
-    affordable:
-      w.resources.fish >= (gDef.fishCost ?? 0) &&
-      w.resources.food + (gDef.foodCost ?? 1) <= w.resources.maxFood,
-    description: 'Worker unit. Gathers fish and logs, builds structures.',
-    category: 'train',
-    costBreakdown: { fish: gDef.fishCost, logs: gDef.logCost, food: gDef.foodCost },
-    onClick: () => {
-      train(
-        w,
-        lodgeEid,
-        EntityKind.Gatherer,
-        gDef.fishCost ?? 0,
-        gDef.logCost ?? 0,
-        gDef.foodCost ?? 1,
-      );
-      recorder?.record(w.frameCount, 'train', {
-        buildingEid: lodgeEid,
-        unitKind: EntityKind.Gatherer,
-      });
-    },
-  });
-  const scoutDef = ENTITY_DEFS[EntityKind.Scout];
-  btns.push({
-    title: 'Scout',
-    cost: `${scoutDef.fishCost}F ${scoutDef.foodCost}F`,
-    hotkey: 'R',
-    affordable:
-      w.resources.fish >= (scoutDef.fishCost ?? 0) &&
-      w.resources.food + (scoutDef.foodCost ?? 1) <= w.resources.maxFood,
-    description: 'Fast recon unit with wide vision range.',
-    category: 'train',
-    costBreakdown: { fish: scoutDef.fishCost, logs: scoutDef.logCost, food: scoutDef.foodCost },
-    onClick: () => {
-      train(
-        w,
-        lodgeEid,
-        EntityKind.Scout,
-        scoutDef.fishCost ?? 0,
-        scoutDef.logCost ?? 0,
-        scoutDef.foodCost ?? 1,
-      );
-      recorder?.record(w.frameCount, 'train', {
-        buildingEid: lodgeEid,
-        unitKind: EntityKind.Scout,
-      });
-    },
-  });
+  const stage = w.panelGrid?.getActivePanels().length ?? 1;
 
-  // Swimmer -- gated on aquaticTraining upgrade
-  if (w.tech.aquaticTraining) {
-    const swimDef = ENTITY_DEFS[EntityKind.Swimmer];
-    const swimDiscount = 1 - w.commanderModifiers.passiveSwimmerCostReduction;
-    const swimFish = Math.round((swimDef.fishCost ?? 0) * swimDiscount);
-    const swimLog = Math.round((swimDef.logCost ?? 0) * swimDiscount);
+  for (const spec of MANUAL_BUTTON_SPECS) {
+    if (stage < spec.requiredStage) continue;
+
+    const def = ENTITY_DEFS[spec.kind];
+    const adjustedCost = getPlayerTrainingCost(w, spec.kind);
+    const fishCost = adjustedCost.fish;
+    const logCost = adjustedCost.logs;
+    const rockCost = adjustedCost.rocks;
+    const foodCost = adjustedCost.food;
+
     btns.push({
-      title: 'Swimmer',
-      cost: `${swimFish}F ${swimLog}L ${swimDef.foodCost}F`,
-      hotkey: 'F',
+      title: spec.title,
+      cost: formatManualCost(fishCost, logCost, rockCost, foodCost),
+      hotkey: spec.hotkey,
       affordable:
-        w.resources.fish >= swimFish &&
-        w.resources.logs >= swimLog &&
-        w.resources.food + (swimDef.foodCost ?? 1) <= w.resources.maxFood,
-      description: 'Amphibious fast unit. Great for scouting and harassing.',
+        w.resources.fish >= fishCost &&
+        w.resources.logs >= logCost &&
+        w.resources.rocks >= rockCost &&
+        w.resources.food + foodCost <= w.resources.maxFood,
+      description: spec.description,
       category: 'train',
-      costBreakdown: { fish: swimFish, logs: swimLog, food: swimDef.foodCost },
-      requires: 'Requires: Aquatic Training',
+      costBreakdown: { fish: fishCost, logs: logCost, rocks: rockCost, food: foodCost },
       onClick: () => {
-        train(w, lodgeEid, EntityKind.Swimmer, swimFish, swimLog, swimDef.foodCost ?? 1);
+        train(w, lodgeEid, spec.kind, fishCost, logCost, foodCost, rockCost);
         recorder?.record(w.frameCount, 'train', {
           buildingEid: lodgeEid,
-          unitKind: EntityKind.Swimmer,
+          unitKind: spec.kind,
         });
       },
     });
   }
 
+  btns.push(...buildSpecialistButtons(w, lodgeEid, recorder));
   return btns;
+}
+
+function formatManualCost(
+  fishCost: number,
+  logCost: number,
+  rockCost: number,
+  foodCost: number,
+): string {
+  const parts: string[] = [];
+  if (fishCost > 0) parts.push(`${fishCost}F`);
+  if (logCost > 0) parts.push(`${logCost}L`);
+  if (rockCost > 0) parts.push(`${rockCost}R`);
+  parts.push(`${foodCost}Pop`);
+  return parts.join(' ');
 }

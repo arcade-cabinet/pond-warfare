@@ -17,7 +17,7 @@ const SYMBOL_CHARS: Record<number, string> = {
   [SymbolType.Gather]: '\u{1F41F}', // Fish
   [SymbolType.Attack]: '\u{2694}', // Crossed swords
   [SymbolType.Heal]: '\u{271A}', // Heavy Greek cross
-  [SymbolType.Scout]: '\u{1F441}', // Eye
+  [SymbolType.Recon]: '\u{1F441}', // Eye
 };
 
 const SYMBOL_STYLE: TextStyleOptions = {

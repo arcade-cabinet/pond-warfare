@@ -10,7 +10,7 @@ import { hasComponent } from 'bitecs';
 import { getFortDef } from '@/config/config-loader';
 import type { FortDef } from '@/config/v3-types';
 import { FactionTag, Health, Position } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
 import { generateFortSlotPositions, getFortSlotCount } from '@/rendering/lodge-renderer';
 import { Faction } from '@/types';
@@ -59,6 +59,8 @@ export interface FortificationState {
   slots: FortSlot[];
   /** Total rock cost spent on fortifications this match. */
   totalRockCost: number;
+  /** Match-scoped wall HP modifier from pre-match upgrades. */
+  wallHpMultiplier: number;
 }
 
 // ── Constants ────────────────────────────────────────────────────
@@ -79,6 +81,7 @@ export function initFortificationState(
   progressionLevel: number,
   lodgeX: number,
   lodgeY: number,
+  options?: { wallHpMultiplier?: number },
 ): FortificationState {
   const slotCount = getFortSlotCount(progressionLevel);
   const offsets = generateFortSlotPositions(slotCount);
@@ -97,7 +100,11 @@ export function initFortificationState(
     lastAttackFrame: 0,
   }));
 
-  return { slots, totalRockCost: 0 };
+  return {
+    slots,
+    totalRockCost: 0,
+    wallHpMultiplier: options?.wallHpMultiplier ?? 1,
+  };
 }
 
 /**
@@ -141,10 +148,15 @@ export function placeFortification(
   }
 
   // Place the fortification
+  let maxHp = def.hp;
+  if (def.blocks_movement === true && state.wallHpMultiplier > 1) {
+    maxHp = Math.round(maxHp * state.wallHpMultiplier);
+  }
+
   slot.status = 'active';
   slot.fortType = fortType;
-  slot.currentHp = def.hp;
-  slot.maxHp = def.hp;
+  slot.currentHp = maxHp;
+  slot.maxHp = maxHp;
   slot.damage = def.damage ?? 0;
   slot.range = def.range ?? 0;
   slot.lastAttackFrame = 0;
@@ -289,7 +301,11 @@ export function fortificationTickSystem(world: GameWorld): void {
       }
     }
     if (bestEid !== -1) {
-      takeDamage(world, bestEid, tower.damage, -1);
+      let damage = tower.damage;
+      if (world.playerTowerDamageMultiplier > 1) {
+        damage = Math.round(damage * world.playerTowerDamageMultiplier);
+      }
+      takeDamage(world, bestEid, damage, -1);
       recordTowerAttack(tower, world.frameCount);
     }
   }

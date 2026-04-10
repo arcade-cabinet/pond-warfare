@@ -2,7 +2,7 @@
  * Shaman AoE Healing System
  *
  * The Shaman passively heals all friendly units within 100px for 2 HP
- * every 300 frames (5 seconds). Different from Healer (single-target);
+ * every 300 frames (5 seconds). Different from Medic (single-target);
  * Shaman is AoE. Shows green particle ring on heal tick.
  *
  * Runs every 300 frames.
@@ -18,8 +18,10 @@ import {
   Position,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isPointInSpecialistArea } from '@/game/specialist-assignment-queries';
 import { EntityKind, Faction } from '@/types';
 import { spawnParticle } from '@/utils/particles';
+import { applyPlayerHeal } from './health/healing';
 
 /** Radius in pixels for Shaman AoE heal. */
 const SHAMAN_HEAL_RADIUS = 100;
@@ -65,13 +67,14 @@ export function shamanHealSystem(world: GameWorld): void {
       if (Health.current[t] >= Health.max[t]) continue;
       if (hasComponent(world.ecs, t, IsBuilding) || hasComponent(world.ecs, t, IsResource))
         continue;
+      if (!isPointInSpecialistArea(world, eid, Position.x[t], Position.y[t])) continue;
 
       const dx = Position.x[t] - sx;
       const dy = Position.y[t] - sy;
       if (Math.sqrt(dx * dx + dy * dy) > SHAMAN_HEAL_RADIUS) continue;
 
       // Heal
-      Health.current[t] = Math.min(Health.current[t] + SHAMAN_HEAL_AMOUNT, Health.max[t]);
+      applyPlayerHeal(world, t, SHAMAN_HEAL_AMOUNT);
       healedAny = true;
     }
 

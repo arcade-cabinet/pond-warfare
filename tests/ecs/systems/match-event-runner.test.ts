@@ -205,9 +205,9 @@ describe('Event-driven match flow — US16', () => {
       }
     });
 
-    it('wave events spawn fighters and raiders', () => {
+    it('wave events spawn assault units and raiders', () => {
       const wave = getEventTemplate('basic_wave');
-      expect(wave.enemy_composition.fighter).toBe(3);
+      expect(wave.enemy_composition.assault_enemy).toBe(3);
       expect(wave.enemy_composition.raider).toBe(2);
     });
 

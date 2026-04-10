@@ -17,6 +17,7 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from '@/constants';
+import { resetTransientComponentState } from '@/ecs/components';
 import { TerrainGrid } from '@/terrain/terrain-grid';
 import { EntityKind, type Particle } from '@/types';
 import { ObjectPool } from '@/utils/pool';
@@ -31,13 +32,13 @@ export interface CommanderModifiers {
   auraHpBonus: number;
   auraUnitHpBonus: number;
   auraEnemyDamageReduction: number;
+  auraGatherBonus: number;
   passiveGatherBonus: number;
-  passiveResearchSpeed: number;
   passiveTowerAttackSpeed: number;
-  passiveSwimmerCostReduction: number;
-  passiveTrapDurationMult: number;
-  passiveShieldbearerTrainSpeed: number;
-  passiveCatapultRangeBonus: number;
+  passiveFisherCostReduction: number;
+  passiveGuardCostReduction: number;
+  passiveRangerProjectionBonus: number;
+  passiveBombardierProjectionBonus: number;
   passiveLightningDamage: number;
 }
 
@@ -45,12 +46,12 @@ const defaultSeed = Math.floor(Math.random() * 2147483647);
 
 /** Create a fresh GameWorld with all default values. */
 export function createGameWorld(): GameWorld {
+  resetTransientComponentState();
   return {
     ecs: createWorld(),
     particles: [],
     floatingTexts: [],
     corpses: [],
-    minimapPings: [],
     groundPings: [],
     fireflies: [],
     resources: {
@@ -99,15 +100,36 @@ export function createGameWorld(): GameWorld {
     ctrlGroups: {},
     yukaManager: new YukaManager(),
     autoBehaviors: {
-      gatherer: false,
+      generalist: false,
       combat: false,
-      healer: false,
-      scout: false,
+      support: false,
+      recon: false,
     },
     difficulty: 'normal',
     permadeath: false,
     rewardsModifier: 1.0,
+    clamRewardMultiplier: 1.0,
     gatherSpeedMod: 1.0,
+    playerUnitDamageMultiplier: 1.0,
+    playerAttackSpeedMultiplier: 1.0,
+    playerCriticalHitChance: 0.0,
+    playerDamageTakenMultiplier: 1.0,
+    playerGatherRadiusMultiplier: 1.0,
+    playerCarryCapacityMultiplier: 1.0,
+    playerUnitCostMultiplier: 1.0,
+    playerUnitHpMultiplier: 1.0,
+    playerUnitSpeedMultiplier: 1.0,
+    playerVisionRangeMultiplier: 1.0,
+    playerSiegeDamageMultiplier: 1.0,
+    playerSiegeRangeMultiplier: 1.0,
+    playerSiegeSpeedMultiplier: 1.0,
+    playerDemolishPowerMultiplier: 1.0,
+    playerHealMultiplier: 1.0,
+    playerTrainSpeedMultiplier: 1.0,
+    playerTowerDamageMultiplier: 1.0,
+    playerLodgeHpMultiplier: 1.0,
+    playerWallHpMultiplier: 1.0,
+    playerRepairSpeedMultiplier: 1.0,
     evolutionSpeedMod: 1.0,
     fogOfWarMode: 'full',
     heroMode: false,
@@ -123,7 +145,11 @@ export function createGameWorld(): GameWorld {
     gameRng: new SeededRandom(defaultSeed ^ 0x9e3779b9),
     placingBuilding: null,
     attackMoveMode: false,
-    idleWorkerIdx: 0,
+    idleGeneralistIdx: 0,
+    specialistAssignments: new Map(),
+    pendingSpecialistAssignment: null,
+    specialistBlueprintCaps: {},
+    specialistZoneBonuses: {},
     resTracker: {
       lastFish: STARTING_FISH,
       lastLogs: STARTING_LOGS,
@@ -156,6 +182,7 @@ export function createGameWorld(): GameWorld {
     enemyCommanderEntityId: -1,
     commanderDamageBuff: new Set(),
     commanderSpeedBuff: new Set(),
+    commanderGatherBuff: new Set(),
     commanderHpBuffApplied: new Set(),
     commanderUnitHpBuff: new Set(),
     commanderEnemyDebuff: new Set(),
@@ -166,17 +193,15 @@ export function createGameWorld(): GameWorld {
       auraHpBonus: 0,
       auraUnitHpBonus: 0,
       auraEnemyDamageReduction: 0,
+      auraGatherBonus: 0,
       passiveGatherBonus: 0,
-      passiveResearchSpeed: 0,
       passiveTowerAttackSpeed: 0,
-      passiveSwimmerCostReduction: 0,
-      passiveTrapDurationMult: 1,
-      passiveShieldbearerTrainSpeed: 0,
-      passiveCatapultRangeBonus: 0,
+      passiveFisherCostReduction: 0,
+      passiveGuardCostReduction: 0,
+      passiveRangerProjectionBonus: 0,
+      passiveBombardierProjectionBonus: 0,
       passiveLightningDamage: 0,
     },
-    airdropsRemaining: 2,
-    airdropCooldownUntil: 0,
     checkpoints: [],
     lastCheckpointFrame: 0,
     evacuationTriggered: false,
@@ -196,6 +221,7 @@ export function createGameWorld(): GameWorld {
     waveSurvivalTarget: 5,
     commanderAbilityCooldownUntil: 0,
     commanderAbilityActiveUntil: 0,
+    commanderAbilityTargets: new Set(),
     demoralizedUnits: new Set(),
     commanderDeathDemoralizeUntil: 0,
     autoRetreatEnabled: true,
@@ -206,15 +232,10 @@ export function createGameWorld(): GameWorld {
     gameEndPrevSpeed: 1,
     gameOverReason: null,
     stealthEntities: new Set(),
-    stealthAmbushReady: new Set(),
     wormBurrowTimers: new Map(),
     lastWormSpawnFrame: 0,
-    engineerBridges: [],
     // v2.0.0
     weather: createWeatherState(defaultSeed, 0),
-    berserkerCombatFrames: new Map(),
-    shrineUsed: new Set(),
-    wallGateFaction: new Map(),
     // v2.1.0
     extendedStats: {},
     // Co-op multiplayer

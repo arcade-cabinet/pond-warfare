@@ -34,6 +34,7 @@ export const Health = soa({
   max: [] as number[],
   flashTimer: [] as number[],
   lastDamagedFrame: [] as number[],
+  healCarry: [] as number[],
 });
 
 // Combat
@@ -42,6 +43,7 @@ export const Combat = soa({
   attackRange: [] as number[],
   attackCooldown: [] as number[],
   kills: [] as number[],
+  critCharge: [] as number[],
 });
 
 // Unit state machine
@@ -73,7 +75,7 @@ export const Resource = soa({
   amount: [] as number[],
 });
 
-// Carrying resource (for gatherers returning resources)
+// Carrying resource for units returning a harvested payload
 export const Carrying = soa({
   resourceType: [] as number[],
   resourceAmount: [] as number[],
@@ -95,6 +97,19 @@ export const TrainingQueue = soa({
 
 // Training queue slots stored in a plain Map since bitECS SoA doesn't support nested arrays
 export const trainingQueueSlots = new Map<number, number[]>();
+export interface TrainingQueueCost {
+  fish: number;
+  logs: number;
+  rocks: number;
+  food: number;
+}
+export const trainingQueueCostSlots = new Map<number, TrainingQueueCost[]>();
+
+/** Clear world-scoped component state that lives outside bitECS SoA arrays. */
+export function resetTransientComponentState(): void {
+  trainingQueueSlots.clear();
+  trainingQueueCostSlots.clear();
+}
 
 // Collider
 export const Collider = soa({
@@ -117,6 +132,7 @@ export const TaskOverride = soa({
   active: [] as number[], // 0 = no override, 1 = has override
   task: [] as number[], // UnitState value for the assigned task
   targetEntity: [] as number[], // target entity for the task (0 = none)
+  resourceKind: [] as number[], // EntityKind for gather overrides (0 = none)
 });
 
 // Unit stance (controls auto-aggro behavior)
@@ -140,6 +156,8 @@ export const IsBuilding = {};
 export const IsResource = {};
 export const Dead = {};
 export const IsProjectile = {};
+export const SnapshotHarnessSpecialist = {};
+export const AutonomousSpecialist = {};
 
 // Patrol route tracking (waypoints stored externally in world.patrolWaypoints)
 export const Patrol = soa({
@@ -151,7 +169,7 @@ export const Patrol = soa({
 // Auto-symbol: icon above unit head after completing an order while deselected
 export const AutoSymbol = soa({
   active: [] as number[], // 0 = inactive, 1 = showing symbol
-  symbolType: [] as number[], // 0=none, 1=gather, 2=attack, 3=heal, 4=scout
+  symbolType: [] as number[], // 0=none, 1=gather, 2=attack, 3=heal, 4=recon
   timer: [] as number[], // frames remaining (240 = 4s at 60fps)
   confirmed: [] as number[], // 0 = unconfirmed, 1 = player tapped to confirm
 });
@@ -162,7 +180,7 @@ export const SymbolType = {
   Gather: 1,
   Attack: 2,
   Heal: 3,
-  Scout: 4,
+  Recon: 4,
 } as const;
 
 // Commander component (one per commander entity)

@@ -21,10 +21,17 @@ export enum UnitState {
   PatrolMove = 13,
 }
 
+/**
+ * Shared stable entity ids.
+ *
+ * Numeric ids remain stable for saved data and ECS state, while the member
+ * names reflect the canonical live roster and the shared chassis that still
+ * back a few runtime mappings.
+ */
 export enum EntityKind {
-  Gatherer = 0,
-  Brawler = 1,
-  Sniper = 2,
+  Mudpaw = 0,
+  SharedSapperChassis = 1,
+  SharedSaboteurChassis = 2,
   Gator = 3,
   Snake = 4,
   Lodge = 5,
@@ -34,14 +41,14 @@ export enum EntityKind {
   PredatorNest = 9,
   Cattail = 10,
   Clambed = 11,
-  Healer = 12,
+  Medic = 12,
   Watchtower = 13,
   BossCroc = 14,
-  Shieldbearer = 15,
-  Scout = 16,
-  Catapult = 17,
+  SharedHeavyChassis = 15,
+  Lookout = 16,
+  SharedSiegeChassis = 17,
   Wall = 18,
-  ScoutPost = 19,
+  LookoutPost = 19,
   ArmoredGator = 20,
   VenomSnake = 21,
   SwampDrake = 22,
@@ -50,23 +57,23 @@ export enum EntityKind {
   PearlBed = 25,
   FishingHut = 26,
   HerbalistHut = 27,
-  Swimmer = 28,
-  Trapper = 29,
+  ReservedUnit28 = 28,
+  ReservedUnit29 = 29,
   Commander = 30,
   Frog = 31,
   Fish = 32,
-  Diver = 33,
-  Engineer = 34,
+  ReservedUnit33 = 33,
+  ReservedUnit34 = 34,
   Shaman = 35,
   BurrowingWorm = 36,
   FlyingHeron = 37,
   Market = 38,
-  // v2.0.0 entities
-  Dock = 39,
-  OtterWarship = 40,
-  Berserker = 41,
-  WallGate = 42,
-  Shrine = 43,
+  // Reserved historical slots kept stable for saved data
+  ReservedBuilding39 = 39,
+  ReservedUnit40 = 40,
+  ReservedUnit41 = 41,
+  ReservedBuilding42 = 42,
+  ReservedBuilding43 = 43,
   // v3.0.0 entities
   Sapper = 44,
   Saboteur = 45,
@@ -81,13 +88,13 @@ export const BUILDING_KINDS: ReadonlySet<EntityKind> = new Set([
   EntityKind.PredatorNest,
   EntityKind.Watchtower,
   EntityKind.Wall,
-  EntityKind.ScoutPost,
+  EntityKind.LookoutPost,
   EntityKind.FishingHut,
   EntityKind.HerbalistHut,
   EntityKind.Market,
-  EntityKind.Dock,
-  EntityKind.WallGate,
-  EntityKind.Shrine,
+  EntityKind.ReservedBuilding39,
+  EntityKind.ReservedBuilding42,
+  EntityKind.ReservedBuilding43,
 ]);
 
 export enum ResourceType {
@@ -97,10 +104,16 @@ export enum ResourceType {
   Rocks = 3,
 }
 
+/**
+ * Shared stable sprite ids.
+ *
+ * Like `EntityKind`, these numeric ids stay stable while the member names
+ * follow the canonical live roster and the shared chassis still used under it.
+ */
 export enum SpriteId {
-  Gatherer = 0,
-  Brawler = 1,
-  Sniper = 2,
+  Mudpaw = 0,
+  SharedSapperChassis = 1,
+  SharedSaboteurChassis = 2,
   Gator = 3,
   Snake = 4,
   Lodge = 5,
@@ -110,14 +123,14 @@ export enum SpriteId {
   PredatorNest = 9,
   Cattail = 10,
   Clambed = 11,
-  Healer = 12,
+  Medic = 12,
   Watchtower = 13,
   BossCroc = 14,
-  Shieldbearer = 15,
-  Scout = 16,
-  Catapult = 17,
+  SharedHeavyChassis = 15,
+  Lookout = 16,
+  SharedSiegeChassis = 17,
   Wall = 18,
-  ScoutPost = 19,
+  LookoutPost = 19,
   ArmoredGator = 20,
   VenomSnake = 21,
   SwampDrake = 22,
@@ -126,23 +139,23 @@ export enum SpriteId {
   PearlBed = 25,
   FishingHut = 26,
   HerbalistHut = 27,
-  Swimmer = 28,
-  Trapper = 29,
+  ReservedSprite28 = 28,
+  ReservedSprite29 = 29,
   Commander = 30,
   Frog = 31,
   Fish = 32,
-  Diver = 33,
-  Engineer = 34,
+  ReservedSprite33 = 33,
+  ReservedSprite34 = 34,
   Shaman = 35,
   BurrowingWorm = 36,
   FlyingHeron = 37,
   Market = 38,
-  // v2.0.0 sprites
-  Dock = 39,
-  OtterWarship = 40,
-  Berserker = 41,
-  WallGate = 42,
-  Shrine = 43,
+  // Reserved historical slots kept stable for saved data
+  ReservedSprite39 = 39,
+  ReservedSprite40 = 40,
+  ReservedSprite41 = 41,
+  ReservedSprite42 = 42,
+  ReservedSprite43 = 43,
   // v3.0.0 sprites
   Sapper = 44,
   Saboteur = 45,
@@ -216,14 +229,6 @@ export function resetCorpseIdCounter(): void {
   nextCorpseId = 1;
 }
 
-export interface MinimapPing {
-  x: number;
-  y: number;
-  life: number;
-  maxLife: number;
-  color?: string;
-}
-
 export interface GroundPing {
   x: number;
   y: number;
@@ -263,17 +268,11 @@ export interface TooltipData {
 /** Extended game stats tracked per match for achievements. */
 export interface ExtendedStats {
   weatherTypesExperienced: number;
-  warshipKills: number;
-  bridgesBuilt: number;
-  diverAmbushKills: number;
   marketTrades: number;
-  maxBerserkerKills: number;
-  shrineAbilitiesUsed: number;
   coopMode: boolean;
   dailyChallengesCompleted: number;
   playerLevel: number;
   perfectPuzzleCount: number;
   randomEventsExperienced: number;
   wallsBuilt: number;
-  enemiesBlockedByGates: number;
 }

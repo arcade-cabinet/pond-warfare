@@ -14,7 +14,6 @@
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { entityKindName } from '@/config/entity-defs';
-import { TRAIN_TIMER } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
@@ -24,10 +23,13 @@ import {
   Position,
   Sprite,
   TrainingQueue,
+  trainingQueueCostSlots,
   trainingQueueSlots,
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerTrainTimer } from '@/game/train-timer';
+import { getEntityDisplayName } from '@/game/unit-display';
 import { triggerSpawnPop } from '@/rendering/animations';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
@@ -57,14 +59,7 @@ export function trainingSystem(world: GameWorld): void {
     if (count === 0) continue;
 
     // Count down timer
-    // Ironpaw passive: Shieldbearers train 2x faster (tick 2 per frame)
-    const frontKind = slots[0] as EntityKind;
-    const trainTick =
-      frontKind === EntityKind.Shieldbearer &&
-      world.commanderModifiers.passiveShieldbearerTrainSpeed > 0
-        ? 2
-        : 1;
-    TrainingQueue.timer[eid] -= trainTick;
+    TrainingQueue.timer[eid] -= 1;
     if (TrainingQueue.timer[eid] <= 0) {
       // Get the first queued unit type from the slots map
       const unitKind = slots[0] as EntityKind;
@@ -79,7 +74,7 @@ export function trainingSystem(world: GameWorld): void {
       // Spawn the unit
       const newEid = spawnEntity(world, unitKind, sx, sy, Faction.Player);
       if (newEid < 0) {
-        TrainingQueue.timer[eid] = TRAIN_TIMER;
+        TrainingQueue.timer[eid] = getPlayerTrainTimer(world);
         continue;
       }
 
@@ -96,11 +91,14 @@ export function trainingSystem(world: GameWorld): void {
       // Shift queue: remove front item
       slots.shift();
       trainingQueueSlots.set(eid, slots);
+      const costSlots = trainingQueueCostSlots.get(eid) ?? [];
+      costSlots.shift();
+      trainingQueueCostSlots.set(eid, costSlots);
       TrainingQueue.count[eid] = slots.length;
 
       // Set timer for next unit if queue still has entries
       if (TrainingQueue.count[eid] > 0) {
-        TrainingQueue.timer[eid] = TRAIN_TIMER;
+        TrainingQueue.timer[eid] = getPlayerTrainTimer(world, slots[0] as EntityKind);
       }
 
       // Training complete sound + unit selection voice
@@ -108,7 +106,7 @@ export function trainingSystem(world: GameWorld): void {
       audio.playSelectionVoice(unitKind, world.playerFaction);
 
       // "{Unit Name} Ready" floating text near building
-      const unitName = entityKindName(unitKind);
+      const unitName = getEntityDisplayName(world, newEid);
 
       // Event feed
       pushGameEvent(`${unitName} trained`, '#38bdf8', world.frameCount);

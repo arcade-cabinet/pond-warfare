@@ -10,14 +10,26 @@ import { hasComponent } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { SPEED_LEVELS } from '@/constants';
 import { Selectable, UnitStateMachine } from '@/ecs/components';
+import { GameError, logError } from '@/errors';
 import { game } from '@/game';
 import { cycleStanceForSelection } from '@/game/input-setup';
-import { hasPlayerUnitsSelected, selectArmy, selectIdleWorker } from '@/input/selection';
-import { setColorBlindMode } from '@/rendering/pixi-app';
+import { selectArmy, selectIdleGeneralist } from '@/input/selection/group-select';
+import { hasPlayerUnitsSelected } from '@/input/selection/queries';
+import { setColorBlindMode } from '@/rendering/pixi';
 import { loadGame, saveGame } from '@/save-system';
 import { getLatestSave, saveGameToDb } from '@/storage';
 import { COLORS } from './design-tokens';
 import * as store from './store';
+
+function pushCenteredFloatingText(text: string, color: string, life = 60): void {
+  game.world.floatingTexts.push({
+    x: game.world.camX + (game.world.viewWidth || 400) / 2,
+    y: game.world.camY + 60,
+    text,
+    color,
+    life,
+  });
+}
 
 /** Clear current selection. */
 export function deselect(): void {
@@ -71,13 +83,13 @@ export function selectAllUnits(): void {
   game.syncUIStore();
 }
 
-/** Cycle through idle workers. */
-export function cycleIdleWorker(): void {
-  selectIdleWorker(game.world);
+/** Cycle through idle Mudpaws/generalists. */
+export function cycleIdleGeneralist(): void {
+  selectIdleGeneralist(game.world);
   game.syncUIStore();
 }
 
-/** Select all army (non-building, non-gatherer) units. */
+/** Select all field army units (non-building, non-generalist) units. */
 export function selectArmyUnits(): void {
   selectArmy(game.world);
   game.syncUIStore();
@@ -91,25 +103,12 @@ export function quickSave(): void {
   saveGameToDb('quicksave', difficulty, seed, json, false)
     .then(() => {
       store.hasSaveGame.value = true;
-      game.world.floatingTexts.push({
-        x: game.world.camX + (game.world.viewWidth || 400) / 2,
-        y: game.world.camY + 60,
-        text: 'Game Saved',
-        color: COLORS.feedbackSuccess,
-        life: 60,
-      });
+      pushCenteredFloatingText('Game Saved', COLORS.feedbackSuccess);
       audio.click();
     })
     .catch((err) => {
-      // biome-ignore lint/suspicious/noConsole: surface save failures
-      console.error('Failed to save game to DB', err);
-      game.world.floatingTexts.push({
-        x: game.world.camX + (game.world.viewWidth || 400) / 2,
-        y: game.world.camY + 60,
-        text: 'Save Failed',
-        color: COLORS.feedbackError,
-        life: 90,
-      });
+      logError(new GameError('Failed to save game to DB', 'ui/game-actions.quickSave', { cause: err }));
+      pushCenteredFloatingText('Save Failed', COLORS.feedbackError, 90);
     });
 }
 
@@ -121,11 +120,14 @@ export function quickLoad(): void {
         loadGame(game.world, row.data);
         game.syncUIStore();
         audio.click();
+        pushCenteredFloatingText('Game Loaded', COLORS.feedbackSuccess);
+        return;
       }
+      pushCenteredFloatingText('No Save Found', COLORS.feedbackWarn, 75);
     })
     .catch((err) => {
-      // biome-ignore lint/suspicious/noConsole: surface load failures
-      console.error('Failed to load game from DB', err);
+      logError(new GameError('Failed to load game from DB', 'ui/game-actions.quickLoad', { cause: err }));
+      pushCenteredFloatingText('Load Failed', COLORS.feedbackError, 90);
     });
 }
 

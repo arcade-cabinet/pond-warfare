@@ -1,17 +1,13 @@
 export {
-  closeDatabase,
   deleteSave,
   getLatestSave,
   getPlayerProfile,
   getSetting,
   getUnlock,
-  initDatabase,
-  isDatabaseReady,
   listSaves,
   listUnlocks,
   loadSave,
   type PlayerProfile,
-  persist,
   recordGameResult,
   type SaveRow,
   saveGameToDb,
@@ -19,7 +15,23 @@ export {
   setUnlock,
   updatePlayerProfile,
   updateSave,
-} from './database';
+} from './queries';
+export {
+  closeDatabase,
+  getDb,
+  initDatabase,
+  isDatabaseReady,
+  loadCurrentRun,
+  loadPrestigeState,
+  loadSelectedCommander,
+  persist,
+  resetCurrentRun,
+  saveCurrentRun,
+  savePrestigeState,
+  saveSelectedCommander,
+  type V3CurrentRunRow,
+  type V3PrestigeRow,
+} from './schema';
 export {
   getMatchHistory,
   type MatchRecord,

@@ -1,4 +1,13 @@
+---
+title: Playtest Personas (Historical)
+updated: 2026-04-10
+status: stale
+domain: quality
+---
+
 # Paper Playtest — Persona Walkthroughs
+
+> **Note:** This file predates the canonical `Mudpaw` plus trainable Pearl specialist model. References to `Gatherer`, `Fighter`, free match-start specialist auto-deploy, or the old "deleted ability bar" discussion should be read as historical terminology unless explicitly updated below. See [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
 
 ## Persona 1: "Casual Carly" — Phone, bus commute, 5 min sessions
 
@@ -11,7 +20,7 @@
 2. Panel 5 fills screen. Lodge at bottom. 4 tiny units near it.
 3. Doesn't know what to do. Taps a unit. Nothing obvious happens (no radial — pointer events may not trigger on first tap).
 4. **PROBLEM**: No onboarding. No tutorial. First-time player is lost.
-5. Eventually taps Lodge by accident. If radial works: sees "Train Gatherer" but doesn't know why.
+5. Eventually taps Lodge by accident. If radial works: sees "Train Mudpaw" but doesn't know why.
 6. Enemies arrive from top. Units auto-engage (if aggressive stance). Carly watches.
 7. Match ends — win or lose in 2-3 minutes.
 8. Rewards screen: "+18 Clams". Taps PLAY AGAIN.
@@ -46,9 +55,9 @@
 2. Analyzes categories, costs, diamond nodes. Plans a build order.
 3. "I need Frontier Expansion I to unlock panel 2 for logs."
 4. Taps PLAY. Immediately drag-selects all units. Right-clicks resource.
-5. Gatherer goes to fish node. Fighter idles. "Where's the attack-move?"
+5. Mudpaw goes to fish node. "Where's the attack-move?"
 6. **PROBLEM**: A-Move button was removed with ability bar. No way to attack-move on tablet without keyboard.
-7. Taps Lodge for radial. "Train Gatherer" — queues 3. Good.
+7. Taps Lodge for radial. "Train Mudpaw" — queues 3. Good.
 8. Manages economy. Waves arrive. Handles them.
 9. Wins. Rewards: +45 Clams. Goes to upgrade web. Buys efficiently.
 
@@ -60,8 +69,8 @@
 ### Session 10 (mid-game):
 1. Has Frontier Expansion I. Panel 2 unlocked.
 2. Zooms out to see both panels. Good.
-3. Sends Scout into panel 2. Fog reveals muddy forest + log groves.
-4. Sends Gatherer to collect logs. "Now I can repair."
+3. Sends a Mudpaw into panel 2 to scout ahead. Fog reveals muddy forest + log groves.
+4. Sends Mudpaw to collect logs. "Now I can repair."
 5. Enemies from panel 2 top. Two-front pressure.
 6. "I need the radial to issue attack commands faster."
 7. **PROBLEM**: Radial menu auto-dismisses in 3 seconds — too fast for planning.
@@ -76,14 +85,14 @@
 
 **Device**: Android phone, landscape (800×360 viewport)
 **Attention**: Medium. Wants to see numbers go up.
-**Goal**: Prestige as many times as possible. Auto-deploy army.
+**Goal**: Prestige as many times as possible. Unlock and field autonomous specialists.
 
 ### Session 50 (prestige rank 3):
-1. Has auto-deploy: 5 Fishers, 3 Diggers, 2 Soldiers.
-2. Taps PLAY. Match starts. Specialists auto-deploy around Lodge.
-3. Fishers run to water. Diggers run to rocks (if panel 4/6 unlocked). Soldiers idle.
-4. Pete manually directs Fighters to frontline. Uses Gatherers for strategic pickups.
-5. Wave 3 arrives. Auto-defenders engage. Pete focuses on fort placement.
+1. Has unlocked Fisher, Digger, and Guard blueprints, with several radius/cap ranks.
+2. Taps PLAY. Match starts. Pete still needs to spend in-match resources to field specialists.
+3. Pete trains a Fisher and a Digger, then assigns each to a terrain radius near the Lodge economy lanes.
+4. Pete trains a Guard and assigns it to a defensive radius while manually directing Mudpaws and combat units.
+5. Wave 3 arrives. Specialists operate inside their assigned zones while Pete focuses on fort placement and manual reactions.
 6. **PROBLEM**: Fort slot placement requires tapping empty slots near Lodge, but at 800×360 viewport, slots may be too small to tap accurately.
 
 ### Session 100 (prestige rank 5):

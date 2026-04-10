@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 
 /** Create a player unit at a given position. */
@@ -68,7 +69,7 @@ describe('fogOfWarSystem', () => {
   });
 
   it('should reveal area around player units', () => {
-    createPlayerUnit(world, EntityKind.Gatherer, 320, 320);
+    createPlayerUnit(world, MUDPAW_KIND, 320, 320);
 
     fogOfWarSystem(world);
 
@@ -81,7 +82,7 @@ describe('fogOfWarSystem', () => {
   it('should not reveal areas when no context is initialized', () => {
     resetFogOfWar(); // Remove the context
 
-    createPlayerUnit(world, EntityKind.Gatherer, 320, 320);
+    createPlayerUnit(world, MUDPAW_KIND, 320, 320);
 
     // Should not throw and should not call any canvas methods
     fogOfWarSystem(world);
@@ -90,12 +91,12 @@ describe('fogOfWarSystem', () => {
     expect(mockCtx.arc).not.toHaveBeenCalled();
   });
 
-  it('should give Scout units a larger reveal radius than normal units', () => {
-    createPlayerUnit(world, EntityKind.Scout, 320, 320);
+  it('should give Lookout units a larger reveal radius than normal units', () => {
+    createPlayerUnit(world, LOOKOUT_KIND, 320, 320);
 
     fogOfWarSystem(world);
 
-    // Scout reveal radius should be 16 (same as buildings, vs 10 for normal units)
+    // Lookout reveal radius should be 16 (same as buildings, vs 10 for normal units)
     const arcCalls = mockCtx.arc.mock.calls;
     expect(arcCalls.length).toBeGreaterThanOrEqual(1);
     const lastArc = arcCalls[arcCalls.length - 1];
@@ -103,8 +104,8 @@ describe('fogOfWarSystem', () => {
     expect(lastArc[2]).toBe(16);
   });
 
-  it('should give normal units a smaller reveal radius than Scout', () => {
-    createPlayerUnit(world, EntityKind.Gatherer, 320, 320);
+  it('should give normal units a smaller reveal radius than Lookout', () => {
+    createPlayerUnit(world, MUDPAW_KIND, 320, 320);
 
     fogOfWarSystem(world);
 
@@ -126,7 +127,7 @@ describe('fogOfWarSystem', () => {
     Health.current[eid] = 50;
     Health.max[eid] = 50;
     FactionTag.faction[eid] = Faction.Enemy;
-    EntityTypeTag.kind[eid] = EntityKind.Scout;
+    EntityTypeTag.kind[eid] = LOOKOUT_KIND;
 
     fogOfWarSystem(world);
 
@@ -145,16 +146,16 @@ describe('fogOfWarSystem', () => {
     Health.current[eid] = 0;
     Health.max[eid] = 50;
     FactionTag.faction[eid] = Faction.Player;
-    EntityTypeTag.kind[eid] = EntityKind.Scout;
+    EntityTypeTag.kind[eid] = LOOKOUT_KIND;
 
     fogOfWarSystem(world);
 
     expect(mockCtx.arc).not.toHaveBeenCalled();
   });
 
-  it('should apply cartography tech bonus to Scout reveal radius', () => {
+  it('should apply cartography tech bonus to Lookout reveal radius', () => {
     world.tech.cartography = true;
-    createPlayerUnit(world, EntityKind.Scout, 320, 320);
+    createPlayerUnit(world, LOOKOUT_KIND, 320, 320);
 
     fogOfWarSystem(world);
 
@@ -167,14 +168,26 @@ describe('fogOfWarSystem', () => {
 
   it('should reduce vision radius during fog weather', () => {
     if (world.weather) world.weather.current = 'fog';
-    createPlayerUnit(world, EntityKind.Scout, 320, 320);
+    createPlayerUnit(world, LOOKOUT_KIND, 320, 320);
 
     fogOfWarSystem(world);
 
     const arcCalls = mockCtx.arc.mock.calls;
     expect(arcCalls.length).toBeGreaterThanOrEqual(1);
     const lastArc = arcCalls[arcCalls.length - 1];
-    // Scout base=16, fog vision mult=0.6: ceil(16*0.6) = 10
+    // Lookout base=16, fog vision mult=0.6: ceil(16*0.6) = 10
     expect(lastArc[2]).toBe(10);
+  });
+
+  it('should apply utility vision range to explored reveal radius', () => {
+    world.playerVisionRangeMultiplier = 1.5;
+    createPlayerUnit(world, MUDPAW_KIND, 320, 320);
+
+    fogOfWarSystem(world);
+
+    const arcCalls = mockCtx.arc.mock.calls;
+    expect(arcCalls.length).toBeGreaterThanOrEqual(1);
+    const lastArc = arcCalls[arcCalls.length - 1];
+    expect(lastArc[2]).toBe(15);
   });
 });

@@ -19,8 +19,10 @@ import {
   Sprite,
   UnitStateMachine,
 } from '@/ecs/components';
+import { resumeGatherOverride, retargetGatherOverride } from '@/ecs/systems/gathering/gather-override';
 import { getWeatherGatherMult } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerRepairTimer } from '@/game/repair-timer';
 import { Faction, ResourceType, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
@@ -48,6 +50,7 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
 
   switch (state) {
     case UnitState.Move:
+      if (resumeGatherOverride(world, eid)) break;
       UnitStateMachine.state[eid] = UnitState.Idle;
       break;
     case UnitState.AttackMovePatrol:
@@ -55,9 +58,12 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
       break;
     case UnitState.GatherMove:
+      // Player gathering upgrades should not accelerate enemy economy.
+      const gatherSpeedMod =
+        FactionTag.faction[eid] === Faction.Player ? world.gatherSpeedMod : 1;
       UnitStateMachine.state[eid] = UnitState.Gathering;
       UnitStateMachine.gatherTimer[eid] = Math.round(
-        GATHER_TIMER * world.gatherSpeedMod * (1 / getWeatherGatherMult(world)),
+        (GATHER_TIMER / Math.max(0.1, gatherSpeedMod)) * (1 / getWeatherGatherMult(world)),
       );
       break;
     case UnitState.BuildMove:
@@ -66,7 +72,8 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
       break;
     case UnitState.RepairMove:
       UnitStateMachine.state[eid] = UnitState.Repairing;
-      UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
+      UnitStateMachine.gatherTimer[eid] =
+        FactionTag.faction[eid] === Faction.Player ? getPlayerRepairTimer(world) : REPAIR_TIMER;
       break;
     case UnitState.Retreat:
       // Arrived at building safely; go idle
@@ -181,6 +188,8 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
           UnitStateMachine.targetX[eid] = Position.x[tEnt];
           UnitStateMachine.targetY[eid] = Position.y[tEnt];
           UnitStateMachine.state[eid] = UnitState.GatherMove;
+        } else if (retargetGatherOverride(world, eid)) {
+          // Manual/governor gather orders should reacquire a same-type resource.
         } else {
           UnitStateMachine.state[eid] = UnitState.Idle;
         }

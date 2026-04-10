@@ -1,7 +1,7 @@
 /**
  * Healing Sub-systems
  *
- * Passive healing, healer aura (max 3 targets), herbalist hut area heal,
+ * Passive healing, Medic aura (max 3 targets), herbalist hut area heal,
  * and regeneration (requires 5s out of combat).
  */
 
@@ -18,10 +18,11 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { MEDIC_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { spawnParticle } from '@/utils/particles';
 
-/** Max units a single healer can heal per tick. */
+/** Max units a single Medic can heal per tick. */
 const MAX_HEALS_PER_HEALER = 3;
 
 /** Herbalist Hut healing radius in pixels. */
@@ -29,6 +30,26 @@ const HERBALIST_HUT_RANGE = 200;
 
 /** Frames since last damage before regen kicks in (5s at 60fps). */
 const REGEN_OUT_OF_COMBAT_FRAMES = 300;
+
+function getPlayerHealAmount(world: GameWorld, eid: number, baseAmount: number): number {
+  const scaled = baseAmount * world.playerHealMultiplier + (Health.healCarry[eid] ?? 0);
+  const wholeAmount = Math.max(1, Math.floor(scaled));
+  Health.healCarry[eid] = Math.max(0, scaled - wholeAmount);
+  return wholeAmount;
+}
+
+export function applyPlayerHeal(world: GameWorld, eid: number, baseAmount: number): void {
+  if (Health.current[eid] <= 0 || Health.current[eid] >= Health.max[eid]) {
+    Health.healCarry[eid] = 0;
+    return;
+  }
+
+  const healAmount = getPlayerHealAmount(world, eid, baseAmount);
+  Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + healAmount);
+  if (Health.current[eid] >= Health.max[eid]) {
+    Health.healCarry[eid] = 0;
+  }
+}
 
 /** Passive healing: every 300 frames, player non-building units heal +1 HP when idle/non-combat. */
 export function processPassiveHealing(world: GameWorld): void {
@@ -49,8 +70,7 @@ export function processPassiveHealing(world: GameWorld): void {
       state === UnitState.GatherMove ||
       state === UnitState.ReturnMove
     ) {
-      const healAmount = world.tech.hardenedShells ? 5 : 1;
-      Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + healAmount);
+      applyPlayerHeal(world, eid, world.tech.hardenedShells ? 5 : 1);
 
       if (world.tech.hardenedShells) {
         spawnParticle(
@@ -68,8 +88,8 @@ export function processPassiveHealing(world: GameWorld): void {
   }
 }
 
-/** Healer aura: healers heal up to 3 nearest friendlies within 80px every 60 frames. */
-export function processHealerAura(world: GameWorld): void {
+/** Support aura: Medics heal up to 3 nearest friendlies within 80px every 60 frames. */
+export function processSupportAura(world: GameWorld): void {
   const allUnits = query(world.ecs, [Position, Health, FactionTag, EntityTypeTag]);
 
   const healers: number[] = [];
@@ -78,7 +98,7 @@ export function processHealerAura(world: GameWorld): void {
     const eid = allUnits[i];
     if ((FactionTag.faction[eid] as Faction) !== Faction.Player) continue;
     if (Health.current[eid] <= 0) continue;
-    if ((EntityTypeTag.kind[eid] as EntityKind) === EntityKind.Healer) {
+    if ((EntityTypeTag.kind[eid] as EntityKind) === MEDIC_KIND) {
       healers.push(eid);
     } else if (
       !hasComponent(world.ecs, eid, IsBuilding) &&
@@ -113,7 +133,7 @@ export function processHealerAura(world: GameWorld): void {
 
     for (let h = 0; h < healCount; h++) {
       const target = inRange[h].eid;
-      Health.current[target] = Math.min(Health.max[target], Health.current[target] + 2);
+      applyPlayerHeal(world, target, 2);
       spawnParticle(
         world,
         Position.x[target],
@@ -127,7 +147,7 @@ export function processHealerAura(world: GameWorld): void {
     }
 
     if (healCount > 0 && world.gameRng.next() < 0.2) {
-      showBark(world, hEid, hx, hy, EntityKind.Healer, 'heal');
+      showBark(world, hEid, hx, hy, MEDIC_KIND, 'heal');
     }
   }
 }
@@ -147,7 +167,7 @@ export function processRegeneration(world: GameWorld): void {
     const lastDmg = Health.lastDamagedFrame[eid];
     if (lastDmg > 0 && world.frameCount - lastDmg < REGEN_OUT_OF_COMBAT_FRAMES) continue;
 
-    Health.current[eid] = Math.min(Health.max[eid], Health.current[eid] + 1);
+    applyPlayerHeal(world, eid, 1);
   }
 }
 
@@ -173,7 +193,7 @@ export function processHerbalistHutHeal(world: GameWorld): void {
       if (hasComponent(world.ecs, uid, IsBuilding)) continue;
       if (!hasComponent(world.ecs, uid, Health)) continue;
       if (Health.current[uid] <= 0 || Health.current[uid] >= Health.max[uid]) continue;
-      Health.current[uid] = Math.min(Health.max[uid], Health.current[uid] + 2);
+      applyPlayerHeal(world, uid, 2);
       spawnParticle(
         world,
         Position.x[uid],

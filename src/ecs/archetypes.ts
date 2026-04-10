@@ -1,5 +1,19 @@
 import { addComponent, addEntity } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
+import {
+  LOOKOUT_KIND,
+  LOOKOUT_SPRITE_ID,
+  MEDIC_KIND,
+  MEDIC_SPRITE_ID,
+  MUDPAW_KIND,
+  MUDPAW_SPRITE_ID,
+  SHARED_HEAVY_CHASSIS_KIND,
+  isPlayerSiegeKind,
+  isMudpawKind,
+  SABOTEUR_SPRITE_ID,
+  SAPPER_SPRITE_ID,
+  SHARED_SIEGE_CHASSIS_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
 import {
   AutoSymbol,
@@ -19,6 +33,7 @@ import {
   Sprite,
   Stance,
   StanceMode,
+  TaskOverride,
   TowerAI,
   TrainingQueue,
   UnitStateMachine,
@@ -28,9 +43,9 @@ import {
 import type { GameWorld } from './world';
 
 const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
-  [EntityKind.Gatherer]: SpriteId.Gatherer,
-  [EntityKind.Brawler]: SpriteId.Brawler,
-  [EntityKind.Sniper]: SpriteId.Sniper,
+  [MUDPAW_KIND]: MUDPAW_SPRITE_ID,
+  [EntityKind.SharedSapperChassis]: SAPPER_SPRITE_ID,
+  [EntityKind.SharedSaboteurChassis]: SABOTEUR_SPRITE_ID,
   [EntityKind.Gator]: SpriteId.Gator,
   [EntityKind.Snake]: SpriteId.Snake,
   [EntityKind.Lodge]: SpriteId.Lodge,
@@ -40,14 +55,14 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.PredatorNest]: SpriteId.PredatorNest,
   [EntityKind.Cattail]: SpriteId.Cattail,
   [EntityKind.Clambed]: SpriteId.Clambed,
-  [EntityKind.Healer]: SpriteId.Healer,
+  [MEDIC_KIND]: MEDIC_SPRITE_ID,
   [EntityKind.Watchtower]: SpriteId.Watchtower,
   [EntityKind.BossCroc]: SpriteId.BossCroc,
-  [EntityKind.Shieldbearer]: SpriteId.Shieldbearer,
-  [EntityKind.Scout]: SpriteId.Scout,
-  [EntityKind.Catapult]: SpriteId.Catapult,
+  [SHARED_HEAVY_CHASSIS_KIND]: SpriteId.SharedHeavyChassis,
+  [LOOKOUT_KIND]: LOOKOUT_SPRITE_ID,
+  [SHARED_SIEGE_CHASSIS_KIND]: SpriteId.SharedSiegeChassis,
   [EntityKind.Wall]: SpriteId.Wall,
-  [EntityKind.ScoutPost]: SpriteId.ScoutPost,
+  [EntityKind.LookoutPost]: SpriteId.LookoutPost,
   [EntityKind.ArmoredGator]: SpriteId.ArmoredGator,
   [EntityKind.VenomSnake]: SpriteId.VenomSnake,
   [EntityKind.SwampDrake]: SpriteId.SwampDrake,
@@ -56,26 +71,26 @@ const KIND_TO_SPRITE: Record<EntityKind, SpriteId> = {
   [EntityKind.PearlBed]: SpriteId.PearlBed,
   [EntityKind.FishingHut]: SpriteId.FishingHut,
   [EntityKind.HerbalistHut]: SpriteId.HerbalistHut,
-  [EntityKind.Swimmer]: SpriteId.Swimmer,
-  [EntityKind.Trapper]: SpriteId.Trapper,
+  [EntityKind.ReservedUnit28]: SpriteId.ReservedSprite28,
+  [EntityKind.ReservedUnit29]: SpriteId.ReservedSprite29,
   [EntityKind.Commander]: SpriteId.Commander,
   [EntityKind.Frog]: SpriteId.Frog,
   [EntityKind.Fish]: SpriteId.Fish,
-  [EntityKind.Diver]: SpriteId.Diver,
-  [EntityKind.Engineer]: SpriteId.Engineer,
+  [EntityKind.ReservedUnit33]: SpriteId.ReservedSprite33,
+  [EntityKind.ReservedUnit34]: SpriteId.ReservedSprite34,
   [EntityKind.Shaman]: SpriteId.Shaman,
   [EntityKind.BurrowingWorm]: SpriteId.BurrowingWorm,
   [EntityKind.FlyingHeron]: SpriteId.FlyingHeron,
   [EntityKind.Market]: SpriteId.Market,
   // v2.0.0
-  [EntityKind.Dock]: SpriteId.Dock,
-  [EntityKind.OtterWarship]: SpriteId.OtterWarship,
-  [EntityKind.Berserker]: SpriteId.Berserker,
-  [EntityKind.WallGate]: SpriteId.WallGate,
-  [EntityKind.Shrine]: SpriteId.Shrine,
+  [EntityKind.ReservedBuilding39]: SpriteId.ReservedSprite39,
+  [EntityKind.ReservedUnit40]: SpriteId.ReservedSprite40,
+  [EntityKind.ReservedUnit41]: SpriteId.ReservedSprite41,
+  [EntityKind.ReservedBuilding42]: SpriteId.ReservedSprite42,
+  [EntityKind.ReservedBuilding43]: SpriteId.ReservedSprite43,
   // v3.0.0
-  [EntityKind.Sapper]: SpriteId.Sapper,
-  [EntityKind.Saboteur]: SpriteId.Saboteur,
+  [EntityKind.Sapper]: SAPPER_SPRITE_ID,
+  [EntityKind.Saboteur]: SABOTEUR_SPRITE_ID,
 };
 
 export function spawnEntity(
@@ -125,10 +140,31 @@ export function spawnEntity(
     maxHp = Math.round(maxHp * world.enemyStatMult);
   }
 
+  if (
+    faction === Faction.Player &&
+    !def.isBuilding &&
+    !def.isResource &&
+    world.playerUnitHpMultiplier > 1
+  ) {
+    hp = Math.round(hp * world.playerUnitHpMultiplier);
+    maxHp = Math.round(maxHp * world.playerUnitHpMultiplier);
+  }
+
   // Apply tech bonuses for player buildings
   if (faction === Faction.Player && def.isBuilding && world.tech.sturdyMud) {
     hp += 300;
     maxHp += 300;
+  }
+
+  if (faction === Faction.Player && def.isBuilding) {
+    if (kind === EntityKind.Lodge && world.playerLodgeHpMultiplier > 1) {
+      hp = Math.round(hp * world.playerLodgeHpMultiplier);
+      maxHp = Math.round(maxHp * world.playerLodgeHpMultiplier);
+    }
+    if (kind === EntityKind.Wall && world.playerWallHpMultiplier > 1) {
+      hp = Math.round(hp * world.playerWallHpMultiplier);
+      maxHp = Math.round(maxHp * world.playerWallHpMultiplier);
+    }
   }
 
   addComponent(world.ecs, eid, Health);
@@ -153,7 +189,7 @@ export function spawnEntity(
       kind === EntityKind.Lodge ||
       kind === EntityKind.Burrow ||
       kind === EntityKind.Armory ||
-      kind === EntityKind.Dock ||
+      kind === EntityKind.ReservedBuilding39 ||
       kind === EntityKind.PredatorNest
     ) {
       addComponent(world.ecs, eid, TrainingQueue);
@@ -165,7 +201,11 @@ export function spawnEntity(
     if (kind === EntityKind.Tower || kind === EntityKind.Watchtower) {
       addComponent(world.ecs, eid, TowerAI);
       addComponent(world.ecs, eid, Combat);
-      Combat.damage[eid] = def.damage;
+      let towerDamage = def.damage;
+      if (faction === Faction.Player && world.playerTowerDamageMultiplier > 1) {
+        towerDamage = Math.round(towerDamage * world.playerTowerDamageMultiplier);
+      }
+      Combat.damage[eid] = towerDamage;
       Combat.attackRange[eid] = def.attackRange;
       Combat.attackCooldown[eid] = 0;
       Combat.kills[eid] = 0;
@@ -183,27 +223,39 @@ export function spawnEntity(
     addComponent(world.ecs, eid, Velocity);
     let speed = def.speed;
     if (faction === Faction.Player && world.tech.swiftPaws) speed *= 1.15;
+    if (
+      faction === Faction.Player &&
+      !isMudpawKind(kind) &&
+      world.playerUnitSpeedMultiplier > 1
+    ) {
+      speed *= world.playerUnitSpeedMultiplier;
+    }
+    if (faction === Faction.Player && isPlayerSiegeKind(kind) && world.playerSiegeSpeedMultiplier > 1) {
+      speed *= world.playerSiegeSpeedMultiplier;
+    }
     Velocity.speed[eid] = speed;
     Velocity.speedDebuffTimer[eid] = 0;
 
     addComponent(world.ecs, eid, Combat);
     let damage = def.damage;
     if (faction === Faction.Player && world.tech.sharpSticks && damage > 0) damage += 2;
+    if (faction === Faction.Player && damage > 0 && world.playerUnitDamageMultiplier > 1) {
+      damage = Math.round(damage * world.playerUnitDamageMultiplier);
+    }
+    if (faction === Faction.Player && damage > 0 && isPlayerSiegeKind(kind) && world.playerSiegeDamageMultiplier > 1) {
+      damage = Math.round(damage * world.playerSiegeDamageMultiplier);
+    }
     // Apply enemy stat multiplier to damage
     if (faction === Faction.Enemy && world.enemyStatMult > 1 && damage > 0)
       damage = Math.round(damage * world.enemyStatMult);
     Combat.damage[eid] = damage;
 
     let range = def.attackRange;
-    if (kind === EntityKind.Sniper && faction === Faction.Player && world.tech.eagleEye)
+    if (kind === EntityKind.Saboteur && faction === Faction.Player && world.tech.eagleEye)
       range += 50;
-    // Stormcaller passive: Catapults +50% range
-    if (
-      kind === EntityKind.Catapult &&
-      faction === Faction.Player &&
-      world.commanderModifiers.passiveCatapultRangeBonus > 0
-    )
-      range = Math.round(range * (1 + world.commanderModifiers.passiveCatapultRangeBonus));
+    if (faction === Faction.Player && range > 0 && isPlayerSiegeKind(kind) && world.playerSiegeRangeMultiplier > 1) {
+      range = Math.round(range * world.playerSiegeRangeMultiplier);
+    }
     Combat.attackRange[eid] = range;
     Combat.attackCooldown[eid] = 0;
     Combat.kills[eid] = 0;
@@ -220,16 +272,20 @@ export function spawnEntity(
     addComponent(world.ecs, eid, Carrying);
     Carrying.resourceType[eid] = 0; // None
 
+    addComponent(world.ecs, eid, TaskOverride);
+    TaskOverride.active[eid] = 0;
+    TaskOverride.task[eid] = 0;
+    TaskOverride.targetEntity[eid] = 0;
+    TaskOverride.resourceKind[eid] = 0;
+
     addComponent(world.ecs, eid, Veterancy);
     Veterancy.rank[eid] = 0;
     Veterancy.appliedRank[eid] = 0;
 
-    // Stance: gatherers/healers default Defensive, combat units Aggressive
+    // Stance: generalists/support units default Defensive, combat units Aggressive
     addComponent(world.ecs, eid, Stance);
     Stance.mode[eid] =
-      kind === EntityKind.Gatherer || kind === EntityKind.Healer
-        ? StanceMode.Defensive
-        : StanceMode.Aggressive;
+      isMudpawKind(kind) || kind === MEDIC_KIND ? StanceMode.Defensive : StanceMode.Aggressive;
 
     // Auto-symbol: tracks pending auto-behavior confirmation
     addComponent(world.ecs, eid, AutoSymbol);

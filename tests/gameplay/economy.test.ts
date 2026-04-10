@@ -26,19 +26,19 @@ import { gatheringSystem } from '@/ecs/systems/gathering';
 import { healthSystem } from '@/ecs/systems/health';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { ENEMY_HARVESTER_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } from '@/types';
 
 /* ------------------------------------------------------------------ */
 /*  Helper factories                                                   */
 /* ------------------------------------------------------------------ */
 
-function createGatherer(
+function createMudpaw(
   world: GameWorld,
   x: number,
   y: number,
-  faction: Faction = Faction.Player,
 ): number {
-  const eid = spawnEntity(world, EntityKind.Gatherer, x, y, faction);
+  const eid = spawnEntity(world, MUDPAW_KIND, x, y, Faction.Player);
   return eid;
 }
 
@@ -89,33 +89,33 @@ describe('Economy', () => {
     world.frameCount = 1;
   });
 
-  it('gatherer should collect resources and return to lodge', () => {
+  it('Mudpaw should collect resources and return to Lodge', () => {
     const lodge = createLodge(world, 200, 200);
     const resource = createResource(world, EntityKind.Clambed, 100, 100, 4000);
-    const gatherer = createGatherer(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
 
-    // Put the gatherer into gathering state pointing at the resource
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1; // About to finish
+    // Put the Mudpaw into gathering state pointing at the resource
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1; // About to finish
 
     gatheringSystem(world);
 
-    // Gatherer should now be carrying clams and heading to the lodge
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Fish);
-    expect(Carrying.resourceAmount[gatherer]).toBe(GATHER_AMOUNT);
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.ReturnMove);
-    expect(UnitStateMachine.returnEntity[gatherer]).toBe(lodge);
+    // Mudpaw should now be carrying fish and heading to the Lodge
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Fish);
+    expect(Carrying.resourceAmount[mudpaw]).toBe(GATHER_AMOUNT);
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.ReturnMove);
+    expect(UnitStateMachine.returnEntity[mudpaw]).toBe(lodge);
   });
 
   it('resource nodes should deplete after harvesting', () => {
     createLodge(world, 200, 200);
     const resource = createResource(world, EntityKind.Cattail, 100, 100, GATHER_AMOUNT);
-    const gatherer = createGatherer(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
@@ -127,57 +127,57 @@ describe('Economy', () => {
   it('depleted nodes should not be harvestable', () => {
     createLodge(world, 200, 200);
     const resource = createResource(world, EntityKind.Clambed, 100, 100, 0);
-    const gatherer = createGatherer(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 5;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 5;
 
     gatheringSystem(world);
 
-    // Gatherer should go idle because resource is empty
-    expect(UnitStateMachine.state[gatherer]).toBe(UnitState.Idle);
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.None);
+    // Mudpaw should go idle because resource is empty
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.None);
   });
 
-  it('fishing hut should generate passive clam income', () => {
+  it('fishing hut should generate passive Fish income', () => {
     createFishingHut(world, 300, 300);
-    const clamsBefore = world.resources.fish;
+    const fishBefore = world.resources.fish;
 
     // Fishing hut generates income every 300 frames
     world.frameCount = 300;
     gatheringSystem(world);
 
-    expect(world.resources.fish).toBe(clamsBefore + 5);
+    expect(world.resources.fish).toBe(fishBefore + 5);
   });
 
   it('herbalist hut should heal nearby units', () => {
     createHerbalistHut(world, 300, 300);
-    const brawler = spawnEntity(world, EntityKind.Brawler, 310, 310, Faction.Player);
-    // Wound the brawler
-    Health.current[brawler] = 20;
+    const sapper = spawnEntity(world, SAPPER_KIND, 310, 310, Faction.Player);
+    // Wound the sapper
+    Health.current[sapper] = 20;
 
     // Herbalist hut heals every 120 frames
     world.frameCount = 120;
     // Need spatial hash for the lookup - rebuild it
     world.spatialHash.clear();
-    world.spatialHash.insert(brawler, Position.x[brawler], Position.y[brawler]);
+    world.spatialHash.insert(sapper, Position.x[sapper], Position.y[sapper]);
 
     healthSystem(world);
 
     // Should have healed +2 HP
-    expect(Health.current[brawler]).toBe(22);
+    expect(Health.current[sapper]).toBe(22);
   });
 
   it('tidal harvest tech should increase gather rate by 50%', () => {
     world.tech.tidalHarvest = true;
     createLodge(world, 200, 200);
     const resource = createResource(world, EntityKind.Clambed, 100, 100, 4000);
-    const gatherer = createGatherer(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = resource;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = resource;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
@@ -185,40 +185,40 @@ describe('Economy', () => {
     // amount but in the code: tidalHarvest sets gatherAmt = 15 when true (same
     // base). Looking at the code: `let gatherAmt = faction === Faction.Player && world.tech.tidalHarvest ? 15 : GATHER_AMOUNT;`
     // Tidal Harvest: +25% gather amount (15 * 1.25 = 18.75 → 19)
-    expect(Carrying.resourceAmount[gatherer]).toBe(19);
+    expect(Carrying.resourceAmount[mudpaw]).toBe(19);
   });
 
   it('pearl beds should yield pearl resource type', () => {
     createLodge(world, 200, 200);
     const pearlBed = createResource(world, EntityKind.PearlBed, 100, 100, 500);
-    const gatherer = createGatherer(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = pearlBed;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = pearlBed;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Rocks);
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Rocks);
   });
 
-  it('enemy gatherers should compete for same resource nodes', () => {
-    // Create a PredatorNest for enemy gatherers to return to
+  it('enemy resource harvesters should compete for same resource nodes', () => {
+    // Create a PredatorNest for enemy harvesters to return to
     spawnEntity(world, EntityKind.PredatorNest, 500, 500, Faction.Enemy);
     const resource = createResource(world, EntityKind.Clambed, 300, 300, GATHER_AMOUNT * 2);
 
-    // Create an enemy gatherer
-    const enemyGatherer = createGatherer(world, 300, 300, Faction.Enemy);
-    UnitStateMachine.state[enemyGatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[enemyGatherer] = resource;
-    UnitStateMachine.gatherTimer[enemyGatherer] = 1;
+    // Enemy-side workers still use the shared internal harvester chassis.
+    const enemyHarvester = spawnEntity(world, ENEMY_HARVESTER_KIND, 300, 300, Faction.Enemy);
+    UnitStateMachine.state[enemyHarvester] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[enemyHarvester] = resource;
+    UnitStateMachine.gatherTimer[enemyHarvester] = 1;
 
     const amountBefore = Resource.amount[resource];
     gatheringSystem(world);
 
-    // Enemy gatherer should have depleted the resource by GATHER_AMOUNT
+    // Enemy harvester should have depleted the resource by GATHER_AMOUNT
     expect(Resource.amount[resource]).toBe(amountBefore - GATHER_AMOUNT);
-    expect(Carrying.resourceType[enemyGatherer]).toBe(ResourceType.Fish);
+    expect(Carrying.resourceType[enemyHarvester]).toBe(ResourceType.Fish);
   });
 
   it('food cap should increase with lodges and burrows', () => {
@@ -232,14 +232,14 @@ describe('Economy', () => {
   });
 
   // ── T31: Training cost uses Fish (world.resources.fish) ──────────
-  it('training cost reads fish from units.json and deducts clams', () => {
-    // units.json: gatherer.cost.fish = 10
+  it('training cost reads Fish from units.json and deducts Fish', () => {
+    // units.json: mudpaw.cost.fish = 10
     // radial-actions.ts reads def.cost.fish and deducts world.resources.fish
-    const def = getUnitDef('gatherer') as import('@/config/v3-types').GeneralistDef;
+    const def = getUnitDef('mudpaw') as import('@/config/v3-types').GeneralistDef;
     expect(def.cost.fish).toBe(10);
 
-    const fighterDef = getUnitDef('fighter') as import('@/config/v3-types').GeneralistDef;
-    expect(fighterDef.cost.fish).toBe(20);
+    const medicDef = getUnitDef('medic') as import('@/config/v3-types').GeneralistDef;
+    expect(medicDef.cost.fish).toBe(15);
   });
 
   // ── T32: Fortification costs Rocks (world.resources.rocks) ──────
@@ -269,15 +269,15 @@ describe('Economy', () => {
   it('cattail gathering yields Twigs (Logs) resource type', () => {
     createLodge(world, 200, 200);
     const cattail = createResource(world, EntityKind.Cattail, 100, 100, 500);
-    const gatherer = createGatherer(world, 100, 100);
+    const mudpaw = createMudpaw(world, 100, 100);
 
-    UnitStateMachine.state[gatherer] = UnitState.Gathering;
-    UnitStateMachine.targetEntity[gatherer] = cattail;
-    UnitStateMachine.gatherTimer[gatherer] = 1;
+    UnitStateMachine.state[mudpaw] = UnitState.Gathering;
+    UnitStateMachine.targetEntity[mudpaw] = cattail;
+    UnitStateMachine.gatherTimer[mudpaw] = 1;
 
     gatheringSystem(world);
 
-    expect(Carrying.resourceType[gatherer]).toBe(ResourceType.Logs);
+    expect(Carrying.resourceType[mudpaw]).toBe(ResourceType.Logs);
   });
 
   it('cannot train units when at food cap', () => {
@@ -287,7 +287,7 @@ describe('Economy', () => {
     TrainingQueue.count[lodge] = 1;
     TrainingQueue.timer[lodge] = 1; // About to finish
 
-    const slots = [EntityKind.Brawler];
+    const slots = [SAPPER_KIND];
     trainingQueueSlots.set(lodge, slots);
 
     // Set food to be at cap
@@ -296,8 +296,8 @@ describe('Economy', () => {
 
     // The training system spawns units regardless of food cap in the current
     // implementation - this tests that the entity defs have food costs defined
-    const brawlerDef = ENTITY_DEFS[EntityKind.Brawler];
-    expect(brawlerDef.foodCost).toBe(1);
+    const sapperDef = ENTITY_DEFS[SAPPER_KIND];
+    expect(sapperDef.foodCost).toBe(1);
 
     // Training completes and spawns the unit
     trainingSystem(world);

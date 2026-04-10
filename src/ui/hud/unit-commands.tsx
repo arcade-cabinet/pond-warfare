@@ -3,7 +3,7 @@
  *
  * Attack-move, Stop, Patrol, and Stance buttons are always visible when
  * units are selected (all screen sizes including mobile/tablet).
- * Army select, idle worker, and save-group remain desktop-only.
+ * Army select, idle Mudpaw, and save-group remain desktop-only.
  *
  * Buttons are positioned absolutely on the right side of the game screen,
  * styled as floating command buttons with backdrop blur.
@@ -16,7 +16,7 @@ import {
   armyCount,
   attackMoveActive,
   hasPlayerUnits,
-  idleWorkerCount,
+  idleGeneralistCount,
   patrolModeActive,
   selectionCount,
   selectionStance,
@@ -25,7 +25,7 @@ import {
 const STANCE_TITLES = ['Aggressive', 'Defensive', 'Hold'] as const;
 
 export interface UnitCommandsProps {
-  onIdleWorkerClick?: () => void;
+  onIdleGeneralistClick?: () => void;
   onArmyClick?: () => void;
   onAttackMoveClick?: () => void;
   onHaltClick?: () => void;
@@ -77,28 +77,28 @@ function CmdButton({
 export function UnitCommands(props: UnitCommandsProps) {
   const [saveGroupOpen, setSaveGroupOpen] = useState(false);
 
-  const totalIdle = idleWorkerCount.value;
+  const totalIdle = idleGeneralistCount.value;
   const mobile = screenClass.value === 'compact';
   const hasSelection = hasPlayerUnits.value && selectionCount.value > 0;
 
   return (
     <>
-      {/* Idle units button (desktop only) */}
+      {/* Idle Mudpaws button (desktop only) */}
       {!mobile && totalIdle > 0 && (
         <div class="absolute top-14 right-2 md:right-6 z-20 flex flex-wrap items-center gap-1">
           <button
             type="button"
-            id="idle-worker-btn"
+            id="idle-generalist-btn"
             class="cmd-btn border-2 px-2 py-0.5 md:px-4 md:py-2 min-h-[32px] md:min-h-[36px] rounded-full font-bold flex items-center gap-1.5 md:gap-2 transition-colors shadow-lg cursor-pointer"
             style={{ borderColor: 'var(--pw-warning)', color: 'var(--pw-warning)' }}
-            title="Select idle worker (.)"
-            onClick={() => props.onIdleWorkerClick?.()}
+            title="Select idle Mudpaw (.)"
+            onClick={() => props.onIdleGeneralistClick?.()}
           >
             <span
               class="w-3 h-3 rounded-full animate-pulse"
               style={{ background: 'var(--pw-warning)' }}
             />
-            <span class="font-heading text-xs md:text-sm">{totalIdle} Idle</span>
+            <span class="font-heading text-xs md:text-sm">{totalIdle} Idle Mudpaws</span>
           </button>
         </div>
       )}
@@ -184,7 +184,7 @@ export function UnitCommands(props: UnitCommandsProps) {
             <button
               type="button"
               class="cmd-btn border-2 px-4 py-2 rounded-full font-bold flex items-center gap-2 transition-colors shadow-lg cursor-pointer"
-              style={{ borderColor: 'var(--pw-scout-dark)', color: 'var(--pw-scout)' }}
+              style={{ borderColor: 'var(--pw-recon-dark)', color: 'var(--pw-recon)' }}
               title="Save selection to a control group"
               onClick={(e) => {
                 e.stopPropagation();
@@ -198,7 +198,7 @@ export function UnitCommands(props: UnitCommandsProps) {
               class="flex gap-1 items-center rounded-full px-2 py-1 shadow-lg"
               style={{
                 background: 'var(--pw-overlay-heavy)',
-                border: '1px solid var(--pw-scout-dark)',
+                border: '1px solid var(--pw-recon-dark)',
               }}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
@@ -208,8 +208,8 @@ export function UnitCommands(props: UnitCommandsProps) {
                   class="w-7 h-7 rounded font-numbers font-bold text-xs cursor-pointer flex items-center justify-center transition-colors"
                   style={{
                     background: 'var(--pw-bg-surface)',
-                    border: '1px solid var(--pw-scout-dark)',
-                    color: 'var(--pw-scout)',
+                    border: '1px solid var(--pw-recon-dark)',
+                    color: 'var(--pw-recon)',
                   }}
                   title={`Save to group ${n}`}
                   onClick={(e) => {

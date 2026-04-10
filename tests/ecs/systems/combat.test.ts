@@ -17,11 +17,14 @@ import {
   IsBuilding,
   Position,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createCombatUnit(
@@ -42,6 +45,7 @@ function createCombatUnit(
   addComponent(world.ecs, eid, Collider);
   addComponent(world.ecs, eid, Sprite);
   addComponent(world.ecs, eid, Carrying);
+  addComponent(world.ecs, eid, TaskOverride);
 
   Position.x[eid] = x;
   Position.y[eid] = y;
@@ -57,6 +61,10 @@ function createCombatUnit(
   Velocity.speed[eid] = 1.8;
   Collider.radius[eid] = 16;
   Carrying.resourceType[eid] = ResourceType.None;
+  TaskOverride.active[eid] = 0;
+  TaskOverride.task[eid] = 0;
+  TaskOverride.targetEntity[eid] = -1;
+  TaskOverride.resourceKind[eid] = 0;
 
   return eid;
 }
@@ -70,7 +78,7 @@ describe('combatSystem', () => {
   });
 
   it('should set attack cooldown after attacking', () => {
-    const attacker = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
 
     UnitStateMachine.state[attacker] = UnitState.Attacking;
@@ -84,7 +92,7 @@ describe('combatSystem', () => {
   });
 
   it('should return to idle if target is dead', () => {
-    const attacker = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
 
     UnitStateMachine.state[attacker] = UnitState.Attacking;
@@ -97,7 +105,7 @@ describe('combatSystem', () => {
   });
 
   it('should skip attack when cooldown is active', () => {
-    const attacker = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
 
     UnitStateMachine.state[attacker] = UnitState.Attacking;
@@ -113,7 +121,7 @@ describe('combatSystem', () => {
 
   it('clears commander aura buffs immediately after the commander dies', () => {
     const commander = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Commander);
-    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, SAPPER_KIND);
 
     combatSystem(world);
     expect(world.commanderDamageBuff.has(ally)).toBe(true);
@@ -143,7 +151,7 @@ describe('combatSystem', () => {
     FactionTag.faction[armory] = Faction.Player;
     EntityTypeTag.kind[armory] = EntityKind.Armory;
 
-    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, SAPPER_KIND);
     world.tech.warDrums = true;
 
     combatSystem(world);
@@ -168,7 +176,7 @@ describe('combatSystem', () => {
     FactionTag.faction[armory] = Faction.Player;
     EntityTypeTag.kind[armory] = EntityKind.Armory;
 
-    const ally = createCombatUnit(world, 130, 100, Faction.Player, EntityKind.Brawler);
+    const ally = createCombatUnit(world, 130, 100, Faction.Player, SAPPER_KIND);
     world.tech.warDrums = true;
 
     combatSystem(world);
@@ -179,5 +187,97 @@ describe('combatSystem', () => {
 
     combatSystem(world);
     expect(world.warDrumsBuff.has(ally)).toBe(false);
+  });
+
+  it('applies player critical hits to melee damage', () => {
+    const baselineWorld = createGameWorld();
+    baselineWorld.spatialHash = undefined as never;
+    const baselineAttacker = createCombatUnit(baselineWorld, 100, 100, Faction.Player, SAPPER_KIND);
+    const baselineTarget = createCombatUnit(baselineWorld, 110, 100, Faction.Enemy, EntityKind.Gator);
+    UnitStateMachine.state[baselineAttacker] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[baselineAttacker] = baselineTarget;
+    Combat.attackCooldown[baselineAttacker] = 0;
+    combatSystem(baselineWorld);
+    const baselineDamage = 60 - Health.current[baselineTarget];
+
+    const attacker = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
+    const target = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
+
+    world.playerCriticalHitChance = 1.0;
+    world.gameRng.next = () => 0;
+    UnitStateMachine.state[attacker] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[attacker] = target;
+    Combat.attackCooldown[attacker] = 0;
+
+    combatSystem(world);
+
+    expect(60 - Health.current[target]).toBe(baselineDamage * 2);
+    expect(world.floatingTexts.some((text) => text.text === 'CRIT!')).toBe(true);
+  });
+
+  it('skips idle auto-aggro for gather overrides', () => {
+    world.frameCount = 10;
+    const mudpaw = createCombatUnit(world, 100, 100, Faction.Player, MUDPAW_KIND);
+    const enemy = createCombatUnit(world, 120, 100, Faction.Enemy, EntityKind.Snake);
+
+    Combat.damage[mudpaw] = 2;
+    TaskOverride.active[mudpaw] = 1;
+    TaskOverride.task[mudpaw] = UnitState.GatherMove;
+    TaskOverride.targetEntity[mudpaw] = 3;
+    TaskOverride.resourceKind[mudpaw] = EntityKind.Clambed;
+    UnitStateMachine.targetEntity[mudpaw] = -1;
+
+    combatSystem(world);
+
+    expect(UnitStateMachine.state[mudpaw]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.targetEntity[mudpaw]).toBe(-1);
+    expect(enemy).toBeGreaterThanOrEqual(0);
+  });
+
+  it('moves shamans toward wounded allies while idle', () => {
+    world.frameCount = 30;
+    const shaman = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Shaman);
+    const ally = createCombatUnit(world, 140, 100, Faction.Player, SAPPER_KIND);
+
+    Combat.damage[shaman] = 0;
+    Health.current[ally] = 40;
+
+    combatSystem(world);
+
+    expect(UnitStateMachine.state[shaman]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetEntity[shaman]).toBe(ally);
+    expect(UnitStateMachine.targetX[shaman]).toBe(Position.x[ally]);
+    expect(UnitStateMachine.targetY[shaman]).toBe(Position.y[ally]);
+  });
+
+  it('keeps shaman support targeting inside the assigned area', () => {
+    world.frameCount = 30;
+    const shaman = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Shaman);
+    const inside = createCombatUnit(world, 150, 100, Faction.Player, SAPPER_KIND);
+    const outside = createCombatUnit(world, 360, 100, Faction.Player, SAPPER_KIND);
+
+    Health.current[inside] = 40;
+    Health.current[outside] = 20;
+    world.specialistAssignments.set(shaman, {
+      runtimeId: 'shaman',
+      canonicalId: 'shaman',
+      label: 'Shaman',
+      mode: 'single_zone',
+      operatingRadius: 120,
+      centerX: 150,
+      centerY: 100,
+      anchorX: 150,
+      anchorY: 100,
+      anchorRadius: 0,
+      engagementRadius: 0,
+      engagementX: 150,
+      engagementY: 100,
+      projectionRange: 0,
+    } satisfies SpecialistAssignment);
+
+    combatSystem(world);
+
+    expect(UnitStateMachine.targetEntity[shaman]).toBe(inside);
+    expect(UnitStateMachine.targetEntity[shaman]).not.toBe(outside);
   });
 });

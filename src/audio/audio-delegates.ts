@@ -53,12 +53,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'pickup', function (this: Self, wx?: number) {
     this.sfxMgr.pickup(wx);
   });
-  def(proto, 'sniperHit', function (this: Self, wx?: number) {
-    this.sfxMgr.sniperHit(wx);
-  });
-  def(proto, 'catapultImpact', function (this: Self, wx?: number) {
-    this.sfxMgr.catapultImpact(wx);
-  });
   def(proto, 'towerHit', function (this: Self, wx?: number) {
     this.sfxMgr.towerHit(wx);
   });
@@ -90,29 +84,35 @@ export function installDelegates(proto: any): void {
   def(proto, 'selectUnit', function (this: Self) {
     this.sfxMgr.selectUnit();
   });
-  def(proto, 'selectBrawler', function (this: Self) {
-    this.sfxMgr.selectBrawler();
+  def(proto, 'selectMudpaw', function (this: Self) {
+    this.sfxMgr.selectMudpaw();
   });
-  def(proto, 'selectSniper', function (this: Self) {
-    this.sfxMgr.selectSniper();
+  def(proto, 'selectGuard', function (this: Self) {
+    this.sfxMgr.selectGuard();
   });
-  def(proto, 'selectHealer', function (this: Self) {
-    this.sfxMgr.selectHealer();
+  def(proto, 'selectRanger', function (this: Self) {
+    this.sfxMgr.selectRanger();
   });
-  def(proto, 'selectCatapult', function (this: Self) {
-    this.sfxMgr.selectCatapult();
+  def(proto, 'selectBombardier', function (this: Self) {
+    this.sfxMgr.selectBombardier();
   });
-  def(proto, 'selectScout', function (this: Self) {
-    this.sfxMgr.selectScout();
+  def(proto, 'selectSapper', function (this: Self) {
+    this.sfxMgr.selectSapper();
+  });
+  def(proto, 'selectSaboteur', function (this: Self) {
+    this.sfxMgr.selectSaboteur();
+  });
+  def(proto, 'selectMedic', function (this: Self) {
+    this.sfxMgr.selectMedic();
+  });
+  def(proto, 'selectShaman', function (this: Self) {
+    this.sfxMgr.selectShaman();
+  });
+  def(proto, 'selectLookout', function (this: Self) {
+    this.sfxMgr.selectLookout();
   });
   def(proto, 'selectCommander', function (this: Self) {
     this.sfxMgr.selectCommander();
-  });
-  def(proto, 'selectGatherer', function (this: Self) {
-    this.sfxMgr.selectGatherer();
-  });
-  def(proto, 'selectShieldbearer', function (this: Self) {
-    this.sfxMgr.selectShieldbearer();
   });
   def(proto, 'selectBuild', function (this: Self) {
     this.sfxMgr.selectBuild();
@@ -131,9 +131,6 @@ export function installDelegates(proto: any): void {
   });
   def(proto, 'buildComplete', function (this: Self) {
     this.sfxMgr.buildComplete();
-  });
-  def(proto, 'airdropIncoming', function (this: Self) {
-    this.sfxMgr.airdropIncoming();
   });
   def(proto, 'enemyEvolution', function (this: Self) {
     this.sfxMgr.enemyEvolution();
@@ -171,14 +168,6 @@ export function installDelegates(proto: any): void {
   def(proto, 'shoot', function (this: Self, wx?: number) {
     this.cueMgr.combatStinger();
     this.sfxMgr.shoot(wx);
-  });
-  def(proto, 'sniperShoot', function (this: Self, wx?: number) {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.sniperShoot(wx);
-  });
-  def(proto, 'catapultShoot', function (this: Self, wx?: number) {
-    this.cueMgr.combatStinger();
-    this.sfxMgr.catapultShoot(wx);
   });
   def(proto, 'towerShoot', function (this: Self, wx?: number) {
     this.cueMgr.combatStinger();

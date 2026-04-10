@@ -18,10 +18,12 @@ import {
   Position,
   Sprite,
   TrainingQueue,
+  trainingQueueCostSlots,
   trainingQueueSlots,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { cancelTrain } from '@/input/selection';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { cancelTrain, train } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
 
 function createTrainingBuilding(world: GameWorld, kind: EntityKind): number {
@@ -58,78 +60,107 @@ describe('cancelTrain', () => {
   beforeEach(() => {
     world = createGameWorld();
     trainingQueueSlots.clear();
+    trainingQueueCostSlots.clear();
   });
 
   it('removes item from queue at the given index', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory);
-    trainingQueueSlots.set(armory, [EntityKind.Brawler, EntityKind.Sniper]);
-    TrainingQueue.count[armory] = 2;
-    TrainingQueue.timer[armory] = TRAIN_TIMER;
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, SAPPER_KIND]);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = TRAIN_TIMER;
 
-    cancelTrain(world, armory, 1);
+    cancelTrain(world, lodge, 1);
 
-    const slots = trainingQueueSlots.get(armory) ?? [];
+    const slots = trainingQueueSlots.get(lodge) ?? [];
     expect(slots.length).toBe(1);
-    expect(slots[0]).toBe(EntityKind.Brawler);
-    expect(TrainingQueue.count[armory]).toBe(1);
+    expect(slots[0]).toBe(MUDPAW_KIND);
+    expect(TrainingQueue.count[lodge]).toBe(1);
   });
 
-  it('refunds clam and twig costs', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory);
-    const brawlerDef = ENTITY_DEFS[EntityKind.Brawler];
-    const fishCost = brawlerDef.fishCost ?? 0;
-    const logCost = brawlerDef.logCost ?? 0;
+  it('refunds fish and rock costs', () => {
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge);
+    const sapperDef = ENTITY_DEFS[SAPPER_KIND];
+    const fishCost = sapperDef.fishCost ?? 0;
+    const rockCost = sapperDef.rockCost ?? 0;
 
     world.resources.fish = 100;
-    world.resources.logs = 50;
+    world.resources.rocks = 50;
 
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = TRAIN_TIMER;
+    trainingQueueSlots.set(lodge, [SAPPER_KIND]);
+    TrainingQueue.count[lodge] = 1;
+    TrainingQueue.timer[lodge] = TRAIN_TIMER;
 
-    cancelTrain(world, armory, 0);
+    cancelTrain(world, lodge, 0);
 
     expect(world.resources.fish).toBe(100 + fishCost);
-    expect(world.resources.logs).toBe(50 + logCost);
+    expect(world.resources.rocks).toBe(50 + rockCost);
+  });
+
+  it('refunds the discounted queued cost when unit-cost reduction is active', () => {
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge);
+    const sapperDef = ENTITY_DEFS[SAPPER_KIND];
+
+    world.playerUnitCostMultiplier = 0.97;
+    world.resources.fish = 100;
+    world.resources.rocks = 50;
+    world.resources.food = 0;
+    world.resources.maxFood = 8;
+    train(
+      world,
+      lodge,
+      SAPPER_KIND,
+      sapperDef.fishCost ?? 0,
+      sapperDef.logCost ?? 0,
+      sapperDef.foodCost ?? 1,
+      sapperDef.rockCost ?? 0,
+    );
+
+    expect(world.resources.fish).toBe(76);
+    expect(world.resources.rocks).toBe(35);
+
+    cancelTrain(world, lodge, 0);
+
+    expect(world.resources.fish).toBe(100);
+    expect(world.resources.rocks).toBe(50);
   });
 
   it('resets timer when cancelling the active (index 0) item with remaining queue', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory);
-    trainingQueueSlots.set(armory, [EntityKind.Brawler, EntityKind.Sniper]);
-    TrainingQueue.count[armory] = 2;
-    TrainingQueue.timer[armory] = 50; // Partially trained
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, SAPPER_KIND]);
+    TrainingQueue.count[lodge] = 2;
+    TrainingQueue.timer[lodge] = 50; // Partially trained
 
-    cancelTrain(world, armory, 0);
+    cancelTrain(world, lodge, 0);
 
-    expect(TrainingQueue.timer[armory]).toBe(TRAIN_TIMER);
-    expect(TrainingQueue.count[armory]).toBe(1);
-    const slots = trainingQueueSlots.get(armory) ?? [];
-    expect(slots[0]).toBe(EntityKind.Sniper);
+    expect(TrainingQueue.timer[lodge]).toBe(TRAIN_TIMER);
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    const slots = trainingQueueSlots.get(lodge) ?? [];
+    expect(slots[0]).toBe(SAPPER_KIND);
   });
 
   it('zeroes timer when cancelling the only item in queue', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory);
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 80;
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND]);
+    TrainingQueue.count[lodge] = 1;
+    TrainingQueue.timer[lodge] = 80;
 
-    cancelTrain(world, armory, 0);
+    cancelTrain(world, lodge, 0);
 
-    expect(TrainingQueue.timer[armory]).toBe(0);
-    expect(TrainingQueue.count[armory]).toBe(0);
+    expect(TrainingQueue.timer[lodge]).toBe(0);
+    expect(TrainingQueue.count[lodge]).toBe(0);
   });
 
   it('does nothing for out-of-range index', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory);
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = TRAIN_TIMER;
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND]);
+    TrainingQueue.count[lodge] = 1;
+    TrainingQueue.timer[lodge] = TRAIN_TIMER;
 
     const clamsBefore = world.resources.fish;
 
-    cancelTrain(world, armory, 5);
+    cancelTrain(world, lodge, 5);
 
-    expect(TrainingQueue.count[armory]).toBe(1);
+    expect(TrainingQueue.count[lodge]).toBe(1);
     expect(world.resources.fish).toBe(clamsBefore);
   });
 });

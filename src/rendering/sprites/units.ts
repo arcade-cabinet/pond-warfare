@@ -1,12 +1,17 @@
 /**
- * Otter-type unit sprites: gatherer, brawler, sniper, healer, shieldbearer,
- * scout, swimmer, trapper, commander, sapper, saboteur, shaman, diver, engineer.
+ * Otter-type unit sprites.
+ *
+ * Sprite bodies for live otter units. A few reserved enum ids reuse these same
+ * draw functions, but the player-facing roster is:
+ * - `drawMudpaw` -> Mudpaw and gather-specialist bodies
+ * - `drawLookout` -> Lookout body
+ * - `drawSapper` / `drawSaboteur` -> live combat bodies
  */
 
 import { PALETTE } from '@/constants';
 import { type DrawCtx, OTTER_NOSE_HIGHLIGHT, OTTER_OUTLINE } from './draw-helpers';
 
-/** Draw the base otter body shared by gatherer, brawler, sniper, healer, etc. */
+/** Draw the base otter body shared by Mudpaw and a few alias-backed otter units. */
 function drawOtterBase(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   // Shadow under feet
@@ -38,7 +43,7 @@ function drawOtterBase(d: DrawCtx): void {
   rect(11, 10, 3, 2, PALETTE.otterBase);
 }
 
-/** Draw the standard otter body without extra outline on feet (healer/shieldbearer). */
+/** Draw the standard otter body without extra outline on feet (Medic/shared heavy chassis). */
 function drawOtterBodyMinimal(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -61,31 +66,18 @@ function drawOtterBodyMinimal(d: DrawCtx): void {
   rect(11, 10, 3, 2, PALETTE.otterBase);
 }
 
-export function drawGatherer(d: DrawCtx): void {
+export function drawMudpaw(d: DrawCtx): void {
   drawOtterBase(d);
   d.rect(3, 5, 2, 2, PALETTE.clamShell);
 }
 
-export function drawBrawler(d: DrawCtx): void {
-  drawOtterBase(d);
-  d.rect(12, 4, 2, 7, PALETTE.reedBrown);
-  d.rect(6, 1, 4, 2, PALETTE.clamShell);
-}
-
-export function drawSniper(d: DrawCtx): void {
-  drawOtterBase(d);
-  d.rect(13, 4, 1, 8, PALETTE.reedBrown);
-  d.rect(12, 4, 1, 1, PALETTE.stoneL);
-  d.rect(12, 11, 1, 1, PALETTE.stoneL);
-}
-
-export function drawHealer(d: DrawCtx): void {
+export function drawMedic(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   d.rect(7, 6, 2, 5, '#22c55e');
   d.rect(6, 8, 4, 1, '#22c55e');
 }
 
-export function drawShieldbearer(d: DrawCtx): void {
+export function drawSharedHeavyChassis(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   d.rect(2, 5, 4, 6, PALETTE.clamShell);
   d.rect(1, 6, 1, 4, PALETTE.stoneL);
@@ -93,7 +85,7 @@ export function drawShieldbearer(d: DrawCtx): void {
   d.p(3, 9, PALETTE.stone);
 }
 
-export function drawScout(d: DrawCtx): void {
+export function drawLookout(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.fillRect(5, 14, 6, 1);
@@ -117,7 +109,7 @@ export function drawScout(d: DrawCtx): void {
   rect(11, 10, 3, 1, PALETTE.otterBase);
 }
 
-export function drawSwimmer(d: DrawCtx): void {
+export function drawReservedUnit28(d: DrawCtx): void {
   const { p, rect, ctx } = d;
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.fillRect(3, 12, 10, 1);
@@ -140,7 +132,7 @@ export function drawSwimmer(d: DrawCtx): void {
   rect(1, 9, 1, 1, PALETTE.otterBase);
 }
 
-export function drawTrapper(d: DrawCtx): void {
+export function drawReservedUnit29(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   const { p, rect } = d;
   rect(2, 5, 3, 1, '#f59e0b');
@@ -232,8 +224,8 @@ export function drawShaman(d: DrawCtx): void {
   p(13, 0, '#bbf7d0');
 }
 
-/** Diver -- blue-tinted otter with goggles for stealth. */
-export function drawDiver(d: DrawCtx): void {
+/** Reserved unit slot 33 reusing a blue-tinted otter body. */
+export function drawReservedUnit33(d: DrawCtx): void {
   drawOtterBodyMinimal(d);
   const { p, rect } = d;
   // Blue tint on body
@@ -252,20 +244,4 @@ export function drawDiver(d: DrawCtx): void {
   // Flippers on feet
   rect(4, 13, 3, 1, '#0284c7');
   rect(9, 13, 3, 1, '#0284c7');
-}
-
-/** Engineer -- brown otter with hammer for bridge building. */
-export function drawEngineer(d: DrawCtx): void {
-  drawOtterBase(d);
-  const { p, rect } = d;
-  // Tool belt across belly
-  rect(5, 8, 6, 1, '#92400e');
-  p(6, 8, '#f59e0b');
-  // Hammer in right hand
-  rect(12, 4, 1, 5, '#92400e');
-  rect(11, 3, 3, 2, '#6b7280');
-  p(12, 3, '#9ca3af');
-  // Hard hat
-  rect(5, 1, 6, 2, '#f59e0b');
-  rect(4, 2, 8, 1, '#d97706');
 }

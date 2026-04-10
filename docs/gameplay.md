@@ -1,10 +1,31 @@
+---
+title: Gameplay Design
+updated: 2026-04-10
+status: current
+domain: product
+---
+
 # Gameplay Design (v3)
 
 ## Overview
 
-Pond Warfare is a mobile-first real-time strategy game set in a pond ecosystem. The player controls a colony of otters defending their Lodge from escalating waves of predators. There is one game mode: defend the Lodge. Between matches, the player spends earned Clams on a deep upgrade web and Pearls on prestige upgrades.
+Pond Warfare is a mobile-first real-time strategy game set in a pond ecosystem. The player controls a colony of otters defending their Lodge from escalating waves of predators. There is one game mode: defend the Lodge. The metagame uses a dual-path loop:
 
-The core loop: PLAY -> EARN CLAMS -> UPGRADE -> PLAY HARDER -> PRESTIGE -> REPEAT.
+- **Clams** are the current-run currency. Winning matches earns Clams, and between matches the player spends them on temporary power and frontier expansion for the current prestige cycle.
+- **Pearls** are the prestige currency. Ranking up resets the Clam run and converts long-run progress into permanent unlocks and automation from the main menu.
+
+The core loop: PLAY -> WIN -> SPEND CLAMS TO PUSH THE CURRENT RUN -> RANK UP FOR PEARLS -> REPEAT.
+
+The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), with a machine-readable copy in [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). Older docs that describe separate baseline `Gatherer`, `Fighter`, and `Scout` units plus free match-start Pearl auto-deploys should be treated as obsolete.
+
+### Baseline Balance Rule
+
+The baseline game must be technically playable without spending either Clams or Pearls:
+
+- A fresh prestige cycle should be able to clear the first exposure to each of the six panel stages using only baseline tools
+- Clams act as a **pressure-relief valve**, easing the rising swarm complexity and enemy scaling across successive matches in the same run
+- Pearls act as the permanent long-run acceleration layer
+- If a building or response is required to clear a pane for the first time, it belongs in the baseline pane progression, not behind Clams
 
 ## Game Mode: Defend the Lodge
 
@@ -18,11 +39,13 @@ Each match takes place on a vertical map. The player's Lodge sits at the bottom.
 ### Match Flow
 
 1. Match starts with Lodge + initial units at bottom of vertical map
-2. Player gathers resources (Fish, Rocks, Logs), trains units, builds fortifications
-3. Events trigger on a timer (waves, boss fights, sabotage raids, etc.)
-4. Player defends Lodge, completes events for bonus Clam rewards
-5. Match ends -> Rewards Screen calculates Clam earnings
-6. Return to main menu -> spend Clams on upgrades, optionally prestige
+2. A first-session HUD coach guides the player through the opening loop: train from the Lodge, select a Mudpaw, then survive the first pressure spike
+3. Player gathers resources (Fish, Rocks, Logs), trains units, builds fortifications
+4. Events trigger on a timer (waves, boss fights, sabotage raids, etc.)
+5. Player defends Lodge, completes events for bonus Clam rewards
+6. Match ends -> Rewards Screen calculates Clam earnings
+7. Rewards Screen opens -> spend Clams for the next match in the current run
+8. When the run slows down enough, the RANK UP button begins to matter -> prestige for Pearls from the main menu
 
 ## Resources
 
@@ -30,12 +53,12 @@ Each match takes place on a vertical map. The player's Lodge sits at the bottom.
 
 | Resource | Source | Used For |
 |----------|--------|----------|
-| **Fish** | Fish nodes (Clambed) | Training generalist units |
+| **Fish** | Fish nodes (Clambed) | Training manual units and Pearl specialists |
 | **Rocks** | Rock deposits (PearlBed) | Building fortifications |
 | **Logs** | Tree clusters (Cattail) | Building construction, repairs |
 | **Food** | Population count vs housing cap | Limits unit count |
 
-Food works as a population system: each non-building player entity counts as 1 food. Max food comes from the Lodge (+8) and Burrow wings (+6).
+Food works as a population system: each non-building player entity counts as 1 food. Max food comes from the Lodge (+8) and Burrow wings (+6). Under the canonical specialist model, Pearl specialists are trained during a match and should be balanced intentionally rather than appearing as free hidden-cap helpers.
 
 Resources are finite. When a node is depleted, it is gone -- forcing expansion toward fresh nodes. Both factions compete for the same resource nodes.
 
@@ -43,12 +66,17 @@ Resources are finite. When a node is depleted, it is gone -- forcing expansion t
 
 | Currency | Source | Used For |
 |----------|--------|----------|
-| **Clams** | Earned post-match | Upgrade web purchases (240+ nodes) |
-| **Pearls** | Earned from prestige (Rank Up) | Pearl upgrades (auto-deploy, auto-behaviors, multipliers) |
+| **Clams** | Earned post-match victories | Current-run upgrades between matches, including Frontier Expansion diamonds; resets on Rank Up |
+| **Pearls** | Earned from prestige (Rank Up) | Permanent main-menu upgrades, automation, commander/loadout progression, starting-tier boosts |
 
 ## Vertical Map & 6-Panel Grid
 
-Maps use a 6-panel grid system (`configs/panels.json`). Each panel has a unique biome, resource types, terrain features, and a progression unlock stage. The Lodge panel sits at the bottom center; enemy panels are at the top. Panels unlock as the player advances through progression stages.
+Maps use a 6-panel grid system (`configs/panels.json`). Each panel has a unique biome, resource types, terrain features, and a frontier unlock stage. The Lodge panel sits at the bottom center; enemy panels are at the top. The intended run loop is:
+
+1. Clear the current battlefield shape
+2. Enter the Clam upgrade screen
+3. Buy temporary upgrades and, when available, the next Frontier Expansion
+4. Start the next match on a larger battlefield
 
 | Panel | Biome | Resources | Unlock Stage |
 |-------|-------|-----------|--------------|
@@ -78,33 +106,100 @@ Map dimensions also scale with progression level (from `configs/terrain.json`):
 
 ## Units
 
-### Player Generalists (4)
+### Manual Units
 
-Trainable at the Lodge during a match. These are the core units available from the start.
+The baseline run uses a compact manual roster that expands only when new pressure complexity demands a new response.
 
-| Unit | HP | Speed | Damage | Cost (Fish) | Role |
-|------|----|-------|--------|-------------|------|
-| **Gatherer** | 30 | 2.0 | 0 | 10 | Collects resources, constructs buildings |
-| **Fighter** | 60 | 1.8 | 8 | 20 | Melee combat unit |
-| **Medic** | 25 | 1.5 | 0 | 15 | Heals nearby wounded allies |
-| **Scout** | 20 | 3.5 | 1 | 8 | Fast recon, reveals fog of war |
+| Unit | Unlock Stage | Role |
+|------|--------------|------|
+| **Mudpaw** | 1 | Baseline manual generalist. Gathers, fights, scouts, builds, repairs. |
+| **Medic** | 2 | Manual healing/support once logs and repair pressure enter the run. |
+| **Sapper** | 5 | Manual siege/demolition once rocks, fortifications, and flank pressure matter. |
+| **Saboteur** | 6 | Manual disruption/subversion once the full six-panel pressure set is active. |
 
-### Player Specialists (10)
+`Mudpaw` replaces the older split baseline `Gatherer + Fighter + Scout` model. Clam upgrades are intended to make that one reusable manual chassis better at economy, vision, field utility, and survivability.
 
-Unlocked via upgrade web diamond nodes and auto-deployed at match start via prestige Pearl upgrades. Specialists cannot be trained during a match -- they are permanent automated units.
+The live player-facing Lodge surfaces now follow that model:
 
-| Unit | HP | Speed | Damage | Role | Auto-Target |
-|------|----|-------|--------|------|-------------|
-| **Fisher** | 25 | 2.0 | 0 | Auto-gathers fish | Nearest fish node |
-| **Digger** | 25 | 1.8 | 0 | Auto-gathers rocks | Nearest rock deposit |
-| **Logger** | 25 | 1.8 | 0 | Auto-gathers logs | Nearest tree cluster |
-| **Guardian** | 80 | 1.2 | 6 | Auto-defends Lodge area | Lodge perimeter |
-| **Hunter** | 50 | 2.0 | 10 | Auto-attacks nearest enemy | Closest threat |
-| **Ranger** | 40 | 2.5 | 6 | Auto-patrols routes | Patrol waypoints |
-| **Shaman** | 20 | 1.5 | 0 | Auto-heals wounded | Nearest wounded ally |
-| **Lookout** | 15 | 3.0 | 0 | Auto-scouts fog edges | Fog of war boundary |
-| **Sapper** | 40 | 1.5 | 15 | Siege enemy fortifications | Enemy forts |
-| **Saboteur** | 30 | 2.5 | 5 | Subverts enemy resource nodes | Enemy resource nodes |
+- stage 1 Lodge/radial training exposes `Mudpaw`
+- `Medic` appears at stage 2
+- `Sapper` appears at stage 5
+- `Saboteur` appears at stage 6
+- selected `Mudpaws` use the mixed generalist radial, not the old gatherer-only command set
+
+### Pearl Specialists
+
+Pearls unlock specialist blueprints, autonomy, and specialist growth. They do not exist to give the player free match-start godmode bodies.
+
+| Specialist | Domain | Behavior |
+|------------|--------|----------|
+| **Fisher** | Economy | Autonomous fish harvesting in an assigned area |
+| **Logger** | Economy | Autonomous log harvesting in an assigned area |
+| **Digger** | Economy | Autonomous rock harvesting in an assigned area |
+| **Guard** | Combat | Autonomous infantry coverage in an assigned area |
+| **Ranger** | Combat | Autonomous ranged coverage in an assigned area |
+| **Bombardier** | Combat | Autonomous siege support in an assigned area |
+| **Shaman** | Support | Autonomous healing in an assigned area |
+| **Lookout** | Recon | Autonomous scouting in an assigned area |
+
+### Specialist Control Model
+
+Pearl specialists are trained during a match after their blueprint is unlocked. The player still pays in-match resources to spawn them.
+
+- Specialists are autonomous by default
+- The player can still select and reposition them
+- Specialists are assigned to a terrain area, not a single target
+- That area defines the specialist's Yuka-governed operating radius
+- Within that radius, the specialist searches for work matching its role
+- Radius growth is a primary Pearl upgrade path alongside unlock, cap, throughput, and durability
+- The Lodge action panel shows only the specialist blueprints the player has actually unlocked and the current field-cap state for each
+
+The live Pearl progression surface now reflects that model directly:
+
+- Pearl upgrades are grouped per specialist on the Pearl screen
+- specialist rows now mix blueprint unlocks with zone-growth rows instead of hiding all specialist progression inside one generic section
+- single-zone specialists upgrade `operating radius`
+- `Ranger` and `Bombardier` upgrade `anchor radius`, `engagement radius`, and `projection range`
+
+### Specialist Radius UI
+
+Selecting a specialist should reveal its assignment geometry on the map.
+
+- Single-zone specialists show one assigned circle plus a dotted line from the unit to that circle
+- Dual-zone specialists show an `anchor` circle, an `engagement` circle, and a dotted line connecting them
+- The dotted link is not just cosmetic; where appropriate, its reach becomes an upgradeable `projection range`
+- Circle and line styling should visually correlate to the selected specialist via color, glyph, or both
+- The runtime now applies Pearl zone upgrades into those circles and projection limits when the specialist is spawned
+
+## Commanders
+
+Commanders are permanent Pearl/loadout progression. Their bonuses must hook live gameplay systems only; dead tech-tree and removed-unit references are obsolete.
+
+### Commander Passives
+
+| Commander | Primary Effect | Secondary Effect |
+|----------|----------------|------------------|
+| **Marshal** | Nearby units deal +15% damage | None |
+| **Sage** | Nearby Mudpaws gain +25% gather rate | Mudpaws gain +10% gather rate globally |
+| **Warden** | Nearby buildings gain +200 HP | Towers attack 20% faster |
+| **Tidekeeper** | All nearby units gain +0.4 speed | Fishers cost 50% less to field |
+| **Shadowfang** | Enemies in aura deal -10% damage | Rangers gain +50% projection range |
+| **Ironpaw** | Nearby units gain +20% HP | Guards cost 50% less to field |
+| **Stormcaller** | Nearby units deal +10% damage | Bombardiers gain +50% projection range and lightning strikes every 15 seconds |
+
+### Commander Abilities
+
+The active commander ability is bound to the HUD button / `Q` and must produce real runtime effects:
+
+| Commander | Ability | Live Effect |
+|----------|---------|-------------|
+| **Marshal** | `Charge!` | Selected units gain 2x movement speed for 5 seconds |
+| **Sage** | `Eureka!` | Instantly grants +60 Fish, +20 Logs, +10 Rocks |
+| **Warden** | `Fortify!` | Player buildings are invulnerable for 10 seconds |
+| **Tidekeeper** | `Tidal Wave` | Pushes and damages enemies around the Lodge |
+| **Shadowfang** | `Vanish` | Player units become untargetable through temporary stealth for 8 seconds |
+| **Ironpaw** | `Iron Will` | Player units ignore incoming damage for 5 seconds |
+| **Stormcaller** | `Thunder Strike` | Deals massive AoE damage at the camera center |
 
 ### Enemy Units (6)
 
@@ -113,15 +208,15 @@ Enemy units scale with progression level: HP +5%/level, Damage +3%/level, Speed 
 | Unit | HP | Speed | Damage | Role |
 |------|----|-------|--------|------|
 | **Raider** | 25 | 2.5 | 4 | Targets player resource nodes |
-| **Fighter** | 60 | 1.8 | 8 | Direct assault on Lodge and units |
-| **Healer** | 20 | 1.5 | 0 | Restores wounded enemy allies |
-| **Scout (enemy)** | 15 | 3.0 | 1 | Reveals player army composition |
+| **Assault** | 60 | 1.8 | 8 | Direct assault on the Lodge and field units |
+| **Support** | 20 | 1.5 | 0 | Restores wounded enemy allies |
+| **Recon** | 15 | 3.0 | 1 | Probes player composition and exposed lanes |
 | **Sapper (enemy)** | 50 | 1.0 | 20 | Destroys fortifications and walls |
 | **Saboteur (enemy)** | 25 | 2.5 | 3 | Poisons player resource nodes |
 
 ## Fortifications
 
-Built by Gatherers using Rocks. Placed around the Lodge perimeter. Fort slot count scales with progression level.
+Built by Mudpaws using Rocks. Placed around the Lodge perimeter. Fort slot count scales with progression level.
 
 | Fortification | HP | Cost (Rocks) | Effect |
 |---------------|----|-------------|--------|
@@ -132,17 +227,16 @@ Built by Gatherers using Rocks. Placed around the Lodge perimeter. Fort slot cou
 
 Fort slots per progression level: 4 (level 0-9), 8 (level 10-29), 12 (level 30+).
 
-## Lodge
+## Lodge & Buildings
 
 The central building. If it falls, the match is lost.
 
 - **Base HP**: 500 (scales with upgrades)
-- **Wings**: Visual attachments unlocked via upgrade web diamond nodes:
-  - Dock Wing (Gathering category tier 5) -- faster fish gathering
-  - Barracks Wing (Combat category tier 5) -- faster unit training
-  - Watchtower Wing (Defense category tier 5) -- early wave warning
-  - Healing Pool Wing (Utility category tier 5) -- units near Lodge heal
+- **Baseline building unlocks**: Required responses should arrive organically with the first panel that demands them. If a building is necessary to clear the next pane, it must not be gated behind Clams.
+- **Clam upgrades**: Clams can strengthen or specialize a building during the current prestige run, but they should not be the gate for a required building to exist.
+- **Pearl upgrades**: Pearls can permanently unlock optional automation, commander/loadout progression, and non-essential building variants.
 - **Building wings**: Armory, Burrow, FishingHut, HerbalistHut, Market, and Dock are Lodge wings rather than standalone structures. They appear as ECS entities for gameplay purposes but are conceptually attached to the Lodge.
+- **Manual training surface**: The Lodge is the player-facing manual production building. Armory and Burrow should not expose obsolete split-roster production queues in the live UI.
 - **Prestige glow**: Visual effect based on prestige rank
 
 ## Match Events
@@ -153,11 +247,11 @@ Events are the primary challenge mechanic, replacing the old wave system. Define
 
 | Event | Description | Reward (Clams) |
 |-------|-------------|----------------|
-| **Basic Wave** | Fighters and raiders approach | 5 |
+| **Basic Wave** | Assault enemies and raiders approach | 5 |
 | **Raider Wave** | Raiders target resource nodes | 4 |
-| **Heavy Assault** | Fighters with wall-breaker sappers | 8 |
-| **Healer Squad** | Enemy healers support assault | 7 |
-| **Scout Incursion** | Enemy scouts probe defenses | 3 |
+| **Heavy Assault** | Assault enemies push with wall-breaker sappers | 8 |
+| **Support Squad** | Enemy support units sustain the assault | 7 |
+| **Recon Incursion** | Enemy recon units probe defenses | 3 |
 | **Sabotage Raid** | Saboteurs corrupt resource nodes | 6 |
 | **Boss Croc** | Boss enemy with massive HP | 15 |
 | **Alpha Predator** | Elite boss with damage aura | 20 |
@@ -176,7 +270,7 @@ Events are the primary challenge mechanic, replacing the old wave system. Define
 
 ## Upgrade Web
 
-Between matches, the player spends earned Clams on permanent upgrades arranged in a web of 240+ nodes.
+Between matches, the player spends earned Clams on run-scoped upgrades arranged in a web of 240+ nodes. These upgrades persist across matches in the current prestige cycle and reset on Rank Up.
 
 ### Structure
 
@@ -199,13 +293,13 @@ Between matches, the player spends earned Clams on permanent upgrades arranged i
 
 ### Diamond Nodes
 
-Cross-category milestone nodes that unlock major features:
+Cross-category milestone nodes mark the big run-level pivots:
 
-- **Lodge wings**: Reaching tier 5 in a category unlocks a Lodge wing (visual + gameplay effect)
-- **Specialist unlocks**: Reaching specific tier combinations unlocks new specialist types
-- **Auto-behavior unlocks**: Reaching milestones enables new automated behaviors
+- **Frontier Expansion I-V**: Unlock the next battlefield shape and panel count for the current prestige run
+- **Run power spikes**: Optional current-run multipliers and specializations
+- **Design constraint**: A diamond should never be the gate for a building or response that is required to clear the next pane
 
-Diamond nodes have multi-path requirements (e.g., "Gathering tier 5 AND Economy tier 3").
+Diamond nodes have multi-path requirements (for example, "Gathering tier 5 AND Economy tier 3").
 
 ### Tier Prefixes
 
@@ -228,7 +322,7 @@ Example: "Expert Fish Gathering" (tier 4 of Fish Gathering subcategory).
 
 ## Prestige System
 
-When the player reaches a progression threshold, they can **Rank Up** (prestige):
+When the player reaches a progression threshold and the run starts to taper off, they can **Rank Up** (prestige):
 
 1. All Clam upgrade progress is reset
 2. Player earns Pearls: `floor(progression_level * 0.5)`
@@ -236,53 +330,52 @@ When the player reaches a progression threshold, they can **Rank Up** (prestige)
 
 ### Pearl Upgrades
 
-Three categories of Pearl upgrades:
+Pearl upgrades are the permanent main-menu layer. They can unlock:
 
-#### Auto-Deploy (specialists at match start)
-- Auto-Deploy Fisher (3 Pearls/rank, max 5)
-- Auto-Deploy Digger (3 Pearls/rank, max 5)
-- Auto-Deploy Logger (3 Pearls/rank, max 5)
-- Auto-Deploy Guardian (5 Pearls/rank, max 3)
-- Auto-Deploy Hunter (5 Pearls/rank, max 3)
-- Auto-Deploy Ranger (4 Pearls/rank, max 3)
-- Auto-Deploy Shaman (4 Pearls/rank, max 3)
-- Auto-Deploy Lookout (3 Pearls/rank, max 3)
-- Auto-Deploy Sapper (5 Pearls/rank, max 2)
-- Auto-Deploy Saboteur (4 Pearls/rank, max 2)
+#### Specialist blueprints and autonomy
+- Unlock Fisher, Logger, Digger, Guard, Ranger, Bombardier, Shaman, and Lookout
+- Increase specialist cap or deployment slots
+- Increase specialist operating radius
+- Increase specialist throughput, efficiency, or survivability
 
-#### Auto-Behaviors (permanent passives)
-- Auto-Gather (2 Pearls) -- gatherers auto-collect
-- Auto-Defend (3 Pearls) -- combat units auto-patrol
-- Auto-Heal (2 Pearls) -- medics auto-heal wounded
+Specialists are intended to be strategic in-match investments after Pearl unlock, not free match-start units. Pearls unlock the blueprint and the autonomy layer; Fish, Logs, and Rocks still gate how many specialists the player actually fields during a match.
 
-#### Multipliers (permanent stat boosts)
-- Gather Speed +10%/rank (2 Pearls/rank, max 5)
-- Unit HP +5%/rank (3 Pearls/rank, max 5)
-- Attack Damage +5%/rank (3 Pearls/rank, max 5)
+#### Permanent passives / behavior unlocks
+- Lodge-adjacent unit regen
+- Lodge self-repair
+- Rare resource access
+- Other non-essential automation that should survive prestige
+
+#### Permanent multipliers / run shortcuts
+- Gather speed multipliers
+- Unit HP and damage multipliers
+- Clam earnings multipliers
+- Starting tier boosts so new runs begin above the base Clam rank
 
 ## Post-Match Rewards
 
-After each match, the Rewards Screen shows earned Clams:
+After each match, the Rewards Screen shows earned Clams and routes the player back into the current run:
 
-**Formula**: `(base + kill_bonus + event_bonus + survival_bonus) * prestige_multiplier`
+**Formula**: `(base + kill_bonus + event_bonus + resource_bonus + survival_bonus) * prestige_multiplier`
 
 | Component | Value |
 |-----------|-------|
-| Base Clams | 10 (always earned) |
-| Kill Bonus | 1 per enemy killed |
-| Event Bonus | 5 per event completed |
-| Survival Bonus | 2 per minute survived |
+| Base Clams | 20 (always earned) |
+| Kill Bonus | 2 per enemy killed |
+| Event Bonus | 6 per event completed |
+| Resource Bonus | 8 per 100 resources gathered |
+| Survival Bonus | 4 per minute survived |
 | Prestige Multiplier | 1.0 + (rank * 0.1) |
 | Loss Penalty | 50% of total |
 
 ### Rank Up Eligibility
 
-Rank Up becomes available when `progression_level >= rank_threshold_base * (1 + current_rank * 0.5)`. Base threshold is 20.
+Rank Up becomes available when `progression_level >= rank_threshold_base * (1 + current_rank * 0.5)`. Base threshold is 20. In practice, the current run keeps feeding Clam upgrades and panel growth until that pressure curve slows enough that cashing out for Pearls becomes the better move.
 
 ## Combat Mechanics
 
 - **Auto-aggro**: Idle combat units engage enemies within aggro radius (200px player, 250px enemy)
-- **Retaliation**: Units under attack fight back (gatherers flee first)
+- **Retaliation**: Units under attack fight back, including Mudpaws when they are forced into close contact
 - **Ally assist**: Nearby idle allies join combat within 300px
 - **Towers/Watchtowers**: Auto-target nearest enemy within range
 - **Formation movement**: Group move commands arrange units by role (melee front, ranged middle, support back)
@@ -315,18 +408,9 @@ After a player unit completes an order and is deselected, a themed icon (the aut
 
 This provides a non-intrusive way to set up automated economy and defense without micro-managing every unit. Auto-symbols are rendered as PixiJS overlays (`src/rendering/pixi/auto-symbol-overlay.ts`) and driven by the `autoSymbolSystem` ECS system.
 
-## Auto-Behaviors
+## Automation Note
 
-Toggled via the radial menu on the idle worker button:
-
-| Behavior | Applies To | Effect |
-|----------|-----------|--------|
-| Auto-Gather | Idle Gatherers | Seek nearest resource node |
-| Auto-Build | Idle Gatherers | Pressure-based building decisions |
-| Auto-Defend | Idle Combat | Patrol near Lodge |
-| Auto-Attack | Idle Combat | Attack-move toward nearest enemy |
-| Auto-Heal | Idle Medics | Seek nearest wounded ally |
-| Auto-Scout | Idle Scouts | Move to unexplored map areas |
+The current runtime uses two live automation layers. Manual units still use the auto-symbol and per-role automation toggles for repeatable Mudpaw/combat/support/recon behavior, while Pearl specialists use area assignment from [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md). The long-term direction is to keep shrinking the older generalist automation surface as specialist-area control absorbs more of that work.
 
 ## Day/Night Cycle
 
@@ -340,7 +424,7 @@ Toggled via the radial menu on the idle worker button:
 - Unexplored areas of the map are hidden
 - Player units and buildings reveal a circle around their position
 - Previously explored areas remain dimly visible but don't show current enemies
-- Scouting is essential to locate resource nodes and incoming attacks
+- Recon is essential to locate resource nodes and incoming attacks
 
 ## Kill Streaks
 
@@ -367,11 +451,9 @@ Unit-specific SFX via Tone.js synthesis with spatial stereo panning. Effects inc
 
 ## Difficulty
 
-The game scales difficulty through progression level, not an explicit difficulty selector. Higher progression means:
-- Larger maps with more spawn directions
-- More events with tougher enemy compositions
-- Enemies with scaled HP, damage, and speed
-- More resource nodes but more to defend
+The game scales pressure through two overlapping axes:
+- **Frontier stage**: More panels means more resources, more enemy angles, and more required responses
+- **Progression level**: Longer runs push prestige thresholds, event pools, and long-run intensity
 
 ## Persistence
 

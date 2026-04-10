@@ -1,13 +1,13 @@
-/** SFX module - All sound effect methods and synth pool management. */
+/**
+ * SFX module - All sound effect methods and synth pool management.
+ *
+ * Canonical live callers should prefer Mudpaw/Medic/Lookout/Sapper/Saboteur.
+ */
 import * as Tone from 'tone';
 import {
-  catapultImpactEffect,
-  catapultShootEffect,
   deathMeleeEffect,
   deathRangedEffect,
   rampageEffect,
-  sniperHitEffect,
-  sniperShootEffect,
   towerHitEffect,
   towerShootEffect,
   tripleKillEffect,
@@ -23,8 +23,8 @@ import {
   placeBuildingEffect,
   researchCompleteEffect,
   selectCommanderEffect,
-  selectHealerEffect,
-  selectScoutEffect,
+  selectReconEffect,
+  selectSupportEffect,
   upgradeEffect,
   veteranPromotionEffect,
   winEffect,
@@ -156,20 +156,29 @@ export class SfxManager {
   selectUnit(): void {
     this.playAt(600, 'sine', 0.1, 0.05, 800);
   }
-  selectBrawler(): void {
-    this.playAt(80, 'sine', 0.15, 0.08, 50);
-  }
-  selectSniper(): void {
-    this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
-  }
-  selectCatapult(): void {
-    this.playAt(60, 'sawtooth', 0.2, 0.06, 40);
-  }
-  selectGatherer(): void {
+  selectMudpaw(): void {
     this.playAt(900, 'triangle', 0.04, 0.04, 600);
   }
-  selectShieldbearer(): void {
-    this.playAt(150, 'square', 0.12, 0.07, 90);
+  selectGuard(): void {
+    this.selectSapper();
+  }
+  selectRanger(): void {
+    this.selectSaboteur();
+  }
+  selectBombardier(): void {
+    this.selectSapper();
+  }
+  selectSapper(): void {
+    this.playAt(80, 'sine', 0.15, 0.08, 50);
+  }
+  selectSaboteur(): void {
+    this.playAt(1200, 'triangle', 0.08, 0.06, 1800);
+  }
+  selectMedic(): void {
+    selectSupportEffect(this, this._getMuted, this._getStarted);
+  }
+  selectShaman(): void {
+    this.selectMedic();
   }
   selectBuild(): void {
     this.playAt(200, 'triangle', 0.1, 0.05, 150);
@@ -187,9 +196,6 @@ export class SfxManager {
   trainComplete(): void {
     this.playAt(500, 'sine', 0.1, 0.06, 800);
   }
-  airdropIncoming(): void {
-    this.playAt(1200, 'sine', 0.4, 0.08, 300);
-  }
   /** Short rising tone when resources are deposited at the Lodge. */
   deposit(worldX?: number): void {
     this.playAt(500, 'sine', 0.08, 0.04, 800, worldX);
@@ -198,7 +204,7 @@ export class SfxManager {
   trade(worldX?: number): void {
     this.playAt(350, 'sine', 0.1, 0.06, 550, worldX);
   }
-  /** Subtle pickup sound when a gatherer finishes collecting a resource. */
+  /** Subtle pickup sound when a Mudpaw or gather specialist finishes collecting a resource. */
   pickup(worldX?: number): void {
     this.playAt(700, 'triangle', 0.06, 0.03, 900, worldX);
   }
@@ -207,11 +213,8 @@ export class SfxManager {
   ping(): void {
     pingEffect(this, this._getMuted, this._getStarted);
   }
-  selectHealer(): void {
-    selectHealerEffect(this, this._getMuted, this._getStarted);
-  }
-  selectScout(): void {
-    selectScoutEffect(this, this._getMuted, this._getStarted);
+  selectLookout(): void {
+    selectReconEffect(this, this._getMuted, this._getStarted);
   }
   selectCommander(): void {
     selectCommanderEffect(this, this._getMuted, this._getStarted);
@@ -254,18 +257,6 @@ export class SfxManager {
   }
 
   // ---- Differentiated combat sounds ----
-  sniperShoot(worldX?: number): void {
-    sniperShootEffect(this, worldX);
-  }
-  sniperHit(worldX?: number): void {
-    sniperHitEffect(this, worldX);
-  }
-  catapultShoot(worldX?: number): void {
-    catapultShootEffect(this, worldX);
-  }
-  catapultImpact(worldX?: number): void {
-    catapultImpactEffect(this, this._getMuted, this._getStarted, worldX);
-  }
   towerShoot(worldX?: number): void {
     towerShootEffect(this, worldX);
   }

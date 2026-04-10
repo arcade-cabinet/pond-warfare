@@ -29,6 +29,7 @@ import {
 import { combatSystem } from '@/ecs/systems/combat';
 import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 // ---- Helpers ----
@@ -113,49 +114,49 @@ describe('rally points', () => {
   });
 
   it('should move spawned unit to rally point when building has one', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory, 500, 500);
-    Building.rallyX[armory] = 700;
-    Building.rallyY[armory] = 300;
-    Building.hasRally[armory] = 1;
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
+    Building.rallyX[lodge] = 700;
+    Building.rallyY[lodge] = 300;
+    Building.hasRally[lodge] = 1;
 
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1;
+    trainingQueueSlots.set(lodge, [SAPPER_KIND]);
+    TrainingQueue.count[lodge] = 1;
+    TrainingQueue.timer[lodge] = 1;
 
     trainingSystem(world);
 
-    // Find spawned brawler
+    // Find spawned sapper
     const units = query(world.ecs, [FactionTag, EntityTypeTag, UnitStateMachine]);
-    const brawler = units.find(
+    const sapper = units.find(
       (eid: number) =>
-        EntityTypeTag.kind[eid] === EntityKind.Brawler &&
+        EntityTypeTag.kind[eid] === SAPPER_KIND &&
         FactionTag.faction[eid] === Faction.Player,
     );
-    expect(brawler).toBeDefined();
-    expect(UnitStateMachine.state[brawler!]).toBe(UnitState.Move);
-    expect(UnitStateMachine.targetX[brawler!]).toBe(700);
-    expect(UnitStateMachine.targetY[brawler!]).toBe(300);
+    expect(sapper).toBeDefined();
+    expect(UnitStateMachine.state[sapper!]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetX[sapper!]).toBe(700);
+    expect(UnitStateMachine.targetY[sapper!]).toBe(300);
   });
 
   it('should not move spawned unit when building has no rally point', () => {
-    const armory = createTrainingBuilding(world, EntityKind.Armory, 500, 500);
-    Building.hasRally[armory] = 0;
+    const lodge = createTrainingBuilding(world, EntityKind.Lodge, 500, 500);
+    Building.hasRally[lodge] = 0;
 
-    trainingQueueSlots.set(armory, [EntityKind.Brawler]);
-    TrainingQueue.count[armory] = 1;
-    TrainingQueue.timer[armory] = 1;
+    trainingQueueSlots.set(lodge, [SAPPER_KIND]);
+    TrainingQueue.count[lodge] = 1;
+    TrainingQueue.timer[lodge] = 1;
 
     trainingSystem(world);
 
     const units = query(world.ecs, [FactionTag, EntityTypeTag, UnitStateMachine]);
-    const brawler = units.find(
+    const sapper = units.find(
       (eid: number) =>
-        EntityTypeTag.kind[eid] === EntityKind.Brawler &&
+        EntityTypeTag.kind[eid] === SAPPER_KIND &&
         FactionTag.faction[eid] === Faction.Player,
     );
-    expect(brawler).toBeDefined();
+    expect(sapper).toBeDefined();
     // Without rally point, unit should be idle (default state from archetype)
-    expect(UnitStateMachine.state[brawler!]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[sapper!]).toBe(UnitState.Idle);
   });
 });
 
@@ -171,7 +172,7 @@ describe('unit stances', () => {
 
   it('aggressive: unit auto-attacks nearby enemy when idle', () => {
     world.frameCount = 30;
-    const player = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const player = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
     Stance.mode[player] = StanceMode.Aggressive;
 
@@ -182,7 +183,7 @@ describe('unit stances', () => {
 
   it('defensive: unit ignores nearby enemy when not recently damaged', () => {
     world.frameCount = 300;
-    const player = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const player = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
     Stance.mode[player] = StanceMode.Defensive;
     Health.lastDamagedFrame[player] = 0; // Damaged long ago (frame 0, now at 300)
@@ -194,7 +195,7 @@ describe('unit stances', () => {
 
   it('defensive: unit fights back when recently damaged', () => {
     world.frameCount = 30;
-    const player = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const player = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
     Stance.mode[player] = StanceMode.Defensive;
     Health.lastDamagedFrame[player] = 25; // Damaged 5 frames ago (within 120)
@@ -206,7 +207,7 @@ describe('unit stances', () => {
 
   it('hold: unit ignores nearby enemy entirely', () => {
     world.frameCount = 30;
-    const player = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const player = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
     Stance.mode[player] = StanceMode.Hold;
 
@@ -218,7 +219,7 @@ describe('unit stances', () => {
   it('hold: unit is skipped by auto-behavior system', () => {
     world.frameCount = 60;
     world.autoBehaviors.combat = true;
-    const player = createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    const player = createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
     Stance.mode[player] = StanceMode.Hold;
 
@@ -228,7 +229,7 @@ describe('unit stances', () => {
 
   it('enemy units ignore player stance (always aggressive)', () => {
     world.frameCount = 30;
-    createCombatUnit(world, 100, 100, Faction.Player, EntityKind.Brawler);
+    createCombatUnit(world, 100, 100, Faction.Player, SAPPER_KIND);
     const enemy = createCombatUnit(world, 110, 100, Faction.Enemy, EntityKind.Gator);
     // Even though the enemy technically has a Stance component, enemies
     // should always auto-aggro (stance checks only apply to Player faction).

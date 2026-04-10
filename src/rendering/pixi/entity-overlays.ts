@@ -6,7 +6,9 @@
 
 import { type Container, type Graphics, Text, type TextStyleOptions } from 'pixi.js';
 import { CB_PALETTE } from '@/constants';
-import { EntityKind, type EntityKind as EntityKindType } from '@/types';
+import type { GameWorld } from '@/ecs/world';
+import { getEntityDisplayName } from '@/game/unit-display';
+import { type EntityKind as EntityKindType } from '@/types';
 import { cleanupAutoSymbols } from './auto-symbol-overlay';
 import {
   colorToHex,
@@ -121,6 +123,8 @@ export function cleanupOverlayTexts(): void {
   idleZTexts.clear();
   for (const t of ctrlGroupTexts.values()) t.destroy();
   ctrlGroupTexts.clear();
+  for (const t of getUnitLabelTexts().values()) t.destroy();
+  getUnitLabelTexts().clear();
   cleanupAutoSymbols();
 }
 
@@ -195,6 +199,7 @@ export function drawHealthBar(
 }
 
 export function renderUnitLabel(
+  world: Pick<GameWorld, 'specialistAssignments'> | null,
   eid: number,
   kind: EntityKindType,
   isResource: boolean,
@@ -214,7 +219,7 @@ export function renderUnitLabel(
       entityLayer.addChild(label);
       unitLabelTexts.set(eid, label);
     }
-    label.text = EntityKind[kind] ?? '';
+    label.text = world ? getEntityDisplayName(world, eid) : String(kind);
     label.position.set(ex, ey - sh / 2 + yOff - 16);
     label.zIndex = ey + 1;
     label.visible = true;

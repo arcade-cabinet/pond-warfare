@@ -1,4 +1,13 @@
 import type { PlayableFaction } from '@/config/factions';
+import {
+  isLookoutKind,
+  isMudpawKind,
+  MEDIC_KIND,
+  SABOTEUR_KIND,
+  SHARED_HEAVY_CHASSIS_KIND,
+  SHARED_SIEGE_CHASSIS_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { SfxManager } from './sfx';
 
@@ -12,12 +21,12 @@ type VoiceStep = {
 };
 
 type VoicePalette = Record<
-  'worker' | 'skirmisher' | 'heavy' | 'support' | 'leader',
+  'generalist' | 'skirmisher' | 'heavy' | 'support' | 'leader',
   readonly VoiceStep[]
 >;
 
 const OTTER_PALETTE: VoicePalette = {
-  worker: [
+  generalist: [
     { freq: 820, type: 'triangle', duration: 0.06, volume: 0.035, slide: 960 },
     { freq: 980, type: 'sine', duration: 0.05, volume: 0.03, slide: 1120, delay: 70 },
   ],
@@ -37,7 +46,7 @@ const OTTER_PALETTE: VoicePalette = {
 };
 
 const PREDATOR_PALETTE: VoicePalette = {
-  worker: [{ freq: 280, type: 'square', duration: 0.08, volume: 0.04, slide: 230 }],
+  generalist: [{ freq: 280, type: 'square', duration: 0.08, volume: 0.04, slide: 230 }],
   skirmisher: [
     { freq: 300, type: 'sawtooth', duration: 0.1, volume: 0.045, slide: 220 },
     { freq: 220, type: 'square', duration: 0.08, volume: 0.035, slide: 180, delay: 70 },
@@ -120,12 +129,12 @@ export class VoiceManager {
   }
 
   private roleFor(kind: EntityKind, faction: PlayableFaction): keyof VoicePalette {
-    if (kind === EntityKind.Gatherer) return 'worker';
+    if (isMudpawKind(kind)) return 'generalist';
     if (
-      kind === EntityKind.Healer ||
-      kind === EntityKind.Scout ||
-      kind === EntityKind.SwampDrake ||
-      kind === EntityKind.Trapper
+      kind === MEDIC_KIND ||
+      kind === EntityKind.Shaman ||
+      isLookoutKind(kind) ||
+      kind === EntityKind.SwampDrake
     ) {
       return 'support';
     }
@@ -137,8 +146,8 @@ export class VoiceManager {
       return 'leader';
     }
     if (
-      kind === EntityKind.Shieldbearer ||
-      kind === EntityKind.Catapult ||
+      kind === SHARED_HEAVY_CHASSIS_KIND ||
+      kind === SHARED_SIEGE_CHASSIS_KIND ||
       kind === EntityKind.ArmoredGator ||
       kind === EntityKind.SiegeTurtle
     ) {
@@ -150,6 +159,9 @@ export class VoiceManager {
     ) {
       return 'skirmisher';
     }
-    return kind === EntityKind.Brawler || kind === EntityKind.Sniper ? 'skirmisher' : 'heavy';
+    if (kind === SAPPER_KIND || kind === SABOTEUR_KIND) {
+      return 'skirmisher';
+    }
+    return 'heavy';
   }
 }

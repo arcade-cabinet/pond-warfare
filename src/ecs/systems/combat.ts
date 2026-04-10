@@ -2,7 +2,7 @@
  * Combat System
  *
  * Orchestrator that delegates aura processing to sub-modules and handles
- * tower auto-attack, idle auto-aggro, attack-move scanning, healer auto-follow,
+ * tower auto-attack, idle auto-aggro, attack-move scanning, support auto-follow,
  * and attack-move resume inline.
  */
 
@@ -20,16 +20,21 @@ import {
   Position,
   Stance,
   StanceMode,
+  TaskOverride,
   TowerAI,
   UnitStateMachine,
 } from '@/ecs/components';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import type { GameWorld } from '@/ecs/world';
+import {
+  findNearestAssignedWoundedAlly,
+  getSpecialistOperatingArea,
+  isPointInSpecialistArea,
+} from '@/game/specialist-assignment-queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { processAttackState } from './combat/attack-state';
 import { commanderAura } from './combat/commander-aura';
 import { warDrumsAura } from './combat/war-drums';
-import { isStealthed } from './diver-stealth';
 
 export function combatSystem(world: GameWorld): void {
   commanderAura(world);
@@ -67,7 +72,7 @@ export function combatSystem(world: GameWorld): void {
       if (FactionTag.faction[t] === faction) continue;
       if (Health.current[t] <= 0) continue;
       if (hasComponent(world.ecs, t, IsResource)) continue;
-      if (isStealthed(world, t)) continue; // Skip stealthed Divers
+      if (world.stealthEntities.has(t)) continue;
       const dx = Position.x[t] - ex;
       const dy = Position.y[t] - ey;
       const d = Math.sqrt(dx * dx + dy * dy);
@@ -112,11 +117,26 @@ export function combatSystem(world: GameWorld): void {
     const ey = Position.y[eid];
     const dmg = Combat.damage[eid];
 
-    // Healer auto-follow
-    if (kind === EntityKind.Healer && state === UnitState.Idle && world.frameCount % 30 === 0) {
+    // Support units move toward wounded allies so their healing auras matter.
+    const isSupportUnit = kind === EntityKind.Medic || kind === EntityKind.Shaman;
+    if (isSupportUnit && state === UnitState.Idle && world.frameCount % 30 === 0) {
+      const supportRadius = kind === EntityKind.Shaman ? 220 : 150;
+      const assignedAlly =
+        kind === EntityKind.Shaman
+          ? findNearestAssignedWoundedAlly(world, eid, faction, supportRadius)
+          : -1;
+      if (assignedAlly !== -1) {
+        UnitStateMachine.targetEntity[eid] = assignedAlly;
+        UnitStateMachine.targetX[eid] = Position.x[assignedAlly];
+        UnitStateMachine.targetY[eid] = Position.y[assignedAlly];
+        UnitStateMachine.state[eid] = UnitState.Move;
+        continue;
+      }
       let bestAlly = -1;
-      let bestDistSq = 150 * 150;
-      const healCands = hasSpatial ? world.spatialHash.query(ex, ey, 150) : allTargetable;
+      let bestDistSq = supportRadius * supportRadius;
+      const healCands = hasSpatial
+        ? world.spatialHash.query(ex, ey, supportRadius)
+        : allTargetable;
       for (let j = 0; j < healCands.length; j++) {
         const t = healCands[j];
         if (t === eid) continue;
@@ -125,6 +145,7 @@ export function combatSystem(world: GameWorld): void {
           continue;
         if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (Health.current[t] >= Health.max[t]) continue;
+        if (!isPointInSpecialistArea(world, eid, Position.x[t], Position.y[t])) continue;
         const dx = Position.x[t] - ex,
           dy = Position.y[t] - ey;
         const dSq = dx * dx + dy * dy;
@@ -138,12 +159,24 @@ export function combatSystem(world: GameWorld): void {
         UnitStateMachine.targetX[eid] = Position.x[bestAlly];
         UnitStateMachine.targetY[eid] = Position.y[bestAlly];
         UnitStateMachine.state[eid] = UnitState.Move;
+      } else {
+        const area = kind === EntityKind.Shaman ? getSpecialistOperatingArea(world, eid) : null;
+        if (area) {
+          UnitStateMachine.targetEntity[eid] = -1;
+          UnitStateMachine.targetX[eid] = area.centerX;
+          UnitStateMachine.targetY[eid] = area.centerY;
+          UnitStateMachine.state[eid] = UnitState.Move;
+        }
       }
       continue;
     }
 
     // Idle auto-aggro: scan every 10 frames for snappier combat response
     if (state === UnitState.Idle && dmg > 0 && world.frameCount % 10 === 0) {
+      if (TaskOverride.active[eid] === 1 && TaskOverride.task[eid] === UnitState.GatherMove) {
+        continue;
+      }
+
       const stanceMode = (Stance.mode?.[eid] as number | undefined) ?? StanceMode.Aggressive;
       // Hold stance: never auto-aggro
       if (faction === Faction.Player && stanceMode === StanceMode.Hold) continue;
@@ -167,7 +200,8 @@ export function combatSystem(world: GameWorld): void {
           continue;
         if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
-        if (isStealthed(world, t)) continue; // Skip stealthed Divers
+        if (world.stealthEntities.has(t)) continue;
+        if (!isPointInSpecialistArea(world, eid, Position.x[t], Position.y[t])) continue;
         const dx = Position.x[t] - ex,
           dy = Position.y[t] - ey;
         const d = Math.sqrt(dx * dx + dy * dy);
@@ -198,7 +232,8 @@ export function combatSystem(world: GameWorld): void {
           continue;
         if (!hasComponent(world.ecs, t, Health) || Health.current[t] <= 0) continue;
         if (hasComponent(world.ecs, t, IsResource)) continue;
-        if (isStealthed(world, t)) continue; // Skip stealthed Divers
+        if (world.stealthEntities.has(t)) continue;
+        if (!isPointInSpecialistArea(world, eid, Position.x[t], Position.y[t])) continue;
         const dx = Position.x[t] - ex,
           dy = Position.y[t] - ey;
         const d = Math.sqrt(dx * dx + dy * dy);

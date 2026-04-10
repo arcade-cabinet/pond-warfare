@@ -1,3 +1,10 @@
+---
+title: Pond Warfare
+updated: 2026-04-10
+status: current
+domain: product
+---
+
 # Pond Warfare
 
 Warcraft II-style real-time strategy game set in a pond ecosystem. Two playable factions -- otters and predators -- compete for territory, resources, and dominance. Gather clams, twigs, and rare pearls, expand your base with multiple Lodges, train an army from 10 unique unit types, research 25 technologies with active abilities, play through 5 campaign missions, choose from 7 commanders with unique bonuses, customize AI personality, and climb the ranked leaderboard from Bronze to Diamond.

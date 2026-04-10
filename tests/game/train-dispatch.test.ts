@@ -19,7 +19,8 @@ import {
   trainingQueueSlots,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { train } from '@/input/selection';
+import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
 
 function createPlayerBuilding(world: GameWorld, _kind: EntityKind): number {
@@ -53,6 +54,7 @@ describe('train dispatch', () => {
     // Give player enough resources
     world.resources.fish = 500;
     world.resources.logs = 500;
+    world.resources.rocks = 500;
     world.resources.food = 0;
     world.resources.maxFood = 20;
     trainingQueueSlots.clear();
@@ -60,12 +62,12 @@ describe('train dispatch', () => {
 
   it('deducts resources and enqueues unit', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
-    const def = ENTITY_DEFS[EntityKind.Gatherer];
+    const def = ENTITY_DEFS[MUDPAW_KIND];
 
     train(
       world,
       lodge,
-      EntityKind.Gatherer,
+      MUDPAW_KIND,
       def.fishCost ?? 0,
       def.logCost ?? 0,
       def.foodCost ?? 1,
@@ -74,26 +76,62 @@ describe('train dispatch', () => {
     expect(world.resources.fish).toBe(500 - (def.fishCost ?? 0));
     expect(TrainingQueue.count[lodge]).toBe(1);
     const slots = trainingQueueSlots.get(lodge) ?? [];
-    expect(slots[0]).toBe(EntityKind.Gatherer);
+    expect(slots[0]).toBe(MUDPAW_KIND);
   });
 
   it('does not enqueue when resources insufficient', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
     world.resources.fish = 0;
     world.resources.logs = 0;
+    world.resources.rocks = 0;
 
-    train(world, lodge, EntityKind.Brawler, 100, 50, 1);
+    const def = ENTITY_DEFS[EntityKind.Sapper];
+    train(
+      world,
+      lodge,
+      EntityKind.Sapper,
+      def.fishCost ?? 0,
+      def.logCost ?? 0,
+      def.foodCost ?? 1,
+      def.rockCost ?? 0,
+    );
 
     expect(TrainingQueue.count[lodge]).toBe(0);
     expect(world.resources.fish).toBe(0);
   });
 
   it('adds to TrainingQueue with correct timer on first enqueue', () => {
-    const armory = createPlayerBuilding(world, EntityKind.Armory);
+    const lodge = createPlayerBuilding(world, EntityKind.Lodge);
+    const def = ENTITY_DEFS[MEDIC_KIND];
 
-    train(world, armory, EntityKind.Brawler, 100, 50, 1);
+    train(
+      world,
+      lodge,
+      MEDIC_KIND,
+      def.fishCost ?? 0,
+      def.logCost ?? 0,
+      def.foodCost ?? 1,
+    );
 
-    expect(TrainingQueue.count[armory]).toBe(1);
-    expect(TrainingQueue.timer[armory]).toBeGreaterThan(0);
+    expect(TrainingQueue.count[lodge]).toBe(1);
+    expect(TrainingQueue.timer[lodge]).toBeGreaterThan(0);
+  });
+
+  it('deducts rocks for stage-five manual siege units', () => {
+    const lodge = createPlayerBuilding(world, EntityKind.Lodge);
+    const def = ENTITY_DEFS[EntityKind.Sapper];
+
+    train(
+      world,
+      lodge,
+      EntityKind.Sapper,
+      def.fishCost ?? 0,
+      def.logCost ?? 0,
+      def.foodCost ?? 1,
+      def.rockCost ?? 0,
+    );
+
+    expect(world.resources.rocks).toBe(500 - (def.rockCost ?? 0));
+    expect(TrainingQueue.count[lodge]).toBe(1);
   });
 });

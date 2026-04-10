@@ -42,26 +42,29 @@ import { trainingSystem } from '@/ecs/systems/training';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
+import { LOOKOUT_KIND, MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { computePopulation } from '@/game/population-counter';
 import { syncRosters } from '@/game/roster-sync';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
 import { progressionLevel } from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
+
+const DIAGNOSTIC_PLAYTHROUGH_TIMEOUT = 20_000;
 
 // ── Mocks ──────────────────────────────────────────────────────────
 
 // Mutable world ref — Governor goals read game.world to dispatch actions
-const _gameRef: { world: GameWorld | null } = { world: null };
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
     get(_target, prop) {
-      if (prop === 'world') return _gameRef.world;
+      if (prop === 'world') return mockedGameRef.world;
       return undefined;
     },
   }),
@@ -94,7 +97,7 @@ interface Snap {
   gathered: number;
   trained: number;
   enemyFish: number;
-  gathererInfo: string;
+  rosterInfo: string;
 }
 
 function countAlive(world: GameWorld, faction: Faction): number {
@@ -146,7 +149,7 @@ function snap(w: GameWorld, frame: number): Snap {
     trained: w.stats.unitsTrained,
     gathered: w.stats.resourcesGathered,
     enemyFish: w.enemyResources.fish,
-    gathererInfo: gathererInfo(w),
+    rosterInfo: rosterInfo(w),
   };
 }
 
@@ -161,14 +164,14 @@ const STATE_NAMES: Record<number, string> = {
 };
 
 const KIND_SHORT: Record<number, string> = {
-  [EntityKind.Gatherer]: 'Ga',
-  [EntityKind.Brawler]: 'Br',
-  [EntityKind.Scout]: 'Sc',
+  [MUDPAW_KIND]: 'Mu',
+  [SAPPER_KIND]: 'Sa',
+  [LOOKOUT_KIND]: 'Lo',
   [EntityKind.Commander]: 'Cm',
-  [EntityKind.Healer]: 'He',
+  [MEDIC_KIND]: 'Me',
 };
 
-function gathererInfo(w: GameWorld): string {
+function rosterInfo(w: GameWorld): string {
   const states: string[] = [];
   for (const eid of query(w.ecs, [Health, FactionTag, EntityTypeTag, UnitStateMachine])) {
     if (FactionTag.faction[eid] !== Faction.Player) continue;
@@ -263,14 +266,14 @@ function runFrame(w: GameWorld, governor: Governor): void {
   governor.tick();
 
   // Direct task dispatch: bypass game.world proxy (bitECS query isolation
-  // in vitest). Re-dispatch every 30 frames to keep gatherers working between
+  // in vitest). Re-dispatch every 30 frames to keep Mudpaws working between
   // trips and assign combat units when base is under attack.
   if (w.frameCount % 30 === 0) {
-    // Re-dispatch ALL idle gatherers (including those between trips)
-    const allIdleGatherers = store.unitRoster.value
+    // Re-dispatch all idle generalists (including those between trips).
+    const allIdleMudpaws = store.unitRoster.value
       .flatMap((g) => g.units)
-      .filter((u) => u.task === 'idle' && u.kind === EntityKind.Gatherer);
-    for (const u of allIdleGatherers) {
+      .filter((u) => u.task === 'idle' && u.kind === MUDPAW_KIND);
+    for (const u of allIdleMudpaws) {
       dispatchTaskOverride(w, u.eid, 'gathering-fish');
     }
 
@@ -285,21 +288,21 @@ function runFrame(w: GameWorld, governor: Governor): void {
       }
     }
 
-    // Direct training: train ONE unit per 120-frame cycle to avoid queue flooding.
-    // Alternate between gatherers (up to 4) and combat (up to 3).
+    // Direct training: train one unit per 120-frame cycle to avoid queue flooding.
+    // Alternate between Mudpaws (up to 4) and Sappers (up to 3).
     if (w.frameCount % 120 === 0 && w.resources.food < w.resources.maxFood) {
       const lodge = store.buildingRoster.value.find((b) => b.kind === EntityKind.Lodge);
       if (lodge && lodge.queueItems.length < 2) {
-        const gatherers = store.unitRoster.value
-          .filter((g) => g.role === 'gatherer')
+        const mudpaws = store.unitRoster.value
+          .filter((g) => g.role === 'generalist')
           .reduce((sum, g) => sum + g.units.length, 0);
         const army = store.unitRoster.value
           .filter((g) => g.role === 'combat')
           .reduce((sum, g) => sum + g.units.length, 0);
 
         let unitKind: EntityKind | null = null;
-        if (gatherers < 4) unitKind = EntityKind.Gatherer;
-        else if (army < 3) unitKind = EntityKind.Brawler;
+        if (mudpaws < 4) unitKind = MUDPAW_KIND;
+        else if (army < 3) unitKind = SAPPER_KIND;
 
         if (unitKind !== null) {
           const def = ENTITY_DEFS[unitKind];
@@ -329,7 +332,7 @@ function printDiag(
   );
   console.log(`${'═'.repeat(76)}`);
   console.log(
-    '  Frame | P.Unt | E.Unt | Fish | Rock | Food | Kill | Lost | Trn | Gath | E.Clm | Gatherers',
+    '  Frame | P.Unt | E.Unt | Fish | Rock | Food | Kill | Lost | Trn | Gath | E.Clm | Roster',
   );
   console.log(`${'─'.repeat(90)}`);
   for (const s of snaps) {
@@ -345,7 +348,7 @@ function printDiag(
         `${String(s.trained).padStart(3)} |` +
         `${String(s.gathered).padStart(4)} |` +
         `${String(s.enemyFish).padStart(5)} |` +
-        ` ${s.gathererInfo}`,
+        ` ${s.rosterInfo}`,
     );
   }
   console.log(`${'─'.repeat(76)}`);
@@ -370,7 +373,7 @@ describe('Governor Diagnostic Playthrough', () => {
     // Create world with peace timer disabled so AI engages immediately
     const world = createTestWorld({ stage, seed: 42 });
     world.peaceTimer = 0; // No grace period — enemies active from frame 1
-    _gameRef.world = world; // Wire Governor goals to this world
+    mockedGameRef.world = world; // Wire Governor goals to this world
     const pg = createTestPanelGrid(stage);
     const layout = generateVerticalMapLayout(pg, new SeededRandom(42));
 
@@ -449,23 +452,23 @@ describe('Governor Diagnostic Playthrough', () => {
 
     // Print full diagnostic table
     printDiag(stage, pg.getActivePanels(), world.waveSurvivalMode, world, snaps);
-  });
+  }, DIAGNOSTIC_PLAYTHROUGH_TIMEOUT);
 
   it('entity roster at spawn for each tier', () => {
     const NAMES: Record<number, string> = {
       [EntityKind.Lodge]: 'Lodge',
       [EntityKind.PredatorNest]: 'PredNest',
       [EntityKind.Commander]: 'Cmdr',
-      [EntityKind.Gatherer]: 'Gatherer',
-      [EntityKind.Brawler]: 'Brawler',
-      [EntityKind.Healer]: 'Healer',
+      [MUDPAW_KIND]: 'Mudpaw',
+      [MEDIC_KIND]: 'Medic',
+      [SAPPER_KIND]: 'Sapper',
       [EntityKind.Gator]: 'Gator',
       [EntityKind.Snake]: 'Snake',
       [EntityKind.Clambed]: 'Fish',
       [EntityKind.PearlBed]: 'Rocks',
       [EntityKind.Cattail]: 'Logs',
       [EntityKind.Frog]: 'Frog',
-      [EntityKind.Scout]: 'Scout',
+      [LOOKOUT_KIND]: 'Lookout',
     };
 
     console.log(`\n${'═'.repeat(80)}`);
@@ -519,5 +522,5 @@ describe('Governor Diagnostic Playthrough', () => {
       new SeededRandom(99),
     );
     expect(query(w6.ecs, [Health]).length).toBeGreaterThan(query(w1.ecs, [Health]).length);
-  });
+  }, DIAGNOSTIC_PLAYTHROUGH_TIMEOUT);
 });

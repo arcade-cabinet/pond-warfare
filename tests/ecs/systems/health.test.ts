@@ -6,6 +6,7 @@
 
 import { addComponent, addEntity, entityExists } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -42,7 +43,7 @@ function createUnit(world: GameWorld, hp: number, maxHp: number, faction: Factio
   Health.flashTimer[eid] = 0;
   UnitStateMachine.state[eid] = UnitState.Idle;
   FactionTag.faction[eid] = faction;
-  EntityTypeTag.kind[eid] = EntityKind.Brawler;
+  EntityTypeTag.kind[eid] = SAPPER_KIND;
   Velocity.speed[eid] = 1.8;
   Collider.radius[eid] = 16;
   Combat.damage[eid] = 6;

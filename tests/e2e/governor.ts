@@ -9,6 +9,7 @@
 import { hasComponent } from 'bitecs';
 import { IsBuilding } from '@/ecs/components';
 import { game } from '@/game';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import { getEnemyNests, getPlayerArmyUnits, getPlayerEntities } from '../helpers/ecs-queries';
 
@@ -26,18 +27,18 @@ export interface GovernorSnapshot {
   pearls: number;
   food: number;
   maxFood: number;
-  gatherers: number;
-  army: number;
+  mudpaws: number;
+  fieldUnits: number;
   buildings: number;
   enemyNests: number;
   techResearched: string[];
   evolutionTier: number;
   champions: number;
   autoBehaviors: {
-    gatherer: boolean;
+    generalist: boolean;
     combat: boolean;
-    healer: boolean;
-    scout: boolean;
+    support: boolean;
+    recon: boolean;
   };
 }
 
@@ -73,8 +74,8 @@ export function takeSnapshot(): GovernorSnapshot {
     pearls: w.resources.rocks,
     food: w.resources.food,
     maxFood: w.resources.maxFood,
-    gatherers: getPlayerEntities(w, EntityKind.Gatherer).length,
-    army: getPlayerArmyUnits(w).length,
+    mudpaws: getPlayerEntities(w, MUDPAW_KIND).length,
+    fieldUnits: getPlayerArmyUnits(w).length,
     buildings: getPlayerEntities(w).filter((eid) => hasComponent(w.ecs, eid, IsBuilding)).length,
     enemyNests: getEnemyNests(w).length,
     techResearched: Object.entries(w.tech)

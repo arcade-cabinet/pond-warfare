@@ -73,7 +73,7 @@ describe('AudioSystem – biome and faction palettes', () => {
   it('plays different selection voice palettes for otters and predators', async () => {
     const playAt = vi.spyOn((sys as any).sfxMgr, 'playAt');
 
-    sys.playSelectionVoice(EntityKind.Brawler, 'otter');
+    sys.playSelectionVoice(EntityKind.Sapper, 'otter');
     await vi.runAllTimersAsync();
     const otterCalls = playAt.mock.calls.map((call) => [call[0], call[1]]);
 
@@ -90,5 +90,30 @@ describe('AudioSystem – biome and faction palettes', () => {
       [300, 'sawtooth'],
       [220, 'square'],
     ]);
+  });
+
+  it('exposes canonical selection-sfx aliases for live roster names', async () => {
+    const sfxMgr = (sys as any).sfxMgr;
+    const selectMudpaw = vi.spyOn(sfxMgr, 'selectMudpaw');
+    const selectMedic = vi.spyOn(sfxMgr, 'selectMedic');
+    const selectLookout = vi.spyOn(sfxMgr, 'selectLookout');
+    const selectSapper = vi.spyOn(sfxMgr, 'selectSapper');
+    const selectSaboteur = vi.spyOn(sfxMgr, 'selectSaboteur');
+
+    sys.selectMudpaw();
+    sys.selectMedic();
+    sys.selectSapper();
+    sys.selectSaboteur();
+    sys.selectGuard();
+    sys.selectRanger();
+    sys.selectBombardier();
+    sys.selectShaman();
+    sys.selectLookout();
+
+    expect(selectMudpaw).toHaveBeenCalledTimes(1);
+    expect(selectMedic).toHaveBeenCalledTimes(2);
+    expect(selectLookout).toHaveBeenCalledTimes(1);
+    expect(selectSapper).toHaveBeenCalledTimes(3);
+    expect(selectSaboteur).toHaveBeenCalledTimes(2);
   });
 });

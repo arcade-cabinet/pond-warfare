@@ -14,6 +14,13 @@ import {
   getDamageMultiplier,
   isWingBuilding,
 } from '@/config/entity-defs';
+import {
+  LOOKOUT_KIND,
+  MEDIC_KIND,
+  MUDPAW_KIND,
+  SABOTEUR_KIND,
+  SAPPER_KIND,
+} from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 describe('ENTITY_DEFS', () => {
@@ -48,10 +55,11 @@ describe('ENTITY_DEFS', () => {
     }
   });
 
-  it('player units should have food cost', () => {
-    expect(ENTITY_DEFS[EntityKind.Gatherer].foodCost).toBe(1);
-    expect(ENTITY_DEFS[EntityKind.Brawler].foodCost).toBe(1);
-    expect(ENTITY_DEFS[EntityKind.Sniper].foodCost).toBe(1);
+  it('live manual player roster should have food cost', () => {
+    expect(ENTITY_DEFS[MUDPAW_KIND].foodCost).toBe(1);
+    expect(ENTITY_DEFS[MEDIC_KIND].foodCost).toBe(1);
+    expect(ENTITY_DEFS[SAPPER_KIND].foodCost).toBe(1);
+    expect(ENTITY_DEFS[SABOTEUR_KIND].foodCost).toBe(1);
   });
 
   it('buildings should be marked as isBuilding', () => {
@@ -63,7 +71,7 @@ describe('ENTITY_DEFS', () => {
       EntityKind.PredatorNest,
       EntityKind.Watchtower,
       EntityKind.Wall,
-      EntityKind.ScoutPost,
+      EntityKind.LookoutPost,
     ];
     for (const kind of buildings) {
       expect(ENTITY_DEFS[kind].isBuilding).toBe(true);
@@ -81,10 +89,9 @@ describe('ENTITY_DEFS', () => {
     expect(tower.attackRange).toBe(200);
   });
 
-  it('sniper should have longest attack range', () => {
-    const sniper = ENTITY_DEFS[EntityKind.Sniper];
-    const brawler = ENTITY_DEFS[EntityKind.Brawler];
-    expect(sniper.attackRange).toBeGreaterThan(brawler.attackRange);
+  it('reserved alias ids mirror the live Sapper and Saboteur defs', () => {
+    expect(ENTITY_DEFS[EntityKind.SharedSapperChassis]).toEqual(ENTITY_DEFS[SAPPER_KIND]);
+    expect(ENTITY_DEFS[EntityKind.SharedSaboteurChassis]).toEqual(ENTITY_DEFS[SABOTEUR_KIND]);
   });
 });
 
@@ -95,7 +102,6 @@ describe('isWingBuilding', () => {
     expect(isWingBuilding(EntityKind.FishingHut)).toBe(true);
     expect(isWingBuilding(EntityKind.HerbalistHut)).toBe(true);
     expect(isWingBuilding(EntityKind.Market)).toBe(true);
-    expect(isWingBuilding(EntityKind.Dock)).toBe(true);
   });
 
   it('should return false for standalone buildings', () => {
@@ -103,13 +109,13 @@ describe('isWingBuilding', () => {
     expect(isWingBuilding(EntityKind.Tower)).toBe(false);
     expect(isWingBuilding(EntityKind.Watchtower)).toBe(false);
     expect(isWingBuilding(EntityKind.Wall)).toBe(false);
-    expect(isWingBuilding(EntityKind.ScoutPost)).toBe(false);
+    expect(isWingBuilding(EntityKind.LookoutPost)).toBe(false);
     expect(isWingBuilding(EntityKind.PredatorNest)).toBe(false);
   });
 
   it('should return false for non-building entities', () => {
-    expect(isWingBuilding(EntityKind.Gatherer)).toBe(false);
-    expect(isWingBuilding(EntityKind.Brawler)).toBe(false);
+    expect(isWingBuilding(MUDPAW_KIND)).toBe(false);
+    expect(isWingBuilding(SAPPER_KIND)).toBe(false);
     expect(isWingBuilding(EntityKind.Gator)).toBe(false);
     expect(isWingBuilding(EntityKind.Cattail)).toBe(false);
   });
@@ -117,14 +123,24 @@ describe('isWingBuilding', () => {
 
 describe('entityKindName', () => {
   it('should return correct names', () => {
-    expect(entityKindName(EntityKind.Gatherer)).toBe('Gatherer');
+    expect(entityKindName(MUDPAW_KIND)).toBe('Mudpaw');
+    expect(entityKindName(MEDIC_KIND)).toBe('Medic');
+    expect(entityKindName(LOOKOUT_KIND)).toBe('Lookout');
     expect(entityKindName(EntityKind.PredatorNest)).toBe('Predator Nest');
   });
 });
 
 describe('entityKindFromString', () => {
   it('should convert string names to EntityKind', () => {
-    expect(entityKindFromString('gatherer')).toBe(EntityKind.Gatherer);
+    expect(entityKindFromString('mudpaw')).toBe(MUDPAW_KIND);
+    expect(entityKindFromString('fisher')).toBe(MUDPAW_KIND);
+    expect(entityKindFromString('logger')).toBe(MUDPAW_KIND);
+    expect(entityKindFromString('digger')).toBe(MUDPAW_KIND);
+    expect(entityKindFromString('medic')).toBe(MEDIC_KIND);
+    expect(entityKindFromString('lookout')).toBe(LOOKOUT_KIND);
+    expect(entityKindFromString('guard')).toBe(SAPPER_KIND);
+    expect(entityKindFromString('ranger')).toBe(SABOTEUR_KIND);
+    expect(entityKindFromString('bombardier')).toBe(SAPPER_KIND);
     expect(entityKindFromString('predator_nest')).toBe(EntityKind.PredatorNest);
   });
 
@@ -135,42 +151,25 @@ describe('entityKindFromString', () => {
 
 describe('getDamageMultiplier', () => {
   it('should return 1.5 for strong matchups', () => {
-    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Sniper)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Healer)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Healer)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Snake)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Brawler)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Snake, EntityKind.Sniper)).toBe(1.5);
-  });
-
-  it('should return 0.75 for weak matchups', () => {
-    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Gator)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Brawler)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Sniper)).toBe(0.75);
-    expect(getDamageMultiplier(EntityKind.Snake, EntityKind.Brawler)).toBe(0.75);
+    expect(getDamageMultiplier(EntityKind.BurrowingWorm, MUDPAW_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.FlyingHeron, MUDPAW_KIND)).toBe(1.5);
+    expect(getDamageMultiplier(EntityKind.Tower, EntityKind.FlyingHeron)).toBe(1.5);
   });
 
   it('should return 1.0 for neutral/unknown matchups', () => {
-    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Brawler)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.BossCroc, EntityKind.Brawler)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.BossCroc, EntityKind.Sniper)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.Gatherer, EntityKind.Gator)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.Healer, EntityKind.Brawler)).toBe(1.0);
-    expect(getDamageMultiplier(EntityKind.Lodge, EntityKind.Brawler)).toBe(1.0);
+    expect(getDamageMultiplier(SAPPER_KIND, SABOTEUR_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.BossCroc, SAPPER_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.BossCroc, SABOTEUR_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(MUDPAW_KIND, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(MEDIC_KIND, SAPPER_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.Lodge, SAPPER_KIND)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.SharedHeavyChassis, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.ReservedUnit33, EntityKind.SharedHeavyChassis)).toBe(1.0);
   });
 
-  it('should have expected counter triangle symmetry (A strong vs B implies B weak vs A)', () => {
-    // Brawler strong vs Sniper, Sniper weak vs Brawler
-    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Sniper)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Sniper, EntityKind.Brawler)).toBe(0.75);
-
-    // Gator strong vs Brawler, Brawler weak vs Gator
-    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Brawler)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Brawler, EntityKind.Gator)).toBe(0.75);
-
-    // Snake strong vs Sniper, Gator weak vs Sniper (enemy triangle)
-    expect(getDamageMultiplier(EntityKind.Snake, EntityKind.Sniper)).toBe(1.5);
-    expect(getDamageMultiplier(EntityKind.Gator, EntityKind.Sniper)).toBe(0.75);
+  it('reserved alias ids now fall back to neutral damage behavior', () => {
+    expect(getDamageMultiplier(EntityKind.SharedSapperChassis, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.SharedSaboteurChassis, EntityKind.Snake)).toBe(1.0);
   });
 
   it('should only contain multipliers for entities with damage', () => {

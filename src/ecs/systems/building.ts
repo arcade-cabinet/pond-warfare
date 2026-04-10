@@ -15,7 +15,7 @@
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { entityKindName } from '@/config/entity-defs';
-import { BUILD_TIMER, PALETTE, REPAIR_TIMER } from '@/constants';
+import { BUILD_TIMER, PALETTE } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -25,6 +25,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerRepairTimer } from '@/game/repair-timer';
 import { triggerBuildingComplete } from '@/rendering/animations';
 import { EntityKind, UnitState } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
@@ -129,8 +130,14 @@ export function buildingSystem(world: GameWorld): void {
             life: 90,
           });
 
-          // Minimap ping on the completed building
-          world.minimapPings.push({ x: bx, y: by, life: 120, maxLife: 120 });
+          // World-space completion ping on the completed building
+          world.groundPings.push({
+            x: bx,
+            y: by,
+            life: 120,
+            maxLife: 120,
+            color: 'rgba(251, 191, 36, 0.85)',
+          });
 
           // Event feed
           pushGameEvent(`${buildingName} complete`, '#fbbf24', world.frameCount);
@@ -181,8 +188,7 @@ export function buildingSystem(world: GameWorld): void {
           if (Health.current[tEnt] >= Health.max[tEnt]) {
             UnitStateMachine.state[eid] = UnitState.Idle;
           } else {
-            // Reset timer only when not yet complete (original: this.gTimer = 40)
-            UnitStateMachine.gatherTimer[eid] = REPAIR_TIMER;
+            UnitStateMachine.gatherTimer[eid] = getPlayerRepairTimer(world);
           }
         } else {
           world.floatingTexts.push({

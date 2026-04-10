@@ -102,9 +102,12 @@ export function generateVerticalMapLayout(
     }
   }
 
-  // Rare node spawning: 1-2 rare nodes per active panel when prestige unlocked
+  // Rare node spawning: keep prestige bonus nodes in the player's accessible
+  // half of the map so the unlock accelerates economy instead of baiting
+  // Mudpaws into the hostile top row.
   if (options.hasRareResourceAccess) {
-    for (const panelId of activePanels) {
+    const rarePanels = activePanels.filter((panelId) => panelGrid.getPanelDef(panelId).row === 1);
+    for (const panelId of rarePanels) {
       const bounds = panelGrid.getPanelBounds(panelId);
       const margin = 60;
       const count = rng.int(1, 2);

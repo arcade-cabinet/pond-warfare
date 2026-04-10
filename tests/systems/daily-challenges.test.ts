@@ -153,6 +153,17 @@ describe('daily-challenges', () => {
     }
   });
 
+  it('challenge copy avoids obsolete player roster terms', () => {
+    const copy = getAllChallenges()
+      .flatMap((c) => [c.title, c.description])
+      .join(' ');
+
+    expect(copy).not.toMatch(/\bGatherers?\b/);
+    expect(copy).not.toMatch(/\bBrawlers?\b/);
+    expect(copy).not.toMatch(/\bScouts?\b/);
+    expect(copy).toContain('Mudpaws');
+  });
+
   it('speed_run_10 challenge requires win under 10 minutes', () => {
     const challenge = getAllChallenges().find((c) => c.id === 'speed_run_10');
     expect(challenge).toBeDefined();
@@ -171,14 +182,24 @@ describe('daily-challenges', () => {
     expect(challenge.objective(makeStats({ techsResearched: 7 }))).toBe(false);
   });
 
-  it('economy_only challenge requires win with no combat units', () => {
-    const challenge = getAllChallenges().find((c) => c.id === 'economy_only');
+  it('basic_units_only challenge requires winning with only Mudpaws and buildings', () => {
+    const challenge = getAllChallenges().find((c) => c.id === 'basic_units_only');
     expect(challenge).toBeDefined();
     if (!challenge) return;
 
     expect(challenge.objective(makeStats({ result: 'win', combatUnitsTrained: 0 }))).toBe(true);
     expect(challenge.objective(makeStats({ result: 'win', combatUnitsTrained: 1 }))).toBe(false);
     expect(challenge.objective(makeStats({ result: 'loss', combatUnitsTrained: 0 }))).toBe(false);
+  });
+
+  it('economy_only challenge requires win with no combat units', () => {
+    const challenge = getAllChallenges().find((c) => c.id === 'economy_only');
+    expect(challenge).toBeDefined();
+    if (!challenge) return;
+
+    expect(challenge.objective(makeStats({ result: 'win', totalFishEarned: 4000 }))).toBe(true);
+    expect(challenge.objective(makeStats({ result: 'win', totalFishEarned: 3999 }))).toBe(false);
+    expect(challenge.objective(makeStats({ result: 'loss', totalFishEarned: 4500 }))).toBe(false);
   });
 
   it('survival_15 challenge requires wave 15', () => {

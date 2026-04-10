@@ -8,8 +8,8 @@
     "dev": "vite",
     "build": "pnpm copywasm && tsc --noEmit && vite build",
     "build:web": "pnpm build",
-    "build:android": "CAPACITOR=true pnpm copywasm && tsc --noEmit && vite build && npx cap sync android",
-    "dev:android": "CAPACITOR=true vite build && npx cap sync android && npx cap open android",
+    "build:android": "pnpm generate:icons && CAPACITOR=true pnpm copywasm && tsc --noEmit && vite build && npx cap sync android && pnpm sync:android-shell",
+    "dev:android": "pnpm generate:icons && CAPACITOR=true vite build && npx cap sync android && pnpm sync:android-shell && npx cap open android",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -19,7 +19,9 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
-    "generate:icons": "node scripts/generate-icons.js"
+    "generate:icons": "node scripts/generate-icons.js",
+    "sync:android-shell": "node scripts/sync-android-shell.js",
+    "verify:release": "bash scripts/verify-release.sh"
   },
   "dependencies": {
     "@capacitor-community/sqlite": "^8.0.1",
@@ -56,7 +58,7 @@
     "sql.js": "1.11.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
-    "vite": "^8.0.3",
+    "vite": "^8.0.7",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.1.2"
   },

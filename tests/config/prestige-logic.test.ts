@@ -1,9 +1,9 @@
 /**
- * Prestige Auto-Deploy Logic Tests
+ * Prestige Pearl logic tests.
  *
  * Validates prestige system from configs/prestige.json:
  * - Pearl calculation formula
- * - Auto-deploy counts at each rank
+ * - Specialist blueprint caps at each rank
  * - Auto-behavior unlocks
  * - Stat multipliers
  * - Pearl upgrade purchase logic
@@ -20,9 +20,11 @@ import {
   canPrestige,
   createPrestigeState,
   executePrestige,
-  getAutoDeployCount,
-  getAutoDeployUnits,
   getPearlUpgradeDisplayList,
+  getSpecialistBlueprintCap,
+  getSpecialistBlueprints,
+  getSpecialistZoneBonus,
+  getSpecialistZoneBonuses,
   getStatMultiplier,
   getStatMultipliers,
   getUnlockedAutoBehaviors,
@@ -36,18 +38,11 @@ import {
 describe('Pearl calculation', () => {
   it('should calculate Pearls using formula: floor(level * multiplier * (1 + rank * 0.1))', () => {
     const config = getPrestigeConfig();
-    const _multiplier = config.pearl_formula.rank_multiplier; // 0.5
+    const _multiplier = config.pearl_formula.rank_multiplier;
 
-    // Rank 0, level 20: floor(20 * 0.5 * 1.0) = 10
     expect(pearlsForPrestige(20, 0)).toBe(10);
-
-    // Rank 1, level 20: floor(20 * 0.5 * 1.1) = 11
     expect(pearlsForPrestige(20, 1)).toBe(11);
-
-    // Rank 5, level 50: floor(50 * 0.5 * 1.5) = 37
     expect(pearlsForPrestige(50, 5)).toBe(37);
-
-    // Level 0 always gives 0 Pearls
     expect(pearlsForPrestige(0, 10)).toBe(0);
   });
 
@@ -62,15 +57,10 @@ describe('Pearl calculation', () => {
 
 describe('Prestige threshold', () => {
   it('should calculate threshold using formula from config', () => {
-    const _base = getPrestigeConfig().rank_threshold_base; // 20
+    const _base = getPrestigeConfig().rank_threshold_base;
 
-    // Rank 0: 20 * (1 + 0) = 20
     expect(nextPrestigeThreshold(0)).toBe(20);
-
-    // Rank 1: 20 * (1 + 0.5) = 30
     expect(nextPrestigeThreshold(1)).toBe(30);
-
-    // Rank 2: 20 * (1 + 1.0) = 40
     expect(nextPrestigeThreshold(2)).toBe(40);
   });
 
@@ -81,7 +71,7 @@ describe('Prestige threshold', () => {
   });
 
   it('canPrestige returns false below threshold', () => {
-    expect(canPrestige(19, 0)).toBe(false); // Threshold is 20
+    expect(canPrestige(19, 0)).toBe(false);
   });
 
   it('canPrestige returns true at threshold', () => {
@@ -93,49 +83,49 @@ describe('Prestige threshold', () => {
   });
 });
 
-describe('Auto-deploy calculations', () => {
+describe('Specialist blueprint cap calculations', () => {
   it('should return empty list for new player', () => {
     const state = createPrestigeState();
-    const deploys = getAutoDeployUnits(state);
-    expect(deploys).toHaveLength(0);
+    const blueprints = getSpecialistBlueprints(state);
+    expect(blueprints).toHaveLength(0);
   });
 
-  it('should return correct count for single upgrade', () => {
+  it('should return correct cap for single upgrade', () => {
     const state: PrestigeState = {
       rank: 1,
       pearls: 0,
       totalPearlsEarned: 10,
-      upgradeRanks: { auto_deploy_fisher: 3 },
+      upgradeRanks: { blueprint_fisher: 3 },
     };
 
-    const deploys = getAutoDeployUnits(state);
-    const fisher = deploys.find((d) => d.unitId === 'fisher');
+    const blueprints = getSpecialistBlueprints(state);
+    const fisher = blueprints.find((d) => d.unitId === 'fisher');
     expect(fisher).toBeDefined();
-    expect(fisher?.count).toBe(3); // 1 per rank * 3 ranks
+    expect(fisher?.cap).toBe(3);
   });
 
-  it('should return correct counts for multiple upgrades', () => {
+  it('should return correct caps for multiple upgrades', () => {
     const state: PrestigeState = {
       rank: 3,
       pearls: 0,
       totalPearlsEarned: 50,
       upgradeRanks: {
-        auto_deploy_fisher: 5,
-        auto_deploy_digger: 2,
-        auto_deploy_guardian: 1,
+        blueprint_fisher: 5,
+        blueprint_digger: 2,
+        blueprint_guard: 1,
       },
     };
 
-    const deploys = getAutoDeployUnits(state);
-    expect(deploys.length).toBe(3);
+    const blueprints = getSpecialistBlueprints(state);
+    expect(blueprints.length).toBe(3);
 
-    expect(getAutoDeployCount(state, 'fisher')).toBe(5);
-    expect(getAutoDeployCount(state, 'digger')).toBe(2);
-    expect(getAutoDeployCount(state, 'guardian')).toBe(1);
-    expect(getAutoDeployCount(state, 'hunter')).toBe(0);
+    expect(getSpecialistBlueprintCap(state, 'fisher')).toBe(5);
+    expect(getSpecialistBlueprintCap(state, 'digger')).toBe(2);
+    expect(getSpecialistBlueprintCap(state, 'guard')).toBe(1);
+    expect(getSpecialistBlueprintCap(state, 'bombardier')).toBe(0);
   });
 
-  it('should not include non-auto-deploy upgrades', () => {
+  it('should not include non-specialist Pearl upgrades', () => {
     const state: PrestigeState = {
       rank: 1,
       pearls: 0,
@@ -143,8 +133,30 @@ describe('Auto-deploy calculations', () => {
       upgradeRanks: { gather_multiplier: 5 },
     };
 
-    const deploys = getAutoDeployUnits(state);
-    expect(deploys).toHaveLength(0);
+    const blueprints = getSpecialistBlueprints(state);
+    expect(blueprints).toHaveLength(0);
+  });
+});
+
+describe('Specialist zone bonuses', () => {
+  it('should return empty list for a new player', () => {
+    expect(getSpecialistZoneBonuses(createPrestigeState())).toEqual([]);
+  });
+
+  it('should sum specialist zone upgrades per unit and stat', () => {
+    const state: PrestigeState = {
+      rank: 2,
+      pearls: 0,
+      totalPearlsEarned: 25,
+      upgradeRanks: {
+        fisher_radius: 2,
+        ranger_projection_range: 1,
+      },
+    };
+
+    expect(getSpecialistZoneBonus(state, 'fisher', 'operating_radius')).toBe(48);
+    expect(getSpecialistZoneBonus(state, 'ranger', 'projection_range')).toBe(20);
+    expect(getSpecialistZoneBonus(state, 'ranger', 'anchor_radius')).toBe(0);
   });
 });
 
@@ -203,8 +215,6 @@ describe('Stat multipliers', () => {
       upgradeRanks: { gather_multiplier: 4 },
     };
 
-    // gathering_speed: value_per_rank = 0.05, rank 4
-    // 1.0 + 0.05 * 4 = 1.20
     expect(getStatMultiplier(state, 'gathering_speed')).toBeCloseTo(1.2);
   });
 
@@ -239,12 +249,11 @@ describe('Pearl upgrade purchase', () => {
       upgradeRanks: {},
     };
 
-    // auto_deploy_fisher costs 3 Pearls per rank
-    const { state: newState, result } = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    const { state: newState, result } = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.success).toBe(true);
-    expect(result.newPearls).toBe(7); // 10 - 3
+    expect(result.newPearls).toBe(7);
     expect(result.newRank).toBe(1);
-    expect(newState.upgradeRanks.auto_deploy_fisher).toBe(1);
+    expect(newState.upgradeRanks.blueprint_fisher).toBe(1);
   });
 
   it('should fail when not enough Pearls', () => {
@@ -255,7 +264,7 @@ describe('Pearl upgrade purchase', () => {
       upgradeRanks: {},
     };
 
-    const { result } = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    const { result } = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.success).toBe(false);
     expect(result.reason).toContain('Need');
   });
@@ -265,10 +274,10 @@ describe('Pearl upgrade purchase', () => {
       rank: 5,
       pearls: 100,
       totalPearlsEarned: 100,
-      upgradeRanks: { auto_deploy_fisher: 5 }, // max_rank is 5
+      upgradeRanks: { blueprint_fisher: 5 },
     };
 
-    const { result } = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    const { result } = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.success).toBe(false);
     expect(result.reason).toContain('max rank');
   });
@@ -281,9 +290,9 @@ describe('Pearl upgrade purchase', () => {
       upgradeRanks: {},
     };
 
-    const { state: newState } = purchasePearlUpgrade(state, 'auto_deploy_fisher');
-    expect(state.pearls).toBe(10); // Original unchanged
-    expect(newState.pearls).toBe(7); // New state updated
+    const { state: newState } = purchasePearlUpgrade(state, 'blueprint_fisher');
+    expect(state.pearls).toBe(10);
+    expect(newState.pearls).toBe(7);
   });
 
   it('should increment existing rank', () => {
@@ -291,12 +300,12 @@ describe('Pearl upgrade purchase', () => {
       rank: 2,
       pearls: 20,
       totalPearlsEarned: 40,
-      upgradeRanks: { auto_deploy_fisher: 2 },
+      upgradeRanks: { blueprint_fisher: 2 },
     };
 
-    const { state: newState, result } = purchasePearlUpgrade(state, 'auto_deploy_fisher');
+    const { state: newState, result } = purchasePearlUpgrade(state, 'blueprint_fisher');
     expect(result.success).toBe(true);
-    expect(newState.upgradeRanks.auto_deploy_fisher).toBe(3);
+    expect(newState.upgradeRanks.blueprint_fisher).toBe(3);
   });
 });
 
@@ -322,23 +331,21 @@ describe('Prestige execution (rank up)', () => {
       rank: 1,
       pearls: 5,
       totalPearlsEarned: 15,
-      upgradeRanks: { auto_deploy_fisher: 3, combat_multiplier: 2 },
+      upgradeRanks: { blueprint_fisher: 3, combat_multiplier: 2 },
     };
 
     const { state: newState } = executePrestige(state, 40);
-    expect(newState.upgradeRanks.auto_deploy_fisher).toBe(3);
+    expect(newState.upgradeRanks.blueprint_fisher).toBe(3);
     expect(newState.upgradeRanks.combat_multiplier).toBe(2);
   });
 
   it('should accumulate Pearls across multiple prestiges', () => {
     let state: PrestigeState = createPrestigeState();
 
-    // First prestige at level 25
     const r1 = executePrestige(state, 25);
     state = r1.state;
     const firstPearls = r1.result.pearlsEarned;
 
-    // Second prestige at level 35
     const r2 = executePrestige(state, 35);
     state = r2.state;
 
@@ -363,7 +370,7 @@ describe('Prestige execution (rank up)', () => {
       rank: 0,
       pearls: 5,
       totalPearlsEarned: 5,
-      upgradeRanks: { auto_deploy_fisher: 1 },
+      upgradeRanks: { blueprint_fisher: 1 },
     };
 
     const { state: newState } = executePrestige(state, 30);
@@ -379,19 +386,19 @@ describe('Display helpers', () => {
       rank: 2,
       pearls: 10,
       totalPearlsEarned: 30,
-      upgradeRanks: { auto_deploy_fisher: 2 },
+      upgradeRanks: { blueprint_fisher: 2 },
     };
 
     const list = getPearlUpgradeDisplayList(state);
     expect(list.length).toBeGreaterThan(0);
 
-    const fisher = list.find((u) => u.id === 'auto_deploy_fisher');
+    const fisher = list.find((u) => u.id === 'blueprint_fisher');
     expect(fisher).toBeDefined();
     expect(fisher?.currentRank).toBe(2);
     expect(fisher?.maxRank).toBe(5);
     expect(fisher?.isMaxed).toBe(false);
-    expect(fisher?.canAfford).toBe(true); // 10 >= 3
-    expect(fisher?.effectSummary).toBe('2x fisher');
+    expect(fisher?.canAfford).toBe(true);
+    expect(fisher?.effectSummary).toBe('Field up to 2 Fishers');
   });
 
   it('should show max rank correctly', () => {
@@ -399,7 +406,7 @@ describe('Display helpers', () => {
       rank: 5,
       pearls: 100,
       totalPearlsEarned: 200,
-      upgradeRanks: { auto_heal_behavior: 1 }, // max_rank is 1
+      upgradeRanks: { auto_heal_behavior: 1 },
     };
 
     const list = getPearlUpgradeDisplayList(state);
@@ -429,23 +436,20 @@ describe('Prestige config completeness', () => {
     const config = getPrestigeConfig();
     const ids = Object.keys(config.pearl_upgrades);
 
-    // Auto-deploy upgrades (8 specialist types)
-    expect(ids).toContain('auto_deploy_fisher');
-    expect(ids).toContain('auto_deploy_digger');
-    expect(ids).toContain('auto_deploy_logger');
-    expect(ids).toContain('auto_deploy_guardian');
-    expect(ids).toContain('auto_deploy_hunter');
-    expect(ids).toContain('auto_deploy_ranger');
-    expect(ids).toContain('auto_deploy_shaman');
-    expect(ids).toContain('auto_deploy_lookout');
+    expect(ids).toContain('blueprint_fisher');
+    expect(ids).toContain('blueprint_digger');
+    expect(ids).toContain('blueprint_logger');
+    expect(ids).toContain('blueprint_guard');
+    expect(ids).toContain('blueprint_ranger');
+    expect(ids).toContain('blueprint_bombardier');
+    expect(ids).toContain('blueprint_shaman');
+    expect(ids).toContain('blueprint_lookout');
 
-    // Multiplier upgrades
     expect(ids).toContain('gather_multiplier');
     expect(ids).toContain('combat_multiplier');
     expect(ids).toContain('hp_multiplier');
     expect(ids).toContain('clam_earnings_multiplier');
 
-    // Auto-behavior upgrades
     expect(ids).toContain('auto_heal_behavior');
     expect(ids).toContain('auto_repair_behavior');
   });

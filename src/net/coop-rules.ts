@@ -5,15 +5,14 @@
  * - Shared resource pool (broadcast resource changes to partner)
  * - Both-survive win condition (game over only when BOTH lodges destroyed)
  * - Co-op difficulty scaling (+50% enemy HP/damage)
- * - Minimap ping system (partner pings rendered as flashing indicators)
+ * - Ground ping system (partner pings rendered as world-space rings)
  * - Shared fog of war (partner units reveal fog for you)
  */
 
 import type { GameWorld } from '@/ecs/world';
-import * as mp from '@/ui/store-multiplayer';
 import type { NetMessage } from './types';
 
-/** Duration of a co-op minimap ping in frames (3 seconds at 60fps). */
+/** Duration of a co-op ground ping in frames (3 seconds at 60fps). */
 export const COOP_PING_DURATION = 180;
 
 /** Co-op difficulty multiplier applied to enemy HP and damage. */
@@ -23,7 +22,7 @@ export const COOP_ENEMY_STAT_MULT = 1.5;
 
 /**
  * Build a resource-sync message from the current player resources.
- * Called after a gatherer deposits resources in co-op mode.
+ * Called after a Mudpaw/generalist deposits resources in co-op mode.
  */
 export function buildResourceSyncMessage(world: GameWorld): NetMessage {
   return {
@@ -47,10 +46,10 @@ export function applyResourceSync(
   world.resources.rocks = Math.max(world.resources.rocks, msg.rocks);
 }
 
-// ---- Co-op Minimap Ping ----
+// ---- Co-op Ground Ping ----
 
 /**
- * Create a minimap ping at the given world position.
+ * Create a co-op ping message at the given world position.
  * Returns the NetMessage to broadcast to the partner.
  */
 export function buildPingMessage(x: number, y: number): NetMessage {
@@ -58,23 +57,16 @@ export function buildPingMessage(x: number, y: number): NetMessage {
 }
 
 /**
- * Apply a received co-op ping to the local minimap pings list.
- * Adds both to the world.minimapPings array (for rendering) and the
- * store signal (for UI reactivity).
+ * Apply a received co-op ping to the local world-space ground-ping list.
  */
 export function applyCoopPing(world: GameWorld, x: number, y: number): void {
-  // Cyan color for partner pings to distinguish from red alert pings
-  const ping = {
+  world.groundPings.push({
     x,
     y,
     life: COOP_PING_DURATION,
     maxLife: COOP_PING_DURATION,
-    color: '56, 189, 248',
-  };
-  world.minimapPings.push(ping);
-
-  // Also update the store signal for UI reactivity
-  mp.coopMinimapPings.value = [...mp.coopMinimapPings.value, ping];
+    color: 'rgba(56, 189, 248, 0.85)',
+  });
 }
 
 // ---- Both-Survive Win Condition ----
@@ -122,18 +114,3 @@ export function applyCoopDifficultyScaling(world: GameWorld): void {
 }
 
 // ---- Shared Fog of War ----
-
-/**
- * Tick down co-op minimap pings and remove expired ones.
- * Called each frame from the game loop.
- */
-export function tickCoopPings(world: GameWorld): void {
-  if (!world.coopMode) return;
-
-  // Tick down and remove expired pings from the store signal
-  const storePings = mp.coopMinimapPings.value;
-  if (storePings.length > 0) {
-    const remaining = storePings.map((p) => ({ ...p, life: p.life - 1 })).filter((p) => p.life > 0);
-    mp.coopMinimapPings.value = remaining;
-  }
-}

@@ -165,7 +165,7 @@ const SpriteSnake = () => (
       <path d="M 40 40 L 55 40 L 50 65 L 45 65 Z" fill={TOKENS.colors.vineHighlight} stroke="#111" strokeWidth="2" />
       {/* Tactical Gear Base */}
       <path d="M 40 45 L 55 45 L 52 52 L 42 52 Z" fill={TOKENS.colors.weatheredSteel} stroke="#111" strokeWidth="2" />
-      {/* Back Sniper/Laser */}
+      {/* Back Ranger/Laser */}
       <path d="M 35 35 L 75 30 L 75 35 L 35 40 Z" fill="#222" stroke="#111" strokeWidth="2" />
       {/* Head */}
       <path d="M 45 25 L 65 25 L 70 35 L 40 35 Z" fill={TOKENS.colors.vineHighlight} stroke="#111" strokeWidth="2" />
@@ -182,7 +182,7 @@ const SpriteSnake = () => (
       {/* Body lunged forward */}
       <path d="M 50 35 L 65 35 L 55 65 L 45 65 Z" fill={TOKENS.colors.vineHighlight} stroke="#111" strokeWidth="2" />
       <path d="M 50 40 L 62 40 L 57 48 L 47 48 Z" fill={TOKENS.colors.weatheredSteel} stroke="#111" strokeWidth="2" />
-      {/* Sniper Firing */}
+      {/* Ranger Firing */}
       <path d="M 45 25 L 85 28 L 85 33 L 45 30 Z" fill="#222" stroke="#111" strokeWidth="2" />
       {/* Laser Beam WC2 Style */}
       <polygon points="85,30 110,29 120,30 110,31" fill="#FF0000" />
@@ -343,7 +343,7 @@ export default function App() {
   const units = {
     otter: { name: 'Otter Commando', role: 'Assault Infantry', Sprite: SpriteOtter, desc: 'High mobility. Equipped with standard tactical bandana and auto-rifle.' },
     croc: { name: 'Gator Heavy', role: 'Siege & Armor', Sprite: SpriteCroc, desc: 'Slow, heavily armored. Carries a back-mounted Gatling cannon for suppressing fire.' },
-    snake: { name: 'Viper Sniper', role: 'Specialist', Sprite: SpriteSnake, desc: 'Stealth coils. Uses cyber-optics and a high-energy back-mounted laser rifle.' }
+    snake: { name: 'Viper Ranger', role: 'Specialist', Sprite: SpriteSnake, desc: 'Stealth coils. Uses cyber-optics and a high-energy back-mounted laser rifle.' }
   };
 
   return (

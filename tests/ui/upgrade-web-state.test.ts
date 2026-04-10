@@ -192,16 +192,16 @@ describe('Diamond node purchase', () => {
     const w = freshWeb();
     const state = stateWithClams(100000);
 
-    // guardian_specialist requires defense.lodge_hp:5 AND defense.wall_hp:5
+    // guard_specialist requires defense.lodge_hp:5 AND defense.wall_hp:5
     buyPath(state, w, 'defense', 'lodge_hp', 4);
 
     // Only one path met
-    const result1 = purchaseDiamondNode(state, w, 'guardian_specialist');
+    const result1 = purchaseDiamondNode(state, w, 'guard_specialist');
     expect(result1.success).toBe(false);
 
     // Both paths met
     buyPath(state, w, 'defense', 'wall_hp', 4);
-    const result2 = purchaseDiamondNode(state, w, 'guardian_specialist');
+    const result2 = purchaseDiamondNode(state, w, 'guard_specialist');
     expect(result2.success).toBe(true);
   });
 });

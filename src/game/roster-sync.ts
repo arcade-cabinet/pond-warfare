@@ -1,5 +1,4 @@
 import { hasComponent, query } from 'bitecs';
-import { entityKindName } from '@/config/entity-defs';
 import {
   EntityTypeTag,
   FactionTag,
@@ -13,6 +12,8 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isLookoutKind, isMudpawKind, MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { getEntityDisplayName, getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type {
   RosterBuilding,
@@ -24,10 +25,10 @@ import type {
 import * as store from '@/ui/store';
 
 function roleFor(kind: EntityKind): UnitRole {
-  if (kind === EntityKind.Gatherer) return 'gatherer';
+  if (isMudpawKind(kind)) return 'generalist';
   if (kind === EntityKind.Commander) return 'commander';
-  if (kind === EntityKind.Healer) return 'support';
-  if (kind === EntityKind.Scout) return 'scout';
+  if (kind === MEDIC_KIND || kind === EntityKind.Shaman) return 'support';
+  if (isLookoutKind(kind)) return 'recon';
   return 'combat';
 }
 
@@ -63,26 +64,24 @@ function deriveTask(eid: number, state: UnitState): UnitTask {
   return 'idle';
 }
 
-function targetNameFor(eid: number): string {
+function targetNameFor(world: GameWorld, eid: number): string {
   const target = UnitStateMachine.targetEntity[eid];
   if (target <= 0) return '';
-  return entityKindName(EntityTypeTag.kind[target] as EntityKind) ?? '';
+  return getEntityDisplayName(world, target) ?? '';
 }
 
-const AUTO_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
-  gatherer: 'gatherer',
+const AUTOMATION_KEY: Record<UnitRole, keyof GameWorld['autoBehaviors'] | null> = {
+  generalist: 'generalist',
   combat: 'combat',
-  support: 'healer',
-  scout: 'scout',
+  support: 'support',
+  recon: 'recon',
   commander: null,
 };
 
-const ROLE_ORDER: UnitRole[] = ['gatherer', 'combat', 'support', 'scout', 'commander'];
+const ROLE_ORDER: UnitRole[] = ['generalist', 'combat', 'support', 'recon', 'commander'];
 
 const BUILDING_TRAIN_MAP: Partial<Record<EntityKind, EntityKind[]>> = {
-  [EntityKind.Lodge]: [EntityKind.Gatherer, EntityKind.Scout],
-  [EntityKind.Armory]: [EntityKind.Brawler, EntityKind.Sniper, EntityKind.Healer],
-  [EntityKind.Burrow]: [EntityKind.Gatherer],
+  [EntityKind.Lodge]: [MUDPAW_KIND, MEDIC_KIND, EntityKind.Sapper, EntityKind.Saboteur],
 };
 
 /** Sync unit and building rosters from ECS into store signals. */
@@ -103,8 +102,9 @@ export function syncRosters(world: GameWorld): void {
     const unit: RosterUnit = {
       eid,
       kind,
+      label: getEntityDisplayName(world, eid),
       task: deriveTask(eid, state),
-      targetName: targetNameFor(eid),
+      targetName: targetNameFor(world, eid),
       hp: Health.current[eid],
       maxHp: Health.max[eid],
       hasOverride: TaskOverride.active[eid] === 1,
@@ -122,12 +122,12 @@ export function syncRosters(world: GameWorld): void {
     const units = groups.get(role) ?? [];
     if (units.length === 0) continue;
     units.sort((a, b) => (a.task === 'idle' ? 0 : 1) - (b.task === 'idle' ? 0 : 1));
-    const autoKey = AUTO_KEY[role];
+    const automationKey = AUTOMATION_KEY[role];
     roster.push({
       role,
       units,
       idleCount: units.filter((u) => u.task === 'idle').length,
-      autoEnabled: autoKey ? world.autoBehaviors[autoKey] : false,
+      automationEnabled: automationKey ? world.autoBehaviors[automationKey] : false,
     });
   }
   store.unitRoster.value = roster;
@@ -143,7 +143,7 @@ export function syncRosters(world: GameWorld): void {
     const slots = trainingQueueSlots.get(eid) ?? [];
     const count = TrainingQueue.count[eid] ?? 0;
     const timer = TrainingQueue.timer[eid] ?? 0;
-    const queueItems = slots.map((k) => entityKindName(k as EntityKind) ?? '');
+    const queueItems = slots.map((k) => getPlayerTrainableDisplayName(k as EntityKind));
     const progress = count > 0 && timer > 0 ? 1 - timer / 300 : count > 0 ? 1 : 0;
     buildings.push({
       eid,

@@ -4,7 +4,7 @@
  * Enemy AI with resource-based economy. Replaces the old fixed-timer wave
  * spawning with intelligent decision-making:
  *
- * 1. **Gatherer spawning** (from task #11): nests spawn gatherers to collect
+ * 1. **Enemy harvester spawning** (from task #11): nests spawn harvester units to collect
  *    resources that feed the enemy economy.
  *
  * 2. **Building construction** (task #12): AI spends resources to build Towers,
@@ -15,7 +15,7 @@
  *
  * 4. **Attack decision-making** (task #14): Enemy attacks when army exceeds a
  *    threshold, targets weakest player building, groups before attacking,
- *    retreats damaged units, and sends scouts.
+ *    retreats damaged units, and sends recon fliers.
  *
  * 5. **Nest defense**: when a nest drops below 50% HP, spawn defenders
  *    (unchanged from original, but now costs resources).
@@ -29,7 +29,7 @@ import { enemyCombatTick } from './enemy-combat';
 import { enemyCommanderTick } from './enemy-commander';
 import { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 import { enemyEconomyTick } from './enemy-economy';
-import { enemyHealerTick } from './enemy-healer';
+import { enemySupportTick } from './enemy-support';
 import { enemyRaiderTick } from './enemy-raider';
 import { enemySapperTick } from './enemy-sapper';
 import { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';
@@ -41,7 +41,7 @@ export function aiSystem(world: GameWorld): void {
   enemyTrainingQueueProcess(world);
   enemyCombatTick(world);
   enemyRaiderTick(world);
-  enemyHealerTick(world);
+  enemySupportTick(world);
   enemySapperTick(world);
   enemyCommanderTick(world);
   nestDefenseReinforcement(world);
@@ -54,7 +54,7 @@ export { enemyCommanderTick } from './enemy-commander';
 export { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 // Re-export sub-module functions for direct access if needed
 export { enemyEconomyTick } from './enemy-economy';
-export { enemyHealerTick } from './enemy-healer';
+export { enemySupportTick } from './enemy-support';
 export { enemyRaiderTick } from './enemy-raider';
 export { enemySapperTick } from './enemy-sapper';
 export { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';

@@ -1,4 +1,17 @@
+---
+title: Responsive Modals Design Reference
+updated: 2026-04-10
+status: current
+domain: product
+---
+
 # Responsive Modals — Design Reference
+
+> Historical note: this document still references the old `TechTreePanel`
+> work because that was the modal surface that originally drove the responsive
+> fixes. The live v3 game uses the Upgrade Web and Pearl screens instead of the
+> old tech-tree UI, but the viewport and drag-scroll guidance here still
+> applies to the current modal stack.
 
 ## Problem statement
 
@@ -232,7 +245,7 @@ Each `TechCard` shows:
 - **Tech name** and **description**
 - **Cost** with pearl cost if applicable
 - **Dependency text badge**: "Needs: Sturdy Mud" (locked) or "From: Sturdy Mud" (available)
-- **Unlock badge**: "🔓 Shieldbearer" for techs that gate units
+- **Unlock badge**: "🔓 Sapper" for techs that gate units
 
 This replaces SVG dependency lines entirely on mobile — no SVG rendering,
 no absolute positioning, just a flowing CSS grid.

@@ -6,6 +6,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { logError } from '@/errors';
 import {
   DEFAULT_KEYMAP,
   getKeymap,
@@ -17,12 +18,22 @@ import {
 
 // Mock the native module so we don't need real Capacitor
 const mockPrefs: Record<string, string> = {};
+const mockLoadPreference = vi.fn(async (key: string) => mockPrefs[key] ?? null);
+const mockSavePreference = vi.fn(async (key: string, value: string) => {
+  mockPrefs[key] = value;
+});
 vi.mock('@/platform/native', () => ({
-  savePreference: vi.fn(async (key: string, value: string) => {
-    mockPrefs[key] = value;
-  }),
-  loadPreference: vi.fn(async (key: string) => mockPrefs[key] ?? null),
+  savePreference: (...args: [string, string]) => mockSavePreference(...args),
+  loadPreference: (...args: [string]) => mockLoadPreference(...args),
 }));
+
+vi.mock('@/errors', async () => {
+  const actual = await vi.importActual<typeof import('@/errors')>('@/errors');
+  return {
+    ...actual,
+    logError: vi.fn(),
+  };
+});
 
 describe('DEFAULT_KEYMAP', () => {
   it('should have all expected keys', () => {
@@ -36,7 +47,7 @@ describe('DEFAULT_KEYMAP', () => {
       'pause',
       'mute',
       'speed',
-      'idleWorker',
+      'idleGeneralist',
       'selectArmy',
       'centerSelection',
       'cycleBuildings',
@@ -119,10 +130,15 @@ describe('setKeymap / getKeymap', () => {
 
 describe('loadKeymapFromStorage / saveKeymapToStorage', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     // Clear mock prefs
     for (const key of Object.keys(mockPrefs)) {
       delete mockPrefs[key];
     }
+    mockLoadPreference.mockImplementation(async (key: string) => mockPrefs[key] ?? null);
+    mockSavePreference.mockImplementation(async (key: string, value: string) => {
+      mockPrefs[key] = value;
+    });
     // Reset keymap to default
     setKeymap(DEFAULT_KEYMAP);
   });
@@ -158,5 +174,20 @@ describe('loadKeymapFromStorage / saveKeymapToStorage', () => {
     await expect(loadKeymapFromStorage()).resolves.toBeUndefined();
     // Keymap should remain unchanged
     expect(getKeymap().attackMove).toBe('a');
+    expect(logError).toHaveBeenCalledTimes(1);
+  });
+
+  it('should log load failures instead of rejecting', async () => {
+    mockLoadPreference.mockRejectedValueOnce(new Error('prefs unavailable'));
+
+    await expect(loadKeymapFromStorage()).resolves.toBeUndefined();
+    expect(logError).toHaveBeenCalledTimes(1);
+  });
+
+  it('should log save failures instead of rejecting', async () => {
+    mockSavePreference.mockRejectedValueOnce(new Error('prefs unavailable'));
+
+    await expect(saveKeymapToStorage()).resolves.toBeUndefined();
+    expect(logError).toHaveBeenCalledTimes(1);
   });
 });

@@ -7,6 +7,7 @@ import type { createWorld } from 'bitecs';
 import type { YukaManager } from '@/ai/yuka-manager';
 import type { AIPersonality } from '@/config/ai-personalities';
 import type { PlayableFaction } from '@/config/factions';
+import type { SpecialistZoneStat } from '@/config/v3-types';
 import type { WeatherState } from '@/config/weather';
 import type { FortificationState } from '@/ecs/systems/fortification';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
@@ -20,12 +21,12 @@ import type {
   GameState,
   GameStats,
   GroundPing,
-  MinimapPing,
   Particle,
 } from '@/types';
 import type { ObjectPool } from '@/utils/pool';
 import type { SeededRandom } from '@/utils/random';
 import type { SpatialHash } from '@/utils/spatial-hash';
+import type { PendingSpecialistAssignment, SpecialistAssignment } from '@/game/specialist-assignment';
 import type { CommanderModifiers } from './world-defaults';
 
 export { type CommanderModifiers, createGameWorld } from './world-defaults';
@@ -38,7 +39,6 @@ export interface GameWorld {
   particles: Particle[];
   floatingTexts: FloatingText[];
   corpses: Corpse[];
-  minimapPings: MinimapPing[];
   groundPings: GroundPing[];
   fireflies: Firefly[];
 
@@ -82,17 +82,21 @@ export interface GameWorld {
   // Input state
   placingBuilding: string | null;
   attackMoveMode: boolean;
-  idleWorkerIdx: number;
+  idleGeneralistIdx: number;
+  specialistAssignments: Map<number, SpecialistAssignment>;
+  pendingSpecialistAssignment: PendingSpecialistAssignment | null;
+  specialistBlueprintCaps: Record<string, number>;
+  specialistZoneBonuses: Record<string, Partial<Record<SpecialistZoneStat, number>>>;
 
   // Yuka AI manager for steering behaviors (all factions)
   yukaManager: YukaManager;
 
   // Auto-behavior toggles grouped by role (synced from UI store signals)
   autoBehaviors: {
-    gatherer: boolean;
+    generalist: boolean;
     combat: boolean;
-    healer: boolean;
-    scout: boolean;
+    support: boolean;
+    recon: boolean;
   };
 
   // Difficulty setting (affects enemy eco speed, army size, aggression)
@@ -101,9 +105,30 @@ export interface GameWorld {
   // Permadeath mode
   permadeath: boolean;
   rewardsModifier: number;
+  clamRewardMultiplier: number;
 
   // Custom game settings modifiers
   gatherSpeedMod: number;
+  playerUnitDamageMultiplier: number;
+  playerAttackSpeedMultiplier: number;
+  playerCriticalHitChance: number;
+  playerDamageTakenMultiplier: number;
+  playerGatherRadiusMultiplier: number;
+  playerCarryCapacityMultiplier: number;
+  playerUnitCostMultiplier: number;
+  playerUnitHpMultiplier: number;
+  playerUnitSpeedMultiplier: number;
+  playerVisionRangeMultiplier: number;
+  playerSiegeDamageMultiplier: number;
+  playerSiegeRangeMultiplier: number;
+  playerSiegeSpeedMultiplier: number;
+  playerDemolishPowerMultiplier: number;
+  playerHealMultiplier: number;
+  playerTrainSpeedMultiplier: number;
+  playerTowerDamageMultiplier: number;
+  playerLodgeHpMultiplier: number;
+  playerWallHpMultiplier: number;
+  playerRepairSpeedMultiplier: number;
   evolutionSpeedMod: number;
   fogOfWarMode: 'full' | 'explored' | 'revealed';
   heroMode: boolean;
@@ -179,15 +204,14 @@ export interface GameWorld {
   enemyCommanderEntityId: number;
   commanderDamageBuff: Set<number>;
   commanderSpeedBuff: Set<number>;
+  commanderGatherBuff: Set<number>;
   commanderHpBuffApplied: Set<number>;
   commanderUnitHpBuff: Set<number>;
   commanderEnemyDebuff: Set<number>;
   commanderId: string;
   commanderModifiers: CommanderModifiers;
 
-  // Airdrop, checkpoint, evacuation
-  airdropsRemaining: number;
-  airdropCooldownUntil: number;
+  // Checkpoint, evacuation
   checkpoints: string[];
   lastCheckpointFrame: number;
   evacuationTriggered: boolean;
@@ -218,6 +242,7 @@ export interface GameWorld {
   // Commander active ability + morale
   commanderAbilityCooldownUntil: number;
   commanderAbilityActiveUntil: number;
+  commanderAbilityTargets: Set<number>;
   demoralizedUnits: Set<number>;
   commanderDeathDemoralizeUntil: number;
   autoRetreatEnabled: boolean;
@@ -239,22 +264,15 @@ export interface GameWorld {
     | 'adversarial-loss'
     | null;
 
-  // Diver stealth: set of entity IDs currently in stealth
+  // Active stealth state (currently used by commander/passive invisibility)
   stealthEntities: Set<number>;
-  stealthAmbushReady: Set<number>;
 
   // Burrowing Worm: entity ID -> remaining burrow frames before emergence
   wormBurrowTimers: Map<number, number>;
   lastWormSpawnFrame: number;
 
-  // Engineer temporary bridges
-  engineerBridges: { col: number; row: number; revertFrame: number; original: number }[];
-
   // --- v2.0.0 ---
   weather: WeatherState;
-  berserkerCombatFrames: Map<number, number>;
-  shrineUsed: Set<number>;
-  wallGateFaction: Map<number, number>;
 
   // --- v2.1.0 ---
   extendedStats?: Partial<ExtendedStats>;

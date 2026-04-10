@@ -22,12 +22,12 @@ import {
 } from '@/ecs/components';
 import { enemyCommanderTick } from '@/ecs/systems/ai/enemy-commander';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 // Mock takeDamage to avoid side-effect chain (audio, particles, death)
-vi.mock('@/ecs/systems/health', () => ({
+vi.mock('@/ecs/systems/health/take-damage', () => ({
   takeDamage: vi.fn(),
-  healthSystem: vi.fn(),
 }));
 
 // Mock audio
@@ -95,7 +95,7 @@ function createPlayerUnit(world: GameWorld, x: number, y: number, hp = 60): numb
   Combat.damage[eid] = 6;
   Combat.attackRange[eid] = 40;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Brawler;
+  EntityTypeTag.kind[eid] = SAPPER_KIND;
   UnitStateMachine.state[eid] = UnitState.Idle;
   Velocity.speed[eid] = 1.8;
 
@@ -180,7 +180,7 @@ describe('enemyCommanderTick', () => {
   });
 
   it('should use AoE ability when timer is 0 and player units nearby', async () => {
-    const { takeDamage } = await import('@/ecs/systems/health');
+    const { takeDamage } = await import('@/ecs/systems/health/take-damage');
     (takeDamage as ReturnType<typeof vi.fn>).mockClear();
 
     createEnemyNest(world, 500, 100);
@@ -200,7 +200,7 @@ describe('enemyCommanderTick', () => {
   });
 
   it('should not use AoE when timer is still counting down', async () => {
-    const { takeDamage } = await import('@/ecs/systems/health');
+    const { takeDamage } = await import('@/ecs/systems/health/take-damage');
     (takeDamage as ReturnType<typeof vi.fn>).mockClear();
 
     createEnemyNest(world, 500, 100);

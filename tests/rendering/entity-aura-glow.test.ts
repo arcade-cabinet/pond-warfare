@@ -10,6 +10,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { drawCommanderAura, drawNestGlow } from '@/rendering/pixi/entity-aura-glow';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 /** Create a mock PixiJS Graphics that records circle/stroke calls. */
@@ -40,15 +41,15 @@ describe('Commander aura constants', () => {
 
 describe('Commander aura visual behavior', () => {
   it('should distinguish Commander from regular units by EntityKind', () => {
-    expect(EntityKind.Commander).not.toBe(EntityKind.Gatherer);
-    expect(EntityKind.Commander).not.toBe(EntityKind.Brawler);
-    expect(EntityKind.Commander).not.toBe(EntityKind.Sniper);
+    expect(EntityKind.Commander).not.toBe(MUDPAW_KIND);
+    expect(EntityKind.Commander).not.toBe(SAPPER_KIND);
+    expect(EntityKind.Commander).not.toBe(SABOTEUR_KIND);
   });
 
   it('should have Commander spriteScale > regular unit spriteScale', async () => {
     const { ENTITY_DEFS } = await import('@/config/entity-defs');
     const commanderDef = ENTITY_DEFS[EntityKind.Commander];
-    const gathererDef = ENTITY_DEFS[EntityKind.Gatherer];
+    const gathererDef = ENTITY_DEFS[MUDPAW_KIND];
 
     expect(commanderDef).toBeDefined();
     expect(gathererDef).toBeDefined();

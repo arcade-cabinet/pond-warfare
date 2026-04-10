@@ -18,10 +18,12 @@ import {
   IsBuilding,
   Position,
   Sprite,
+  TaskOverride,
   UnitStateMachine,
   Velocity,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
 import { triggerHitRecoil } from '@/rendering/animations';
 import { checkAttackAlert } from '@/systems/attack-alerts';
 import { EntityKind, Faction, UnitState } from '@/types';
@@ -38,8 +40,12 @@ export function takeDamage(
 ): void {
   if (!hasComponent(world.ecs, targetEid, Health)) return;
   if (Health.current[targetEid] <= 0) return;
+  if (isInvulnerableFromCommanderAbility(world, targetEid)) return;
 
-  let effectiveAmount = Math.max(0, Math.round(amount * multiplier));
+  // Most callers already fold matchup and upgrade math into the incoming
+  // amount. The optional multiplier is retained for damage text styling and
+  // diagnostics, but should not scale the numeric hit a second time.
+  let effectiveAmount = Math.max(0, Math.round(amount));
 
   // Hardened Shells: player units take 15% less damage
   if (
@@ -49,6 +55,16 @@ export function takeDamage(
     world.tech.hardenedShells
   ) {
     effectiveAmount = Math.max(1, Math.round(effectiveAmount * 0.85));
+  }
+
+  if (
+    effectiveAmount > 0 &&
+    hasComponent(world.ecs, targetEid, FactionTag) &&
+    FactionTag.faction[targetEid] === Faction.Player &&
+    !hasComponent(world.ecs, targetEid, IsBuilding) &&
+    world.playerDamageTakenMultiplier < 1
+  ) {
+    effectiveAmount = Math.max(1, Math.round(effectiveAmount * world.playerDamageTakenMultiplier));
   }
 
   if (effectiveAmount === 0) return;
@@ -73,7 +89,7 @@ export function takeDamage(
   // Check if this warrants an under-attack alert
   checkAttackAlert(world, targetEid);
 
-  // Track combat zone for minimap (only cross-faction combat, throttled)
+  // Track combat zones for offscreen-combat cues (only cross-faction combat, throttled)
   if (
     hasComponent(world.ecs, targetEid, FactionTag) &&
     hasComponent(world.ecs, attackerEid, FactionTag) &&
@@ -152,6 +168,22 @@ export function takeDamage(
   }
 }
 
+function isInvulnerableFromCommanderAbility(world: GameWorld, targetEid: number): boolean {
+  if (world.frameCount >= world.commanderAbilityActiveUntil) return false;
+  if (!hasComponent(world.ecs, targetEid, FactionTag)) return false;
+  if (FactionTag.faction[targetEid] !== Faction.Player) return false;
+
+  if (world.commanderId === 'warden') {
+    return hasComponent(world.ecs, targetEid, IsBuilding);
+  }
+
+  if (world.commanderId === 'ironpaw') {
+    return !hasComponent(world.ecs, targetEid, IsBuilding);
+  }
+
+  return false;
+}
+
 function processRetaliation(
   world: GameWorld,
   targetEid: number,
@@ -167,11 +199,6 @@ function processRetaliation(
     ? (FactionTag.faction[attackerEid] as Faction)
     : Faction.Neutral;
 
-  // Minimap ping for player units attacked by enemies
-  if (targetFaction === Faction.Player && attackerFaction === Faction.Enemy) {
-    world.minimapPings.push({ x: tx, y: ty, life: 120, maxLife: 120 });
-  }
-
   // Target retaliates if in non-combat idle-ish state
   if (
     !isBuilding &&
@@ -183,6 +210,8 @@ function processRetaliation(
     const targetKind = hasComponent(world.ecs, targetEid, EntityTypeTag)
       ? (EntityTypeTag.kind[targetEid] as EntityKind)
       : -1;
+    const hasGatherOverride =
+      TaskOverride.active[targetEid] === 1 && TaskOverride.task[targetEid] === UnitState.GatherMove;
 
     if (
       targetState === UnitState.Idle ||
@@ -192,8 +221,9 @@ function processRetaliation(
       targetState === UnitState.Move
     ) {
       const isGathering =
-        targetKind === EntityKind.Gatherer &&
-        (targetState === UnitState.Gathering ||
+        (isMudpawKind(targetKind) || hasGatherOverride) &&
+        (hasGatherOverride ||
+          targetState === UnitState.Gathering ||
           targetState === UnitState.GatherMove ||
           targetState === UnitState.ReturnMove);
 
@@ -233,6 +263,9 @@ function processRetaliation(
     if (FactionTag.faction[ally] !== targetFaction) continue;
     if (!hasComponent(world.ecs, ally, UnitStateMachine)) continue;
     if (hasComponent(world.ecs, ally, IsBuilding)) continue;
+    if (TaskOverride.active[ally] === 1 && TaskOverride.task[ally] === UnitState.GatherMove) {
+      continue;
+    }
     if (!hasComponent(world.ecs, ally, Health) || Health.current[ally] <= 0) continue;
     if (!hasComponent(world.ecs, ally, Combat) || Combat.damage[ally] <= 0) continue;
 

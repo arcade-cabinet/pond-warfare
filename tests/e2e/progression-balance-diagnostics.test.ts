@@ -1,0 +1,204 @@
+// @vitest-environment jsdom
+
+import { query } from 'bitecs';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  EntityTypeTag,
+  FactionTag,
+  Health,
+  Position,
+  TaskOverride,
+  UnitStateMachine,
+} from '@/ecs/components';
+import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { matchEventRunnerSystem, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import type { GameWorld } from '@/ecs/world';
+import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
+import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { Governor } from '@/governor/governor';
+import { EntityKind, Faction } from '@/types';
+import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
+import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
+import { type PrestigeState, createPrestigeState, isAutoBehaviorUnlocked } from '@/config/prestige-logic';
+import { SeededRandom } from '@/utils/random';
+import { mockedGameRef } from '../helpers/game-world-ref';
+import { syncGovernorSignals } from '../helpers/governor-sync';
+import { runSimFrame } from '../helpers/run-sim-frame';
+import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
+
+vi.mock('@/game', () => ({
+  game: new Proxy({} as Record<string, unknown>, {
+    get(_target, prop) {
+      if (prop === 'world') return mockedGameRef.world;
+      return undefined;
+    },
+  }),
+}));
+vi.mock('@/audio/audio-system', () => ({
+  audio: new Proxy({}, { get: () => vi.fn() }),
+}));
+vi.mock('@/rendering/animations');
+vi.mock('@/utils/particles');
+
+interface DiagnosticVariant {
+  name: string;
+  prestigeState?: PrestigeState;
+  purchasedNodeIds?: string[];
+  startingTierRank?: number;
+}
+
+interface VariantMetrics {
+  name: string;
+  startingMudpaws: number;
+  gatherSpeedMod: number;
+  rareNodeCount: number;
+  resourcesGathered: number;
+  unitsTrained: number;
+  playerUnits: number;
+  fish: number;
+  logs: number;
+  rocks: number;
+  generalistInfo: string;
+}
+
+function countPlayerUnits(world: GameWorld, kind?: EntityKind): number {
+  return Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag])).filter((eid) => {
+    if (FactionTag.faction[eid] !== Faction.Player || Health.current[eid] <= 0) return false;
+    return kind === undefined || EntityTypeTag.kind[eid] === kind;
+  }).length;
+}
+
+function summarizeMudpaws(world: GameWorld): string {
+  return Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag, UnitStateMachine]))
+    .filter(
+      (eid) =>
+        FactionTag.faction[eid] === Faction.Player &&
+        Health.current[eid] > 0 &&
+        EntityTypeTag.kind[eid] === MUDPAW_KIND,
+    )
+    .map((eid) => {
+      const target = UnitStateMachine.targetEntity[eid];
+      const targetKind = target >= 0 ? EntityTypeTag.kind[target] : -1;
+      return `M:${UnitStateMachine.state[eid]}/O:${TaskOverride.task[eid]}/T:${targetKind}`;
+    })
+    .join(' ');
+}
+
+function runVariant(variant: DiagnosticVariant): VariantMetrics {
+  resetAutoSymbol();
+  resetMatchEventRunner();
+  const prestigeState = variant.prestigeState ?? createPrestigeState();
+  storeV3.progressionLevel.value = 3;
+  storeV3.prestigeState.value = prestigeState;
+  storeV3.startingTierRank.value = variant.startingTierRank ?? 0;
+
+  const world = createTestWorld({ stage: 3, seed: 42, fish: 200 });
+  world.peaceTimer = 0;
+  mockedGameRef.world = world;
+
+  const panelGrid = createTestPanelGrid(3);
+  const layout = generateVerticalMapLayout(panelGrid, new SeededRandom(42), {
+    hasRareResourceAccess: isAutoBehaviorUnlocked(prestigeState, 'rare_resource_access'),
+  });
+  const upgradeState = buildCurrentRunUpgradeState({
+    clams: 100,
+    purchasedNodeIds: variant.purchasedNodeIds ?? [],
+    purchasedDiamondIds: [],
+    startingTierRank: variant.startingTierRank ?? 0,
+  });
+  applyUpgradeEffects(world, upgradeState.state, prestigeState);
+
+  const lodgeEid = spawnVerticalEntities(world, layout, new SeededRandom(99));
+  deploySpecialistsAtMatchStart(world, prestigeState, lodgeEid);
+  syncGovernorSignals(world);
+
+  const governor = new Governor();
+  governor.enabled = true;
+
+  const startingMudpaws = countPlayerUnits(world, MUDPAW_KIND);
+  const rareNodeCount = layout.resourcePositions.filter((pos) => pos.type === 'rare_node').length;
+
+  for (let frame = 0; frame < 1200; frame += 1) {
+    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+  }
+
+  return {
+    name: variant.name,
+    startingMudpaws,
+    gatherSpeedMod: world.gatherSpeedMod,
+    rareNodeCount,
+    resourcesGathered: world.stats.resourcesGathered,
+    unitsTrained: world.stats.unitsTrained,
+    playerUnits: countPlayerUnits(world),
+    fish: world.resources.fish,
+    logs: world.resources.logs,
+    rocks: world.resources.rocks,
+    generalistInfo: summarizeMudpaws(world),
+  };
+}
+
+describe('progression balance diagnostics', () => {
+  it('compares baseline runs against progression variants', () => {
+    const baseline = runVariant({ name: 'baseline' });
+    const blueprintFisher = runVariant({
+      name: 'blueprint_fisher',
+      prestigeState: {
+        rank: 1,
+        pearls: 0,
+        totalPearlsEarned: 3,
+        upgradeRanks: { blueprint_fisher: 1 },
+      },
+    });
+    const pearlGather = runVariant({
+      name: 'pearl_gather_multiplier',
+      prestigeState: {
+        rank: 1,
+        pearls: 0,
+        totalPearlsEarned: 10,
+        upgradeRanks: { gather_multiplier: 2 },
+      },
+    });
+    const clamFishTier = runVariant({
+      name: 'clam_fish_tier_1',
+      purchasedNodeIds: ['gathering_fish_gathering_t0'],
+    });
+    const rareResources = runVariant({
+      name: 'rare_resource_access',
+      prestigeState: {
+        rank: 1,
+        pearls: 0,
+        totalPearlsEarned: 15,
+        upgradeRanks: { rare_resource_access: 1 },
+      },
+    });
+    const startingTier = runVariant({
+      name: 'starting_tier_1',
+      prestigeState: {
+        rank: 1,
+        pearls: 0,
+        totalPearlsEarned: 20,
+        upgradeRanks: { starting_tier: 1 },
+      },
+      startingTierRank: 1,
+    });
+
+    console.table([
+      baseline,
+      blueprintFisher,
+      pearlGather,
+      clamFishTier,
+      rareResources,
+      startingTier,
+    ]);
+
+    expect(blueprintFisher.startingMudpaws).toBeGreaterThan(baseline.startingMudpaws);
+    expect(pearlGather.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
+    expect(clamFishTier.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
+    expect(rareResources.rareNodeCount).toBeGreaterThan(baseline.rareNodeCount);
+    expect(startingTier.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
+  }, 60_000);
+});

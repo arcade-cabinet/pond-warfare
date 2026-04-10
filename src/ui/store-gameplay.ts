@@ -41,10 +41,6 @@ export const commanderAbilityCooldown = signal(0);
 export const commanderAbilityActive = signal(false);
 export const commanderAbilityName = signal('');
 
-// ---- Airdrop system ----
-export const airdropsRemaining = signal(0);
-export const airdropCooldown = signal(0);
-
 // ---- Checkpoint/Evacuation ----
 export const evacuationActive = signal(false);
 export const checkpointCount = signal(0);
@@ -101,6 +97,3 @@ export const globalProductionQueue = signal<QueueItem[]>([]);
 // ---- Roster (Forces + Buildings) ----
 export const unitRoster = signal<RosterGroup[]>([]);
 export const buildingRoster = signal<RosterBuilding[]>([]);
-
-/** True when the splash video should play before a new game. */
-export const showSplashVideo = signal(false);

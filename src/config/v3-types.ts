@@ -26,8 +26,10 @@ export interface SpecialistDef {
   hp: number;
   damage: number;
   speed: number;
+  cost: ResourceCost;
   role: string;
   autoTarget: string;
+  attackRange?: number;
 }
 
 export interface UnitsConfig {
@@ -123,6 +125,7 @@ export interface RewardsConfig {
   base_clams: number;
   kill_bonus: number;
   event_bonus: number;
+  resource_bonus_per_100: number;
   survival_bonus_per_minute: number;
   prestige_multiplier_per_rank: number;
 }
@@ -242,10 +245,23 @@ export interface PearlFormula {
   rank_multiplier: number;
 }
 
-export interface AutoDeployEffect {
-  type: 'auto_deploy';
+export interface SpecialistBlueprintEffect {
+  type: 'specialist_blueprint';
   unit: string;
-  count_per_rank: number;
+  cap_per_rank: number;
+}
+
+export type SpecialistZoneStat =
+  | 'operating_radius'
+  | 'anchor_radius'
+  | 'engagement_radius'
+  | 'projection_range';
+
+export interface SpecialistZoneEffect {
+  type: 'specialist_zone';
+  unit: string;
+  stat: SpecialistZoneStat;
+  value_per_rank: number;
 }
 
 export interface MultiplierEffect {
@@ -264,7 +280,8 @@ export interface StartingTierEffect {
 }
 
 export type PearlUpgradeEffect =
-  | AutoDeployEffect
+  | SpecialistBlueprintEffect
+  | SpecialistZoneEffect
   | MultiplierEffect
   | AutoBehaviorEffect
   | StartingTierEffect;

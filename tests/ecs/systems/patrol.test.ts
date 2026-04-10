@@ -7,6 +7,7 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -54,7 +55,7 @@ function createTestUnit(world: GameWorld, x: number, y: number): number {
   UnitStateMachine.state[eid] = UnitState.Idle;
   Collider.radius[eid] = 16;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Brawler;
+  EntityTypeTag.kind[eid] = SAPPER_KIND;
   Combat.attackRange[eid] = 40;
   Health.current[eid] = 100;
   Health.max[eid] = 100;

@@ -15,7 +15,7 @@
 import { render } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { COMMANDER_ABILITIES, COMMANDERS } from '@/config/commanders';
-import type { PlayerProfile } from '@/storage/database';
+import type { PlayerProfile } from '@/storage';
 import { CommanderAccordionContent } from '@/ui/screens/CommanderAccordionContent';
 
 const DEFAULT_PROFILE: PlayerProfile = {
@@ -180,7 +180,8 @@ describe('CommanderAccordionContent', () => {
       />,
     );
 
-    expect(getByText('Gatherers +10% gather rate')).toBeTruthy();
+    expect(getByText('Mudpaws +10% gather rate')).toBeTruthy();
+    expect(getByText('+25% gather rate to nearby Mudpaws')).toBeTruthy();
   });
 
   it('should apply grayscale filter to portrait when locked', () => {

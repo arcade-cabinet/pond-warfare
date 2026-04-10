@@ -68,7 +68,7 @@ vi.mock('@/types', () => ({
     Watchtower: 'watchtower',
     Lodge: 'lodge',
     Wall: 'wall',
-    ScoutPost: 'scout_post',
+    LookoutPost: 'lookout_post',
   },
 }));
 
@@ -122,7 +122,15 @@ describe('Build Preview Ghost', () => {
   });
 
   it('resolves known building types to sprite ids', () => {
-    const knownTypes = ['burrow', 'armory', 'tower', 'watchtower', 'lodge', 'wall', 'scout_post'];
+    const knownTypes = [
+      'burrow',
+      'armory',
+      'tower',
+      'watchtower',
+      'lodge',
+      'wall',
+      'lookout_post',
+    ];
     for (const buildingType of knownTypes) {
       hidePlacementGhost();
       resetLastSprite();

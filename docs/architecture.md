@@ -1,6 +1,15 @@
+---
+title: Architecture
+updated: 2026-04-10
+status: current
+domain: technical
+---
+
 # Architecture
 
 Pond Warfare uses an Entity Component System (ECS) architecture powered by bitECS, with Preact for UI and PixiJS 8 for rendering.
+
+The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md) and [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). The live player-facing runtime now uses the canonical Lodge/radial roster and in-match specialist blueprints. The remaining low-level compatibility layer is limited to shared chassis ids and the specialist snapshot harness used by diagnostics; Pearl progression no longer uses the deleted free specialist match-start spawn contract.
 
 ## System Overview
 
@@ -40,16 +49,13 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
 4. **ECS Systems** - Execute in order (see `src/game/systems-runner.ts`):
    - `weatherSystem` - Weather transitions (clear/rain/fog/wind), speed/vision modifiers
    - `dayNightSystem` - Time of day, ambient darkness, fireflies
-   - `diverStealthSystem` - Water-based stealth mechanics
    - `movementSystem` - Unit pathfinding via Yuka steering
    - `collisionSystem` - Planck.js broadphase overlap resolution
    - `gatheringSystem` - Resource collection and dropoff (both factions)
    - `buildingSystem` - Construction progress and repair
-   - `engineerSystem` - Sapper siege mechanics
    - `combatSystem` - Tower auto-attack, idle aggro (10-frame scan), melee/ranged with damage multipliers, immediate retarget after kill
    - `fortificationTickSystem` - Fort slot towers attack nearest enemy in range
-   - `commanderPassivesSystem` - Commander aura/passive bonuses
-   - `berserkerSystem` - Berserker rage mechanic
+   - `commanderPassivesSystem` - Commander passive upkeep, Marshal/Shadowfang active-state cleanup, Stormcaller lightning
    - `projectileSystem` - Projectile movement and impact
    - `trainingSystem` - Unit production from buildings
    - `aiSystem` - Enemy economy, training, combat, defense, building (6 sub-systems)
@@ -61,7 +67,6 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `moraleSystem` - Morale effects, commander death demoralize
    - `autoRetreatSystem` - Automatic retreat for low-HP units
    - `shamanHealSystem` - Shaman auto-healing
-   - `wallGateSystem` - Wall gate open/close mechanics
    - `veterancySystem` - Kill tracking, rank-up bonuses (HP/damage/speed)
    - `fogOfWarSystem` - Visibility based on unit positions
    - `branchCosmeticsSystem` - Visual branch unlocks
@@ -71,7 +76,7 @@ The game runs a fixed-timestep loop at 60 FPS. Each frame:
    - `cleanupSystem` - Particle/corpse/ping decay
 5. **Camera** - Pan velocity, tracking lerp, screen shake
 6. **UI Sync** - Every 30 frames, sync world state to Preact signals
-7. **Render** - PixiJS entities + Canvas2D overlays (fog, light, minimap)
+7. **Render** - PixiJS entities + Canvas2D overlays (fog, light)
 
 ## Data Flow
 
@@ -91,21 +96,23 @@ Store is split across 5 files:
 
 ## Enemy AI Architecture
 
-The enemy AI runs a full parallel economy and makes strategic decisions through the `aiSystem` (7 sub-files in `src/ecs/systems/ai/`). In v3, enemies also have role-based behaviors:
+The enemy AI runs a full parallel economy and makes strategic decisions through the `aiSystem` (`src/ecs/systems/ai/`). In v3, enemies also have role-based behaviors:
 
 - **Raiders** (`enemy-raider.ts`) - Target player resource nodes
-- **Healers** (`enemy-healer.ts`) - Restore wounded enemy allies
+- **Support units** (`enemy-support.ts`) - Restore wounded enemy allies
 - **Sappers** (`enemy-sapper.ts`) - Breach player fortifications
 
 ```
 aiSystem()
   |
-  +-- enemyGathererSpawning (every 1200 frames)
-  +-- enemyBuildingConstruction (every 1800 frames)
-  +-- enemyArmyTraining (every 300 frames)
-  +-- enemyAttackDecision (every 600 frames)
-  +-- enemyRetreatLogic (every 60 frames)
-  +-- enemyScoutLogic (every 3600 frames)
+  +-- enemyEconomyTick
+  +-- enemyBuildingTick
+  +-- enemyTrainingTick / enemyTrainingQueueProcess
+  +-- enemyCombatTick
+  +-- enemyRaiderTick
+  +-- enemySupportTick
+  +-- enemySapperTick
+  +-- enemyCommanderTick
   +-- nestDefenseReinforcement (every 600 frames)
   +-- bossWaveLogic (every 3 wave intervals after wave 10)
 ```
@@ -134,11 +141,48 @@ aiSystem()
 
 ## Vertical Map & Panel Grid
 
-Maps use a 6-panel grid system (`src/game/panel-grid.ts`) with progression-based unlock:
-- Panels defined in `configs/panels.json` with biome, resources, terrain features
-- Lodge panel at bottom center, enemy panels at top
-- Panel unlock tied to progression stage
-- Map dimensions scale with progression level via `configs/terrain.json`
+Maps use a 6-panel grid system (`src/game/panel-grid.ts`) with Clam-run frontier unlocks:
+- Panels are defined in `configs/panels.json` with biome, resources, terrain features, and unlock order
+- Lodge panel sits at bottom center; new panels expand outward and add pressure/resources
+- The live match map size is driven by purchased Frontier Expansion diamonds in the current run, not by Pearl prestige state
+- Required buildings/responses should arrive from the pane baseline; Clams can tune power, but should not gate the existence of mandatory progression tools
+
+## Canonical Unit Architecture
+
+The intended gameplay model is:
+
+- baseline manual units: `Mudpaw`, `Medic`, `Sapper`, `Saboteur`
+- Pearl specialists: `Fisher`, `Logger`, `Digger`, `Guard`, `Ranger`, `Bombardier`, `Shaman`, `Lookout`
+- Pearl specialists are unlocked by Pearls but trained with in-match resources
+- specialists are assigned to terrain areas and operate within a Yuka-governed radius
+- specialist radius growth is a first-class Pearl upgrade axis, not a secondary stat
+- selected specialists should reveal their assigned circle(s) plus dotted correlation links on the map; `Ranger` and `Bombardier` are dual-zone by design
+
+The live player-facing runtime now also carries specialist zone bonuses on the
+world state at match start:
+
+- blueprint caps initialize from prestige state
+- zone bonuses initialize from prestige state
+- `registerSpecialistEntity()` applies those bonuses to the spawned specialist assignment
+- the Pearl screen groups progression per specialist so blueprint and radius rows stay readable together
+
+The older model of free match-start specialist auto-deploy is obsolete in the player-facing runtime. Pearl specialist ranks now initialize in-match blueprint caps, the player fields those specialists from the Lodge during a run, and the manual Lodge/radial flow now exposes `Mudpaw`, `Medic`, `Sapper`, and `Saboteur` on their intended stage gates.
+
+## Commander Runtime
+
+The live commander layer now has two distinct parts:
+
+1. **Persistent commander modifiers**
+   - difficulty setup copies the selected commander's live aura/passive numbers into `world.commanderModifiers`
+   - aura state is rebuilt by `commanderAura()`
+   - specialist-specific commander bonuses are applied at specialist field time, not through deleted unit types
+
+2. **Active commander abilities**
+   - `src/game/commander-abilities.ts` owns activation and cooldown state
+   - `Marshal` tracks charged units in `world.commanderAbilityTargets`
+   - `Warden` and `Ironpaw` gate `takeDamage()` during their active windows
+   - `Shadowfang` uses the existing stealth targeting path instead of a fake placeholder flag
+   - `Sage` no longer targets the deleted research tree; it grants an instant resource spike
 
 ## Upgrade Effects Pipeline
 
@@ -147,6 +191,15 @@ At game init, `src/game/upgrade-effects.ts`:
 2. Computes active stat effects (gather rate, combat, defense, etc.)
 3. Reads Pearl upgrade multipliers from prestige state
 4. Applies all bonuses as world modifiers before entity spawning
+
+Separately, `src/ui/current-run-diamond-effects.ts` resolves current-run Frontier Expansion diamonds so the next match spawns at the correct panel stage.
+
+Under the canonical unit model, Pearl progression now centers on:
+
+1. specialist blueprint unlocks
+2. specialist cap/radius/projection/efficiency modifiers
+3. specialist training availability during a match
+4. area-assignment control rather than per-target micromanagement
 
 ## Veterancy System
 
@@ -231,7 +284,7 @@ src/
 |   +-- components/      # Reusable UI primitives
 |   |   +-- frame/       # SVG 9-slice panel system
 |   |   +-- sprites/     # SVG unit sprites with idle/attack frames
-|   +-- hud/             # HUD elements (event alerts, onboarding, weather, ctrl-groups)
+|   +-- hud/             # HUD elements (event alerts, contextual onboarding coach, weather, ctrl-groups)
 |   +-- screens/         # UpgradeWebScreen, PearlUpgradeScreen, RewardsScreen, RankUpModal
 |   +-- overlays/        # Modal overlays (settings, etc.)
 +-- utils/              # Utility modules (particles, pool, spatial-hash, random)

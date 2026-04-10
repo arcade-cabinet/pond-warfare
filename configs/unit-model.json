@@ -1,0 +1,339 @@
+{
+  "manual_units": [
+    {
+      "id": "mudpaw",
+      "label": "Mudpaw",
+      "unlock_stage": 1,
+      "role": "manual_generalist",
+      "description": "Baseline manual chassis that gathers, fights, scouts, builds, and repairs.",
+      "responsibilities": [
+        "gather_resources",
+        "fight_basic_threats",
+        "scout_fog",
+        "build_structures",
+        "repair_structures"
+      ],
+      "clam_upgrade_axes": [
+        "gather_speed",
+        "carry_capacity",
+        "build_speed",
+        "repair_speed",
+        "sight_radius",
+        "survivability"
+      ]
+    },
+    {
+      "id": "medic",
+      "label": "Medic",
+      "unlock_stage": 2,
+      "role": "manual_support",
+      "description": "Manual healer unlocked when repair and sustain pressure become part of the run.",
+      "responsibilities": [
+        "heal_wounded",
+        "support_frontline"
+      ],
+      "clam_upgrade_axes": [
+        "heal_rate",
+        "survivability",
+        "mobility"
+      ]
+    },
+    {
+      "id": "sapper",
+      "label": "Sapper",
+      "unlock_stage": 5,
+      "role": "manual_siege",
+      "description": "Manual demolition unit for fortification pressure and choke-breaking.",
+      "responsibilities": [
+        "siege_targets",
+        "breach_fortifications"
+      ],
+      "clam_upgrade_axes": [
+        "siege_damage",
+        "mobility",
+        "survivability"
+      ]
+    },
+    {
+      "id": "saboteur",
+      "label": "Saboteur",
+      "unlock_stage": 6,
+      "role": "manual_disruption",
+      "description": "Manual disruption unit for late full-grid pressure and subversion play.",
+      "responsibilities": [
+        "disrupt_enemy_nodes",
+        "subvert_pressure_points"
+      ],
+      "clam_upgrade_axes": [
+        "disruption_strength",
+        "mobility",
+        "survivability"
+      ]
+    }
+  ],
+  "pearl_specialists": [
+    {
+      "id": "fisher",
+      "label": "Fisher",
+      "domain": "economy",
+      "assignment_shape": "radius",
+      "behavior": "autonomously harvests fish within the assigned area",
+      "radius_display": {
+        "mode": "single_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "operating_radius"
+        ],
+        "upgrade_axes": [
+          "operating_radius"
+        ],
+        "selection_notes": [
+          "show the assigned operating circle on selection",
+          "show a dotted link from the specialist to the assigned circle so the player can correlate unit and zone"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "operating_radius",
+        "throughput",
+        "durability"
+      ]
+    },
+    {
+      "id": "logger",
+      "label": "Logger",
+      "domain": "economy",
+      "assignment_shape": "radius",
+      "behavior": "autonomously harvests logs within the assigned area",
+      "radius_display": {
+        "mode": "single_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "operating_radius"
+        ],
+        "upgrade_axes": [
+          "operating_radius"
+        ],
+        "selection_notes": [
+          "show the assigned operating circle on selection",
+          "show a dotted link from the specialist to the assigned circle so the player can correlate unit and zone"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "operating_radius",
+        "throughput",
+        "durability"
+      ]
+    },
+    {
+      "id": "digger",
+      "label": "Digger",
+      "domain": "economy",
+      "assignment_shape": "radius",
+      "behavior": "autonomously harvests rocks within the assigned area",
+      "radius_display": {
+        "mode": "single_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "operating_radius"
+        ],
+        "upgrade_axes": [
+          "operating_radius"
+        ],
+        "selection_notes": [
+          "show the assigned operating circle on selection",
+          "show a dotted link from the specialist to the assigned circle so the player can correlate unit and zone"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "operating_radius",
+        "throughput",
+        "durability"
+      ]
+    },
+    {
+      "id": "guard",
+      "label": "Guard",
+      "domain": "combat",
+      "assignment_shape": "radius",
+      "behavior": "autonomously handles infantry defense and offense within the assigned area",
+      "radius_display": {
+        "mode": "single_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "operating_radius"
+        ],
+        "upgrade_axes": [
+          "operating_radius"
+        ],
+        "selection_notes": [
+          "show the assigned operating circle on selection",
+          "show a dotted link from the specialist to the assigned circle so the player can correlate unit and zone"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "operating_radius",
+        "combat_effectiveness",
+        "durability"
+      ]
+    },
+    {
+      "id": "ranger",
+      "label": "Ranger",
+      "domain": "combat",
+      "assignment_shape": "radius",
+      "behavior": "autonomously provides ranged coverage within the assigned area",
+      "radius_display": {
+        "mode": "dual_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "anchor_radius",
+          "engagement_radius"
+        ],
+        "upgrade_axes": [
+          "anchor_radius",
+          "engagement_radius",
+          "projection_range"
+        ],
+        "selection_notes": [
+          "show the specialist's home anchor circle on selection",
+          "show the engagement circle the specialist can project fire into",
+          "show a dotted link between specialist anchor and engagement zone so the player can correlate both circles"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "anchor_radius",
+        "engagement_radius",
+        "projection_range",
+        "combat_effectiveness",
+        "durability"
+      ]
+    },
+    {
+      "id": "bombardier",
+      "label": "Bombardier",
+      "domain": "combat",
+      "assignment_shape": "radius",
+      "behavior": "autonomously applies siege pressure to valuable targets within the assigned area",
+      "radius_display": {
+        "mode": "dual_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "anchor_radius",
+          "engagement_radius"
+        ],
+        "upgrade_axes": [
+          "anchor_radius",
+          "engagement_radius",
+          "projection_range"
+        ],
+        "selection_notes": [
+          "show the specialist's home anchor circle on selection",
+          "show the engagement circle the specialist can project siege pressure into",
+          "show a dotted link between specialist anchor and engagement zone so the player can correlate both circles"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "anchor_radius",
+        "engagement_radius",
+        "projection_range",
+        "siege_effectiveness",
+        "durability"
+      ]
+    },
+    {
+      "id": "shaman",
+      "label": "Shaman",
+      "domain": "support",
+      "assignment_shape": "radius",
+      "behavior": "autonomously heals wounded allies within the assigned area",
+      "radius_display": {
+        "mode": "single_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "operating_radius"
+        ],
+        "upgrade_axes": [
+          "operating_radius"
+        ],
+        "selection_notes": [
+          "show the assigned operating circle on selection",
+          "show a dotted link from the specialist to the assigned circle so the player can correlate unit and zone"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "operating_radius",
+        "heal_effectiveness",
+        "durability"
+      ]
+    },
+    {
+      "id": "lookout",
+      "label": "Lookout",
+      "domain": "recon",
+      "assignment_shape": "radius",
+      "behavior": "autonomously patrols and extends vision within the assigned area",
+      "radius_display": {
+        "mode": "single_zone",
+        "show_dotted_assignment_link": true,
+        "circle_labels": [
+          "operating_radius"
+        ],
+        "upgrade_axes": [
+          "operating_radius"
+        ],
+        "selection_notes": [
+          "show the assigned operating circle on selection",
+          "show a dotted link from the specialist to the assigned circle so the player can correlate unit and zone"
+        ]
+      },
+      "pearl_upgrade_axes": [
+        "blueprint_unlock",
+        "deployment_cap",
+        "operating_radius",
+        "vision_effectiveness",
+        "durability"
+      ]
+    }
+  ],
+  "specialist_control_model": {
+    "unlock_source": "pearls",
+    "spawn_cost_source": "in_match_resources",
+    "assignment_mode": "terrain_radius",
+    "player_can_reposition": true,
+    "player_can_assign_single_target": false,
+    "player_can_override_temporarily": true,
+    "radius_upgrade_is_core_path": true,
+    "radius_behavior_rules": [
+      "player clicks terrain to place a specialist operating radius",
+      "specialist searches for role-valid work inside the assigned radius",
+      "specialist returns to the lodge or relevant dropoff flow automatically when needed",
+      "moving or reassigning the specialist replaces the previous operating radius"
+    ],
+    "upgrade_philosophy": [
+      "pearls unlock blueprints and specialist autonomy",
+      "specialists still cost in-match resources to train",
+      "radius growth is a primary specialist progression axis",
+      "specialist upgrades should improve capability rather than bypass baseline play"
+    ]
+  },
+  "obsolete_assumptions": [
+    "free match-start auto-deploy as the primary Pearl specialist model",
+    "separate baseline manual Gatherer Fighter and Scout units",
+    "Guardian and Hunter as the primary autonomous combat split",
+    "required baseline buildings or first-clear responses gated behind Clams"
+  ]
+}

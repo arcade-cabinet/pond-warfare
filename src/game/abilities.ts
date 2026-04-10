@@ -1,5 +1,5 @@
 /**
- * Active Abilities & Airdrop -- commander abilities and supply drops.
+ * Active Abilities
  *
  * v3.0 note: In-game research was removed, but these abilities remain
  * valid. They gate on world.tech flags (swiftPaws, pondBlessing,
@@ -10,12 +10,10 @@
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { spawnEntity } from '@/ecs/archetypes';
-import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
-import { takeDamage } from '@/ecs/systems/health';
+import { FactionTag, Health, Position } from '@/ecs/components';
+import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction } from '@/types';
-import * as store from '@/ui/store';
+import { Faction } from '@/types';
 
 /** Activate Shadow Sprint: +40% speed to all units for 8s. Cooldown 60s. */
 export function useShadowSprint(world: GameWorld): boolean {
@@ -103,91 +101,5 @@ export function useTidalSurge(world: GameWorld): boolean {
     color: '#38bdf8',
     life: 120,
   });
-  return true;
-}
-
-/** Use an airdrop: spawn resources and units at the Lodge position. */
-export function useAirdrop(world: GameWorld): boolean {
-  if (world.airdropsRemaining <= 0) return false;
-  if (world.frameCount < world.airdropCooldownUntil) return false;
-
-  const buildings = query(world.ecs, [Position, Health, IsBuilding, FactionTag, EntityTypeTag]);
-  let lodgeX = 0;
-  let lodgeY = 0;
-  let foundLodge = false;
-  for (let i = 0; i < buildings.length; i++) {
-    const eid = buildings[i];
-    if (
-      EntityTypeTag.kind[eid] === EntityKind.Lodge &&
-      FactionTag.faction[eid] === Faction.Player &&
-      Health.current[eid] > 0
-    ) {
-      lodgeX = Position.x[eid];
-      lodgeY = Position.y[eid];
-      foundLodge = true;
-      break;
-    }
-  }
-  if (!foundLodge) return false;
-
-  // Grant resources
-  world.resources.fish += 200;
-  world.resources.logs += 100;
-
-  // Spawn units near Lodge
-  const offsets = [
-    { x: -40, y: 60 },
-    { x: 40, y: 60 },
-    { x: 0, y: 80 },
-  ];
-  spawnEntity(
-    world,
-    EntityKind.Brawler,
-    lodgeX + offsets[0].x,
-    lodgeY + offsets[0].y,
-    Faction.Player,
-  );
-  spawnEntity(
-    world,
-    EntityKind.Brawler,
-    lodgeX + offsets[1].x,
-    lodgeY + offsets[1].y,
-    Faction.Player,
-  );
-  spawnEntity(
-    world,
-    EntityKind.Healer,
-    lodgeX + offsets[2].x,
-    lodgeY + offsets[2].y,
-    Faction.Player,
-  );
-
-  // Decrement and set cooldown
-  world.airdropsRemaining--;
-  world.airdropCooldownUntil = world.frameCount + 600;
-  store.airdropsRemaining.value = world.airdropsRemaining;
-  store.airdropCooldown.value = 10;
-
-  // Visual feedback
-  world.floatingTexts.push({
-    x: lodgeX,
-    y: lodgeY - 40,
-    text: 'SUPPLIES INCOMING!',
-    color: '#facc15',
-    life: 120,
-  });
-
-  for (let p = 0; p < 20; p++) {
-    world.particles.push({
-      x: lodgeX + (world.gameRng.next() - 0.5) * 60,
-      y: lodgeY + (world.gameRng.next() - 0.5) * 60,
-      vx: (world.gameRng.next() - 0.5) * 3,
-      vy: -world.gameRng.next() * 3 - 1,
-      life: 40,
-      color: '#facc15',
-      size: 4,
-    });
-  }
-
   return true;
 }

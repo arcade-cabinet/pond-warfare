@@ -3,7 +3,7 @@
  *
  * Validates the complete v3 player journey:
  * 1. Match setup: world creation, entity spawning, panel config
- * 2. Early game: train gatherers, start economy
+ * 2. Early game: train Mudpaws, start economy
  * 3. Mid game: train army, resource gathering income
  * 4. Combat: enemy engagement, kills, Lodge defense
  * 5. Match end: victory conditions, reward calculation
@@ -30,10 +30,11 @@ import { healthSystem } from '@/ecs/systems/health';
 import { movementSystem } from '@/ecs/systems/movement';
 import { trainingSystem } from '@/ecs/systems/training';
 import type { GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { calculateMatchReward } from '@/game/match-rewards';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
-import { train } from '@/input/selection';
+import { train } from '@/input/selection/queries';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { progressionLevel } from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
@@ -78,29 +79,31 @@ describe('Full Match Flow', () => {
     expect(world.resources.fish).toBeGreaterThan(0);
 
     // ── 2. EARLY GAME: TRAIN UNITS ──────────────────────────
-    const gathererCost = ENTITY_DEFS[EntityKind.Gatherer].fishCost ?? 0;
-    const brawlerCost = ENTITY_DEFS[EntityKind.Brawler].fishCost ?? 0;
+    const mudpawCost = ENTITY_DEFS[MUDPAW_KIND].fishCost ?? 0;
+    const sapperFishCost = ENTITY_DEFS[SAPPER_KIND].fishCost ?? 0;
+    const sapperRockCost = ENTITY_DEFS[SAPPER_KIND].rockCost ?? 0;
     const fishBefore = world.resources.fish;
 
     // Ensure Lodge food cap is set (normally computed by populationSync)
     world.resources.maxFood = 8;
 
-    // Train 2 gatherers from Lodge
-    train(world, lodgeEid, EntityKind.Gatherer, gathererCost, 0, 1);
-    train(world, lodgeEid, EntityKind.Gatherer, gathererCost, 0, 1);
-    expect(world.resources.fish).toBe(fishBefore - gathererCost * 2);
+    // Train 2 Mudpaws from the Lodge
+    train(world, lodgeEid, MUDPAW_KIND, mudpawCost, 0, 1);
+    train(world, lodgeEid, MUDPAW_KIND, mudpawCost, 0, 1);
+    expect(world.resources.fish).toBe(fishBefore - mudpawCost * 2);
 
-    // Train 1 brawler (cost deducted from remaining fish)
-    const fishAfterGatherers = world.resources.fish;
-    train(world, lodgeEid, EntityKind.Brawler, brawlerCost, 0, 1);
-    expect(world.resources.fish).toBe(fishAfterGatherers - brawlerCost);
+    // Train 1 Sapper (fish + rocks deducted from remaining stockpile)
+    world.resources.rocks = Math.max(world.resources.rocks, sapperRockCost + 5);
+    const fishAfterMudpaws = world.resources.fish;
+    train(world, lodgeEid, SAPPER_KIND, sapperFishCost, 0, 1, sapperRockCost);
+    expect(world.resources.fish).toBe(fishAfterMudpaws - sapperFishCost);
 
     // Run frames to complete training (TRAIN_TIMER = 120 per unit)
     runFrames(world, 400);
     expect(world.stats.unitsTrained).toBeGreaterThanOrEqual(2);
 
     // ── 3. MID GAME: ECONOMY ────────────────────────────────
-    // Manually place a gatherer near a resource and run gather cycle
+    // Manually place a Mudpaw near a resource and run gather cycle
     const clambeds = query(world.ecs, [Position, Resource, EntityTypeTag]).filter(
       (eid) => EntityTypeTag.kind[eid] === EntityKind.Clambed && Resource.amount[eid] > 0,
     );
@@ -108,13 +111,13 @@ describe('Full Match Flow', () => {
 
     const rx = Position.x[clambeds[0]];
     const ry = Position.y[clambeds[0]];
-    const testGatherer = spawnEntity(world, EntityKind.Gatherer, rx + 30, ry, Faction.Player);
+    const testMudpaw = spawnEntity(world, MUDPAW_KIND, rx + 30, ry, Faction.Player);
 
-    // Set gatherer to gather the resource
-    UnitStateMachine.state[testGatherer] = UnitState.GatherMove;
-    UnitStateMachine.targetEntity[testGatherer] = clambeds[0];
-    UnitStateMachine.targetX[testGatherer] = rx;
-    UnitStateMachine.targetY[testGatherer] = ry;
+    // Set Mudpaw to gather the resource
+    UnitStateMachine.state[testMudpaw] = UnitState.GatherMove;
+    UnitStateMachine.targetEntity[testMudpaw] = clambeds[0];
+    UnitStateMachine.targetX[testMudpaw] = rx;
+    UnitStateMachine.targetY[testMudpaw] = ry;
 
     const _fishBeforeGather = world.resources.fish;
     runFrames(world, 600); // Enough for walk + gather + return + deposit
@@ -170,9 +173,9 @@ describe('Full Match Flow', () => {
     );
     expect(playerUnits.length).toBeGreaterThanOrEqual(2); // Lodge + Commander
 
-    // Can afford at least 1 Gatherer
-    const gathererCost = ENTITY_DEFS[EntityKind.Gatherer].fishCost ?? 0;
-    expect(world.resources.fish).toBeGreaterThanOrEqual(gathererCost);
+    // Can afford at least 1 Mudpaw
+    const mudpawCost = ENTITY_DEFS[MUDPAW_KIND].fishCost ?? 0;
+    expect(world.resources.fish).toBeGreaterThanOrEqual(mudpawCost);
 
     // Run 300 frames without crash
     runFrames(world, 300);

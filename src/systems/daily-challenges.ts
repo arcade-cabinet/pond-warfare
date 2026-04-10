@@ -50,7 +50,7 @@ export interface GameEndStats {
   commanderAbilitiesUsed: number;
   /** Number of towers built. */
   towersBuilt: number;
-  /** Number of combat units (non-gatherer) trained. */
+  /** Number of non-Mudpaw units trained. */
   combatUnitsTrained: number;
   /** Highest survival wave reached (0 if not survival mode). */
   survivalWaveReached: number;
@@ -65,9 +65,9 @@ const CHALLENGES: DailyChallenge[] = [
   {
     id: 'basic_units_only',
     title: 'Back to Basics',
-    description: 'Win with only Gatherers and Brawlers (no advanced units)',
+    description: 'Win with Mudpaws and buildings only (no Medics, Sappers, Saboteurs, or specialists)',
     type: 'general',
-    objective: (s) => s.result === 'win',
+    objective: (s) => s.result === 'win' && s.combatUnitsTrained === 0,
     xpReward: 250,
   },
   {
@@ -129,9 +129,9 @@ const CHALLENGES: DailyChallenge[] = [
   {
     id: 'economy_only',
     title: 'Economic Victory',
-    description: 'Win with gatherers and buildings only (no combat units)',
+    description: 'Win after earning at least 4000 fish in one game',
     type: 'economy',
-    objective: (s) => s.result === 'win' && s.combatUnitsTrained === 0,
+    objective: (s) => s.result === 'win' && s.totalFishEarned >= 4000,
     xpReward: 400,
   },
   {

@@ -273,7 +273,7 @@ export function renderEntity(eid: number, frameCount: number): void {
     renderAutoSymbol(eid, ex, ey, sh, yOff, frameCount, entityLayer);
   }
 
-  renderUnitLabel(eid, kind, isResource, selected, ex, ey, sh, yOff, entityLayer);
+  renderUnitLabel(_world, eid, kind, isResource, selected, ex, ey, sh, yOff, entityLayer);
   renderBuildingProgress(
     eid,
     isBuilding,

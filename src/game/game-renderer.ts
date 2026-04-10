@@ -17,7 +17,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import type { PointerHandler } from '@/input/pointer';
-import { canPlaceBuilding } from '@/input/selection';
+import { canPlaceBuilding } from '@/input/selection/queries';
 import { computeShakeOffset } from '@/rendering/camera';
 import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
@@ -27,8 +27,10 @@ import {
   type PixiRenderFrameData,
   type PlacementPreview,
   renderPixiFrame,
-} from '@/rendering/pixi-app';
+} from '@/rendering/pixi';
 import { type EntityKind, Faction, type SpriteId } from '@/types';
+import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
+import * as storeV3 from '@/ui/store-v3';
 
 export interface DrawState {
   world: GameWorld;
@@ -65,6 +67,7 @@ export function draw(state: DrawState): void {
     trail: [] as { x: number; y: number; life: number }[],
   }));
   updateProjectileTrails(projectiles);
+  const panelStage = getCurrentRunPanelStage(storeV3.currentRunPurchasedDiamondIds.value);
 
   const renderData: PixiRenderFrameData = {
     sortedEids,
@@ -78,6 +81,7 @@ export function draw(state: DrawState): void {
     selectionRect,
     placement,
     isDragging: state.pointer.mouse.isDown,
+    progressionLevel: panelStage,
   };
 
   renderPixiFrame(w, state.spriteCanvases, renderData);

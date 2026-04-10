@@ -6,8 +6,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
-import { entityKindName } from '@/config/entity-defs';
-import { TRAIN_TIMER, WAVE_INTERVAL } from '@/constants';
+import { WAVE_INTERVAL } from '@/constants';
 import {
   Building,
   EntityTypeTag,
@@ -20,6 +19,8 @@ import {
   trainingQueueSlots,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { getPlayerTrainProgress } from '@/game/train-timer';
+import { getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { EntityKind, Faction } from '@/types';
 import * as store from '@/ui/store';
 
@@ -52,13 +53,10 @@ export function syncThreatAndObjectives(world: GameWorld): void {
     const slots = trainingQueueSlots.get(eid) ?? [];
     if (slots.length === 0) continue;
     const unitKind = slots[0] as EntityKind;
-    const progress = Math.max(
-      0,
-      Math.min(100, ((TRAIN_TIMER - TrainingQueue.timer[eid]) / TRAIN_TIMER) * 100),
-    );
+    const progress = getPlayerTrainProgress(w, TrainingQueue.timer[eid], unitKind);
     prodQueue.push({
       buildingKind: EntityTypeTag.kind[eid],
-      unitLabel: entityKindName(unitKind),
+      unitLabel: getPlayerTrainableDisplayName(unitKind),
       progress,
       entityId: eid,
     });
@@ -67,7 +65,7 @@ export function syncThreatAndObjectives(world: GameWorld): void {
 
   // --- Base under attack detection: enemies within 400px of any player Lodge ---
   const BASE_THREAT_RADIUS_SQ = 400 * 400;
-  let baseAttacked = false;
+  let baseThreatCount = 0;
   const lodgePositions: { x: number; y: number }[] = [];
   const enemyPositions: { x: number; y: number }[] = [];
 
@@ -88,17 +86,17 @@ export function syncThreatAndObjectives(world: GameWorld): void {
     }
   }
 
-  outer: for (const lodge of lodgePositions) {
+  for (const lodge of lodgePositions) {
     for (const enemy of enemyPositions) {
       const dx = lodge.x - enemy.x;
       const dy = lodge.y - enemy.y;
       if (dx * dx + dy * dy < BASE_THREAT_RADIUS_SQ) {
-        baseAttacked = true;
-        break outer;
+        baseThreatCount += 1;
       }
     }
   }
-  store.baseUnderAttack.value = baseAttacked;
+  store.baseThreatCount.value = baseThreatCount;
+  store.baseUnderAttack.value = baseThreatCount > 0;
 
   // --- Objective tracking: enemy nest counts ---
   let aliveNests = 0;

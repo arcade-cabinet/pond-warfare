@@ -6,6 +6,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { TerrainGrid, TerrainType } from '@/terrain/terrain-grid';
 import { EntityKind } from '@/types';
 
@@ -17,31 +18,31 @@ describe('Terrain affects movement', () => {
   it('unit on Grass moves at normal speed (1.0x)', () => {
     const grid = new TerrainGrid(W, H, TILE);
     // Default is all grass
-    const mult = grid.getSpeedMultiplier(50, 50, EntityKind.Gatherer);
+    const mult = grid.getSpeedMultiplier(50, 50, MUDPAW_KIND);
     expect(mult).toBe(1.0);
   });
 
   it('unit on Mud moves at 0.75x speed', () => {
     const grid = new TerrainGrid(W, H, TILE);
     grid.set(1, 1, TerrainType.Mud);
-    const mult = grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, EntityKind.Brawler);
+    const mult = grid.getSpeedMultiplier(1 * TILE + 5, 1 * TILE + 5, MUDPAW_KIND);
     expect(mult).toBe(0.75);
   });
 
-  it('non-Swimmer is blocked on Water (0 speed)', () => {
+  it('manual land units are blocked on Water (0 speed)', () => {
     const grid = new TerrainGrid(W, H, TILE);
     grid.set(2, 2, TerrainType.Water);
-    const mult = grid.getSpeedMultiplier(2 * TILE + 5, 2 * TILE + 5, EntityKind.Brawler);
+    const mult = grid.getSpeedMultiplier(2 * TILE + 5, 2 * TILE + 5, MUDPAW_KIND);
     expect(mult).toBe(0);
-    expect(grid.isPassable(2 * TILE + 5, 2 * TILE + 5, EntityKind.Brawler)).toBe(false);
+    expect(grid.isPassable(2 * TILE + 5, 2 * TILE + 5, MUDPAW_KIND)).toBe(false);
   });
 
-  it('Swimmer crosses Water at 0.5x speed', () => {
+  it('Fish crosses Water at 0.5x speed', () => {
     const grid = new TerrainGrid(W, H, TILE);
     grid.set(3, 3, TerrainType.Water);
-    const mult = grid.getSpeedMultiplier(3 * TILE + 5, 3 * TILE + 5, EntityKind.Swimmer);
+    const mult = grid.getSpeedMultiplier(3 * TILE + 5, 3 * TILE + 5, EntityKind.Fish);
     expect(mult).toBe(0.5);
-    expect(grid.isPassable(3 * TILE + 5, 3 * TILE + 5, EntityKind.Swimmer)).toBe(true);
+    expect(grid.isPassable(3 * TILE + 5, 3 * TILE + 5, EntityKind.Fish)).toBe(true);
   });
 
   it('HighGround grants +25% range for ranged attacks (attackRange > 50)', () => {

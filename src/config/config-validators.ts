@@ -60,8 +60,10 @@ export function validateUnits(data: UnitsConfig): void {
     assertField(def, 'speed', ctx);
     assertPositive(def.speed, `${ctx}.speed`);
     assertNonNegative(def.damage, `${ctx}.damage`);
+    assertField(def, 'cost', ctx);
     assertField(def, 'role', ctx);
     assertField(def, 'autoTarget', ctx);
+    if (def.attackRange !== undefined) assertPositive(def.attackRange, `${ctx}.attackRange`);
   }
 }
 
@@ -127,6 +129,7 @@ export function validateRewards(data: RewardsConfig): void {
   assertPositive(data.base_clams, 'rewards.base_clams');
   assertNonNegative(data.kill_bonus, 'rewards.kill_bonus');
   assertNonNegative(data.event_bonus, 'rewards.event_bonus');
+  assertNonNegative(data.resource_bonus_per_100, 'rewards.resource_bonus_per_100');
   assertNonNegative(data.survival_bonus_per_minute, 'rewards.survival_bonus_per_minute');
   assertNonNegative(data.prestige_multiplier_per_rank, 'rewards.prestige_multiplier_per_rank');
 }
@@ -191,5 +194,21 @@ export function validatePrestige(data: PrestigeConfig): void {
     const ctx = `prestige.pearl_upgrades.${id}`;
     assertPositive(up.cost_per_rank, `${ctx}.cost_per_rank`);
     assertPositive(up.max_rank, `${ctx}.max_rank`);
+    if (up.effect.type === 'specialist_blueprint') {
+      assertField(up.effect, 'unit', `${ctx}.effect`);
+      assertPositive(up.effect.cap_per_rank, `${ctx}.effect.cap_per_rank`);
+    }
+    if (up.effect.type === 'specialist_zone') {
+      assertField(up.effect, 'unit', `${ctx}.effect`);
+      assertField(up.effect, 'stat', `${ctx}.effect`);
+      assertPositive(up.effect.value_per_rank, `${ctx}.effect.value_per_rank`);
+      if (
+        !['operating_radius', 'anchor_radius', 'engagement_radius', 'projection_range'].includes(
+          up.effect.stat,
+        )
+      ) {
+        throw new Error(`Config validation: invalid specialist zone stat in ${ctx}.effect.stat`);
+      }
+    }
   }
 }

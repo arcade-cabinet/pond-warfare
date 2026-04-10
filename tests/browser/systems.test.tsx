@@ -8,7 +8,6 @@
  * Run with: pnpm test:browser
  */
 
-import { render } from 'preact';
 import { page } from 'vitest/browser';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { query } from 'bitecs';
@@ -26,9 +25,10 @@ import { ENTITY_DEFS } from '@/config/entity-defs';
 import { VET_HP_BONUS, VET_THRESHOLDS } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
 import { game } from '@/game';
-import { App } from '@/ui/app';
+import { LOOKOUT_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
+import { mountCurrentGame } from './helpers/mount-current-game';
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as gameplay-loops.test.tsx)
@@ -99,24 +99,7 @@ async function selectEntity(eid: number) {
 // Bootstrap
 // ---------------------------------------------------------------------------
 
-async function mountGame() {
-  let root = document.getElementById('app');
-  if (!root) { root = document.createElement('div'); root.id = 'app'; document.body.appendChild(root); }
-  document.body.style.cssText = 'margin:0;padding:0;overflow:hidden';
-
-  const ready = new Promise<void>((resolve) => {
-    render(<App onMount={async (refs) => {
-      await game.init(refs.container, refs.gameCanvas, refs.fogCanvas, refs.lightCanvas);
-      resolve();
-    }} />, root!);
-  });
-
-  await delay(500);
-  clickButton('New Game');
-  await delay(500);
-  clickButton('START');
-  await ready;
-}
+const mountGame = mountCurrentGame;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -125,13 +108,13 @@ async function mountGame() {
 describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
   beforeAll(async () => {
     await mountGame();
-    await delay(4500); // intro fade
+    await delay(1000);
     game.world.gameSpeed = 3;
     // Ensure all auto-behaviors start OFF for a clean slate
-    game.world.autoBehaviors.gatherer = false;
+    game.world.autoBehaviors.generalist = false;
     game.world.autoBehaviors.combat = false;
-    game.world.autoBehaviors.healer = false;
-    game.world.autoBehaviors.scout = false;
+    game.world.autoBehaviors.support = false;
+    game.world.autoBehaviors.recon = false;
   }, 30_000);
 
   // =========================================================================
@@ -140,31 +123,30 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
 
   describe('Auto-behaviors', () => {
 
-    // 1. Toggle auto-gatherer ON -> idle gatherers enter GatherMove state
-    it('auto-gatherer toggle sets world.autoBehaviors.gatherer flag', async () => {
-      game.world.autoBehaviors.gatherer = false;
-      expect(game.world.autoBehaviors.gatherer).toBe(false);
-      game.world.autoBehaviors.gatherer = true;
-      expect(game.world.autoBehaviors.gatherer).toBe(true);
+    // 1. Toggle auto-generalist ON -> idle Mudpaws can leave Idle
+    it('auto-generalist toggle sets world.autoBehaviors.generalist flag', async () => {
+      game.world.autoBehaviors.generalist = false;
+      expect(game.world.autoBehaviors.generalist).toBe(false);
+      game.world.autoBehaviors.generalist = true;
+      expect(game.world.autoBehaviors.generalist).toBe(true);
       // Verify the system reads this flag (it checks every 60 frames)
       await waitFrames(120);
-      // Gatherers should be working if resources exist
-      const working = getUnits(EntityKind.Gatherer).filter(
+      // Mudpaws should be working if resources exist
+      const working = getUnits(MUDPAW_KIND).filter(
         (eid) => UnitStateMachine.state[eid] !== UnitState.Idle,
       );
       expect(working.length).toBeGreaterThanOrEqual(0); // may be 0 if no resources nearby
-      game.world.autoBehaviors.gatherer = false;
+      game.world.autoBehaviors.generalist = false;
     });
 
-    // 2. Toggle auto-gatherer OFF -> new idle gatherers stay idle
-    it('toggle auto-gatherer OFF -> new idle gatherers stay idle', async () => {
-      game.world.autoBehaviors.gatherer = false;
+    // 2. Toggle auto-generalist OFF -> idle Mudpaws stay idle
+    it('toggle auto-generalist OFF -> new idle Mudpaws stay idle', async () => {
+      game.world.autoBehaviors.generalist = false;
       await waitFrames(60);
 
-      // Force a gatherer to idle
-      const gatherers = getUnits(EntityKind.Gatherer);
-      expect(gatherers.length).toBeGreaterThan(0);
-      const gid = gatherers[0];
+      const mudpaws = getUnits(MUDPAW_KIND);
+      expect(mudpaws.length).toBeGreaterThan(0);
+      const gid = mudpaws[0];
       UnitStateMachine.state[gid] = UnitState.Idle;
       UnitStateMachine.targetEntity[gid] = -1;
 
@@ -175,8 +157,8 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       expect(UnitStateMachine.state[gid]).toBe(UnitState.Idle);
     });
 
-    // 3. Toggle auto-gatherer ON -> idle gatherers assigned to auto-build
-    it('toggle auto-gatherer ON -> idle gatherers assigned to auto-build', async () => {
+    // 3. Toggle auto-generalist ON -> idle Mudpaws can be assigned to auto-build
+    it('toggle auto-generalist ON -> idle Mudpaws assigned to auto-build', async () => {
       // Give resources for auto-build to work
       game.world.resources.fish = 500;
       game.world.resources.logs = 500;
@@ -184,21 +166,20 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       // Ensure population cap is reached (triggers auto-build Burrow priority)
       game.world.resources.food = game.world.resources.maxFood;
 
-      // Force a gatherer to idle
-      const gatherers = getUnits(EntityKind.Gatherer);
-      expect(gatherers.length).toBeGreaterThan(0);
-      const gid = gatherers[0];
+      const mudpaws = getUnits(MUDPAW_KIND);
+      expect(mudpaws.length).toBeGreaterThan(0);
+      const gid = mudpaws[0];
       UnitStateMachine.state[gid] = UnitState.Idle;
       UnitStateMachine.targetEntity[gid] = -1;
 
-      // Enable auto-gatherer (covers both gather + build)
-      game.world.autoBehaviors.gatherer = true;
+      // Enable auto-generalist economy/build behavior
+      game.world.autoBehaviors.generalist = true;
 
       // Align the frame count so auto-build runs on the next multiple of 300
       const remainder = 300 - (game.world.frameCount % 300);
       await waitFrames(remainder + 300);
 
-      // The auto-build system should have assigned the gatherer to build
+      // The auto-build system should have assigned the Mudpaw to build
       const state = UnitStateMachine.state[gid];
       const wasAssigned =
         state === UnitState.BuildMove ||
@@ -211,7 +192,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
         expect(wasAssigned).toBe(true);
       }
 
-      game.world.autoBehaviors.gatherer = false;
+      game.world.autoBehaviors.generalist = false;
       await page.screenshot({ path: 'tests/browser/screenshots/sys-03-auto-build.png' });
     });
 
@@ -224,22 +205,22 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       game.world.autoBehaviors.combat = false;
     });
 
-    // 5. Toggle auto-healer ON -> idle healers seek wounded allies
-    it('auto-healer toggle sets world.autoBehaviors.healer flag', async () => {
-      game.world.autoBehaviors.healer = false;
-      expect(game.world.autoBehaviors.healer).toBe(false);
-      game.world.autoBehaviors.healer = true;
-      expect(game.world.autoBehaviors.healer).toBe(true);
-      game.world.autoBehaviors.healer = false;
+    // 5. Toggle auto-support ON -> idle healers seek wounded allies
+    it('auto-support toggle sets world.autoBehaviors.support flag', async () => {
+      game.world.autoBehaviors.support = false;
+      expect(game.world.autoBehaviors.support).toBe(false);
+      game.world.autoBehaviors.support = true;
+      expect(game.world.autoBehaviors.support).toBe(true);
+      game.world.autoBehaviors.support = false;
     });
 
-    // 6. Toggle auto-scout ON -> idle scouts move to unexplored areas
-    it('auto-scout toggle sets world.autoBehaviors.scout flag', async () => {
-      game.world.autoBehaviors.scout = false;
-      expect(game.world.autoBehaviors.scout).toBe(false);
-      game.world.autoBehaviors.scout = true;
-      expect(game.world.autoBehaviors.scout).toBe(true);
-      game.world.autoBehaviors.scout = false;
+    // 6. Toggle auto-recon ON -> idle Lookouts move to unexplored areas
+    it('auto-recon toggle sets world.autoBehaviors.recon flag', async () => {
+      game.world.autoBehaviors.recon = false;
+      expect(game.world.autoBehaviors.recon).toBe(false);
+      game.world.autoBehaviors.recon = true;
+      expect(game.world.autoBehaviors.recon).toBe(true);
+      game.world.autoBehaviors.recon = false;
     });
   });
 
@@ -255,8 +236,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       const lx = Position.x[lodge];
       const ly = Position.y[lodge];
 
-      // Spawn a fresh brawler
-      const eid = spawnEntity(game.world, EntityKind.Brawler, lx + 60, ly - 60, Faction.Player);
+      const eid = spawnEntity(game.world, SAPPER_KIND, lx + 60, ly - 60, Faction.Player);
 
       // Verify starts at rank 0
       expect(Veterancy.rank[eid]).toBe(0);
@@ -281,9 +261,8 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       const lx = Position.x[lodge];
       const ly = Position.y[lodge];
 
-      // Spawn a fresh brawler -- base HP = 60
-      const eid = spawnEntity(game.world, EntityKind.Brawler, lx + 80, ly - 80, Faction.Player);
-      const baseHp = ENTITY_DEFS[EntityKind.Brawler].hp; // 60
+      const eid = spawnEntity(game.world, SAPPER_KIND, lx + 80, ly - 80, Faction.Player);
+      const baseHp = ENTITY_DEFS[SAPPER_KIND].hp;
       expect(Health.max[eid]).toBe(baseHp);
 
       // Give kills for Veteran rank
@@ -308,8 +287,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       const lx = Position.x[lodge];
       const ly = Position.y[lodge];
 
-      // Spawn a fresh brawler
-      const eid = spawnEntity(game.world, EntityKind.Brawler, lx + 100, ly - 100, Faction.Player);
+      const eid = spawnEntity(game.world, SAPPER_KIND, lx + 100, ly - 100, Faction.Player);
       expect(Veterancy.rank[eid]).toBe(0);
 
       // Set kills to Elite threshold (7)
@@ -323,7 +301,7 @@ describe('Systems: auto-behaviors, veterancy, day/night, fog of war', () => {
       expect(Veterancy.appliedRank[eid]).toBe(2);
 
       // Elite HP bonus = 20% of base
-      const baseHp = ENTITY_DEFS[EntityKind.Brawler].hp;
+      const baseHp = ENTITY_DEFS[SAPPER_KIND].hp;
       const expectedHpBonus = Math.round(baseHp * VET_HP_BONUS[2]);
       expect(Health.max[eid]).toBe(baseHp + expectedHpBonus);
 

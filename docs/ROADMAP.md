@@ -1,6 +1,13 @@
+---
+title: Feature Roadmap
+updated: 2026-04-10
+status: current
+domain: context
+---
+
 # Pond Warfare -- Feature Roadmap
 
-Current state: v3.0 -- Mobile-first single-mode RTS with prestige loop. 1663 tests.
+Current state: v3.0 -- Mobile-first single-mode RTS with prestige loop. Test count changes continuously; use CI or `pnpm test` for the current total.
 
 ---
 
@@ -18,12 +25,12 @@ Total rearchitecture from multi-mode 4X-hybrid to single-mode mobile-first RTS w
 prestige loop.
 
 - **One game mode**: Defend the Lodge (replaces Skirmish, Campaign, Survival, Puzzles, Co-op)
-- **JSON config system**: 10 config files drive all game balance (units, enemies, events, upgrades, prestige, terrain, fortifications, lodge, rewards, prefixes)
+- **JSON config system**: 12 config files drive all game balance and design truth (units, unit-model, enemies, events, upgrades, prestige, terrain, fortifications, lodge, rewards, panels, prefixes)
 - **Vertical map**: Lodge at bottom, enemies from top, resources in middle; map scales with progression level
 - **Upgrade web**: 240+ procedural nodes from 6 categories x 4 subcategories x 10 tiers, plus diamond nodes for Lodge wings and specialist unlocks
-- **Prestige system**: Rank up to reset Clam upgrades and earn Pearls for permanent auto-deploy, auto-behavior, and multiplier upgrades
-- **Simplified units**: 4 generalists (Gatherer, Fighter, Medic, Scout) + 10 specialists (auto-deployed via prestige)
-- **6 enemy types**: Raider, Fighter, Healer, Scout, Sapper, Saboteur with per-level scaling
+- **Prestige system**: Rank up to reset Clam upgrades and earn Pearls for permanent specialist blueprints, autonomy upgrades, and multipliers
+- **Simplified units**: canonical direction is `Mudpaw`, `Medic`, `Sapper`, `Saboteur` as the manual run roster, plus Pearl-unlocked trainable specialists
+- **6 enemy types**: Raider, Assault, Support, Recon, Sapper, Saboteur with per-level scaling
 - **Match events**: JSON-driven waves, bosses, sabotage, escorts, storms replacing old wave/evolution system
 - **Fortification system**: Walls and towers from JSON config with progression-based slot counts
 - **Lodge visual evolution**: Wings unlock via upgrade web diamond nodes, prestige glow
@@ -40,7 +47,7 @@ prestige loop.
 
 1. **More event types** -- new event templates in events.json (defense holdouts, resource race, VIP escort variants)
 2. **More upgrade diamond nodes** -- additional cross-category unlocks
-3. **Specialist balance pass** -- tune auto-deploy counts and specialist stats
+3. **Specialist balance pass** -- tune blueprint costs, area-assignment radii, specialist stats, and autonomy progression
 4. **Map variety** -- additional terrain painting patterns, biome variations
 
 ### v3.2 -- Polish & Accessibility
@@ -73,6 +80,6 @@ prestige loop.
 - Asset loading optimization
 
 ### Testing
-- Maintain 1600+ tests across unit, integration, browser, and gameplay categories
+- Maintain broad coverage across unit, integration, browser, and gameplay categories
 - Browser screenshot regression tests
 - bitECS test isolation (mock audio/rendering in parallel tests)

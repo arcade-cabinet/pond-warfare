@@ -36,8 +36,8 @@ import { EntityKind, Faction } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
 import { eventAlert } from '@/ui/store-v3';
 
-// Re-export role tracking for external consumers
-export { clearEnemyUnitRole, getEnemyUnitRole } from '@/ecs/systems/wave-spawner';
+// Re-export enemy behavior role tracking for external consumers.
+export { clearEnemyUnitRole, getEnemyBehaviorRole } from '@/ecs/systems/wave-spawner';
 
 /** CHECK_INTERVAL: how often to poll for new events (every 2 seconds). */
 const CHECK_INTERVAL = 120;
@@ -220,11 +220,21 @@ function applyEventEffects(world: GameWorld, template: EventTemplate): void {
   if (template.effects.bonus_nodes != null) {
     const nodeCount = template.effects.bonus_nodes;
     for (let i = 0; i < nodeCount; i++) {
-      const x = mapW * 0.2 + Math.random() * mapW * 0.6;
-      const y = mapH * 0.3 + Math.random() * mapH * 0.4;
+      const { x, y } = getBonusNodeSpawnPosition(world, mapW, mapH);
       spawnEntity(world, EntityKind.Clambed, x, y, Faction.Neutral);
     }
   }
+}
+
+export function getBonusNodeSpawnPosition(
+  world: GameWorld,
+  mapW: number,
+  mapH: number,
+): { x: number; y: number } {
+  return {
+    x: mapW * 0.2 + world.gameRng.next() * mapW * 0.6,
+    y: mapH * 0.3 + world.gameRng.next() * mapH * 0.4,
+  };
 }
 
 // ── Active Event Tick ────────────────────────────────────────────

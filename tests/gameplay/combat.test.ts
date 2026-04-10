@@ -1,17 +1,29 @@
 /**
  * Combat Behavioral Tests
  *
- * Validates damage multiplier tables, special unit abilities (AoE, enrage,
- * siege, poison, speed debuff), tower auto-attack, and alpha predator aura.
+ * Validates damage multiplier tables, live combat behaviors, enrage,
+ * siege, poison, tower auto-attack, and alpha predator aura.
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
+import { ATTACK_COOLDOWN } from '@/constants';
 import { spawnEntity } from '@/ecs/archetypes';
-import { Building, Combat, Health, Position, UnitStateMachine, Velocity } from '@/ecs/components';
+import {
+  Building,
+  Combat,
+  Health,
+  IsProjectile,
+  Position,
+  Sprite,
+  UnitStateMachine,
+  Velocity,
+} from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { query } from 'bitecs';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /* ------------------------------------------------------------------ */
@@ -26,14 +38,9 @@ describe('Combat', () => {
     world.frameCount = 0;
   });
 
-  it('brawler should deal 1.5x damage to sniper', () => {
-    const mult = getDamageMultiplier(EntityKind.Brawler, EntityKind.Sniper);
-    expect(mult).toBe(1.5);
-  });
-
-  it('sniper should deal 0.75x damage to brawler', () => {
-    const mult = getDamageMultiplier(EntityKind.Sniper, EntityKind.Brawler);
-    expect(mult).toBe(0.75);
+  it('live Sapper and Saboteur use neutral direct-damage matchups', () => {
+    expect(getDamageMultiplier(EntityKind.Sapper, EntityKind.Saboteur)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.Saboteur, EntityKind.Sapper)).toBe(1.0);
   });
 
   it('tower should auto-attack nearest enemy in range', () => {
@@ -56,65 +63,79 @@ describe('Combat', () => {
     expect(Combat.attackCooldown[tower]).toBeGreaterThan(0);
   });
 
-  it('catapult should deal AoE damage', () => {
-    const catapult = spawnEntity(world, EntityKind.Catapult, 100, 100, Faction.Player);
-    UnitStateMachine.state[catapult] = UnitState.Attacking;
-    Combat.attackCooldown[catapult] = 0;
+  it('shared heavy chassis now falls back to direct live-combat behavior', () => {
+    const gator = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
+    const sharedHeavy = spawnEntity(world, EntityKind.SharedHeavyChassis, 140, 100, Faction.Player);
+    Sprite.facingLeft[gator] = 0;
 
-    // Primary target and a nearby secondary target
-    const target = spawnEntity(world, EntityKind.Gator, 200, 100, Faction.Enemy);
-    const nearby = spawnEntity(world, EntityKind.Snake, 220, 100, Faction.Enemy);
-    UnitStateMachine.targetEntity[catapult] = target;
-
-    // Place them within catapult's attack range
-    const catapultRange = Combat.attackRange[catapult];
-    expect(catapultRange).toBe(250);
-
-    // Ensure distance <= range
-    Position.x[target] = Position.x[catapult] + 200;
-    Position.y[target] = Position.y[catapult];
-
-    // Place nearby enemy within AoE radius (60px) of target
-    Position.x[nearby] = Position.x[target] + 30;
-    Position.y[nearby] = Position.y[target];
-
-    // Populate spatial hash
-    world.spatialHash.clear();
-    world.spatialHash.insert(target, Position.x[target], Position.y[target]);
-    world.spatialHash.insert(nearby, Position.x[nearby], Position.y[nearby]);
-    world.spatialHash.insert(catapult, Position.x[catapult], Position.y[catapult]);
-
-    const nearbyHpBefore = Health.current[nearby];
+    UnitStateMachine.state[sharedHeavy] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sharedHeavy] = gator;
+    Combat.attackCooldown[sharedHeavy] = 0;
 
     combatSystem(world);
 
-    // The nearby unit should have taken AoE damage (50% of catapult damage)
-    expect(Health.current[nearby]).toBeLessThan(nearbyHpBefore);
+    expect(Health.current[gator]).toBe(45);
+    expect(query(world.ecs, [IsProjectile]).length).toBe(0);
+  });
+
+  it('Saboteur attacks deal direct damage without spawning projectile entities', () => {
+    const snake = spawnEntity(world, EntityKind.Snake, 120, 100, Faction.Enemy);
+    const saboteur = spawnEntity(world, EntityKind.Saboteur, 100, 100, Faction.Player);
+
+    UnitStateMachine.state[saboteur] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[saboteur] = snake;
+    Combat.attackCooldown[saboteur] = 0;
+
+    combatSystem(world);
+
+    expect(Health.current[snake]).toBeLessThan(Health.max[snake]);
+    expect(query(world.ecs, [IsProjectile]).length).toBe(0);
+  });
+
+  it('shared siege chassis now attacks directly without projectile splash', () => {
+    const sharedSiege = spawnEntity(world, EntityKind.SharedSiegeChassis, 100, 100, Faction.Player);
+    UnitStateMachine.state[sharedSiege] = UnitState.Attacking;
+    Combat.attackCooldown[sharedSiege] = 0;
+
+    const target = spawnEntity(world, EntityKind.Gator, 120, 100, Faction.Enemy);
+    const nearby = spawnEntity(world, EntityKind.Snake, 140, 100, Faction.Enemy);
+    UnitStateMachine.targetEntity[sharedSiege] = target;
+
+    const nearbyHpBefore = Health.current[nearby];
+    combatSystem(world);
+
+    expect(Health.current[target]).toBeLessThan(Health.max[target]);
+    expect(Health.current[nearby]).toBe(nearbyHpBefore);
+    expect(query(world.ecs, [IsProjectile]).length).toBe(0);
   });
 
   it('boss croc should enrage below 30% HP', () => {
     const boss = spawnEntity(world, EntityKind.BossCroc, 100, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, EntityKind.Brawler, 120, 100, Faction.Player);
+    const sapper = spawnEntity(world, SAPPER_KIND, 120, 100, Faction.Player);
 
     // Set boss to low HP (below 30%)
     Health.current[boss] = Math.floor(Health.max[boss] * 0.2);
     UnitStateMachine.state[boss] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[boss] = brawler;
+    UnitStateMachine.targetEntity[boss] = sapper;
     Combat.attackCooldown[boss] = 0;
 
     // Place them within attack range
-    const brawlerHpBefore = Health.current[brawler];
+    const sapperHpBefore = Health.current[sapper];
 
     // Populate spatial hash for AoE stomp
     world.spatialHash.clear();
-    world.spatialHash.insert(brawler, Position.x[brawler], Position.y[brawler]);
+    world.spatialHash.insert(
+      sapper,
+      Position.x[sapper],
+      Position.y[sapper],
+    );
     world.spatialHash.insert(boss, Position.x[boss], Position.y[boss]);
 
     combatSystem(world);
 
     // Boss should have dealt enraged damage (2x) via AoE stomp
     // Normal boss damage is 15, enraged = 30
-    expect(Health.current[brawler]).toBeLessThan(brawlerHpBefore);
+    expect(Health.current[sapper]).toBeLessThan(sapperHpBefore);
     // Should see "ENRAGED!" floating text
     const enrageText = world.floatingTexts.find((t) => t.text === 'ENRAGED!');
     expect(enrageText).toBeDefined();
@@ -135,23 +156,22 @@ describe('Combat', () => {
 
     combatSystem(world);
 
-    // Siege Turtle should have dealt significant damage to the building
-    expect(Health.current[lodge]).toBeLessThan(lodgeHpBefore);
+    // Siege Turtle base damage 25 with 3x building bonus => 75 damage.
+    expect(lodgeHpBefore - Health.current[lodge]).toBe(75);
   });
 
   it('venom snake should apply poison DoT', () => {
     const snake = spawnEntity(world, EntityKind.VenomSnake, 100, 100, Faction.Enemy);
-    const brawler = spawnEntity(world, EntityKind.Brawler, 120, 100, Faction.Player);
+    const sapper = spawnEntity(world, SAPPER_KIND, 120, 100, Faction.Player);
 
     UnitStateMachine.state[snake] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[snake] = brawler;
+    UnitStateMachine.targetEntity[snake] = sapper;
     Combat.attackCooldown[snake] = 0;
 
     combatSystem(world);
 
-    // Brawler should be poisoned (5 ticks)
-    expect(world.poisonTimers.has(brawler)).toBe(true);
-    expect(world.poisonTimers.get(brawler)).toBe(5);
+    expect(world.poisonTimers.has(sapper)).toBe(true);
+    expect(world.poisonTimers.get(sapper)).toBe(5);
   });
 
   it('alpha predator should buff nearby enemy damage by 20%', () => {
@@ -177,32 +197,47 @@ describe('Combat', () => {
     expect(world.alphaDamageBuff.get(gator)).toBe(world.frameCount + 60);
   });
 
-  it('shieldbearer should resist gator damage (0.75x)', () => {
-    const mult = getDamageMultiplier(EntityKind.Shieldbearer, EntityKind.Gator);
-    expect(mult).toBe(0.75);
+  it('reserved compatibility ids use neutral matchup values', () => {
+    expect(getDamageMultiplier(EntityKind.SharedHeavyChassis, EntityKind.Gator)).toBe(1.0);
+    expect(getDamageMultiplier(EntityKind.SharedSiegeChassis, EntityKind.Gator)).toBe(1.0);
   });
 
-  it('trapper should apply speed debuff on attack', () => {
-    const trapper = spawnEntity(world, EntityKind.Trapper, 100, 100, Faction.Player);
-    const gator = spawnEntity(world, EntityKind.Gator, 150, 100, Faction.Enemy);
+  it('player attack speed multiplier reduces attack cooldown', () => {
+    world.playerAttackSpeedMultiplier = 1.5;
+    const snake = spawnEntity(world, EntityKind.Snake, 120, 100, Faction.Enemy);
+    const sapper = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
 
-    UnitStateMachine.state[trapper] = UnitState.Attacking;
-    UnitStateMachine.targetEntity[trapper] = gator;
-    Combat.attackCooldown[trapper] = 0;
-
-    // Place within attack range (trapper range = 100)
-    const dist = Math.sqrt(
-      (Position.x[gator] - Position.x[trapper]) ** 2 +
-        (Position.y[gator] - Position.y[trapper]) ** 2,
-    );
-    expect(dist).toBeLessThanOrEqual(Combat.attackRange[trapper]);
+    UnitStateMachine.state[sapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sapper] = snake;
+    Combat.attackCooldown[sapper] = 0;
 
     combatSystem(world);
 
-    // Gator should have a speed debuff timer set
-    expect(Velocity.speedDebuffTimer[gator]).toBe(180);
-    // Should see "TRAPPED!" floating text
-    const trapText = world.floatingTexts.find((t) => t.text === 'TRAPPED!');
-    expect(trapText).toBeDefined();
+    expect(Combat.attackCooldown[sapper]).toBe(Math.round(ATTACK_COOLDOWN / 1.5));
+    expect(Combat.attackCooldown[sapper]).toBeLessThan(ATTACK_COOLDOWN);
+  });
+
+  it('player demolish power increases Sapper damage against buildings', () => {
+    const baseWorld = createGameWorld();
+    const baseLodge = spawnEntity(baseWorld, EntityKind.Lodge, 120, 100, Faction.Enemy);
+    const baseSapper = spawnEntity(baseWorld, SAPPER_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[baseSapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[baseSapper] = baseLodge;
+    Combat.attackCooldown[baseSapper] = 0;
+    const baseHpBefore = Health.current[baseLodge];
+    combatSystem(baseWorld);
+    const baseDamage = baseHpBefore - Health.current[baseLodge];
+
+    world.playerDemolishPowerMultiplier = 1.5;
+    const lodge = spawnEntity(world, EntityKind.Lodge, 120, 100, Faction.Enemy);
+    const sapper = spawnEntity(world, SAPPER_KIND, 100, 100, Faction.Player);
+    UnitStateMachine.state[sapper] = UnitState.Attacking;
+    UnitStateMachine.targetEntity[sapper] = lodge;
+    Combat.attackCooldown[sapper] = 0;
+    const lodgeHpBefore = Health.current[lodge];
+    combatSystem(world);
+    const boostedDamage = lodgeHpBefore - Health.current[lodge];
+
+    expect(boostedDamage).toBeGreaterThan(baseDamage);
   });
 });

@@ -71,8 +71,8 @@
   --pw-stone-highlight: #6B4D28;
 
   /* Role colors */
-  --pw-scout: #b090d8;
-  --pw-scout-dark: #8a6ab8;
+  --pw-recon: #b090d8;
+  --pw-recon-dark: #8a6ab8;
 
   /* Resource - pearls */
   --pw-pearl: #a5b4fc;
@@ -221,7 +221,7 @@
   --pw-auto-warning-bg: rgba(139, 105, 20, 0.3);
   --pw-auto-enemy-bg: rgba(224, 96, 96, 0.3);
   --pw-auto-success-bg: rgba(64, 184, 104, 0.3);
-  --pw-auto-scout-bg: rgba(138, 106, 184, 0.3);
+  --pw-auto-recon-bg: rgba(138, 106, 184, 0.3);
 
   /* Danger button hover */
   --pw-danger-hover: rgba(224, 96, 96, 0.15);
@@ -316,8 +316,7 @@ body {
 }
 
 #game-container,
-#game-canvas,
-#minimap-container {
+#game-canvas {
   touch-action: none;
 }
 

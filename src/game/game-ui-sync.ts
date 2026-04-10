@@ -4,10 +4,11 @@
 
 import { audio } from '@/audio/audio-system';
 import type { GameWorld } from '@/ecs/world';
+import { GameError, logError } from '@/errors';
 import { buildActionPanel } from '@/game/action-panel';
 import { syncPopulationAndTimers } from '@/game/population-sync';
 import { syncSelectionInfo } from '@/game/selection-sync';
-import { hasPlayerUnitsSelected } from '@/input/selection';
+import { hasPlayerUnitsSelected } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import { checkAchievements } from '@/systems/achievements';
 import * as store from '@/ui/store';
@@ -25,7 +26,10 @@ export interface UISyncState {
 export function syncUIStore(state: UISyncState): void {
   const w = state.world;
 
-  const { idleWorkers, armyUnits, maxFoodCap } = syncPopulationAndTimers(w, state.exploredCtx);
+  const { idleGeneralists, armyUnits, maxFoodCap } = syncPopulationAndTimers(
+    w,
+    state.exploredCtx,
+  );
 
   store.muted.value = audio.muted;
   store.hasPlayerUnits.value = hasPlayerUnitsSelected(w);
@@ -44,13 +48,13 @@ export function syncUIStore(state: UISyncState): void {
   if ((w.state === 'win' || w.state === 'lose') && state.audioInitialized && !state.wasGameOver) {
     audio.stopMusic();
     state.wasGameOver = true;
-    checkAchievements(w).catch(() => {
-      /* best-effort */
+    checkAchievements(w).catch((error) => {
+      logError(new GameError('Game-over achievement check failed', 'game/game-ui-sync', { cause: error }));
     });
   }
 
   // Selection info
-  syncSelectionInfo(w, idleWorkers, armyUnits, maxFoodCap);
+  syncSelectionInfo(w, idleGeneralists, armyUnits, maxFoodCap);
 
   // Action panel buttons and queue
   buildActionPanel(w, state.recorder);

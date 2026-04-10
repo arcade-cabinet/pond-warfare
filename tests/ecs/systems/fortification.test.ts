@@ -104,6 +104,15 @@ describe('Fort placement', () => {
     expect(state.slots[1].range).toBe(200);
   });
 
+  it('applies the wall hp multiplier to blocking forts', () => {
+    const state = initFortificationState(0, 500, 900, { wallHpMultiplier: 1.15 });
+    const result = placeFortification(state, 0, 'wood_wall', 100);
+
+    expect(result.success).toBe(true);
+    expect(state.slots[0].currentHp).toBe(115);
+    expect(state.slots[0].maxHp).toBe(115);
+  });
+
   it('should fail when slot already occupied', () => {
     const state = makeState(0);
     placeFortification(state, 0, 'wood_wall', 100);

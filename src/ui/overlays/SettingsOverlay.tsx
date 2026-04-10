@@ -5,7 +5,7 @@
  */
 
 import { audio } from '@/audio/audio-system';
-import { setColorBlindMode } from '@/rendering/pixi-app';
+import { setColorBlindMode } from '@/rendering/pixi';
 import { persistSetting } from '@/storage/settings-persistence';
 import { setSpeed } from '../game-actions';
 import { SettingsPanel } from '../settings-panel';

@@ -61,10 +61,17 @@ const errorLog: ErrorLogEntry[] = [];
 const errorListeners = new Set<() => void>();
 let fatalError: Error | null = null;
 const fatalListeners = new Set<() => void>();
+let globalHandlersInstalled = false;
 
 function normalizeError(error: unknown): Error {
   if (error instanceof Error) return error;
   return new Error(String(error));
+}
+
+function toGlobalError(source: 'window/error' | 'window/unhandledrejection', error: unknown): Error {
+  if (error instanceof GameError) return error;
+  if (error instanceof Error) return new GameError(error.message, source, { cause: error });
+  return new GameError(String(error), source);
 }
 
 /** Log an error to the ring buffer and notify subscribers. */
@@ -156,11 +163,18 @@ export function clearFatalError(): void {
 
 /** Install global error handlers that route to the error log. */
 export function installGlobalErrorHandlers(): void {
+  if (globalHandlersInstalled) return;
+  globalHandlersInstalled = true;
+
   window.addEventListener('error', (event) => {
-    logError(event.error ?? new Error(event.message));
+    event.preventDefault();
+    reportFatalError(toGlobalError('window/error', event.error ?? event.message));
   });
 
   window.addEventListener('unhandledrejection', (event) => {
-    logError(event.reason ?? new Error('Unhandled promise rejection'));
+    event.preventDefault();
+    reportFatalError(
+      toGlobalError('window/unhandledrejection', event.reason ?? 'Unhandled promise rejection'),
+    );
   });
 }

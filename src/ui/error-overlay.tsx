@@ -17,10 +17,23 @@ import {
   subscribeErrors,
   subscribeFatalError,
 } from '@/errors';
+import { restartMountedGameSession } from '@/game/shell-session';
+import * as store from '@/ui/store';
 import { Frame9Slice } from './components/frame';
 
-/** Fatal error modal — blocks the screen until dismissed. */
-function FatalErrorModal({ error, onDismiss }: { error: Error; onDismiss: () => void }) {
+/** Fatal error modal — blocks the screen until the session is safely recovered. */
+function FatalErrorModal({ error }: { error: Error }) {
+  const handleRecovery = () => {
+    clearFatalError();
+    if (store.menuState.value === 'playing') {
+      void restartMountedGameSession();
+      return;
+    }
+    store.gameLoading.value = false;
+    store.continueRequested.value = false;
+    store.menuState.value = 'main';
+  };
+
   return (
     <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80">
       <div class="max-w-lg w-full mx-4">
@@ -28,6 +41,9 @@ function FatalErrorModal({ error, onDismiss }: { error: Error; onDismiss: () => 
           <div class="p-6">
             <h2 class="font-title text-2xl text-[var(--pw-enemy)] mb-4">Fatal Error</h2>
             <p class="font-game text-[var(--pw-text-primary)] mb-2">{error.message}</p>
+            <p class="font-game text-xs text-[var(--pw-text-muted)]">
+              The current session cannot continue until it is safely restarted.
+            </p>
             {error.stack && (
               <pre class="font-numbers text-[10px] text-[var(--pw-text-muted)] bg-black/40 p-3 rounded mt-2 max-h-40 overflow-auto whitespace-pre-wrap">
                 {error.stack}
@@ -37,16 +53,9 @@ function FatalErrorModal({ error, onDismiss }: { error: Error; onDismiss: () => 
               <button
                 type="button"
                 class="action-btn px-4 py-2 min-h-[44px] font-heading text-sm"
-                onClick={() => window.location.reload()}
+                onClick={handleRecovery}
               >
-                Reload Game
-              </button>
-              <button
-                type="button"
-                class="hud-btn px-4 py-2 min-h-[44px] font-heading text-sm"
-                onClick={onDismiss}
-              >
-                Dismiss
+                {store.menuState.value === 'playing' ? 'Retry Session' : 'Return to Menu'}
               </button>
             </div>
           </div>
@@ -108,15 +117,7 @@ export function ErrorOverlay() {
   return (
     <>
       {/* Fatal error modal */}
-      {fatalErr && (
-        <FatalErrorModal
-          error={fatalErr}
-          onDismiss={() => {
-            clearFatalError();
-            setFatalErr(null);
-          }}
-        />
-      )}
+      {fatalErr && <FatalErrorModal error={fatalErr} />}
 
       {/* Error toasts (bottom-right corner) */}
       {toasts.length > 0 && (

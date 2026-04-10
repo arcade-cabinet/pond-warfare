@@ -15,9 +15,11 @@ import * as store from './store';
 import * as storeV3 from './store-v3';
 import {
   persistPrestigeState,
+  persistCurrentRun,
   persistSelectedCommander,
   resetCurrentRunOnPrestige,
 } from './store-v3-persistence';
+import type { CurrentRunUpgradeSnapshot } from './current-run-upgrades';
 
 export function handleUpgradesBack() {
   storeV3.upgradesScreenOpen.value = false;
@@ -33,13 +35,25 @@ export function handlePearlBack() {
 
 export function handleCommanderSelect(commanderId: string) {
   store.selectedCommander.value = commanderId;
-  persistSelectedCommander().catch(() => {});
+  void persistSelectedCommander();
 }
 
 export function handlePearlStateChange(newState: PrestigeState) {
   storeV3.prestigeState.value = newState;
   storeV3.totalPearls.value = newState.pearls;
   storeV3.prestigeRank.value = newState.rank;
+  storeV3.startingTierRank.value = getStartingTierRank(newState);
+  void persistPrestigeState();
+}
+
+export function handleCurrentRunUpgradeStateChange(
+  snapshot: CurrentRunUpgradeSnapshot,
+  newClams: number,
+) {
+  storeV3.currentRunPurchasedNodeIds.value = snapshot.nodes;
+  storeV3.currentRunPurchasedDiamondIds.value = snapshot.diamonds;
+  storeV3.totalClams.value = newClams;
+  void persistCurrentRun({ incrementMatchCount: false });
 }
 
 export function handleRankUpCancel() {
@@ -70,8 +84,8 @@ export function handleRankUpConfirm(_result: PrestigeResult, newState: PrestigeS
   store.menuState.value = 'main';
 
   // 6. Persist prestige state and reset current run in SQLite
-  resetCurrentRunOnPrestige().catch(() => {});
-  persistPrestigeState().catch(() => {});
+  void resetCurrentRunOnPrestige();
+  void persistPrestigeState();
 }
 
 export function handleRewardsRankUp() {

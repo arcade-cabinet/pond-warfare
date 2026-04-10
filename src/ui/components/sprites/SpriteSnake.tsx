@@ -1,7 +1,7 @@
 import { COLORS } from '@/ui/design-tokens';
 
 /**
- * Viper Sniper -- Specialist sprite.
+ * Viper Ranger -- Specialist sprite.
  *
  * 100x100 SVG with two animation frames:
  * - Frame 1 (idle): coiled body, raised torso, tactical gear, back-mounted laser rifle,
@@ -15,7 +15,7 @@ export function SpriteSnake() {
       class="w-full h-full overflow-visible"
       shapeRendering="crispEdges"
       role="img"
-      aria-label="Viper Sniper"
+      aria-label="Viper Ranger"
     >
       {/* RTS Selection Circle */}
       <ellipse
@@ -62,7 +62,7 @@ export function SpriteSnake() {
           stroke="#111"
           strokeWidth="2"
         />
-        {/* Back-mounted laser/sniper rifle */}
+        {/* Back-mounted ranger rifle */}
         <path d="M 35 35 L 75 30 L 75 35 L 35 40 Z" fill="#222" stroke="#111" strokeWidth="2" />
         {/* Head */}
         <path
@@ -109,7 +109,7 @@ export function SpriteSnake() {
           stroke="#111"
           strokeWidth="2"
         />
-        {/* Sniper firing */}
+        {/* Ranger firing */}
         <path d="M 45 25 L 85 28 L 85 33 L 45 30 Z" fill="#222" stroke="#111" strokeWidth="2" />
         {/* Laser beam WC2 style */}
         <polygon points="85,30 110,29 120,30 110,31" fill="#FF0000" />

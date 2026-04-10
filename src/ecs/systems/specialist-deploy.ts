@@ -1,21 +1,20 @@
 /**
- * Specialist Auto-Deploy System (v3.0 — US11)
+ * Specialist Blueprint Snapshot System (v3.0 — US11)
  *
- * At match start, reads prestige state to spawn specialist units.
- * Each specialist has ONE hardcoded auto-behavior from units.json.
- * Specialists cannot be manually redirected — they do their thing.
- *
- * Generalists are always stat-superior (flexibility premium).
+ * Legacy diagnostic helper used by simulation/test harnesses that still
+ * want an immediate specialist field-cap snapshot from prestige state.
+ * The live player-facing runtime now uses blueprint caps plus in-match
+ * specialist training from the Lodge.
  */
 
 import { getUnitDef } from '@/config/config-loader';
 import type { PrestigeState } from '@/config/prestige-logic';
-import { type AutoDeploySpec, getAutoDeployUnits } from '@/config/prestige-logic';
+import { type SpecialistBlueprintSpec, getSpecialistBlueprints } from '@/config/prestige-logic';
 import type { SpecialistDef } from '@/config/v3-types';
 
 // ── Types ─────────────────────────────────────────────────────────
 
-/** A specialist unit to spawn at match start. */
+/** A specialist blueprint-cap snapshot request used by harnesses. */
 export interface SpecialistSpawnRequest {
   /** Specialist unit ID from units.json (e.g. "fisher"). */
   unitId: string;
@@ -31,7 +30,7 @@ export interface SpecialistSpawnRequest {
   speed: number;
 }
 
-/** Result of computing all specialist spawns. */
+/** Result of computing the specialist field-cap snapshot. */
 export interface SpecialistDeployPlan {
   /** All specialist units to spawn. */
   spawns: SpecialistSpawnRequest[];
@@ -44,11 +43,11 @@ export interface SpecialistDeployPlan {
 // ── Core Logic ────────────────────────────────────────────────────
 
 /**
- * Compute the full specialist deploy plan from prestige state.
- * Call this once at match start to determine what to spawn.
+ * Compute the full specialist snapshot plan from prestige state.
+ * Harnesses can call this to derive immediate specialist counts.
  */
 export function computeSpecialistDeployPlan(prestigeState: PrestigeState): SpecialistDeployPlan {
-  const autoDeploySpecs = getAutoDeployUnits(prestigeState);
+  const autoDeploySpecs = getSpecialistBlueprints(prestigeState);
 
   if (autoDeploySpecs.length === 0) {
     return { spawns: [], totalCount: 0, summary: [] };
@@ -71,10 +70,10 @@ export function computeSpecialistDeployPlan(prestigeState: PrestigeState): Speci
 }
 
 /**
- * Resolve a single auto-deploy spec into a spawn request.
+ * Resolve a single blueprint-cap spec into a spawn request.
  * Returns null if the specialist isn't found in config.
  */
-function resolveSpecialistSpawn(spec: AutoDeploySpec): SpecialistSpawnRequest | null {
+function resolveSpecialistSpawn(spec: SpecialistBlueprintSpec): SpecialistSpawnRequest | null {
   try {
     const def = getUnitDef(spec.unitId);
     // Specialists are in the specialists section, which has autoTarget
@@ -83,7 +82,7 @@ function resolveSpecialistSpawn(spec: AutoDeploySpec): SpecialistSpawnRequest | 
     const specDef = def as SpecialistDef;
     return {
       unitId: spec.unitId,
-      count: spec.count,
+      count: spec.cap,
       autoTarget: specDef.autoTarget,
       role: specDef.role,
       hp: specDef.hp,
@@ -169,21 +168,19 @@ export function validateGeneralistSuperior(
 }
 
 /**
- * Get the auto-behavior description for a specialist.
+ * Get the area-autonomy description for a specialist.
  * Used in UI tooltips.
  */
 export function getSpecialistBehaviorDesc(unitId: string): string {
   const BEHAVIOR_DESCRIPTIONS: Record<string, string> = {
-    fisher: 'Automatically goes to the nearest water node to collect fish',
-    digger: 'Automatically goes to the nearest rock deposit to collect rocks',
-    logger: 'Automatically goes to the nearest tree cluster to collect logs',
-    guardian: 'Automatically defends the area around the Lodge',
-    hunter: 'Automatically attacks the nearest enemy',
-    ranger: 'Automatically patrols a route around the map',
-    shaman: 'Automatically heals the nearest wounded friendly unit',
-    lookout: 'Automatically patrols the fog edges to reveal the map',
-    sapper: 'Automatically targets and destroys enemy fortifications',
-    saboteur: 'Automatically infiltrates and corrupts enemy resource nodes',
+    fisher: 'Autonomously harvests fish inside its assigned operating radius',
+    digger: 'Autonomously harvests rocks inside its assigned operating radius',
+    logger: 'Autonomously harvests logs inside its assigned operating radius',
+    guard: 'Autonomously holds and fights inside its assigned operating radius',
+    ranger: 'Autonomously patrols from its anchor zone into its engagement radius',
+    shaman: 'Autonomously heals wounded allies inside its assigned operating radius',
+    lookout: 'Autonomously patrols and maintains vision inside its assigned operating radius',
+    bombardier: 'Autonomously projects siege pressure from its anchor zone into its engagement radius',
   };
 
   return BEHAVIOR_DESCRIPTIONS[unitId] ?? 'Unknown specialist behavior';

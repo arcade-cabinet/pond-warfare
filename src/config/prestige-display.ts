@@ -50,8 +50,10 @@ export function getPearlUpgradeDisplayList(state: PrestigeState): PearlUpgradeDi
 function formatEffectSummary(def: PearlUpgradeDef, rank: number): string {
   const effect = def.effect;
   switch (effect.type) {
-    case 'auto_deploy':
-      return `${effect.count_per_rank * rank}x ${effect.unit}`;
+    case 'specialist_blueprint':
+      return formatBlueprintCapSummary(effect.unit, effect.cap_per_rank * rank);
+    case 'specialist_zone':
+      return formatSpecialistZoneSummary(effect.unit, effect.stat, effect.value_per_rank * rank);
     case 'multiplier':
       return `+${Math.round(effect.value_per_rank * rank * 100)}% ${effect.stat}`;
     case 'auto_behavior':
@@ -61,4 +63,40 @@ function formatEffectSummary(def: PearlUpgradeDef, rank: number): string {
     default:
       return '';
   }
+}
+
+function formatBlueprintCapSummary(unitId: string, count: number): string {
+  const label = SPECIALIST_DISPLAY_NAMES[unitId] ?? titleCase(unitId);
+  return `Field up to ${count} ${count === 1 ? label : `${label}s`}`;
+}
+
+function formatSpecialistZoneSummary(unitId: string, stat: string, value: number): string {
+  const label = SPECIALIST_DISPLAY_NAMES[unitId] ?? titleCase(unitId);
+  const statLabel = SPECIALIST_ZONE_STAT_LABELS[stat] ?? titleCase(stat);
+  return `+${Math.round(value)} ${label} ${statLabel}`;
+}
+
+const SPECIALIST_DISPLAY_NAMES: Record<string, string> = {
+  fisher: 'Fisher',
+  digger: 'Digger',
+  logger: 'Logger',
+  guard: 'Guard',
+  ranger: 'Ranger',
+  shaman: 'Shaman',
+  lookout: 'Lookout',
+  bombardier: 'Bombardier',
+};
+
+const SPECIALIST_ZONE_STAT_LABELS: Record<string, string> = {
+  operating_radius: 'operating radius',
+  anchor_radius: 'anchor radius',
+  engagement_radius: 'engagement radius',
+  projection_range: 'projection range',
+};
+
+function titleCase(value: string): string {
+  return value
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }

@@ -1,6 +1,6 @@
 /**
  * Resource and misc sprites: cattail, clambed, bones, rubble, pearl_bed,
- * catapult, frog, fish.
+ * shared siege chassis, frog, fish.
  *
  * Clambed is now drawn on a 32x32 canvas (LARGE_TYPES) for better
  * visibility. Includes a bright shimmer ring so fish nodes visually
@@ -104,7 +104,7 @@ export function drawPearlBed(d: DrawCtx): void {
   rect(9, 13, 3, 1, PALETTE.clamShell);
 }
 
-export function drawCatapult(d: DrawCtx): void {
+export function drawSharedSiegeChassis(d: DrawCtx): void {
   const { p, rect, circle } = d;
   rect(4, 20, 24, 4, PALETTE.reedBrown);
   rect(6, 14, 4, 10, PALETTE.reedBrown);

@@ -3,7 +3,7 @@
  *
  * Tests for all v3 integration gaps:
  * - Resource economy v3 aliases (fish/rocks/logs)
- * - Specialist auto-deploy from prestige state
+ * - Specialist blueprint snapshot from prestige state
  * - Fortification slot system
  * - Lodge HP + game over
  * - Wave indicator from match events
@@ -11,8 +11,20 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { getEventsCompletedCount, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import {
+  computeSpecialistDeployPlan,
+  getSpecialistSpawnPositions,
+} from '@/ecs/systems/specialist-deploy';
+import {
+  findClosestSlot,
+  initFortificationState,
+  placeFortification,
+} from '@/ecs/systems/fortification';
 import { EntityKind, type GameResources, nodeKindToResourceType, ResourceType } from '@/types';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { COLORS } from '@/ui/design-tokens';
+import * as storeV3 from '@/ui/store-v3';
 
 describe('v3 resource aliases', () => {
   it('ResourceType aliases have matching numeric values', () => {
@@ -58,14 +70,13 @@ describe('nodeKindToResourceType', () => {
   });
 
   it('maps unknown EntityKind to None', () => {
-    expect(nodeKindToResourceType(EntityKind.Brawler)).toBe(ResourceType.None);
+    expect(nodeKindToResourceType(SAPPER_KIND)).toBe(ResourceType.None);
     expect(nodeKindToResourceType(EntityKind.Lodge)).toBe(ResourceType.None);
   });
 });
 
-describe('specialist auto-deploy plan', () => {
-  it('produces empty plan for fresh prestige state', async () => {
-    const { computeSpecialistDeployPlan } = await import('@/ecs/systems/specialist-deploy');
+describe('specialist blueprint snapshot plan', () => {
+  it('produces empty plan for fresh prestige state', () => {
     const plan = computeSpecialistDeployPlan({
       rank: 0,
       pearls: 0,
@@ -76,13 +87,12 @@ describe('specialist auto-deploy plan', () => {
     expect(plan.spawns).toHaveLength(0);
   });
 
-  it('produces correct count for rank 2 fisher', async () => {
-    const { computeSpecialistDeployPlan } = await import('@/ecs/systems/specialist-deploy');
+  it('produces correct count for rank 2 fisher', () => {
     const plan = computeSpecialistDeployPlan({
       rank: 1,
       pearls: 10,
       totalPearlsEarned: 20,
-      upgradeRanks: { auto_deploy_fisher: 2 },
+      upgradeRanks: { blueprint_fisher: 2 },
     });
     expect(plan.totalCount).toBe(2);
     expect(plan.spawns.length).toBe(1);
@@ -90,8 +100,7 @@ describe('specialist auto-deploy plan', () => {
     expect(plan.spawns[0].count).toBe(2);
   });
 
-  it('produces spawn positions in semicircle below lodge', async () => {
-    const { getSpecialistSpawnPositions } = await import('@/ecs/systems/specialist-deploy');
+  it('produces spawn positions in semicircle below lodge', () => {
     const positions = getSpecialistSpawnPositions(400, 2000, 3);
     expect(positions).toHaveLength(3);
     // All positions should be below the lodge (y > lodgeY)
@@ -102,15 +111,13 @@ describe('specialist auto-deploy plan', () => {
 });
 
 describe('fortification slot system', () => {
-  it('initializes correct number of slots for level 0', async () => {
-    const { initFortificationState } = await import('@/ecs/systems/fortification');
+  it('initializes correct number of slots for level 0', () => {
     const state = initFortificationState(0, 400, 2000);
     expect(state.slots.length).toBe(4); // lodge.json: min_level 0 -> 4 slots
     expect(state.totalRockCost).toBe(0);
   });
 
-  it('all slots start empty', async () => {
-    const { initFortificationState } = await import('@/ecs/systems/fortification');
+  it('all slots start empty', () => {
     const state = initFortificationState(0, 400, 2000);
     for (const slot of state.slots) {
       expect(slot.status).toBe('empty');
@@ -118,10 +125,7 @@ describe('fortification slot system', () => {
     }
   });
 
-  it('places a wood wall in slot 0', async () => {
-    const { initFortificationState, placeFortification } = await import(
-      '@/ecs/systems/fortification'
-    );
+  it('places a wood wall in slot 0', () => {
     const state = initFortificationState(0, 400, 2000);
     const result = placeFortification(state, 0, 'wood_wall', 100);
     expect(result.success).toBe(true);
@@ -131,10 +135,7 @@ describe('fortification slot system', () => {
     expect(state.slots[0].currentHp).toBe(100); // from fortifications.json
   });
 
-  it('rejects placement in occupied slot', async () => {
-    const { initFortificationState, placeFortification } = await import(
-      '@/ecs/systems/fortification'
-    );
+  it('rejects placement in occupied slot', () => {
     const state = initFortificationState(0, 400, 2000);
     placeFortification(state, 0, 'wood_wall', 100);
     const result = placeFortification(state, 0, 'wood_wall', 100);
@@ -142,18 +143,14 @@ describe('fortification slot system', () => {
     expect(result.reason).toContain('active');
   });
 
-  it('rejects placement with insufficient rocks', async () => {
-    const { initFortificationState, placeFortification } = await import(
-      '@/ecs/systems/fortification'
-    );
+  it('rejects placement with insufficient rocks', () => {
     const state = initFortificationState(0, 400, 2000);
     const result = placeFortification(state, 0, 'wood_wall', 5);
     expect(result.success).toBe(false);
     expect(result.reason).toContain('Rocks');
   });
 
-  it('finds closest empty slot', async () => {
-    const { initFortificationState, findClosestSlot } = await import('@/ecs/systems/fortification');
+  it('finds closest empty slot', () => {
     const state = initFortificationState(0, 400, 2000);
     const closest = findClosestSlot(state, 400, 2000, 'empty');
     expect(closest).not.toBeNull();
@@ -162,39 +159,32 @@ describe('fortification slot system', () => {
 });
 
 describe('wave indicator', () => {
-  it('match event runner resets to 0 on new match', async () => {
-    const { resetMatchEventRunner, getEventsCompletedCount } = await import(
-      '@/ecs/systems/match-event-runner'
-    );
+  it('match event runner resets to 0 on new match', () => {
     resetMatchEventRunner();
     expect(getEventsCompletedCount()).toBe(0);
   });
 });
 
 describe('lodge HP signals', () => {
-  it('lodgeHpPercent computes correctly', async () => {
-    const storeV3 = await import('@/ui/store-v3');
+  it('lodgeHpPercent computes correctly', () => {
     storeV3.lodgeHp.value = 750;
     storeV3.lodgeMaxHp.value = 1500;
     expect(storeV3.lodgeHpPercent.value).toBe(0.5);
   });
 
-  it('lodgeHpColor uses feedbackWarn token at 50%', async () => {
-    const storeV3 = await import('@/ui/store-v3');
+  it('lodgeHpColor uses feedbackWarn token at 50%', () => {
     storeV3.lodgeHp.value = 750;
     storeV3.lodgeMaxHp.value = 1500;
     expect(storeV3.lodgeHpColor.value).toBe(COLORS.feedbackWarn);
   });
 
-  it('lodgeHpColor uses feedbackSuccess token above 60%', async () => {
-    const storeV3 = await import('@/ui/store-v3');
+  it('lodgeHpColor uses feedbackSuccess token above 60%', () => {
     storeV3.lodgeHp.value = 1200;
     storeV3.lodgeMaxHp.value = 1500;
     expect(storeV3.lodgeHpColor.value).toBe(COLORS.feedbackSuccess);
   });
 
-  it('lodgeHpColor is red below 30%', async () => {
-    const storeV3 = await import('@/ui/store-v3');
+  it('lodgeHpColor is red below 30%', () => {
     storeV3.lodgeHp.value = 300;
     storeV3.lodgeMaxHp.value = 1500;
     expect(storeV3.lodgeHpColor.value).toBe('#ef4444');

@@ -6,6 +6,8 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { REPAIR_TIMER } from '@/constants';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   Carrying,
@@ -22,6 +24,7 @@ import {
 } from '@/ecs/components';
 import { buildingSystem } from '@/ecs/systems/building';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { getPlayerRepairTimer } from '@/game/repair-timer';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createBuilder(world: GameWorld): number {
@@ -42,7 +45,7 @@ function createBuilder(world: GameWorld): number {
   Health.current[eid] = 30;
   Health.max[eid] = 30;
   FactionTag.faction[eid] = Faction.Player;
-  EntityTypeTag.kind[eid] = EntityKind.Gatherer;
+  EntityTypeTag.kind[eid] = MUDPAW_KIND;
   Velocity.speed[eid] = 2.0;
   Collider.radius[eid] = 16;
   Carrying.resourceType[eid] = ResourceType.None;
@@ -109,5 +112,22 @@ describe('buildingSystem', () => {
     expect(Health.current[building]).toBe(300);
     expect(Building.progress[building]).toBe(100);
     expect(UnitStateMachine.state[builder]).toBe(UnitState.Idle);
+  });
+
+  it('resets repair timer using player repair speed multiplier', () => {
+    const builder = createBuilder(world);
+    const building = createBuilding(world, 150, 300);
+    world.resources.logs = 10;
+    world.playerRepairSpeedMultiplier = 1.1;
+
+    UnitStateMachine.state[builder] = UnitState.Repairing;
+    UnitStateMachine.targetEntity[builder] = building;
+    UnitStateMachine.gatherTimer[builder] = 1;
+
+    buildingSystem(world);
+
+    expect(Health.current[building]).toBe(155);
+    expect(UnitStateMachine.gatherTimer[builder]).toBe(getPlayerRepairTimer(world));
+    expect(UnitStateMachine.gatherTimer[builder]).toBeLessThan(REPAIR_TIMER);
   });
 });

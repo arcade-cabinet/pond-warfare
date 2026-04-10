@@ -27,6 +27,7 @@ import {
   UnitStateMachine,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isLookoutKind, MEDIC_KIND, SHAMAN_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 /** Duration in frames the auto-symbol icon is visible (4s at 60fps). */
@@ -55,13 +56,13 @@ function symbolFromPrevState(prev: UnitState, kind: EntityKind): number {
     default:
       break;
   }
-  // Healers/Shamans that were moving get heal symbol
-  if (kind === EntityKind.Healer || kind === EntityKind.Shaman) {
+  // Medics/Shamans that were moving get heal symbol
+  if (kind === MEDIC_KIND || kind === SHAMAN_KIND) {
     if (prev === UnitState.Move) return SymbolType.Heal;
   }
-  // Scouts that were moving get scout symbol
-  if (kind === EntityKind.Scout) {
-    if (prev === UnitState.Move) return SymbolType.Scout;
+  // Recon specialists on the lookout chassis that were moving get recon symbol
+  if (isLookoutKind(kind)) {
+    if (prev === UnitState.Move) return SymbolType.Recon;
   }
   return SymbolType.None;
 }
@@ -179,11 +180,11 @@ function reissueCommand(world: GameWorld, eid: number, symType: number): void {
       UnitStateMachine.state[eid] = UnitState.AttackMove;
     }
   }
-  // Heal and Scout: enable the corresponding auto-behavior toggle
+  // Heal and recon: enable the corresponding role automation toggle
   else if (symType === SymbolType.Heal) {
-    world.autoBehaviors.healer = true;
-  } else if (symType === SymbolType.Scout) {
-    world.autoBehaviors.scout = true;
+    world.autoBehaviors.support = true;
+  } else if (symType === SymbolType.Recon) {
+    world.autoBehaviors.recon = true;
   }
 }
 

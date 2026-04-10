@@ -5,13 +5,15 @@
  * Also opens the radial menu on Lodge or selected-unit taps.
  * v3: handles fortification slot placement when placingBuilding starts with "fort_".
  *
- * Fix: when re-tapping a selected gatherer near a resource node, dispatch
+ * Fix: when re-tapping a selected Mudpaw near a resource node, dispatch
  * a gather command instead of opening the radial menu.
  */
 
 import { showSelectBark } from '@/config/barks';
 import { AutoSymbol } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
+import { isMudpawKind } from '@/game/live-unit-kinds';
+import { placePendingSpecialistAssignment } from '@/game/specialist-assignment';
 import { hitTestAutoSymbol } from '@/rendering/pixi/auto-symbol-overlay';
 import { EntityKind, type EntityKind as EntityKindType } from '@/types';
 import { tryPlaceFortAtPosition } from '@/ui/radial-actions';
@@ -44,6 +46,12 @@ export function handleClick(
   // v3: Fortification slot placement mode
   if (world.placingBuilding?.startsWith('fort_')) {
     tryPlaceFortAtPosition(world, mouse.worldX, mouse.worldY);
+    cb.onUpdateUI();
+    return;
+  }
+
+  if (placePendingSpecialistAssignment(world, mouse.worldX, mouse.worldY)) {
+    cb.onPlaySound('click');
     cb.onUpdateUI();
     return;
   }
@@ -87,14 +95,15 @@ export function handleClick(
       const wasAlreadySelected = world.selection.includes(clicked);
 
       // When re-tapping an already-selected unit, check for a resource
-      // underneath. If the selection contains gatherers, prefer gathering
+      // underneath. If the selection contains generalists, prefer gathering
       // over opening the radial menu -- this is the core gameplay loop.
       if (wasAlreadySelected && !isShiftDown()) {
         const resourceUnder = cb.getResourceAt(mouse.worldX, mouse.worldY);
-        const hasGatherer = world.selection.some(
-          (eid) => cb.getEntityKind(eid) === EntityKind.Gatherer,
+        const hasMudpaw = world.selection.some(
+          (eid) =>
+            isMudpawKind(cb.getEntityKind(eid)) && cb.getSpecialistMenuMode(eid) === null,
         );
-        if (resourceUnder !== null && hasGatherer) {
+        if (resourceUnder !== null && hasMudpaw) {
           cb.issueContextCommand(resourceUnder);
           clickState.lastClickTime = now;
           clickState.lastClickEntity = clicked;
@@ -126,7 +135,14 @@ export function handleClick(
       if (wasAlreadySelected && !isShiftDown()) {
         const kind = cb.getEntityKind(clicked);
         const role = entityKindToRole(kind);
-        openRadialMenu(mouse.screenX, mouse.screenY, 'unit', role);
+        openRadialMenu(
+          mouse.screenX,
+          mouse.screenY,
+          'unit',
+          role,
+          clicked,
+          cb.getSpecialistMenuMode(clicked),
+        );
       }
     } else if (cb.isPlayerBuilding(clicked)) {
       // Player building tap: select it and open radial for Lodge
