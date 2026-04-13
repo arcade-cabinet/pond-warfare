@@ -10,7 +10,7 @@
  */
 
 import { page } from 'vitest/browser';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { hasComponent, query } from 'bitecs';
 import {
   EntityTypeTag,
@@ -26,6 +26,24 @@ import '@/styles/main.css';
 import * as store from '@/ui/store';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { mountCurrentGame } from './helpers/mount-current-game';
+
+vi.mock('@/rendering/animations', async () => {
+  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
+    '@/rendering/animations',
+  );
+  return {
+    ...actual,
+    animateGameOverStats: vi.fn(),
+    animateIntroTitle: vi.fn(),
+    animateIntroSubtitle: vi.fn(),
+    cleanupEntityAnimation: vi.fn(),
+    triggerCommandPulse: vi.fn(),
+    triggerHitRecoil: vi.fn(),
+    triggerBuildingComplete: vi.fn(),
+    triggerSpawnPop: vi.fn(),
+    triggerAttackLunge: vi.fn(),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as gameplay-loops.test.tsx)
@@ -79,6 +97,14 @@ function getUnits(kind?: EntityKind, faction = Faction.Player) {
 async function waitFrames(n: number) {
   const start = game.world.frameCount;
   while (game.world.frameCount - start < n) await delay(16);
+}
+
+async function captureScreenshot(path: string) {
+  const wasPaused = game.world.paused;
+  game.world.paused = true;
+  await delay(50);
+  await page.screenshot({ path, element: document.body });
+  game.world.paused = wasPaused;
 }
 
 async function selectEntity(eid: number) {
@@ -170,7 +196,7 @@ describe('UI panels and keyboard controls', () => {
       clickButton('\u2630');
       await delay(300);
       expect(store.mobilePanelOpen.value).toBe(true);
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-01-panel-open.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-01-panel-open.png');
     });
 
     it('clicking hamburger again closes the panel', async () => {
@@ -178,7 +204,7 @@ describe('UI panels and keyboard controls', () => {
       clickButton('\u2630');
       await delay(300);
       expect(store.mobilePanelOpen.value).toBe(false);
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-01-panel-closed.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-01-panel-closed.png');
     });
   });
 
@@ -201,7 +227,7 @@ describe('UI panels and keyboard controls', () => {
       expect(store.logs.value).toBeGreaterThanOrEqual(0);
       expect(store.food.value).toBeGreaterThanOrEqual(0);
 
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-02-map-tab.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-02-map-tab.png');
     });
   });
 
@@ -218,7 +244,7 @@ describe('UI panels and keyboard controls', () => {
       const text = document.body.innerText;
       expect(text).toMatch(/FORCES/i);
       expect(text).toMatch(/generalist|combat|support|recon|commander/i);
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-03-forces-tab.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-03-forces-tab.png');
     });
   });
 
@@ -235,7 +261,7 @@ describe('UI panels and keyboard controls', () => {
       const text = document.body.innerText;
       expect(text).toMatch(/BUILDINGS/i);
       expect(text).toMatch(/Lodge/);
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-04-buildings-tab.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-04-buildings-tab.png');
     });
   });
 
@@ -259,7 +285,7 @@ describe('UI panels and keyboard controls', () => {
       // Action panel should be rendered
       const panel = document.getElementById('action-panel');
       expect(panel).toBeTruthy();
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-05-act-tab.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-05-act-tab.png');
     });
   });
 
@@ -278,7 +304,7 @@ describe('UI panels and keyboard controls', () => {
       expect(btns.some((t) => t?.includes('Load'))).toBe(true);
       expect(btns.some((t) => t?.includes('Settings'))).toBe(true);
       expect(btns.some((t) => t?.includes('Color Blind'))).toBe(true);
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-06-menu-tab.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-06-menu-tab.png');
     });
   });
 
@@ -299,7 +325,7 @@ describe('UI panels and keyboard controls', () => {
       overlay!.click();
       await delay(300);
       expect(store.mobilePanelOpen.value).toBe(false);
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-07-overlay-close.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-07-overlay-close.png');
     });
   });
 
@@ -337,7 +363,7 @@ describe('UI panels and keyboard controls', () => {
       await delay(100);
       expect(game.world.paused).toBe(false);
 
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-08-pause-resume.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-08-pause-resume.png');
     });
   });
 
@@ -381,7 +407,7 @@ describe('UI panels and keyboard controls', () => {
       game.world.gameSpeed = 3;
       store.gameSpeed.value = 3;
 
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-09-speed-cycle.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-09-speed-cycle.png');
     });
   });
 
@@ -413,7 +439,7 @@ describe('UI panels and keyboard controls', () => {
       expect(store.muted.value).toBe(wasMuted);
 
       await ensurePanelClosed();
-      await page.screenshot({ path: 'tests/browser/screenshots/ui-10-mute-toggle.png' });
+      await captureScreenshot('tests/browser/screenshots/ui-10-mute-toggle.png');
     });
   });
 
@@ -735,6 +761,6 @@ describe('UI panels and keyboard controls', () => {
   });
 
   afterAll(async () => {
-    await page.screenshot({ path: 'tests/browser/screenshots/ui-controls-final.png' });
+    await captureScreenshot('tests/browser/screenshots/ui-controls-final.png');
   });
 });

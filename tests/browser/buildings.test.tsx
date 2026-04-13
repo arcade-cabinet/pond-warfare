@@ -10,7 +10,7 @@
  */
 
 import { page } from 'vitest/browser';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { hasComponent, query } from 'bitecs';
 import {
   Building,
@@ -33,11 +33,30 @@ import { buildingSystem } from '@/ecs/systems/building';
 import { combatSystem } from '@/ecs/systems/combat';
 import { game } from '@/game';
 import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { healthSystem } from '@/ecs/systems/health';
 import { projectileSystem } from '@/ecs/systems/projectile';
 import '@/styles/main.css';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { takeDamage } from '@/ecs/systems/health/take-damage';
 import { mountCurrentGame } from './helpers/mount-current-game';
+
+vi.mock('@/rendering/animations', async () => {
+  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
+    '@/rendering/animations',
+  );
+  return {
+    ...actual,
+    animateGameOverStats: vi.fn(),
+    animateIntroTitle: vi.fn(),
+    animateIntroSubtitle: vi.fn(),
+    cleanupEntityAnimation: vi.fn(),
+    triggerCommandPulse: vi.fn(),
+    triggerHitRecoil: vi.fn(),
+    triggerBuildingComplete: vi.fn(),
+    triggerSpawnPop: vi.fn(),
+    triggerAttackLunge: vi.fn(),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as gameplay-loops.test.tsx)
@@ -103,10 +122,45 @@ async function waitFrames(n: number) {
   while (game.world.frameCount - start < n) await delay(16);
 }
 
+async function captureScreenshot(path: string) {
+  const wasPaused = game.world.paused;
+  game.world.paused = true;
+  await delay(50);
+  await page.screenshot({ path });
+  game.world.paused = wasPaused;
+}
+
 function runBuildingFrames(n: number) {
   for (let i = 0; i < n; i += 1) {
     game.world.frameCount += 1;
     buildingSystem(game.world);
+  }
+}
+
+function runHealthFrames(n: number) {
+  for (let i = 0; i < n; i += 1) {
+    game.world.frameCount += 1;
+    healthSystem(game.world);
+  }
+}
+
+function runCombatFrames(n: number) {
+  for (let i = 0; i < n; i += 1) {
+    game.world.frameCount += 1;
+    rebuildSpatialHash();
+    combatSystem(game.world);
+    projectileSystem(game.world);
+    healthSystem(game.world);
+  }
+}
+
+function runCombatUntil(
+  condition: () => boolean,
+  maxFrames: number,
+) {
+  for (let i = 0; i < maxFrames; i += 1) {
+    runCombatFrames(1);
+    if (condition()) return;
   }
 }
 
@@ -443,6 +497,9 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
   describe('12. Multiple builders speed up construction', () => {
     it('two builders increase progress faster than one', async () => {
+      await resetBuildingSandbox();
+      game.world.paused = true;
+
       const lodge = getUnits(EntityKind.Lodge)[0];
       const bx = Position.x[lodge] + 300;
       const by = Position.y[lodge] + 300;
@@ -456,10 +513,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       UnitStateMachine.targetEntity[builder1] = building1;
       UnitStateMachine.gatherTimer[builder1] = BUILD_TIMER;
 
-      // Run for some frames
       const startProgress1 = Building.progress[building1];
-      await waitFrames(200);
+      runBuildingFrames(200);
       const singleProgress = Building.progress[building1] - startProgress1;
+
+      Health.current[builder1] = 0;
+      Health.current[building1] = 0;
 
       // --- Two builder test ---
       const building2 = spawnIncompleteBuilding(EntityKind.Burrow, bx + 200, by);
@@ -475,12 +534,12 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       UnitStateMachine.gatherTimer[builderB] = BUILD_TIMER;
 
       const startProgress2 = Building.progress[building2];
-      await waitFrames(200);
+      runBuildingFrames(200);
       const doubleProgress = Building.progress[building2] - startProgress2;
 
       // Two builders should make more progress than one
       expect(doubleProgress).toBeGreaterThan(singleProgress);
-      await page.screenshot({ path: 'tests/browser/screenshots/bld-12-multi-builder.png' });
+      await captureScreenshot('tests/browser/screenshots/bld-12-multi-builder.png');
     });
   });
 
@@ -490,6 +549,9 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
   describe('13. Losing last Lodge triggers game over', () => {
     it('destroying all Lodges and field units sets state to lose', async () => {
+      await resetBuildingSandbox();
+      game.world.paused = true;
+
       // Find all player Lodges
       const lodges = getUnits(EntityKind.Lodge);
       expect(lodges.length).toBeGreaterThanOrEqual(1);
@@ -508,20 +570,10 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
       // The health system checks win/lose every 60 frames -- align to boundary
       const remainder = 60 - (game.world.frameCount % 60);
-      await waitFrames(remainder + 120);
+      runHealthFrames(remainder + 120);
 
       expect(game.world.state).toBe('lose');
-      await page.screenshot({ path: 'tests/browser/screenshots/bld-13-lodge-game-over.png' });
-
-      // Restore a minimal playable commander-mode state for the remaining tests.
-      game.world.state = 'playing';
-      const spawnedLodge = spawnEntity(game.world, EntityKind.Lodge, 400, 400, Faction.Player);
-      Building.progress[spawnedLodge] = 100;
-      Health.current[spawnedLodge] = Health.max[spawnedLodge];
-      const commander = spawnEntity(game.world, EntityKind.Commander, 440, 340, Faction.Player);
-      game.world.commanderEntityId = commander;
-      spawnEntity(game.world, MUDPAW_KIND, 360, 360, Faction.Player);
-      rebuildSpatialHash();
+      await captureScreenshot('tests/browser/screenshots/bld-13-lodge-game-over.png');
     });
   });
 
@@ -531,18 +583,19 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
 
   describe('14. Tower targets nearest enemy within range', () => {
     it('Tower fires at an enemy placed within 200px range', async () => {
+      await resetBuildingSandbox();
+      game.world.paused = true;
+
       const lodge = getUnits(EntityKind.Lodge)[0];
       const tx = Position.x[lodge] - 250;
       const ty = Position.y[lodge] - 250;
 
-      // Keep any ambient enemies away from this local targeting check.
+      // Isolate this targeting check from the live enemy sandbox.
       const ambientEnemies = getUnits(undefined, Faction.Enemy);
       for (const eid of ambientEnemies) {
-        if (Math.hypot(Position.x[eid] - tx, Position.y[eid] - ty) < 300) {
-          Position.x[eid] = Position.x[lodge] + 1200;
-          Position.y[eid] = Position.y[lodge] + 1200;
-        }
+        Health.current[eid] = 0;
       }
+      rebuildSpatialHash();
 
       // Spawn a complete Tower via archetype (sets TowerAI, Combat, Building progress, etc.)
       const towerEid = spawnCompleteBuilding(EntityKind.Tower, tx, ty);
@@ -553,26 +606,30 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const enemyEid = spawnEntity(game.world, EntityKind.Gator, tx + 100, ty, Faction.Enemy);
       const enemyHpBefore = Health.current[enemyEid];
 
-      rebuildSpatialHash();
-      combatSystem(game.world);
-      expect(Combat.attackCooldown[towerEid]).toBeGreaterThan(0);
-
-      for (let i = 0; i < 40; i++) {
-        projectileSystem(game.world);
-      }
+      runCombatUntil(() => Health.current[enemyEid] < enemyHpBefore, 120);
 
       // The enemy should have taken damage (from tower projectile)
       expect(Health.current[enemyEid]).toBeLessThan(enemyHpBefore);
-      await page.screenshot({ path: 'tests/browser/screenshots/bld-14-tower-targeting.png' });
+      expect(Combat.attackCooldown[towerEid]).toBeGreaterThan(0);
+      await captureScreenshot('tests/browser/screenshots/bld-14-tower-targeting.png');
 
       // Cleanup
       Health.current[enemyEid] = 0;
     });
 
     it('Tower ignores enemies outside 200px range', async () => {
+      await resetBuildingSandbox();
+      game.world.paused = true;
+
       const lodge = getUnits(EntityKind.Lodge)[0];
       const tx = Position.x[lodge] - 350;
       const ty = Position.y[lodge] + 350;
+
+      const ambientEnemies = getUnits(undefined, Faction.Enemy);
+      for (const eid of ambientEnemies) {
+        Health.current[eid] = 0;
+      }
+      rebuildSpatialHash();
 
       // Spawn a complete Tower via archetype
       const towerEid = spawnCompleteBuilding(EntityKind.Tower, tx, ty);
@@ -582,8 +639,7 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
       const enemyEid = spawnEntity(game.world, EntityKind.Gator, tx + 300, ty, Faction.Enemy);
       const enemyHpBefore = Health.current[enemyEid];
 
-      rebuildSpatialHash();
-      combatSystem(game.world);
+      runCombatFrames(20);
 
       // The enemy should NOT have taken damage since it is out of range
       expect(Health.current[enemyEid]).toBe(enemyHpBefore);
@@ -801,6 +857,6 @@ describe('Buildings: stats, placement, construction, effects, destruction', () =
   });
 
   afterAll(async () => {
-    await page.screenshot({ path: 'tests/browser/screenshots/buildings-final.png' });
+    await captureScreenshot('tests/browser/screenshots/buildings-final.png');
   });
 });
