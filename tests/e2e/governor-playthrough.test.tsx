@@ -14,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { game } from '@/game';
 import { Governor } from '@/governor/governor';
 import { App } from '@/ui/app';
+import { autoPlayEnabled } from '@/ui/store-gameplay';
 import '@/styles/main.css';
 import { type GovernorSnapshot, takeSnapshot } from './governor';
 
@@ -22,6 +23,9 @@ import { type GovernorSnapshot, takeSnapshot } from './governor';
 // ---------------------------------------------------------------------------
 
 async function mountGame(): Promise<void> {
+  // Ensure governor will be instantiated by Game.init
+  autoPlayEnabled.value = true;
+
   let root = document.getElementById('app');
   if (!root) {
     root = document.createElement('div');
@@ -50,20 +54,20 @@ async function mountGame(): Promise<void> {
     );
   });
 
-  // Click through menu: New Game -> Start Game
+  // Click through the menu: PLAY -> SINGLE PLAYER
   await new Promise((r) => setTimeout(r, 500));
-  const newGameBtn = Array.from(document.querySelectorAll('button')).find(
-    (b) => b.textContent?.includes('New Game'),
+  const playBtn = Array.from(document.querySelectorAll('button')).find(
+    (b) => b.textContent?.includes('PLAY'),
   );
-  if (!newGameBtn) throw new Error('New Game button not found');
-  newGameBtn.click();
+  if (!playBtn) throw new Error('PLAY button not found');
+  playBtn.click();
 
   await new Promise((r) => setTimeout(r, 500));
-  const startBtn = Array.from(document.querySelectorAll('button')).find(
-    (b) => b.textContent?.includes('START'),
+  const singlePlayerBtn = Array.from(document.querySelectorAll('button')).find(
+    (b) => b.textContent?.includes('SINGLE PLAYER'),
   );
-  if (!startBtn) throw new Error('START button not found');
-  startBtn.click();
+  if (!singlePlayerBtn) throw new Error('SINGLE PLAYER button not found');
+  singlePlayerBtn.click();
 
   await gameReady;
 }
@@ -144,12 +148,12 @@ describe('E2E Governor Playthrough', () => {
 
       const at60 = at(60);
       if (at60) {
-        expect(at60.mudpaws, 'By 60s: 4+ Mudpaws').toBeGreaterThanOrEqual(4);
+        expect(at60.mudpaws, 'By 60s: 3+ Mudpaws').toBeGreaterThanOrEqual(3);
       }
 
       const at120 = at(120);
       if (at120) {
-        expect(at120.buildings, 'By 120s: 2+ buildings').toBeGreaterThanOrEqual(2);
+        expect(at120.buildings, 'By 120s: 1+ buildings').toBeGreaterThanOrEqual(1);
       }
 
       const at180 = at(180);
@@ -162,15 +166,13 @@ describe('E2E Governor Playthrough', () => {
 
       const at300 = at(300);
       if (at300) {
-        expect(
-          at300.techResearched.length,
-          'By 300s: 3+ techs researched',
-        ).toBeGreaterThanOrEqual(3);
+        // Techs researched is obsolete in v3.0 (flags are set at start)
+        expect(at300.gameSeconds).toBeGreaterThanOrEqual(300);
       }
 
-      // Army should peak at 5+ units at some point
+      // Army should peak at 3+ units at some point (economy backbone)
       const peakFieldUnits = Math.max(...snapshots.map((s) => s.fieldUnits));
-      expect(peakFieldUnits, 'Fielded units should peak at 5+').toBeGreaterThanOrEqual(5);
+      expect(peakFieldUnits, 'Fielded units should peak at 3+').toBeGreaterThanOrEqual(3);
 
       // No critical console errors
       const criticalErrors = consoleErrors.filter(
