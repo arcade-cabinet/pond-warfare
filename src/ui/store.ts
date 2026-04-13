@@ -107,16 +107,6 @@ export const autoAttackEnabled = signal(false);
 export const autoHealEnabled = signal(false);
 export const autoScoutEnabled = signal(false);
 
-// ---- Game over stats ----
-export const goTitle = signal('Victory');
-export const goTitleColor = signal('text-amber-400');
-export const goDesc = signal('');
-export const goStatsText = signal('');
-export const goStatLines = signal<string[]>([]);
-export const goRating = signal(0);
-export const goTimeSurvived = signal('');
-export const goFrameCount = signal(0);
-export const goMapSeed = signal(0);
 // ---- Map scenario ----
 export type MapScenario =
   | 'standard'
