@@ -4,7 +4,6 @@ updated: 2026-04-10
 status: archived
 domain: context
 ---
-
 # Claude Plan/Docs Audit — 2026-04-06
 
 > **Archived on 2026-04-07.** This file is now a historical checkpoint, not a live gap list. For the current shipped model, use [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), [docs/architecture.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/architecture.md), and [docs/balance-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/balance-model.md).
