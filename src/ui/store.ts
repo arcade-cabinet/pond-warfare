@@ -99,6 +99,14 @@ export const radialMenuOpen = signal(false);
 export const radialMenuX = signal(0);
 export const radialMenuY = signal(0);
 
+// Auto-behavior toggle states (persist across menu opens)
+export const autoGatherEnabled = signal(true);
+export const autoBuildEnabled = signal(true);
+export const autoDefendEnabled = signal(false);
+export const autoAttackEnabled = signal(false);
+export const autoHealEnabled = signal(false);
+export const autoScoutEnabled = signal(false);
+
 // ---- Map scenario ----
 export type MapScenario =
   | 'standard'

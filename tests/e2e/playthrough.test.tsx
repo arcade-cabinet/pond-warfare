@@ -48,20 +48,20 @@ async function mountGame(): Promise<void> {
     );
   });
 
-  // Click through the menu: New Game -> Start Game
+  // Click through the menu: PLAY -> SINGLE PLAYER
   await new Promise((r) => setTimeout(r, 500));
-  const newGameBtn = Array.from(document.querySelectorAll('button')).find(
-    (b) => b.textContent?.includes('New Game'),
+  const playBtn = Array.from(document.querySelectorAll('button')).find(
+    (b) => b.textContent?.includes('PLAY'),
   );
-  if (!newGameBtn) throw new Error('New Game button not found');
-  newGameBtn.click();
+  if (!playBtn) throw new Error('PLAY button not found');
+  playBtn.click();
 
   await new Promise((r) => setTimeout(r, 500));
-  const startBtn = Array.from(document.querySelectorAll('button')).find(
-    (b) => b.textContent?.includes('START'),
+  const singlePlayerBtn = Array.from(document.querySelectorAll('button')).find(
+    (b) => b.textContent?.includes('SINGLE PLAYER'),
   );
-  if (!startBtn) throw new Error('START button not found');
-  startBtn.click();
+  if (!singlePlayerBtn) throw new Error('SINGLE PLAYER button not found');
+  singlePlayerBtn.click();
 
   await gameReady;
 }

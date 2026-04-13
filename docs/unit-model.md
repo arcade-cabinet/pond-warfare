@@ -4,7 +4,6 @@ updated: 2026-04-10
 status: current
 domain: product
 ---
-
 # Unit Model
 
 This document is the canonical human-readable unit-model reference for Pond Warfare as of April 7, 2026.
