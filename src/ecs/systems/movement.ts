@@ -194,7 +194,8 @@ export function movementSystem(world: GameWorld): void {
       arriveDist = Collider.radius[eid] + targetRad + 15;
       if (state === UnitState.GatherMove && FactionTag.faction[eid] === Faction.Player) {
         const gatherRadiusMultiplier =
-          Number.isFinite(world.playerGatherRadiusMultiplier) && world.playerGatherRadiusMultiplier > 1
+          Number.isFinite(world.playerGatherRadiusMultiplier) &&
+          world.playerGatherRadiusMultiplier > 1
             ? world.playerGatherRadiusMultiplier
             : 1;
         const gatherRadiusBonus = gatherRadiusMultiplier - 1;

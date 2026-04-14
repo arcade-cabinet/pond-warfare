@@ -134,9 +134,7 @@ export function combatSystem(world: GameWorld): void {
       }
       let bestAlly = -1;
       let bestDistSq = supportRadius * supportRadius;
-      const healCands = hasSpatial
-        ? world.spatialHash.query(ex, ey, supportRadius)
-        : allTargetable;
+      const healCands = hasSpatial ? world.spatialHash.query(ex, ey, supportRadius) : allTargetable;
       for (let j = 0; j < healCands.length; j++) {
         const t = healCands[j];
         if (t === eid) continue;

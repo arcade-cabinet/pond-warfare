@@ -12,7 +12,6 @@
  */
 
 import { hasComponent, query } from 'bitecs';
-import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   Building,
   EntityTypeTag,
@@ -24,12 +23,7 @@ import {
   TrainingQueue,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import {
-  MEDIC_KIND,
-  MUDPAW_KIND,
-  SABOTEUR_KIND,
-  SAPPER_KIND,
-} from '@/game/live-unit-kinds';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { getPlayerTrainingCost } from '@/game/training-costs';
 import { train } from '@/input/selection/queries';
 import { EntityKind, Faction } from '@/types';
@@ -137,8 +131,7 @@ export function autoTrainSystem(world: GameWorld): void {
       }
     }
 
-    const mudpawTarget =
-      enemies >= 3 ? (stage >= 5 ? 4 : 3) : stage >= 6 ? 2 : stage >= 4 ? 3 : 4;
+    const mudpawTarget = enemies >= 3 ? (stage >= 5 ? 4 : 3) : stage >= 6 ? 2 : stage >= 4 ? 3 : 4;
     const frontline = mudpaws + sappers + saboteurs;
 
     if (mudpaws < mudpawTarget) {

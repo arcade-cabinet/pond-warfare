@@ -19,7 +19,10 @@ import {
   Sprite,
   UnitStateMachine,
 } from '@/ecs/components';
-import { resumeGatherOverride, retargetGatherOverride } from '@/ecs/systems/gathering/gather-override';
+import {
+  resumeGatherOverride,
+  retargetGatherOverride,
+} from '@/ecs/systems/gathering/gather-override';
 import { getWeatherGatherMult } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
 import { getPlayerRepairTimer } from '@/game/repair-timer';
@@ -57,15 +60,15 @@ export function arrive(world: GameWorld, eid: number, state: UnitState): void {
       UnitStateMachine.state[eid] = UnitState.Idle;
       UnitStateMachine.hasAttackMoveTarget[eid] = 0;
       break;
-    case UnitState.GatherMove:
+    case UnitState.GatherMove: {
       // Player gathering upgrades should not accelerate enemy economy.
-      const gatherSpeedMod =
-        FactionTag.faction[eid] === Faction.Player ? world.gatherSpeedMod : 1;
+      const gatherSpeedMod = FactionTag.faction[eid] === Faction.Player ? world.gatherSpeedMod : 1;
       UnitStateMachine.state[eid] = UnitState.Gathering;
       UnitStateMachine.gatherTimer[eid] = Math.round(
         (GATHER_TIMER / Math.max(0.1, gatherSpeedMod)) * (1 / getWeatherGatherMult(world)),
       );
       break;
+    }
     case UnitState.BuildMove:
       UnitStateMachine.state[eid] = UnitState.Building;
       UnitStateMachine.gatherTimer[eid] = BUILD_TIMER;
