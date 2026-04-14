@@ -54,7 +54,7 @@ export function getGovernorMudpawTarget(): number {
   if (hasImmediatePressure()) return 2;
 
   const stage = currentStage();
-  if (stage >= 6 && !hasCompletedBuilding(EntityKind.Armory)) return 2;
+  if (stage >= 6 && !hasCompletedBuilding(EntityKind.Armory)) return 3;
   if (
     stage >= 6 &&
     hasCompletedBuilding(EntityKind.Armory) &&
@@ -94,16 +94,37 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
   const lodgeHp = lodgeHpRatio();
   const towerDamageTrackActive = hasCurrentRunTrack('defense_tower_damage');
   const wallHpTrackActive = hasCurrentRunTrack('defense_wall_hp');
+  const demolishTrackActive = hasCurrentRunTrack('siege_demolish_power');
 
   const canStartWallSavings =
     stage >= 6 &&
     wallHpTrackActive &&
     !hasBuilding(EntityKind.Wall) &&
     unitCount('generalist') >= 1 &&
-    lodgeHp >= 0.82;
+    unitCount('combat') >= 1 &&
+    lodgeHp >= 0.92 &&
+    threats <= 1 &&
+    (waveCountdown === null || waveCountdown > 8);
 
   if (canStartWallSavings) {
     return EntityKind.Wall;
+  }
+
+  const armoryFishCost = ENTITY_DEFS[EntityKind.Armory].fishCost ?? 0;
+  const canStartArmorySavings =
+    stage >= 6 &&
+    !hasCompletedBuilding(EntityKind.Armory) &&
+    !towerDamageTrackActive &&
+    !wallHpTrackActive &&
+    !demolishTrackActive &&
+    unitCount('generalist') >= 3 &&
+    nearBuildBudget(EntityKind.Armory, 50, 30) &&
+    lodgeHp >= 0.92 &&
+    threats <= 2 &&
+    (waveCountdown === null || waveCountdown > 10);
+
+  if (canStartArmorySavings) {
+    return EntityKind.Armory;
   }
 
   if (unitCount('combat') < combatFloorForBuildSavings()) return null;

@@ -27,6 +27,7 @@ import { dispatchTaskOverride } from '@/game/task-dispatch';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 import { canDefendWith } from './combat-roster';
 import { hasCurrentRunTrack } from '../current-run-upgrades';
 import { getGovernorReservedBuildKind } from '../train-policy';
@@ -100,9 +101,24 @@ function shouldPreserveLogsForReservedDefenseBuild(): boolean {
   const towerTrackActive =
     hasCurrentRunTrack('defense_tower_damage') &&
     !store.buildingRoster.value.some((building) => building.kind === EntityKind.Tower);
+  const wallTrackActive =
+    hasCurrentRunTrack('defense_wall_hp') &&
+    !store.buildingRoster.value.some((building) => building.kind === EntityKind.Wall);
+  const demolishTrackActive = hasCurrentRunTrack('siege_demolish_power');
+  const armoryMissing = !store.buildingRoster.value.some((building) => building.kind === EntityKind.Armory);
   const preserveForTowerTrack =
     towerTrackActive && (reservedBuildKind === null || reservedBuildKind === EntityKind.Tower);
+  const preserveForArmory = reservedBuildKind === EntityKind.Armory;
+  const preserveForPreArmoryLogLane =
+    storeV3.progressionLevel.value >= 6 &&
+    armoryMissing &&
+    !towerTrackActive &&
+    !wallTrackActive &&
+    !demolishTrackActive &&
+    reservedBuildKind === null;
   if (
+    !preserveForPreArmoryLogLane &&
+    !preserveForArmory &&
     reservedBuildKind !== EntityKind.Wall &&
     reservedBuildKind !== EntityKind.Tower &&
     !preserveForTowerTrack
@@ -114,6 +130,17 @@ function shouldPreserveLogsForReservedDefenseBuild(): boolean {
   if (lodgeEid < 0 || Health.max[lodgeEid] <= 0) return false;
 
   const lodgeHpRatio = Health.current[lodgeEid] / Health.max[lodgeEid];
+  if (preserveForPreArmoryLogLane) {
+    if (lodgeHpRatio < 0.95) return false;
+    const armoryLogs = ENTITY_DEFS[EntityKind.Armory].logCost ?? 0;
+    return game.world.resources.logs >= Math.max(0, armoryLogs - 30);
+  }
+  if (preserveForArmory) {
+    // The Armory path is a pre-siege economy pivot. Preserve its log budget while
+    // the Lodge is still healthy, otherwise repeated repairs can consume every
+    // staged log pickup before the wing ever becomes placeable.
+    return lodgeHpRatio >= 0.95;
+  }
   if (preserveForTowerTrack) {
     if (lodgeHpRatio < 0.9) return false;
     const towerLogs = ENTITY_DEFS[EntityKind.Tower].logCost ?? 0;

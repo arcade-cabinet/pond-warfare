@@ -144,7 +144,7 @@ describe('Governor viability decisions', () => {
     const defend = new DefendEvaluator().calculateDesirability(owner);
     const train = new TrainEvaluator().calculateDesirability(owner);
 
-    expect(defend).toBe(0.72);
+    expect(defend).toBe(0.76);
     expect(train).toBe(0.8);
     expect(train).toBeGreaterThan(defend);
   });

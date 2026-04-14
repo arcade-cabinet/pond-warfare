@@ -75,7 +75,11 @@ export class TrainGoal extends Goal {
 
       const unitKind = this.pickUnit(trainable);
       if (unitKind === null) continue;
-      if (reservedBuildKind !== null && armySize() >= Math.max(3, combatTarget - 1)) {
+      if (
+        reservedBuildKind !== null &&
+        unitKind !== MEDIC_KIND &&
+        armySize() >= Math.max(3, combatTarget - 1)
+      ) {
         continue;
       }
 

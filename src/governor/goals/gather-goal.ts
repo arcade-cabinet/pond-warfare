@@ -72,10 +72,11 @@ function prioritizeBuildResources(
     const secondary = primary === 'gathering-logs' ? 'gathering-fish' : 'gathering-logs';
     if (Math.abs(fishRatio - logRatio) >= 0.2) {
       return {
-        // If one build budget is materially further behind, keep the full
-        // economy on that bottleneck until the gap narrows.
-        tasks: [primary, secondary, 'gathering-rocks'],
-        rotateAssignments: false,
+        // Bias toward the larger bottleneck without fully starving the
+        // secondary budget; otherwise stage-six build plans can deadlock once
+        // a single extra combat train has pushed fish back below cost.
+        tasks: [primary, secondary, primary],
+        rotateAssignments: true,
         hardFocusPrimary: true,
       };
     }

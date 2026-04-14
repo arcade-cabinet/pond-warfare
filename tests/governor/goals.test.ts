@@ -268,14 +268,14 @@ describe('GatherGoal', () => {
     expect(UnitStateMachine.targetEntity[eid1]).toBe(logNode);
   });
 
-  it('keeps both Mudpaws on logs when the missing armory is much more log-gated than fish-gated', async () => {
+  it('splits Mudpaws across logs and fish when the missing armory still needs both budgets', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 
     const eid1 = createUnit(MUDPAW_KIND, 100, 100);
     const eid2 = createUnit(MUDPAW_KIND, 115, 105);
     const logNodeA = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
     const logNodeB = createResource(EntityKind.Cattail, ResourceType.Logs, 145, 125);
-    createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+    const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
 
     store.unitRoster.value = [
       rosterGroup('generalist', [
@@ -297,8 +297,9 @@ describe('GatherGoal', () => {
     goal.activate();
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
-    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid1]);
-    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid2]);
+    const targets = [UnitStateMachine.targetEntity[eid1], UnitStateMachine.targetEntity[eid2]];
+    expect(targets).toContain(fishNode);
+    expect(targets.some((target) => [logNodeA, logNodeB].includes(target))).toBe(true);
   });
 
   it('keeps multiple idle Mudpaws on logs when the first tower is still log-gated', async () => {
@@ -567,6 +568,7 @@ describe('TrainGoal', () => {
       rosterGroup('generalist', [
         rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
         rosterUnit(2, MUDPAW_KIND, 'gathering-fish'),
+        rosterUnit(3, MUDPAW_KIND, 'gathering-logs'),
       ]),
     ];
     world.resources.fish = 40;
@@ -611,6 +613,7 @@ describe('TrainGoal', () => {
       rosterGroup('generalist', [
         rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
         rosterUnit(2, MUDPAW_KIND, 'gathering-logs'),
+        rosterUnit(3, MUDPAW_KIND, 'gathering-fish'),
       ]),
       rosterGroup('combat', [
         rosterUnit(10, SAPPER_KIND, 'attacking', 18, 30),

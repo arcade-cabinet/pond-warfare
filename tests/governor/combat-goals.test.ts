@@ -209,7 +209,7 @@ describe('DefendGoal', () => {
     expect(world.resources.logs).toBe(70);
   });
 
-  it('preserves near-complete wall logs under pressure when the lodge is still healthy', async () => {
+  it('repairs the lodge when the wall lane is not healthy enough to preserve logs yet', async () => {
     const { DefendGoal } = await import('@/governor/goals/defend-goal');
 
     const lodge = createPlayerLodge(220, 220);
@@ -219,6 +219,8 @@ describe('DefendGoal', () => {
     store.buildingRoster.value = [{ eid: lodge, kind: EntityKind.Lodge, hp: 430, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] }];
     storeV3.progressionLevel.value = 6;
     storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
+    store.baseThreatCount.value = 1;
+    store.waveCountdown.value = 12;
 
     const generalist = createUnit(MUDPAW_KIND, 180, 180);
     const regular = createUnit(SAPPER_KIND);
@@ -231,8 +233,80 @@ describe('DefendGoal', () => {
     goal.activate();
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
-    expect(Health.current[lodge]).toBe(430);
-    expect(world.resources.logs).toBe(35);
+    expect(Health.current[lodge]).toBe(500);
+    expect(world.resources.logs).toBe(5);
+    expect(TaskOverride.active[regular]).toBe(1);
+    expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
+  });
+
+  it('preserves the stage-six armory log budget while the lodge is still healthy', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = createPlayerLodge(220, 220);
+    Health.current[lodge] = 480;
+    Health.max[lodge] = 500;
+    world.resources.logs = 95;
+    store.fish.value = 140;
+    store.logs.value = 95;
+    store.buildingRoster.value = [
+      { eid: lodge, kind: EntityKind.Lodge, hp: 480, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    storeV3.progressionLevel.value = 6;
+
+    const gathererA = createUnit(MUDPAW_KIND, 180, 180);
+    const gathererB = createUnit(MUDPAW_KIND, 190, 180);
+    const gathererC = createUnit(MUDPAW_KIND, 200, 180);
+    const regular = createUnit(SAPPER_KIND);
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(gathererA, MUDPAW_KIND, 'gathering-logs', true),
+        rosterUnit(gathererB, MUDPAW_KIND, 'gathering-fish', true),
+        rosterUnit(gathererC, MUDPAW_KIND, 'gathering-logs', true),
+      ]),
+      rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')]),
+    ];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(Health.current[lodge]).toBe(480);
+    expect(world.resources.logs).toBe(95);
+    expect(TaskOverride.active[regular]).toBe(1);
+    expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
+  });
+
+  it('preserves the early stage-six armory log lane before the explicit reserve window opens', async () => {
+    const { DefendGoal } = await import('@/governor/goals/defend-goal');
+
+    const lodge = createPlayerLodge(220, 220);
+    Health.current[lodge] = 480;
+    Health.max[lodge] = 500;
+    world.resources.logs = 95;
+    store.fish.value = 110;
+    store.logs.value = 95;
+    store.buildingRoster.value = [
+      { eid: lodge, kind: EntityKind.Lodge, hp: 480, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+    ];
+    storeV3.progressionLevel.value = 6;
+
+    const gathererA = createUnit(MUDPAW_KIND, 180, 180);
+    const gathererB = createUnit(MUDPAW_KIND, 190, 180);
+    const regular = createUnit(SAPPER_KIND);
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(gathererA, MUDPAW_KIND, 'gathering-logs', true),
+        rosterUnit(gathererB, MUDPAW_KIND, 'gathering-fish', true),
+      ]),
+      rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')]),
+    ];
+
+    const goal = new DefendGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.COMPLETED);
+    expect(Health.current[lodge]).toBe(480);
+    expect(world.resources.logs).toBe(95);
     expect(TaskOverride.active[regular]).toBe(1);
     expect(UnitStateMachine.state[regular]).toBe(UnitState.AttackMovePatrol);
   });

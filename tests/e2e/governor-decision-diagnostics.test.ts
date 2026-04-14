@@ -20,6 +20,7 @@ import { calculateMatchReward } from '@/game/match-rewards';
 import { Governor } from '@/governor/governor';
 import { BUILDING_KINDS, EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
 import {
   combatArmySize,
   countTaskUnits,
@@ -63,6 +64,15 @@ interface TraceSummary {
   window: string;
   seed: number;
   decisions: string;
+  maxGatherScore: number;
+  maxBuildScore: number;
+  maxDefendScore: number;
+  affordableArmoryTicks: number;
+  affordableArmoryDefendTicks: number;
+  affordableArmorySevereThreatTicks: number;
+  affordableArmoryCriticalHpTicks: number;
+  maxThreatWhileAffordableArmory: number;
+  minLodgeHpWhileAffordableArmory: number | null;
   avgCombatArmy: number;
   avgReadyArmy: number;
   attackOpportunityTicks: number;
@@ -85,6 +95,7 @@ interface TraceSummary {
   stockpile: number;
   fish: number;
   logs: number;
+  armories: number;
   towers: number;
   clams: number;
   power: number;
@@ -100,7 +111,13 @@ function getMobilePlayerUnits(world: GameWorld): number[] {
   );
 }
 
-function scoreDecisionWindow(): { bestName: string; attackScore: number } {
+function scoreDecisionWindow(): {
+  bestName: string;
+  attackScore: number;
+  buildScore: number;
+  gatherScore: number;
+  defendScore: number;
+} {
   const evaluators = [
     ['gather', new GatherEvaluator()],
     ['build', new BuildEvaluator()],
@@ -111,15 +128,21 @@ function scoreDecisionWindow(): { bestName: string; attackScore: number } {
   let bestName = 'none';
   let bestScore = 0;
   let attackScore = 0;
+  let buildScore = 0;
+  let gatherScore = 0;
+  let defendScore = 0;
   for (const [name, evaluator] of evaluators) {
     const score = evaluator.calculateDesirability(evaluatorOwner);
     if (name === 'attack') attackScore = score;
+    if (name === 'build') buildScore = score;
+    if (name === 'gather') gatherScore = score;
+    if (name === 'defend') defendScore = score;
     if (score > bestScore) {
       bestScore = score;
       bestName = name;
     }
   }
-  return { bestName, attackScore };
+  return { bestName, attackScore, buildScore, gatherScore, defendScore };
 }
 
 function runVariant(
@@ -138,7 +161,16 @@ function runVariant(
   let attackDecisionTicks = 0;
   let firstAttackOpportunityFrame: number | null = null;
   let firstAttackDecisionFrame: number | null = null;
+  let maxGatherScore = 0;
   let maxAttackScore = 0;
+  let maxBuildScore = 0;
+  let maxDefendScore = 0;
+  let affordableArmoryTicks = 0;
+  let affordableArmoryDefendTicks = 0;
+  let affordableArmorySevereThreatTicks = 0;
+  let affordableArmoryCriticalHpTicks = 0;
+  let maxThreatWhileAffordableArmory = 0;
+  let minLodgeHpWhileAffordableArmory: number | null = null;
   let attackersTotal = 0;
   let defendersTotal = 0;
   let lodgeHpTotal = 0;
@@ -158,10 +190,26 @@ function runVariant(
       const lodgeHp = lodgeHpRatio(world);
       const waveCountdown = store.waveCountdown.value === -1 ? null : store.waveCountdown.value;
       const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
-      const { bestName: choice, attackScore } = scoreDecisionWindow();
+      const affordableFirstArmory =
+        storeV3.progressionLevel.value >= 6 &&
+        store.buildingRoster.value.every((building) => building.kind !== EntityKind.Armory) &&
+        store.fish.value >= 180 &&
+        store.logs.value >= 120;
+      const { bestName: choice, attackScore, buildScore, gatherScore, defendScore } = scoreDecisionWindow();
       decisionCounts.set(choice, (decisionCounts.get(choice) ?? 0) + 1);
       combatArmyTotal += combatArmy;
       readyArmyTotal += readyArmy;
+      if (affordableFirstArmory) {
+        affordableArmoryTicks += 1;
+        if (choice === 'defend') affordableArmoryDefendTicks += 1;
+        if (threats >= 3) affordableArmorySevereThreatTicks += 1;
+        if (lodgeHp < 0.7) affordableArmoryCriticalHpTicks += 1;
+        maxThreatWhileAffordableArmory = Math.max(maxThreatWhileAffordableArmory, threats);
+        minLodgeHpWhileAffordableArmory =
+          minLodgeHpWhileAffordableArmory == null
+            ? lodgeHp
+            : Math.min(minLodgeHpWhileAffordableArmory, lodgeHp);
+      }
       if (readyArmy >= MIN_ATTACK_ARMY) readyForAttackTicks += 1;
       if (
         store.baseUnderAttack.value &&
@@ -182,6 +230,9 @@ function runVariant(
         if (firstAttackDecisionFrame == null) firstAttackDecisionFrame = world.frameCount;
       }
       if (attackScore > maxAttackScore) maxAttackScore = attackScore;
+      if (buildScore > maxBuildScore) maxBuildScore = buildScore;
+      if (gatherScore > maxGatherScore) maxGatherScore = gatherScore;
+      if (defendScore > maxDefendScore) maxDefendScore = defendScore;
     }
     if (world.frameCount % 30 === 0) {
       attackersTotal += countTaskUnits(world, UnitState.AttackMove);
@@ -215,6 +266,16 @@ function runVariant(
     window: window.label,
     seed,
     decisions,
+    maxGatherScore: Number(maxGatherScore.toFixed(2)),
+    maxBuildScore: Number(maxBuildScore.toFixed(2)),
+    maxDefendScore: Number(maxDefendScore.toFixed(2)),
+    affordableArmoryTicks,
+    affordableArmoryDefendTicks,
+    affordableArmorySevereThreatTicks,
+    affordableArmoryCriticalHpTicks,
+    maxThreatWhileAffordableArmory,
+    minLodgeHpWhileAffordableArmory:
+      minLodgeHpWhileAffordableArmory == null ? null : Number(minLodgeHpWhileAffordableArmory.toFixed(3)),
     avgCombatArmy: Number((combatArmyTotal / Math.max(window.frames / 120, 1)).toFixed(2)),
     avgReadyArmy: Number((readyArmyTotal / Math.max(window.frames / 120, 1)).toFixed(2)),
     attackOpportunityTicks,
@@ -243,6 +304,7 @@ function runVariant(
     stockpile: world.resources.fish + world.resources.logs + world.resources.rocks,
     fish: world.resources.fish,
     logs: world.resources.logs,
+    armories: store.buildingRoster.value.filter((building) => building.kind === EntityKind.Armory).length,
     towers: store.buildingRoster.value.filter((building) => building.kind === EntityKind.Tower).length,
     clams,
     power: Number(
