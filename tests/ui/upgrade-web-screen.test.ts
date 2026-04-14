@@ -19,6 +19,7 @@ import {
   getDiamondsForCategory,
   getNodesForCategory,
   getNodesForPath,
+  type UpgradeNode,
 } from '@/config/upgrade-web';
 import { findCheapestAvailableNodeId, stateColor } from '@/ui/screens/UpgradeNodeRow';
 import {
@@ -28,9 +29,12 @@ import {
   purchaseNode,
 } from '@/ui/upgrade-web-state';
 
-function requireNode(web: ReturnType<typeof generateUpgradeWeb>, nodeId: string) {
+function requireNode(web: ReturnType<typeof generateUpgradeWeb>, nodeId: string): UpgradeNode {
   const node = web.nodeMap.get(nodeId);
   expect(node).toBeDefined();
+  if (!node) {
+    throw new Error(`Expected upgrade node ${nodeId}`);
+  }
   return node;
 }
 

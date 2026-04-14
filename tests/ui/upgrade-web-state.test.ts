@@ -11,7 +11,12 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { generateUpgradeWeb, type UpgradeWeb } from '@/config/upgrade-web';
+import {
+  type DiamondNode,
+  generateUpgradeWeb,
+  type UpgradeNode,
+  type UpgradeWeb,
+} from '@/config/upgrade-web';
 import {
   computeActiveEffects,
   countPurchased,
@@ -37,15 +42,21 @@ function stateWithClams(clams: number): UpgradeWebPurchaseState {
   return createUpgradeWebState(clams);
 }
 
-function requireNode(w: UpgradeWeb, nodeId: string) {
+function requireNode(w: UpgradeWeb, nodeId: string): UpgradeNode {
   const node = w.nodeMap.get(nodeId);
   expect(node).toBeDefined();
+  if (!node) {
+    throw new Error(`Expected upgrade node ${nodeId}`);
+  }
   return node;
 }
 
-function requireDiamond(w: UpgradeWeb, diamondId: string) {
+function requireDiamond(w: UpgradeWeb, diamondId: string): DiamondNode {
   const diamond = w.diamondMap.get(diamondId);
   expect(diamond).toBeDefined();
+  if (!diamond) {
+    throw new Error(`Expected diamond node ${diamondId}`);
+  }
   return diamond;
 }
 
