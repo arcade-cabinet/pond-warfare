@@ -155,9 +155,7 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
         threats <= 1 &&
         (waveCountdown === null || waveCountdown > 8)));
 
-  if (canStartTowerSavings && nearBuildBudget(EntityKind.Tower, 60, 70)) {
-    return EntityKind.Tower;
-  } else if (canStartTowerSavings) {
+  if (canStartTowerSavings) {
     return EntityKind.Tower;
   }
 
