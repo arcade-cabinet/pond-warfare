@@ -234,8 +234,7 @@ export class GatherEvaluator extends GoalEvaluator {
     const affordableFirstArmory =
       storeV3.progressionLevel.value >= 6 &&
       !hasWingOrBuilding(EntityKind.Armory) &&
-      store.fish.value >= 180 &&
-      store.logs.value >= 120;
+      canAffordBuild(EntityKind.Armory);
     if (idle.length === 0) {
       if (!needsGatherRebalance()) return 0;
       const fortificationBudgetScore = fortificationBudgetRebalanceScore();
@@ -279,10 +278,11 @@ export class BuildEvaluator extends GoalEvaluator {
     if (towerDamageTrackActive && proactiveTowerWindowReady()) return 0.88;
     if (defensiveWallWindowReady()) return 0.86;
     // Armory is a Lodge wing — check if it's unlocked rather than placed
-    if (!hasWingOrBuilding(EntityKind.Armory) && store.fish.value >= 180 && store.logs.value >= 120) {
+    if (!hasWingOrBuilding(EntityKind.Armory) && canAffordBuild(EntityKind.Armory)) {
       return storeV3.progressionLevel.value >= 6 ? 0.9 : 0.85;
     }
-    if (baseThreatCount() >= 2 && store.fish.value >= 200) return 0.8;
+    if (baseThreatCount() >= 2 && store.fish.value >= (ENTITY_DEFS[EntityKind.Tower].fishCost ?? 0))
+      return 0.8;
     if (proactiveTowerWindowReady()) {
       return 0.79;
     }
@@ -369,8 +369,7 @@ export class DefendEvaluator extends GoalEvaluator {
     const affordableFirstArmory =
       storeV3.progressionLevel.value >= 6 &&
       !hasWingOrBuilding(EntityKind.Armory) &&
-      store.fish.value >= 180 &&
-      store.logs.value >= 120;
+      canAffordBuild(EntityKind.Armory);
     const canRepairLodge = lodgeHp < 1 && store.logs.value >= LODGE_REPAIR_LOG_COST;
 
     if (defenders === 0 && !canRepairLodge) {
