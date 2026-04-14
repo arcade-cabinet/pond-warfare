@@ -27,9 +27,8 @@ import * as store from '@/ui/store';
 
 // Mock animejs — the game-over and intro components import animation helpers
 vi.mock('@/rendering/animations', async () => {
-  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
-    '@/rendering/animations',
-  );
+  const actual =
+    await vi.importActual<typeof import('@/rendering/animations')>('@/rendering/animations');
   return {
     ...actual,
     animateGameOverStats: vi.fn(),

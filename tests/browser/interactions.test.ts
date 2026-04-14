@@ -20,9 +20,8 @@ import * as store from '@/ui/store';
 
 // Mock animation module with explicit overrides so isolated browser runs stay stable.
 vi.mock('@/rendering/animations', async () => {
-  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
-    '@/rendering/animations',
-  );
+  const actual =
+    await vi.importActual<typeof import('@/rendering/animations')>('@/rendering/animations');
   return {
     ...actual,
     animateGameOverStats: vi.fn(),

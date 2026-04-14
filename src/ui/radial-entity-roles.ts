@@ -5,8 +5,8 @@
  * Extracted from radial-menu-options.ts for 300 LOC compliance.
  */
 
-import { EntityKind } from '@/types';
 import { isLookoutKind, isMudpawKind, MEDIC_KIND } from '@/game/live-unit-kinds';
+import { EntityKind } from '@/types';
 import type { RadialUnitRole } from './radial-menu-options';
 
 /**

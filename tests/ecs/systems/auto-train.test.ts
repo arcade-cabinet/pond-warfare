@@ -8,7 +8,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   Carrying,
@@ -27,6 +26,7 @@ import {
 } from '@/ecs/components';
 import { autoTrainSystem } from '@/ecs/systems/auto-train';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 /** Create a completed player building with training queue support. */
