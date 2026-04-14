@@ -25,9 +25,9 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { isMudpawKind } from '@/game/live-unit-kinds';
-import { getPlayerTrainingCost } from '@/game/training-costs';
 import { getPlayerTrainTimer } from '@/game/train-timer';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { getPlayerTrainingCost } from '@/game/training-costs';
+import { type EntityKind, Faction, UnitState } from '@/types';
 
 /**
  * Find the entity closest to (x, y) within click tolerance.

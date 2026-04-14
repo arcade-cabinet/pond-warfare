@@ -148,10 +148,10 @@ export class BuildGoal extends Goal {
         need.kind === EntityKind.Wall && hasCurrentRunTrack('defense_wall_hp')
           ? 2
           : need.kind === EntityKind.Tower && hasCurrentRunTrack('defense_tower_damage')
-          ? 3
-          : need.kind === EntityKind.Armory || need.kind === EntityKind.Tower
-            ? 2
-            : 1;
+            ? 3
+            : need.kind === EntityKind.Armory || need.kind === EntityKind.Tower
+              ? 2
+              : 1;
       w.selection = generalists.slice(0, builderCount).map((unit) => unit.eid);
     }
 

@@ -9,10 +9,7 @@ const SINGLE_ZONE_COLOR = 0x2dd4bf;
 const DUAL_ZONE_COLOR = 0xf59e0b;
 const LINK_ALPHA = 0.7;
 
-export function renderSpecialistAssignments(
-  world: GameWorld,
-  uiGfx: Graphics,
-): void {
+export function renderSpecialistAssignments(world: GameWorld, uiGfx: Graphics): void {
   for (const eid of world.selection) {
     const assignment = getSpecialistAssignment(world, eid);
     if (!assignment) continue;
@@ -99,12 +96,7 @@ export function renderSpecialistAssignments(
   }
 }
 
-function drawCenterDot(
-  uiGfx: Graphics,
-  x: number,
-  y: number,
-  color: number,
-): void {
+function drawCenterDot(uiGfx: Graphics, x: number, y: number, color: number): void {
   uiGfx.circle(x, y, 4);
   uiGfx.fill({ color, alpha: LINK_ALPHA });
 }

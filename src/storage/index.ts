@@ -1,4 +1,9 @@
 export {
+  getMatchHistory,
+  type MatchRecord,
+  saveMatchRecord,
+} from './match-history';
+export {
   deleteSave,
   getLatestSave,
   getPlayerProfile,
@@ -32,8 +37,3 @@ export {
   type V3CurrentRunRow,
   type V3PrestigeRow,
 } from './schema';
-export {
-  getMatchHistory,
-  type MatchRecord,
-  saveMatchRecord,
-} from './match-history';

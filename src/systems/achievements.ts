@@ -41,7 +41,11 @@ let peakKillStreak = 0;
 /** Track whether Commander has died this match. */
 let commanderDied = false;
 
-function reportAchievementStorageError(action: 'load' | 'save', achievementId: string, error: unknown) {
+function reportAchievementStorageError(
+  action: 'load' | 'save',
+  achievementId: string,
+  error: unknown,
+) {
   logError(
     new GameError(`Failed to ${action} achievement "${achievementId}"`, 'systems/achievements', {
       cause: error,

@@ -7,20 +7,20 @@
 
 import { type GameEntity, GoalEvaluator } from 'yuka';
 import { ENTITY_DEFS, isWingBuilding } from '@/config/entity-defs';
+import { LODGE_REPAIR_LOG_COST } from '@/game/lodge-repair';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
+import { hasCurrentRunTrack } from './current-run-upgrades';
 import {
   AttackGoal,
   countAvailableAttackers,
   countAvailableSiegeAttackers,
   MIN_ATTACK_ARMY,
 } from './goals/attack-goal';
-import { hasCurrentRunTrack } from './current-run-upgrades';
 import { BuildGoal } from './goals/build-goal';
-import { LODGE_REPAIR_LOG_COST } from '@/game/lodge-repair';
-import { DefendGoal } from './goals/defend-goal';
 import { canDefendWith } from './goals/combat-roster';
+import { DefendGoal } from './goals/defend-goal';
 import { findIdleMudpaws, GatherGoal, needsGatherRebalance } from './goals/gather-goal';
 import { TrainGoal } from './goals/train-goal';
 import type { Governor } from './governor';
@@ -113,11 +113,19 @@ function safeAttackArmyThreshold(totalArmy: number): number {
     return MIN_ATTACK_ARMY;
   }
 
-  if (totalArmy >= MIN_ATTACK_ARMY && lodgeHp >= 0.97 && (waveCountdown === null || waveCountdown > 18)) {
+  if (
+    totalArmy >= MIN_ATTACK_ARMY &&
+    lodgeHp >= 0.97 &&
+    (waveCountdown === null || waveCountdown > 18)
+  ) {
     return MIN_ATTACK_ARMY;
   }
 
-  if (totalArmy >= MIN_ATTACK_ARMY + 1 && lodgeHp >= 0.92 && (waveCountdown === null || waveCountdown > 14)) {
+  if (
+    totalArmy >= MIN_ATTACK_ARMY + 1 &&
+    lodgeHp >= 0.92 &&
+    (waveCountdown === null || waveCountdown > 14)
+  ) {
     return MIN_ATTACK_ARMY + 1;
   }
 
@@ -161,7 +169,8 @@ function demolishRaidWindowReady(totalArmy: number, readyArmy: number): boolean 
   const waveCountdown = nextWaveCountdown();
   const threats = baseThreatCount();
   const lodgeHp = lodgeHpRatio();
-  const raidWindow = threats <= 1 && lodgeHp >= 0.9 && (waveCountdown === null || waveCountdown > 10);
+  const raidWindow =
+    threats <= 1 && lodgeHp >= 0.9 && (waveCountdown === null || waveCountdown > 10);
   return (
     hasCurrentRunTrack('siege_demolish_power') &&
     storeV3.progressionLevel.value >= 6 &&
@@ -253,7 +262,10 @@ export class GatherEvaluator extends GoalEvaluator {
     }
     const totalArmy = combatUnitCount();
     const readyArmy = countAvailableAttackers();
-    if (lightPressureSkirmishWindow(totalArmy, readyArmy) || canPressureSafely(totalArmy, readyArmy)) {
+    if (
+      lightPressureSkirmishWindow(totalArmy, readyArmy) ||
+      canPressureSafely(totalArmy, readyArmy)
+    ) {
       return 0.46 + Math.min(idle.length * 0.02, 0.06);
     }
     return 0.85 + Math.min(idle.length * 0.03, 0.1);
@@ -433,7 +445,10 @@ export class AttackEvaluator extends GoalEvaluator {
     const reservePressure = Math.min(Math.max(totalArmy - readyArmy, 0) * 0.03, 0.09);
     const fishReservePressure = Math.min(Math.max(store.fish.value - 60, 0) / 320, 0.14);
     const lightPressureTax = skirmishWindow ? 0.06 : 0;
-    return Math.min(openingWindow + armyPressure + reservePressure + fishReservePressure - lightPressureTax, 0.82);
+    return Math.min(
+      openingWindow + armyPressure + reservePressure + fishReservePressure - lightPressureTax,
+      0.82,
+    );
   }
 
   override setGoal(owner: GameEntity): void {

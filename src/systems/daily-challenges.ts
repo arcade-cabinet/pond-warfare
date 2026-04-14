@@ -65,7 +65,8 @@ const CHALLENGES: DailyChallenge[] = [
   {
     id: 'basic_units_only',
     title: 'Back to Basics',
-    description: 'Win with Mudpaws and buildings only (no Medics, Sappers, Saboteurs, or specialists)',
+    description:
+      'Win with Mudpaws and buildings only (no Medics, Sappers, Saboteurs, or specialists)',
     type: 'general',
     objective: (s) => s.result === 'win' && s.combatUnitsTrained === 0,
     xpReward: 250,
