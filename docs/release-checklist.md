@@ -74,7 +74,7 @@ Refresh the canonical staged browser captures and manifest before signoff:
 pnpm audit:browser-captures
 ```
 
-This updates the screenshots in [tests/browser/audit](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/browser/audit) and regenerates the tracked manifest at [tests/browser/audit/MANIFEST.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/browser/audit/MANIFEST.md) with the current commit, package version, and capture timestamps.
+This updates the screenshots in [tests/browser/audit](../tests/browser/audit) and regenerates the tracked manifest at [tests/browser/audit/MANIFEST.md](../tests/browser/audit/MANIFEST.md) with the current commit, package version, and capture timestamps.
 
 At minimum, visually inspect:
 - main menu

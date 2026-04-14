@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const repoRoot = resolve(import.meta.dirname, '..');
@@ -7,10 +7,17 @@ const auditDir = join(repoRoot, 'tests', 'browser', 'audit');
 const manifestPath = join(auditDir, 'MANIFEST.md');
 
 function git(args) {
-  return execFileSync('git', args, {
-    cwd: repoRoot,
-    encoding: 'utf8',
-  }).trim();
+  try {
+    return execFileSync('git', args, {
+      cwd: repoRoot,
+      encoding: 'utf8',
+    }).trim();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Git command failed: git ${args.join(' ')}`);
+    console.error(message);
+    process.exit(1);
+  }
 }
 
 const captures = readdirSync(auditDir)
@@ -29,7 +36,15 @@ const captures = readdirSync(auditDir)
 const generatedAt = new Date().toISOString();
 const commitSha = git(['rev-parse', 'HEAD']);
 const branchName = git(['rev-parse', '--abbrev-ref', 'HEAD']);
-const version = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')).version;
+let version;
+try {
+  version = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')).version;
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error('Failed to read version from package.json');
+  console.error(message);
+  process.exit(1);
+}
 
 const lines = [
   '---',
@@ -57,7 +72,7 @@ const lines = [
   '| --- | --- | ---: |',
   ...captures.map(
     ({ name, modifiedAt, size }) =>
-      `| [${name}](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/browser/audit/${basename(name)}) | \`${modifiedAt}\` | ${size} |`,
+      `| [${name}](./${name}) | \`${modifiedAt}\` | ${size} |`,
   ),
   '',
 ];
