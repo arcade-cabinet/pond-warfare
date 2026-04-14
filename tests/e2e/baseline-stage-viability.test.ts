@@ -2,19 +2,18 @@
 
 import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { matchEventRunnerSystem, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import { createPrestigeState } from '@/config/prestige-logic';
+import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
 import { EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
-import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
-import { createPrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
@@ -94,7 +93,12 @@ function runScenario(stage: number, purchasedNodeIds: string[] = []): BaselineMe
   governor.enabled = true;
 
   for (let frame = 0; frame < 1800; frame += 1) {
-    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+    runSimFrame(world, {
+      governor,
+      runMatchEvents: true,
+      runPrestigeAutoBehaviors: true,
+      syncSignals: true,
+    });
   }
 
   return {
@@ -128,22 +132,26 @@ describe('baseline stage viability', () => {
     BASELINE_SCENARIO_TIMEOUT,
   );
 
-  it('Clam upgrades improve margin instead of providing baseline viability', () => {
-    const baseline = runScenario(6);
-    const reliefValve = runScenario(6, [
-      'gathering_fish_gathering_t0',
-      'gathering_fish_gathering_t1',
-      'defense_wall_hp_t0',
-      'economy_node_yield_t0',
-    ]);
+  it(
+    'Clam upgrades improve margin instead of providing baseline viability',
+    () => {
+      const baseline = runScenario(6);
+      const reliefValve = runScenario(6, [
+        'gathering_fish_gathering_t0',
+        'gathering_fish_gathering_t1',
+        'defense_wall_hp_t0',
+        'economy_node_yield_t0',
+      ]);
 
-    console.table([baseline, reliefValve]);
+      console.table([baseline, reliefValve]);
 
-    expect(baseline.state).not.toBe('lose');
-    expect(reliefValve.state).not.toBe('lose');
-    expect(reliefValve.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
-    expect(reliefValve.resourcesGathered * reliefValve.gatherSpeedMod).toBeGreaterThan(
-      baseline.resourcesGathered * baseline.gatherSpeedMod,
-    );
-  }, BASELINE_SCENARIO_TIMEOUT);
+      expect(baseline.state).not.toBe('lose');
+      expect(reliefValve.state).not.toBe('lose');
+      expect(reliefValve.gatherSpeedMod).toBeGreaterThan(baseline.gatherSpeedMod);
+      expect(reliefValve.resourcesGathered * reliefValve.gatherSpeedMod).toBeGreaterThan(
+        baseline.resourcesGathered * baseline.gatherSpeedMod,
+      );
+    },
+    BASELINE_SCENARIO_TIMEOUT,
+  );
 });

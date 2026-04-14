@@ -7,7 +7,6 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -32,7 +31,16 @@ import {
   startPatrol,
 } from '@/ecs/systems/patrol';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { Faction, UnitState } from '@/types';
+
+function requireWaypointList<T>(value: T | undefined, message: string): T {
+  expect(value).toBeDefined();
+  if (value === undefined) {
+    throw new Error(message);
+  }
+  return value;
+}
 
 function createTestUnit(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);
@@ -198,7 +206,10 @@ describe('patrol system', () => {
     startPatrol(world, eid, waypoints);
     addPatrolWaypoint(world, eid, 300, 300);
 
-    const stored = world.patrolWaypoints.get(eid)!;
+    const stored = requireWaypointList(
+      world.patrolWaypoints.get(eid),
+      'Expected patrol waypoints to exist',
+    );
     expect(stored.length).toBe(3);
     expect(stored[2]).toEqual({ x: 300, y: 300 });
     expect(Patrol.waypointCount[eid]).toBe(3);

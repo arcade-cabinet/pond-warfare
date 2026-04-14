@@ -14,8 +14,8 @@ import {
 } from '@/ecs/components';
 import { specialistZoneBehaviorSystem } from '@/ecs/systems/specialist-zone-behavior';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { registerSpecialistEntity } from '@/game/specialist-assignment';
 import { LOOKOUT_KIND, MUDPAW_KIND, SABOTEUR_KIND } from '@/game/live-unit-kinds';
+import { registerSpecialistEntity } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createUnit(world: GameWorld, x: number, y: number, kind: EntityKind): number {
