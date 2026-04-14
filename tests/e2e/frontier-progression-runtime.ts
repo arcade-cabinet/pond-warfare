@@ -2,30 +2,27 @@
 
 import { query } from 'bitecs';
 import { vi } from 'vitest';
-import { type BalanceSnapshot } from '@/balance/progression-model';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
-import {
-  getEventsCompletedCount,
-  resetMatchEventRunner,
-} from '@/ecs/systems/match-event-runner';
-import type { GameWorld } from '@/ecs/world';
+import type { BalanceSnapshot } from '@/balance/progression-model';
 import { createPrestigeState } from '@/config/prestige-logic';
+import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
+import { getEventsCompletedCount, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { calculateMatchReward } from '@/game/match-rewards';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
 import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
 import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
-import { type UpgradeWebPurchaseState } from '@/ui/upgrade-web-state';
 import * as storeV3 from '@/ui/store-v3';
+import type { UpgradeWebPurchaseState } from '@/ui/upgrade-web-state';
 import { SeededRandom } from '@/utils/random';
-import { mockedGameRef } from '../helpers/game-world-ref';
 import { createExploredTestContext } from '../helpers/explored-context';
 import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
@@ -67,7 +64,8 @@ export function runFrontierMatch(
 ): MatchRunResult {
   resetAutoSymbol();
   resetMatchEventRunner();
-  const panelStage = options.forcedStage ?? getCurrentRunPanelStage(Array.from(state.purchasedDiamonds));
+  const panelStage =
+    options.forcedStage ?? getCurrentRunPanelStage(Array.from(state.purchasedDiamonds));
 
   storeV3.progressionLevel.value = panelStage;
   storeV3.prestigeState.value = createPrestigeState();
@@ -97,7 +95,12 @@ export function runFrontierMatch(
   const governor = new Governor();
   governor.enabled = true;
   for (let frame = 0; frame < frames; frame += 1) {
-    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+    runSimFrame(world, {
+      governor,
+      runMatchEvents: true,
+      runPrestigeAutoBehaviors: true,
+      syncSignals: true,
+    });
     fogOfWarSystem(world);
   }
 

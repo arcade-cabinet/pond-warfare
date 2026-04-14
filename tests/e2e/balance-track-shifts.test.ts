@@ -3,34 +3,30 @@
 import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  type BalanceSnapshot,
   getDifficultyShiftPercent,
   summarizeShiftPercents,
-  type BalanceSnapshot,
 } from '@/balance/progression-model';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import {
-  getEventsCompletedCount,
-  resetMatchEventRunner,
-} from '@/ecs/systems/match-event-runner';
+import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
+import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { getEventsCompletedCount, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { calculateMatchReward } from '@/game/match-rewards';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
 import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
-import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
-import { type PrestigeState, createPrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
-import { createSnapshotScoreCache } from './balance-score-cache';
-import { mockedGameRef } from '../helpers/game-world-ref';
 import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
+import { createSnapshotScoreCache } from './balance-score-cache';
 
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
@@ -131,7 +127,12 @@ function runVariant(seed: number, variant: VariantConfig): BalanceSnapshot {
   governor.enabled = true;
 
   for (let frame = 0; frame < TEST_FRAMES; frame += 1) {
-    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+    runSimFrame(world, {
+      governor,
+      runMatchEvents: true,
+      runPrestigeAutoBehaviors: true,
+      syncSignals: true,
+    });
   }
 
   return getLodgeSnapshot(world);
@@ -224,7 +225,11 @@ describe('balance track shifts', () => {
     expect(rows.find((row) => row.track === 'clam_yield_t1')?.mean_pct).toBeGreaterThan(0);
     // A blueprint-only Pearl unlock should be near-neutral until the player
     // actually fields that specialist in-match.
-    expect(rows.find((row) => row.track === 'pearl_blueprint_fisher')?.mean_pct).toBeGreaterThanOrEqual(-0.1);
-    expect(rows.find((row) => row.track === 'pearl_clam_earnings_rank_1')?.mean_pct).toBeGreaterThan(0);
+    expect(
+      rows.find((row) => row.track === 'pearl_blueprint_fisher')?.mean_pct,
+    ).toBeGreaterThanOrEqual(-0.1);
+    expect(
+      rows.find((row) => row.track === 'pearl_clam_earnings_rank_1')?.mean_pct,
+    ).toBeGreaterThan(0);
   }, 180_000);
 });

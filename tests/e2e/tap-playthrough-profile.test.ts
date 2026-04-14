@@ -39,6 +39,7 @@ import { movementSystem } from '@/ecs/systems/movement';
 import { trainingSystem } from '@/ecs/systems/training';
 import { weatherSystem } from '@/ecs/systems/weather';
 import type { GameWorld } from '@/ecs/world';
+import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import {
   LOOKOUT_KIND,
   MEDIC_KIND,
@@ -46,7 +47,6 @@ import {
   SABOTEUR_KIND,
   SAPPER_KIND,
 } from '@/game/live-unit-kinds';
-import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { computePopulation } from '@/game/population-counter';
 import { syncRosters } from '@/game/roster-sync';
 import { generateVerticalMapLayout } from '@/game/vertical-map';
@@ -134,13 +134,7 @@ function findPlayerUnits(w: GameWorld, kind: EntityKind): number[] {
 
 /** Find all idle player combat-capable units, including Mudpaws. */
 function findIdleCombatUnits(w: GameWorld): number[] {
-  const combatKinds = new Set([
-    MUDPAW_KIND,
-    MEDIC_KIND,
-    LOOKOUT_KIND,
-    SAPPER_KIND,
-    SABOTEUR_KIND,
-  ]);
+  const combatKinds = new Set([MUDPAW_KIND, MEDIC_KIND, LOOKOUT_KIND, SAPPER_KIND, SABOTEUR_KIND]);
   const results: number[] = [];
   for (const eid of query(w.ecs, [EntityTypeTag, FactionTag, Health, UnitStateMachine])) {
     if (FactionTag.faction[eid] !== Faction.Player) continue;
@@ -329,193 +323,195 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
     store.maxFood.value = 0;
   });
 
-  it.each([
-    1, 2, 3, 4, 5, 6,
-  ])('tier %i: tap-only playthrough with timing profile (13200 frames ~220s)', (stage) => {
-    progressionLevel.value = stage;
+  it.each([1, 2, 3, 4, 5, 6])(
+    'tier %i: tap-only playthrough with timing profile (13200 frames ~220s)',
+    (stage) => {
+      progressionLevel.value = stage;
 
-    // ── World Setup ───────────────────────────────────
-    const world = createTestWorld({ stage, seed: 42 });
-    // Real peace timer: 10800 frames (3 min) — player builds economy before enemies attack
-    const pg = createTestPanelGrid(stage);
-    const layout = generateVerticalMapLayout(pg, new SeededRandom(42));
-    spawnVerticalEntities(world, layout, new SeededRandom(99));
+      // ── World Setup ───────────────────────────────────
+      const world = createTestWorld({ stage, seed: 42 });
+      // Real peace timer: 10800 frames (3 min) — player builds economy before enemies attack
+      const pg = createTestPanelGrid(stage);
+      const layout = generateVerticalMapLayout(pg, new SeededRandom(42));
+      spawnVerticalEntities(world, layout, new SeededRandom(99));
 
-    // Initial population sync
-    computePopulation(world);
-    syncRosters(world);
-    store.fish.value = world.resources.fish;
-    store.logs.value = world.resources.logs;
-    store.rocks.value = world.resources.rocks;
+      // Initial population sync
+      computePopulation(world);
+      syncRosters(world);
+      store.fish.value = world.resources.fish;
+      store.logs.value = world.resources.logs;
+      store.rocks.value = world.resources.rocks;
 
-    // ── Milestone tracking ────────────────────────────
-    const profile: TierProfile = {
-      tier: stage,
-      firstUnitTrained: NO_FRAME,
-      firstDeposit: NO_FRAME,
-      firstKill: NO_FRAME,
-      firstWaveEvent: NO_FRAME,
-      lodgeHpAtEnd: -1,
-      finalState: 'playing',
-      playerUnits: 0,
-      enemyUnits: 0,
-      totalTrained: 0,
-      totalGathered: 0,
-      totalKills: 0,
-    };
+      // ── Milestone tracking ────────────────────────────
+      const profile: TierProfile = {
+        tier: stage,
+        firstUnitTrained: NO_FRAME,
+        firstDeposit: NO_FRAME,
+        firstKill: NO_FRAME,
+        firstWaveEvent: NO_FRAME,
+        lodgeHpAtEnd: -1,
+        finalState: 'playing',
+        playerUnits: 0,
+        enemyUnits: 0,
+        totalTrained: 0,
+        totalGathered: 0,
+        totalKills: 0,
+      };
 
-    let prevUnitsTrained = world.stats.unitsTrained;
-    let prevResourcesGathered = world.stats.resourcesGathered;
-    let prevKills = world.stats.unitsKilled;
-    let prevWaveNumber = world.waveNumber;
-    let mudpawTrainAttempts = 0;
-    let fighterTrainAttempts = 0;
+      let prevUnitsTrained = world.stats.unitsTrained;
+      let prevResourcesGathered = world.stats.resourcesGathered;
+      let prevKills = world.stats.unitsKilled;
+      let prevWaveNumber = world.waveNumber;
+      let mudpawTrainAttempts = 0;
+      let fighterTrainAttempts = 0;
 
-    const TOTAL_FRAMES = 13200; // 220 seconds — past 3-min peace timer + initial combat
+      const TOTAL_FRAMES = 13200; // 220 seconds — past 3-min peace timer + initial combat
 
-    for (let f = 0; f < TOTAL_FRAMES; f++) {
-      // Stop early if game ended (Lodge destroyed)
-      if (world.state !== 'playing') break;
+      for (let f = 0; f < TOTAL_FRAMES; f++) {
+        // Stop early if game ended (Lodge destroyed)
+        if (world.state !== 'playing') break;
 
-      runFrame(world);
+        runFrame(world);
 
-      // ── Milestone Detection ─────────────────────────
-      if (profile.firstUnitTrained === NO_FRAME && world.stats.unitsTrained > prevUnitsTrained) {
-        profile.firstUnitTrained = f + 1;
-      }
-      if (
-        profile.firstDeposit === NO_FRAME &&
-        world.stats.resourcesGathered > prevResourcesGathered
-      ) {
-        profile.firstDeposit = f + 1;
-      }
-      if (profile.firstKill === NO_FRAME && world.stats.unitsKilled > prevKills) {
-        profile.firstKill = f + 1;
-      }
-      if (profile.firstWaveEvent === NO_FRAME && world.waveNumber > prevWaveNumber) {
-        profile.firstWaveEvent = f + 1;
-      }
+        // ── Milestone Detection ─────────────────────────
+        if (profile.firstUnitTrained === NO_FRAME && world.stats.unitsTrained > prevUnitsTrained) {
+          profile.firstUnitTrained = f + 1;
+        }
+        if (
+          profile.firstDeposit === NO_FRAME &&
+          world.stats.resourcesGathered > prevResourcesGathered
+        ) {
+          profile.firstDeposit = f + 1;
+        }
+        if (profile.firstKill === NO_FRAME && world.stats.unitsKilled > prevKills) {
+          profile.firstKill = f + 1;
+        }
+        if (profile.firstWaveEvent === NO_FRAME && world.waveNumber > prevWaveNumber) {
+          profile.firstWaveEvent = f + 1;
+        }
 
-      prevUnitsTrained = world.stats.unitsTrained;
-      prevResourcesGathered = world.stats.resourcesGathered;
-      prevKills = world.stats.unitsKilled;
-      prevWaveNumber = world.waveNumber;
+        prevUnitsTrained = world.stats.unitsTrained;
+        prevResourcesGathered = world.stats.resourcesGathered;
+        prevKills = world.stats.unitsKilled;
+        prevWaveNumber = world.waveNumber;
 
-      // ── Player Actions (every 60 frames = ~1s) ─────
-      if ((f + 1) % 60 !== 0) continue;
+        // ── Player Actions (every 60 frames = ~1s) ─────
+        if ((f + 1) % 60 !== 0) continue;
 
-      const lodge = findLodge(world);
-      if (!lodge) continue;
+        const lodge = findLodge(world);
+        if (!lodge) continue;
 
-      const lodgeX = Position.x[lodge];
-      const lodgeY = Position.y[lodge];
-      const mudpaws = findPlayerUnits(world, MUDPAW_KIND);
-      const medics = findPlayerUnits(world, MEDIC_KIND);
-      const sappers = findPlayerUnits(world, SAPPER_KIND);
-      const saboteurs = findPlayerUnits(world, SABOTEUR_KIND);
-      const baseAttacked = isBaseUnderAttack(world, 500);
+        const lodgeX = Position.x[lodge];
+        const lodgeY = Position.y[lodge];
+        const mudpaws = findPlayerUnits(world, MUDPAW_KIND);
+        const medics = findPlayerUnits(world, MEDIC_KIND);
+        const sappers = findPlayerUnits(world, SAPPER_KIND);
+        const saboteurs = findPlayerUnits(world, SABOTEUR_KIND);
+        const baseAttacked = isBaseUnderAttack(world, 500);
 
-      // Priority 1: If base is under attack, rally ALL combat units
-      if (baseAttacked) {
-        const cmdr = findCommander(world);
-        if (cmdr !== null && UnitStateMachine.state[cmdr] === UnitState.Idle) {
-          const enemy = findNearestEnemy(world, lodgeX, lodgeY);
-          if (enemy !== null) {
-            tapUnitThenTarget(world, cmdr, enemy);
+        // Priority 1: If base is under attack, rally ALL combat units
+        if (baseAttacked) {
+          const cmdr = findCommander(world);
+          if (cmdr !== null && UnitStateMachine.state[cmdr] === UnitState.Idle) {
+            const enemy = findNearestEnemy(world, lodgeX, lodgeY);
+            if (enemy !== null) {
+              tapUnitThenTarget(world, cmdr, enemy);
+            }
+          }
+          const idleCombat = findIdleCombatUnits(world);
+          for (const cEid of idleCombat) {
+            const enemy = findNearestEnemy(world, Position.x[cEid], Position.y[cEid]);
+            if (enemy !== null) {
+              tapUnitThenTarget(world, cEid, enemy);
+            }
           }
         }
-        const idleCombat = findIdleCombatUnits(world);
-        for (const cEid of idleCombat) {
-          const enemy = findNearestEnemy(world, Position.x[cEid], Position.y[cEid]);
-          if (enemy !== null) {
-            tapUnitThenTarget(world, cEid, enemy);
+
+        // Priority 2: Train units via Lodge radial menu
+        if (mudpaws.length < 4 && mudpawTrainAttempts < 10) {
+          tapSelect(world, lodge);
+          if (tapTrainFromRadial(world, lodge, MUDPAW_KIND)) {
+            mudpawTrainAttempts++;
+          }
+        } else if (stage >= 2 && medics.length < 1 && fighterTrainAttempts < 4) {
+          tapSelect(world, lodge);
+          if (tapTrainFromRadial(world, lodge, MEDIC_KIND)) {
+            fighterTrainAttempts++;
+          }
+        } else if (stage >= 5 && sappers.length < 1) {
+          tapSelect(world, lodge);
+          tapTrainFromRadial(world, lodge, SAPPER_KIND);
+        } else if (stage >= 6 && saboteurs.length < 1) {
+          tapSelect(world, lodge);
+          tapTrainFromRadial(world, lodge, SABOTEUR_KIND);
+        } else if (world.resources.food < world.resources.maxFood) {
+          tapSelect(world, lodge);
+          tapTrainFromRadial(world, lodge, MUDPAW_KIND);
+        }
+
+        // Priority 3: Send idle Mudpaws to fish
+        for (const gEid of mudpaws) {
+          if (UnitStateMachine.state[gEid] !== UnitState.Idle) continue;
+          const fishNode = findNearestResource(
+            world,
+            Position.x[gEid],
+            Position.y[gEid],
+            EntityKind.Clambed,
+          );
+          if (fishNode !== null) {
+            tapUnitThenTarget(world, gEid, fishNode);
           }
         }
-      }
 
-      // Priority 2: Train units via Lodge radial menu
-      if (mudpaws.length < 4 && mudpawTrainAttempts < 10) {
-        tapSelect(world, lodge);
-        if (tapTrainFromRadial(world, lodge, MUDPAW_KIND)) {
-          mudpawTrainAttempts++;
-        }
-      } else if (stage >= 2 && medics.length < 1 && fighterTrainAttempts < 4) {
-        tapSelect(world, lodge);
-        if (tapTrainFromRadial(world, lodge, MEDIC_KIND)) {
-          fighterTrainAttempts++;
-        }
-      } else if (stage >= 5 && sappers.length < 1) {
-        tapSelect(world, lodge);
-        tapTrainFromRadial(world, lodge, SAPPER_KIND);
-      } else if (stage >= 6 && saboteurs.length < 1) {
-        tapSelect(world, lodge);
-        tapTrainFromRadial(world, lodge, SABOTEUR_KIND);
-      } else if (world.resources.food < world.resources.maxFood) {
-        tapSelect(world, lodge);
-        tapTrainFromRadial(world, lodge, MUDPAW_KIND);
-      }
-
-      // Priority 3: Send idle Mudpaws to fish
-      for (const gEid of mudpaws) {
-        if (UnitStateMachine.state[gEid] !== UnitState.Idle) continue;
-        const fishNode = findNearestResource(
-          world,
-          Position.x[gEid],
-          Position.y[gEid],
-          EntityKind.Clambed,
-        );
-        if (fishNode !== null) {
-          tapUnitThenTarget(world, gEid, fishNode);
-        }
-      }
-
-      // Priority 4: Send idle Mudpaws and specialists to proactively attack enemies
-      if (!baseAttacked) {
-        const pressureUnits = [...mudpaws, ...medics, ...sappers, ...saboteurs];
-        for (const fEid of pressureUnits) {
-          if (UnitStateMachine.state[fEid] !== UnitState.Idle) continue;
-          const enemy = findNearestEnemy(world, Position.x[fEid], Position.y[fEid]);
-          if (enemy !== null) {
-            tapUnitThenTarget(world, fEid, enemy);
+        // Priority 4: Send idle Mudpaws and specialists to proactively attack enemies
+        if (!baseAttacked) {
+          const pressureUnits = [...mudpaws, ...medics, ...sappers, ...saboteurs];
+          for (const fEid of pressureUnits) {
+            if (UnitStateMachine.state[fEid] !== UnitState.Idle) continue;
+            const enemy = findNearestEnemy(world, Position.x[fEid], Position.y[fEid]);
+            if (enemy !== null) {
+              tapUnitThenTarget(world, fEid, enemy);
+            }
           }
         }
+
+        // Clear selection after actions
+        world.selection = [];
       }
 
-      // Clear selection after actions
-      world.selection = [];
-    }
+      // ── Record profile ────────────────────────────────
+      profile.lodgeHpAtEnd = getLodgeHp(world);
+      profile.finalState = world.state;
+      profile.playerUnits = countAlive(world, Faction.Player);
+      profile.enemyUnits = countAlive(world, Faction.Enemy);
+      profile.totalTrained = world.stats.unitsTrained;
+      profile.totalGathered = world.stats.resourcesGathered;
+      profile.totalKills = world.stats.unitsKilled;
+      profiles.push(profile);
 
-    // ── Record profile ────────────────────────────────
-    profile.lodgeHpAtEnd = getLodgeHp(world);
-    profile.finalState = world.state;
-    profile.playerUnits = countAlive(world, Faction.Player);
-    profile.enemyUnits = countAlive(world, Faction.Enemy);
-    profile.totalTrained = world.stats.unitsTrained;
-    profile.totalGathered = world.stats.resourcesGathered;
-    profile.totalKills = world.stats.unitsKilled;
-    profiles.push(profile);
+      // ── Assertions ────────────────────────────────────
+      // The player actively trained and gathered
+      expect(world.stats.unitsTrained + world.stats.resourcesGathered).toBeGreaterThan(0);
 
-    // ── Assertions ────────────────────────────────────
-    // The player actively trained and gathered
-    expect(world.stats.unitsTrained + world.stats.resourcesGathered).toBeGreaterThan(0);
+      // No NaN positions on any surviving entity
+      for (const eid of query(world.ecs, [Position, Health])) {
+        if (Health.current[eid] <= 0) continue;
+        expect(Number.isNaN(Position.x[eid])).toBe(false);
+        expect(Number.isNaN(Position.y[eid])).toBe(false);
+      }
 
-    // No NaN positions on any surviving entity
-    for (const eid of query(world.ecs, [Position, Health])) {
-      if (Health.current[eid] <= 0) continue;
-      expect(Number.isNaN(Position.x[eid])).toBe(false);
-      expect(Number.isNaN(Position.y[eid])).toBe(false);
-    }
+      // Tiers 1-2: safe enough that active player survives 100s easily
+      if (stage <= 2) {
+        expect(world.state).toBe('playing');
+        expect(getLodgeHp(world)).toBeGreaterThan(0);
+      }
 
-    // Tiers 1-2: safe enough that active player survives 100s easily
-    if (stage <= 2) {
-      expect(world.state).toBe('playing');
-      expect(getLodgeHp(world)).toBeGreaterThan(0);
-    }
-
-    // At all tiers, first unit should train within 300 frames (5s)
-    expect(profile.firstUnitTrained).toBeGreaterThan(0);
-    expect(profile.firstUnitTrained).toBeLessThanOrEqual(300);
-  }, TAP_PLAYTHROUGH_TIMEOUT);
+      // At all tiers, first unit should train within 300 frames (5s)
+      expect(profile.firstUnitTrained).toBeGreaterThan(0);
+      expect(profile.firstUnitTrained).toBeLessThanOrEqual(300);
+    },
+    TAP_PLAYTHROUGH_TIMEOUT,
+  );
 
   it('prints consolidated profiling table', () => {
     if (profiles.length === 0) {
@@ -554,7 +550,9 @@ describe('Tap-Based E2E Playthrough Profiles', () => {
 
     console.log('-'.repeat(100));
     console.log('  Frames @ 60 FPS. 13200 frames = ~220 seconds. Peace timer = 10800 (3 min).');
-    console.log('  Player strategy: 4 Mudpaws -> support/siege unlocks, defend Lodge, gather fish.');
+    console.log(
+      '  Player strategy: 4 Mudpaws -> support/siege unlocks, defend Lodge, gather fish.',
+    );
     console.log(`${'='.repeat(100)}\n`);
   });
 });
