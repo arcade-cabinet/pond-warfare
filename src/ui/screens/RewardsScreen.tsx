@@ -14,6 +14,7 @@ import {
   getResultTitle,
   type RewardBreakdown,
 } from '@/game/match-rewards';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { Frame9Slice } from '@/ui/components/frame';
 import { COLORS } from '@/ui/design-tokens';
 
@@ -179,6 +180,13 @@ export function RewardsScreen({
                   Play Again
                 </button>
               </div>
+            </div>
+
+            <div
+              class="font-numbers text-[10px] uppercase tracking-[0.2em] text-center"
+              style={{ color: COLORS.weatheredSteel, opacity: 0.7 }}
+            >
+              Build {BUILD_STAMP_LABEL}
             </div>
           </div>
         </Frame9Slice>
