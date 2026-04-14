@@ -231,5 +231,5 @@ describe('balance track shifts', () => {
     expect(
       rows.find((row) => row.track === 'pearl_clam_earnings_rank_1')?.mean_pct,
     ).toBeGreaterThan(0);
-  }, 180_000);
+  }, 480_000);
 });

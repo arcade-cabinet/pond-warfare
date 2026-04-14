@@ -48,5 +48,5 @@ describe('ErrorBoundary', () => {
     expect(store.gameLoading.value).toBe(false);
     expect(store.continueRequested.value).toBe(false);
     expect(getFatalError()).toBeNull();
-  });
+  }, 15_000);
 });

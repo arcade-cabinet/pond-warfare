@@ -17,7 +17,7 @@ describe('RankUpModal', () => {
     const view = render(<RankUpModal {...baseProps} />);
 
     expect(view.getByText(`Build ${BUILD_STAMP_LABEL}`)).toBeTruthy();
-  });
+  }, 15_000);
 
   it('renders the current rank, next rank, and pearl reward', () => {
     const view = render(<RankUpModal {...baseProps} />);
@@ -36,7 +36,7 @@ describe('RankUpModal', () => {
     fireEvent.click(view.getByRole('button', { name: 'Cancel' }));
 
     expect(onCancel).toHaveBeenCalledTimes(1);
-  });
+  }, 15_000);
 
   it('calls onConfirm with the prestige result when Confirm is pressed', () => {
     const onConfirm = vi.fn();

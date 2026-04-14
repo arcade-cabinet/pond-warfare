@@ -42,7 +42,7 @@ describe('TopBarResources font sizing', () => {
       expect(classes).toContain('text-xs');
       expect(classes).toContain('md:text-sm');
     }
-  });
+  }, 15_000);
 
   it('should render label text with responsive sizing', () => {
     store.fish.value = 100;

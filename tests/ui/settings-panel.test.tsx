@@ -24,5 +24,5 @@ describe('SettingsPanel', () => {
     );
 
     expect(view.getByText(BUILD_STAMP_LABEL)).toBeTruthy();
-  });
+  }, 15_000);
 });

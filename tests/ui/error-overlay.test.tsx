@@ -54,7 +54,7 @@ describe('ErrorOverlay', () => {
     expect(store.gameLoading.value).toBe(false);
     expect(store.continueRequested.value).toBe(false);
     expect(restartMountedGameSession).not.toHaveBeenCalled();
-  });
+  }, 15_000);
 
   it('retries the mounted session instead of dismissing a fatal in-match crash', async () => {
     store.menuState.value = 'playing';

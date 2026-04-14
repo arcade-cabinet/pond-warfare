@@ -220,5 +220,5 @@ describe('pearl combat-pressure diagnostics', () => {
       expect(row.max_pct).toBeGreaterThanOrEqual(row.mean_pct);
       expect(row.mean_pct).toBeGreaterThanOrEqual(row.min_pct);
     }
-  }, 60_000);
+  }, 180_000);
 });

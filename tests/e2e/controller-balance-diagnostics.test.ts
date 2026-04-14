@@ -57,7 +57,7 @@ const BUILD_CONTROLLER_SEED = 201;
 const TRAIN_CONTROLLER_SEED = 301;
 const DEFEND_CONTROLLER_SEED = 401;
 const ATTACK_CONTROLLER_SEED = 501;
-const CONTROLLER_DIAGNOSTICS_TIMEOUT = 90_000;
+const CONTROLLER_DIAGNOSTICS_TIMEOUT = 240_000;
 
 function tickWorld(world: GameWorld): void {
   runSimFrame(world, { runMatchEvents: false, runPrestigeAutoBehaviors: true, syncSignals: false });

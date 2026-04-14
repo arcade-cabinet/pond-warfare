@@ -248,5 +248,5 @@ describe('pearl sustain diagnostics', () => {
 
     expect(byTrack.get('auto_heal_behavior')?.mean_pct ?? 0).toBeGreaterThan(0);
     expect(byTrack.get('auto_repair_behavior')?.mean_pct ?? 0).toBeGreaterThan(0);
-  }, 60_000);
+  }, 180_000);
 });

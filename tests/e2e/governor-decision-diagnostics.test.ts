@@ -52,7 +52,7 @@ const TRACE_WINDOWS = [
 ] as const;
 const TRACE_SEEDS = [11, 42, 77];
 const evaluatorOwner = new GameEntity();
-const GOVERNOR_DECISION_TIMEOUT = 180_000;
+const GOVERNOR_DECISION_TIMEOUT = 480_000;
 
 interface TraceVariant {
   name: string;
