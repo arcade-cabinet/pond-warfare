@@ -122,15 +122,7 @@ describe('Build Preview Ghost', () => {
   });
 
   it('resolves known building types to sprite ids', () => {
-    const knownTypes = [
-      'burrow',
-      'armory',
-      'tower',
-      'watchtower',
-      'lodge',
-      'wall',
-      'lookout_post',
-    ];
+    const knownTypes = ['burrow', 'armory', 'tower', 'watchtower', 'lodge', 'wall', 'lookout_post'];
     for (const buildingType of knownTypes) {
       hidePlacementGhost();
       resetLastSprite();

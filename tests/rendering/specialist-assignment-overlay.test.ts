@@ -20,7 +20,11 @@ vi.mock('@/rendering/pixi/init', () => ({
 
 import { renderSpecialistAssignments } from '@/rendering/pixi/specialist-assignment-overlay';
 
-function createEntity(world = createGameWorld(), x = 100, y = 100): { eid: number; world: ReturnType<typeof createGameWorld> } {
+function createEntity(
+  world = createGameWorld(),
+  x = 100,
+  y = 100,
+): { eid: number; world: ReturnType<typeof createGameWorld> } {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   Position.x[eid] = x;

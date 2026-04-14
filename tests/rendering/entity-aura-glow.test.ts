@@ -9,8 +9,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { drawCommanderAura, drawNestGlow } from '@/rendering/pixi/entity-aura-glow';
 import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { drawCommanderAura, drawNestGlow } from '@/rendering/pixi/entity-aura-glow';
 import { EntityKind } from '@/types';
 
 /** Create a mock PixiJS Graphics that records circle/stroke calls. */

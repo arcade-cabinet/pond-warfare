@@ -14,8 +14,8 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  Carrying,
   Building,
+  Carrying,
   Combat,
   EntityTypeTag,
   FactionTag,
@@ -35,7 +35,7 @@ import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
-import { registerSpecialistEntity, getSpecialistAssignment } from '@/game/specialist-assignment';
+import { getSpecialistAssignment, registerSpecialistEntity } from '@/game/specialist-assignment';
 import { getSpecialistSpawnCost } from '@/game/specialist-training';
 import { EntityKind, Faction, UnitState } from '@/types';
 
