@@ -16,15 +16,6 @@ domain: creative
 >
 > The roster matrices, progression beats, and matchup tables below are preserved for historical art and design context only. They should not be used as live gameplay, balance, or naming truth.
 
-> **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](gameplay.md), [docs/architecture.md](architecture.md), and [docs/unit-model.md](unit-model.md).
->
-> Historical term translation:
-> `Gatherer` -> `Mudpaw`
-> `free specialist auto-deploy` -> obsolete; specialists are now Pearl blueprints trained in-match
-> `Brawler / Sniper / Shieldbearer / Catapult` -> historical compatibility content, not the live player roster
->
-> The roster matrices, progression beats, and matchup tables below are preserved for historical art and design context only. They should not be used as live gameplay, balance, or naming truth.
-
 ## Vision
 
 Warcraft II-style RTS in a pond ecosystem. Two playable factions compete for finite resources, territory, and survival. Long games with escalating threats, meaningful progression, and deep replayability. Campaign mode teaches the ropes; ranked play and cosmetic unlocks keep players coming back.
