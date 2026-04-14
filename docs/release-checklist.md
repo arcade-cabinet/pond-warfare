@@ -24,7 +24,7 @@ This covers:
 - Android packaging sync build
 - Dependency audit
 
-Before tagging a release, confirm the semantic version in [package.json](package.json) is the one you intend to ship. The tracked [sync-android-shell.js](scripts/sync-android-shell.js) step now stamps the Android shell from that root package version before native verification runs.
+Before tagging a release, confirm the semantic version in [package.json](../package.json) is the one you intend to ship. The tracked [sync-android-shell.js](../scripts/sync-android-shell.js) step now stamps the Android shell from that root package version before native verification runs.
 
 ## Manual Smoke
 
@@ -96,4 +96,4 @@ Capture these before shipping:
 - Device/browser smoke matrix used for signoff
 - Browser audit manifest path and generation timestamp
 
-Use [docs/release-signoff-template.md](docs/release-signoff-template.md) as the canonical signoff record.
+Use [docs/release-signoff-template.md](release-signoff-template.md) as the canonical signoff record.

@@ -11,7 +11,7 @@ How each dependency is utilized in Pond Warfare.
 
 > Historical note: older references to `Gatherer`, `Swimmer`, or other removed
 > player-roster units in this file describe internal or superseded usage. The
-> live player-facing unit model is [docs/unit-model.md](docs/unit-model.md).
+> live player-facing unit model is [docs/unit-model.md](unit-model.md).
 
 ## Runtime Dependencies
 
