@@ -11,7 +11,7 @@ import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { LOOKOUT_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
-import { EntityKind, Faction } from '@/types';
+import { type EntityKind, Faction } from '@/types';
 
 /** Create a player unit at a given position. */
 function createPlayerUnit(world: GameWorld, kind: EntityKind, x: number, y: number): number {

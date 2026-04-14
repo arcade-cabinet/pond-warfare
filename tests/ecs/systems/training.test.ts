@@ -82,8 +82,7 @@ describe('trainingSystem', () => {
     const units = query(world.ecs, [FactionTag, EntityTypeTag]);
     const sappers = units.filter(
       (eid: number) =>
-        EntityTypeTag.kind[eid] === SAPPER_KIND &&
-        FactionTag.faction[eid] === Faction.Player,
+        EntityTypeTag.kind[eid] === SAPPER_KIND && FactionTag.faction[eid] === Faction.Player,
     );
     expect(sappers.length).toBe(1);
   });

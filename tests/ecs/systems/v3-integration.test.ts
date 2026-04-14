@@ -11,18 +11,18 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { getEventsCompletedCount, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
-import {
-  computeSpecialistDeployPlan,
-  getSpecialistSpawnPositions,
-} from '@/ecs/systems/specialist-deploy';
 import {
   findClosestSlot,
   initFortificationState,
   placeFortification,
 } from '@/ecs/systems/fortification';
-import { EntityKind, type GameResources, nodeKindToResourceType, ResourceType } from '@/types';
+import { getEventsCompletedCount, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import {
+  computeSpecialistDeployPlan,
+  getSpecialistSpawnPositions,
+} from '@/ecs/systems/specialist-deploy';
 import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { EntityKind, type GameResources, nodeKindToResourceType, ResourceType } from '@/types';
 import { COLORS } from '@/ui/design-tokens';
 import * as storeV3 from '@/ui/store-v3';
 
