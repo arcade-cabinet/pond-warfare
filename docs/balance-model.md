@@ -154,7 +154,7 @@ creation, deterministic seeded weather in `createTestWorld()`, attaching the
 
 The latest correction is bigger than the earlier bookkeeping fixes: the
 balance/governor harnesses now share
-[run-sim-frame.ts](../tests/helpers/run-sim-frame.ts),
+[tests/helpers/run-sim-frame.ts](../tests/helpers/run-sim-frame.ts),
 which runs the live defensive stack instead of a stripped-down loop. That
 means the reports now include `buildingSystem`, `fortificationTickSystem`,
 `projectileSystem`, and `shamanHealSystem` in the same frame flow as the live
@@ -172,8 +172,8 @@ same mocked `game.world` reference.
 The broad scan is now split into isolated files so each currency layer runs in
 a fresh worker process:
 
-- [exhaustive-clam-balance-report.test.ts](../tests/e2e/exhaustive-clam-balance-report.test.ts)
-- [exhaustive-pearl-balance-report.test.ts](../tests/e2e/exhaustive-pearl-balance-report.test.ts)
+- [tests/e2e/exhaustive-clam-balance-report.test.ts](../tests/e2e/exhaustive-clam-balance-report.test.ts)
+- [tests/e2e/exhaustive-pearl-balance-report.test.ts](../tests/e2e/exhaustive-pearl-balance-report.test.ts)
 
 The Pearl broad scan still reports two horizons:
 
@@ -196,7 +196,7 @@ Current isolated readout:
     - `economy_clam_bonus_t0` lands around `0.15%`, with about `0.99%` `economy_mean_pct`
   - most other T1 rows are currently flat in this harness instead of falsely negative, which is a better read but still tells us many categories are not expressing enough value in the immediate next-match window
 - Frontier Expansion path:
-  - [frontier-progression-report.test.ts](../tests/e2e/frontier-progression-report.test.ts) now runs the actual prestige-cycle frontier ladder: earn Clams at the current stage, buy the next required path and Frontier diamond when affordable, then score the first match at the newly unlocked stage
+  - [tests/e2e/frontier-progression-report.test.ts](../tests/e2e/frontier-progression-report.test.ts) now runs the actual prestige-cycle frontier ladder: earn Clams at the current stage, buy the next required path and Frontier diamond when affordable, then score the first match at the newly unlocked stage
   - the earlier extreme negative Frontier readout was contaminated by a diagnostic bug: it was comparing stage-entry runs against a stage-1 baseline instead of a fresh same-stage baseline
   - in the current live-stack 30-second lens, mean total matches to first exposure are about `2` for stage 2, `7` for stage 3, `13.67` for stage 4, `20.67` for stage 5, and `34.33` for stage 6
   - corrected stage-entry relief is now near-neutral overall: `Frontier Expansion I` lands around `-0.41%` `meta_mean_pct`, `II` around `+0.06%`, `III` around `+0.16%`, `IV` around `-0.46%`, and `V` around `+0.08%`
@@ -218,7 +218,7 @@ Current isolated readout:
 
 ## Combat-Pressure Diagnostic
 
-From [pearl-combat-pressure-diagnostics.test.ts](../tests/e2e/pearl-combat-pressure-diagnostics.test.ts), stage 3 immediate-pressure scenario, seeds `11/42/77`:
+From [tests/e2e/pearl-combat-pressure-diagnostics.test.ts](../tests/e2e/pearl-combat-pressure-diagnostics.test.ts), stage 3 immediate-pressure scenario, seeds `11/42/77`:
 
 | Track | Min % | Mean % | Max % |
 |------|------:|-------:|------:|
@@ -236,7 +236,7 @@ This is not a tuning success. It is a diagnostic finding:
 
 ## Sustain Diagnostic
 
-From [pearl-sustain-diagnostics.test.ts](../tests/e2e/pearl-sustain-diagnostics.test.ts), a developed home-defense hold with a pre-existing wounded army and repeated enemy assault waves:
+From [tests/e2e/pearl-sustain-diagnostics.test.ts](../tests/e2e/pearl-sustain-diagnostics.test.ts), a developed home-defense hold with a pre-existing wounded army and repeated enemy assault waves:
 
 This harness is intentionally not a release-budget baseline. It is an
 expression harness that answers a narrower question: once the player already
@@ -252,7 +252,7 @@ Current reading:
 
 ## Controller Diagnostics
 
-From [controller-balance-diagnostics.test.ts](../tests/e2e/controller-balance-diagnostics.test.ts):
+From [tests/e2e/controller-balance-diagnostics.test.ts](../tests/e2e/controller-balance-diagnostics.test.ts):
 
 This harness now uses fixed seeds per controller slice and actually deploys the
 Pearl specialists in the micro-worlds that claim to measure them. The old
