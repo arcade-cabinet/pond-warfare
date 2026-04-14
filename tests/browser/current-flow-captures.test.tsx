@@ -1,7 +1,7 @@
 import { query } from 'bitecs';
 import { render } from 'preact';
 import { page } from 'vitest/browser';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { game } from '@/game';
@@ -14,6 +14,18 @@ import '@/styles/main.css';
 import { EntityKind, Faction } from '@/types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const auditOutputDir = import.meta.env.VITE_BROWSER_AUDIT_OUTPUT_DIR ?? 'audit';
+let mathRandomRestore: (() => void) | null = null;
+
+function createSeededRandom(seed: number) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 function firePointer(
   el: HTMLElement,
@@ -112,11 +124,30 @@ function findFishNode(): number {
 }
 
 async function takeShot(name: string) {
-  await delay(150);
-  await page.screenshot({
-    path: `audit/${name}.png`,
-    element: document.body,
-  });
+  const canPauseGame =
+    store.menuState.value === 'playing' &&
+    Boolean((game as unknown as { running?: boolean }).running);
+  const wasPaused = canPauseGame ? game.world.paused : false;
+  try {
+    if (canPauseGame) {
+      game.world.particles.length = 0;
+      game.world.floatingTexts.length = 0;
+      game.world.groundPings.length = 0;
+      game.world.corpses.length = 0;
+      game.world.paused = true;
+      await delay(150);
+    } else {
+      await delay(150);
+    }
+    await page.screenshot({
+      path: `${auditOutputDir}/${name}.png`,
+      element: document.body,
+    });
+  } finally {
+    if (canPauseGame) {
+      game.world.paused = wasPaused;
+    }
+  }
 }
 
 async function mountApp() {
@@ -145,6 +176,10 @@ async function mountApp() {
 
 describe('Current flow captures', () => {
   afterAll(() => {
+    mathRandomRestore?.();
+    mathRandomRestore = null;
+    localStorage.removeItem('pw_onboarding_v2');
+    store.reduceVisualNoise.value = false;
     storeV3.eventAlert.value = null;
     storeV3.rewardsScreenOpen.value = false;
     storeV3.clamUpgradeScreenOpen.value = false;
@@ -160,6 +195,10 @@ describe('Current flow captures', () => {
   });
 
   it('captures landing stages and six current gameplay phases', async () => {
+    const seededRandom = createSeededRandom(1337);
+    const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => seededRandom());
+    mathRandomRestore = () => randomSpy.mockRestore();
+    store.reduceVisualNoise.value = true;
     store.menuState.value = 'main';
     store.hasSaveGame.value = true;
     storeV3.progressionLevel.value = 0;
@@ -175,6 +214,7 @@ describe('Current flow captures', () => {
     storeV3.rewardsScreenOpen.value = false;
     storeV3.clamUpgradeScreenOpen.value = false;
     storeV3.lastRewardBreakdown.value = null;
+    localStorage.setItem('pw_onboarding_v2', 'dismissed');
     const { ready } = await mountApp();
 
     expect(store.menuState.value).toBe('main');

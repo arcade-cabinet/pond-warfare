@@ -62,6 +62,7 @@ domain: context
 - [x] Accessibility improvements (ARIA labels, keyboard navigation)
 - [x] Scripted release gate (`pnpm verify:release`)
 - [x] Tracked browser audit captures + manifest
+- [x] Pixel-diff visual regression gate for the canonical staged browser captures
 
 ### Documentation
 
@@ -157,7 +158,7 @@ None currently. The tracked release gate is green on v1.3.0.
 
 - [ ] Extract `src/game/` into smaller domain modules (<300 LOC each)
 - [ ] Refactor UI state sync to event-driven (currently polling every 30 frames)
-- [ ] Add E2E visual regression tests (screenshot comparison)
+- [x] Add E2E visual regression tests (screenshot comparison)
 - [ ] Improve audio streaming (lazy-load SFX by category)
 - [ ] Profile memory usage on low-end Android devices
 
@@ -168,7 +169,7 @@ None currently. The tracked release gate is green on v1.3.0.
 
 ## Testing Gaps
 
-- **Visual regression:** Canonical staged captures are tracked, but there is still no pixel-diff screenshot comparison
+- **Visual regression:** Canonical staged captures now have a pixel-diff gate, but live gameplay scenes still use explicit per-capture budgets to absorb harmless canvas speckle
 - **Mobile stress test:** No automated test for 100+ unit match on low-end devices
 - **Audio:** No test for spatial panning correctness (manual verification only)
 - **Networking:** Multiplayer P2P not fully tested (feature WIP)

@@ -39,6 +39,9 @@ pnpm verify:release
 # Refresh canonical staged browser audit captures + manifest
 pnpm audit:browser-captures
 
+# Compare a fresh staged capture run against the tracked baseline
+pnpm verify:browser-audit
+
 # Single file
 pnpm test src/ecs/systems/movement.test.ts
 ```
@@ -159,6 +162,20 @@ pnpm audit:browser-captures
 
 That command regenerates [tests/browser/audit/MANIFEST.md](../tests/browser/audit/MANIFEST.md) and fails closed if the canonical nine capture files drift.
 
+The production visual-regression gate is:
+
+```bash
+pnpm verify:browser-audit
+```
+
+That command:
+- captures the canonical nine browser audit stages into an untracked current-output directory
+- compares each image against the tracked baseline in `tests/browser/audit`
+- writes reviewable diff images and a summary to `tests/browser/screenshots/audit-diff` on failure
+- fails CI if any capture drifts beyond the allowed per-capture pixel budget
+
+Those budgets are defined in [scripts/browser-audit-config.js](../scripts/browser-audit-config.js). Static menu captures are still held to zero drift; the live gameplay phases allow a small, explicit budget for harmless canvas/text speckle so the gate stays reviewable instead of flaky.
+
 ## When to Write Tests
 
 ### Always
@@ -184,7 +201,7 @@ That command regenerates [tests/browser/audit/MANIFEST.md](../tests/browser/audi
 
 **Before every release:**
 
-Use [docs/release-checklist.md](release-checklist.md) for the canonical smoke sequence and [docs/release-signoff-template.md](release-signoff-template.md) for the record you attach to a release PR or release issue.
+Use [docs/release-checklist.md](release-checklist.md) for the canonical smoke sequence, [docs/release-signoff-template.md](release-signoff-template.md) for the record you attach to a release PR or release issue, and [docs/release-signoff-v1.3.0.md](release-signoff-v1.3.0.md) as the current in-repo production reference.
 
 At minimum, manual signoff should cover:
 
