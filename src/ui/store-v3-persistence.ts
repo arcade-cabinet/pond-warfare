@@ -159,7 +159,7 @@ export async function persistCurrentRun(
       ? existing
         ? existing.matches_this_run + 1
         : 1
-      : existing?.matches_this_run ?? 0;
+      : (existing?.matches_this_run ?? 0);
     const snapshot = serializeCurrentRunUpgradeSnapshot({
       nodes: storeV3.currentRunPurchasedNodeIds.value,
       diamonds: storeV3.currentRunPurchasedDiamondIds.value,

@@ -22,8 +22,8 @@ import { Frame9Slice } from '@/ui/components/frame';
 import { type AccordionSection, PondAccordion } from '@/ui/components/PondAccordion';
 import {
   buildCurrentRunUpgradeState,
-  snapshotCurrentRunUpgradeState,
   type CurrentRunUpgradeSnapshot,
+  snapshotCurrentRunUpgradeState,
 } from '@/ui/current-run-upgrades';
 import { COLORS } from '@/ui/design-tokens';
 import {
@@ -34,8 +34,8 @@ import {
   type UpgradeWebPurchaseState,
 } from '@/ui/upgrade-web-state';
 import { ConfirmChoicesOverlay } from './ConfirmChoicesOverlay';
-import { UpgradeWebCategoryContent } from './UpgradeWebCategoryContent';
 import { findCheapestAvailableNodeId } from './UpgradeNodeRow';
+import { UpgradeWebCategoryContent } from './UpgradeWebCategoryContent';
 
 export interface UpgradeWebScreenProps {
   clams: number;
@@ -89,7 +89,9 @@ export function UpgradeWebScreen({
       }),
     [clams, purchasedNodeIds, purchasedDiamondIds, startingTierRank],
   );
-  const [purchaseState, setPurchaseState] = useState<UpgradeWebPurchaseState>(() => initialState.state);
+  const [purchaseState, setPurchaseState] = useState<UpgradeWebPurchaseState>(
+    () => initialState.state,
+  );
   const [purchases, setPurchases] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -101,7 +103,8 @@ export function UpgradeWebScreen({
       );
       const diamondInfos = diamonds.map((diamond) => getDiamondDisplayInfo(purchaseState, diamond));
       const nextNode = findNextNodeForCategory(nodes, purchaseState);
-      const availableDiamond = diamondInfos.find((diamond) => diamond.state === 'available') ?? null;
+      const availableDiamond =
+        diamondInfos.find((diamond) => diamond.state === 'available') ?? null;
       const complete =
         isCategoryComplete(nodes, purchaseState) &&
         diamonds.every((diamond) => purchaseState.purchasedDiamonds.has(diamond.id));

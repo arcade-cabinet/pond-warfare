@@ -2,9 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { buildClamTierOneVariants } from '@/balance/track-variants';
-import {
-  getSuspiciousRows,
-} from './balance-report-sim';
+import { getSuspiciousRows } from './balance-report-sim';
 import {
   buildPostMatchClamReportRows,
   CLAM_POSTMATCH_EVAL_FRAMES,
