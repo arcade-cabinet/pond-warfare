@@ -9,6 +9,7 @@
 import { cleanup, fireEvent, render } from '@testing-library/preact';
 import { h } from 'preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 
 vi.mock('@/platform', async () => {
   const { signal } = await import('@preact/signals');
@@ -42,6 +43,7 @@ describe('DisconnectOverlay', () => {
     const overlay = document.querySelector('[data-testid="disconnect-overlay"]');
     expect(overlay).not.toBeNull();
     expect(overlay?.textContent).toContain('Player Disconnected');
+    expect(overlay?.textContent).toContain(`Build ${BUILD_STAMP_LABEL}`);
   });
 
   it('shows reconnection countdown timer', () => {

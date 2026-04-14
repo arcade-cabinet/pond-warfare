@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { disconnectMultiplayer } from '@/net/multiplayer-controller';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { MenuButton } from '../menu-button';
 import { menuState } from '../store';
 import { multiplayerDisconnected } from '../store-multiplayer';
@@ -74,6 +75,13 @@ export function DisconnectOverlay() {
         <div class="flex flex-col gap-2">
           <MenuButton label="Continue Solo" wide onClick={handleContinueSolo} />
           <MenuButton label="Return to Menu" wide onClick={handleReturnToMenu} />
+        </div>
+
+        <div
+          class="font-numbers text-[10px] uppercase tracking-[0.2em] text-center"
+          style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
+        >
+          Build {BUILD_STAMP_LABEL}
         </div>
       </div>
     </div>
