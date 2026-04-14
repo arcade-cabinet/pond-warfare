@@ -28,6 +28,12 @@ import {
   purchaseNode,
 } from '@/ui/upgrade-web-state';
 
+function requireNode(web: ReturnType<typeof generateUpgradeWeb>, nodeId: string) {
+  const node = web.nodeMap.get(nodeId);
+  expect(node).toBeDefined();
+  return node;
+}
+
 describe('UpgradeWebScreen -- US12', () => {
   describe('Upgrade web catalog', () => {
     it('should generate 240+ linear nodes', () => {
@@ -70,8 +76,7 @@ describe('UpgradeWebScreen -- US12', () => {
       const nodes = getNodesForCategory(web, 'gathering');
       const cheapest = findCheapestAvailableNodeId(nodes, state);
       expect(cheapest).toBeTruthy();
-      const node = web.nodeMap.get(cheapest!);
-      expect(node?.tier).toBe(0);
+      expect(requireNode(web, cheapest as string)?.tier).toBe(0);
     });
 
     it('should find tier 1 node after purchasing all tier 0 in a category', () => {
@@ -88,8 +93,7 @@ describe('UpgradeWebScreen -- US12', () => {
       const nodes = getNodesForCategory(web, 'gathering');
       const cheapest = findCheapestAvailableNodeId(nodes, state);
       expect(cheapest).toBeTruthy();
-      const node = web.nodeMap.get(cheapest!);
-      expect(node?.tier).toBe(1);
+      expect(requireNode(web, cheapest as string)?.tier).toBe(1);
     });
 
     it('should return null when all nodes are purchased', () => {
@@ -179,7 +183,7 @@ describe('UpgradeWebScreen -- US12', () => {
     it('should show tier 0 as available', () => {
       const web = generateUpgradeWeb();
       const state = createUpgradeWebState(500);
-      const node = web.nodeMap.get('gathering_fish_gathering_t0')!;
+      const node = requireNode(web, 'gathering_fish_gathering_t0');
       expect(getNodeDisplayState(state, node)).toBe('available');
     });
 
@@ -187,14 +191,14 @@ describe('UpgradeWebScreen -- US12', () => {
       const web = generateUpgradeWeb();
       const state = createUpgradeWebState(500);
       purchaseNode(state, web, 'gathering_fish_gathering_t0');
-      const node = web.nodeMap.get('gathering_fish_gathering_t0')!;
+      const node = requireNode(web, 'gathering_fish_gathering_t0');
       expect(getNodeDisplayState(state, node)).toBe('purchased');
     });
 
     it('should show tier 1 as locked when tier 0 not purchased', () => {
       const web = generateUpgradeWeb();
       const state = createUpgradeWebState(500);
-      const node = web.nodeMap.get('gathering_fish_gathering_t1')!;
+      const node = requireNode(web, 'gathering_fish_gathering_t1');
       expect(getNodeDisplayState(state, node)).toBe('locked');
     });
   });

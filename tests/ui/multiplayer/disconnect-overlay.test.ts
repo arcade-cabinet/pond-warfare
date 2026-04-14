@@ -20,6 +20,14 @@ import { DisconnectOverlay } from '@/ui/overlays/DisconnectOverlay';
 import { menuState } from '@/ui/store';
 import { multiplayerDisconnected, multiplayerMode } from '@/ui/store-multiplayer';
 
+function requireButton(text: string): HTMLButtonElement {
+  const button = [...document.querySelectorAll('button')].find((b) =>
+    b.textContent?.includes(text),
+  );
+  expect(button).toBeInstanceOf(HTMLButtonElement);
+  return button as HTMLButtonElement;
+}
+
 beforeEach(() => {
   multiplayerDisconnected.value = true;
   multiplayerMode.value = true;
@@ -69,10 +77,7 @@ describe('DisconnectOverlay', () => {
 
   it('Continue Solo clears disconnect and multiplayer mode', () => {
     render(h(DisconnectOverlay, {}));
-    const soloBtn = [...document.querySelectorAll('button')].find((b) =>
-      b.textContent?.includes('Continue Solo'),
-    );
-    fireEvent.click(soloBtn!);
+    fireEvent.click(requireButton('Continue Solo'));
 
     expect(multiplayerDisconnected.value).toBe(false);
     expect(multiplayerMode.value).toBe(false);
@@ -80,10 +85,7 @@ describe('DisconnectOverlay', () => {
 
   it('Return to Menu navigates back to main menu', () => {
     render(h(DisconnectOverlay, {}));
-    const menuBtn = [...document.querySelectorAll('button')].find((b) =>
-      b.textContent?.includes('Return to Menu'),
-    );
-    fireEvent.click(menuBtn!);
+    fireEvent.click(requireButton('Return to Menu'));
 
     expect(multiplayerDisconnected.value).toBe(false);
     expect(multiplayerMode.value).toBe(false);

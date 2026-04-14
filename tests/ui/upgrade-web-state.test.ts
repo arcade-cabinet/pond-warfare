@@ -37,6 +37,18 @@ function stateWithClams(clams: number): UpgradeWebPurchaseState {
   return createUpgradeWebState(clams);
 }
 
+function requireNode(w: UpgradeWeb, nodeId: string) {
+  const node = w.nodeMap.get(nodeId);
+  expect(node).toBeDefined();
+  return node;
+}
+
+function requireDiamond(w: UpgradeWeb, diamondId: string) {
+  const diamond = w.diamondMap.get(diamondId);
+  expect(diamond).toBeDefined();
+  return diamond;
+}
+
 // ── State creation tests ──────────────────────────────────────────
 
 describe('Upgrade web state creation', () => {
@@ -212,7 +224,7 @@ describe('Node display state', () => {
   it('should show tier 0 as available for new player', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
-    const node = w.nodeMap.get('gathering_fish_gathering_t0')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t0');
 
     expect(getNodeDisplayState(state, node)).toBe('available');
   });
@@ -220,7 +232,7 @@ describe('Node display state', () => {
   it('should show tier 1 as locked when tier 0 not purchased', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
-    const node = w.nodeMap.get('gathering_fish_gathering_t1')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t1');
 
     expect(getNodeDisplayState(state, node)).toBe('locked');
   });
@@ -229,7 +241,7 @@ describe('Node display state', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
     purchaseNode(state, w, 'gathering_fish_gathering_t0');
-    const node = w.nodeMap.get('gathering_fish_gathering_t0')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t0');
 
     expect(getNodeDisplayState(state, node)).toBe('purchased');
   });
@@ -238,7 +250,7 @@ describe('Node display state', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
     purchaseNode(state, w, 'gathering_fish_gathering_t0');
-    const node = w.nodeMap.get('gathering_fish_gathering_t1')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t1');
 
     expect(getNodeDisplayState(state, node)).toBe('available');
   });
@@ -275,7 +287,7 @@ describe('Diamond display info', () => {
   it('should show locked diamond with prerequisite details', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
-    const diamond = w.diamondMap.get('dock_wing')!;
+    const diamond = requireDiamond(w, 'dock_wing');
 
     const info = getDiamondDisplayInfo(state, diamond);
     expect(info.state).toBe('locked');
