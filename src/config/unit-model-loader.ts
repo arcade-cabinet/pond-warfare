@@ -12,14 +12,8 @@ const unitModel = unitModelJson as UnitModelConfig;
 
 validateUnitModel(unitModel);
 
-export type {
-  UnitModelConfig,
-  UnitModelControlModel,
-  UnitModelManualUnit,
-  UnitModelSpecialist,
-};
-
 export { validateUnitModel } from './unit-model-validator';
+export type { UnitModelConfig, UnitModelControlModel, UnitModelManualUnit, UnitModelSpecialist };
 
 export function getUnitModelConfig(): UnitModelConfig {
   return unitModel;

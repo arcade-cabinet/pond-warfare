@@ -166,7 +166,11 @@ export function enemyTrainingTick(world: GameWorld): void {
       world,
       personality.trainingPreference,
     );
-    const unitKind = pickEnemyUnit(world.gameRng, world.enemyEvolution.unlockedUnits, trainingPreference);
+    const unitKind = pickEnemyUnit(
+      world.gameRng,
+      world.enemyEvolution.unlockedUnits,
+      trainingPreference,
+    );
     const costs = ENEMY_UNIT_COSTS[unitKind];
     if (!costs) continue;
     const costFish = costs.fish;

@@ -1,5 +1,5 @@
-import { loadPreference, savePreference } from '@/platform';
 import { GameError, logError } from '@/errors';
+import { loadPreference, savePreference } from '@/platform';
 
 export interface KeyMap {
   panUp: string[];

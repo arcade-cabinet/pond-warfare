@@ -1,4 +1,4 @@
-import { MEDIC_KIND, MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 
 /**

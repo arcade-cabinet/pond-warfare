@@ -4,9 +4,9 @@ import {
   isMudpawKind,
   MEDIC_KIND,
   SABOTEUR_KIND,
+  SAPPER_KIND,
   SHARED_HEAVY_CHASSIS_KIND,
   SHARED_SIEGE_CHASSIS_KIND,
-  SAPPER_KIND,
 } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { SfxManager } from './sfx';

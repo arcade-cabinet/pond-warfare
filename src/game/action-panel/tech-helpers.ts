@@ -5,10 +5,10 @@
  * were removed in v3.0 (replaced by upgrade web).
  */
 
-import { getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { TrainingQueue, trainingQueueSlots } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { getPlayerTrainProgress } from '@/game/train-timer';
+import { getPlayerTrainableDisplayName } from '@/game/unit-display';
 import { cancelTrain } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
 import type { EntityKind } from '@/types';

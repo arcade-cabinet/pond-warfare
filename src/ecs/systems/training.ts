@@ -13,7 +13,6 @@
 
 import { query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { entityKindName } from '@/config/entity-defs';
 import { spawnEntity } from '@/ecs/archetypes';
 import {
   Building,
@@ -31,7 +30,7 @@ import type { GameWorld } from '@/ecs/world';
 import { getPlayerTrainTimer } from '@/game/train-timer';
 import { getEntityDisplayName } from '@/game/unit-display';
 import { triggerSpawnPop } from '@/rendering/animations';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { type EntityKind, Faction, UnitState } from '@/types';
 import { pushGameEvent } from '@/ui/game-events';
 import { spawnDustBurst } from '@/utils/particles';
 

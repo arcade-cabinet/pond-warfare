@@ -28,7 +28,7 @@ import {
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { isLookoutKind, MEDIC_KIND, SHAMAN_KIND } from '@/game/live-unit-kinds';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { type EntityKind, Faction, UnitState } from '@/types';
 
 /** Duration in frames the auto-symbol icon is visible (4s at 60fps). */
 export const AUTO_SYMBOL_DURATION = 240;
