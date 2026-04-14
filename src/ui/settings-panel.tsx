@@ -11,6 +11,7 @@
  */
 
 import { useMemo } from 'preact/hooks';
+import { BUILD_STAMP_LABEL } from './build-stamp';
 import { Frame9Slice } from './components/frame';
 import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';
@@ -255,6 +256,15 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 />
               </div>
             </PondAccordion>
+
+            <div class="mt-4 pt-3 border-t border-[var(--pw-border)]/40 text-center">
+              <span
+                class="font-numbers text-[10px] tracking-[0.14em] uppercase"
+                style={{ color: 'var(--pw-text-muted)' }}
+              >
+                {BUILD_STAMP_LABEL}
+              </span>
+            </div>
           </div>
         </Frame9Slice>
       </div>
