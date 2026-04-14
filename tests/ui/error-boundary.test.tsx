@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render } from '@testing-library/preact';
 import { h } from 'preact';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { clearErrorLog, clearFatalError, getErrorLog, getFatalError } from '@/errors';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { ErrorBoundary } from '@/ui/error-boundary';
 import * as store from '@/ui/store';
 
@@ -36,6 +37,7 @@ describe('ErrorBoundary', () => {
     const view = render(h(ErrorBoundary, null, h(BrokenChild, null)));
 
     expect(view.getByText('Game Error')).toBeTruthy();
+    expect(view.getByText(`Build ${BUILD_STAMP_LABEL}`)).toBeTruthy();
     expect(getFatalError()?.message).toBe('Render exploded');
     expect(getErrorLog()).toHaveLength(1);
     expect(getErrorLog()[0].isFatal).toBe(true);
