@@ -7,7 +7,7 @@
  */
 
 import { screenClass } from '@/platform';
-import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
+import { BuildStampFooter } from '@/ui/components/BuildStampFooter';
 import { Frame9Slice } from './components/frame';
 import { useScrollDrag } from './hooks/useScrollDrag';
 
@@ -155,12 +155,7 @@ export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
               ))}
             </div>
 
-            <div
-              class="mt-4 font-numbers text-[10px] uppercase tracking-[0.2em] text-center"
-              style={{ color: 'var(--pw-text-muted)', opacity: 0.7 }}
-            >
-              Build {BUILD_STAMP_LABEL}
-            </div>
+            <BuildStampFooter class="mt-4" />
           </div>
         </Frame9Slice>
       </div>
