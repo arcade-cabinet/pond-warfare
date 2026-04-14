@@ -8,7 +8,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WORLD_BOUNDS_MARGIN } from '@/constants';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -23,8 +22,9 @@ import {
 } from '@/ecs/components';
 import { collisionSystem } from '@/ecs/systems/collision';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { PhysicsManager } from '@/physics/physics-world';
-import { EntityKind, Faction } from '@/types';
+import { Faction } from '@/types';
 
 function createUnit(world: GameWorld, x: number, y: number): number {
   const eid = addEntity(world.ecs);

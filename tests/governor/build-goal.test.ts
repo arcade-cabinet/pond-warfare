@@ -12,6 +12,14 @@ import * as storeV3 from '@/ui/store-v3';
 
 let world: GameWorld;
 
+function requireEntity<T>(value: T | undefined, message: string): T {
+  expect(value).toBeDefined();
+  if (value === undefined) {
+    throw new Error(message);
+  }
+  return value;
+}
+
 vi.mock('@/game', () => ({
   game: {
     get world() {
@@ -68,7 +76,17 @@ describe('BuildGoal', () => {
         role: 'generalist',
         idleCount: 1,
         automationEnabled: false,
-        units: [{ eid: mudpaw, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false }],
+        units: [
+          {
+            eid: mudpaw,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
+        ],
       } satisfies RosterGroup,
     ];
 
@@ -133,8 +151,24 @@ describe('BuildGoal', () => {
         idleCount: 2,
         automationEnabled: false,
         units: [
-          { eid: builderA, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
-          { eid: builderB, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
+          {
+            eid: builderA,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
+          {
+            eid: builderB,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
         ],
       } satisfies RosterGroup,
     ];
@@ -189,26 +223,50 @@ describe('BuildGoal', () => {
         idleCount: 3,
         automationEnabled: false,
         units: [
-          { eid: builderA, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
-          { eid: builderB, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
-          { eid: builderC, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
+          {
+            eid: builderA,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
+          {
+            eid: builderB,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
+          {
+            eid: builderC,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
         ],
       } satisfies RosterGroup,
     ];
 
     new BuildGoal().activate();
 
-    const placedBuildings = Array.from(query(world.ecs, [EntityTypeTag, FactionTag, Health])).filter(
-      (eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0,
-    );
+    const placedBuildings = Array.from(
+      query(world.ecs, [EntityTypeTag, FactionTag, Health]),
+    ).filter((eid) => FactionTag.faction[eid] === Faction.Player && Health.current[eid] > 0);
     const placedKinds = placedBuildings.map((eid) => EntityTypeTag.kind[eid]);
     const tower = placedBuildings.find((eid) => EntityTypeTag.kind[eid] === EntityKind.Tower);
+    const placedTower = requireEntity(tower, 'Expected tower to be placed');
 
     expect(placedKinds).toContain(EntityKind.Tower);
     expect(placedKinds).not.toContain(EntityKind.Armory);
-    expect(tower).toBeDefined();
-    expect(Position.x[tower!]).toBe(Position.x[lodge]);
-    expect(Position.y[tower!]).toBeLessThan(Position.y[lodge]);
+    expect(Position.x[placedTower]).toBe(Position.x[lodge]);
+    expect(Position.y[placedTower]).toBeLessThan(Position.y[lodge]);
     expect(world.selection).toEqual([builderA, builderB, builderC]);
   });
 
@@ -242,7 +300,15 @@ describe('BuildGoal', () => {
         idleCount: 1,
         automationEnabled: false,
         units: [
-          { eid: builder, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
+          {
+            eid: builder,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
         ],
       } satisfies RosterGroup,
     ];
@@ -255,10 +321,10 @@ describe('BuildGoal', () => {
         FactionTag.faction[eid] === Faction.Player &&
         Health.current[eid] > 0,
     );
+    const placedWall = requireEntity(wall, 'Expected wall to be placed');
 
-    expect(wall).toBeDefined();
-    expect(Position.x[wall!]).toBe(Position.x[lodge]);
-    expect(Position.y[wall!]).toBeLessThan(Position.y[lodge]);
+    expect(Position.x[placedWall]).toBe(Position.x[lodge]);
+    expect(Position.y[placedWall]).toBeLessThan(Position.y[lodge]);
     expect(world.selection).toEqual([builder]);
   });
 
@@ -310,8 +376,24 @@ describe('BuildGoal', () => {
         idleCount: 2,
         automationEnabled: false,
         units: [
-          { eid: builderA, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
-          { eid: builderB, kind: MUDPAW_KIND, task: 'idle', targetName: '', hp: 30, maxHp: 30, hasOverride: false },
+          {
+            eid: builderA,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
+          {
+            eid: builderB,
+            kind: MUDPAW_KIND,
+            task: 'idle',
+            targetName: '',
+            hp: 30,
+            maxHp: 30,
+            hasOverride: false,
+          },
         ],
       } satisfies RosterGroup,
     ];

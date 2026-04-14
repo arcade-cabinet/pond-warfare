@@ -64,14 +64,7 @@ describe('train dispatch', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
     const def = ENTITY_DEFS[MUDPAW_KIND];
 
-    train(
-      world,
-      lodge,
-      MUDPAW_KIND,
-      def.fishCost ?? 0,
-      def.logCost ?? 0,
-      def.foodCost ?? 1,
-    );
+    train(world, lodge, MUDPAW_KIND, def.fishCost ?? 0, def.logCost ?? 0, def.foodCost ?? 1);
 
     expect(world.resources.fish).toBe(500 - (def.fishCost ?? 0));
     expect(TrainingQueue.count[lodge]).toBe(1);
@@ -104,14 +97,7 @@ describe('train dispatch', () => {
     const lodge = createPlayerBuilding(world, EntityKind.Lodge);
     const def = ENTITY_DEFS[MEDIC_KIND];
 
-    train(
-      world,
-      lodge,
-      MEDIC_KIND,
-      def.fishCost ?? 0,
-      def.logCost ?? 0,
-      def.foodCost ?? 1,
-    );
+    train(world, lodge, MEDIC_KIND, def.fishCost ?? 0, def.logCost ?? 0, def.foodCost ?? 1);
 
     expect(TrainingQueue.count[lodge]).toBe(1);
     expect(TrainingQueue.timer[lodge]).toBeGreaterThan(0);

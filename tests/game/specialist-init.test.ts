@@ -13,13 +13,8 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
-import {
-  BOMBARDIER_KIND,
-  FISHER_KIND,
-  GUARD_KIND,
-  LOOKOUT_KIND,
-} from '@/game/live-unit-kinds';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
+import { BOMBARDIER_KIND, FISHER_KIND, GUARD_KIND, LOOKOUT_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 function findPlayerUnit(world: ReturnType<typeof createGameWorld>, kind: EntityKind): number {
