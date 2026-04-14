@@ -5,15 +5,9 @@
  * combat units and assigns them to 'defending' task.
  */
 
-import { Goal } from 'yuka';
 import { query } from 'bitecs';
+import { Goal } from 'yuka';
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { game } from '@/game';
-import {
-  findPlayerLodge,
-  LODGE_REPAIR_LOG_COST,
-  repairPlayerLodge,
-} from '@/game/lodge-repair';
 import {
   EntityTypeTag,
   FactionTag,
@@ -22,14 +16,16 @@ import {
   TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
-import { getGovernorCombatUnits, getGovernorGatherUnits } from '@/governor/roster-units';
+import { game } from '@/game';
+import { findPlayerLodge, LODGE_REPAIR_LOG_COST, repairPlayerLodge } from '@/game/lodge-repair';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
+import { getGovernorCombatUnits, getGovernorGatherUnits } from '@/governor/roster-units';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
-import { canDefendWith } from './combat-roster';
 import { hasCurrentRunTrack } from '../current-run-upgrades';
-import { getGovernorReservedBuildKind } from '../train-policy';
+import { getGovernorReservedBuildKind, shouldPreserveEarlyArmoryLogLane } from '../train-policy';
+import { canDefendWith } from './combat-roster';
 
 /** Find combat units that can be redirected to defense. */
 function availableDefenders(): RosterUnit[] {
@@ -85,7 +81,9 @@ function assignRepairOrder(unit: RosterUnit, target: number): void {
 
 function findRepairer(defenders: RosterUnit[]): RosterUnit | undefined {
   if (defenders.length <= 0) return undefined;
-  const mudpaws = getGovernorGatherUnits(store.unitRoster.value).filter((unit) => !unit.hasOverride);
+  const mudpaws = getGovernorGatherUnits(store.unitRoster.value).filter(
+    (unit) => !unit.hasOverride,
+  );
   for (const task of REPAIR_TASK_PRIORITY) {
     const candidate = mudpaws.find(
       (unit) => unit.task === task && defenders.some((defender) => defender.eid !== unit.eid),
@@ -100,9 +98,25 @@ function shouldPreserveLogsForReservedDefenseBuild(): boolean {
   const towerTrackActive =
     hasCurrentRunTrack('defense_tower_damage') &&
     !store.buildingRoster.value.some((building) => building.kind === EntityKind.Tower);
+  const wallTrackActive =
+    hasCurrentRunTrack('defense_wall_hp') &&
+    !store.buildingRoster.value.some((building) => building.kind === EntityKind.Wall);
+  const demolishTrackActive = hasCurrentRunTrack('siege_demolish_power');
+  const armoryMissing = !store.buildingRoster.value.some(
+    (building) => building.kind === EntityKind.Armory,
+  );
   const preserveForTowerTrack =
     towerTrackActive && (reservedBuildKind === null || reservedBuildKind === EntityKind.Tower);
+  const preserveForArmory = reservedBuildKind === EntityKind.Armory;
+  const preserveForPreArmoryLogLane =
+    shouldPreserveEarlyArmoryLogLane() &&
+    armoryMissing &&
+    !towerTrackActive &&
+    !wallTrackActive &&
+    !demolishTrackActive;
   if (
+    !preserveForPreArmoryLogLane &&
+    !preserveForArmory &&
     reservedBuildKind !== EntityKind.Wall &&
     reservedBuildKind !== EntityKind.Tower &&
     !preserveForTowerTrack
@@ -114,14 +128,26 @@ function shouldPreserveLogsForReservedDefenseBuild(): boolean {
   if (lodgeEid < 0 || Health.max[lodgeEid] <= 0) return false;
 
   const lodgeHpRatio = Health.current[lodgeEid] / Health.max[lodgeEid];
+  if (preserveForPreArmoryLogLane) {
+    if (lodgeHpRatio < 0.95) return false;
+    const armoryLogs = ENTITY_DEFS[EntityKind.Armory].logCost ?? 0;
+    return game.world.resources.logs >= Math.max(0, armoryLogs - 30);
+  }
+  if (preserveForArmory) {
+    // The Armory path is a pre-siege economy pivot. Preserve its log budget while
+    // the Lodge is still healthy, otherwise repeated repairs can consume every
+    // staged log pickup before the wing ever becomes placeable.
+    return lodgeHpRatio >= 0.95;
+  }
   if (preserveForTowerTrack) {
     if (lodgeHpRatio < 0.9) return false;
     const towerLogs = ENTITY_DEFS[EntityKind.Tower].logCost ?? 0;
     return game.world.resources.logs < towerLogs;
   }
 
+  if (reservedBuildKind === null) return false;
   if (lodgeHpRatio < 0.8) return false;
-  const buildLogs = ENTITY_DEFS[reservedBuildKind!].logCost ?? 0;
+  const buildLogs = ENTITY_DEFS[reservedBuildKind].logCost ?? 0;
   const logs = game.world.resources.logs;
   return logs >= Math.max(0, buildLogs - LODGE_REPAIR_LOG_COST);
 }

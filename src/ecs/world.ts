@@ -10,6 +10,10 @@ import type { PlayableFaction } from '@/config/factions';
 import type { SpecialistZoneStat } from '@/config/v3-types';
 import type { WeatherState } from '@/config/weather';
 import type { FortificationState } from '@/ecs/systems/fortification';
+import type {
+  PendingSpecialistAssignment,
+  SpecialistAssignment,
+} from '@/game/specialist-assignment';
 import type { TerrainGrid } from '@/terrain/terrain-grid';
 import type {
   Corpse,
@@ -26,7 +30,6 @@ import type {
 import type { ObjectPool } from '@/utils/pool';
 import type { SeededRandom } from '@/utils/random';
 import type { SpatialHash } from '@/utils/spatial-hash';
-import type { PendingSpecialistAssignment, SpecialistAssignment } from '@/game/specialist-assignment';
 import type { CommanderModifiers } from './world-defaults';
 
 export { type CommanderModifiers, createGameWorld } from './world-defaults';

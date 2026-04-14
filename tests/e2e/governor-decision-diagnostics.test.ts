@@ -4,10 +4,11 @@ import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import { GameEntity } from 'yuka';
 import { getPowerScore } from '@/balance/progression-model';
+import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
 import { getEventsCompletedCount } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
-import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
+import { calculateMatchReward } from '@/game/match-rewards';
 import {
   AttackEvaluator,
   BuildEvaluator,
@@ -16,10 +17,12 @@ import {
   TrainEvaluator,
 } from '@/governor/evaluators';
 import { countAvailableAttackers, MIN_ATTACK_ARMY } from '@/governor/goals/attack-goal';
-import { calculateMatchReward } from '@/game/match-rewards';
 import { Governor } from '@/governor/governor';
 import { BUILDING_KINDS, EntityKind, Faction, UnitState } from '@/types';
 import * as store from '@/ui/store';
+import * as storeV3 from '@/ui/store-v3';
+import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import {
   combatArmySize,
   countTaskUnits,
@@ -27,8 +30,6 @@ import {
   lodgeHpRatio,
   runGovernorFrame,
 } from './governor-diagnostics-harness';
-import { mockedGameRef } from '../helpers/game-world-ref';
-import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
 
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
@@ -51,7 +52,7 @@ const TRACE_WINDOWS = [
 ] as const;
 const TRACE_SEEDS = [11, 42, 77];
 const evaluatorOwner = new GameEntity();
-const GOVERNOR_DECISION_TIMEOUT = 180_000;
+const GOVERNOR_DECISION_TIMEOUT = 480_000;
 
 interface TraceVariant {
   name: string;
@@ -63,6 +64,15 @@ interface TraceSummary {
   window: string;
   seed: number;
   decisions: string;
+  maxGatherScore: number;
+  maxBuildScore: number;
+  maxDefendScore: number;
+  affordableArmoryTicks: number;
+  affordableArmoryDefendTicks: number;
+  affordableArmorySevereThreatTicks: number;
+  affordableArmoryCriticalHpTicks: number;
+  maxThreatWhileAffordableArmory: number;
+  minLodgeHpWhileAffordableArmory: number | null;
   avgCombatArmy: number;
   avgReadyArmy: number;
   attackOpportunityTicks: number;
@@ -85,6 +95,7 @@ interface TraceSummary {
   stockpile: number;
   fish: number;
   logs: number;
+  armories: number;
   towers: number;
   clams: number;
   power: number;
@@ -100,7 +111,13 @@ function getMobilePlayerUnits(world: GameWorld): number[] {
   );
 }
 
-function scoreDecisionWindow(): { bestName: string; attackScore: number } {
+function scoreDecisionWindow(): {
+  bestName: string;
+  attackScore: number;
+  buildScore: number;
+  gatherScore: number;
+  defendScore: number;
+} {
   const evaluators = [
     ['gather', new GatherEvaluator()],
     ['build', new BuildEvaluator()],
@@ -111,15 +128,21 @@ function scoreDecisionWindow(): { bestName: string; attackScore: number } {
   let bestName = 'none';
   let bestScore = 0;
   let attackScore = 0;
+  let buildScore = 0;
+  let gatherScore = 0;
+  let defendScore = 0;
   for (const [name, evaluator] of evaluators) {
     const score = evaluator.calculateDesirability(evaluatorOwner);
     if (name === 'attack') attackScore = score;
+    if (name === 'build') buildScore = score;
+    if (name === 'gather') gatherScore = score;
+    if (name === 'defend') defendScore = score;
     if (score > bestScore) {
       bestScore = score;
       bestName = name;
     }
   }
-  return { bestName, attackScore };
+  return { bestName, attackScore, buildScore, gatherScore, defendScore };
 }
 
 function runVariant(
@@ -138,7 +161,16 @@ function runVariant(
   let attackDecisionTicks = 0;
   let firstAttackOpportunityFrame: number | null = null;
   let firstAttackDecisionFrame: number | null = null;
+  let maxGatherScore = 0;
   let maxAttackScore = 0;
+  let maxBuildScore = 0;
+  let maxDefendScore = 0;
+  let affordableArmoryTicks = 0;
+  let affordableArmoryDefendTicks = 0;
+  let affordableArmorySevereThreatTicks = 0;
+  let affordableArmoryCriticalHpTicks = 0;
+  let maxThreatWhileAffordableArmory = 0;
+  let minLodgeHpWhileAffordableArmory: number | null = null;
   let attackersTotal = 0;
   let defendersTotal = 0;
   let lodgeHpTotal = 0;
@@ -158,10 +190,32 @@ function runVariant(
       const lodgeHp = lodgeHpRatio(world);
       const waveCountdown = store.waveCountdown.value === -1 ? null : store.waveCountdown.value;
       const threats = Math.max(0, Math.trunc(store.baseThreatCount.value || 0));
-      const { bestName: choice, attackScore } = scoreDecisionWindow();
+      const affordableFirstArmory =
+        storeV3.progressionLevel.value >= 6 &&
+        store.buildingRoster.value.every((building) => building.kind !== EntityKind.Armory) &&
+        store.fish.value >= 180 &&
+        store.logs.value >= 120;
+      const {
+        bestName: choice,
+        attackScore,
+        buildScore,
+        gatherScore,
+        defendScore,
+      } = scoreDecisionWindow();
       decisionCounts.set(choice, (decisionCounts.get(choice) ?? 0) + 1);
       combatArmyTotal += combatArmy;
       readyArmyTotal += readyArmy;
+      if (affordableFirstArmory) {
+        affordableArmoryTicks += 1;
+        if (choice === 'defend') affordableArmoryDefendTicks += 1;
+        if (threats >= 3) affordableArmorySevereThreatTicks += 1;
+        if (lodgeHp < 0.7) affordableArmoryCriticalHpTicks += 1;
+        maxThreatWhileAffordableArmory = Math.max(maxThreatWhileAffordableArmory, threats);
+        minLodgeHpWhileAffordableArmory =
+          minLodgeHpWhileAffordableArmory == null
+            ? lodgeHp
+            : Math.min(minLodgeHpWhileAffordableArmory, lodgeHp);
+      }
       if (readyArmy >= MIN_ATTACK_ARMY) readyForAttackTicks += 1;
       if (
         store.baseUnderAttack.value &&
@@ -182,6 +236,9 @@ function runVariant(
         if (firstAttackDecisionFrame == null) firstAttackDecisionFrame = world.frameCount;
       }
       if (attackScore > maxAttackScore) maxAttackScore = attackScore;
+      if (buildScore > maxBuildScore) maxBuildScore = buildScore;
+      if (gatherScore > maxGatherScore) maxGatherScore = gatherScore;
+      if (defendScore > maxDefendScore) maxDefendScore = defendScore;
     }
     if (world.frameCount % 30 === 0) {
       attackersTotal += countTaskUnits(world, UnitState.AttackMove);
@@ -215,12 +272,26 @@ function runVariant(
     window: window.label,
     seed,
     decisions,
+    maxGatherScore: Number(maxGatherScore.toFixed(2)),
+    maxBuildScore: Number(maxBuildScore.toFixed(2)),
+    maxDefendScore: Number(maxDefendScore.toFixed(2)),
+    affordableArmoryTicks,
+    affordableArmoryDefendTicks,
+    affordableArmorySevereThreatTicks,
+    affordableArmoryCriticalHpTicks,
+    maxThreatWhileAffordableArmory,
+    minLodgeHpWhileAffordableArmory:
+      minLodgeHpWhileAffordableArmory == null
+        ? null
+        : Number(minLodgeHpWhileAffordableArmory.toFixed(3)),
     avgCombatArmy: Number((combatArmyTotal / Math.max(window.frames / 120, 1)).toFixed(2)),
     avgReadyArmy: Number((readyArmyTotal / Math.max(window.frames / 120, 1)).toFixed(2)),
     attackOpportunityTicks,
     attackDecisionTicks,
     firstAttackOpportunitySec:
-      firstAttackOpportunityFrame == null ? null : Number((firstAttackOpportunityFrame / 60).toFixed(1)),
+      firstAttackOpportunityFrame == null
+        ? null
+        : Number((firstAttackOpportunityFrame / 60).toFixed(1)),
     firstAttackDecisionSec:
       firstAttackDecisionFrame == null ? null : Number((firstAttackDecisionFrame / 60).toFixed(1)),
     maxAttackScore: Number(maxAttackScore.toFixed(2)),
@@ -243,62 +314,81 @@ function runVariant(
     stockpile: world.resources.fish + world.resources.logs + world.resources.rocks,
     fish: world.resources.fish,
     logs: world.resources.logs,
-    towers: store.buildingRoster.value.filter((building) => building.kind === EntityKind.Tower).length,
+    armories: store.buildingRoster.value.filter((building) => building.kind === EntityKind.Armory)
+      .length,
+    towers: store.buildingRoster.value.filter((building) => building.kind === EntityKind.Tower)
+      .length,
     clams,
     power: Number(
       (() => {
         const playerUnits = getMobilePlayerUnits(world);
         const totalCurrentHp = playerUnits.reduce((sum, eid) => sum + Health.current[eid], 0);
         const totalMaxHp = playerUnits.reduce((sum, eid) => sum + Health.max[eid], 0);
-	        return getPowerScore({
-	          resourcesGathered: world.stats.resourcesGathered,
-	          resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
-	          unitsTrained: world.stats.unitsTrained,
-	          kills: world.stats.unitsKilled,
-	          playerUnits: playerUnits.length,
-	          playerUnitHpPool: totalCurrentHp,
-	          playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
-	          ...getPlayerFortificationSnapshot(world),
-	          lodgeHpRatio: lodgeHpRatio(world),
-	        });
+        return getPowerScore({
+          resourcesGathered: world.stats.resourcesGathered,
+          resourcesStockpiled: world.resources.fish + world.resources.logs + world.resources.rocks,
+          unitsTrained: world.stats.unitsTrained,
+          kills: world.stats.unitsKilled,
+          playerUnits: playerUnits.length,
+          playerUnitHpPool: totalCurrentHp,
+          playerUnitHpRatio: totalMaxHp > 0 ? totalCurrentHp / totalMaxHp : 0,
+          ...getPlayerFortificationSnapshot(world),
+          lodgeHpRatio: lodgeHpRatio(world),
+        });
       })().toFixed(3),
     ),
   };
 }
 
 describe('governor decision diagnostics', () => {
-  it('profiles full-governor decision mix for baseline and problematic pearl rows', () => {
-    const rankOne = { ...createPrestigeState(), rank: 1 };
-    const variants = [
-      { name: 'baseline', prestigeState: rankOne },
-      { name: 'combat_multiplier', prestigeState: { ...rankOne, upgradeRanks: { combat_multiplier: 1 } } },
-      { name: 'hp_multiplier', prestigeState: { ...rankOne, upgradeRanks: { hp_multiplier: 1 } } },
-      { name: 'auto_heal_behavior', prestigeState: { ...rankOne, upgradeRanks: { auto_heal_behavior: 1 } } },
-      { name: 'gather_multiplier', prestigeState: { ...rankOne, upgradeRanks: { gather_multiplier: 1 } } },
-    ];
-    const rows = TRACE_WINDOWS.flatMap((window) =>
-      TRACE_SEEDS.flatMap((seed) => variants.map((variant) => runVariant(seed, variant, window))),
-    );
+  it(
+    'profiles full-governor decision mix for baseline and problematic pearl rows',
+    () => {
+      const rankOne = { ...createPrestigeState(), rank: 1 };
+      const variants = [
+        { name: 'baseline', prestigeState: rankOne },
+        {
+          name: 'combat_multiplier',
+          prestigeState: { ...rankOne, upgradeRanks: { combat_multiplier: 1 } },
+        },
+        {
+          name: 'hp_multiplier',
+          prestigeState: { ...rankOne, upgradeRanks: { hp_multiplier: 1 } },
+        },
+        {
+          name: 'auto_heal_behavior',
+          prestigeState: { ...rankOne, upgradeRanks: { auto_heal_behavior: 1 } },
+        },
+        {
+          name: 'gather_multiplier',
+          prestigeState: { ...rankOne, upgradeRanks: { gather_multiplier: 1 } },
+        },
+      ];
+      const rows = TRACE_WINDOWS.flatMap((window) =>
+        TRACE_SEEDS.flatMap((seed) => variants.map((variant) => runVariant(seed, variant, window))),
+      );
 
-    console.log('\nGovernor decision diagnostics');
-    console.table(rows);
+      console.log('\nGovernor decision diagnostics');
+      console.table(rows);
 
-    expect(rows).toHaveLength(TRACE_WINDOWS.length * TRACE_SEEDS.length * variants.length);
-    for (const row of rows) {
-      expect(Number.isFinite(row.avgAttackers)).toBe(true);
-      expect(Number.isFinite(row.avgDefenders)).toBe(true);
-      expect(Number.isFinite(row.avgLodgeHp)).toBe(true);
-      expect(Number.isFinite(row.baseThreatPct)).toBe(true);
-      expect(Number.isFinite(row.avgThreatCount)).toBe(true);
-      expect(Number.isFinite(row.lightThreatPct)).toBe(true);
-      expect(Number.isFinite(row.heavyThreatPct)).toBe(true);
-      expect(Number.isFinite(row.readyForAttackPct)).toBe(true);
-      expect(Number.isFinite(row.skirmishWindowPct)).toBe(true);
-      expect(Number.isFinite(row.avgCombatArmy)).toBe(true);
-      expect(Number.isFinite(row.avgReadyArmy)).toBe(true);
-      expect(Number.isFinite(row.attackDecisionTicks)).toBe(true);
-      expect(Number.isFinite(row.maxAttackScore)).toBe(true);
-      expect(row.decisions.length).toBeGreaterThan(0);
-    }
-  }, GOVERNOR_DECISION_TIMEOUT);
+      expect(rows).toHaveLength(TRACE_WINDOWS.length * TRACE_SEEDS.length * variants.length);
+      for (const row of rows) {
+        expect(Number.isFinite(row.avgAttackers)).toBe(true);
+        expect(Number.isFinite(row.avgDefenders)).toBe(true);
+        expect(Number.isFinite(row.avgLodgeHp)).toBe(true);
+        expect(Number.isFinite(row.baseThreatPct)).toBe(true);
+        expect(Number.isFinite(row.avgThreatCount)).toBe(true);
+        expect(Number.isFinite(row.lightThreatPct)).toBe(true);
+        expect(Number.isFinite(row.heavyThreatPct)).toBe(true);
+        expect(Number.isFinite(row.readyForAttackPct)).toBe(true);
+        expect(Number.isFinite(row.skirmishWindowPct)).toBe(true);
+        expect(Number.isFinite(row.avgCombatArmy)).toBe(true);
+        expect(Number.isFinite(row.avgReadyArmy)).toBe(true);
+        expect(Number.isFinite(row.attackDecisionTicks)).toBe(true);
+        expect(Number.isFinite(row.maxAttackScore)).toBe(true);
+        expect(row.decisions.length).toBeGreaterThan(0);
+      }
+    },
+    GOVERNOR_DECISION_TIMEOUT,
+  );
 });

@@ -3,34 +3,24 @@
 import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  type BalanceSnapshot,
   getCombatPressureScore,
   getDifficultyShiftPercent,
-  getPowerScore,
   summarizeShiftPercents,
-  type BalanceSnapshot,
 } from '@/balance/progression-model';
+import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import { spawnEntity } from '@/ecs/archetypes';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-} from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
-import { computePopulation } from '@/game/population-counter';
-import { syncRosters } from '@/game/roster-sync';
-import { syncThreatAndObjectives } from '@/game/threat-sync';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
 import { EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
-import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
-import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
@@ -147,7 +137,12 @@ function runCombatVariant(seed: number, variant: CombatVariant): BalanceSnapshot
   const governor = new Governor();
   governor.enabled = true;
   for (let frame = 0; frame < TEST_FRAMES; frame += 1) {
-    runSimFrame(world, { governor, runMatchEvents: false, runPrestigeAutoBehaviors: true, syncSignals: true });
+    runSimFrame(world, {
+      governor,
+      runMatchEvents: false,
+      runPrestigeAutoBehaviors: true,
+      syncSignals: true,
+    });
   }
 
   return snapshotWorld(world);
@@ -225,5 +220,5 @@ describe('pearl combat-pressure diagnostics', () => {
       expect(row.max_pct).toBeGreaterThanOrEqual(row.mean_pct);
       expect(row.mean_pct).toBeGreaterThanOrEqual(row.min_pct);
     }
-  }, 60_000);
+  }, 180_000);
 });

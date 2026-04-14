@@ -7,7 +7,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { REPAIR_TIMER } from '@/constants';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   Carrying,
@@ -24,6 +23,7 @@ import {
 } from '@/ecs/components';
 import { buildingSystem } from '@/ecs/systems/building';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { getPlayerRepairTimer } from '@/game/repair-timer';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 

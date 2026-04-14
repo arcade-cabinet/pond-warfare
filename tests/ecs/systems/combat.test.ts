@@ -193,7 +193,13 @@ describe('combatSystem', () => {
     const baselineWorld = createGameWorld();
     baselineWorld.spatialHash = undefined as never;
     const baselineAttacker = createCombatUnit(baselineWorld, 100, 100, Faction.Player, SAPPER_KIND);
-    const baselineTarget = createCombatUnit(baselineWorld, 110, 100, Faction.Enemy, EntityKind.Gator);
+    const baselineTarget = createCombatUnit(
+      baselineWorld,
+      110,
+      100,
+      Faction.Enemy,
+      EntityKind.Gator,
+    );
     UnitStateMachine.state[baselineAttacker] = UnitState.Attacking;
     UnitStateMachine.targetEntity[baselineAttacker] = baselineTarget;
     Combat.attackCooldown[baselineAttacker] = 0;

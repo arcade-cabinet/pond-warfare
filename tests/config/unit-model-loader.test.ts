@@ -64,7 +64,9 @@ describe('unit-model config', () => {
 
   it('flags the legacy split-baseline and free auto-deploy model as obsolete', () => {
     const obsolete = getUnitModelConfig().obsolete_assumptions;
-    expect(obsolete).toContain('free match-start auto-deploy as the primary Pearl specialist model');
+    expect(obsolete).toContain(
+      'free match-start auto-deploy as the primary Pearl specialist model',
+    );
     expect(obsolete).toContain('separate baseline manual Gatherer Fighter and Scout units');
   });
 

@@ -11,6 +11,8 @@
  */
 
 import { useMemo } from 'preact/hooks';
+import { BuildStampFooter } from '@/ui/components/BuildStampFooter';
+import { COLORS } from '@/ui/design-tokens';
 import { Frame9Slice } from './components/frame';
 import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';
@@ -255,6 +257,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 />
               </div>
             </PondAccordion>
+
+            <div
+              class="mt-4 pt-3 border-t text-center"
+              style={{ borderColor: `${COLORS.weatheredSteel}66` }}
+            >
+              <BuildStampFooter includeBuildLabel={false} class="tracking-[0.14em]" />
+            </div>
           </div>
         </Frame9Slice>
       </div>

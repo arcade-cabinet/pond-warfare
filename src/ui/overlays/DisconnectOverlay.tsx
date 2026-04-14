@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { disconnectMultiplayer } from '@/net/multiplayer-controller';
+import { BuildStampFooter } from '@/ui/components/BuildStampFooter';
 import { MenuButton } from '../menu-button';
 import { menuState } from '../store';
 import { multiplayerDisconnected } from '../store-multiplayer';
@@ -75,6 +76,8 @@ export function DisconnectOverlay() {
           <MenuButton label="Continue Solo" wide onClick={handleContinueSolo} />
           <MenuButton label="Return to Menu" wide onClick={handleReturnToMenu} />
         </div>
+
+        <BuildStampFooter />
       </div>
     </div>
   );

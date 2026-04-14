@@ -19,7 +19,9 @@ describe('progression model', () => {
     const stageThreeMatchEight = getBaselinePressureScore(3, 8);
     const stageThreeMatchNine = getBaselinePressureScore(3, 9);
 
-    expect(stageThreeMatchTwo - stageThreeMatchOne).toBeGreaterThan(stageThreeMatchThree - stageThreeMatchTwo);
+    expect(stageThreeMatchTwo - stageThreeMatchOne).toBeGreaterThan(
+      stageThreeMatchThree - stageThreeMatchTwo,
+    );
     expect(stageThreeMatchThree - stageThreeMatchTwo).toBeGreaterThan(
       stageThreeMatchNine - stageThreeMatchEight,
     );
@@ -63,7 +65,9 @@ describe('progression model', () => {
 
     expect(getPowerScore(higherReward)).toBe(getPowerScore(baseline));
     expect(getRewardScore(higherReward)).toBeGreaterThan(getRewardScore(baseline));
-    expect(getMetaProgressionScore(higherReward)).toBeGreaterThan(getMetaProgressionScore(baseline));
+    expect(getMetaProgressionScore(higherReward)).toBeGreaterThan(
+      getMetaProgressionScore(baseline),
+    );
   });
 
   it('credits retained stockpile as in-match power', () => {
@@ -101,7 +105,9 @@ describe('progression model', () => {
     };
 
     expect(getPowerScore(riskyEconomy)).toBeGreaterThan(0);
-    expect(getCombatPressureScore(stableDefense)).toBeGreaterThan(getCombatPressureScore(riskyEconomy));
+    expect(getCombatPressureScore(stableDefense)).toBeGreaterThan(
+      getCombatPressureScore(riskyEconomy),
+    );
   });
 
   it('credits healthier armies in the broad power score', () => {

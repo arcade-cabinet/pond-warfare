@@ -6,7 +6,6 @@
 
 import { addComponent, addEntity, entityExists } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -21,7 +20,8 @@ import {
 } from '@/ecs/components';
 import { healthSystem } from '@/ecs/systems/health';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { Faction, ResourceType, UnitState } from '@/types';
 
 function createUnit(world: GameWorld, hp: number, maxHp: number, faction: Faction): number {
   const eid = addEntity(world.ecs);

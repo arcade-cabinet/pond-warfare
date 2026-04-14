@@ -27,7 +27,10 @@ export function UpgradeWebCategoryContent({
         <LinearUpgradeCard nextNode={nextNode} clams={clams} onPurchase={onPurchaseNode} />
       ) : (
         <div class="py-1 text-center">
-          <span class="font-heading text-sm" style={{ color: complete ? COLORS.mossGreen : COLORS.sepiaText }}>
+          <span
+            class="font-heading text-sm"
+            style={{ color: complete ? COLORS.mossGreen : COLORS.sepiaText }}
+          >
             {complete ? 'Linear upgrades complete' : 'No linear upgrades available yet'}
           </span>
         </div>
@@ -119,7 +122,10 @@ function DiamondUpgradeRow({
       }}
     >
       <div>
-        <div class="font-heading text-sm" style={{ color: purchased ? COLORS.mossGreen : COLORS.sepiaText }}>
+        <div
+          class="font-heading text-sm"
+          style={{ color: purchased ? COLORS.mossGreen : COLORS.sepiaText }}
+        >
           {diamond.label}
         </div>
         <div class="font-game text-xs mt-1" style={{ color: COLORS.weatheredSteel }}>
@@ -136,7 +142,11 @@ function DiamondUpgradeRow({
         class="rts-btn w-full py-2 font-heading text-sm"
         style={{
           color: purchased ? COLORS.mossGreen : canBuy ? COLORS.grittyGold : COLORS.weatheredSteel,
-          borderColor: purchased ? COLORS.mossGreen : canBuy ? COLORS.grittyGold : COLORS.weatheredSteel,
+          borderColor: purchased
+            ? COLORS.mossGreen
+            : canBuy
+              ? COLORS.grittyGold
+              : COLORS.weatheredSteel,
           opacity: purchased || canBuy ? 1 : 0.6,
           cursor: canBuy ? 'pointer' : 'not-allowed',
           minHeight: '44px',
@@ -151,7 +161,11 @@ function DiamondUpgradeRow({
               : `${diamond.label} locked`
         }
       >
-        {purchased ? 'Purchased' : canBuy ? `Unlock -- ${diamond.cost}C` : `${diamond.cost}C (locked)`}
+        {purchased
+          ? 'Purchased'
+          : canBuy
+            ? `Unlock -- ${diamond.cost}C`
+            : `${diamond.cost}C (locked)`}
       </button>
     </div>
   );

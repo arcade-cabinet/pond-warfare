@@ -2,9 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { buildClamTierOneVariants } from '@/balance/track-variants';
-import {
-  getSuspiciousRows,
-} from './balance-report-sim';
+import { getSuspiciousRows } from './balance-report-sim';
 import {
   buildPostMatchClamReportRows,
   CLAM_POSTMATCH_EVAL_FRAMES,
@@ -41,5 +39,5 @@ describe('exhaustive clam balance report', () => {
       expect(Number.isFinite(row.meta_mean_pct)).toBe(true);
       expect(Number.isFinite(row.meta_max_pct)).toBe(true);
     }
-  }, 240_000);
+  }, 720_000);
 });

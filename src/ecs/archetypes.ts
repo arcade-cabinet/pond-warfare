@@ -1,17 +1,17 @@
 import { addComponent, addEntity } from 'bitecs';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
+  isMudpawKind,
+  isPlayerSiegeKind,
   LOOKOUT_KIND,
   LOOKOUT_SPRITE_ID,
   MEDIC_KIND,
   MEDIC_SPRITE_ID,
   MUDPAW_KIND,
   MUDPAW_SPRITE_ID,
-  SHARED_HEAVY_CHASSIS_KIND,
-  isPlayerSiegeKind,
-  isMudpawKind,
   SABOTEUR_SPRITE_ID,
   SAPPER_SPRITE_ID,
+  SHARED_HEAVY_CHASSIS_KIND,
   SHARED_SIEGE_CHASSIS_KIND,
 } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, type ResourceType, SpriteId } from '@/types';
@@ -223,14 +223,14 @@ export function spawnEntity(
     addComponent(world.ecs, eid, Velocity);
     let speed = def.speed;
     if (faction === Faction.Player && world.tech.swiftPaws) speed *= 1.15;
-    if (
-      faction === Faction.Player &&
-      !isMudpawKind(kind) &&
-      world.playerUnitSpeedMultiplier > 1
-    ) {
+    if (faction === Faction.Player && !isMudpawKind(kind) && world.playerUnitSpeedMultiplier > 1) {
       speed *= world.playerUnitSpeedMultiplier;
     }
-    if (faction === Faction.Player && isPlayerSiegeKind(kind) && world.playerSiegeSpeedMultiplier > 1) {
+    if (
+      faction === Faction.Player &&
+      isPlayerSiegeKind(kind) &&
+      world.playerSiegeSpeedMultiplier > 1
+    ) {
       speed *= world.playerSiegeSpeedMultiplier;
     }
     Velocity.speed[eid] = speed;
@@ -242,7 +242,12 @@ export function spawnEntity(
     if (faction === Faction.Player && damage > 0 && world.playerUnitDamageMultiplier > 1) {
       damage = Math.round(damage * world.playerUnitDamageMultiplier);
     }
-    if (faction === Faction.Player && damage > 0 && isPlayerSiegeKind(kind) && world.playerSiegeDamageMultiplier > 1) {
+    if (
+      faction === Faction.Player &&
+      damage > 0 &&
+      isPlayerSiegeKind(kind) &&
+      world.playerSiegeDamageMultiplier > 1
+    ) {
       damage = Math.round(damage * world.playerSiegeDamageMultiplier);
     }
     // Apply enemy stat multiplier to damage
@@ -253,7 +258,12 @@ export function spawnEntity(
     let range = def.attackRange;
     if (kind === EntityKind.Saboteur && faction === Faction.Player && world.tech.eagleEye)
       range += 50;
-    if (faction === Faction.Player && range > 0 && isPlayerSiegeKind(kind) && world.playerSiegeRangeMultiplier > 1) {
+    if (
+      faction === Faction.Player &&
+      range > 0 &&
+      isPlayerSiegeKind(kind) &&
+      world.playerSiegeRangeMultiplier > 1
+    ) {
       range = Math.round(range * world.playerSiegeRangeMultiplier);
     }
     Combat.attackRange[eid] = range;

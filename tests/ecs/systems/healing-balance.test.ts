@@ -9,7 +9,6 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MEDIC_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   Carrying,
@@ -30,6 +29,7 @@ import {
   processSupportAura,
 } from '@/ecs/systems/health/healing';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function makeUnit(

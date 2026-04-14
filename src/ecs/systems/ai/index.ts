@@ -29,9 +29,9 @@ import { enemyCombatTick } from './enemy-combat';
 import { enemyCommanderTick } from './enemy-commander';
 import { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 import { enemyEconomyTick } from './enemy-economy';
-import { enemySupportTick } from './enemy-support';
 import { enemyRaiderTick } from './enemy-raider';
 import { enemySapperTick } from './enemy-sapper';
+import { enemySupportTick } from './enemy-support';
 import { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';
 
 export function aiSystem(world: GameWorld): void {
@@ -54,9 +54,9 @@ export { enemyCommanderTick } from './enemy-commander';
 export { bossWaveLogic, nestDefenseReinforcement } from './enemy-defense';
 // Re-export sub-module functions for direct access if needed
 export { enemyEconomyTick } from './enemy-economy';
-export { enemySupportTick } from './enemy-support';
 export { enemyRaiderTick } from './enemy-raider';
 export { enemySapperTick } from './enemy-sapper';
+export { enemySupportTick } from './enemy-support';
 export { enemyTrainingQueueProcess, enemyTrainingTick } from './enemy-training';
 export {
   countEnemyArmy,

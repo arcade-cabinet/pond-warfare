@@ -47,22 +47,22 @@ export function useCommanderAbility(world: GameWorld): boolean {
   // Execute ability-specific logic
   const activated = (() => {
     switch (world.commanderId) {
-    case 'marshal':
-      return activateCharge(world);
-    case 'sage':
-      return activateEureka(world);
-    case 'warden':
-      return activateFortify(world);
-    case 'tidekeeper':
-      return activateTidalWave(world);
-    case 'shadowfang':
-      return activateVanish(world);
-    case 'ironpaw':
-      return activateIronWill(world);
-    case 'stormcaller':
-      return activateThunderStrike(world);
-    default:
-      return false;
+      case 'marshal':
+        return activateCharge(world);
+      case 'sage':
+        return activateEureka(world);
+      case 'warden':
+        return activateFortify(world);
+      case 'tidekeeper':
+        return activateTidalWave(world);
+      case 'shadowfang':
+        return activateVanish(world);
+      case 'ironpaw':
+        return activateIronWill(world);
+      case 'stormcaller':
+        return activateThunderStrike(world);
+      default:
+        return false;
     }
   })();
 

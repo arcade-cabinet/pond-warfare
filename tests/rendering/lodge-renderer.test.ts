@@ -31,6 +31,15 @@ function makeState(overrides: Partial<LodgeVisualState> = {}): LodgeVisualState 
   };
 }
 
+function requireGlow(rank: number) {
+  const glow = getPrestigeGlow(rank);
+  expect(glow).toBeDefined();
+  if (!glow) {
+    throw new Error(`Expected prestige glow for rank ${rank}`);
+  }
+  return glow;
+}
+
 // ── Wing rendering tests ──────────────────────────────────────────
 
 describe('Lodge wing rendering', () => {
@@ -113,9 +122,9 @@ describe('Prestige glow', () => {
   });
 
   it('should return brighter glow for higher ranks', () => {
-    const glow1 = getPrestigeGlow(1)!;
-    const glow5 = getPrestigeGlow(5)!;
-    const glow10 = getPrestigeGlow(10)!;
+    const glow1 = requireGlow(1);
+    const glow5 = requireGlow(5);
+    const glow10 = requireGlow(10);
 
     expect(glow5.radius).toBeGreaterThan(glow1.radius);
     expect(glow10.radius).toBeGreaterThan(glow5.radius);

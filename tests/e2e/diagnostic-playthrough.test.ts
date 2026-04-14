@@ -365,162 +365,169 @@ describe('Governor Diagnostic Playthrough', () => {
     progressionLevel.value = 0;
   });
 
-  it.each([
-    1, 2, 3, 4, 5, 6,
-  ])('tier %i: Governor plays 1800 frames (~30s) with diagnostics', (stage) => {
-    progressionLevel.value = stage;
-
-    // Create world with peace timer disabled so AI engages immediately
-    const world = createTestWorld({ stage, seed: 42 });
-    world.peaceTimer = 0; // No grace period — enemies active from frame 1
-    mockedGameRef.world = world; // Wire Governor goals to this world
-    const pg = createTestPanelGrid(stage);
-    const layout = generateVerticalMapLayout(pg, new SeededRandom(42));
-
-    // Spawn all entities
-    spawnVerticalEntities(world, layout, new SeededRandom(99));
-
-    // Create and enable Governor (player AI)
-    const governor = new Governor();
-    governor.enabled = true;
-
-    // Initial snapshot
-    const initial = snap(world, 0);
-    const snaps: Snap[] = [initial];
-
-    // Run 1800 frames (~30 seconds of gameplay at 60 FPS)
-    const TOTAL_FRAMES = 1800;
-    for (let f = 0; f < TOTAL_FRAMES; f++) {
-      runFrame(world, governor);
-
-      // Snapshot every 300 frames (5 seconds)
-      if ((f + 1) % 300 === 0) {
-        snaps.push(snap(world, f + 1));
-      }
-    }
-
-    // Final snapshot
-    const final = snaps[snaps.length - 1];
-
-    // ── INVARIANTS ──────────────────────────────────────────
-    expect(noNaNPositions(world)).toBe(true);
-
-    // Lodge and Commander survive 30 seconds
-    expect(final.lodgeHp).toBeGreaterThan(0);
-    expect(final.cmdrHp).toBeGreaterThan(0);
-
-    // Game still playing (no instant loss in 30s)
-    expect(world.state).toBe('playing');
-
-    // ── ACTIVITY CHECKS ─────────────────────────────────────
-    // After 30 seconds, SOMETHING should have happened
-    const _anyActivity =
-      final.kills > 0 ||
-      final.lost > 0 ||
-      final.trained > 0 ||
-      final.gathered > 0 ||
-      final.fish !== initial.fish ||
-      final.enemyUnits !== initial.enemyUnits;
-
-    // At tier 2+ with enemies, enemy AI should be active
-    if (stage >= 2) {
-      // Enemy AI should have trained units or gathered resources
-      const enemyGrew = final.enemyUnits > initial.enemyUnits;
-      const enemyGathered = final.enemyFish !== initial.enemyFish;
-      console.log(`  [Tier ${stage}] Enemy grew: ${enemyGrew}, Enemy eco: ${enemyGathered}`);
-    }
-
-    // Resource distance diagnostic
-    const lodgeEids = query(world.ecs, [Position, EntityTypeTag, FactionTag]).filter(
-      (eid) =>
-        EntityTypeTag.kind[eid] === EntityKind.Lodge && FactionTag.faction[eid] === Faction.Player,
-    );
-    if (lodgeEids.length > 0) {
-      const lx = Position.x[lodgeEids[0]];
-      const ly = Position.y[lodgeEids[0]];
-      const resEids = query(world.ecs, [Position, Resource, EntityTypeTag]).filter(
-        (eid) => Resource.amount[eid] > 0,
-      );
-      const dists = resEids.map((eid) => {
-        const dx = Position.x[eid] - lx;
-        const dy = Position.y[eid] - ly;
-        return Math.round(Math.sqrt(dx * dx + dy * dy));
-      });
-      dists.sort((a, b) => a - b);
-      console.log(`  Resource distances from Lodge: ${dists.slice(0, 5).join(', ')}px`);
-    }
-
-    // Print full diagnostic table
-    printDiag(stage, pg.getActivePanels(), world.waveSurvivalMode, world, snaps);
-  }, DIAGNOSTIC_PLAYTHROUGH_TIMEOUT);
-
-  it('entity roster at spawn for each tier', () => {
-    const NAMES: Record<number, string> = {
-      [EntityKind.Lodge]: 'Lodge',
-      [EntityKind.PredatorNest]: 'PredNest',
-      [EntityKind.Commander]: 'Cmdr',
-      [MUDPAW_KIND]: 'Mudpaw',
-      [MEDIC_KIND]: 'Medic',
-      [SAPPER_KIND]: 'Sapper',
-      [EntityKind.Gator]: 'Gator',
-      [EntityKind.Snake]: 'Snake',
-      [EntityKind.Clambed]: 'Fish',
-      [EntityKind.PearlBed]: 'Rocks',
-      [EntityKind.Cattail]: 'Logs',
-      [EntityKind.Frog]: 'Frog',
-      [LOOKOUT_KIND]: 'Lookout',
-    };
-
-    console.log(`\n${'═'.repeat(80)}`);
-    console.log('  SPAWN ROSTER BY TIER');
-    console.log('═'.repeat(80));
-
-    for (let stage = 1; stage <= 6; stage++) {
+  it.each([1, 2, 3, 4, 5, 6])(
+    'tier %i: Governor plays 1800 frames (~30s) with diagnostics',
+    (stage) => {
       progressionLevel.value = stage;
-      const w = createTestWorld({ stage, seed: 42 });
+
+      // Create world with peace timer disabled so AI engages immediately
+      const world = createTestWorld({ stage, seed: 42 });
+      world.peaceTimer = 0; // No grace period — enemies active from frame 1
+      mockedGameRef.world = world; // Wire Governor goals to this world
       const pg = createTestPanelGrid(stage);
+      const layout = generateVerticalMapLayout(pg, new SeededRandom(42));
+
+      // Spawn all entities
+      spawnVerticalEntities(world, layout, new SeededRandom(99));
+
+      // Create and enable Governor (player AI)
+      const governor = new Governor();
+      governor.enabled = true;
+
+      // Initial snapshot
+      const initial = snap(world, 0);
+      const snaps: Snap[] = [initial];
+
+      // Run 1800 frames (~30 seconds of gameplay at 60 FPS)
+      const TOTAL_FRAMES = 1800;
+      for (let f = 0; f < TOTAL_FRAMES; f++) {
+        runFrame(world, governor);
+
+        // Snapshot every 300 frames (5 seconds)
+        if ((f + 1) % 300 === 0) {
+          snaps.push(snap(world, f + 1));
+        }
+      }
+
+      // Final snapshot
+      const final = snaps[snaps.length - 1];
+
+      // ── INVARIANTS ──────────────────────────────────────────
+      expect(noNaNPositions(world)).toBe(true);
+
+      // Lodge and Commander survive 30 seconds
+      expect(final.lodgeHp).toBeGreaterThan(0);
+      expect(final.cmdrHp).toBeGreaterThan(0);
+
+      // Game still playing (no instant loss in 30s)
+      expect(world.state).toBe('playing');
+
+      // ── ACTIVITY CHECKS ─────────────────────────────────────
+      // After 30 seconds, SOMETHING should have happened
+      const _anyActivity =
+        final.kills > 0 ||
+        final.lost > 0 ||
+        final.trained > 0 ||
+        final.gathered > 0 ||
+        final.fish !== initial.fish ||
+        final.enemyUnits !== initial.enemyUnits;
+
+      // At tier 2+ with enemies, enemy AI should be active
+      if (stage >= 2) {
+        // Enemy AI should have trained units or gathered resources
+        const enemyGrew = final.enemyUnits > initial.enemyUnits;
+        const enemyGathered = final.enemyFish !== initial.enemyFish;
+        console.log(`  [Tier ${stage}] Enemy grew: ${enemyGrew}, Enemy eco: ${enemyGathered}`);
+      }
+
+      // Resource distance diagnostic
+      const lodgeEids = query(world.ecs, [Position, EntityTypeTag, FactionTag]).filter(
+        (eid) =>
+          EntityTypeTag.kind[eid] === EntityKind.Lodge &&
+          FactionTag.faction[eid] === Faction.Player,
+      );
+      if (lodgeEids.length > 0) {
+        const lx = Position.x[lodgeEids[0]];
+        const ly = Position.y[lodgeEids[0]];
+        const resEids = query(world.ecs, [Position, Resource, EntityTypeTag]).filter(
+          (eid) => Resource.amount[eid] > 0,
+        );
+        const dists = resEids.map((eid) => {
+          const dx = Position.x[eid] - lx;
+          const dy = Position.y[eid] - ly;
+          return Math.round(Math.sqrt(dx * dx + dy * dy));
+        });
+        dists.sort((a, b) => a - b);
+        console.log(`  Resource distances from Lodge: ${dists.slice(0, 5).join(', ')}px`);
+      }
+
+      // Print full diagnostic table
+      printDiag(stage, pg.getActivePanels(), world.waveSurvivalMode, world, snaps);
+    },
+    DIAGNOSTIC_PLAYTHROUGH_TIMEOUT,
+  );
+
+  it(
+    'entity roster at spawn for each tier',
+    () => {
+      const NAMES: Record<number, string> = {
+        [EntityKind.Lodge]: 'Lodge',
+        [EntityKind.PredatorNest]: 'PredNest',
+        [EntityKind.Commander]: 'Cmdr',
+        [MUDPAW_KIND]: 'Mudpaw',
+        [MEDIC_KIND]: 'Medic',
+        [SAPPER_KIND]: 'Sapper',
+        [EntityKind.Gator]: 'Gator',
+        [EntityKind.Snake]: 'Snake',
+        [EntityKind.Clambed]: 'Fish',
+        [EntityKind.PearlBed]: 'Rocks',
+        [EntityKind.Cattail]: 'Logs',
+        [EntityKind.Frog]: 'Frog',
+        [LOOKOUT_KIND]: 'Lookout',
+      };
+
+      console.log(`\n${'═'.repeat(80)}`);
+      console.log('  SPAWN ROSTER BY TIER');
+      console.log('═'.repeat(80));
+
+      for (let stage = 1; stage <= 6; stage++) {
+        progressionLevel.value = stage;
+        const w = createTestWorld({ stage, seed: 42 });
+        const pg = createTestPanelGrid(stage);
+        spawnVerticalEntities(
+          w,
+          generateVerticalMapLayout(pg, new SeededRandom(42)),
+          new SeededRandom(99),
+        );
+
+        const roster = new Map<string, number>();
+        for (const eid of query(w.ecs, [EntityTypeTag, FactionTag, Health])) {
+          const k = EntityTypeTag.kind[eid];
+          const f = FactionTag.faction[eid];
+          const label =
+            (f === Faction.Player ? 'P' : f === Faction.Enemy ? 'E' : 'N') +
+            ':' +
+            (NAMES[k] ?? `Kind${k}`);
+          roster.set(label, (roster.get(label) ?? 0) + 1);
+        }
+
+        const entries = [...roster.entries()].sort(([a], [b]) => a.localeCompare(b));
+        console.log(
+          `  T${stage} [${pg.getActivePanels().join(',')}]: ${entries.map(([k, v]) => `${k}×${v}`).join('  ')}`,
+        );
+        console.log(
+          `     Fish: ${w.resources.fish}  Rocks: ${w.resources.rocks}  Logs: ${w.resources.logs}`,
+        );
+      }
+      console.log(`${'═'.repeat(80)}\n`);
+
+      // Sanity: tier 6 has more entities than tier 1
+      progressionLevel.value = 1;
+      const w1 = createTestWorld({ stage: 1, seed: 42 });
       spawnVerticalEntities(
-        w,
-        generateVerticalMapLayout(pg, new SeededRandom(42)),
+        w1,
+        generateVerticalMapLayout(createTestPanelGrid(1), new SeededRandom(42)),
         new SeededRandom(99),
       );
-
-      const roster = new Map<string, number>();
-      for (const eid of query(w.ecs, [EntityTypeTag, FactionTag, Health])) {
-        const k = EntityTypeTag.kind[eid];
-        const f = FactionTag.faction[eid];
-        const label =
-          (f === Faction.Player ? 'P' : f === Faction.Enemy ? 'E' : 'N') +
-          ':' +
-          (NAMES[k] ?? `Kind${k}`);
-        roster.set(label, (roster.get(label) ?? 0) + 1);
-      }
-
-      const entries = [...roster.entries()].sort(([a], [b]) => a.localeCompare(b));
-      console.log(
-        `  T${stage} [${pg.getActivePanels().join(',')}]: ${entries.map(([k, v]) => `${k}×${v}`).join('  ')}`,
+      progressionLevel.value = 6;
+      const w6 = createTestWorld({ stage: 6, seed: 42 });
+      spawnVerticalEntities(
+        w6,
+        generateVerticalMapLayout(createTestPanelGrid(6), new SeededRandom(42)),
+        new SeededRandom(99),
       );
-      console.log(
-        `     Fish: ${w.resources.fish}  Rocks: ${w.resources.rocks}  Logs: ${w.resources.logs}`,
-      );
-    }
-    console.log(`${'═'.repeat(80)}\n`);
-
-    // Sanity: tier 6 has more entities than tier 1
-    progressionLevel.value = 1;
-    const w1 = createTestWorld({ stage: 1, seed: 42 });
-    spawnVerticalEntities(
-      w1,
-      generateVerticalMapLayout(createTestPanelGrid(1), new SeededRandom(42)),
-      new SeededRandom(99),
-    );
-    progressionLevel.value = 6;
-    const w6 = createTestWorld({ stage: 6, seed: 42 });
-    spawnVerticalEntities(
-      w6,
-      generateVerticalMapLayout(createTestPanelGrid(6), new SeededRandom(42)),
-      new SeededRandom(99),
-    );
-    expect(query(w6.ecs, [Health]).length).toBeGreaterThan(query(w1.ecs, [Health]).length);
-  }, DIAGNOSTIC_PLAYTHROUGH_TIMEOUT);
+      expect(query(w6.ecs, [Health]).length).toBeGreaterThan(query(w1.ecs, [Health]).length);
+    },
+    DIAGNOSTIC_PLAYTHROUGH_TIMEOUT,
+  );
 });

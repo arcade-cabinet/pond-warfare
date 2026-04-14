@@ -3,11 +3,11 @@ import {
   MEDIC_KIND,
   MUDPAW_KIND,
   SABOTEUR_KIND,
+  SAPPER_KIND,
   SHARED_HEAVY_CHASSIS_KIND,
   SHARED_SABOTEUR_CHASSIS_KIND,
-  SHARED_SIEGE_CHASSIS_KIND,
   SHARED_SAPPER_CHASSIS_KIND,
-  SAPPER_KIND,
+  SHARED_SIEGE_CHASSIS_KIND,
 } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import { BUILDING_DEFS } from './buildings';

@@ -21,7 +21,7 @@ import {
 import { rankFromKills, veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { SAPPER_KIND } from '@/game/live-unit-kinds';
-import { EntityKind, Faction } from '@/types';
+import { type EntityKind, Faction } from '@/types';
 
 function createVetUnit(
   world: GameWorld,

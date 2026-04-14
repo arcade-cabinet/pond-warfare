@@ -1,10 +1,10 @@
 import { addComponent, query } from 'bitecs';
 import { getUnitDef } from '@/config/config-loader';
+import { spawnEntity } from '@/ecs/archetypes';
 import {
   AutonomousSpecialist,
   Combat,
   EntityTypeTag,
-  FactionTag,
   Health,
   IsResource,
   Position,
@@ -19,10 +19,6 @@ import {
 import { startPatrol } from '@/ecs/systems/patrol';
 import type { GameWorld } from '@/ecs/world';
 import {
-  buildSpecialistAreaPatrol,
-  shouldRefreshSpecialistPatrol,
-} from '@/game/specialist-assignment-queries';
-import {
   BOMBARDIER_KIND,
   DIGGER_KIND,
   FISHER_KIND,
@@ -32,12 +28,12 @@ import {
   RANGER_KIND,
   SHAMAN_KIND,
 } from '@/game/live-unit-kinds';
+import { getSpecialistAssignment, registerSpecialistEntity } from '@/game/specialist-assignment';
 import {
-  getSpecialistAssignment,
-  registerSpecialistEntity,
-} from '@/game/specialist-assignment';
+  buildSpecialistAreaPatrol,
+  shouldRefreshSpecialistPatrol,
+} from '@/game/specialist-assignment-queries';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
-import { spawnEntity } from '@/ecs/archetypes';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 export type SpecialistSpawnMode = 'blueprint' | 'snapshot_harness';
@@ -177,7 +173,8 @@ function initializeSpecialistBehavior(
   runtimeId: string,
   lodgeEid: number,
 ): void {
-  const gatherTask = SPECIALIST_GATHER_TASK_MAP[runtimeId as keyof typeof SPECIALIST_GATHER_TASK_MAP];
+  const gatherTask =
+    SPECIALIST_GATHER_TASK_MAP[runtimeId as keyof typeof SPECIALIST_GATHER_TASK_MAP];
   if (gatherTask) {
     dispatchTaskOverride(world, eid, gatherTask);
     return;

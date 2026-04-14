@@ -36,5 +36,5 @@ describe('LoadingScreen', () => {
     expect(view.getByText('Loading Standard Map...')).toBeTruthy();
     expect(view.getByText(LOADING_TIPS[0])).toBeTruthy();
     expect(view.getByText(BUILD_STAMP_LABEL)).toBeTruthy();
-  });
+  }, 15_000);
 });

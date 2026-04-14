@@ -16,7 +16,9 @@ export interface PlayerFortificationSnapshot {
 }
 
 export function getPlayerFortificationSnapshot(world: GameWorld): PlayerFortificationSnapshot {
-  const fortifications = Array.from(query(world.ecs, [Health, FactionTag, EntityTypeTag, Building])).filter(
+  const fortifications = Array.from(
+    query(world.ecs, [Health, FactionTag, EntityTypeTag, Building]),
+  ).filter(
     (eid) =>
       FactionTag.faction[eid] === Faction.Player &&
       PLAYER_FORTIFICATION_KINDS.has(EntityTypeTag.kind[eid] as EntityKind) &&

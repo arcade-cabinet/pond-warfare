@@ -1,15 +1,12 @@
-import type { ReplayRecorder } from '@/replay';
 import type { GameWorld } from '@/ecs/world';
-import type { ActionButtonDef } from '@/ui/action-panel';
-import {
-  getActiveSpecialistCount,
-  getSpecialistBlueprintCap,
-} from '@/game/specialist-blueprints';
+import { getActiveSpecialistCount, getSpecialistBlueprintCap } from '@/game/specialist-blueprints';
 import {
   canSpawnSpecialistFromLodge,
   getSpecialistSpawnCost,
   spawnSpecialistFromLodge,
 } from '@/game/specialist-training';
+import type { ReplayRecorder } from '@/replay';
+import type { ActionButtonDef } from '@/ui/action-panel';
 
 interface SpecialistButtonSpec {
   unitId: string;

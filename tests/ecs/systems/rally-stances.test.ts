@@ -34,6 +34,14 @@ import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 // ---- Helpers ----
 
+function requireEntity<T>(value: T | undefined, message: string): T {
+  expect(value).toBeDefined();
+  if (value === undefined) {
+    throw new Error(message);
+  }
+  return value;
+}
+
 function createTrainingBuilding(world: GameWorld, kind: EntityKind, x: number, y: number): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
@@ -129,13 +137,12 @@ describe('rally points', () => {
     const units = query(world.ecs, [FactionTag, EntityTypeTag, UnitStateMachine]);
     const sapper = units.find(
       (eid: number) =>
-        EntityTypeTag.kind[eid] === SAPPER_KIND &&
-        FactionTag.faction[eid] === Faction.Player,
+        EntityTypeTag.kind[eid] === SAPPER_KIND && FactionTag.faction[eid] === Faction.Player,
     );
-    expect(sapper).toBeDefined();
-    expect(UnitStateMachine.state[sapper!]).toBe(UnitState.Move);
-    expect(UnitStateMachine.targetX[sapper!]).toBe(700);
-    expect(UnitStateMachine.targetY[sapper!]).toBe(300);
+    const spawnedSapper = requireEntity(sapper, 'Expected sapper to spawn');
+    expect(UnitStateMachine.state[spawnedSapper]).toBe(UnitState.Move);
+    expect(UnitStateMachine.targetX[spawnedSapper]).toBe(700);
+    expect(UnitStateMachine.targetY[spawnedSapper]).toBe(300);
   });
 
   it('should not move spawned unit when building has no rally point', () => {
@@ -151,12 +158,11 @@ describe('rally points', () => {
     const units = query(world.ecs, [FactionTag, EntityTypeTag, UnitStateMachine]);
     const sapper = units.find(
       (eid: number) =>
-        EntityTypeTag.kind[eid] === SAPPER_KIND &&
-        FactionTag.faction[eid] === Faction.Player,
+        EntityTypeTag.kind[eid] === SAPPER_KIND && FactionTag.faction[eid] === Faction.Player,
     );
-    expect(sapper).toBeDefined();
+    const spawnedSapper = requireEntity(sapper, 'Expected sapper to spawn');
     // Without rally point, unit should be idle (default state from archetype)
-    expect(UnitStateMachine.state[sapper!]).toBe(UnitState.Idle);
+    expect(UnitStateMachine.state[spawnedSapper]).toBe(UnitState.Idle);
   });
 });
 

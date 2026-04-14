@@ -99,8 +99,14 @@ export function validateUnitModel(data: UnitModelConfig): void {
   if (control.assignment_mode !== 'terrain_radius') {
     throw new Error('Unit model validation: assignment_mode must be terrain_radius');
   }
-  assertNonEmptyList(control.radius_behavior_rules, 'unit-model.specialist_control_model.radius_behavior_rules');
-  assertNonEmptyList(control.upgrade_philosophy, 'unit-model.specialist_control_model.upgrade_philosophy');
+  assertNonEmptyList(
+    control.radius_behavior_rules,
+    'unit-model.specialist_control_model.radius_behavior_rules',
+  );
+  assertNonEmptyList(
+    control.upgrade_philosophy,
+    'unit-model.specialist_control_model.upgrade_philosophy',
+  );
   if (!control.radius_upgrade_is_core_path) {
     throw new Error('Unit model validation: radius_upgrade_is_core_path must be true');
   }

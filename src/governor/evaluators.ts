@@ -7,17 +7,19 @@
 
 import { type GameEntity, GoalEvaluator } from 'yuka';
 import { ENTITY_DEFS, isWingBuilding } from '@/config/entity-defs';
+import { LODGE_REPAIR_LOG_COST } from '@/game/lodge-repair';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
+import { hasCurrentRunTrack } from './current-run-upgrades';
 import {
   AttackGoal,
   countAvailableAttackers,
   countAvailableSiegeAttackers,
   MIN_ATTACK_ARMY,
 } from './goals/attack-goal';
-import { hasCurrentRunTrack } from './current-run-upgrades';
 import { BuildGoal } from './goals/build-goal';
+import { canDefendWith } from './goals/combat-roster';
 import { DefendGoal } from './goals/defend-goal';
 import { findIdleMudpaws, GatherGoal, needsGatherRebalance } from './goals/gather-goal';
 import { TrainGoal } from './goals/train-goal';
@@ -51,6 +53,10 @@ function hasWingOrBuilding(kind: EntityKind): boolean {
 
 function combatUnitCount(): number {
   return getGovernorCombatUnits(store.unitRoster.value).length;
+}
+
+function availableDefenderCount(): number {
+  return getGovernorCombatUnits(store.unitRoster.value).filter(canDefendWith).length;
 }
 
 function frontlineCombatUnitCount(): number {
@@ -107,11 +113,19 @@ function safeAttackArmyThreshold(totalArmy: number): number {
     return MIN_ATTACK_ARMY;
   }
 
-  if (totalArmy >= MIN_ATTACK_ARMY && lodgeHp >= 0.97 && (waveCountdown === null || waveCountdown > 18)) {
+  if (
+    totalArmy >= MIN_ATTACK_ARMY &&
+    lodgeHp >= 0.97 &&
+    (waveCountdown === null || waveCountdown > 18)
+  ) {
     return MIN_ATTACK_ARMY;
   }
 
-  if (totalArmy >= MIN_ATTACK_ARMY + 1 && lodgeHp >= 0.92 && (waveCountdown === null || waveCountdown > 14)) {
+  if (
+    totalArmy >= MIN_ATTACK_ARMY + 1 &&
+    lodgeHp >= 0.92 &&
+    (waveCountdown === null || waveCountdown > 14)
+  ) {
     return MIN_ATTACK_ARMY + 1;
   }
 
@@ -155,7 +169,8 @@ function demolishRaidWindowReady(totalArmy: number, readyArmy: number): boolean 
   const waveCountdown = nextWaveCountdown();
   const threats = baseThreatCount();
   const lodgeHp = lodgeHpRatio();
-  const raidWindow = threats <= 1 && lodgeHp >= 0.9 && (waveCountdown === null || waveCountdown > 10);
+  const raidWindow =
+    threats <= 1 && lodgeHp >= 0.9 && (waveCountdown === null || waveCountdown > 10);
   return (
     hasCurrentRunTrack('siege_demolish_power') &&
     storeV3.progressionLevel.value >= 6 &&
@@ -180,10 +195,16 @@ function proactiveTowerWindowReady(): boolean {
 
 function defensiveWallWindowReady(): boolean {
   const def = ENTITY_DEFS[EntityKind.Wall];
+  const lodgeHp = lodgeHpRatio();
+  const threats = baseThreatCount();
+  const waveCountdown = nextWaveCountdown();
   return (
     storeV3.progressionLevel.value >= 6 &&
     hasCurrentRunTrack('defense_wall_hp') &&
     !hasBuilding(EntityKind.Wall) &&
+    lodgeHp >= 0.92 &&
+    threats <= 1 &&
+    (waveCountdown === null || waveCountdown > 8) &&
     store.fish.value >= (def.fishCost ?? 0) &&
     store.logs.value >= (def.logCost ?? 0)
   );
@@ -196,7 +217,14 @@ function canAffordBuild(kind: EntityKind): boolean {
 
 function fortificationBudgetRebalanceScore(): number {
   if (storeV3.progressionLevel.value < 6) return 0;
-  if (hasCurrentRunTrack('defense_wall_hp') && !hasBuilding(EntityKind.Wall)) return 0.96;
+  if (
+    hasCurrentRunTrack('defense_wall_hp') &&
+    !hasBuilding(EntityKind.Wall) &&
+    lodgeHpRatio() >= 0.92 &&
+    baseThreatCount() <= 1
+  ) {
+    return 0.9;
+  }
   if (hasCurrentRunTrack('defense_tower_damage') && !hasBuilding(EntityKind.Tower)) return 0.9;
   return 0;
 }
@@ -204,6 +232,7 @@ function fortificationBudgetRebalanceScore(): number {
 function reservedBuildScore(kind: EntityKind): number {
   if (kind === EntityKind.Wall) return 0.97;
   if (kind === EntityKind.Tower) return 0.94;
+  if (kind === EntityKind.Armory) return 0.92;
   return 0.91;
 }
 
@@ -211,6 +240,10 @@ function reservedBuildScore(kind: EntityKind): number {
 export class GatherEvaluator extends GoalEvaluator {
   override calculateDesirability(_owner: GameEntity): number {
     const idle = findIdleMudpaws();
+    const affordableFirstArmory =
+      storeV3.progressionLevel.value >= 6 &&
+      !hasWingOrBuilding(EntityKind.Armory) &&
+      canAffordBuild(EntityKind.Armory);
     if (idle.length === 0) {
       if (!needsGatherRebalance()) return 0;
       const fortificationBudgetScore = fortificationBudgetRebalanceScore();
@@ -224,9 +257,15 @@ export class GatherEvaluator extends GoalEvaluator {
     if (proactiveTowerWindowReady()) {
       return 0.42 + Math.min(idle.length * 0.02, 0.04);
     }
+    if (affordableFirstArmory) {
+      return 0.42 + Math.min(idle.length * 0.02, 0.04);
+    }
     const totalArmy = combatUnitCount();
     const readyArmy = countAvailableAttackers();
-    if (lightPressureSkirmishWindow(totalArmy, readyArmy) || canPressureSafely(totalArmy, readyArmy)) {
+    if (
+      lightPressureSkirmishWindow(totalArmy, readyArmy) ||
+      canPressureSafely(totalArmy, readyArmy)
+    ) {
       return 0.46 + Math.min(idle.length * 0.02, 0.06);
     }
     return 0.85 + Math.min(idle.length * 0.03, 0.1);
@@ -251,9 +290,11 @@ export class BuildEvaluator extends GoalEvaluator {
     if (towerDamageTrackActive && proactiveTowerWindowReady()) return 0.88;
     if (defensiveWallWindowReady()) return 0.86;
     // Armory is a Lodge wing — check if it's unlocked rather than placed
-    if (!hasWingOrBuilding(EntityKind.Armory) && store.fish.value >= 180 && store.logs.value >= 120)
-      return 0.85;
-    if (baseThreatCount() >= 2 && store.fish.value >= 200) return 0.8;
+    if (!hasWingOrBuilding(EntityKind.Armory) && canAffordBuild(EntityKind.Armory)) {
+      return storeV3.progressionLevel.value >= 6 ? 0.9 : 0.85;
+    }
+    if (baseThreatCount() >= 2 && store.fish.value >= (ENTITY_DEFS[EntityKind.Tower].fishCost ?? 0))
+      return 0.8;
     if (proactiveTowerWindowReady()) {
       return 0.79;
     }
@@ -335,9 +376,27 @@ export class DefendEvaluator extends GoalEvaluator {
     const threats = baseThreatCount();
     const lodgeHp = lodgeHpRatio();
     const army = combatUnitCount();
+    const defenders = availableDefenderCount();
     const combatTarget = getGovernorCombatTarget();
+    const affordableFirstArmory =
+      storeV3.progressionLevel.value >= 6 &&
+      !hasWingOrBuilding(EntityKind.Armory) &&
+      canAffordBuild(EntityKind.Armory);
+    const canRepairLodge = lodgeHp < 1 && store.logs.value >= LODGE_REPAIR_LOG_COST;
+
+    if (defenders === 0 && !canRepairLodge) {
+      return affordableFirstArmory ? 0.4 : 0.28;
+    }
 
     if (lodgeHp < 0.7 || threats >= 3) return 0.95;
+    if (
+      affordableFirstArmory &&
+      lodgeHp >= 0.97 &&
+      threats <= 2 &&
+      army < Math.max(combatTarget, MIN_ATTACK_ARMY + 1)
+    ) {
+      return 0.76;
+    }
     if (lodgeHp < 0.85 || threats >= 2) return 0.88;
     if (threats === 1 && lodgeHp >= 0.97 && army >= Math.max(combatTarget, MIN_ATTACK_ARMY + 1)) {
       return 0.54;
@@ -386,7 +445,10 @@ export class AttackEvaluator extends GoalEvaluator {
     const reservePressure = Math.min(Math.max(totalArmy - readyArmy, 0) * 0.03, 0.09);
     const fishReservePressure = Math.min(Math.max(store.fish.value - 60, 0) / 320, 0.14);
     const lightPressureTax = skirmishWindow ? 0.06 : 0;
-    return Math.min(openingWindow + armyPressure + reservePressure + fishReservePressure - lightPressureTax, 0.82);
+    return Math.min(
+      openingWindow + armyPressure + reservePressure + fishReservePressure - lightPressureTax,
+      0.82,
+    );
   }
 
   override setGoal(owner: GameEntity): void {

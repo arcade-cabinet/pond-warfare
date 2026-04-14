@@ -9,7 +9,7 @@ import { hasComponent, query } from 'bitecs';
 import { EntityTypeTag, FactionTag, Health, IsBuilding, Position } from '@/ecs/components';
 import { takeDamage } from '@/ecs/systems/health/take-damage';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, Faction } from '@/types';
+import { Faction } from '@/types';
 
 /** Interval in frames between lightning strikes (~15 seconds at 60fps). */
 const LIGHTNING_INTERVAL = 900;

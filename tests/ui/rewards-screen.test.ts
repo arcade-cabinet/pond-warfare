@@ -12,6 +12,8 @@
  */
 
 import { signal } from '@preact/signals';
+import { render, screen } from '@testing-library/preact';
+import { h } from 'preact';
 import { describe, expect, it } from 'vitest';
 import {
   calculateMatchReward,
@@ -20,6 +22,8 @@ import {
   getResultTitle,
   type MatchStats,
 } from '@/game/match-rewards';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
+import { RewardsScreen } from '@/ui/screens/RewardsScreen';
 
 describe('RewardsScreen -- US13', () => {
   const baseStats: MatchStats = {
@@ -170,6 +174,29 @@ describe('RewardsScreen -- US13', () => {
       const rankUpModalOpen = signal(false);
       rankUpModalOpen.value = true;
       expect(rankUpModalOpen.value).toBe(true);
+    });
+  });
+
+  describe('Rendered screen', () => {
+    it('shows the build stamp in the post-match overlay', () => {
+      const breakdown = calculateMatchReward(baseStats);
+
+      render(
+        h(RewardsScreen, {
+          breakdown,
+          kills: baseStats.kills,
+          eventsCompleted: baseStats.eventsCompleted,
+          resourcesGathered: baseStats.resourcesGathered,
+          durationSeconds: baseStats.durationSeconds,
+          canRankUp: false,
+          prestigeRank: baseStats.prestigeRank,
+          onRankUp: () => {},
+          onUpgrades: () => {},
+          onPlayAgain: () => {},
+        }),
+      );
+
+      expect(screen.getByText(`Build ${BUILD_STAMP_LABEL}`)).toBeTruthy();
     });
   });
 });

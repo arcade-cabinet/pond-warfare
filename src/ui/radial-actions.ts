@@ -10,8 +10,6 @@
 
 import { hasComponent, query } from 'bitecs';
 import { audio } from '@/audio/audio-system';
-import { getUnitDef } from '@/config/config-loader';
-import { ENTITY_DEFS } from '@/config/entity-defs';
 import {
   EntityTypeTag,
   FactionTag,
@@ -23,8 +21,8 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { game } from '@/game';
 import { cycleStanceForSelection } from '@/game/input-setup';
-import { repairPlayerLodge } from '@/game/lodge-repair';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { repairPlayerLodge } from '@/game/lodge-repair';
 import { beginSpecialistAssignment } from '@/game/specialist-assignment';
 import { getPlayerTrainingCost } from '@/game/training-costs';
 import { train } from '@/input/selection/queries';
@@ -76,7 +74,6 @@ function handleTrainAction(world: GameWorld, actionId: string): boolean {
   const configKey = TRAIN_CONFIG_MAP[actionId];
   if (unitKind === undefined || !configKey) return false;
 
-  const def = getUnitDef(configKey);
   const adjustedCost = getPlayerTrainingCost(world, unitKind);
   const fishCost = adjustedCost.fish;
   const logCost = adjustedCost.logs;

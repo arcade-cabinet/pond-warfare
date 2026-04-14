@@ -10,7 +10,10 @@ import {
   registerSpecialistEntity,
 } from '@/game/specialist-assignment';
 
-function createPositionedEntity(x: number, y: number): { eid: number; world: ReturnType<typeof createGameWorld> } {
+function createPositionedEntity(
+  x: number,
+  y: number,
+): { eid: number; world: ReturnType<typeof createGameWorld> } {
   const world = createGameWorld();
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);

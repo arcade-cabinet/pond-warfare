@@ -7,6 +7,7 @@
 
 import { Component } from 'preact';
 import { clearFatalError, reportFatalError } from '@/errors';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import * as store from '@/ui/store';
 
 interface ErrorBoundaryState {
@@ -30,6 +31,7 @@ export class ErrorBoundary extends Component<{ children: any }, ErrorBoundarySta
         <div class="p-4 bg-red-900 text-white font-mono text-sm">
           <h2 class="text-lg font-bold mb-2">Game Error</h2>
           <p>Something went wrong. Return to the main menu and try again.</p>
+          <p class="mt-2 text-xs opacity-80">Build {BUILD_STAMP_LABEL}</p>
           {import.meta.env.DEV && (
             <pre class="mt-2 whitespace-pre-wrap text-xs opacity-80">
               {this.state.error.message}

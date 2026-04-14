@@ -26,7 +26,7 @@ import type { GameWorld } from '@/ecs/world';
 import { isMudpawKind } from '@/game/live-unit-kinds';
 import { triggerHitRecoil } from '@/rendering/animations';
 import { checkAttackAlert } from '@/systems/attack-alerts';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { type EntityKind, Faction, UnitState } from '@/types';
 import { reduceVisualNoise } from '@/ui/store';
 import { spawnParticle } from '@/utils/particles';
 import { processDeath } from './death';
@@ -195,10 +195,6 @@ function processRetaliation(
   const targetFaction = hasComponent(world.ecs, targetEid, FactionTag)
     ? (FactionTag.faction[targetEid] as Faction)
     : Faction.Neutral;
-  const attackerFaction = hasComponent(world.ecs, attackerEid, FactionTag)
-    ? (FactionTag.faction[attackerEid] as Faction)
-    : Faction.Neutral;
-
   // Target retaliates if in non-combat idle-ish state
   if (
     !isBuilding &&

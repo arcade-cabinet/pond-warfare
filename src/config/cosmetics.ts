@@ -6,8 +6,6 @@
  * and has an unlock requirement checked against the player profile.
  */
 
-import type { RecolorPreset } from '@/rendering/recolor';
-import type { PlayerProfile } from '@/storage';
 import {
   LOOKOUT_KIND,
   MEDIC_KIND,
@@ -16,6 +14,8 @@ import {
   SAPPER_KIND,
   SHAMAN_KIND,
 } from '@/game/live-unit-kinds';
+import type { RecolorPreset } from '@/rendering/recolor';
+import type { PlayerProfile } from '@/storage';
 import { EntityKind } from '@/types';
 
 export interface CosmeticDef {

@@ -94,7 +94,8 @@ export function registerSpecialistEntity(world: GameWorld, eid: number, runtimeI
     canonicalId: profile.canonicalId,
     label: profile.label,
     mode: profile.mode,
-    operatingRadius: profile.operatingRadius + getSpecialistZoneBonus(world, runtimeId, 'operating_radius'),
+    operatingRadius:
+      profile.operatingRadius + getSpecialistZoneBonus(world, runtimeId, 'operating_radius'),
     centerX: x,
     centerY: y,
     anchorX: x,

@@ -40,7 +40,8 @@ function edgeOrigin(
   edge: 'top' | 'left' | 'right',
   panelId: PanelId,
 ): SpawnPosition {
-  const grid = world.panelGrid!;
+  const grid = world.panelGrid;
+  if (!grid) throw new Error('Panel grid is required for spawn positioning');
   const b = grid.getPanelBounds(panelId);
   switch (edge) {
     case 'top':

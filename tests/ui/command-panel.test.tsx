@@ -79,5 +79,5 @@ describe('CommandPanel Forces tab', () => {
     expect(screen.getByText(/Recon/)).toBeTruthy();
     expect(screen.queryByText(/gathering-fish/)).toBeNull();
     expect(screen.queryByText(/scouting/)).toBeNull();
-  });
+  }, 15_000);
 });

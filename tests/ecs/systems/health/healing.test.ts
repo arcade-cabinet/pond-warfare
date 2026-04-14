@@ -7,7 +7,6 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MEDIC_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Building,
   EntityTypeTag,
@@ -24,6 +23,7 @@ import {
   processSupportAura,
 } from '@/ecs/systems/health/healing';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MEDIC_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { SpatialHash } from '@/utils/spatial-hash';
 

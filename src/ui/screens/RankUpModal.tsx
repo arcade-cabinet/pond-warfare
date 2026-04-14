@@ -18,6 +18,7 @@ import {
   type PrestigeState,
   pearlsForPrestige,
 } from '@/config/prestige-logic';
+import { BuildStampFooter } from '@/ui/components/BuildStampFooter';
 import { Frame9Slice } from '@/ui/components/frame';
 import { COLORS } from '@/ui/design-tokens';
 
@@ -200,6 +201,8 @@ export function RankUpModal({
                 {confirmed ? 'Ranking Up...' : 'Confirm'}
               </button>
             </div>
+
+            <BuildStampFooter />
           </div>
         </Frame9Slice>
       </div>

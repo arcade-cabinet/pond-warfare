@@ -3,27 +3,29 @@
 import { query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createPrestigeState,
+  isAutoBehaviorUnlocked,
+  type PrestigeState,
+} from '@/config/prestige-logic';
+import {
   EntityTypeTag,
   FactionTag,
   Health,
-  Position,
   TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { matchEventRunnerSystem, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
-import { EntityKind, Faction } from '@/types';
+import { type EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
-import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
-import { type PrestigeState, createPrestigeState, isAutoBehaviorUnlocked } from '@/config/prestige-logic';
 import { SeededRandom } from '@/utils/random';
 import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
@@ -123,7 +125,12 @@ function runVariant(variant: DiagnosticVariant): VariantMetrics {
   const rareNodeCount = layout.resourcePositions.filter((pos) => pos.type === 'rare_node').length;
 
   for (let frame = 0; frame < 1200; frame += 1) {
-    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+    runSimFrame(world, {
+      governor,
+      runMatchEvents: true,
+      runPrestigeAutoBehaviors: true,
+      syncSignals: true,
+    });
   }
 
   return {

@@ -369,8 +369,10 @@ describe('Fortification config integration', () => {
   it('stone wall is tougher than wood wall', () => {
     const wood = getFortDef('wood_wall');
     const stone = getFortDef('stone_wall');
+    const woodRocks = wood.cost.rocks ?? 0;
+    const stoneRocks = stone.cost.rocks ?? 0;
 
     expect(stone.hp).toBeGreaterThan(wood.hp);
-    expect(stone.cost.rocks!).toBeGreaterThan(wood.cost.rocks!);
+    expect(stoneRocks).toBeGreaterThan(woodRocks);
   });
 });

@@ -79,12 +79,9 @@ export function spawnVerticalEntities(
   );
 
   // Initialize fortification slots around the Lodge
-  world.fortifications = initFortificationState(
-    stage,
-    layout.lodgeX,
-    layout.lodgeY,
-    { wallHpMultiplier: world.playerWallHpMultiplier },
-  );
+  world.fortifications = initFortificationState(stage, layout.lodgeX, layout.lodgeY, {
+    wallHpMultiplier: world.playerWallHpMultiplier,
+  });
 
   // Scale Lodge HP with tier
   const tierHpBonus = [0, 0, 0, 200, 400, 600, 800][Math.min(stage, 6)];

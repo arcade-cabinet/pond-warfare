@@ -20,7 +20,12 @@ function showNext(): void {
     return;
   }
 
-  const next = queue.shift()!;
+  const next = queue.shift();
+  if (!next) {
+    activeAchievementToast.value = null;
+    timerId = null;
+    return;
+  }
   activeAchievementToast.value = next;
 
   timerId = setTimeout(() => {

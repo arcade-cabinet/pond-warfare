@@ -10,7 +10,6 @@ import { hasComponent } from 'bitecs';
 import { IsBuilding } from '@/ecs/components';
 import { game } from '@/game';
 import { MUDPAW_KIND } from '@/game/live-unit-kinds';
-import { EntityKind } from '@/types';
 import { getEnemyNests, getPlayerArmyUnits, getPlayerEntities } from '../helpers/ecs-queries';
 
 // ---------------------------------------------------------------------------

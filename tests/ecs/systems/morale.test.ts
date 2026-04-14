@@ -6,11 +6,11 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { Combat, EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES, moraleSystem } from '@/ecs/systems/morale';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { EntityKind, Faction } from '@/types';
+import { SAPPER_KIND } from '@/game/live-unit-kinds';
+import { type EntityKind, Faction } from '@/types';
 
 function createUnit(
   world: GameWorld,

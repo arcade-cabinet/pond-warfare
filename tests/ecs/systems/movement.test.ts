@@ -8,7 +8,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GATHER_TIMER } from '@/constants';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -25,6 +24,7 @@ import {
 } from '@/ecs/components';
 import { movementSystem } from '@/ecs/systems/movement';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 function createTestUnit(world: GameWorld, x: number, y: number): number {

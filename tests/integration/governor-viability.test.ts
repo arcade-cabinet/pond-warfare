@@ -7,13 +7,13 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GameEntity } from 'yuka';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   BuildEvaluator,
   DefendEvaluator,
   GatherEvaluator,
   TrainEvaluator,
 } from '@/governor/evaluators';
-import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -139,12 +139,22 @@ describe('Governor viability decisions', () => {
       makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
       makeGroup('generalist', [{ eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND }]),
     ];
-    store.buildingRoster.value = [{ eid: 10, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] }];
+    store.buildingRoster.value = [
+      {
+        eid: 10,
+        kind: EntityKind.Lodge,
+        hp: 980,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+    ];
 
     const defend = new DefendEvaluator().calculateDesirability(owner);
     const train = new TrainEvaluator().calculateDesirability(owner);
 
-    expect(defend).toBe(0.72);
+    expect(defend).toBe(0.76);
     expect(train).toBe(0.8);
     expect(train).toBeGreaterThan(defend);
   });

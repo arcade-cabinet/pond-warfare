@@ -10,6 +10,7 @@ import {
 } from '@/ecs/components';
 import { startPatrol } from '@/ecs/systems/patrol';
 import type { GameWorld } from '@/ecs/world';
+import { getSpecialistAssignment } from '@/game/specialist-assignment';
 import {
   buildSpecialistAreaPatrol,
   findNearestAssignedResource,
@@ -17,7 +18,6 @@ import {
   getSpecialistOperatingArea,
   shouldRefreshSpecialistPatrol,
 } from '@/game/specialist-assignment-queries';
-import { getSpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 
 const UPDATE_INTERVAL = 20;
@@ -103,7 +103,10 @@ function handleDualZoneCombatSpecialist(world: GameWorld, eid: number): void {
   const state = UnitStateMachine.state[eid] as UnitState;
   if (state === UnitState.Attacking || state === UnitState.AttackMove) return;
 
-  const distanceToAnchor = Math.hypot(Position.x[eid] - assignment.anchorX, Position.y[eid] - assignment.anchorY);
+  const distanceToAnchor = Math.hypot(
+    Position.x[eid] - assignment.anchorX,
+    Position.y[eid] - assignment.anchorY,
+  );
   const anchorPadding = Math.max(24, assignment.anchorRadius * 0.2);
   if (distanceToAnchor > assignment.anchorRadius + anchorPadding) {
     UnitStateMachine.targetEntity[eid] = -1;

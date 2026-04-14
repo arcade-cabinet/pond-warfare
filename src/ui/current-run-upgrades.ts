@@ -19,7 +19,9 @@ export function createEmptyCurrentRunUpgradeSnapshot(): CurrentRunUpgradeSnapsho
   return { nodes: [], diamonds: [] };
 }
 
-export function parseCurrentRunUpgradeSnapshot(raw: string | null | undefined): CurrentRunUpgradeSnapshot {
+export function parseCurrentRunUpgradeSnapshot(
+  raw: string | null | undefined,
+): CurrentRunUpgradeSnapshot {
   if (!raw) return createEmptyCurrentRunUpgradeSnapshot();
 
   try {

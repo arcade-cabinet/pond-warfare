@@ -1,10 +1,10 @@
-import { ENTITY_DEFS } from '@/config/entity-defs';
 import { getUnitDef } from '@/config/config-loader';
+import { ENTITY_DEFS } from '@/config/entity-defs';
 import type { SpecialistDef } from '@/config/v3-types';
-import type { GameWorld } from '@/ecs/world';
 import { Position } from '@/ecs/components';
 import { getSpecialistSpawnPositions } from '@/ecs/systems/specialist-deploy';
-import { spawnSpecialistUnit, getSpecialistSpawnKind } from '@/game/init-entities/specialist-spawn';
+import type { GameWorld } from '@/ecs/world';
+import { getSpecialistSpawnKind, spawnSpecialistUnit } from '@/game/init-entities/specialist-spawn';
 import {
   getActiveSpecialistCount,
   getRemainingSpecialistCapacity,
@@ -35,10 +35,7 @@ export function getSpecialistSpawnCost(
   };
 }
 
-export function canSpawnSpecialistFromLodge(
-  world: GameWorld,
-  runtimeId: string,
-): boolean {
+export function canSpawnSpecialistFromLodge(world: GameWorld, runtimeId: string): boolean {
   const remaining = getRemainingSpecialistCapacity(world, runtimeId);
   if (remaining <= 0) return false;
 

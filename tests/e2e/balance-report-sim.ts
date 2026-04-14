@@ -3,37 +3,34 @@
 import { query } from 'bitecs';
 import { vi } from 'vitest';
 import {
+  type BalanceSnapshot,
   getDifficultyShiftPercent,
   summarizeShiftPercents,
-  type BalanceSnapshot,
 } from '@/balance/progression-model';
-import { type BalanceVariantConfig } from '@/balance/track-variants';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
-import {
-  getEventsCompletedCount,
-  resetMatchEventRunner,
-} from '@/ecs/systems/match-event-runner';
-import type { GameWorld } from '@/ecs/world';
+import type { BalanceVariantConfig } from '@/balance/track-variants';
 import { createPrestigeState, isAutoBehaviorUnlocked } from '@/config/prestige-logic';
-import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
+import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
+import { getEventsCompletedCount, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
+import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { calculateMatchReward } from '@/game/match-rewards';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
 import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
 import * as storeV3 from '@/ui/store-v3';
 import { SeededRandom } from '@/utils/random';
-import { createSnapshotScoreCache } from './balance-score-cache';
-import { mockedGameRef } from '../helpers/game-world-ref';
 import { createExploredTestContext } from '../helpers/explored-context';
 import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
+import { createSnapshotScoreCache } from './balance-score-cache';
 
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
@@ -170,7 +167,12 @@ function runVariant(
   const governor = new Governor();
   governor.enabled = true;
   for (let frame = 0; frame < frames; frame += 1) {
-    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+    runSimFrame(world, {
+      governor,
+      runMatchEvents: true,
+      runPrestigeAutoBehaviors: true,
+      syncSignals: true,
+    });
     fogOfWarSystem(world);
   }
 

@@ -9,7 +9,7 @@
 
 import { getUnitDef } from '@/config/config-loader';
 import type { PrestigeState } from '@/config/prestige-logic';
-import { type SpecialistBlueprintSpec, getSpecialistBlueprints } from '@/config/prestige-logic';
+import { getSpecialistBlueprints, type SpecialistBlueprintSpec } from '@/config/prestige-logic';
 import type { SpecialistDef } from '@/config/v3-types';
 
 // ── Types ─────────────────────────────────────────────────────────
@@ -180,7 +180,8 @@ export function getSpecialistBehaviorDesc(unitId: string): string {
     ranger: 'Autonomously patrols from its anchor zone into its engagement radius',
     shaman: 'Autonomously heals wounded allies inside its assigned operating radius',
     lookout: 'Autonomously patrols and maintains vision inside its assigned operating radius',
-    bombardier: 'Autonomously projects siege pressure from its anchor zone into its engagement radius',
+    bombardier:
+      'Autonomously projects siege pressure from its anchor zone into its engagement radius',
   };
 
   return BEHAVIOR_DESCRIPTIONS[unitId] ?? 'Unknown specialist behavior';

@@ -25,7 +25,10 @@ import * as storeV3 from './store-v3';
 
 export function MenuScreen() {
   return (
-    <div class="relative h-screen w-screen overflow-hidden" style={{ color: 'var(--pw-text-primary)' }}>
+    <div
+      class="relative h-screen w-screen overflow-hidden"
+      style={{ color: 'var(--pw-text-primary)' }}
+    >
       <div class="rotate-prompt">
         <div class="text-center">
           <span style={{ fontSize: '48px' }}>&#x1F4F1;&#x2194;&#xFE0F;</span>

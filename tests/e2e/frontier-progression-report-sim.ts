@@ -20,6 +20,17 @@ export const FRONTIER_WARMUP_FRAMES = 1800;
 export const FRONTIER_EVAL_FRAMES = 1800;
 const MAX_FRONTIER_MATCHES = 200;
 
+function requireBaselineResult(
+  baselineCache: Map<string, MatchRunResult>,
+  cacheKey: string,
+): MatchRunResult {
+  const baseline = baselineCache.get(cacheKey);
+  if (!baseline) {
+    throw new Error(`Expected baseline frontier snapshot for ${cacheKey}`);
+  }
+  return baseline;
+}
+
 interface FrontierSeedResult {
   activePanels: number;
   cumulativeCost: number;
@@ -48,7 +59,10 @@ export interface FrontierProgressionRow {
   survival_rate_pct: number;
 }
 
-function buildFrontierPlan(web: ReturnType<typeof generateUpgradeWeb>, diamond: DiamondNode): string[] {
+function buildFrontierPlan(
+  web: ReturnType<typeof generateUpgradeWeb>,
+  diamond: DiamondNode,
+): string[] {
   const seen = new Set<string>();
   const ordered: string[] = [];
   for (const nodeId of diamond.prerequisiteNodeIds) {
@@ -82,11 +96,11 @@ function buyAffordableFrontierStep(
   const nextNodeId = nodePlan.find((nodeId) => !state.purchasedNodes.has(nodeId));
   if (nextNodeId) {
     const result = purchaseNode(state, web, nextNodeId);
-    return result.success ? web.nodeMap.get(nextNodeId)?.cost ?? 0 : 0;
+    return result.success ? (web.nodeMap.get(nextNodeId)?.cost ?? 0) : 0;
   }
   if (!state.purchasedDiamonds.has(diamondId)) {
     const result = purchaseDiamondNode(state, web, diamondId);
-    return result.success ? web.diamondMap.get(diamondId)?.cost ?? 0 : 0;
+    return result.success ? (web.diamondMap.get(diamondId)?.cost ?? 0) : 0;
   }
   return 0;
 }
@@ -95,7 +109,9 @@ function runFrontierProgression(seed: number): Map<string, FrontierSeedResult> {
   const web = generateUpgradeWeb();
   const diamonds = web.diamondNodes
     .filter(
-      (diamond): diamond is DiamondNode & { effect: { type: 'unlock_panel_stage'; stage: number } } =>
+      (
+        diamond,
+      ): diamond is DiamondNode & { effect: { type: 'unlock_panel_stage'; stage: number } } =>
         diamond.effect.type === 'unlock_panel_stage' && Number.isFinite(diamond.effect.stage),
     )
     .sort((a, b) => (a.effect.stage ?? 0) - (b.effect.stage ?? 0));
@@ -144,19 +160,23 @@ export function buildFrontierProgressionRows(): FrontierProgressionRow[] {
   const web = generateUpgradeWeb();
   const diamonds = web.diamondNodes
     .filter(
-      (diamond): diamond is DiamondNode & { effect: { type: 'unlock_panel_stage'; stage: number } } =>
+      (
+        diamond,
+      ): diamond is DiamondNode & { effect: { type: 'unlock_panel_stage'; stage: number } } =>
         diamond.effect.type === 'unlock_panel_stage' && Number.isFinite(diamond.effect.stage),
     )
     .sort((a, b) => (a.effect.stage ?? 0) - (b.effect.stage ?? 0));
-  const seedResults = new Map(FRONTIER_REPORT_SEEDS.map((seed) => [seed, runFrontierProgression(seed)]));
+  const seedResults = new Map(
+    FRONTIER_REPORT_SEEDS.map((seed) => [seed, runFrontierProgression(seed)]),
+  );
   const baselineCache = new Map<string, MatchRunResult>();
 
   return diamonds.map((diamond) => {
     const toStage = diamond.effect.stage;
     const fromStage = Math.max(1, toStage - 1);
-    const bySeed = FRONTIER_REPORT_SEEDS.map((seed) => seedResults.get(seed)?.get(diamond.id)).filter(
-      (result): result is FrontierSeedResult => result != null,
-    );
+    const bySeed = FRONTIER_REPORT_SEEDS.map((seed) =>
+      seedResults.get(seed)?.get(diamond.id),
+    ).filter((result): result is FrontierSeedResult => result != null);
     const powerShifts = FRONTIER_REPORT_SEEDS.map((seed) => {
       const result = seedResults.get(seed)?.get(diamond.id);
       const cacheKey = `${seed}:${toStage}`;
@@ -171,19 +191,24 @@ export function buildFrontierProgressionRows(): FrontierProgressionRow[] {
     });
     const rewardShifts = FRONTIER_REPORT_SEEDS.map((seed) => {
       const result = seedResults.get(seed)?.get(diamond.id);
-      const baseline = baselineCache.get(`${seed}:${toStage}`)!;
+      const baseline = requireBaselineResult(baselineCache, `${seed}:${toStage}`);
       return getDifficultyShiftPercent(getRewardScore(baseline.snapshot), result?.reward ?? 0);
     });
     const metaShifts = FRONTIER_REPORT_SEEDS.map((seed) => {
       const result = seedResults.get(seed)?.get(diamond.id);
-      const baseline = baselineCache.get(`${seed}:${toStage}`)!;
-      return getDifficultyShiftPercent(getMetaProgressionScore(baseline.snapshot), result?.meta ?? 0);
+      const baseline = requireBaselineResult(baselineCache, `${seed}:${toStage}`);
+      return getDifficultyShiftPercent(
+        getMetaProgressionScore(baseline.snapshot),
+        result?.meta ?? 0,
+      );
     });
     const powerSummary = summarizeShiftPercents(powerShifts);
     const rewardSummary = summarizeShiftPercents(rewardShifts);
     const metaSummary = summarizeShiftPercents(metaShifts);
-    const survivalRate = bySeed.filter((result) => result.state !== 'lose').length / FRONTIER_REPORT_SEEDS.length;
-    const mean = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length;
+    const survivalRate =
+      bySeed.filter((result) => result.state !== 'lose').length / FRONTIER_REPORT_SEEDS.length;
+    const mean = (values: number[]) =>
+      values.reduce((sum, value) => sum + value, 0) / values.length;
 
     return {
       id: diamond.id,

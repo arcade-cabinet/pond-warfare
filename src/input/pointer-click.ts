@@ -100,8 +100,7 @@ export function handleClick(
       if (wasAlreadySelected && !isShiftDown()) {
         const resourceUnder = cb.getResourceAt(mouse.worldX, mouse.worldY);
         const hasMudpaw = world.selection.some(
-          (eid) =>
-            isMudpawKind(cb.getEntityKind(eid)) && cb.getSpecialistMenuMode(eid) === null,
+          (eid) => isMudpawKind(cb.getEntityKind(eid)) && cb.getSpecialistMenuMode(eid) === null,
         );
         if (resourceUnder !== null && hasMudpaw) {
           cb.issueContextCommand(resourceUnder);

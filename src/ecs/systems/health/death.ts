@@ -9,7 +9,6 @@
 import { hasComponent, removeEntity } from 'bitecs';
 import { audio } from '@/audio/audio-system';
 import { showBark } from '@/config/barks';
-import { entityKindName } from '@/config/entity-defs';
 import {
   Combat,
   EntityTypeTag,
@@ -18,8 +17,8 @@ import {
   IsBuilding,
   IsResource,
   Position,
-  trainingQueueSlots,
   trainingQueueCostSlots,
+  trainingQueueSlots,
 } from '@/ecs/components';
 import { COMMANDER_DEATH_DEMORALIZE_FRAMES } from '@/ecs/systems/morale';
 import type { GameWorld } from '@/ecs/world';
@@ -49,12 +48,16 @@ export function processDeath(world: GameWorld, eid: number, attackerEid?: number
     const faction = FactionTag.faction[eid] as Faction;
     if (faction === Faction.Player && !isBuilding && !isResource) {
       world.stats.unitsLost++;
-      const name = hasComponent(world.ecs, eid, EntityTypeTag) ? getEntityDisplayName(world, eid) : 'Unit';
+      const name = hasComponent(world.ecs, eid, EntityTypeTag)
+        ? getEntityDisplayName(world, eid)
+        : 'Unit';
       pushGameEvent(`${name} killed`, '#ef4444', world.frameCount);
     }
     if (faction === Faction.Player && isBuilding) {
       world.stats.buildingsLost++;
-      const bName = hasComponent(world.ecs, eid, EntityTypeTag) ? getEntityDisplayName(world, eid) : 'Building';
+      const bName = hasComponent(world.ecs, eid, EntityTypeTag)
+        ? getEntityDisplayName(world, eid)
+        : 'Building';
       pushGameEvent(`${bName} destroyed`, '#ef4444', world.frameCount);
     }
     if (faction === Faction.Enemy) {

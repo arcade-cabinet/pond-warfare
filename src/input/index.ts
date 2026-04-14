@@ -4,9 +4,7 @@ export {
   PointerHandler,
   type PointerState,
 } from './pointer';
-export {
-  issueContextCommand,
-} from './selection/commands';
+export { issueContextCommand } from './selection/commands';
 export {
   selectArmy,
   selectIdleGeneralist,

@@ -68,7 +68,10 @@ function normalizeError(error: unknown): Error {
   return new Error(String(error));
 }
 
-function toGlobalError(source: 'window/error' | 'window/unhandledrejection', error: unknown): Error {
+function toGlobalError(
+  source: 'window/error' | 'window/unhandledrejection',
+  error: unknown,
+): Error {
   if (error instanceof GameError) return error;
   if (error instanceof Error) return new GameError(error.message, source, { cause: error });
   return new GameError(String(error), source);

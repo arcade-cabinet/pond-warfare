@@ -9,7 +9,7 @@ import {
   Resource,
 } from '@/ecs/components';
 import type { GameWorld } from '@/ecs/world';
-import { EntityKind, type Faction } from '@/types';
+import type { EntityKind, Faction } from '@/types';
 import { getSpecialistAssignment } from './specialist-assignment';
 
 export interface SpecialistOperatingArea {
@@ -72,10 +72,22 @@ export function buildSpecialistAreaPatrol(
 
   const patrolRadius = Math.max(40, area.radius * 0.65);
   return [
-    { x: clamp(area.centerX, patrolRadius, world.worldWidth - patrolRadius), y: clamp(area.centerY - patrolRadius, patrolRadius, world.worldHeight - patrolRadius) },
-    { x: clamp(area.centerX + patrolRadius, patrolRadius, world.worldWidth - patrolRadius), y: clamp(area.centerY, patrolRadius, world.worldHeight - patrolRadius) },
-    { x: clamp(area.centerX, patrolRadius, world.worldWidth - patrolRadius), y: clamp(area.centerY + patrolRadius, patrolRadius, world.worldHeight - patrolRadius) },
-    { x: clamp(area.centerX - patrolRadius, patrolRadius, world.worldWidth - patrolRadius), y: clamp(area.centerY, patrolRadius, world.worldHeight - patrolRadius) },
+    {
+      x: clamp(area.centerX, patrolRadius, world.worldWidth - patrolRadius),
+      y: clamp(area.centerY - patrolRadius, patrolRadius, world.worldHeight - patrolRadius),
+    },
+    {
+      x: clamp(area.centerX + patrolRadius, patrolRadius, world.worldWidth - patrolRadius),
+      y: clamp(area.centerY, patrolRadius, world.worldHeight - patrolRadius),
+    },
+    {
+      x: clamp(area.centerX, patrolRadius, world.worldWidth - patrolRadius),
+      y: clamp(area.centerY + patrolRadius, patrolRadius, world.worldHeight - patrolRadius),
+    },
+    {
+      x: clamp(area.centerX - patrolRadius, patrolRadius, world.worldWidth - patrolRadius),
+      y: clamp(area.centerY, patrolRadius, world.worldHeight - patrolRadius),
+    },
   ];
 }
 
@@ -132,15 +144,22 @@ export function findNearestAssignedWoundedAlly(
 
   for (const candidate of candidates) {
     if (candidate === eid) continue;
-    if (!hasComponent(world.ecs, candidate, FactionTag) || FactionTag.faction[candidate] !== faction) {
+    if (
+      !hasComponent(world.ecs, candidate, FactionTag) ||
+      FactionTag.faction[candidate] !== faction
+    ) {
       continue;
     }
     if (!hasComponent(world.ecs, candidate, Health) || Health.current[candidate] <= 0) continue;
     if (Health.current[candidate] >= Health.max[candidate]) continue;
-    if (hasComponent(world.ecs, candidate, IsBuilding) || hasComponent(world.ecs, candidate, IsResource)) {
+    if (
+      hasComponent(world.ecs, candidate, IsBuilding) ||
+      hasComponent(world.ecs, candidate, IsResource)
+    ) {
       continue;
     }
-    if (!isPointInSpecialistArea(world, eid, Position.x[candidate], Position.y[candidate])) continue;
+    if (!isPointInSpecialistArea(world, eid, Position.x[candidate], Position.y[candidate]))
+      continue;
 
     const dx = Position.x[candidate] - ex;
     const dy = Position.y[candidate] - ey;

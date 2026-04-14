@@ -7,6 +7,7 @@
  */
 
 import { screenClass } from '@/platform';
+import { BuildStampFooter } from '@/ui/components/BuildStampFooter';
 import { Frame9Slice } from './components/frame';
 import { useScrollDrag } from './hooks/useScrollDrag';
 
@@ -153,6 +154,8 @@ export function KeyboardReference({ onClose }: KeyboardReferenceProps) {
                 <ShortcutColumn key={group.title} group={group} />
               ))}
             </div>
+
+            <BuildStampFooter class="mt-4" />
           </div>
         </Frame9Slice>
       </div>

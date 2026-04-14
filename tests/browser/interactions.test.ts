@@ -10,6 +10,7 @@ import { cleanup, fireEvent, render } from '@testing-library/preact';
 import { h } from 'preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ActionPanel, actionButtons, queueItems } from '@/ui/action-panel';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { GameOverBanner } from '@/ui/game-over';
 import { HUD } from '@/ui/hud';
 import { KeyboardReference } from '@/ui/keyboard-reference';
@@ -19,9 +20,8 @@ import * as store from '@/ui/store';
 
 // Mock animation module with explicit overrides so isolated browser runs stay stable.
 vi.mock('@/rendering/animations', async () => {
-  const actual = await vi.importActual<typeof import('@/rendering/animations')>(
-    '@/rendering/animations',
-  );
+  const actual =
+    await vi.importActual<typeof import('@/rendering/animations')>('@/rendering/animations');
   return {
     ...actual,
     animateGameOverStats: vi.fn(),
@@ -574,6 +574,7 @@ describe('Game Over interactions', () => {
     const restartBtn = must(document.getElementById('restart-btn'), 'Missing restart button');
     expect(restartBtn).toBeTruthy();
     expect(restartBtn.textContent).toContain('Play Again');
+    expect(document.body.textContent).toContain(`Build ${BUILD_STAMP_LABEL}`);
     restartBtn.click();
 
     expect(onRestart).toHaveBeenCalledTimes(1);

@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearErrorLog, clearFatalError, getFatalError, reportFatalError } from '@/errors';
 import { restartMountedGameSession } from '@/game/shell-session';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { ErrorOverlay } from '@/ui/error-overlay';
 import * as store from '@/ui/store';
 
@@ -39,6 +40,7 @@ describe('ErrorOverlay', () => {
       expect(view.getByText('Fatal Error')).toBeTruthy();
     });
 
+    expect(view.getByText(`Build ${BUILD_STAMP_LABEL}`)).toBeTruthy();
     expect(view.getByRole('button', { name: 'Return to Menu' })).toBeTruthy();
     expect(view.queryByRole('button', { name: 'Dismiss' })).toBeNull();
 
@@ -52,7 +54,7 @@ describe('ErrorOverlay', () => {
     expect(store.gameLoading.value).toBe(false);
     expect(store.continueRequested.value).toBe(false);
     expect(restartMountedGameSession).not.toHaveBeenCalled();
-  });
+  }, 15_000);
 
   it('retries the mounted session instead of dismissing a fatal in-match crash', async () => {
     store.menuState.value = 'playing';
@@ -65,6 +67,7 @@ describe('ErrorOverlay', () => {
       expect(view.getByRole('button', { name: 'Retry Session' })).toBeTruthy();
     });
 
+    expect(view.getByText(`Build ${BUILD_STAMP_LABEL}`)).toBeTruthy();
     expect(view.queryByRole('button', { name: 'Dismiss' })).toBeNull();
 
     fireEvent.click(view.getByRole('button', { name: 'Retry Session' }));

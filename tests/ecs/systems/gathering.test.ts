@@ -6,7 +6,6 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import {
   Carrying,
   Collider,
@@ -24,6 +23,7 @@ import {
 } from '@/ecs/components';
 import { gatheringSystem } from '@/ecs/systems/gathering';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
 import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 

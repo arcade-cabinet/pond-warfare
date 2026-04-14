@@ -25,11 +25,7 @@ import { trainingSystem } from '@/ecs/systems/training';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
-import {
-  getPlayerArmyUnits,
-  getPlayerEntities,
-  getPlayerLodge,
-} from '../helpers/ecs-queries';
+import { getPlayerArmyUnits, getPlayerEntities, getPlayerLodge } from '../helpers/ecs-queries';
 
 describe('Progression Integration', () => {
   let world: GameWorld;
@@ -54,12 +50,7 @@ describe('Progression Integration', () => {
     const lodge = spawnEntity(world, EntityKind.Lodge, 500, 500, Faction.Player);
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 4;
-    trainingQueueSlots.set(lodge, [
-      MUDPAW_KIND,
-      MUDPAW_KIND,
-      MUDPAW_KIND,
-      MUDPAW_KIND,
-    ]);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, MUDPAW_KIND, MUDPAW_KIND, MUDPAW_KIND]);
 
     for (let i = 0; i < 4; i++) {
       TrainingQueue.timer[lodge] = 1;
@@ -180,12 +171,7 @@ describe('Progression Integration', () => {
 
     addComponent(world.ecs, lodge, TrainingQueue);
     TrainingQueue.count[lodge] = 4;
-    trainingQueueSlots.set(lodge, [
-      MUDPAW_KIND,
-      MUDPAW_KIND,
-      MUDPAW_KIND,
-      MUDPAW_KIND,
-    ]);
+    trainingQueueSlots.set(lodge, [MUDPAW_KIND, MUDPAW_KIND, MUDPAW_KIND, MUDPAW_KIND]);
 
     for (let i = 0; i < 4; i++) {
       TrainingQueue.timer[lodge] = 1;

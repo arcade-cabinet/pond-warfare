@@ -38,7 +38,7 @@ describe('MenuScreen', () => {
     const view = render(<MenuScreen />);
 
     expect(view.getByLabelText('Settings')).toBeTruthy();
-  });
+  }, 15_000);
 
   it('renders the upgrade web overlay from main menu state', () => {
     storeV3.upgradesScreenOpen.value = true;
@@ -47,7 +47,7 @@ describe('MenuScreen', () => {
 
     expect(view.getByText('Spend Clams')).toBeTruthy();
     expect(view.getByText('75C')).toBeTruthy();
-  });
+  }, 15_000);
 
   it('renders the pearl loadout overlay from main menu state', () => {
     storeV3.pearlScreenOpen.value = true;

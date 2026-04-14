@@ -5,6 +5,7 @@
  * siege, poison, tower auto-attack, and alpha predator aura.
  */
 
+import { query } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getDamageMultiplier, SIEGE_BUILDING_MULTIPLIER } from '@/config/entity-defs';
 import { ATTACK_COOLDOWN } from '@/constants';
@@ -17,12 +18,10 @@ import {
   Position,
   Sprite,
   UnitStateMachine,
-  Velocity,
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { evolutionSystem } from '@/ecs/systems/evolution';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { query } from 'bitecs';
 import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
@@ -124,11 +123,7 @@ describe('Combat', () => {
 
     // Populate spatial hash for AoE stomp
     world.spatialHash.clear();
-    world.spatialHash.insert(
-      sapper,
-      Position.x[sapper],
-      Position.y[sapper],
-    );
+    world.spatialHash.insert(sapper, Position.x[sapper], Position.y[sapper]);
     world.spatialHash.insert(boss, Position.x[boss], Position.y[boss]);
 
     combatSystem(world);

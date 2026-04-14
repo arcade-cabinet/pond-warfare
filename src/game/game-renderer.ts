@@ -23,11 +23,7 @@ import { drawFog, type FogRendererState } from '@/rendering/fog-renderer';
 import { drawLighting } from '@/rendering/light-renderer';
 import type { ProjectileRenderData } from '@/rendering/particles';
 import { updateProjectileTrails } from '@/rendering/particles';
-import {
-  type PixiRenderFrameData,
-  type PlacementPreview,
-  renderPixiFrame,
-} from '@/rendering/pixi';
+import { type PixiRenderFrameData, type PlacementPreview, renderPixiFrame } from '@/rendering/pixi';
 import { type EntityKind, Faction, type SpriteId } from '@/types';
 import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
 import * as storeV3 from '@/ui/store-v3';

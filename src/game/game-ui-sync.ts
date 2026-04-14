@@ -26,10 +26,7 @@ export interface UISyncState {
 export function syncUIStore(state: UISyncState): void {
   const w = state.world;
 
-  const { idleGeneralists, armyUnits, maxFoodCap } = syncPopulationAndTimers(
-    w,
-    state.exploredCtx,
-  );
+  const { idleGeneralists, armyUnits, maxFoodCap } = syncPopulationAndTimers(w, state.exploredCtx);
 
   store.muted.value = audio.muted;
   store.hasPlayerUnits.value = hasPlayerUnitsSelected(w);
@@ -49,7 +46,9 @@ export function syncUIStore(state: UISyncState): void {
     audio.stopMusic();
     state.wasGameOver = true;
     checkAchievements(w).catch((error) => {
-      logError(new GameError('Game-over achievement check failed', 'game/game-ui-sync', { cause: error }));
+      logError(
+        new GameError('Game-over achievement check failed', 'game/game-ui-sync', { cause: error }),
+      );
     });
   }
 

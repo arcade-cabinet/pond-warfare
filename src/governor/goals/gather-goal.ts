@@ -44,7 +44,9 @@ function hasBuilding(kind: EntityKind): boolean {
 }
 
 function hasCompletedBuilding(kind: EntityKind): boolean {
-  return store.buildingRoster.value.some((building) => building.kind === kind && building.hp >= building.maxHp);
+  return store.buildingRoster.value.some(
+    (building) => building.kind === kind && building.hp >= building.maxHp,
+  );
 }
 
 function buildingCount(kind: EntityKind): number {
@@ -55,10 +57,7 @@ function currentStage(): number {
   return Math.max(1, Math.trunc(storeV3.progressionLevel.value || 1));
 }
 
-function prioritizeBuildResources(
-  kind: EntityKind,
-  fallback: GatherTask[],
-): GatherPlan {
+function prioritizeBuildResources(kind: EntityKind, fallback: GatherTask[]): GatherPlan {
   const def = ENTITY_DEFS[kind];
   const fishCost = def.fishCost ?? 0;
   const logCost = def.logCost ?? 0;
@@ -70,17 +69,9 @@ function prioritizeBuildResources(
     const logRatio = store.logs.value / logCost;
     const primary = logRatio <= fishRatio ? 'gathering-logs' : 'gathering-fish';
     const secondary = primary === 'gathering-logs' ? 'gathering-fish' : 'gathering-logs';
-    if (Math.abs(fishRatio - logRatio) >= 0.2) {
-      return {
-        // If one build budget is materially further behind, keep the full
-        // economy on that bottleneck until the gap narrows.
-        tasks: [primary, secondary, 'gathering-rocks'],
-        rotateAssignments: false,
-        hardFocusPrimary: true,
-      };
-    }
     return {
-      // Keep extras on the main bottleneck instead of rotating a third
+      // Bias toward the larger bottleneck without fully starving the secondary
+      // budget; keep extras on the main bottleneck instead of rotating a third
       // gatherer onto rocks during a tower savings window.
       tasks: [primary, secondary, primary],
       rotateAssignments: true,
@@ -106,7 +97,9 @@ function prioritizeBuildResources(
 }
 
 function preferredGatherPlan(): GatherPlan {
-  const sorted = [...GATHER_TASKS].sort((a, b) => a.signal() - b.signal()).map((entry) => entry.task);
+  const sorted = [...GATHER_TASKS]
+    .sort((a, b) => a.signal() - b.signal())
+    .map((entry) => entry.task);
 
   if (
     currentStage() >= 6 &&
@@ -134,7 +127,9 @@ function preferredGatherPlan(): GatherPlan {
 
   const needsTower =
     (store.baseUnderAttack.value && buildingCount(EntityKind.Tower) < 2) ||
-    (currentStage() >= 6 && hasCompletedBuilding(EntityKind.Armory) && buildingCount(EntityKind.Tower) < 1);
+    (currentStage() >= 6 &&
+      hasCompletedBuilding(EntityKind.Armory) &&
+      buildingCount(EntityKind.Tower) < 1);
   if (needsTower) {
     return prioritizeBuildResources(EntityKind.Tower, sorted);
   }

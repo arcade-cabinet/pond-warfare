@@ -30,8 +30,8 @@ import type { FogRendererState } from '@/rendering/fog-renderer';
 import { ReplayRecorder } from '@/replay';
 import type { SpriteId } from '@/types';
 import { getCurrentRunPanelStage } from '@/ui/current-run-diamond-effects';
-import { autoPlayEnabled } from '@/ui/store-gameplay';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
+import { autoPlayEnabled } from '@/ui/store-gameplay';
 import * as storeV3 from '@/ui/store-v3';
 
 export class Game {

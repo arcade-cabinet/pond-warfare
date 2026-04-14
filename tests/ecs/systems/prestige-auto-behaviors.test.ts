@@ -1,8 +1,8 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { Health } from '@/ecs/components';
-import { createGameWorld } from '@/ecs/world';
 import { prestigeAutoBehaviorSystem } from '@/ecs/systems/prestige-auto-behaviors';
+import { createGameWorld } from '@/ecs/world';
 import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction } from '@/types';
 import * as storeV3 from '@/ui/store-v3';

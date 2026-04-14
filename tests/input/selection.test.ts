@@ -38,16 +38,8 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import {
-  LOOKOUT_KIND,
-  MEDIC_KIND,
-  MUDPAW_KIND,
-  SABOTEUR_KIND,
-  SAPPER_KIND,
-} from '@/game/live-unit-kinds';
-import {
-  issueContextCommand,
-} from '@/input/selection/commands';
+import { LOOKOUT_KIND, MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import { issueContextCommand } from '@/input/selection/commands';
 import { selectArmy, selectIdleGeneralist } from '@/input/selection/group-select';
 import {
   cancelTrain,
@@ -63,12 +55,7 @@ import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 // ---------------------------------------------------------------------------
 
 /** Create a minimal player unit entity with all required selection components. */
-function createPlayerUnit(
-  world: GameWorld,
-  x: number,
-  y: number,
-  kind = MUDPAW_KIND,
-): number {
+function createPlayerUnit(world: GameWorld, x: number, y: number, kind = MUDPAW_KIND): number {
   const eid = addEntity(world.ecs);
   addComponent(world.ecs, eid, Position);
   addComponent(world.ecs, eid, Health);

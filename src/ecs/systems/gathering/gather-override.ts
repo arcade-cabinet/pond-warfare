@@ -12,7 +12,7 @@ import {
   findNearestAssignedResource,
   getSpecialistOperatingArea,
 } from '@/game/specialist-assignment-queries';
-import { EntityKind, ResourceType, UnitState } from '@/types';
+import { type EntityKind, ResourceType, UnitState } from '@/types';
 
 function getGatherTargetKind(world: GameWorld, eid: number): EntityKind | null {
   if (TaskOverride.resourceKind[eid] > 0) {

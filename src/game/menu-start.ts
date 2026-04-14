@@ -6,9 +6,9 @@
  */
 
 import { GameError, logError } from '@/errors';
+import { game } from '@/game';
 import { loadGame } from '@/save-system';
 import { getLatestSave } from '@/storage';
-import { game } from '@/game';
 import { continueRequested, hasSaveGame, menuState } from '@/ui/store';
 
 export interface MenuStartRefs {

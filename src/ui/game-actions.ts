@@ -107,7 +107,9 @@ export function quickSave(): void {
       audio.click();
     })
     .catch((err) => {
-      logError(new GameError('Failed to save game to DB', 'ui/game-actions.quickSave', { cause: err }));
+      logError(
+        new GameError('Failed to save game to DB', 'ui/game-actions.quickSave', { cause: err }),
+      );
       pushCenteredFloatingText('Save Failed', COLORS.feedbackError, 90);
     });
 }
@@ -126,7 +128,9 @@ export function quickLoad(): void {
       pushCenteredFloatingText('No Save Found', COLORS.feedbackWarn, 75);
     })
     .catch((err) => {
-      logError(new GameError('Failed to load game from DB', 'ui/game-actions.quickLoad', { cause: err }));
+      logError(
+        new GameError('Failed to load game from DB', 'ui/game-actions.quickLoad', { cause: err }),
+      );
       pushCenteredFloatingText('Load Failed', COLORS.feedbackError, 90);
     });
 }

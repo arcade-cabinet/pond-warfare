@@ -20,8 +20,8 @@ import { PointerHandler } from '@/input/pointer';
 import { canDockPanels } from '@/platform';
 import { buildBackground, buildExploredCanvas, buildFogTexture } from '@/rendering/background';
 import type { FogRendererState } from '@/rendering/fog-renderer';
-import { getBgLayer } from '@/rendering/pixi/init';
 import { initPixiApp, setBackground, setColorBlindMode } from '@/rendering/pixi';
+import { getBgLayer } from '@/rendering/pixi/init';
 import { generateAllSprites } from '@/rendering/sprites/index';
 import { attachRippleSprites, initWaterRipples } from '@/rendering/water-ripple';
 import type { ReplayRecorder } from '@/replay';
@@ -53,8 +53,8 @@ export async function initCanvases(
   fogCanvas: HTMLCanvasElement,
   lightCanvas: HTMLCanvasElement,
 ): Promise<CanvasRefs> {
-  const fogCtx = fogCanvas.getContext('2d')!;
-  const lightCtx = lightCanvas.getContext('2d')!;
+  const fogCtx = fogCanvas.getContext('2d');
+  const lightCtx = lightCanvas.getContext('2d');
   if (!fogCtx || !lightCtx) throw new Error('Failed to acquire 2D context');
 
   const { canvases } = generateAllSprites();
@@ -123,7 +123,11 @@ export function resetSession(_world: GameWorld): void {
   resetRandomEvents();
   resetMatchEventRunner();
   loadAchievements().catch((error) => {
-    logError(new GameError('Failed to refresh achievements for new session', 'game/resetSession', { cause: error }));
+    logError(
+      new GameError('Failed to refresh achievements for new session', 'game/resetSession', {
+        cause: error,
+      }),
+    );
   });
 }
 

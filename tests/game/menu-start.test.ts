@@ -25,10 +25,10 @@ vi.mock('@/game', () => ({
 }));
 
 import { logError } from '@/errors';
+import { game } from '@/game';
+import { hydrateSaveAvailability, startMenuGame } from '@/game/menu-start';
 import { loadGame } from '@/save-system';
 import { getLatestSave } from '@/storage';
-import { game } from '@/game';
-import { startMenuGame, hydrateSaveAvailability } from '@/game/menu-start';
 import * as store from '@/ui/store';
 
 const refs = {

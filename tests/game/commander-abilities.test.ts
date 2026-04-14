@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { COMMANDER_ABILITIES, COMMANDERS } from '@/config/commanders';
 import { spawnEntity } from '@/ecs/archetypes';
-import { FactionTag, Health, UnitStateMachine } from '@/ecs/components';
+import { Health, UnitStateMachine } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { commanderPassivesSystem } from '@/ecs/systems/commander-passives';
 import { takeDamage } from '@/ecs/systems/health/take-damage';

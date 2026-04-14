@@ -11,7 +11,12 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { generateUpgradeWeb, type UpgradeWeb } from '@/config/upgrade-web';
+import {
+  type DiamondNode,
+  generateUpgradeWeb,
+  type UpgradeNode,
+  type UpgradeWeb,
+} from '@/config/upgrade-web';
 import {
   computeActiveEffects,
   countPurchased,
@@ -35,6 +40,24 @@ function freshWeb(): UpgradeWeb {
 
 function stateWithClams(clams: number): UpgradeWebPurchaseState {
   return createUpgradeWebState(clams);
+}
+
+function requireNode(w: UpgradeWeb, nodeId: string): UpgradeNode {
+  const node = w.nodeMap.get(nodeId);
+  expect(node).toBeDefined();
+  if (!node) {
+    throw new Error(`Expected upgrade node ${nodeId}`);
+  }
+  return node;
+}
+
+function requireDiamond(w: UpgradeWeb, diamondId: string): DiamondNode {
+  const diamond = w.diamondMap.get(diamondId);
+  expect(diamond).toBeDefined();
+  if (!diamond) {
+    throw new Error(`Expected diamond node ${diamondId}`);
+  }
+  return diamond;
 }
 
 // ── State creation tests ──────────────────────────────────────────
@@ -212,7 +235,7 @@ describe('Node display state', () => {
   it('should show tier 0 as available for new player', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
-    const node = w.nodeMap.get('gathering_fish_gathering_t0')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t0');
 
     expect(getNodeDisplayState(state, node)).toBe('available');
   });
@@ -220,7 +243,7 @@ describe('Node display state', () => {
   it('should show tier 1 as locked when tier 0 not purchased', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
-    const node = w.nodeMap.get('gathering_fish_gathering_t1')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t1');
 
     expect(getNodeDisplayState(state, node)).toBe('locked');
   });
@@ -229,7 +252,7 @@ describe('Node display state', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
     purchaseNode(state, w, 'gathering_fish_gathering_t0');
-    const node = w.nodeMap.get('gathering_fish_gathering_t0')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t0');
 
     expect(getNodeDisplayState(state, node)).toBe('purchased');
   });
@@ -238,7 +261,7 @@ describe('Node display state', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
     purchaseNode(state, w, 'gathering_fish_gathering_t0');
-    const node = w.nodeMap.get('gathering_fish_gathering_t1')!;
+    const node = requireNode(w, 'gathering_fish_gathering_t1');
 
     expect(getNodeDisplayState(state, node)).toBe('available');
   });
@@ -275,7 +298,7 @@ describe('Diamond display info', () => {
   it('should show locked diamond with prerequisite details', () => {
     const w = freshWeb();
     const state = stateWithClams(1000);
-    const diamond = w.diamondMap.get('dock_wing')!;
+    const diamond = requireDiamond(w, 'dock_wing');
 
     const info = getDiamondDisplayInfo(state, diamond);
     expect(info.state).toBe('locked');

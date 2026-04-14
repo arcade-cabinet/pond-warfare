@@ -21,19 +21,15 @@ import {
 } from '@/ecs/components';
 import { spawnProjectile } from '@/ecs/systems/projectile';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import {
-  LOOKOUT_KIND,
-  SABOTEUR_KIND,
-  SAPPER_KIND,
-} from '@/game/live-unit-kinds';
+import { LOOKOUT_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 // Mock audio to track calls
 vi.mock('@/audio/audio-system', () => ({
-    audio: {
-      hit: vi.fn(),
-      shoot: vi.fn(),
+  audio: {
+    hit: vi.fn(),
+    shoot: vi.fn(),
     towerShoot: vi.fn(),
     towerHit: vi.fn(),
     deathUnit: vi.fn(),

@@ -103,8 +103,7 @@ describe('seamless play -- hydration', () => {
     });
     vi.mocked(loadCurrentRun).mockResolvedValue({
       clams: 120,
-      upgrades_purchased:
-        '{"nodes":["gathering_fish_gathering_t0"],"diamonds":["dock_wing"]}',
+      upgrades_purchased: '{"nodes":["gathering_fish_gathering_t0"],"diamonds":["dock_wing"]}',
       lodge_state: '{}',
       progression_level: 3,
       matches_this_run: 5,
@@ -175,8 +174,7 @@ describe('seamless play -- auto-save after match', () => {
 
     expect(saveCurrentRun).toHaveBeenCalledWith({
       clams: 200,
-      upgrades_purchased:
-        '{"nodes":["gathering_fish_gathering_t0"],"diamonds":["dock_wing"]}',
+      upgrades_purchased: '{"nodes":["gathering_fish_gathering_t0"],"diamonds":["dock_wing"]}',
       lodge_state: '{}',
       progression_level: 4,
       matches_this_run: 3, // incremented from 2

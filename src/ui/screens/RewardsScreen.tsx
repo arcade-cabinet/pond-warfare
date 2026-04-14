@@ -14,6 +14,7 @@ import {
   getResultTitle,
   type RewardBreakdown,
 } from '@/game/match-rewards';
+import { BuildStampFooter } from '@/ui/components/BuildStampFooter';
 import { Frame9Slice } from '@/ui/components/frame';
 import { COLORS } from '@/ui/design-tokens';
 
@@ -180,6 +181,8 @@ export function RewardsScreen({
                 </button>
               </div>
             </div>
+
+            <BuildStampFooter />
           </div>
         </Frame9Slice>
       </div>

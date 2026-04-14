@@ -24,17 +24,16 @@ import {
   type QueueItemDef,
   queueItems,
 } from '@/ui/action-panel';
-
-import { buildMudpawButtons } from './mudpaw-buttons';
 import { buildLodgeButtons } from './lodge-buttons';
 import { buildMarketButtons } from './market-buttons';
+import { buildMudpawButtons } from './mudpaw-buttons';
 import { buildTrainingQueueItems } from './tech-helpers';
 
 /**
  * Build the action panel buttons and queue items based on the current selection.
  * Writes directly to the actionButtons and queueItems signals.
  */
-export function buildActionPanel(world: GameWorld, recorder?: ReplayRecorder): void {
+export function buildActionPanel(world: GameWorld, _recorder?: ReplayRecorder): void {
   const w = world;
   const btns: ActionButtonDef[] = [];
   const qItems: QueueItemDef[] = [];

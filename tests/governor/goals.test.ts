@@ -23,7 +23,7 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { MUDPAW_KIND, SAPPER_KIND, SABOTEUR_KIND } from '@/game/live-unit-kinds';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';
 import type { RosterBuilding, RosterGroup, RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -119,9 +119,7 @@ describe('GatherGoal', () => {
     const eid1 = createUnit(MUDPAW_KIND, 100, 100);
     createResource(EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')])];
     store.fish.value = 100;
     store.logs.value = 200;
     store.rocks.value = 0;
@@ -141,9 +139,7 @@ describe('GatherGoal', () => {
     const eid1 = createUnit(MUDPAW_KIND, 100, 100);
     const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 110);
 
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')])];
     store.fish.value = 100;
     store.logs.value = 0;
     store.rocks.value = 0;
@@ -164,12 +160,26 @@ describe('GatherGoal', () => {
     const farLogs = createResource(EntityKind.Cattail, ResourceType.Logs, 1200, 1200);
     const nearFish = createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
 
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')])];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
-      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+      {
+        eid: 100,
+        kind: EntityKind.Armory,
+        hp: 500,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.fish.value = 200;
     store.logs.value = 0;
@@ -192,11 +202,17 @@ describe('GatherGoal', () => {
     const farLogs = createResource(EntityKind.Cattail, ResourceType.Logs, 1200, 1200);
     createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
 
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')])];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.fish.value = 200;
     store.logs.value = 0;
@@ -218,12 +234,26 @@ describe('GatherGoal', () => {
     const farLogs = createResource(EntityKind.Cattail, ResourceType.Logs, 560, 100);
     const nearFish = createResource(EntityKind.Clambed, ResourceType.Fish, 150, 120);
 
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')])];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
-      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+      {
+        eid: 100,
+        kind: EntityKind.Armory,
+        hp: 500,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.fish.value = 200;
     store.logs.value = 0;
@@ -247,11 +277,17 @@ describe('GatherGoal', () => {
     const logNode = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
     createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
 
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')])];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.fish.value = 220;
     store.logs.value = 40;
@@ -268,14 +304,14 @@ describe('GatherGoal', () => {
     expect(UnitStateMachine.targetEntity[eid1]).toBe(logNode);
   });
 
-  it('keeps both Mudpaws on logs when the missing armory is much more log-gated than fish-gated', async () => {
+  it('splits Mudpaws across logs and fish when the missing armory still needs both budgets', async () => {
     const { GatherGoal } = await import('@/governor/goals/gather-goal');
 
     const eid1 = createUnit(MUDPAW_KIND, 100, 100);
     const eid2 = createUnit(MUDPAW_KIND, 115, 105);
     const logNodeA = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
     const logNodeB = createResource(EntityKind.Cattail, ResourceType.Logs, 145, 125);
-    createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
+    const fishNode = createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
 
     store.unitRoster.value = [
       rosterGroup('generalist', [
@@ -284,7 +320,15 @@ describe('GatherGoal', () => {
       ]),
     ];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.fish.value = 120;
     store.logs.value = 30;
@@ -297,8 +341,9 @@ describe('GatherGoal', () => {
     goal.activate();
 
     expect(goal.status).toBe(Goal.STATUS.COMPLETED);
-    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid1]);
-    expect([logNodeA, logNodeB]).toContain(UnitStateMachine.targetEntity[eid2]);
+    const targets = [UnitStateMachine.targetEntity[eid1], UnitStateMachine.targetEntity[eid2]];
+    expect(targets).toContain(fishNode);
+    expect(targets.some((target) => [logNodeA, logNodeB].includes(target))).toBe(true);
   });
 
   it('keeps multiple idle Mudpaws on logs when the first tower is still log-gated', async () => {
@@ -317,8 +362,24 @@ describe('GatherGoal', () => {
       ]),
     ];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
-      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+      {
+        eid: 100,
+        kind: EntityKind.Armory,
+        hp: 500,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.baseUnderAttack.value = false;
     store.fish.value = 260;
@@ -353,8 +414,24 @@ describe('GatherGoal', () => {
       ]),
     ];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
-      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+      {
+        eid: 100,
+        kind: EntityKind.Armory,
+        hp: 500,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.baseUnderAttack.value = false;
     store.fish.value = 80;
@@ -393,8 +470,24 @@ describe('GatherGoal', () => {
       ]),
     ];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
-      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+      {
+        eid: 100,
+        kind: EntityKind.Armory,
+        hp: 500,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.baseUnderAttack.value = false;
     store.fish.value = 40;
@@ -436,8 +529,24 @@ describe('GatherGoal', () => {
       ]),
     ];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
-      { eid: 100, kind: EntityKind.Armory, hp: 500, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+      {
+        eid: 100,
+        kind: EntityKind.Armory,
+        hp: 500,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.baseUnderAttack.value = false;
     store.fish.value = 80;
@@ -465,11 +574,17 @@ describe('GatherGoal', () => {
     const logNode = createResource(EntityKind.Cattail, ResourceType.Logs, 130, 110);
     createResource(EntityKind.Clambed, ResourceType.Fish, 120, 115);
 
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(eid1, MUDPAW_KIND, 'idle')])];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.fish.value = 120;
     store.logs.value = 0;
@@ -567,6 +682,7 @@ describe('TrainGoal', () => {
       rosterGroup('generalist', [
         rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
         rosterUnit(2, MUDPAW_KIND, 'gathering-fish'),
+        rosterUnit(3, MUDPAW_KIND, 'gathering-logs'),
       ]),
     ];
     world.resources.fish = 40;
@@ -611,11 +727,13 @@ describe('TrainGoal', () => {
       rosterGroup('generalist', [
         rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
         rosterUnit(2, MUDPAW_KIND, 'gathering-logs'),
+        rosterUnit(3, MUDPAW_KIND, 'gathering-fish'),
       ]),
       rosterGroup('combat', [
         rosterUnit(10, SAPPER_KIND, 'attacking', 18, 30),
         rosterUnit(11, SAPPER_KIND, 'defending', 22, 30),
         rosterUnit(12, SAPPER_KIND, 'idle', 30, 30),
+        rosterUnit(13, SABOTEUR_KIND, 'idle', 28, 30),
       ]),
     ];
     store.food.value = 2;
@@ -725,4 +843,67 @@ describe('TrainGoal', () => {
     expect(TrainingQueue.count[lodgeEid]).toBe(0);
   });
 
+  it('does not let a fallback Medic bypass a reserved build', async () => {
+    const { TrainGoal } = await import('@/governor/goals/train-goal');
+    const { getGovernorCombatTarget, getGovernorReservedBuildKind, shouldTrainSupportUnit } =
+      await import('@/governor/train-policy');
+
+    const healerHutEid = addEntity(world.ecs);
+    addComponent(world.ecs, healerHutEid, TrainingQueue);
+    addComponent(world.ecs, healerHutEid, FactionTag);
+    addComponent(world.ecs, healerHutEid, IsBuilding);
+    FactionTag.faction[healerHutEid] = Faction.Player;
+    TrainingQueue.count[healerHutEid] = 0;
+
+    storeV3.progressionLevel.value = 6;
+    store.baseThreatCount.value = 0;
+    store.waveCountdown.value = 24;
+    store.fish.value = 300;
+    store.logs.value = 200;
+    store.buildingRoster.value = [
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1500,
+        maxHp: 1500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      } satisfies RosterBuilding,
+      {
+        eid: healerHutEid,
+        kind: EntityKind.HerbalistHut,
+        hp: 500,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [EntityKind.Medic],
+      } satisfies RosterBuilding,
+    ];
+    store.unitRoster.value = [
+      rosterGroup('generalist', [
+        rosterUnit(1, MUDPAW_KIND, 'gathering-fish'),
+        rosterUnit(2, MUDPAW_KIND, 'gathering-logs'),
+        rosterUnit(3, MUDPAW_KIND, 'idle'),
+      ]),
+      rosterGroup('combat', [
+        rosterUnit(10, SAPPER_KIND, 'idle'),
+        rosterUnit(11, SAPPER_KIND, 'idle'),
+        rosterUnit(12, SAPPER_KIND, 'idle'),
+        rosterUnit(13, SAPPER_KIND, 'idle'),
+      ]),
+    ];
+    store.food.value = 2;
+    store.maxFood.value = 8;
+
+    expect(getGovernorReservedBuildKind()).toBe(EntityKind.Armory);
+    expect(getGovernorCombatTarget()).toBe(5);
+    expect(shouldTrainSupportUnit()).toBe(false);
+
+    const goal = new TrainGoal();
+    goal.activate();
+
+    expect(goal.status).toBe(Goal.STATUS.FAILED);
+    expect(TrainingQueue.count[healerHutEid]).toBe(0);
+  });
 });

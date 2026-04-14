@@ -127,9 +127,7 @@ describe('DefendGoal repair routing', () => {
     const mudpaw = createUnit(MUDPAW_KIND, 180, 180);
     world.resources.logs = 40;
     storeV3.currentRunPurchasedNodeIds.value = ['defense_repair_speed_t0'];
-    store.unitRoster.value = [
-      rosterGroup('generalist', [rosterUnit(mudpaw, MUDPAW_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('generalist', [rosterUnit(mudpaw, MUDPAW_KIND, 'idle')])];
 
     const goal = new DefendGoal();
     goal.activate();

@@ -8,8 +8,8 @@
  * Parameterized by tier (1-6) for panel-aware tests.
  */
 
-import type { GameWorld } from '@/ecs/world';
 import { createWeatherState } from '@/config/weather';
+import type { GameWorld } from '@/ecs/world';
 import { createGameWorld } from '@/ecs/world-defaults';
 import { PanelGrid } from '@/game/panel-grid';
 import { SeededRandom } from '@/utils/random';

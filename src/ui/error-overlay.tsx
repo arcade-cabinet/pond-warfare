@@ -18,6 +18,7 @@ import {
   subscribeFatalError,
 } from '@/errors';
 import { restartMountedGameSession } from '@/game/shell-session';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import * as store from '@/ui/store';
 import { Frame9Slice } from './components/frame';
 
@@ -43,6 +44,9 @@ function FatalErrorModal({ error }: { error: Error }) {
             <p class="font-game text-[var(--pw-text-primary)] mb-2">{error.message}</p>
             <p class="font-game text-xs text-[var(--pw-text-muted)]">
               The current session cannot continue until it is safely restarted.
+            </p>
+            <p class="font-numbers text-[10px] text-[var(--pw-text-muted)] mt-2">
+              Build {BUILD_STAMP_LABEL}
             </p>
             {error.stack && (
               <pre class="font-numbers text-[10px] text-[var(--pw-text-muted)] bg-black/40 p-3 rounded mt-2 max-h-40 overflow-auto whitespace-pre-wrap">

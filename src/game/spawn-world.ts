@@ -49,7 +49,7 @@ export function spawnVerticalWorld(world: GameWorld, unlockStage = 1): void {
   world.worldWidth = dims.width;
   world.worldHeight = dims.height;
 
-  const lodgeEid = spawnVerticalEntities(world, layout, rng);
+  spawnVerticalEntities(world, layout, rng);
   initializeSpecialistProgression(world, prestigeState);
 
   const lodge = world.selection[0];

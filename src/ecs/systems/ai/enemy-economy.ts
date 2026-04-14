@@ -30,7 +30,7 @@ import {
 import type { GameWorld } from '@/ecs/world';
 import { ENEMY_HARVESTER_KIND } from '@/game/live-unit-kinds';
 import { triggerSpawnPop } from '@/rendering/animations';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { Faction, UnitState } from '@/types';
 import { spawnDustBurst } from '@/utils/particles';
 import { getEnemyNests } from './helpers';
 

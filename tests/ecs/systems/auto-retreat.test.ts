@@ -6,7 +6,6 @@
 
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   Combat,
   EntityTypeTag,
@@ -18,6 +17,7 @@ import {
 } from '@/ecs/components';
 import { autoRetreatSystem } from '@/ecs/systems/auto-retreat';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
+import { MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 
 function createUnit(
