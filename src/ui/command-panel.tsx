@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals';
 import { entityKindName } from '@/config/entity-defs';
-import { selectBuilding, selectEntity as focusEntity } from '@/game/panel-actions';
+import { selectEntity as focusEntity, selectBuilding } from '@/game/panel-actions';
 import { canDockPanels, screenClass } from '@/platform';
 import { ActionPanel } from './action-panel';
 import {
@@ -15,8 +15,8 @@ import {
   selectArmyUnits,
   toggleColorBlind,
 } from './game-actions';
-import { SelectionPanel } from './selection-panel';
 import { formatUnitTaskLabel } from './roster-types';
+import { SelectionPanel } from './selection-panel';
 import * as store from './store';
 
 type PanelTab = 'map' | 'forces' | 'buildings' | 'act' | 'menu';

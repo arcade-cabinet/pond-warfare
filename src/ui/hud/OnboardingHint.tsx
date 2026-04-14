@@ -134,10 +134,7 @@ export function OnboardingHint() {
           pointerEvents: 'auto',
         }}
       >
-        <div
-          class="flex items-center justify-between gap-3"
-          style={{ marginBottom: '8px' }}
-        >
+        <div class="flex items-center justify-between gap-3" style={{ marginBottom: '8px' }}>
           <div class="font-heading text-sm" style={{ color: 'var(--pw-gold)' }}>
             First Match Guide
           </div>
@@ -161,10 +158,7 @@ export function OnboardingHint() {
           {step.body}
         </div>
 
-        <div
-          class="flex items-center justify-between gap-3"
-          style={{ marginTop: '12px' }}
-        >
+        <div class="flex items-center justify-between gap-3" style={{ marginTop: '12px' }}>
           <div class="text-xs" style={{ color: 'var(--pw-text-dim)' }}>
             Step {stepIndex + 1} of {STEPS.length}
           </div>
@@ -176,8 +170,7 @@ export function OnboardingHint() {
                   width: '8px',
                   height: '8px',
                   borderRadius: '999px',
-                  background:
-                    idx === stepIndex ? 'var(--pw-gold)' : 'rgba(197, 160, 89, 0.25)',
+                  background: idx === stepIndex ? 'var(--pw-gold)' : 'rgba(197, 160, 89, 0.25)',
                   display: 'inline-block',
                 }}
               />
