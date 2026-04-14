@@ -18,8 +18,8 @@ import {
   startGameLoop,
   wireWebGLHandlers,
 } from '@/game/game-init';
-import type { GameLoopState } from '@/game/game-loop';
 import { setupAudio } from '@/game/game-lifecycle';
+import type { GameLoopState } from '@/game/game-loop';
 import { PhysicsManager } from '@/physics/physics-world';
 import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';

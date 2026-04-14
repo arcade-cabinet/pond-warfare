@@ -5,13 +5,12 @@
  * Mudpaw at stage 1, Medic at stage 2, Sapper at stage 5, Saboteur at stage 6.
  */
 
-import { ENTITY_DEFS } from '@/config/entity-defs';
 import type { GameWorld } from '@/ecs/world';
 import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { getPlayerTrainingCost } from '@/game/training-costs';
 import { train } from '@/input/selection/queries';
 import type { ReplayRecorder } from '@/replay';
-import { EntityKind } from '@/types';
+import type { EntityKind } from '@/types';
 import type { ActionButtonDef } from '@/ui/action-panel';
 import { buildSpecialistButtons } from './specialist-buttons';
 
@@ -65,7 +64,6 @@ export function buildLodgeButtons(
   for (const spec of MANUAL_BUTTON_SPECS) {
     if (stage < spec.requiredStage) continue;
 
-    const def = ENTITY_DEFS[spec.kind];
     const adjustedCost = getPlayerTrainingCost(w, spec.kind);
     const fishCost = adjustedCost.fish;
     const logCost = adjustedCost.logs;

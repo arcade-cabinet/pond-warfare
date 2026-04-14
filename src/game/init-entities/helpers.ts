@@ -165,13 +165,7 @@ export function spawnPlayerBase(ctx: SpawnContext): number {
     dirX /= dirLen;
     dirY /= dirLen;
   }
-  spawnEntity(
-    world,
-    factionCfg.generalistKind,
-    sx + dirX * 60,
-    sy + dirY * 60,
-    Faction.Player,
-  );
+  spawnEntity(world, factionCfg.generalistKind, sx + dirX * 60, sy + dirY * 60, Faction.Player);
 
   // Center camera on Commander
   world.camX = sx - world.viewWidth / 2;

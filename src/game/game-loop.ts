@@ -25,7 +25,6 @@ import type { PhysicsManager } from '@/physics/physics-world';
 import { clampCamera } from '@/rendering/camera';
 import type { FogRendererState } from '@/rendering/fog-renderer';
 import type { ReplayRecorder } from '@/replay';
-import { saveGame } from '@/save-system';
 import { checkAchievements } from '@/systems/achievements';
 import { type EntityKind, Faction } from '@/types';
 import { pruneGameEvents } from '@/ui/game-events';
