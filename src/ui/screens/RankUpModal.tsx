@@ -18,6 +18,7 @@ import {
   type PrestigeState,
   pearlsForPrestige,
 } from '@/config/prestige-logic';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { Frame9Slice } from '@/ui/components/frame';
 import { COLORS } from '@/ui/design-tokens';
 
@@ -199,6 +200,13 @@ export function RankUpModal({
               >
                 {confirmed ? 'Ranking Up...' : 'Confirm'}
               </button>
+            </div>
+
+            <div
+              class="font-numbers text-[10px] uppercase tracking-[0.2em] text-center"
+              style={{ color: COLORS.weatheredSteel, opacity: 0.7 }}
+            >
+              Build {BUILD_STAMP_LABEL}
             </div>
           </div>
         </Frame9Slice>
