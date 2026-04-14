@@ -33,11 +33,7 @@ import { EntityKind, Faction, nodeKindToResourceType, ResourceType, UnitState } 
 /*  Helper factories                                                   */
 /* ------------------------------------------------------------------ */
 
-function createMudpaw(
-  world: GameWorld,
-  x: number,
-  y: number,
-): number {
+function createMudpaw(world: GameWorld, x: number, y: number): number {
   const eid = spawnEntity(world, MUDPAW_KIND, x, y, Faction.Player);
   return eid;
 }
