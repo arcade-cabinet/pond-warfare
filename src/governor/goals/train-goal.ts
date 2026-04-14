@@ -10,12 +10,7 @@
 import { Goal } from 'yuka';
 import { ENTITY_DEFS } from '@/config/entity-defs';
 import { game } from '@/game';
-import {
-  MEDIC_KIND,
-  MUDPAW_KIND,
-  SABOTEUR_KIND,
-  SAPPER_KIND,
-} from '@/game/live-unit-kinds';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { train } from '@/input/selection/queries';
 import { EntityKind } from '@/types';
 import * as store from '@/ui/store';
@@ -36,12 +31,6 @@ function armySize(): number {
 
 function mudpawCount(): number {
   return getGovernorGatherUnits(store.unitRoster.value).length;
-}
-
-function scoutCount(): number {
-  return store.unitRoster.value
-    .filter((g) => g.role === 'recon')
-    .reduce((sum, g) => sum + g.units.length, 0);
 }
 
 function preferredCombatUnit(trainable: EntityKind[]): EntityKind | null {
@@ -75,9 +64,11 @@ export class TrainGoal extends Goal {
 
       const unitKind = this.pickUnit(trainable);
       if (unitKind === null) continue;
+      const allowSupportMedicDuringReservation =
+        unitKind === MEDIC_KIND && shouldTrainSupportUnit();
       if (
         reservedBuildKind !== null &&
-        unitKind !== MEDIC_KIND &&
+        !allowSupportMedicDuringReservation &&
         armySize() >= Math.max(3, combatTarget - 1)
       ) {
         continue;

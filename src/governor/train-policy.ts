@@ -7,17 +7,29 @@ import { getGovernorCombatUnits, getGovernorGatherUnits } from './roster-units';
 
 type GovernorUnitRole = 'generalist' | 'combat' | 'support' | 'recon';
 
-function unitCount(role: GovernorUnitRole): number {
-  if (role === 'generalist') return getGovernorGatherUnits(store.unitRoster.value).length;
-  if (role === 'combat') return getGovernorCombatUnits(store.unitRoster.value).length;
+function directRoleUnitCount(
+  role: Exclude<GovernorUnitRole, 'generalist' | 'combat'> | 'combat',
+): number {
   return store.unitRoster.value
     .filter((group) => group.role === role)
     .reduce((sum, group) => sum + group.units.length, 0);
 }
 
+function unitCount(role: GovernorUnitRole): number {
+  if (role === 'generalist') return getGovernorGatherUnits(store.unitRoster.value).length;
+  if (role === 'combat') return getGovernorCombatUnits(store.unitRoster.value).length;
+  return directRoleUnitCount(role);
+}
+
+function directCombatUnitCount(): number {
+  return directRoleUnitCount('combat');
+}
+
 function woundedCombatUnitCount(): number {
-  return getGovernorCombatUnits(store.unitRoster.value).filter((unit) => unit.hp < unit.maxHp)
-    .length;
+  return store.unitRoster.value
+    .filter((group) => group.role === 'combat')
+    .flatMap((group) => group.units)
+    .filter((unit) => unit.hp < unit.maxHp).length;
 }
 
 function lodgeHpRatio(): number {
@@ -152,9 +164,21 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
   return null;
 }
 
+export function shouldPreserveEarlyArmoryLogLane(): boolean {
+  return (
+    currentStage() >= 6 &&
+    !hasCompletedBuilding(EntityKind.Armory) &&
+    !hasCurrentRunTrack('defense_tower_damage') &&
+    !hasCurrentRunTrack('defense_wall_hp') &&
+    !hasCurrentRunTrack('siege_demolish_power') &&
+    unitCount('generalist') >= 2 &&
+    Math.max(0, Math.trunc(store.baseThreatCount.value || 0)) === 0
+  );
+}
+
 export function shouldTrainSupportUnit(): boolean {
   if (unitCount('support') > 0) return false;
-  const combatUnits = unitCount('combat');
+  const combatUnits = directCombatUnitCount();
   const combatTarget = getGovernorCombatTarget();
   if (hasCurrentRunTrack('utility_heal_power') && currentStage() >= 6) {
     const nearCombatTarget = combatUnits >= Math.max(3, combatTarget - 1);

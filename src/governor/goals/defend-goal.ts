@@ -5,15 +5,9 @@
  * combat units and assigns them to 'defending' task.
  */
 
-import { Goal } from 'yuka';
 import { query } from 'bitecs';
+import { Goal } from 'yuka';
 import { ENTITY_DEFS } from '@/config/entity-defs';
-import { game } from '@/game';
-import {
-  findPlayerLodge,
-  LODGE_REPAIR_LOG_COST,
-  repairPlayerLodge,
-} from '@/game/lodge-repair';
 import {
   EntityTypeTag,
   FactionTag,
@@ -22,15 +16,16 @@ import {
   TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
-import { getGovernorCombatUnits, getGovernorGatherUnits } from '@/governor/roster-units';
+import { game } from '@/game';
+import { findPlayerLodge, LODGE_REPAIR_LOG_COST, repairPlayerLodge } from '@/game/lodge-repair';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
+import { getGovernorCombatUnits, getGovernorGatherUnits } from '@/governor/roster-units';
 import { EntityKind, Faction, UnitState } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
-import * as storeV3 from '@/ui/store-v3';
-import { canDefendWith } from './combat-roster';
 import { hasCurrentRunTrack } from '../current-run-upgrades';
-import { getGovernorReservedBuildKind } from '../train-policy';
+import { getGovernorReservedBuildKind, shouldPreserveEarlyArmoryLogLane } from '../train-policy';
+import { canDefendWith } from './combat-roster';
 
 /** Find combat units that can be redirected to defense. */
 function availableDefenders(): RosterUnit[] {
@@ -86,7 +81,9 @@ function assignRepairOrder(unit: RosterUnit, target: number): void {
 
 function findRepairer(defenders: RosterUnit[]): RosterUnit | undefined {
   if (defenders.length <= 0) return undefined;
-  const mudpaws = getGovernorGatherUnits(store.unitRoster.value).filter((unit) => !unit.hasOverride);
+  const mudpaws = getGovernorGatherUnits(store.unitRoster.value).filter(
+    (unit) => !unit.hasOverride,
+  );
   for (const task of REPAIR_TASK_PRIORITY) {
     const candidate = mudpaws.find(
       (unit) => unit.task === task && defenders.some((defender) => defender.eid !== unit.eid),
@@ -105,17 +102,18 @@ function shouldPreserveLogsForReservedDefenseBuild(): boolean {
     hasCurrentRunTrack('defense_wall_hp') &&
     !store.buildingRoster.value.some((building) => building.kind === EntityKind.Wall);
   const demolishTrackActive = hasCurrentRunTrack('siege_demolish_power');
-  const armoryMissing = !store.buildingRoster.value.some((building) => building.kind === EntityKind.Armory);
+  const armoryMissing = !store.buildingRoster.value.some(
+    (building) => building.kind === EntityKind.Armory,
+  );
   const preserveForTowerTrack =
     towerTrackActive && (reservedBuildKind === null || reservedBuildKind === EntityKind.Tower);
   const preserveForArmory = reservedBuildKind === EntityKind.Armory;
   const preserveForPreArmoryLogLane =
-    storeV3.progressionLevel.value >= 6 &&
+    shouldPreserveEarlyArmoryLogLane() &&
     armoryMissing &&
     !towerTrackActive &&
     !wallTrackActive &&
-    !demolishTrackActive &&
-    reservedBuildKind === null;
+    !demolishTrackActive;
   if (
     !preserveForPreArmoryLogLane &&
     !preserveForArmory &&
@@ -147,8 +145,9 @@ function shouldPreserveLogsForReservedDefenseBuild(): boolean {
     return game.world.resources.logs < towerLogs;
   }
 
+  if (reservedBuildKind === null) return false;
   if (lodgeHpRatio < 0.8) return false;
-  const buildLogs = ENTITY_DEFS[reservedBuildKind!].logCost ?? 0;
+  const buildLogs = ENTITY_DEFS[reservedBuildKind].logCost ?? 0;
   const logs = game.world.resources.logs;
   return logs >= Math.max(0, buildLogs - LODGE_REPAIR_LOG_COST);
 }
