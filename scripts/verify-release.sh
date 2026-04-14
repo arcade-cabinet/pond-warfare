@@ -4,9 +4,16 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+timestamp() {
+  date '+%H:%M:%S'
+}
+
 run() {
-  printf '\n==> %s\n' "$*"
+  local start=${SECONDS}
+  printf '\n[%s] ==> %s\n' "$(timestamp)" "$*"
   "$@"
+  local elapsed=$((SECONDS - start))
+  printf '[%s] <== completed in %ss\n' "$(timestamp)" "$elapsed"
 }
 
 run pnpm exec tsc --noEmit
@@ -28,4 +35,4 @@ run pnpm build:android
 run bash -lc 'cd android && ./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestSources --no-daemon'
 run pnpm audit --json
 
-printf '\nRelease verification completed successfully.\n'
+printf '\n[%s] Release verification completed successfully.\n' "$(timestamp)"
