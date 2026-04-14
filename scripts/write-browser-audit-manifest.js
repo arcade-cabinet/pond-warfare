@@ -5,6 +5,17 @@ import { execFileSync } from 'node:child_process';
 const repoRoot = resolve(import.meta.dirname, '..');
 const auditDir = join(repoRoot, 'tests', 'browser', 'audit');
 const manifestPath = join(auditDir, 'MANIFEST.md');
+const expectedCaptures = [
+  'landing-01-main.png',
+  'landing-02-settings.png',
+  'landing-03-play-mode.png',
+  'phase-01-match-start.png',
+  'phase-02-economy-gathering.png',
+  'phase-03-event-alert.png',
+  'phase-04-defense-combat.png',
+  'phase-05-rewards.png',
+  'phase-06-upgrade-web.png',
+];
 
 function git(args) {
   try {
@@ -32,6 +43,20 @@ const captures = readdirSync(auditDir)
       modifiedAt: stats.mtime.toISOString(),
     };
   });
+
+const captureNames = captures.map(({ name }) => name);
+const missingCaptures = expectedCaptures.filter((name) => !captureNames.includes(name));
+const unexpectedCaptures = captureNames.filter((name) => !expectedCaptures.includes(name));
+
+if (missingCaptures.length > 0 || unexpectedCaptures.length > 0) {
+  const problems = [
+    missingCaptures.length > 0 ? `missing: ${missingCaptures.join(', ')}` : null,
+    unexpectedCaptures.length > 0 ? `unexpected: ${unexpectedCaptures.join(', ')}` : null,
+  ].filter(Boolean);
+
+  console.error(`Browser audit capture set mismatch: ${problems.join(' | ')}`);
+  process.exit(1);
+}
 
 const generatedAt = new Date().toISOString();
 const commitSha = git(['rev-parse', 'HEAD']);
