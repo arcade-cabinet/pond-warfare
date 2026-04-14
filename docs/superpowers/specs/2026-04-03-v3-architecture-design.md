@@ -1,7 +1,7 @@
 # Pond Warfare v3.0 — Architecture Design Spec
 
 > Unit-model note, April 7, 2026:
-> The unit split described in this spec is now historical context. The canonical current design lives in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), which supersedes the older `Gatherer/Fighter/Scout + free auto-deploy specialist` framing.
+> The unit split described in this spec is now historical context. The canonical current design lives in [docs/unit-model.md](../../unit-model.md), which supersedes the older `Gatherer/Fighter/Scout + free auto-deploy specialist` framing.
 
 ## Vision
 

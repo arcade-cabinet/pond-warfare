@@ -16,7 +16,7 @@ Pond Warfare is a mobile-first real-time strategy game set in a pond ecosystem. 
 
 The core loop: PLAY -> WIN -> SPEND CLAMS TO PUSH THE CURRENT RUN -> RANK UP FOR PEARLS -> REPEAT.
 
-The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md), with a machine-readable copy in [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). Older docs that describe separate baseline `Gatherer`, `Fighter`, and `Scout` units plus free match-start Pearl auto-deploys should be treated as obsolete.
+The canonical unit model is defined in [docs/unit-model.md](unit-model.md), with a machine-readable copy in [configs/unit-model.json](../configs/unit-model.json). Older docs that describe separate baseline `Gatherer`, `Fighter`, and `Scout` units plus free match-start Pearl auto-deploys should be treated as obsolete.
 
 ### Baseline Balance Rule
 
@@ -410,7 +410,7 @@ This provides a non-intrusive way to set up automated economy and defense withou
 
 ## Automation Note
 
-The current runtime uses two live automation layers. Manual units still use the auto-symbol and per-role automation toggles for repeatable Mudpaw/combat/support/recon behavior, while Pearl specialists use area assignment from [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md). The long-term direction is to keep shrinking the older generalist automation surface as specialist-area control absorbs more of that work.
+The current runtime uses two live automation layers. Manual units still use the auto-symbol and per-role automation toggles for repeatable Mudpaw/combat/support/recon behavior, while Pearl specialists use area assignment from [docs/unit-model.md](unit-model.md). The long-term direction is to keep shrinking the older generalist automation surface as specialist-area control absorbs more of that work.
 
 ## Day/Night Cycle
 

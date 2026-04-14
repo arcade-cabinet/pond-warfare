@@ -8,7 +8,7 @@ domain: product
 
 This document is the canonical human-readable unit-model reference for Pond Warfare as of April 7, 2026.
 
-The machine-readable counterpart is [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). If prose and runtime assumptions diverge, that config plus this doc should be treated as the intended source of truth.
+The machine-readable counterpart is [configs/unit-model.json](../configs/unit-model.json). If prose and runtime assumptions diverge, that config plus this doc should be treated as the intended source of truth.
 
 It supersedes the older mixed model where:
 
