@@ -95,3 +95,5 @@ Capture these before shipping:
 - Android build date/time
 - Device/browser smoke matrix used for signoff
 - Browser audit manifest path and generation timestamp
+
+Use [docs/release-signoff-template.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/release-signoff-template.md) as the canonical signoff record.

@@ -1,15 +1,15 @@
 ---
 title: Current State & Known Issues
-updated: 2026-04-10
+updated: 2026-04-14
 status: current
 domain: context
 ---
 
 # Current State & Known Issues
 
-## Release Status: v1.2.0
+## Release Status: v1.3.0
 
-**Current version:** 1.2.0 (released 2026-03-30)
+**Current version:** 1.3.0 (released 2026-04-10)
 
 **Game mode:** Tower defense with progression — defend Lodge against escalating enemy waves, unlock upgrades and specialist blueprints between matches.
 
@@ -54,12 +54,14 @@ domain: context
 
 ### Quality
 
-- [x] 359+ tests across 29 files (unit, browser, E2E)
+- [x] 2,500+ tests across unit, browser, integration, gameplay, and E2E suites
 - [x] TypeScript strict mode
 - [x] Biome linting + formatting
 - [x] Android APK builds (debug + signed release)
 - [x] Mobile-responsive UI (portrait-first, safe area aware)
 - [x] Accessibility improvements (ARIA labels, keyboard navigation)
+- [x] Scripted release gate (`pnpm verify:release`)
+- [x] Tracked browser audit captures + manifest
 
 ### Documentation
 
@@ -86,7 +88,7 @@ domain: context
 
 - **Status:** Current version stable, continuous tuning
 - **Recent work:** Fortification costs, tower damage, unit speed, cost reduction multipliers
-- **Next focus:** Early-game economy pacing, late-game difficulty curve
+- **Next focus:** Late-stage governor follow-through and remaining balance tuning
 
 ### Mobile Experience
 
@@ -100,7 +102,7 @@ domain: context
 
 ### Critical (Block Release)
 
-None currently. All release-blocking issues resolved in v1.2.0.
+None currently. The tracked release gate is green on v1.3.0.
 
 ### Major (High Priority)
 
@@ -130,24 +132,24 @@ None currently. All release-blocking issues resolved in v1.2.0.
    - Impact: Gather completion delayed by 1 frame
    - Fix: Tighten tolerance to 2px (low priority)
 
-## Next Steps (Post-v1.2)
+## Next Steps (Post-v1.3)
 
 ### Planned Features
 
-1. **Multiplayer (v1.3)** — P2P via Trystero (WebRTC/WebTorrent)
+1. **Multiplayer follow-through** — P2P via Trystero (WebRTC/WebTorrent)
    - Architecture drafted in `src/net/`
    - Need full matchmaking UI + replay sync
 
-2. **Custom game modifiers (v1.4)**
+2. **Custom game modifiers**
    - Prestige-gated difficulty modifiers (speed runs, no walls, etc.)
    - Leaderboard tracking per modifier
 
-3. **Campaign mode (v1.5)**
+3. **Campaign mode**
    - 5 scripted missions with dialogue
    - Progressive unlock of factions/commanders
    - Story beats (cutscenes, dialogue bubbles)
 
-4. **Cosmetic store (v1.5)**
+4. **Cosmetic store**
    - Cosmetic skins for units + buildings
    - Pearl cosmetic bundles
 
@@ -166,14 +168,14 @@ None currently. All release-blocking issues resolved in v1.2.0.
 
 ## Testing Gaps
 
-- **Visual regression:** No automatic screenshot comparison; manual visual QA only
+- **Visual regression:** Canonical staged captures are tracked, but there is still no pixel-diff screenshot comparison
 - **Mobile stress test:** No automated test for 100+ unit match on low-end devices
 - **Audio:** No test for spatial panning correctness (manual verification only)
 - **Networking:** Multiplayer P2P not fully tested (feature WIP)
 
 ## Documentation Gaps
 
-All root and docs/ files now have YAML frontmatter and are current as of 2026-04-10.
+All root and docs/ files now have YAML frontmatter and are current as of 2026-04-14.
 
 - `docs/LORE.md` — Game world and narrative (game is tower defense, not narrative-heavy, but lore docs added for completeness)
 
@@ -203,4 +205,4 @@ pnpm build && pnpm build:android
 # GitHub create release with APK artifact attached
 ```
 
-See [docs/release-checklist.md](release-checklist.md) for full details.
+See [docs/release-checklist.md](release-checklist.md) and [docs/release-signoff-template.md](release-signoff-template.md) for full details.
