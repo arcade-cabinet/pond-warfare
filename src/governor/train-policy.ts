@@ -110,7 +110,6 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
     return EntityKind.Wall;
   }
 
-  const armoryFishCost = ENTITY_DEFS[EntityKind.Armory].fishCost ?? 0;
   const canStartArmorySavings =
     stage >= 6 &&
     !hasCompletedBuilding(EntityKind.Armory) &&
