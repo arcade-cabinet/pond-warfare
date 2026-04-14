@@ -12,6 +12,7 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { audio } from '@/audio/audio-system';
 import { animateGameOverStats } from '@/rendering/animations';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { COLORS } from '@/ui/design-tokens';
 import { Frame9Slice } from './components/frame';
 import {
@@ -203,6 +204,12 @@ export function GameOverBanner(props: GameOverProps) {
         title="Click to select seed for copying"
       >
         Map Seed: {goMapSeed.value}
+      </p>
+      <p
+        class="font-numbers text-[10px] mt-1 tracking-[0.14em] uppercase"
+        style={{ color: COLORS.weatheredSteel }}
+      >
+        Build {BUILD_STAMP_LABEL}
       </p>
 
       {/* Action buttons — rts-btn */}
