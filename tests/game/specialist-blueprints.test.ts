@@ -10,13 +10,13 @@ import {
 } from '@/ecs/components';
 import { createGameWorld } from '@/ecs/world';
 import { buildActionPanel } from '@/game/action-panel';
+import { MUDPAW_KIND } from '@/game/live-unit-kinds';
+import { computePopulation } from '@/game/population-counter';
 import {
   getSpecialistBlueprintCap,
   initializeSpecialistBlueprintCaps,
   initializeSpecialistProgression,
 } from '@/game/specialist-blueprints';
-import { MUDPAW_KIND } from '@/game/live-unit-kinds';
-import { computePopulation } from '@/game/population-counter';
 import { EntityKind, Faction } from '@/types';
 import { actionButtons } from '@/ui/action-panel';
 

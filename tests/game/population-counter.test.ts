@@ -60,10 +60,7 @@ describe('computePopulation', () => {
   });
 });
 
-function addAutonomousSpecialist(
-  world: ReturnType<typeof createGameWorld>,
-  eid: number,
-): void {
+function addAutonomousSpecialist(world: ReturnType<typeof createGameWorld>, eid: number): void {
   world.specialistAssignments.set(eid, {
     runtimeId: 'fisher',
     canonicalId: 'fisher',

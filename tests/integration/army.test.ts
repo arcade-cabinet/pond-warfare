@@ -12,7 +12,6 @@ import {
   Building,
   Combat,
   Health,
-  Position,
   TrainingQueue,
   trainingQueueSlots,
   UnitStateMachine,
@@ -21,7 +20,7 @@ import { combatSystem } from '@/ecs/systems/combat';
 import { trainingSystem } from '@/ecs/systems/training';
 import { rankFromKills, veterancySystem } from '@/ecs/systems/veterancy';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import { MEDIC_KIND, MUDPAW_KIND, SAPPER_KIND, SABOTEUR_KIND } from '@/game/live-unit-kinds';
+import { MEDIC_KIND, MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind, Faction, UnitState } from '@/types';
 import { getPlayerArmyUnits, getPlayerEntities } from '../helpers/ecs-queries';
 
