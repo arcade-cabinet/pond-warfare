@@ -6,7 +6,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 import {
@@ -23,6 +23,19 @@ function resolveDir(input, fallback) {
     return fallback;
   }
   return resolve(repoRoot, input);
+}
+
+function assertSafeDeleteDir(targetPath) {
+  const allowedRoot = resolve(repoRoot, 'tests', 'browser', 'screenshots');
+  const normalizedTarget = resolve(targetPath);
+  const relativeToAllowedRoot = relative(allowedRoot, normalizedTarget);
+  if (
+    normalizedTarget === allowedRoot ||
+    (!relativeToAllowedRoot.startsWith('..') && !relativeToAllowedRoot.startsWith('/') && relativeToAllowedRoot !== '')
+  ) {
+    return;
+  }
+  throw new Error(`Refusing to delete unsafe diff directory: ${normalizedTarget}`);
 }
 
 function parseNumberEnv(name, fallback) {
@@ -46,6 +59,7 @@ const maxDiffPixelsOverride =
     ? null
     : parseNumberEnv('BROWSER_AUDIT_MAX_DIFF_PIXELS', 0);
 
+assertSafeDeleteDir(diffAuditDir);
 rmSync(diffAuditDir, { recursive: true, force: true });
 mkdirSync(diffAuditDir, { recursive: true });
 
