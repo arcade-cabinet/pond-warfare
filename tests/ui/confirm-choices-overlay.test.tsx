@@ -11,6 +11,7 @@
 
 import { render } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { ConfirmChoicesOverlay } from '@/ui/screens/ConfirmChoicesOverlay';
 
 describe('ConfirmChoicesOverlay', () => {
@@ -84,6 +85,14 @@ describe('ConfirmChoicesOverlay', () => {
     // Frame9Slice renders the title -- check it exists in the DOM
     const text = container.textContent ?? '';
     expect(text).toContain('Apply these upgrades?');
+  });
+
+  it('shows the build stamp for upgrade-confirmation captures', () => {
+    const { getByText } = render(
+      <ConfirmChoicesOverlay purchases={mockPurchases} onConfirm={vi.fn()} onGoBack={vi.fn()} />,
+    );
+
+    expect(getByText(`Build ${BUILD_STAMP_LABEL}`)).toBeTruthy();
   });
 
   it('should handle single purchase', () => {
