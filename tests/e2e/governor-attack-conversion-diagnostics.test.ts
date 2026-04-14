@@ -2,12 +2,7 @@
 
 import { hasComponent, query } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  BUILDING_KINDS,
-  EntityKind,
-  Faction,
-  UnitState,
-} from '@/types';
+import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import {
   Combat,
   EntityTypeTag,
@@ -17,13 +12,10 @@ import {
   TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
-import { createPrestigeState, type PrestigeState } from '@/config/prestige-logic';
 import { Governor } from '@/governor/governor';
-import {
-  createGovernorTraceWorld,
-  runGovernorFrame,
-} from './governor-diagnostics-harness';
+import { BUILDING_KINDS, EntityKind, Faction, UnitState } from '@/types';
 import { mockedGameRef } from '../helpers/game-world-ref';
+import { createGovernorTraceWorld, runGovernorFrame } from './governor-diagnostics-harness';
 
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
@@ -86,7 +78,9 @@ function getCommittedAttackers(world = mockedGameRef.world): number[] {
     .filter((eid) => Health.current[eid] > 0)
     .filter((eid) => !BUILDING_KINDS.has(EntityTypeTag.kind[eid] as EntityKind))
     .filter((eid) => EntityTypeTag.kind[eid] !== EntityKind.Lodge)
-    .filter((eid) => TaskOverride.active[eid] === 1 && TaskOverride.task[eid] === UnitState.AttackMove);
+    .filter(
+      (eid) => TaskOverride.active[eid] === 1 && TaskOverride.task[eid] === UnitState.AttackMove,
+    );
 }
 
 function runVariant(seed: number, variant: AttackVariant): AttackConversionRow {
@@ -151,7 +145,11 @@ function runVariant(seed: number, variant: AttackVariant): AttackConversionRow {
       ) {
         directiveSwitches += 1;
       }
-      if (previousLiveTarget.has(eid) && previousLiveTarget.get(eid) !== liveTarget && liveTarget > 0) {
+      if (
+        previousLiveTarget.has(eid) &&
+        previousLiveTarget.get(eid) !== liveTarget &&
+        liveTarget > 0
+      ) {
         liveSwitches += 1;
       }
       previousDirectiveTarget.set(eid, directiveTarget);
@@ -189,13 +187,17 @@ function runVariant(seed: number, variant: AttackVariant): AttackConversionRow {
     avgEngaged: Number((engagedTotal / Math.max(committedSamples, 1)).toFixed(2)),
     engagePct: Number(((engagedTotal / Math.max(committedTotal, 1)) * 100).toFixed(1)),
     liveTargetPct: Number(((liveTargetTotal / Math.max(committedTotal, 1)) * 100).toFixed(1)),
-    avgDistanceOverRange: Number((distanceOverRangeTotal / Math.max(distanceSamples, 1)).toFixed(1)),
+    avgDistanceOverRange: Number(
+      (distanceOverRangeTotal / Math.max(distanceSamples, 1)).toFixed(1),
+    ),
     avgFocusPct: Number((focusPctTotal / Math.max(focusSamples, 1)).toFixed(1)),
     directiveSwitches,
     liveSwitches,
     kills: world.stats.unitsKilled,
     killsWhileCommitted,
-    killsPerCommittedSample: Number((killsWhileCommitted / Math.max(committedSamples, 1)).toFixed(2)),
+    killsPerCommittedSample: Number(
+      (killsWhileCommitted / Math.max(committedSamples, 1)).toFixed(2),
+    ),
   };
 }
 
@@ -204,10 +206,15 @@ describe('governor attack conversion diagnostics', () => {
     const rankOne = { ...createPrestigeState(), rank: 1 };
     const variants: AttackVariant[] = [
       { name: 'baseline', prestigeState: rankOne },
-      { name: 'combat_multiplier', prestigeState: { ...rankOne, upgradeRanks: { combat_multiplier: 1 } } },
+      {
+        name: 'combat_multiplier',
+        prestigeState: { ...rankOne, upgradeRanks: { combat_multiplier: 1 } },
+      },
     ];
 
-    const rows = TRACE_SEEDS.flatMap((seed) => variants.map((variant) => runVariant(seed, variant)));
+    const rows = TRACE_SEEDS.flatMap((seed) =>
+      variants.map((variant) => runVariant(seed, variant)),
+    );
 
     console.log('\nGovernor attack conversion diagnostics');
     console.table(rows);

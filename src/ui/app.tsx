@@ -6,7 +6,6 @@ import { audio } from '@/audio/audio-system';
 import { Health, Position, Selectable } from '@/ecs/components';
 import { game } from '@/game';
 import { restartMountedGameSession } from '@/game/shell-session';
-import { handleGameInitFailure } from './game-init-failure';
 import {
   handleClamsChange,
   handleClamUpgradeContinue,
@@ -17,6 +16,11 @@ import {
   handleRewardsRankUp,
   handleRewardsUpgrades,
 } from './app-v3-handlers';
+import { CommandPanel } from './command-panel';
+import { SvgFilters } from './components/SvgFilters';
+import { Tooltip } from './components/Tooltip';
+import { ErrorOverlay } from './error-overlay';
+import { EvacuationOverlay } from './evacuation-overlay';
 import {
   openKeyboardRef,
   openSettings,
@@ -25,11 +29,7 @@ import {
   toggleColorBlind,
   togglePanel,
 } from './game-actions';
-import { CommandPanel } from './command-panel';
-import { SvgFilters } from './components/SvgFilters';
-import { Tooltip } from './components/Tooltip';
-import { ErrorOverlay } from './error-overlay';
-import { EvacuationOverlay } from './evacuation-overlay';
+import { handleGameInitFailure } from './game-init-failure';
 import { GameOverBanner } from './game-over';
 import { AbilityButtons } from './hud/AbilityButtons';
 import { AchievementToast } from './hud/AchievementToast';

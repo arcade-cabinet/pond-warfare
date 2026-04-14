@@ -14,11 +14,12 @@
 
 import { signal } from '@preact/signals';
 import { useCallback } from 'preact/hooks';
-import { COLORS } from '@/ui/design-tokens';
 import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
+import { COLORS } from '@/ui/design-tokens';
 import { ComicPanel } from './comic-panel';
 import { MenuBackground } from './menu-background';
 import {
+  continueRequested,
   customGameSettings,
   customMapSeed,
   DEFAULT_CUSTOM_SETTINGS,
@@ -29,7 +30,6 @@ import {
   permadeathEnabled,
   selectedDifficulty,
   settingsOpen,
-  continueRequested,
 } from './store';
 import { multiplayerMenuOpen } from './store-multiplayer';
 import { pearlScreenOpen, prestigeRank, upgradesScreenOpen } from './store-v3';
