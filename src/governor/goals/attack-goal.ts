@@ -5,14 +5,14 @@
  * Assigns idle combat units to 'attacking' task.
  */
 
-import { Goal } from 'yuka';
 import { query } from 'bitecs';
+import { Goal } from 'yuka';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { game } from '@/game';
 import { SAPPER_KIND } from '@/game/live-unit-kinds';
 import { dispatchTaskOverride } from '@/game/task-dispatch';
-import { getGovernorCombatUnits } from '@/governor/roster-units';
 import { hasCurrentRunTrack } from '@/governor/current-run-upgrades';
+import { getGovernorCombatUnits } from '@/governor/roster-units';
 import { EntityKind, Faction } from '@/types';
 import type { RosterUnit } from '@/ui/roster-types';
 import * as store from '@/ui/store';
