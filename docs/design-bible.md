@@ -7,7 +7,7 @@ domain: creative
 
 # Pond Warfare - Game Design Bible (Historical Reference)
 
-> **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), [docs/architecture.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/architecture.md), and [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
+> **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](docs/gameplay.md), [docs/architecture.md](docs/architecture.md), and [docs/unit-model.md](docs/unit-model.md).
 >
 > Historical term translation:
 > `Gatherer` -> `Mudpaw`
@@ -16,7 +16,7 @@ domain: creative
 >
 > The roster matrices, progression beats, and matchup tables below are preserved for historical art and design context only. They should not be used as live gameplay, balance, or naming truth.
 
-> **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/gameplay.md), [docs/architecture.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/architecture.md), and [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
+> **Historical note:** This design bible preserves older v1/v2 direction and art intent. It is not the canonical gameplay or unit-model spec for the current game. For the live model, use [docs/gameplay.md](docs/gameplay.md), [docs/architecture.md](docs/architecture.md), and [docs/unit-model.md](docs/unit-model.md).
 >
 > Historical term translation:
 > `Gatherer` -> `Mudpaw`
@@ -45,7 +45,7 @@ Warcraft II-style RTS in a pond ecosystem. Two playable factions compete for fin
 - **15 achievements** + 18 unlockables across 5 categories
 - **Unit-specific SFX** (8 unique select sounds, building/death/tech/evolution effects)
 - **Cosmetic system** with unit skins + building themes via sprite recoloring
-- **359 tests** across 29 files
+- **2,500+ tests** across unit, browser, integration, gameplay, and E2E suites
 
 ## Macro Design (Strategic Layer)
 

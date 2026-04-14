@@ -157,7 +157,7 @@ For visual signoff, refresh the tracked staged screenshots too:
 pnpm audit:browser-captures
 ```
 
-That command regenerates [tests/browser/audit/MANIFEST.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/browser/audit/MANIFEST.md) and fails closed if the canonical nine capture files drift.
+That command regenerates [tests/browser/audit/MANIFEST.md](tests/browser/audit/MANIFEST.md) and fails closed if the canonical nine capture files drift.
 
 ## When to Write Tests
 
@@ -184,7 +184,7 @@ That command regenerates [tests/browser/audit/MANIFEST.md](/Users/jbogaty/src/ar
 
 **Before every release:**
 
-Use [docs/release-checklist.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/release-checklist.md) for the canonical smoke sequence and [docs/release-signoff-template.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/release-signoff-template.md) for the record you attach to a release PR or release issue.
+Use [docs/release-checklist.md](docs/release-checklist.md) for the canonical smoke sequence and [docs/release-signoff-template.md](docs/release-signoff-template.md) for the record you attach to a release PR or release issue.
 
 At minimum, manual signoff should cover:
 

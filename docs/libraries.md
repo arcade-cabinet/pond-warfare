@@ -11,7 +11,7 @@ How each dependency is utilized in Pond Warfare.
 
 > Historical note: older references to `Gatherer`, `Swimmer`, or other removed
 > player-roster units in this file describe internal or superseded usage. The
-> live player-facing unit model is [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md).
+> live player-facing unit model is [docs/unit-model.md](docs/unit-model.md).
 
 ## Runtime Dependencies
 
@@ -152,6 +152,6 @@ SQLite database for ALL platforms. **SQLite is required -- there is no localStor
 |------|---------|---------|
 | TypeScript | 6.0 | Type safety |
 | Vite | 8.0 | Bundling + HMR |
-| Vitest | 4.1 | Testing (359 tests across 29 files) |
+| Vitest | 4.1 | Testing (2,500+ tests across unit, browser, integration, gameplay, and E2E suites) |
 | Biome | 2.4 | Linting + formatting |
 | Tailwind CSS | 4.2 | Utility-first styling |
