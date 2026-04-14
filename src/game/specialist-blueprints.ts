@@ -1,8 +1,8 @@
-import { Health } from '@/ecs/components';
-import type { GameWorld } from '@/ecs/world';
 import type { PrestigeState } from '@/config/prestige-logic';
 import { getSpecialistBlueprints, getSpecialistZoneBonuses } from '@/config/prestige-logic';
 import type { SpecialistZoneStat } from '@/config/v3-types';
+import { Health } from '@/ecs/components';
+import type { GameWorld } from '@/ecs/world';
 
 export interface SpecialistBlueprintCap {
   unitId: string;
@@ -12,9 +12,7 @@ export interface SpecialistBlueprintCap {
 
 export type SpecialistZoneBonusMap = Record<string, Partial<Record<SpecialistZoneStat, number>>>;
 
-export function getSpecialistBlueprintCaps(
-  prestigeState: PrestigeState,
-): SpecialistBlueprintCap[] {
+export function getSpecialistBlueprintCaps(prestigeState: PrestigeState): SpecialistBlueprintCap[] {
   return getSpecialistBlueprints(prestigeState).map((entry) => ({
     unitId: entry.unitId,
     cap: entry.cap,
@@ -75,7 +73,10 @@ export function getRemainingSpecialistCapacity(
   world: Pick<GameWorld, 'specialistAssignments' | 'specialistBlueprintCaps'>,
   unitId: string,
 ): number {
-  return Math.max(0, getSpecialistBlueprintCap(world, unitId) - getActiveSpecialistCount(world, unitId));
+  return Math.max(
+    0,
+    getSpecialistBlueprintCap(world, unitId) - getActiveSpecialistCount(world, unitId),
+  );
 }
 
 export function getSpecialistZoneBonus(

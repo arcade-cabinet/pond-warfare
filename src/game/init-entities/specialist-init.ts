@@ -7,13 +7,13 @@
  */
 
 import type { PrestigeState } from '@/config/prestige-logic';
+import { Position } from '@/ecs/components';
 import {
   computeSpecialistDeployPlan,
   getSpecialistSpawnPositions,
   type SpecialistDeployPlan,
 } from '@/ecs/systems/specialist-deploy';
 import type { GameWorld } from '@/ecs/world';
-import { Position } from '@/ecs/components';
 import { spawnSpecialistUnit } from '@/game/init-entities/specialist-spawn';
 import { initializeSpecialistProgression } from '@/game/specialist-blueprints';
 import { pushGameEvent } from '@/ui/game-events';
@@ -35,14 +35,7 @@ export function deploySpecialistsAtMatchStart(
   for (const spawn of plan.spawns) {
     for (let i = 0; i < spawn.count; i++) {
       const pos = positions[positionIndex] ?? { x: lodgeX, y: lodgeY + 60 };
-      spawnSpecialistUnit(
-        world,
-        spawn.unitId,
-        lodgeEid,
-        pos.x,
-        pos.y,
-        'snapshot_harness',
-      );
+      spawnSpecialistUnit(world, spawn.unitId, lodgeEid, pos.x, pos.y, 'snapshot_harness');
       positionIndex++;
     }
   }
