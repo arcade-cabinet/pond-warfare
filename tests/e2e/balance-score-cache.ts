@@ -1,8 +1,8 @@
 import {
+  type BalanceSnapshot,
   getMetaProgressionScore,
   getPowerScore,
   getRewardScore,
-  type BalanceSnapshot,
 } from '@/balance/progression-model';
 
 export interface SnapshotScores {

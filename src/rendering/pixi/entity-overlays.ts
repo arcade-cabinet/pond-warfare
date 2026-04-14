@@ -8,7 +8,7 @@ import { type Container, type Graphics, Text, type TextStyleOptions } from 'pixi
 import { CB_PALETTE } from '@/constants';
 import type { GameWorld } from '@/ecs/world';
 import { getEntityDisplayName } from '@/game/unit-display';
-import { type EntityKind as EntityKindType } from '@/types';
+import type { EntityKind as EntityKindType } from '@/types';
 import { cleanupAutoSymbols } from './auto-symbol-overlay';
 import {
   colorToHex,

@@ -234,7 +234,9 @@ describe('game-actions', () => {
   });
 
   it('quickLoad restores the latest save and shows success feedback', async () => {
-    vi.mocked(getLatestSave).mockResolvedValueOnce({ data: '{"ok":true}' } as Awaited<ReturnType<typeof getLatestSave>>);
+    vi.mocked(getLatestSave).mockResolvedValueOnce({ data: '{"ok":true}' } as Awaited<
+      ReturnType<typeof getLatestSave>
+    >);
 
     quickLoad();
     await Promise.resolve();

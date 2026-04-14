@@ -5,8 +5,8 @@
  * (volume, game speed, accessibility, commander) survive app restarts.
  */
 
-import { loadPreference, savePreference } from '@/platform';
 import { GameError, logError } from '@/errors';
+import { loadPreference, savePreference } from '@/platform';
 import * as store from '@/ui/store';
 
 const SETTINGS_KEYS = {

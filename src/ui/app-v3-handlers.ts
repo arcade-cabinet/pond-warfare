@@ -11,15 +11,15 @@ import {
   type PrestigeResult,
   type PrestigeState,
 } from '@/config/prestige-logic';
+import type { CurrentRunUpgradeSnapshot } from './current-run-upgrades';
 import * as store from './store';
 import * as storeV3 from './store-v3';
 import {
-  persistPrestigeState,
   persistCurrentRun,
+  persistPrestigeState,
   persistSelectedCommander,
   resetCurrentRunOnPrestige,
 } from './store-v3-persistence';
-import type { CurrentRunUpgradeSnapshot } from './current-run-upgrades';
 
 export function handleUpgradesBack() {
   storeV3.upgradesScreenOpen.value = false;

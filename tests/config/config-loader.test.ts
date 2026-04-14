@@ -77,7 +77,7 @@ describe('Unit configs', () => {
     const ids = getAllUnitIds();
     expect(ids).toEqual(expect.arrayContaining(generalistIds));
     expect(ids).toEqual(expect.arrayContaining(specialistIds));
-      expect(ids.length).toBe(generalistIds.length + specialistIds.length);
+    expect(ids.length).toBe(generalistIds.length + specialistIds.length);
   });
 
   it('should throw for unknown unit ID', () => {
