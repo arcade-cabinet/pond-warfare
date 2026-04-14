@@ -29,8 +29,8 @@ import {
   Velocity,
 } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
-import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { LOOKOUT_KIND, MUDPAW_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
+import type { SpecialistAssignment } from '@/game/specialist-assignment';
 import { type ClickState, handleClick } from '@/input/pointer-click';
 import type { PointerCallbacks, PointerState } from '@/input/pointer-types';
 import { EntityKind, Faction, ResourceType, UnitState } from '@/types';

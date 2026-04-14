@@ -7,6 +7,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GameEntity } from 'yuka';
+import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import {
   AttackEvaluator,
   BuildEvaluator,
@@ -15,7 +16,6 @@ import {
   TrainEvaluator,
 } from '@/governor/evaluators';
 import { Governor } from '@/governor/governor';
-import { MUDPAW_KIND, SABOTEUR_KIND, SAPPER_KIND } from '@/game/live-unit-kinds';
 import { EntityKind } from '@/types';
 import type { RosterBuilding, RosterGroup } from '@/ui/roster-types';
 import * as store from '@/ui/store';
@@ -147,13 +147,9 @@ describe('GatherEvaluator', () => {
     storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
     store.baseThreatCount.value = 1;
     store.waveCountdown.value = 12;
-    store.buildingRoster.value = [
-      { ...makeBuilding(1, EntityKind.Lodge), hp: 1000, maxHp: 1000 },
-    ];
+    store.buildingRoster.value = [{ ...makeBuilding(1, EntityKind.Lodge), hp: 1000, maxHp: 1000 }];
     store.unitRoster.value = [
-      makeGroup('generalist', [
-        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
-      ]),
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
       makeGroup('combat', [{ eid: 20, task: 'idle', kind: SAPPER_KIND }]),
     ];
     store.fish.value = 120;
@@ -224,9 +220,7 @@ describe('BuildEvaluator', () => {
     store.waveCountdown.value = 12;
     store.fish.value = 220;
     store.logs.value = 150;
-    store.buildingRoster.value = [
-      { ...makeBuilding(1, EntityKind.Lodge), hp: 1000, maxHp: 1000 },
-    ];
+    store.buildingRoster.value = [{ ...makeBuilding(1, EntityKind.Lodge), hp: 1000, maxHp: 1000 }];
     store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND }]),
       makeGroup('combat', [{ eid: 20, task: 'idle', kind: SAPPER_KIND }]),
@@ -288,11 +282,14 @@ describe('BuildEvaluator', () => {
         { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
         { eid: 2, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.94);
@@ -360,19 +357,33 @@ describe('TrainEvaluator', () => {
   it('backs off training when a healthy early attack window is already open', () => {
     store.waveCountdown.value = 24;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
-      makeGroup('generalist', Array.from({ length: 4 }, (_, i) => ({
-        eid: i + 1,
-        task: 'gathering-fish',
-        kind: MUDPAW_KIND,
-      }))),
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'generalist',
+        Array.from({ length: 4 }, (_, i) => ({
+          eid: i + 1,
+          task: 'gathering-fish',
+          kind: MUDPAW_KIND,
+        })),
+      ),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.42);
@@ -427,9 +438,7 @@ describe('TrainEvaluator', () => {
       makeBuilding(2, EntityKind.Armory),
     ];
     store.unitRoster.value = [
-      makeGroup('generalist', [
-        { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
-      ]),
+      makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.8);
@@ -449,11 +458,14 @@ describe('TrainEvaluator', () => {
         { eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND },
         { eid: 2, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);
@@ -473,11 +485,14 @@ describe('TrainEvaluator', () => {
         { eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND },
         { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 4 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);
@@ -498,11 +513,14 @@ describe('TrainEvaluator', () => {
         { eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND },
         { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 4 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.12);
@@ -535,20 +553,21 @@ describe('TrainEvaluator', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 80;
     store.logs.value = 140;
-    store.buildingRoster.value = [
-      makeBuilding(1, EntityKind.Lodge),
-    ];
+    store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
     store.unitRoster.value = [
       makeGroup('generalist', [
         { eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND },
         { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
         { eid: 3, task: 'gathering-fish', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 5 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: i === 4 ? SABOTEUR_KIND : SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 5 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: i === 4 ? SABOTEUR_KIND : SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.16);
@@ -568,11 +587,14 @@ describe('TrainEvaluator', () => {
         { eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND },
         { eid: 2, task: 'gathering-fish', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 2 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.18);
@@ -583,9 +605,7 @@ describe('TrainEvaluator', () => {
     storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
     store.fish.value = 120;
     store.logs.value = 20;
-    store.buildingRoster.value = [
-      makeBuilding(1, EntityKind.Lodge),
-    ];
+    store.buildingRoster.value = [makeBuilding(1, EntityKind.Lodge)];
     store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-logs', kind: MUDPAW_KIND }]),
       makeGroup('combat', [{ eid: 20, task: 'idle', kind: SAPPER_KIND }]),
@@ -598,7 +618,7 @@ describe('TrainEvaluator', () => {
     storeV3.progressionLevel.value = 6;
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 1;
-      store.unitRoster.value = [
+    store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
     ];
 
@@ -625,11 +645,17 @@ describe('DefendEvaluator', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 3;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
-    store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
-    ];
+    store.unitRoster.value = [makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }])];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.95);
   });
 
@@ -638,7 +664,15 @@ describe('DefendEvaluator', () => {
     store.baseThreatCount.value = 3;
     store.logs.value = 0;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.28);
@@ -650,11 +684,17 @@ describe('DefendEvaluator', () => {
     store.fish.value = 100;
     store.logs.value = 0;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 980, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 980,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
-    store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
-    ];
+    store.unitRoster.value = [makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }])];
     storeV3.progressionLevel.value = 6;
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.72);
@@ -666,11 +706,17 @@ describe('DefendEvaluator', () => {
     store.fish.value = 220;
     store.logs.value = 120;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
-    store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
-    ];
+    store.unitRoster.value = [makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }])];
     storeV3.progressionLevel.value = 6;
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0.76);
@@ -682,7 +728,15 @@ describe('DefendEvaluator', () => {
     store.fish.value = 220;
     store.logs.value = 120;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     storeV3.progressionLevel.value = 6;
 
@@ -693,14 +747,25 @@ describe('DefendEvaluator', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 1;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
-      makeGroup('combat', Array.from({ length: 5 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 5 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
     storeV3.progressionLevel.value = 6;
 
@@ -728,9 +793,7 @@ describe('AttackEvaluator', () => {
   });
 
   it('returns 0 when army too small', () => {
-    store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
-    ];
+    store.unitRoster.value = [makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }])];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
 
@@ -766,7 +829,15 @@ describe('AttackEvaluator', () => {
 
     store.waveCountdown.value = -1;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 700, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 700,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
   });
@@ -777,14 +848,25 @@ describe('AttackEvaluator', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
-      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 4 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.7);
@@ -797,14 +879,25 @@ describe('AttackEvaluator', () => {
     store.fish.value = 180;
     storeV3.currentRunPurchasedNodeIds.value = ['combat_armor_t0'];
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 950, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 950,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.7);
@@ -814,14 +907,25 @@ describe('AttackEvaluator', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.7);
@@ -833,15 +937,26 @@ describe('AttackEvaluator', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 950, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 950,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
-      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 4 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.4);
@@ -853,15 +968,26 @@ describe('AttackEvaluator', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
-      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 2 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.75);
@@ -875,15 +1001,26 @@ describe('AttackEvaluator', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 1000, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 1000,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
-      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 2 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBeGreaterThan(0.75);
@@ -895,15 +1032,26 @@ describe('AttackEvaluator', () => {
     store.waveCountdown.value = 24;
     store.fish.value = 180;
     store.buildingRoster.value = [
-      { eid: 99, kind: EntityKind.Lodge, hp: 950, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 99,
+        kind: EntityKind.Lodge,
+        hp: 950,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     store.unitRoster.value = [
       makeGroup('generalist', [{ eid: 1, task: 'gathering-fish', kind: MUDPAW_KIND }]),
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 20,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 20,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     expect(evaluator.calculateDesirability(dummyOwner)).toBe(0);
@@ -929,9 +1077,7 @@ describe('Governor brain arbitration', () => {
   it('picks defend when base under attack', () => {
     store.baseUnderAttack.value = true;
     store.baseThreatCount.value = 3;
-    store.unitRoster.value = [
-      makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }]),
-    ];
+    store.unitRoster.value = [makeGroup('combat', [{ eid: 1, task: 'idle', kind: SAPPER_KIND }])];
     governor.brain.arbitrate();
     expect(governor.brain.subgoals.length).toBe(1);
   });
@@ -947,11 +1093,14 @@ describe('Governor brain arbitration', () => {
     ];
     storeV3.progressionLevel.value = 6;
     store.unitRoster.value = [
-      makeGroup('combat', Array.from({ length: 4 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 4 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
       makeGroup('generalist', [{ eid: 20, task: 'gathering-fish', kind: MUDPAW_KIND }]),
     ];
 
@@ -966,17 +1115,28 @@ describe('Governor brain arbitration', () => {
     store.waveCountdown.value = 16;
     store.fish.value = 180;
     store.buildingRoster.value = [
-      { eid: 1, kind: EntityKind.Lodge, hp: 950, maxHp: 1000, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: 1,
+        kind: EntityKind.Lodge,
+        hp: 950,
+        maxHp: 1000,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
       makeBuilding(2, EntityKind.Armory),
     ];
     storeV3.progressionLevel.value = 6;
     storeV3.currentRunPurchasedNodeIds.value = ['combat_armor_t0'];
     store.unitRoster.value = [
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
       makeGroup('generalist', [{ eid: 20, task: 'gathering-fish', kind: MUDPAW_KIND }]),
     ];
 
@@ -996,11 +1156,14 @@ describe('Governor brain arbitration', () => {
     ];
     storeV3.progressionLevel.value = 6;
     store.unitRoster.value = [
-      makeGroup('combat', Array.from({ length: 3 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 3 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
       makeGroup('generalist', [{ eid: 20, task: 'idle', kind: MUDPAW_KIND }]),
     ];
 
@@ -1025,11 +1188,14 @@ describe('Governor brain arbitration', () => {
         { eid: 20, task: 'gathering-fish', kind: MUDPAW_KIND },
         { eid: 21, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 2 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     governor.brain.arbitrate();
@@ -1053,11 +1219,14 @@ describe('Governor brain arbitration', () => {
         { eid: 20, task: 'gathering-fish', kind: MUDPAW_KIND },
         { eid: 21, task: 'gathering-logs', kind: MUDPAW_KIND },
       ]),
-      makeGroup('combat', Array.from({ length: 2 }, (_, i) => ({
-        eid: i + 1,
-        task: 'idle',
-        kind: SAPPER_KIND,
-      }))),
+      makeGroup(
+        'combat',
+        Array.from({ length: 2 }, (_, i) => ({
+          eid: i + 1,
+          task: 'idle',
+          kind: SAPPER_KIND,
+        })),
+      ),
     ];
 
     governor.brain.arbitrate();
