@@ -66,6 +66,27 @@ Run these on at least one real touch device and one desktop browser build:
    - UI overlays failing to close or reopen
 10. On Android, confirm install, launch, background/resume, rotation lock behavior, and a second launch after a full process kill.
 
+## Visual Audit
+
+Refresh the canonical staged browser captures and manifest before signoff:
+
+```bash
+pnpm audit:browser-captures
+```
+
+This updates the screenshots in [tests/browser/audit](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/browser/audit) and regenerates the tracked manifest at [tests/browser/audit/MANIFEST.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/tests/browser/audit/MANIFEST.md) with the current commit, package version, and capture timestamps.
+
+At minimum, visually inspect:
+- main menu
+- settings
+- play-mode selector
+- match start
+- economy gathering
+- event alert
+- defense combat
+- rewards
+- upgrade web
+
 ## Release Notes Inputs
 
 Capture these before shipping:
@@ -73,3 +94,4 @@ Capture these before shipping:
 - `pnpm verify:release` result
 - Android build date/time
 - Device/browser smoke matrix used for signoff
+- Browser audit manifest path and generation timestamp

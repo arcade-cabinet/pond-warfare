@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "audit:browser-captures": "pnpm exec vitest run --config vitest.browser.config.ts tests/browser/current-flow-captures.test.tsx --maxWorkers=1 --reporter=verbose && node scripts/write-browser-audit-manifest.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
