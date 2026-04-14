@@ -1,7 +1,7 @@
 import { query } from 'bitecs';
 import { render } from 'preact';
 import { page } from 'vitest/browser';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { spawnEntity } from '@/ecs/archetypes';
 import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { game } from '@/game';
@@ -14,6 +14,18 @@ import '@/styles/main.css';
 import { EntityKind, Faction } from '@/types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const auditOutputDir = import.meta.env.VITE_BROWSER_AUDIT_OUTPUT_DIR ?? 'audit';
+let mathRandomRestore: (() => void) | null = null;
+
+function createSeededRandom(seed: number) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 function firePointer(
   el: HTMLElement,
@@ -112,11 +124,28 @@ function findFishNode(): number {
 }
 
 async function takeShot(name: string) {
-  await delay(150);
-  await page.screenshot({
-    path: `audit/${name}.png`,
-    element: document.body,
-  });
+  const canPauseGame = store.menuState.value === 'playing' && game.isRunning();
+  const wasPaused = canPauseGame ? game.world.paused : false;
+  try {
+    if (canPauseGame) {
+      game.world.particles.length = 0;
+      game.world.floatingTexts.length = 0;
+      game.world.groundPings.length = 0;
+      game.world.corpses.length = 0;
+      game.world.paused = true;
+      await delay(150);
+    } else {
+      await delay(150);
+    }
+    await page.screenshot({
+      path: `${auditOutputDir}/${name}.png`,
+      element: document.body,
+    });
+  } finally {
+    if (canPauseGame) {
+      game.world.paused = wasPaused;
+    }
+  }
 }
 
 async function mountApp() {
@@ -145,11 +174,15 @@ async function mountApp() {
 
 describe('Current flow captures', () => {
   afterAll(() => {
+    mathRandomRestore?.();
+    mathRandomRestore = null;
+    localStorage.removeItem('pw_onboarding_v2');
+    store.reduceVisualNoise.value = false;
     storeV3.eventAlert.value = null;
     storeV3.rewardsScreenOpen.value = false;
     storeV3.clamUpgradeScreenOpen.value = false;
     storeV3.rankUpModalOpen.value = false;
-    if ((game as unknown as { running?: boolean }).running) {
+    if (game.isRunning()) {
       game.destroy();
     }
     const root = document.getElementById('app');
@@ -160,103 +193,113 @@ describe('Current flow captures', () => {
   });
 
   it('captures landing stages and six current gameplay phases', async () => {
-    store.menuState.value = 'main';
-    store.hasSaveGame.value = true;
-    storeV3.progressionLevel.value = 0;
-    storeV3.totalClams.value = 0;
-    storeV3.prestigeRank.value = 1;
-    storeV3.prestigeState.value = {
-      rank: 1,
-      pearls: 5,
-      totalPearlsEarned: 5,
-      upgradeRanks: {},
-    };
-    store.settingsOpen.value = false;
-    storeV3.rewardsScreenOpen.value = false;
-    storeV3.clamUpgradeScreenOpen.value = false;
-    storeV3.lastRewardBreakdown.value = null;
-    const { ready } = await mountApp();
+    const seededRandom = createSeededRandom(1337);
+    const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => seededRandom());
+    mathRandomRestore = () => randomSpy.mockRestore();
+    try {
+      store.reduceVisualNoise.value = true;
+      store.menuState.value = 'main';
+      store.hasSaveGame.value = true;
+      storeV3.progressionLevel.value = 0;
+      storeV3.totalClams.value = 0;
+      storeV3.prestigeRank.value = 1;
+      storeV3.prestigeState.value = {
+        rank: 1,
+        pearls: 5,
+        totalPearlsEarned: 5,
+        upgradeRanks: {},
+      };
+      store.settingsOpen.value = false;
+      storeV3.rewardsScreenOpen.value = false;
+      storeV3.clamUpgradeScreenOpen.value = false;
+      storeV3.lastRewardBreakdown.value = null;
+      localStorage.setItem('pw_onboarding_v2', 'dismissed');
+      const { ready } = await mountApp();
 
-    expect(store.menuState.value).toBe('main');
-    await takeShot('landing-01-main');
+      expect(store.menuState.value).toBe('main');
+      await takeShot('landing-01-main');
 
-    clickButton('SETTINGS');
-    await delay(250);
-    await takeShot('landing-02-settings');
-    clickLabel('Close settings');
-    await delay(250);
+      clickButton('SETTINGS');
+      await delay(250);
+      await takeShot('landing-02-settings');
+      clickLabel('Close settings');
+      await delay(250);
 
-    clickButton('PLAY');
-    await delay(250);
-    await takeShot('landing-03-play-mode');
+      clickButton('PLAY');
+      await delay(250);
+      await takeShot('landing-03-play-mode');
 
-    clickButton('SINGLE PLAYER');
-    await ready;
-    await delay(1000);
-    game.world.gameSpeed = 3;
+      clickButton('SINGLE PLAYER');
+      await ready;
+      await delay(1000);
+      game.world.gameSpeed = 3;
 
-    expect(document.getElementById('game-container')).toBeTruthy();
-    await takeShot('phase-01-match-start');
+      expect(document.getElementById('game-container')).toBeTruthy();
+      await takeShot('phase-01-match-start');
 
-    const lodge = findPlayerLodge();
-    const fishNode = findFishNode();
-    const mudpaw = spawnEntity(
-      game.world,
-      MUDPAW_KIND,
-      Position.x[lodge] - 80,
-      Position.y[lodge] - 60,
-      Faction.Player,
-    );
-    clickWorld(Position.x[mudpaw], Position.y[mudpaw], 0);
-    await delay(200);
-    clickWorld(Position.x[fishNode], Position.y[fishNode], 2);
-    await waitFrames(120);
-    await takeShot('phase-02-economy-gathering');
+      const lodge = findPlayerLodge();
+      const fishNode = findFishNode();
+      const mudpaw = spawnEntity(
+        game.world,
+        MUDPAW_KIND,
+        Position.x[lodge] - 80,
+        Position.y[lodge] - 60,
+        Faction.Player,
+      );
+      clickWorld(Position.x[mudpaw], Position.y[mudpaw], 0);
+      await delay(200);
+      clickWorld(Position.x[fishNode], Position.y[fishNode], 2);
+      await waitFrames(120);
+      await takeShot('phase-02-economy-gathering');
 
-    storeV3.eventAlert.value = {
-      text: 'WAVE INCOMING - FROM NORTH',
-      direction: 'north',
-      spawnX: Position.x[lodge],
-      spawnY: Position.y[lodge] - 240,
-      frame: game.world.frameCount,
-    };
-    await takeShot('phase-03-event-alert');
+      storeV3.eventAlert.value = {
+        text: 'WAVE INCOMING - FROM NORTH',
+        direction: 'north',
+        spawnX: Position.x[lodge],
+        spawnY: Position.y[lodge] - 240,
+        frame: game.world.frameCount,
+      };
+      await takeShot('phase-03-event-alert');
 
-    spawnEntity(
-      game.world,
-      SAPPER_KIND,
-      Position.x[lodge] + 40,
-      Position.y[lodge] - 80,
-      Faction.Player,
-    );
-    spawnEntity(
-      game.world,
-      SAPPER_KIND,
-      Position.x[lodge] + 40,
-      Position.y[lodge] - 150,
-      Faction.Enemy,
-    );
-    await waitFrames(150);
-    await takeShot('phase-04-defense-combat');
+      spawnEntity(
+        game.world,
+        SAPPER_KIND,
+        Position.x[lodge] + 40,
+        Position.y[lodge] - 80,
+        Faction.Player,
+      );
+      spawnEntity(
+        game.world,
+        SAPPER_KIND,
+        Position.x[lodge] + 40,
+        Position.y[lodge] - 150,
+        Faction.Enemy,
+      );
+      await waitFrames(150);
+      await takeShot('phase-04-defense-combat');
 
-    const reward = calculateMatchReward({
-      result: 'win',
-      durationSeconds: 420,
-      kills: 9,
-      resourcesGathered: 140,
-      eventsCompleted: 1,
-      prestigeRank: storeV3.prestigeRank.value,
-    });
-    game.world.paused = true;
-    storeV3.lastRewardBreakdown.value = reward;
-    storeV3.matchEventsCompleted.value = 1;
-    storeV3.canRankUpAfterMatch.value = true;
-    storeV3.rewardsScreenOpen.value = true;
-    await takeShot('phase-05-rewards');
+      const reward = calculateMatchReward({
+        result: 'win',
+        durationSeconds: 420,
+        kills: 9,
+        resourcesGathered: 140,
+        eventsCompleted: 1,
+        prestigeRank: storeV3.prestigeRank.value,
+      });
+      game.world.paused = true;
+      storeV3.lastRewardBreakdown.value = reward;
+      storeV3.matchEventsCompleted.value = 1;
+      storeV3.canRankUpAfterMatch.value = true;
+      storeV3.rewardsScreenOpen.value = true;
+      await takeShot('phase-05-rewards');
 
-    storeV3.totalClams.value = reward.totalClams;
-    storeV3.rewardsScreenOpen.value = false;
-    storeV3.clamUpgradeScreenOpen.value = true;
-    await takeShot('phase-06-upgrade-web');
+      storeV3.totalClams.value = reward.totalClams;
+      storeV3.rewardsScreenOpen.value = false;
+      storeV3.clamUpgradeScreenOpen.value = true;
+      await takeShot('phase-06-upgrade-web');
+    } finally {
+      mathRandomRestore?.();
+      mathRandomRestore = null;
+    }
   }, 120_000);
 });

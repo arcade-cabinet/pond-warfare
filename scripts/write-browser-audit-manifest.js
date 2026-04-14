@@ -1,21 +1,8 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-
-const repoRoot = resolve(import.meta.dirname, '..');
-const auditDir = join(repoRoot, 'tests', 'browser', 'audit');
+import { baselineAuditDir as auditDir, expectedCaptures, repoRoot } from './browser-audit-config.js';
 const manifestPath = join(auditDir, 'MANIFEST.md');
-const expectedCaptures = [
-  'landing-01-main.png',
-  'landing-02-settings.png',
-  'landing-03-play-mode.png',
-  'phase-01-match-start.png',
-  'phase-02-economy-gathering.png',
-  'phase-03-event-alert.png',
-  'phase-04-defense-combat.png',
-  'phase-05-rewards.png',
-  'phase-06-upgrade-web.png',
-];
 
 function git(args) {
   try {

@@ -76,6 +76,15 @@ pnpm audit:browser-captures
 
 This updates the screenshots in [tests/browser/audit](../tests/browser/audit) and regenerates the tracked manifest at [tests/browser/audit/MANIFEST.md](../tests/browser/audit/MANIFEST.md) with the current commit, package version, and capture timestamps.
 
+To verify that the shipped UI still matches the tracked baseline without mutating it, run:
+
+```bash
+pnpm verify:browser-audit
+```
+
+On failure, review the diff artifacts under `tests/browser/screenshots/audit-diff`.
+The allowed per-capture pixel budgets live in [scripts/browser-audit-config.js](../scripts/browser-audit-config.js); update them intentionally if a reviewed visual change becomes the new baseline.
+
 At minimum, visually inspect:
 - main menu
 - settings
@@ -96,4 +105,4 @@ Capture these before shipping:
 - Device/browser smoke matrix used for signoff
 - Browser audit manifest path and generation timestamp
 
-Use [docs/release-signoff-template.md](release-signoff-template.md) as the canonical signoff record.
+Use [docs/release-signoff-template.md](release-signoff-template.md) as the canonical signoff format and [docs/release-signoff-v1.3.0.md](release-signoff-v1.3.0.md) as the current in-repo production record.
