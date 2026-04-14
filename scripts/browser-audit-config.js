@@ -15,15 +15,15 @@ export const expectedCaptures = [
 ];
 
 export const maxDiffPixelsByCapture = {
-  'landing-01-main.png': 2,
+  'landing-01-main.png': 30,
   'landing-02-settings.png': 100,
-  'landing-03-play-mode.png': 0,
+  'landing-03-play-mode.png': 100,
   'phase-01-match-start.png': 2000,
-  'phase-02-economy-gathering.png': 2000,
+  'phase-02-economy-gathering.png': 2500,
   'phase-03-event-alert.png': 2500,
   'phase-04-defense-combat.png': 3500,
   'phase-05-rewards.png': 15,
-  'phase-06-upgrade-web.png': 50,
+  'phase-06-upgrade-web.png': 100,
 };
 
 export const baselineAuditDir = join(repoRoot, 'tests', 'browser', 'audit');

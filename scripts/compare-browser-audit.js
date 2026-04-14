@@ -25,10 +25,26 @@ function resolveDir(input, fallback) {
   return resolve(repoRoot, input);
 }
 
+function parseNumberEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw == null) {
+    return fallback;
+  }
+  const parsed = Number(raw);
+  if (Number.isNaN(parsed)) {
+    console.error(`Invalid ${name}: expected numeric value, received "${raw}"`);
+    process.exit(1);
+  }
+  return parsed;
+}
+
 const currentAuditDir = resolveDir(process.env.BROWSER_AUDIT_CURRENT_DIR, defaultCurrentAuditDir);
 const diffAuditDir = resolveDir(process.env.BROWSER_AUDIT_DIFF_DIR, defaultDiffAuditDir);
-const pixelmatchThreshold = Number(process.env.BROWSER_AUDIT_PIXELMATCH_THRESHOLD ?? '0.1');
-const maxDiffPixelsOverride = process.env.BROWSER_AUDIT_MAX_DIFF_PIXELS;
+const pixelmatchThreshold = parseNumberEnv('BROWSER_AUDIT_PIXELMATCH_THRESHOLD', 0.1);
+const maxDiffPixelsOverride =
+  process.env.BROWSER_AUDIT_MAX_DIFF_PIXELS == null
+    ? null
+    : parseNumberEnv('BROWSER_AUDIT_MAX_DIFF_PIXELS', 0);
 
 rmSync(diffAuditDir, { recursive: true, force: true });
 mkdirSync(diffAuditDir, { recursive: true });
@@ -54,8 +70,16 @@ for (const fileName of expectedCaptures) {
     continue;
   }
 
-  const baselinePng = PNG.sync.read(readFileSync(baselinePath));
-  const currentPng = PNG.sync.read(readFileSync(currentPath));
+  let baselinePng;
+  let currentPng;
+  try {
+    baselinePng = PNG.sync.read(readFileSync(baselinePath));
+    currentPng = PNG.sync.read(readFileSync(currentPath));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    failures.push(`${fileName}: failed to read PNG images - ${message}`);
+    continue;
+  }
 
   if (baselinePng.width !== currentPng.width || baselinePng.height !== currentPng.height) {
     failures.push(
@@ -118,10 +142,12 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-const currentStats = expectedCaptures.map((fileName) => {
-  const currentPath = join(currentAuditDir, fileName);
-  return `${fileName}: ${statSync(currentPath).size} bytes`;
-});
+const currentStats = expectedCaptures
+  .filter((fileName) => existsSync(join(currentAuditDir, fileName)))
+  .map((fileName) => {
+    const currentPath = join(currentAuditDir, fileName);
+    return `${fileName}: ${statSync(currentPath).size} bytes`;
+  });
 
 console.log('Browser audit visual regression passed.');
 for (const line of currentStats) {

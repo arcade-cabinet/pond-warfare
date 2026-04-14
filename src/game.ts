@@ -171,6 +171,9 @@ export class Game {
   cycleSpeed(): void {
     if (this.loopState) cycleSpeedFn(this.loopState);
   }
+  isRunning(): boolean {
+    return this.running;
+  }
   smoothPanTo(x: number, y: number): void {
     smoothPanTo(this.world, x, y, this.panHandle);
   }
