@@ -9,7 +9,7 @@ domain: technical
 
 Pond Warfare uses an Entity Component System (ECS) architecture powered by bitECS, with Preact for UI and PixiJS 8 for rendering.
 
-The canonical unit model is defined in [docs/unit-model.md](/Users/jbogaty/src/arcade-cabinet/pond-warfare/docs/unit-model.md) and [configs/unit-model.json](/Users/jbogaty/src/arcade-cabinet/pond-warfare/configs/unit-model.json). The live player-facing runtime now uses the canonical Lodge/radial roster and in-match specialist blueprints. The remaining low-level compatibility layer is limited to shared chassis ids and the specialist snapshot harness used by diagnostics; Pearl progression no longer uses the deleted free specialist match-start spawn contract.
+The canonical unit model is defined in [docs/unit-model.md](unit-model.md) and [configs/unit-model.json](../configs/unit-model.json). The live player-facing runtime now uses the canonical Lodge/radial roster and in-match specialist blueprints. The remaining low-level compatibility layer is limited to shared chassis ids and the specialist snapshot harness used by diagnostics; Pearl progression no longer uses the deleted free specialist match-start spawn contract.
 
 ## System Overview
 
