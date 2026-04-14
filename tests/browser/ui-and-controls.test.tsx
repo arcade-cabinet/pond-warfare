@@ -101,10 +101,13 @@ async function waitFrames(n: number) {
 
 async function captureScreenshot(path: string) {
   const wasPaused = game.world.paused;
-  game.world.paused = true;
-  await delay(50);
-  await page.screenshot({ path, element: document.body });
-  game.world.paused = wasPaused;
+  try {
+    game.world.paused = true;
+    await delay(50);
+    await page.screenshot({ path, element: document.body });
+  } finally {
+    game.world.paused = wasPaused;
+  }
 }
 
 async function selectEntity(eid: number) {

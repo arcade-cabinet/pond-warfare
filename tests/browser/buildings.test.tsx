@@ -124,10 +124,13 @@ async function waitFrames(n: number) {
 
 async function captureScreenshot(path: string) {
   const wasPaused = game.world.paused;
-  game.world.paused = true;
-  await delay(50);
-  await page.screenshot({ path });
-  game.world.paused = wasPaused;
+  try {
+    game.world.paused = true;
+    await delay(50);
+    await page.screenshot({ path });
+  } finally {
+    game.world.paused = wasPaused;
+  }
 }
 
 function runBuildingFrames(n: number) {

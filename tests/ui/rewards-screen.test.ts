@@ -12,8 +12,8 @@
  */
 
 import { signal } from '@preact/signals';
-import { h } from 'preact';
 import { render, screen } from '@testing-library/preact';
+import { h } from 'preact';
 import { describe, expect, it } from 'vitest';
 import {
   calculateMatchReward,

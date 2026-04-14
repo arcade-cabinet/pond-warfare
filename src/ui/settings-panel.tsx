@@ -11,7 +11,7 @@
  */
 
 import { useMemo } from 'preact/hooks';
-import { BUILD_STAMP_LABEL } from './build-stamp';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import { Frame9Slice } from './components/frame';
 import { type AccordionSection, PondAccordion } from './components/PondAccordion';
 import { useScrollDrag } from './hooks/useScrollDrag';

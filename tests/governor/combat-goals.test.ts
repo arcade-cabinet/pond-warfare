@@ -177,9 +177,7 @@ describe('DefendGoal', () => {
     world.playerRepairSpeedMultiplier = 1.1;
 
     const regular = createUnit(SAPPER_KIND);
-    store.unitRoster.value = [
-      rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')]),
-    ];
+    store.unitRoster.value = [rosterGroup('combat', [rosterUnit(regular, SAPPER_KIND, 'idle')])];
 
     const goal = new DefendGoal();
     goal.activate();
@@ -216,7 +214,17 @@ describe('DefendGoal', () => {
     Health.current[lodge] = 430;
     Health.max[lodge] = 500;
     world.resources.logs = 35;
-    store.buildingRoster.value = [{ eid: lodge, kind: EntityKind.Lodge, hp: 430, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] }];
+    store.buildingRoster.value = [
+      {
+        eid: lodge,
+        kind: EntityKind.Lodge,
+        hp: 430,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+    ];
     storeV3.progressionLevel.value = 6;
     storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
     store.baseThreatCount.value = 1;
@@ -249,9 +257,19 @@ describe('DefendGoal', () => {
     store.fish.value = 140;
     store.logs.value = 95;
     store.buildingRoster.value = [
-      { eid: lodge, kind: EntityKind.Lodge, hp: 480, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: lodge,
+        kind: EntityKind.Lodge,
+        hp: 480,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     storeV3.progressionLevel.value = 6;
+    store.baseThreatCount.value = 0;
+    store.waveCountdown.value = 0;
 
     const gathererA = createUnit(MUDPAW_KIND, 180, 180);
     const gathererB = createUnit(MUDPAW_KIND, 190, 180);
@@ -286,9 +304,19 @@ describe('DefendGoal', () => {
     store.fish.value = 110;
     store.logs.value = 95;
     store.buildingRoster.value = [
-      { eid: lodge, kind: EntityKind.Lodge, hp: 480, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] },
+      {
+        eid: lodge,
+        kind: EntityKind.Lodge,
+        hp: 480,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
     ];
     storeV3.progressionLevel.value = 6;
+    store.baseThreatCount.value = 0;
+    store.waveCountdown.value = 0;
 
     const gathererA = createUnit(MUDPAW_KIND, 180, 180);
     const gathererB = createUnit(MUDPAW_KIND, 190, 180);
@@ -318,7 +346,17 @@ describe('DefendGoal', () => {
     Health.current[lodge] = 300;
     Health.max[lodge] = 500;
     world.resources.logs = 35;
-    store.buildingRoster.value = [{ eid: lodge, kind: EntityKind.Lodge, hp: 300, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] }];
+    store.buildingRoster.value = [
+      {
+        eid: lodge,
+        kind: EntityKind.Lodge,
+        hp: 300,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+    ];
     storeV3.progressionLevel.value = 6;
     storeV3.currentRunPurchasedNodeIds.value = ['defense_wall_hp_t0'];
 
@@ -346,7 +384,17 @@ describe('DefendGoal', () => {
     Health.current[lodge] = 470;
     Health.max[lodge] = 500;
     world.resources.logs = 70;
-    store.buildingRoster.value = [{ eid: lodge, kind: EntityKind.Lodge, hp: 470, maxHp: 500, queueItems: [], queueProgress: 0, canTrain: [] }];
+    store.buildingRoster.value = [
+      {
+        eid: lodge,
+        kind: EntityKind.Lodge,
+        hp: 470,
+        maxHp: 500,
+        queueItems: [],
+        queueProgress: 0,
+        canTrain: [],
+      },
+    ];
     store.baseThreatCount.value = 1;
     store.waveCountdown.value = 8;
     storeV3.progressionLevel.value = 6;

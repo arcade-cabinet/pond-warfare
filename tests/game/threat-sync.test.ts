@@ -1,11 +1,6 @@
 import { addComponent, addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  EntityTypeTag,
-  FactionTag,
-  Health,
-  Position,
-} from '@/ecs/components';
+import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
 import { createGameWorld, type GameWorld } from '@/ecs/world';
 import { syncThreatAndObjectives } from '@/game/threat-sync';
 import { EntityKind, Faction } from '@/types';
@@ -53,7 +48,15 @@ describe('syncThreatAndObjectives', () => {
 
   it('clears base-under-attack when nearby enemies leave the lodge radius', () => {
     spawnActor(EntityKind.Lodge, Faction.Player, 200, 200);
-    spawnActor(EntityKind.Gator, Faction.Enemy, 620, 200);
+    const enemy = spawnActor(EntityKind.Gator, Faction.Enemy, 440, 200);
+
+    syncThreatAndObjectives(world);
+
+    expect(store.baseThreatCount.value).toBe(1);
+    expect(store.baseUnderAttack.value).toBe(true);
+
+    Position.x[enemy] = 620;
+    Position.y[enemy] = 200;
 
     syncThreatAndObjectives(world);
 

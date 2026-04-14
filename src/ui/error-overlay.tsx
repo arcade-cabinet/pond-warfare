@@ -18,8 +18,8 @@ import {
   subscribeFatalError,
 } from '@/errors';
 import { restartMountedGameSession } from '@/game/shell-session';
+import { BUILD_STAMP_LABEL } from '@/ui/build-stamp';
 import * as store from '@/ui/store';
-import { BUILD_STAMP_LABEL } from './build-stamp';
 import { Frame9Slice } from './components/frame';
 
 /** Fatal error modal — blocks the screen until the session is safely recovered. */

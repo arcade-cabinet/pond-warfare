@@ -16,7 +16,8 @@ function unitCount(role: GovernorUnitRole): number {
 }
 
 function woundedCombatUnitCount(): number {
-  return getGovernorCombatUnits(store.unitRoster.value).filter((unit) => unit.hp < unit.maxHp).length;
+  return getGovernorCombatUnits(store.unitRoster.value).filter((unit) => unit.hp < unit.maxHp)
+    .length;
 }
 
 function lodgeHpRatio(): number {
@@ -30,7 +31,9 @@ function hasBuilding(kind: EntityKind): boolean {
 }
 
 function hasCompletedBuilding(kind: EntityKind): boolean {
-  return store.buildingRoster.value.some((building) => building.kind === kind && building.hp >= building.maxHp);
+  return store.buildingRoster.value.some(
+    (building) => building.kind === kind && building.hp >= building.maxHp,
+  );
 }
 
 function nextWaveCountdown(): number | null {
@@ -55,11 +58,7 @@ export function getGovernorMudpawTarget(): number {
 
   const stage = currentStage();
   if (stage >= 6 && !hasCompletedBuilding(EntityKind.Armory)) return 3;
-  if (
-    stage >= 6 &&
-    hasCompletedBuilding(EntityKind.Armory) &&
-    !hasBuilding(EntityKind.Tower)
-  ) {
+  if (stage >= 6 && hasCompletedBuilding(EntityKind.Armory) && !hasBuilding(EntityKind.Tower)) {
     return 2;
   }
   if (stage >= 6) return 1;
@@ -79,7 +78,10 @@ function nearBuildBudget(kind: EntityKind, fishSlack: number, logSlack: number):
   const def = ENTITY_DEFS[kind];
   const fishCost = def.fishCost ?? 0;
   const logCost = def.logCost ?? 0;
-  return store.fish.value >= Math.max(0, fishCost - fishSlack) && store.logs.value >= Math.max(0, logCost - logSlack);
+  return (
+    store.fish.value >= Math.max(0, fishCost - fishSlack) &&
+    store.logs.value >= Math.max(0, logCost - logSlack)
+  );
 }
 
 function combatFloorForBuildSavings(): number {
@@ -132,29 +134,18 @@ export function getGovernorReservedBuildKind(): EntityKind | null {
     stage >= 6 &&
     !hasBuilding(EntityKind.Tower) &&
     unitCount('generalist') >= 2 &&
-    (
-      (
-        hasCompletedBuilding(EntityKind.Armory) &&
-        lodgeHp >= 0.88 &&
-        threats <= 2 &&
-        (waveCountdown === null || waveCountdown > 12)
-      ) ||
-      (
-        towerDamageTrackActive &&
+    ((hasCompletedBuilding(EntityKind.Armory) &&
+      lodgeHp >= 0.88 &&
+      threats <= 2 &&
+      (waveCountdown === null || waveCountdown > 12)) ||
+      (towerDamageTrackActive &&
         lodgeHp >= 0.9 &&
         threats <= 1 &&
-        (waveCountdown === null || waveCountdown > 8)
-      )
-    );
+        (waveCountdown === null || waveCountdown > 8)));
 
-  if (
-    canStartTowerSavings &&
-    nearBuildBudget(EntityKind.Tower, 60, 70)
-  ) {
+  if (canStartTowerSavings && nearBuildBudget(EntityKind.Tower, 60, 70)) {
     return EntityKind.Tower;
-  }
-
-  if (canStartTowerSavings) {
+  } else if (canStartTowerSavings) {
     return EntityKind.Tower;
   }
 
