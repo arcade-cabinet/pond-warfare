@@ -3,42 +3,39 @@
 import { query } from 'bitecs';
 import { vi } from 'vitest';
 import {
+  type BalanceSnapshot,
   getDifficultyShiftPercent,
   getMetaProgressionScore,
   getPowerScore,
   getRewardScore,
   summarizeShiftPercents,
-  type BalanceSnapshot,
 } from '@/balance/progression-model';
-import { type BalanceVariantConfig } from '@/balance/track-variants';
+import type { BalanceVariantConfig } from '@/balance/track-variants';
+import { createPrestigeState } from '@/config/prestige-logic';
 import { generateUpgradeWeb } from '@/config/upgrade-web';
-import { EntityTypeTag, FactionTag, Health, Position } from '@/ecs/components';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { EntityTypeTag, FactionTag, Health } from '@/ecs/components';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
 import { fogOfWarSystem, initFogOfWar, resetFogOfWar } from '@/ecs/systems/fog-of-war';
-import {
-  getEventsCompletedCount,
-  resetMatchEventRunner,
-} from '@/ecs/systems/match-event-runner';
+import { getEventsCompletedCount, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
 import { calculateMatchReward } from '@/game/match-rewards';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import { Governor } from '@/governor/governor';
 import { BUILDING_KINDS, EntityKind, Faction } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
-import { createUpgradeWebState, purchaseNode } from '@/ui/upgrade-web-state';
 import * as storeV3 from '@/ui/store-v3';
-import { createPrestigeState } from '@/config/prestige-logic';
+import { createUpgradeWebState, purchaseNode } from '@/ui/upgrade-web-state';
 import { SeededRandom } from '@/utils/random';
-import { createSnapshotScoreCache } from './balance-score-cache';
-import { BALANCE_REPORT_SEEDS, type BalanceReportRow } from './balance-report-sim';
-import { mockedGameRef } from '../helpers/game-world-ref';
 import { createExploredTestContext } from '../helpers/explored-context';
 import { getPlayerFortificationSnapshot } from '../helpers/fortification-snapshot';
+import { mockedGameRef } from '../helpers/game-world-ref';
 import { syncGovernorSignals } from '../helpers/governor-sync';
 import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
+import { BALANCE_REPORT_SEEDS, type BalanceReportRow } from './balance-report-sim';
+import { createSnapshotScoreCache } from './balance-score-cache';
 
 vi.mock('@/game', () => ({
   game: new Proxy({} as Record<string, unknown>, {
@@ -143,7 +140,12 @@ function snapshotWorld(world: GameWorld, initialEnemyNestHp: number): MatchRunRe
   };
 }
 
-function runMatch(seed: number, purchasedNodeIds: string[], clams: number, frames: number): MatchRunResult {
+function runMatch(
+  seed: number,
+  purchasedNodeIds: string[],
+  clams: number,
+  frames: number,
+): MatchRunResult {
   resetAutoSymbol();
   resetMatchEventRunner();
   storeV3.progressionLevel.value = CLAM_POSTMATCH_STAGE;
@@ -174,7 +176,12 @@ function runMatch(seed: number, purchasedNodeIds: string[], clams: number, frame
   const governor = new Governor();
   governor.enabled = true;
   for (let frame = 0; frame < frames; frame += 1) {
-    runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+    runSimFrame(world, {
+      governor,
+      runMatchEvents: true,
+      runPrestigeAutoBehaviors: true,
+      syncSignals: true,
+    });
     fogOfWarSystem(world);
   }
 
@@ -200,13 +207,12 @@ function buildPurchasedNodeIds(
   return Array.from(state.purchasedNodes);
 }
 
-export function buildPostMatchClamReportRows(
-  variants: BalanceVariantConfig[],
-): BalanceReportRow[] {
+export function buildPostMatchClamReportRows(variants: BalanceVariantConfig[]): BalanceReportRow[] {
   const getScores = createSnapshotScoreCache<BalanceVariantConfig | undefined>((seed, variant) => {
     const warmup = runMatch(seed, [], 0, CLAM_POSTMATCH_WARMUP_FRAMES);
     const purchasedNodeIds = buildPurchasedNodeIds(warmup.earnedClams, variant);
-    return runMatch(seed, purchasedNodeIds, warmup.earnedClams, CLAM_POSTMATCH_EVAL_FRAMES).snapshot;
+    return runMatch(seed, purchasedNodeIds, warmup.earnedClams, CLAM_POSTMATCH_EVAL_FRAMES)
+      .snapshot;
   });
   const baselineScores = new Map<number, ReturnType<typeof getScores>>();
   for (const seed of BALANCE_REPORT_SEEDS) {

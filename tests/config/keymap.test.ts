@@ -6,7 +6,6 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { logError } from '@/errors';
 import {
   DEFAULT_KEYMAP,
   getKeymap,
@@ -15,6 +14,7 @@ import {
   saveKeymapToStorage,
   setKeymap,
 } from '@/config/keymap';
+import { logError } from '@/errors';
 
 // Mock the native module so we don't need real Capacitor
 const mockPrefs: Record<string, string> = {};

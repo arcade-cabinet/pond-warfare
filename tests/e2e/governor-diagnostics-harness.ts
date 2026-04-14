@@ -1,22 +1,21 @@
 import { query } from 'bitecs';
+import { isAutoBehaviorUnlocked, type PrestigeState } from '@/config/prestige-logic';
 import {
   EntityTypeTag,
   FactionTag,
   Health,
-  Position,
   TaskOverride,
   UnitStateMachine,
 } from '@/ecs/components';
-import { autoSymbolSystem, resetAutoSymbol } from '@/ecs/systems/auto-symbol';
-import { matchEventRunnerSystem, resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
+import { resetAutoSymbol } from '@/ecs/systems/auto-symbol';
+import { resetMatchEventRunner } from '@/ecs/systems/match-event-runner';
 import type { GameWorld } from '@/ecs/world';
-import { isAutoBehaviorUnlocked, type PrestigeState } from '@/config/prestige-logic';
-import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { spawnVerticalEntities } from '@/game/init-entities/spawn-vertical';
-import { generateVerticalMapLayout } from '@/game/vertical-map';
+import { deploySpecialistsAtMatchStart } from '@/game/init-entities/specialist-init';
 import { applyUpgradeEffects } from '@/game/upgrade-effects';
+import { generateVerticalMapLayout } from '@/game/vertical-map';
 import type { Governor } from '@/governor/governor';
-import { EntityKind, Faction, UnitState } from '@/types';
+import { EntityKind, Faction, type UnitState } from '@/types';
 import { buildCurrentRunUpgradeState } from '@/ui/current-run-upgrades';
 import * as store from '@/ui/store';
 import * as storeV3 from '@/ui/store-v3';
@@ -27,7 +26,12 @@ import { runSimFrame } from '../helpers/run-sim-frame';
 import { createTestPanelGrid, createTestWorld } from '../helpers/world-factory';
 
 export function runGovernorFrame(world: GameWorld, governor: Governor): void {
-  runSimFrame(world, { governor, runMatchEvents: true, runPrestigeAutoBehaviors: true, syncSignals: true });
+  runSimFrame(world, {
+    governor,
+    runMatchEvents: true,
+    runPrestigeAutoBehaviors: true,
+    syncSignals: true,
+  });
 }
 
 export function createGovernorTraceWorld(
