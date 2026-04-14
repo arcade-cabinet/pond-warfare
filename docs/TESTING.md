@@ -1,6 +1,6 @@
 ---
 title: Testing Strategy
-updated: 2026-04-10
+updated: 2026-04-14
 status: current
 domain: quality
 ---
@@ -16,12 +16,12 @@ Pond Warfare uses a **multi-layer testing pyramid**:
 - **E2E tests** (Vitest + Playwright) — full match flows, menu navigation, state persistence
 - **Manual smoke** — live gameplay, mobile builds, visual polish
 
-**Current coverage:** 359+ tests across 29 files, with target of >80% line coverage for core systems.
+**Current coverage:** 2,500+ tests across unit, browser, integration, gameplay, and E2E suites, with release gating centered on green scripted verification rather than a single line-coverage threshold.
 
 ## Running Tests
 
 ```bash
-# All tests (unit + jsdom)
+# All tests (unit + jsdom + integration slices under default Vitest config)
 pnpm test
 
 # Watch mode (development)
@@ -32,6 +32,12 @@ pnpm test:browser
 
 # E2E tests (full match flow)
 pnpm test:e2e
+
+# Full release gate
+pnpm verify:release
+
+# Refresh canonical staged browser audit captures + manifest
+pnpm audit:browser-captures
 
 # Single file
 pnpm test src/ecs/systems/movement.test.ts
@@ -129,19 +135,29 @@ test('full match from start to specialist training', async () => {
 })
 ```
 
-## Coverage Goals
+## Release Gate
 
-| Layer | Target | Current | Key Files |
-|-------|--------|---------|-----------|
-| Unit | >85% | 82% | `ecs/`, `utils/`, `config/` |
-| Browser | >70% | 65% | `ui/`, `input/` |
-| E2E | >60% | 58% | `game/`, menu flow |
-| **Total** | **>75%** | **72%** | — |
+The canonical pre-ship gate is:
 
-Run coverage report:
 ```bash
-pnpm test -- --coverage
+pnpm verify:release
 ```
+
+That scripted pass covers:
+- TypeScript compilation
+- Full Vitest suite
+- Core browser smoke slices
+- Production web build
+- Android sync build
+- Dependency audit
+
+For visual signoff, refresh the tracked staged screenshots too:
+
+```bash
+pnpm audit:browser-captures
+```
+
+That command regenerates [tests/browser/audit/MANIFEST.md](tests/browser/audit/MANIFEST.md) and fails closed if the canonical nine capture files drift.
 
 ## When to Write Tests
 
@@ -168,38 +184,34 @@ pnpm test -- --coverage
 
 **Before every release:**
 
-1. **Main menu flow**
-   - Start game → verify landing page renders
-   - Click PLAY → match starts
-   - Verify HUD visible, controls responsive
+Use [docs/release-checklist.md](docs/release-checklist.md) for the canonical smoke sequence and [docs/release-signoff-template.md](docs/release-signoff-template.md) for the record you attach to a release PR or release issue.
 
-2. **Single match (5 min)**
-   - Gather 2 clams from resource node
-   - Train 2 Mudpaws
-   - Move them to gather
-   - Let one auto-attack an enemy
-   - Verify damage number appears
-   - End match (win or lose)
+At minimum, manual signoff should cover:
 
-3. **Upgrade web**
-   - Earn clams
-   - Open upgrades
-   - Click a cost-reduction upgrade
-   - Verify unit cost drops in next match
-   - Verify cost reflects in HUD
+1. **Fresh launch**
+   - Clean install / launch
+   - Main menu art + icon set visible
+   - PLAY → SINGLE PLAYER flow starts a match cleanly
 
-4. **Specialist blueprint** (if Pearl features changed)
-   - Unlock Fisher blueprint (via upgrade or reset)
-   - Train Fisher in-match
-   - Right-click to place radius
-   - Verify Fisher gathers nearby resources
+2. **Core match**
+   - Onboarding coach advances through its three early steps
+   - Units can be selected, commanded, and trained
+   - Rewards screen appears at match end
 
-5. **Mobile (Android APK)**
-   - Tap to select unit
-   - Long-press to move
-   - Two-finger pan/zoom
-   - Verify touch keyboard works
-   - Verify no crashes on app resume
+3. **Progression carry-forward**
+   - Clam upgrades persist into the next match
+   - Pearl upgrades persist into the next match
+   - Specialist blueprint behavior still functions
+
+4. **Touch + resume**
+   - Tap select
+   - Tap command
+   - Pinch zoom
+   - Drag pan
+   - Background / resume without broken audio or shell state
+
+5. **Longer smoke**
+   - 15-20 minute session without stalled AI or broken overlays
 
 ## Test Fixtures & Mocks
 
