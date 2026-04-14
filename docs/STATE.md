@@ -9,7 +9,7 @@ domain: context
 
 ## Release Status: v1.3.0
 
-**Current version:** 1.3.0 (released 2026-04-10)
+**Current version:** 1.3.0 (released 2026-04-14)
 
 **Game mode:** Tower defense with progression — defend Lodge against escalating enemy waves, unlock upgrades and specialist blueprints between matches.
 
