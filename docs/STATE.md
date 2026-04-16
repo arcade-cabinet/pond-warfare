@@ -1,6 +1,6 @@
 ---
 title: Current State & Known Issues
-updated: 2026-04-14
+updated: 2026-04-16
 status: current
 domain: context
 ---
@@ -133,6 +133,17 @@ None currently. The tracked release gate is green on v1.3.0.
    - Impact: Gather completion delayed by 1 frame
    - Fix: Tighten tolerance to 2px (low priority)
 
+## Open Branch Inventory
+
+- `main`
+  - Canonical production branch.
+- `feat/v3.1-commander-flow`
+  - Stale pre-release divergence from merge-base `239f0bb`.
+  - No open PR, heavy conflicts against current `main`, and not a safe merge candidate.
+  - Any still-desired commander work should be rebuilt from fresh branches off `main`, not merged wholesale.
+
+See [docs/outstanding-work.md](outstanding-work.md) for the canonical remaining product work after branch triage.
+
 ## Next Steps (Post-v1.3)
 
 ### Planned Features
@@ -176,7 +187,7 @@ None currently. The tracked release gate is green on v1.3.0.
 
 ## Documentation Gaps
 
-All root and docs/ files now have YAML frontmatter and are current as of 2026-04-14.
+All root and docs/ files now have YAML frontmatter and are current as of 2026-04-16.
 
 - `docs/LORE.md` — Game world and narrative (game is tower defense, not narrative-heavy, but lore docs added for completeness)
 
