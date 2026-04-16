@@ -137,12 +137,8 @@ None currently. The tracked release gate is green on v1.3.0.
 
 - `main`
   - Canonical production branch.
-- `feat/v3.1-commander-flow`
-  - Stale pre-release divergence from merge-base `239f0bb`.
-  - No open PR, heavy conflicts against current `main`, and not a safe merge candidate.
-  - Any still-desired commander work should be rebuilt from fresh branches off `main`, not merged wholesale.
 
-See [docs/outstanding-work.md](outstanding-work.md) for the canonical remaining product work after branch triage.
+See [docs/outstanding-work.md](outstanding-work.md) for the canonical remaining product work after branch triage and [tasks/prd-production-complete.md](../tasks/prd-production-complete.md) for the execution task covering all remaining production work.
 
 ## Next Steps (Post-v1.3)
 
